@@ -213,8 +213,6 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
    char * REG_EXCHANGE = "LR=Reg_exchg";
    char * REG_PAIR     = "LR=Reg_pair";
    TR_Debug * debugObj = cg->getDebug();
-   bool enableHighWordRA = cg->supportsHighWordFacility() &&
-                           rk != TR_FPR && rk != TR_VRF;
    TR::Machine *machine = cg->machine();
 
    // exchange floating point registers
@@ -315,27 +313,6 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
       bool srcRegIsHPR = sourceReg->isHighWordRegister();
       bool tgtRegIsHPR = targetReg->isHighWordRegister();
 
-      if (enableHighWordRA)
-         {
-         if (srcRegIsHPR)
-            {
-            opLoad  = TR::InstOpCode::LFH;
-            }
-         if (tgtRegIsHPR)
-            {
-            opStore = TR::InstOpCode::STFH;
-            }
-
-         if (srcRegIsHPR != tgtRegIsHPR)
-            {
-            opLoadReg = tgtRegIsHPR? TR::InstOpCode::LHLR:InstOpCode::LLHFR;
-            }
-         else
-            {
-            opLoadReg = tgtRegIsHPR? TR::InstOpCode::LHHR:opLoadReg;
-            }
-         }
-
       // exchange general purpose registers
       //
       if (middleReg == NULL)
@@ -382,98 +359,36 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
 
          bool middleRegIsHPR = middleReg->isHighWordRegister();
 
-         if (enableHighWordRA)
+         if (srcRegIsHPR || tgtRegIsHPR)
             {
-            if (srcRegIsHPR || tgtRegIsHPR)
-               {
-               TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/HPR");
-               }
-            else
-               {
-               TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/GPR");
-               }
-            if (srcRegIsHPR != middleRegIsHPR)
-               {
-               currentInstruction =
-                  generateRRInstruction(cg, srcRegIsHPR? TR::InstOpCode::LHLR:InstOpCode::LLHFR, currentNode, sourceReg, middleReg, precedingInstruction);
-               }
-            else
-               {
-               currentInstruction =
-                  generateRRInstruction(cg, srcRegIsHPR? TR::InstOpCode::LHHR:opLoadReg, currentNode, sourceReg, middleReg, precedingInstruction);
-               }
-            cg->traceRAInstruction(currentInstruction);
-            if (debugObj)
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
-               }
-
-            if (srcRegIsHPR != tgtRegIsHPR)
-               {
-               currentInstruction =
-                  generateRRInstruction(cg, tgtRegIsHPR? TR::InstOpCode::LHLR:InstOpCode::LLHFR, currentNode, targetReg, sourceReg, precedingInstruction);
-               }
-            else
-               {
-               currentInstruction =
-                  generateRRInstruction(cg, tgtRegIsHPR? TR::InstOpCode::LHHR:opLoadReg, currentNode, targetReg, sourceReg, precedingInstruction);
-               }
-            cg->traceRAInstruction(currentInstruction);
-            if (debugObj)
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
-               }
-
-            if (middleRegIsHPR != tgtRegIsHPR)
-               {
-               currentInstruction =
-                  generateRRInstruction(cg, middleRegIsHPR? TR::InstOpCode::LHLR:InstOpCode::LLHFR, currentNode, middleReg, targetReg, precedingInstruction);
-               }
-            else
-               {
-               currentInstruction =
-                  generateRRInstruction(cg, middleRegIsHPR? TR::InstOpCode::LHHR:opLoadReg, currentNode, middleReg, targetReg, precedingInstruction);
-               }
-
-            cg->traceRAInstruction(currentInstruction);
-            if (debugObj)
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
-               }
+            TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/HPR");
             }
          else
             {
-            if (srcRegIsHPR || tgtRegIsHPR)
-               {
-               TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/HPR");
-               }
-            else
-               {
-               TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/GPR");
-               }
-            currentInstruction =
-               generateRRInstruction(cg, opLoadReg, currentNode, sourceReg, middleReg, precedingInstruction);
-            cg->traceRAInstruction(currentInstruction);
-            if (debugObj)
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
-               }
+            TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/GPR");
+            }
+         currentInstruction =
+            generateRRInstruction(cg, opLoadReg, currentNode, sourceReg, middleReg, precedingInstruction);
+         cg->traceRAInstruction(currentInstruction);
+         if (debugObj)
+            {
+            debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
+            }
 
-            currentInstruction =
-               generateRRInstruction(cg, opLoadReg, currentNode, targetReg, sourceReg, precedingInstruction);
-            cg->traceRAInstruction(currentInstruction);
-            if (debugObj)
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
-               }
+         currentInstruction =
+            generateRRInstruction(cg, opLoadReg, currentNode, targetReg, sourceReg, precedingInstruction);
+         cg->traceRAInstruction(currentInstruction);
+         if (debugObj)
+            {
+            debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
+            }
 
-            currentInstruction =
-               generateRRInstruction(cg, opLoadReg, currentNode, middleReg, targetReg, precedingInstruction);
-            cg->traceRAInstruction(currentInstruction);
-            if (debugObj)
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
-               }
+         currentInstruction =
+            generateRRInstruction(cg, opLoadReg, currentNode, middleReg, targetReg, precedingInstruction);
+         cg->traceRAInstruction(currentInstruction);
+         if (debugObj)
+            {
+            debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
             }
          }
 
@@ -2309,11 +2224,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
    if (comp->getOption(TR_Randomize))
       {
       randomPreference = preference;
-      if (TR::RealRegister::isHPR((TR::RealRegister::RegNum)preference))
-         {
-         randomPreference = self()->cg()->randomizer.randomInt(TR::RealRegister::FirstHPR,TR::RealRegister::LastHPR);
-         }
-      else if (TR::RealRegister::isFPR((TR::RealRegister::RegNum)preference))
+      
+      if (TR::RealRegister::isFPR((TR::RealRegister::RegNum)preference))
          {
          randomPreference = self()->cg()->randomizer.randomInt(TR::RealRegister::FirstFPR,TR::RealRegister::LastFPR);
          }
@@ -5170,8 +5082,6 @@ OMR::Z::Machine::setRegisterWeightsFromAssociations()
    int32_t first = TR::RealRegister::FirstGPR;
    TR::Compilation *comp = self()->cg()->comp();
    int32_t last = TR::RealRegister::LastAssignableVRF;
-   if (self()->cg()->supportsHighWordFacility())
-      last = TR::RealRegister::LastHPR;
 
    for (int32_t i = first; i <= last; ++i)
       {
@@ -5215,17 +5125,8 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
    {
    TR::Compilation *comp = self()->cg()->comp();
    int32_t last = TR::RealRegister::LastAssignableVRF;
-   TR::RegisterDependencyConditions * associations;
+   TR::RegisterDependencyConditions * associations  = new (self()->cg()->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, last, self()->cg());
 
-   if (self()->cg()->supportsHighWordFacility())
-      {
-      int32_t lastHPR = last + TR::RealRegister::LastHPR - TR::RealRegister::FirstHPR;
-      associations = new (self()->cg()->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, lastHPR, self()->cg());
-      }
-   else
-      {
-      associations = new (self()->cg()->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, last, self()->cg());
-      }
    // Go through the current associations held in the machine and put a copy of
    // that state out into the stream after the cursor
    // so that when the register assigner goes backwards through this point
@@ -5236,16 +5137,6 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
       TR::RealRegister::RegNum regNum = (TR::RealRegister::RegNum) (i + 1);
       associations->addPostCondition(self()->getVirtualAssociatedWithReal(regNum), regNum);
       }
-
-   if (self()->cg()->supportsHighWordFacility())
-      {
-      for (int32_t i = TR::RealRegister::FirstHPR; i < TR::RealRegister::LastHPR+1; i++)
-         {
-         TR::RealRegister::RegNum regNum = (TR::RealRegister::RegNum) (i);
-         associations->addPostCondition(self()->getVirtualAssociatedWithReal(regNum), regNum);
-         }
-      }
-
 
    TR::Instruction *cursor1 = new (self()->cg()->trHeapMemory(), TR_MemoryBase::S390Instruction) TR::Instruction(cursor, TR::InstOpCode::ASSOCREGS, associations, self()->cg());
 
@@ -5391,21 +5282,6 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
 
    c += spilledRegisterList ? spilledRegisterList->size() : 0;
 
-   if (self()->cg()->supportsHighWordFacility())
-      {
-      for (i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
-         {
-         if (self()->getRealRegister(i)->getState() == TR::RealRegister::Assigned && self()->getRealRegister(i)->getAssignedRegister())
-            {
-            if (self()->getRealRegister(i)->getAssignedRegister() != self()->getRealRegister(i)->getLowWordRegister()->getAssignedRegister())
-               c++;
-            // if a HPR is assigned to a virtReg but a virtReg is not assigned to HPR, we must have spilled the virtReg to HPR
-            if (!self()->getRealRegister(i)->getAssignedRegister()->getAssignedRegister())
-               c++;
-            }
-         }
-      }
-
    TR::RegisterDependencyConditions *deps = NULL;
 
    if (c)
@@ -5426,26 +5302,6 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
 
             //virtReg->incTotalUseCount();
             virtReg->incFutureUseCount();
-            }
-         }
-      if (self()->cg()->supportsHighWordFacility())
-         {
-         for (i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
-            {
-            if (self()->getRealRegister(i)->getState() == TR::RealRegister::Assigned && self()->getRealRegister(i)->getAssignedRegister())
-               {
-               if(self()->getRealRegister(i)->getAssignedRegister() != self()->getRealRegister(i)->getLowWordRegister()->getAssignedRegister())
-                  {
-                  deps->addPostCondition(self()->getRealRegister(i)->getAssignedRegister(),self()->getRealRegister(i)->getRegisterNumber());
-                  self()->getRealRegister(i)->getAssignedRegister()->incFutureUseCount();
-                  }
-               // if a HPR is assigned to a virtReg but a virtReg is not assigned to HPR, we must have spilled the virtReg to HPR
-               if(!self()->getRealRegister(i)->getAssignedRegister()->getAssignedRegister())
-                  {
-                  // this is not a conflicting dependency rather a directive to tell RA to mark the virt reg as a HPR spill
-                  deps->addPostCondition(self()->getRealRegister(i), TR::RealRegister::SpilledReg);
-                  }
-               }
             }
          }
       }

@@ -4725,16 +4725,6 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
                trfprintf(_file, "</gprs>\n");
                }
 #if defined(TR_TARGET_S390)
-            if (_registerKindsToAssign & TR_HPR_Mask)
-               {
-               trfprintf(_file, "<hprs>\n");
-               TR::RegisterIterator *iter = _cg->getHPRegisterIterator();
-               for (TR::Register *hpr = iter->getFirst(); hpr; hpr = iter->getNext())
-                  {
-                  printFullRegInfo(_file, hpr);
-                  }
-               trfprintf(_file, "</hprs>\n");
-               }
             if (_registerKindsToAssign & TR_VRF_Mask && _cg->getSupportsVectorRegisters())
                {
                trfprintf(_file, "<vrfs>\n");

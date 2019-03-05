@@ -791,26 +791,6 @@ TR_S390RegisterDependencyGroup::checkRegisterDependencyDuplicates(TR::CodeGenera
             {
             TR_ASSERT(false, "Real register duplicate found in a register dependency\n");
             }
-
-         if (realRegI == realRegJ + (TR::RealRegister::FirstHPR - TR::RealRegister::FirstGPR) &&
-                virtRegI->isPlaceholderReg() &&
-                virtRegJ->is64BitReg() &&
-                virtRegJ->getKind() != TR_FPR &&
-                virtRegJ->getKind() != TR_VRF)
-            {
-            traceMsg(comp, "Remove duplicate GPR (%s) / HPR (%s) register dependency\n", virtRegJ->getRegisterName(comp), virtRegI->getRegisterName(comp));
-            _dependencies[i].setRealRegister(TR::RealRegister::NoReg);
-            }
-
-         if (realRegJ == realRegI + (TR::RealRegister::FirstHPR - TR::RealRegister::FirstGPR) &&
-                virtRegJ->isPlaceholderReg() &&
-                virtRegI->is64BitReg() &&
-                virtRegI->getKind() != TR_FPR &&
-                virtRegI->getKind() != TR_VRF)
-            {
-            traceMsg(comp, "Remove duplicate GPR (%s) / HPR (%s) register dependency\n", virtRegI->getRegisterName(comp), virtRegJ->getRegisterName(comp));
-            _dependencies[j].setRealRegister(TR::RealRegister::NoReg);
-            }
          }
       }
    }
@@ -870,7 +850,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
    int32_t i, j;
    bool changed;
    uint32_t availRegMask = checkDependencyGroup(cg, currentInstruction, numOfDependencies);
-   bool highRegSpill = false;
 
    if (!comp->getOption(TR_DisableOOL))
       {
@@ -999,24 +978,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          switch (virtReg->getKind())
             {
             case TR_GPR:
-               // TODO (Issue #2739): Currently HPRs are not propperly tagged with TR_HPR register kind and are instead
-               // labeled as TR_GPR. This produces incorrect counts for the number of GPR vs. HPR dependencies that we
-               // have. We use a workaround here to circumvent the issue but a larger change is needed to properly tag
-               // the register kinds and eliminate this ugly code.
-               if ((dependentRegNum >= TR::RealRegister::FirstHPR && dependentRegNum <= TR::RealRegister::LastHPR) ||
-
-                     // This case is used to handle removed GPR / HPR dependencies in checkRegisterDependencyDuplicates
-                     // in which we don't actually remove the HPR dependency but simply set the target real register to
-                     // be TR::RealRegister::NoReg. This is also a hack that needs to be cleaned up, i.e. we shouldn't
-                     // be creating the duplicate register dependency in the first place.
-                     (virtReg->isPlaceholderReg() && dependentRegNum == TR::RealRegister::NoReg))
-                  {
-                  ++numHPRs;
-                  }
-               else
-                  {
-                  ++numGPRs;
-                  }
+               ++numGPRs;
                break;
             case TR_HPR:
                ++numHPRs;
@@ -1035,7 +997,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
 #ifdef DEBUG
    int32_t lockedGPRs = 0;
-   int32_t lockedHPRs = 0;
    int32_t lockedFPRs = 0;
    int32_t lockedVRFs = 0;
 
@@ -1045,13 +1006,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
       TR::RealRegister* realReg = machine->getRealRegister((TR::RealRegister::RegNum)i);
       if (realReg->getState() == TR::RealRegister::Locked)
          ++lockedGPRs;
-      }
-
-   for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; ++i)
-      {
-      TR::RealRegister* realReg = machine->getRealRegister((TR::RealRegister::RegNum)i);
-      if (realReg->getState() == TR::RealRegister::Locked)
-         ++lockedHPRs;
       }
 
    for (int32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; ++i)
@@ -1069,7 +1023,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
       }
 
    TR_ASSERT(lockedGPRs == machine->getNumberOfLockedRegisters(TR_GPR), "Inconsistent number of locked GPRs");
-   TR_ASSERT(lockedHPRs == machine->getNumberOfLockedRegisters(TR_HPR), "Inconsistent number of locked HPRs");
    TR_ASSERT(lockedFPRs == machine->getNumberOfLockedRegisters(TR_FPR), "Inconsistent number of locked FPRs");
    TR_ASSERT(lockedVRFs == machine->getNumberOfLockedRegisters(TR_VRF), "Inconsistent number of locked VRFs");
 #endif
@@ -1080,19 +1033,15 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
    // being blocked.
 
    bool haveSpareGPRs = true;
-   bool haveSpareHPRs = true;
    bool haveSpareFPRs = true;
    bool haveSpareVRFs = true;
 
    TR_ASSERT(numGPRs <= (TR::RealRegister::LastGPR - TR::RealRegister::FirstGPR + 1 - machine->getNumberOfLockedRegisters(TR_GPR)), "Too many GPR dependencies, unable to assign");
-   TR_ASSERT(numHPRs <= (TR::RealRegister::LastHPR - TR::RealRegister::FirstHPR + 1 - machine->getNumberOfLockedRegisters(TR_HPR)), "Too many HPR dependencies, unable to assign");
    TR_ASSERT(numFPRs <= (TR::RealRegister::LastFPR - TR::RealRegister::FirstFPR + 1 - machine->getNumberOfLockedRegisters(TR_FPR)), "Too many FPR dependencies, unable to assign");
    TR_ASSERT(numVRFs <= (TR::RealRegister::LastVRF - TR::RealRegister::FirstVRF + 1 - machine->getNumberOfLockedRegisters(TR_VRF)), "Too many VRF dependencies, unable to assign");
 
    if (numGPRs == (TR::RealRegister::LastGPR - TR::RealRegister::FirstGPR + 1 - machine->getNumberOfLockedRegisters(TR_GPR)))
       haveSpareGPRs = false;
-   if (numHPRs == (TR::RealRegister::LastHPR - TR::RealRegister::FirstHPR + 1 - machine->getNumberOfLockedRegisters(TR_HPR)))
-      haveSpareHPRs = false;
    if (numFPRs == (TR::RealRegister::LastFPR - TR::RealRegister::FirstFPR + 1 - machine->getNumberOfLockedRegisters(TR_FPR)))
       haveSpareFPRs = false;
    if (numVRFs == (TR::RealRegister::LastVRF - TR::RealRegister::FirstVRF + 1 - machine->getNumberOfLockedRegisters(TR_VRF)))
@@ -1118,7 +1067,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             if (_dependencies[i].getRealRegister() == assignedRegNum ||
                 (map.getDependencyWithTarget(assignedRegNum) &&
                  ((virtReg->getKind() != TR_GPR || haveSpareGPRs) &&
-                  (virtReg->getKind() != TR_HPR || haveSpareHPRs) &&
                   (virtReg->getKind() != TR_FPR || haveSpareFPRs) &&
                   (virtReg->getKind() != TR_VRF || haveSpareVRFs))))
                {
@@ -1128,13 +1076,11 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          }
 
       // Check for directive to spill high registers. Used on callouts
-      if ( _dependencies[i].getRealRegister() == TR::RealRegister::KillVolHighRegs && TR::Compiler->target.is32Bit())
+      if ( _dependencies[i].getRealRegister() == TR::RealRegister::KillVolHighRegs)
          {
          machine->spillAllVolatileHighRegisters(currentInstruction);
          _dependencies[i].setRealRegister(TR::RealRegister::NoReg);  // ignore from now on
-         highRegSpill = true;
          }
-
       }
 
    /////    REGISTER PAIRS

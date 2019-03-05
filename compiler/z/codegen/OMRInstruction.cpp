@@ -340,33 +340,8 @@ OMR::Z::Instruction::matchesAnyRegister(TR::Register * reg, TR::Register * instR
    TR::RealRegister * realInstReg1 = NULL;
    TR::RealRegister * realInstReg2 = NULL;
 
-   bool enableHighWordRA =
-      self()->cg()->supportsHighWordFacility() &&
-      (reg->getKind()!=TR_FPR)                       &&
-      (instReg->getKind()!=TR_FPR) &&
-      (reg->getKind()!=TR_VRF) &&
-      (instReg->getKind()!=TR_VRF);
-
-   if (enableHighWordRA && reg->getRealRegister())
-      {
-      realReg = (TR::RealRegister *)reg;
-      if (realReg->isHighWordRegister())
-         {
-         // Highword aliasing low word regs
-         realReg = realReg->getLowWordRegister();
-         }
-      }
-
    if (regPair)
       {
-      // if we are matching real regs
-      if (enableHighWordRA && regPair->getHighOrder()->getRealRegister())
-         {
-         // reg pairs do not use HPRs
-         realInstReg1 = (TR::RealRegister *)(regPair->getHighOrder());
-         realInstReg2 = toRealRegister(regPair->getLowOrder());
-         return realReg == realInstReg1 || realReg == realInstReg2;
-         }
       // if we are matching virt regs
       if ((reg == regPair->getHighOrder()) || reg == regPair->getLowOrder())
          {
@@ -375,12 +350,6 @@ OMR::Z::Instruction::matchesAnyRegister(TR::Register * reg, TR::Register * instR
       }
    else
       {
-      // if we are matching real regs
-      if (enableHighWordRA && instReg->getRealRegister())
-         {
-         realInstReg1 = (TR::RealRegister *)instReg;
-         return realReg == realInstReg1;
-         }
       // if we are matching virt regs
       if (reg == instReg)
          {
@@ -764,17 +733,6 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
                }
             }
 
-         if (self()->cg()->supportsHighWordFacility())
-            {
-            for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
-               {
-               TR::Register * virtReg = machine->getVirtualAssociatedWithReal((TR::RealRegister::RegNum) (i));
-               if (virtReg)
-                  {
-                  virtReg->setAssociation(TR::RealRegister::NoReg);
-                  }
-               }
-            }
       // Step 2 : loop through and set up the new associations (both on the machine and by associating the virtual
       // registers with their real dependencies)
          TR_S390RegisterDependencyGroup * depGroup = self()->getDependencyConditions()->getPostConditions();
@@ -784,14 +742,6 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
             machine->setVirtualAssociatedWithReal((TR::RealRegister::RegNum) (j + 1), virtReg);
             }
 
-         if(self()->cg()->supportsHighWordFacility())
-            {
-            for (int32_t j = 0; j < TR::RealRegister::LastHPR-TR::RealRegister::FirstHPR; ++j)
-               {
-               TR::Register * virtReg = depGroup->getRegisterDependency(j+last)->getRegister();
-               machine->setVirtualAssociatedWithReal((TR::RealRegister::RegNum) (j + TR::RealRegister::FirstHPR), virtReg);
-               }
-            }
          machine->setRegisterWeightsFromAssociations();
          }
       }
@@ -1474,21 +1424,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
       _targetReg[i]->block();
 
       tgtAssigned[i] = 2;
-
-      if (self()->cg()->supportsHighWordFacility())
-         {
-         // don't need to block HPR here beacuse no Highword instruction uses register pair
-         // but make sure we do not spill to the targetReg's HPR (even if it became free) while assigning sourceReg
-         if (_targetReg[i]->getRegisterPair() &&
-             _targetReg[i]->getRegisterPair()->getHighOrder()->getKind() != TR_FPR &&
-             _targetReg[i]->getRegisterPair()->getHighOrder()->getKind() != TR_VRF)
-            {
-            uint32_t availHPRMask = self()->cg()->getAvailableHPRSpillMask();
-            availHPRMask &= ~(toRealRegister(_targetReg[i]->getRegisterPair()->getHighOrder())->getHighWordRegister()->getRealRegisterMask());
-            availHPRMask &= ~(toRealRegister(_targetReg[i]->getRegisterPair()->getLowOrder())->getHighWordRegister()->getRealRegisterMask());
-            self()->cg()->setAvailableHPRSpillMask(availHPRMask);
-            }
-         }
       }
    for (i = 0; i < _sourceRegSize; ++i)
       {
@@ -1519,23 +1454,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
             targetRegIs64Bit = true;
             }
          _targetReg[i] = self()->assignRegisterNoDependencies(_targetReg[i]);
-
-         if (self()->cg()->supportsHighWordFacility() &&
-             _targetReg[i]->getKind() != TR_FPR && _targetReg[i]->getKind() != TR_VRF)
-            {
-            if (toRealRegister(_targetReg[i])->getState() == TR::RealRegister::Free && targetRegIs64Bit)
-               {
-               blockTargetHighword = true;
-               toRealRegister(_targetReg[i])->getHighWordRegister()->setState(TR::RealRegister::Blocked);
-               TR_ASSERT(i==0, "more than 1 HPR target regs need to be blocked?");
-               }
-
-            // make sure we do not spill to the targetReg's HPR later (even if it's free)
-            uint32_t availHPRMask = self()->cg()->getAvailableHPRSpillMask();
-            availHPRMask &= ~(toRealRegister(_targetReg[i])->getHighWordRegister()->getRealRegisterMask());
-            self()->cg()->setAvailableHPRSpillMask(availHPRMask);
-            }
-
+         
          if (_targetReg[i]->getAssignedRegister())
             {
             _targetReg[i]->getAssignedRegister()->block();
@@ -2203,35 +2122,6 @@ OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
              tempRegister=postConditions->getRegisterDependency(i)->getRegister();
               if (tempRegister && tempRegister->getRegisterPair()==NULL)
                 (*_defRegs)[indexTarget++]=tempRegister;
-               }
-            }
-         }
-      }
-
-   // set all HPRs to alias GPRs
-   if (self()->cg()->supportsHighWordFacility())
-      {
-      if (_useRegs)
-         {
-         for (i=0;i<_useRegs->size();i++)
-            {
-            if (((*_useRegs)[i])->getRealRegister())
-               {
-               TR::RealRegister * realReg = toRealRegister((*_useRegs)[i]);
-               if (realReg && realReg->isHighWordRegister())
-                  (*_useRegs)[i] = realReg->getLowWordRegister();
-               }
-            }
-         }
-      if (_defRegs)
-         {
-         for (i=0;i<_defRegs->size();i++)
-            {
-            if (((*_defRegs)[i])->getRealRegister())
-               {
-               TR::RealRegister * realReg = toRealRegister((*_defRegs)[i]);
-               if (realReg && realReg->isHighWordRegister())
-                  (*_defRegs)[i] = realReg->getLowWordRegister();
                }
             }
          }

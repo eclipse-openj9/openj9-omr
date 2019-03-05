@@ -486,21 +486,6 @@ TR_Debug::printAssocRegDirective(TR::FILE *pOutFile, TR::Instruction * instr)
          }
       }
 
-   if (0 && !_comp->getOption(TR_DisableHighWordRA))
-      {
-      // 16 HPRs
-      for (int j = 0; j <= TR::RealRegister::LastHPR - TR::RealRegister::FirstHPR; ++j)
-         {
-         TR::RegisterDependency * dependency = depGroup->getRegisterDependency(j+last);
-         if ((intptr_t) dependency->getRegister() > 0)
-            {
-            TR::Register * virtReg = dependency->getRegister();
-            printS390RegisterDependency(pOutFile, virtReg, j+TR::RealRegister::FirstHPR, dependency->getRefsRegister(), dependency->getDefsRegister());
-            }
-         }
-      }
-   //  trfprintf(pOutFile,"\n");
-
    trfflush(pOutFile);
    }
 
@@ -2202,26 +2187,6 @@ TR_Debug::printS390GCRegisterMap(TR::FILE *pOutFile, TR::GCRegisterMap * map)
          }
       }
    trfprintf(pOutFile, "}\n");
-
-   if (0 != map->getHPRMap())
-      {
-      trfprintf(pOutFile, "    compressed ptr in registers: {");
-      for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
-         {
-         // 2 bits per register, '10' means HPR has collectible, '11' means both HPR and GPR have collectibles
-         if (map->getHPRMap() & (1 << (i - TR::RealRegister::FirstHPR)*2 + 1))
-            {
-            trfprintf(pOutFile, "%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum) i)));
-            }
-         // Compressed collectible in lower GPR.
-         if (map->getHPRMap() & (1 << (i - TR::RealRegister::FirstHPR)*2))
-            {
-            trfprintf(pOutFile, "%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum) (i - TR::RealRegister::FirstHPR + TR::RealRegister::FirstGPR))));
-            }
-         }
-      trfprintf(pOutFile, "}\n");
-      }
-
    trfprintf(pOutFile, "}\n");
    }
 

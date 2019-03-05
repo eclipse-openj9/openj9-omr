@@ -2450,38 +2450,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          }
       }
 
-   dummyReg = NULL;
-   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR0), self()->cg(), true, true );
-   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR1), self()->cg(), true, true );
-   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR2), self()->cg(), true, true );
-   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR3), self()->cg(), true, true );
-   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR14), self()->cg(), true, true );
-
-   // consider all HPR volatile on 31-bit
-   if (TR::Compiler->target.is32Bit())
-      {
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR6), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR7), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR8), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR9), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR10), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR11), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR12), self()->cg(), true, true );
-      }
-
-   if (TR::Compiler->target.isZOS())
-      {
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR15), self()->cg(), true, true );
-      if (self()->cg()->supportsJITFreeSystemStackPointer())
-         {
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4),self()->cg(), true, true );
-         }
-      }
-   else
-      {
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4), self()->cg(), true, true );
-      }
-
    // spill all overlapped vector registers if vector linkage is enabled
    if (enableVectorLinkage)
       {
@@ -2588,9 +2556,7 @@ OMR::Z::Linkage::killAndAssignRegister(int64_t killMask, TR::RegisterDependencyC
       {
       if (isAllocate)
          {
-         if (regNum >= TR::RealRegister::FirstHPR && regNum <= TR::RealRegister::LastHPR)
-            *virtualRegPtr = self()->cg()->allocateRegister();
-         else if (regNum <= TR::RealRegister::LastGPR)
+         if (regNum <= TR::RealRegister::LastGPR)
             *virtualRegPtr = self()->cg()->allocateRegister();
          else if (regNum <= TR::RealRegister::LastFPR)
             *virtualRegPtr = self()->cg()->allocateRegister(TR_FPR);

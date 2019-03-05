@@ -4630,13 +4630,6 @@ OMR::Z::TreeEvaluator::extendCastEvaluator(TR::Node * node, TR::CodeGenerator * 
 
    bool canClobberSrc = cg->canClobberNodesRegister(firstChild);
 
-   // We have to be careful when we have HPRs and we're casting to a 64-bit
-   // value. If the result of the cast is then stored into an HPR,
-   // we need a new virtual register. We cannot use a clobber evaluate by
-   // reusing the source 64bit GPR, as this would trigger an assume in RA.
-   if (cg->supportsHighWordFacility() && (numberOfExtendBits==64))
-      canClobberSrc = false;
-
    /**
    * A load (for proper type conversion) is required if the node is unsigned, not sign extended and
    * not marked as unneeded conversion.

@@ -1339,7 +1339,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool isLiteralPoolOnDemandOn () { return false; }
    bool supportsOnDemandLiteralPool() { return false; }
    bool supportsDirectIntegralLoadStoresFromLiteralPool() { return false; }
-   bool supportsHighWordFacility() { return false; }
 
    bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg) { return false; }
 

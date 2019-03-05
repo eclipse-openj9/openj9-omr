@@ -651,11 +651,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
       _callsForPreloadList = new (self()->trHeapMemory()) TR::list<TR_BranchPreloadCallData*>(getTypedAllocator<TR_BranchPreloadCallData*>(comp->allocator()));
       }
 
-   if (TR::Compiler->target.cpu.getS390SupportsHPRDebug() && !comp->getOption(TR_DisableHighWordRA) && !comp->getOption(TR_MimicInterpreterFrameShape))
-      {
-      self()->setSupportsHighWordFacility(true);
-      }
-
    self()->setOnDemandLiteralPoolRun(true);
    self()->setGlobalStaticBaseRegisterOn(false);
 
@@ -812,7 +807,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
       {
       self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
       self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
-      self()->setHPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstHPR, TR::RealRegister::LastHPR));
       self()->setVRFRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstVRF, TR::RealRegister::LastVRF));
       }
 
@@ -1924,7 +1918,6 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
        }
 
    int32_t lockedGPRs = 0;
-   int32_t lockedHPRs = 0;
    int32_t lockedFPRs = 0;
    int32_t lockedVRFs = 0;
 
@@ -1934,13 +1927,6 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
       TR::RealRegister* realReg = machine->getRealRegister((TR::RealRegister::RegNum)i);
       if (realReg->getState() == TR::RealRegister::Locked)
          ++lockedGPRs;
-      }
-
-   for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; ++i)
-      {
-      TR::RealRegister* realReg = machine->getRealRegister((TR::RealRegister::RegNum)i);
-      if (realReg->getState() == TR::RealRegister::Locked)
-         ++lockedHPRs;
       }
 
    for (int32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; ++i)
@@ -1958,7 +1944,6 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
       }
 
    machine->setNumberOfLockedRegisters(TR_GPR, lockedGPRs);
-   machine->setNumberOfLockedRegisters(TR_HPR, lockedHPRs);
    machine->setNumberOfLockedRegisters(TR_FPR, lockedFPRs);
    machine->setNumberOfLockedRegisters(TR_VRF, lockedVRFs);
 
@@ -2067,9 +2052,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
          }
 
       self()->tracePreRAInstruction(instructionCursor);
-
-      if (self()->supportsHighWordFacility())
-         self()->setAvailableHPRSpillMask(0xffff0000);
 
       prevInstruction = instructionCursor->getPrev();
 
@@ -4425,24 +4407,6 @@ OMR::Z::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
    TR_InternalPointerMap * internalPtrMap = NULL;
    TR::GCStackAtlas * atlas = self()->getStackAtlas();
 
-
-   if (self()->supportsHighWordFacility())
-      {
-      for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
-         {
-         TR::RealRegister * realReg = self()->machine()->getRealRegister((TR::RealRegister::RegNum) i);
-         if (realReg->getHasBeenAssignedInMethod())
-            {
-            TR::Register * virtReg = realReg->getAssignedRegister();
-            if (virtReg && virtReg->containsCollectedReference() && virtReg->getAssignedRegister() == NULL)
-               {
-               // 2 bits per register, '10' means HPR has collectible, '11' means both HPR and GPR have collectibles
-               map->setHighWordRegisterBits(1 << ((i - TR::RealRegister::FirstHPR)*2 +1) );
-               //traceMsg(comp(), "\nsetting HPR regmap 0x%x\n", 1 << ((i - TR::RealRegister::FirstHPR)*2 + 1));
-               }
-            }
-         }
-      }
    for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i++)
       {
       TR::RealRegister * realReg = self()->machine()->getRealRegister((TR::RealRegister::RegNum) i);

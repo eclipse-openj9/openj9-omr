@@ -192,10 +192,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::Register                *_assignedRegisterSnapShot[TR::RealRegister::NumRegisters];
    uint32_t                     _globalRegisterNumberToRealRegisterMapSnapShot[TR::RealRegister::NumRegisters];
    bool                         _containsHPRSpillSnapShot[TR::RealRegister::NumRegisters];
-
-   /** Used to keep track of blocked registers (HPR/GPR) that upgrades/spill's etc should not use. Typical stores ~0-3 registers. */
-   TR_Stack<TR::RealRegister *>               *_blockedUpgradedRegList;
-
+   
    TR_GlobalRegisterNumber  _firstGlobalGPRRegisterNumber;
    TR_GlobalRegisterNumber  _lastGlobalGPRRegisterNumber;
    TR_GlobalRegisterNumber  _last8BitGlobalGPRRegisterNumber;
@@ -296,15 +293,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
                                 TR::Instruction* currInst, uint64_t availRegMask=0x0000ffff);
    void    freeBestFPRegisterPair(TR::RealRegister** firstReg, TR::RealRegister** lastReg,
                                   TR::Instruction* currInst, uint64_t availRegMask=0x0000ffff);
-
-   // Access Register managed
-   TR::RealRegister* findVirtRegInHighWordRegister(TR::Register *virtReg);
-
-   // Used to keep track of blocked GPR's during HPR upgrades/spills/copies to prevent clobbering
-   bool addToUpgradedBlockedList(TR::RealRegister * reg);
-   void allocateUpgradedBlockedList(TR_Stack<TR::RealRegister*> * mem);
-   TR::RealRegister * getNextRegFromUpgradedBlockedList();
-
+   
    // High Register managed
    void spillAllVolatileHighRegisters(TR::Instruction  *currentInstruction);
 

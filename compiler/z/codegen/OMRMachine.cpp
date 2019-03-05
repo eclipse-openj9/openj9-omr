@@ -1198,9 +1198,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
 
                TR::Instruction * cursor = generateExtendedHighWordInstruction(currInst->getNode(), self()->cg(), TR::InstOpCode::LHLR, assignedRegister, assignedLowWordRegister, 0, appendInst);
 
-               self()->addToUpgradedBlockedList(assignedRegister) ? 
-                  assignedRegister->setState(TR::RealRegister::Blocked):
-                  assignedRegister->setState(TR::RealRegister::Free);
+               assignedRegister->setState(TR::RealRegister::Blocked);
 
                targetRegister->setAssignedRegister(assignedLowWordRegister);
                assignedLowWordRegister->setAssignedRegister(targetRegister);
@@ -2954,35 +2952,6 @@ OMR::Z::Machine::findRegNotUsedInInstruction(TR::Instruction  *currentInstructio
    TR_ASSERT( spill != NULL, "OMR::Z::Machine::findRegNotUsedInInstruction -- A spill reg should always be found.");
 
    return spill;
-   }
-
-void
-OMR::Z::Machine::allocateUpgradedBlockedList(TR_Stack<TR::RealRegister*> *mem)
-   {
-   _blockedUpgradedRegList = mem;
-   }
-
-bool
-OMR::Z::Machine::addToUpgradedBlockedList(TR::RealRegister * reg)
-   {
-   if (reg == NULL)
-      return false;
-   self()->cg()->traceRegisterAssignment("Adding %s (0x%p) to blocked reg list", getRegisterName(reg,self()->cg()), reg);
-   _blockedUpgradedRegList->push(reg);
-   return true;
-   }
-
-TR::RealRegister *
-OMR::Z::Machine::getNextRegFromUpgradedBlockedList()
-   {
-   if (_blockedUpgradedRegList->isEmpty())
-      return NULL;
-   TR::RealRegister * reg = _blockedUpgradedRegList->pop();
-   TR_ASSERT(reg->getAssignedRegister() == NULL,
-         "Register %s (0x%p) from Blocked-list has assigned reg %p", getRegisterName(reg,self()->cg()), reg, reg->getAssignedRegister());
-   TR_ASSERT(reg->getState() == TR::RealRegister::Blocked,
-         "Register %s (0x%p) from Blocked-list is not in Blocked state", getRegisterName(reg,self()->cg()), reg);
-   return reg;
    }
 
 /**

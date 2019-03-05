@@ -1629,13 +1629,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
       }
    // Unblock everything, as we are done assigning for this instr
    self()->unblock(_sourceReg, _sourceRegSize,  _targetReg, _targetRegSize, _sourceMem, _targetMem);
-   /* Unblock registers that were Assigned and then Blocked in deeper stack frames of RA (src/target is HPR/GPR). */
-   TR::RealRegister * reg = NULL;
-   while(reg = self()->cg()->machine()->getNextRegFromUpgradedBlockedList())
-      {
-      self()->cg()->traceRegisterAssignment("Restoring blocked register %R (0x%p) to previous state", reg, reg);
-      reg->unblock();
-      }
    }
 
 void

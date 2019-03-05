@@ -2014,9 +2014,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
      currBlock->setHasBeenVisited(false);
      }
 
-   // Be stingy with allocating the blocked list (for HPR upgrades). Space requirement is small, but it adds up
-   self()->machine()->allocateUpgradedBlockedList(new (self()->comp()->trStackMemory()) TR_Stack<TR::RealRegister *>(self()->comp()->trMemory(), 16, true, stackAlloc));
-
    while (instructionCursor)
       {
       TR::Node *treeNode=instructionCursor->getNode();

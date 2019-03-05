@@ -2015,12 +2015,37 @@
                 { "name": ""
                 , "overloadsuffix": ""
                 , "flags": []
-                , "return": "VirtualMachineOperandArray"
+                , "return": "none"
                 , "parms": [
                     {"name":"mb","type":"MethodBuilder"},
-                    {"name":"numOfElements","type":"int32"},
+                    {"name":"sizeHint","type":"int32"},
                     {"name":"elementType","type":"IlType"},
-                    {"name":"arrayBase","type":"VirtualMachineRegister"}
+                    {"name":"stackTopRegister","type":"VirtualMachineRegister"}
+                    ]
+                },
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"mb","type":"MethodBuilder"},
+                    {"name":"sizeHint","type":"int32"},
+                    {"name":"elementType","type":"IlType"},
+                    {"name":"stackTopRegister","type":"VirtualMachineRegister"},
+                    {"name":"growsUp","type":"boolean"}
+                    ]
+                },
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"mb","type":"MethodBuilder"},
+                    {"name":"sizeHint","type":"int32"},
+                    {"name":"elementType","type":"IlType"},
+                    {"name":"stackTopRegister","type":"VirtualMachineRegister"},
+                    {"name":"growsUp","type":"boolean"},
+                    {"name":"stackInitialOffset","type":"int32"}
                     ]
                 }
                 ],

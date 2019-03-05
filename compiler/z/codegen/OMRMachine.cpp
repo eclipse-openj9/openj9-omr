@@ -1146,23 +1146,6 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
             assignedRegister->setState(TR::RealRegister::Free);
             assignedRegister = newAssignedRegister;
             }
-         else if (assignedRegister->isLowWordRegister() &&
-             assignedRegister->getHighWordRegister()->getAssignedRegister() != targetRegister)
-           {
-           self()->cg()->traceRegisterAssignment("%R is 64bit but HPR is assigned to a different vreg, freeing up HPR", targetRegister);
-           if (assignedRegister->getHighWordRegister()->getState() == TR::RealRegister::Assigned)
-              {
-              assignedRegister->block();
-              TR::Instruction * cursor = self()->freeHighWordRegister(currInst, assignedRegister->getHighWordRegister());
-              assignedRegister->unblock();
-              self()->cg()->traceRAInstruction(cursor);
-              }
-           else if (assignedRegister->getHighWordRegister()->getState() == TR::RealRegister::Blocked ||
-                    assignedRegister->getHighWordRegister()->getState() == TR::RealRegister::Locked)
-              {
-              TR_ASSERT(0, "\n HPR RA: shouldn't get here, not supported yet!");
-              }
-           }
         else if (assignedRegister->isHighWordRegister())
             {
             self()->cg()->traceRegisterAssignment("%R is 64bit but currently assigned to HPR, shuffling", targetRegister);
@@ -3320,84 +3303,6 @@ void OMR::Z::Machine::freeRealRegister(TR::Instruction *currentInstruction, TR::
      }
   }
 
-TR::Instruction*
-OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::RealRegister * targetRegisterHW)
-   {
-   TR::Register * virtRegHW = targetRegisterHW->getAssignedRegister();
-   TR::RealRegister * spareReg = NULL;
-   TR_RegisterKinds rk = virtRegHW->getKind();
-   TR::Instruction * cursor = currentInstruction;
-
-   self()->cg()->traceRegisterAssignment(" freeHighWordRegister: %R:%R ", virtRegHW, targetRegisterHW);
-
-   TR_ASSERT(targetRegisterHW != NULL, "freeHighWordRegister called but targetReg HW is null?");
-   TR_ASSERT(targetRegisterHW->isHighWordRegister(), "freeHighWordRegister called for non HPR?");
-
-   // if we are trying to free up the HPR that was used for a 32-bit GPR spill
-   if (virtRegHW->getAssignedRegister() == NULL && targetRegisterHW->getState() == TR::RealRegister::Assigned)
-      {
-      self()->cg()->traceRegisterAssignment(" HW RA %R was spilled to %R, now need to spill again", virtRegHW, targetRegisterHW);
-
-      // try to find another free HPR
-      spareReg = self()->findBestFreeRegister(currentInstruction, rk, virtRegHW, self()->cg()->getAvailableHPRSpillMask(), true);
-
-      if (spareReg)
-         {
-         cursor = self()->registerCopy(self()->cg(), TR_HPR, targetRegisterHW, spareReg, currentInstruction);
-         targetRegisterHW->setState(TR::RealRegister::Unlatched);
-         targetRegisterHW->setAssignedRegister(NULL);
-         spareReg->setState(TR::RealRegister::Assigned);
-         spareReg->setAssignedRegister(virtRegHW);
-         }
-      else
-         {
-         // if no more free regs, spill this one to stack, do not try to HPR spill again
-         self()->spillRegister(currentInstruction, virtRegHW, 0);
-         }
-
-      return cursor;
-      }
-
-   spareReg = self()->findBestFreeRegister(currentInstruction, rk, virtRegHW, self()->cg()->getAvailableHPRSpillMask(), true);
-
-   if (targetRegisterHW->getState() == TR::RealRegister::Blocked)
-      {
-      if (spareReg == NULL)
-         {
-         virtRegHW->block();
-         spareReg = self()->freeBestRegister(currentInstruction, virtRegHW, rk, self()->cg()->getAvailableHPRSpillMask());
-         virtRegHW->unblock();
-         }
-      TR_ASSERT(spareReg != NULL, "freeHighWordRegister: blocked, must find a spareReg");
-
-      cursor = self()->registerCopy(self()->cg(), TR_HPR, targetRegisterHW, spareReg, currentInstruction);
-      //TR_ASSERTC( spareReg->isHighWordRegister(),self()->cg()->comp(), "\nfreeHighWordRegister: spareReg is not an HPR?\n");
-      spareReg->setAssignedRegister(virtRegHW);
-      spareReg->setState(TR::RealRegister::Assigned);
-      virtRegHW->setAssignedRegister(spareReg);
-      }
-   else
-      {
-      if (spareReg)
-         {
-         cursor = self()->registerCopy(self()->cg(), TR_HPR, targetRegisterHW, spareReg, currentInstruction);
-         //TR_ASSERTC( spareReg->isHighWordRegister(),self()->cg()->comp(), "\nfreeHighWordRegister: spareReg is not an HPR?\n");
-         spareReg->setAssignedRegister(virtRegHW);
-         spareReg->setState(TR::RealRegister::Assigned);
-         virtRegHW->setAssignedRegister(spareReg);
-         }
-      else
-         {
-         self()->spillRegister(currentInstruction, virtRegHW);
-         }
-      }
-
-   targetRegisterHW->setAssignedRegister(NULL);
-   targetRegisterHW->setState(TR::RealRegister::Free);
-   return cursor;
-   }
-
-
 /**
  *  Spill in a virt register, which frees up the assigned real reg, as we do
  *  assignment in reverse-order of execution.
@@ -4002,16 +3907,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             targetRegister->setAssignedRegister(virtualRegister);
             return cursor;
             }
-
-         if (targetRegisterHW->getState() != TR::RealRegister::Free && targetRegisterHW->getState() != TR::RealRegister::Unlatched)
-            {
-            virtualRegister->block();
-            targetRegister->setState(TR::RealRegister::Blocked);
-            // free up this highword register by either spilling it or moving it
-            cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
-            virtualRegister->unblock();
-            targetRegister->setState(TR::RealRegister::Free);
-            }
          }
       // the virtual register haven't be assigned to any real register yet
       if (currentAssignedRegister == NULL)
@@ -4093,32 +3988,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          currentTargetVirtual->unblock();
          }
 
-      // if currentTargetVirtual is low word only, spare Reg will be low word
-      // but virtual Reg could require full size, in this case, need to free the HW of target Reg
-      if (virtualRegister->is64BitReg())
-         {
-
-         // There is an extra check at the end to avoid the scenario in which virtualRegister is assigned to
-         // HPRx and we are attempting to coerce it to GPRx. In this case we do not need to spill HPRx, rather just copy it
-         if (targetRegisterHW->getState() != TR::RealRegister::Free &&
-             targetRegisterHW->getState() != TR::RealRegister::Unlatched &&
-             targetRegisterHW->getAssignedRegister() != virtualRegister)
-            {
-            if (targetRegisterHW->getAssignedRegister() &&
-                targetRegisterHW->getAssignedRegister() != targetRegister->getAssignedRegister())
-               {
-               //TR_ASSERTC( currentTargetVirtual->isLowWordOnly(),self()->cg()->comp(), "currentTargetVirtual is not LWOnly but HW is clobbered by another vreg?");
-               virtualRegister->block();
-               currentTargetVirtual->block();
-               spareReg->block(); //to do: is this necessary? only need to block HPR?
-               // free up this highword register by either spilling it or moving it
-               cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
-               spareReg->unblock();
-               currentTargetVirtual->unblock();
-               virtualRegister->unblock();
-               }
-            }
-         }
       // find a free register if the virtual register hasn't been assigned to any real register
       // or it is a FPR for later use
       // virtual register is currently assigned to a different register,
@@ -4326,123 +4195,13 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             }
          }
 
-      // If the target HPR was a spill slot
-      if (rk != TR_FPR && rk != TR_VRF &&
-          currentTargetVirtual->getAssignedRegister() == NULL &&
-          targetRegister->isHighWordRegister())
-         {
-         self()->cg()->traceRegisterAssignment(" HW RA %R was spilled to %R, now need to spill again", currentTargetVirtual, targetRegister);
-
-         // free this spill slot up first
-         // block virtual reg?
-         cursor = self()->freeHighWordRegister(currentInstruction, targetRegister);
-
-         if (virtualRegister->is64BitReg() && !virtualRegister->isPlaceholderReg())
-            {
-            // this could happen for OOL, when the reg deps on the top of slow path dictates that a collectible register must be
-            // spilled to a specific HPR
-            TR_ASSERT( virtualRegister->containsCollectedReference(), " OOL HPR spill: spilling a 64 bit scalar into HPR");
-
-            if (currentAssignedRegister == NULL)
-               {
-               if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount() &&
-                     virtualRegister->getBackingStorage() != NULL)
-                  {
-                  // the virtual register is currently spilled to stack, now we need to spill it onto HPR
-                  // load it back from the stack into HPR with STFH
-                  // since we are working with compressed refs shift = 0, simply load 32-bit value into HPR.
-                  TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), self()->cg());
-
-                  // is the offset correct?  +4 big endian?
-                  TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
-
-                  cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
-                  self()->cg()->traceRAInstruction(cursor);
-                  cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, mr, cursor);
-                  self()->cg()->traceRAInstruction(cursor);
-
-                  // fix up states
-                  // don't need to worry about protecting backing storage because we are leaving cold path OOL now
-                  self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
-                  virtualRegister->setBackingStorage(NULL);
-                  }
-               else
-                  {
-                  TR_ASSERT(comp, " OOL HPR spill: currentAssignedRegister is NULL but virtual reg is not spilled?");
-                  }
-               }
-            else
-               {
-               // the virtual register is currently assigned to a 64 bit real reg
-               // simply spill it to HPR and decompress
-               TR_ASSERT(currentAssignedRegister->isLowWordRegister(), " OOL HPR spill: 64-bit reg assigned to HPR and is not spilled to HPR");
-               cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
-               self()->cg()->traceRAInstruction(cursor);
-               cursor = generateRILInstruction(self()->cg(), TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
-               self()->cg()->traceRAInstruction(cursor);
-
-               // fix up states
-               currentAssignedRegister->setAssignedRegister(NULL);
-               currentAssignedRegister->setState(TR::RealRegister::Free);
-               currentAssignedRegisterHW->setAssignedRegister(NULL);
-               currentAssignedRegisterHW->setState(TR::RealRegister::Free);
-               }
-
-            // fix up the states
-            virtualRegister->setAssignedRegister(NULL);
-            targetRegister->setAssignedRegister(virtualRegister);
-            }
-         else
-            {
-            // we need to either assign or spill a 32-bit virtual register into a HPR
-            // the target HPR is now free
-            if (currentAssignedRegister == NULL)
-               {
-               if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
-                  {
-                  // if it is spilled to stack, load it back into HPR
-                  TR_ASSERT(virtualRegister->getBackingStorage(), " OOL HPR spill: virtual reg is not spilled to stack nor HPR");
-                  TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), self()->cg());
-
-                  TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
-
-                  cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
-                  self()->cg()->traceRAInstruction(cursor);
-                  cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, mr, cursor);
-                  self()->cg()->traceRAInstruction(cursor);
-
-                  // fix up states
-                  // don't need to worry about protecting backing storage because we are leaving cold path OOL now
-                  self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
-                  virtualRegister->setBackingStorage(NULL);
-                  }
-               // and do nothing in case virtual reg is a placeholder
-               }
-            else
-               {
-               // the 32-bit virtual register is currently assigned to a real register
-               // do register copy
-               cursor = self()->registerCopy(self()->cg(), currentAssignedRegisterRK, currentAssignedRegister, targetRegister, currentInstruction);
-               currentAssignedRegister->setState(TR::RealRegister::Free);
-               currentAssignedRegister->setAssignedRegister(NULL);
-               }
-
-            // fix up states
-            virtualRegister->setAssignedRegister(targetRegister);
-            targetRegister->setState(TR::RealRegister::Assigned);
-            targetRegister->setAssignedRegister(virtualRegister);
-            }
-         return cursor;
-         }
+      // in this case we cannot use the HPR of target reg as spareReg
+      if (virtualRegister->is64BitReg())
+         spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual, availHighWordRegMap);
       else
-         {
-         // in this case we cannot use the HPR of target reg as spareReg
-         if (virtualRegister->is64BitReg())
-            spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual, availHighWordRegMap);
-         else
-            // Look for a free reg in case we need a spare.
-            spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual);
-         }
+         // Look for a free reg in case we need a spare.
+         spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual);
+
       self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
 
       // If the source register is already assigned a realReg, we will try and
@@ -4496,30 +4255,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                    targetRegister->getRegisterNumber() == spareReg->getHighWordRegister()->getRegisterNumber())
                   doNotRegCopy = true;
                virtualRegister->unblock();
-               }
-
-            // if currentTargetVirtual is low word only, spare Reg will be low word
-            // but virtual Reg could require full size, in this case, need to free the HW of target Reg
-            if (virtualRegister->is64BitReg())
-               {
-               if (targetRegisterHW->getState() != TR::RealRegister::Free &&
-                   targetRegisterHW->getState() != TR::RealRegister::Unlatched)
-                  {
-                  // if the targetReg and targetRegHW are assigned to two different virtual regs
-                  if (targetRegisterHW->getAssignedRegister() &&
-                      targetRegisterHW->getAssignedRegister() != targetRegister->getAssignedRegister())
-                     {
-                     //TR_ASSERTC( currentTargetVirtual->isLowWordOnly(),self()->cg()->comp(), "currentTargetVirtual is not LWOnly but HW is clobbered by another vreg?");
-                     virtualRegister->block();
-                     currentTargetVirtual->block();
-                     spareReg->block(); //to do: is this necessary? only need to block HPR?
-                     // free up this highword register by either spilling it or moving it
-                     cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
-                     spareReg->unblock();
-                     currentTargetVirtual->unblock();
-                     virtualRegister->unblock();
-                     }
-                  }
                }
 
             // Spill policy decided the best reg to spill was not the targetReg, so move target
@@ -4690,29 +4425,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                    targetRegister->getRegisterNumber() == spareReg->getHighWordRegister()->getRegisterNumber())
                   doNotRegCopy = true;
                virtualRegister->unblock();
-               }
-
-            // if currentTargetVirtual is low word only, spare Reg will be low word
-            // but virtual Reg could require full size, in this case, need to free the HW of target Reg
-            if (virtualRegister->is64BitReg())
-               {
-               if (targetRegisterHW->getState() != TR::RealRegister::Free &&
-                   targetRegisterHW->getState() != TR::RealRegister::Unlatched)
-                  {
-                  if (targetRegisterHW->getAssignedRegister() &&
-                      targetRegisterHW->getAssignedRegister() != targetRegister->getAssignedRegister())
-                     {
-                     //TR_ASSERTC( currentTargetVirtual->isLowWordOnly(),self()->cg()->comp(), "currentTargetVirtual is not LWOnly but HW is clobbered by another vreg?");
-                     virtualRegister->block();
-                     currentTargetVirtual->block();
-                     spareReg->block(); //to do: is this necessary? only need to block HPR?
-                     // free up this highword register by either spilling it or moving it
-                     cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
-                     spareReg->unblock();
-                     currentTargetVirtual->unblock();
-                     virtualRegister->unblock();
-                     }
-                  }
                }
 
             //  If we chose to spill a reg that wasn't the target, we use the new space

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,7 +56,8 @@ MM_VerboseHandlerOutput::newInstance(MM_EnvironmentBase *env, MM_VerboseManager 
 
 
 MM_VerboseHandlerOutput::MM_VerboseHandlerOutput(MM_GCExtensionsBase *extensions) :
-	_extensions(extensions)
+	_reportingLock()
+	,_extensions(extensions)
 	,_omrVM(NULL)
 	,_mmPrivateHooks(NULL)
 	,_mmOmrHooks(NULL)
@@ -70,6 +71,10 @@ MM_VerboseHandlerOutput::initialize(MM_EnvironmentBase *env, MM_VerboseManager *
 	_mmPrivateHooks = J9_HOOK_INTERFACE(_extensions->privateHookInterface);
 	_mmOmrHooks = J9_HOOK_INTERFACE(_extensions->omrHookInterface);
 	_manager = manager;
+
+	if (!_reportingLock.initialize(env, &env->getExtensions()->lnrlOptions, "MM_VerboseHandlerOutput:_reportingLock")) {
+		return false;
+	}
 
 	return true;
 }
@@ -85,6 +90,7 @@ MM_VerboseHandlerOutput::kill(MM_EnvironmentBase *env)
 void
 MM_VerboseHandlerOutput::tearDown(MM_EnvironmentBase *env)
 {
+	_reportingLock.tearDown();
 	return ;
 }
 
@@ -696,13 +702,13 @@ MM_VerboseHandlerOutput::handleAcquiredExclusiveToSatisfyAllocation(J9HookInterf
 void
 MM_VerboseHandlerOutput::enterAtomicReportingBlock()
 {
-	/* default implementation needs no special support */
+	_reportingLock.acquire();
 }
 
 void
 MM_VerboseHandlerOutput::exitAtomicReportingBlock()
 {
-	/* default implementation needs no special support */
+	_reportingLock.release();
 }
 
 void

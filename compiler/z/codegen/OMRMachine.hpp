@@ -309,8 +309,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::RealRegister *findBestFreeRegister(TR::Instruction   *currentInstruction,
                                              TR_RegisterKinds  rk,
                                              TR::Register      *virtualReg = NULL,
-                                             uint64_t          availRegMask = 0xffffffff,
-                                             bool              needsHighWord = false);
+                                             uint64_t          availRegMask = 0xffffffff);
 
    TR::RealRegister *freeBestRegister(TR::Instruction   *currentInstruction,
                                          TR::Register     *virtReg,

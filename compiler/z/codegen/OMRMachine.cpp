@@ -2302,8 +2302,7 @@ TR::RealRegister *
 OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
                                      TR_RegisterKinds  rk,
                                      TR::Register      *virtualReg,
-                                     uint64_t          availRegMask,
-                                     bool              needsHighWord)
+                                     uint64_t          availRegMask)
    {
    uint32_t interference = 0;
    int32_t first, maskI, last;
@@ -2347,11 +2346,6 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
          {
          preference = randomPreference;
          }
-      }
-
-   if (needsHighWord && preference !=0 && !TR::RealRegister::isHPR((TR::RealRegister::RegNum)preference))
-      {
-      preference = 0;
       }
 
    uint64_t prefRegMask = TR::RealRegister::isRealReg((TR::RealRegister::RegNum)preference) ? _registerFile[preference]->getRealRegisterMask() : 0;
@@ -2417,7 +2411,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
    /****************************************************************************************************************/
    // Register Associations are best effort. If you really need to map a virtual to a real, use register pre/post dependency conditions.
 
-   if (self()->cg()->enableRegisterPairAssociation() && preference == TR::RealRegister::LegalEvenOfPair && !needsHighWord)
+   if (self()->cg()->enableRegisterPairAssociation() && preference == TR::RealRegister::LegalEvenOfPair)
       {
       // Check to see if there is a sibling already assigned
       if ((virtualReg->getSiblingRegister()) &&
@@ -2447,12 +2441,12 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
        * If the desired register is indeed free use it.
        * If not, default to standard search which is broken into 4 categories:
        * If register pair associations are enabled:
-       *                   Preference                 needsHighWord?
-       *    1. TR::RealRegister::LegalEvenOfPair        No
-       *    2. TR::RealRegister::LegalOddOfPair         No
-       *    3. TR::RealRegister::LegalFirstOfFPPair     N/A
-       *    4. TR::RealRegister::LegalSecondOfFPPair    N/A
-       * 5. None of the above
+       *                   Preference
+       *    1. TR::RealRegister::LegalEvenOfPair
+       *    2. TR::RealRegister::LegalOddOfPair
+       *    3. TR::RealRegister::LegalFirstOfFPPair
+       *    4. TR::RealRegister::LegalSecondOfFPPair
+       *    5. None of the above
        */
       if (virtualReg->is64BitReg())
          {
@@ -2490,7 +2484,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             }
          }
       }
-   else if (self()->cg()->enableRegisterPairAssociation() && preference == TR::RealRegister::LegalOddOfPair && !needsHighWord)
+   else if (self()->cg()->enableRegisterPairAssociation() && preference == TR::RealRegister::LegalOddOfPair)
       {
       // Check to see if there is a sibling already assigned
       if ((virtualReg->getSiblingRegister()) &&
@@ -2665,7 +2659,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
          }
       else
          {
-         if (virtualReg->is64BitReg() && !needsHighWord)
+         if (virtualReg->is64BitReg())
             {
             bool candidateLWFree = true;
             bool candidateHWFree = true;
@@ -2714,10 +2708,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             TR::RealRegister * candidate = NULL;
             if (preference != 0 && (prefRegMask & availRegMask) && _registerFile[preference] != NULL)
                {
-               if (needsHighWord)
-                  candidate = _registerFile[preference]->getHighWordRegister();
-               else
-                  candidate = _registerFile[preference]->getLowWordRegister();
+               candidate = _registerFile[preference]->getLowWordRegister();
                }
             if (candidate != NULL &&
                 (prefRegMask & availRegMask) &&
@@ -2792,7 +2783,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
                }
             }
 
-         if (virtualReg->is64BitReg() && !needsHighWord)
+         if (virtualReg->is64BitReg())
             {
             bool candidateLWFree =
                (candidate->getState() == TR::RealRegister::Free) ||
@@ -2831,15 +2822,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             }
          else
             {
-            if (needsHighWord)
-               {
-               candidate = _registerFile[i]->getHighWordRegister();
-               tRegMask = candidate->getRealRegisterMask();
-               }
-            else
-               {
-               candidate = _registerFile[i]->getLowWordRegister();
-               }
+            candidate = _registerFile[i]->getLowWordRegister();
 
             //self()->cg()->traceRegWeight(candidate, candidate->getWeight());
             // Don't consider registers that can't be assigned.

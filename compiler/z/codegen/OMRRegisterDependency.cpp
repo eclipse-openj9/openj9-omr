@@ -881,23 +881,14 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          if (dependentRegNum == TR::RealRegister::SpilledReg && !_dependencies[i].getRegister()->getRealRegister())
             {
             TR_ASSERT_FATAL(virtReg->getBackingStorage() != NULL, "Spilled virtual register on dependency list does not have backing storage");
-            TR::RealRegister * spilledHPR = NULL;
-            if (virtReg->getKind() != TR_FPR && virtReg->getKind() != TR_VRF && virtReg->getAssignedRealRegister() == NULL)
-               {
-               spilledHPR = cg->machine()->findVirtRegInHighWordRegister(virtReg);
-               cg->traceRegisterAssignment (" \nOOL: found %R spilled to %R", virtReg, spilledHPR);
-               }
-            if (virtReg->getAssignedRealRegister() || spilledHPR)
+
+            if (virtReg->getAssignedRealRegister())
                {
                // this happens when the register was first spilled in main line path then was reverse spilled
                // and assigned to a real register in OOL path. We protected the backing store when doing
                // the reverse spill so we could re-spill to the same slot now
                TR::Node *currentNode = currentInstruction->getNode();
-               TR::RealRegister *assignedReg;
-               if (spilledHPR)
-                  assignedReg = spilledHPR;
-               else
-                  assignedReg = toRealRegister(virtReg->getAssignedRegister());
+               TR::RealRegister *assignedReg = toRealRegister(virtReg->getAssignedRegister());
                cg->traceRegisterAssignment ("\nOOL: Found %R spilled in main line and reused inside OOL", virtReg);
                TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtReg->getBackingStorage()->getSymbolReference(), cg);
                TR::InstOpCode::Mnemonic opCode;

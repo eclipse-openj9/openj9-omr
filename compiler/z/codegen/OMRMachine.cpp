@@ -2973,33 +2973,6 @@ OMR::Z::Machine::findRegNotUsedInInstruction(TR::Instruction  *currentInstructio
    return spill;
    }
 
-
-/**
- * Look for the virtual reg in the highword register table.
- * @return the real reg if found, NULL if not found
- */
-TR::RealRegister *
-OMR::Z::Machine::findVirtRegInHighWordRegister(TR::Register *virtReg)
-   {
-   int32_t first = TR::RealRegister::FirstHPR;
-   int32_t last  = TR::RealRegister::LastHPR;
-   TR::Machine *machine = self()->cg()->machine();
-
-   for (int32_t i = first; i <= last; i++)
-      {
-      TR::RealRegister * realReg =
-         machine->getRealRegister((TR::RealRegister::RegNum) i);
-
-      if (realReg->getAssignedRegister() && virtReg == realReg->getAssignedRegister() )
-         {
-         return realReg;
-         }
-      }
-
-   return NULL;
-   }
-
-
 void
 OMR::Z::Machine::allocateUpgradedBlockedList(TR_Stack<TR::RealRegister*> *mem)
    {
@@ -3978,66 +3951,52 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             // this could happen for OOL, when the reg deps on the top of slow path dictates that a collectible register must be
             // spilled to a specific HPR
             TR_ASSERT( virtualRegister->containsCollectedReference(), " OOL HPR spill: spilling a 64 bit scalar into HPR");
-
-            TR::RealRegister  * currentHighWordReg = self()->findVirtRegInHighWordRegister(virtualRegister);
-
-            if (virtualRegister->getAssignedRegister() == NULL && currentHighWordReg)
+            
+            if (currentAssignedRegister == NULL)
                {
-               // already spilled to HPR, so simply move
-               cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHHR, currentHighWordReg, targetRegister, 0, currentInstruction);
-               self()->cg()->traceRAInstruction(cursor);
-
-               //fix up states
-               currentHighWordReg->setAssignedRegister(NULL);
-               currentHighWordReg->setState(TR::RealRegister::Free);
-               }
-            else
-               {
-               if (currentAssignedRegister == NULL)
+               if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount() &&
+                     virtualRegister->getBackingStorage() != NULL)
                   {
-                  if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount() &&
-                      virtualRegister->getBackingStorage() != NULL)
-                     {
-                     // the virtual register is currently spilled to stack, now we need to spill it onto HPR
-                     // load it back from the stack into HPR with STFH
-                     // since we are working with compressed refs shift = 0, simply load 32-bit value into HPR.
-                     TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), self()->cg());
+                  // the virtual register is currently spilled to stack, now we need to spill it onto HPR
+                  // load it back from the stack into HPR with STFH
+                  // since we are working with compressed refs shift = 0, simply load 32-bit value into HPR.
+                  TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), self()->cg());
 
-                     // is the offset correct?  +4 big endian?
-                     TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
+                  // is the offset correct?  +4 big endian?
+                  TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
 
-                     cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
-                     self()->cg()->traceRAInstruction(cursor);
-                     cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, mr, cursor);
-                     self()->cg()->traceRAInstruction(cursor);
-
-                     // fix up states
-                     // don't need to worry about protecting backing storage because we are leaving cold path OOL now
-                     self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
-                     virtualRegister->setBackingStorage(NULL);
-                     }
-                  else
-                     {
-                     TR_ASSERT(comp, " OOL HPR spill: currentAssignedRegister is NULL but virtual reg is not spilled?");
-                     }
-                  }
-               else
-                  {
-                  // the virtual register is currently assigned to a 64 bit real reg
-                  // simply spill it to HPR and decompress
-                  TR_ASSERT(currentAssignedRegister->isLowWordRegister(), " OOL HPR spill: 64-bit reg assigned to HPR and is not spilled to HPR");
-                  cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
+                  cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
                   self()->cg()->traceRAInstruction(cursor);
-                  cursor = generateRILInstruction(self()->cg(), TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
+                  cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, mr, cursor);
                   self()->cg()->traceRAInstruction(cursor);
 
                   // fix up states
-                  currentAssignedRegister->setAssignedRegister(NULL);
-                  currentAssignedRegister->setState(TR::RealRegister::Free);
-                  currentAssignedRegisterHW->setAssignedRegister(NULL);
-                  currentAssignedRegisterHW->setState(TR::RealRegister::Free);
+                  // don't need to worry about protecting backing storage because we are leaving cold path OOL now
+                  self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
+                  virtualRegister->setBackingStorage(NULL);
+                  }
+               else
+                  {
+                  TR_ASSERT(comp, " OOL HPR spill: currentAssignedRegister is NULL but virtual reg is not spilled?");
                   }
                }
+            else
+               {
+               // the virtual register is currently assigned to a 64 bit real reg
+               // simply spill it to HPR and decompress
+               TR_ASSERT(currentAssignedRegister->isLowWordRegister(), " OOL HPR spill: 64-bit reg assigned to HPR and is not spilled to HPR");
+               cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
+               self()->cg()->traceRAInstruction(cursor);
+               cursor = generateRILInstruction(self()->cg(), TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
+               self()->cg()->traceRAInstruction(cursor);
+
+               // fix up states
+               currentAssignedRegister->setAssignedRegister(NULL);
+               currentAssignedRegister->setState(TR::RealRegister::Free);
+               currentAssignedRegisterHW->setAssignedRegister(NULL);
+               currentAssignedRegisterHW->setState(TR::RealRegister::Free);
+               }
+
             // fix up the states
             virtualRegister->setAssignedRegister(NULL);
             targetRegister->setAssignedRegister(virtualRegister);
@@ -4384,65 +4343,51 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             // spilled to a specific HPR
             TR_ASSERT( virtualRegister->containsCollectedReference(), " OOL HPR spill: spilling a 64 bit scalar into HPR");
 
-            TR::RealRegister  * currentHighWordReg = self()->findVirtRegInHighWordRegister(virtualRegister);
-
-            if (virtualRegister->getAssignedRegister() == NULL && currentHighWordReg)
+            if (currentAssignedRegister == NULL)
                {
-               // already spilled to HPR, so simply move
-               cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHHR, currentHighWordReg, targetRegister, 0, currentInstruction);
-               self()->cg()->traceRAInstruction(cursor);
-
-               //fix up states
-               currentHighWordReg->setAssignedRegister(NULL);
-               currentHighWordReg->setState(TR::RealRegister::Free);
-               }
-            else
-               {
-               if (currentAssignedRegister == NULL)
+               if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount() &&
+                     virtualRegister->getBackingStorage() != NULL)
                   {
-                  if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount() &&
-                      virtualRegister->getBackingStorage() != NULL)
-                     {
-                     // the virtual register is currently spilled to stack, now we need to spill it onto HPR
-                     // load it back from the stack into HPR with STFH
-                     // since we are working with compressed refs shift = 0, simply load 32-bit value into HPR.
-                     TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), self()->cg());
+                  // the virtual register is currently spilled to stack, now we need to spill it onto HPR
+                  // load it back from the stack into HPR with STFH
+                  // since we are working with compressed refs shift = 0, simply load 32-bit value into HPR.
+                  TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), self()->cg());
 
-                     // is the offset correct?  +4 big endian?
-                     TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
+                  // is the offset correct?  +4 big endian?
+                  TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
 
-                     cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
-                     self()->cg()->traceRAInstruction(cursor);
-                     cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, mr, cursor);
-                     self()->cg()->traceRAInstruction(cursor);
-
-                     // fix up states
-                     // don't need to worry about protecting backing storage because we are leaving cold path OOL now
-                     self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
-                     virtualRegister->setBackingStorage(NULL);
-                     }
-                  else
-                     {
-                     TR_ASSERT(comp, " OOL HPR spill: currentAssignedRegister is NULL but virtual reg is not spilled?");
-                     }
-                  }
-               else
-                  {
-                  // the virtual register is currently assigned to a 64 bit real reg
-                  // simply spill it to HPR and decompress
-                  TR_ASSERT(currentAssignedRegister->isLowWordRegister(), " OOL HPR spill: 64-bit reg assigned to HPR and is not spilled to HPR");
-                  cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
+                  cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
                   self()->cg()->traceRAInstruction(cursor);
-                  cursor = generateRILInstruction(self()->cg(), TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
+                  cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, mr, cursor);
                   self()->cg()->traceRAInstruction(cursor);
 
                   // fix up states
-                  currentAssignedRegister->setAssignedRegister(NULL);
-                  currentAssignedRegister->setState(TR::RealRegister::Free);
-                  currentAssignedRegisterHW->setAssignedRegister(NULL);
-                  currentAssignedRegisterHW->setState(TR::RealRegister::Free);
+                  // don't need to worry about protecting backing storage because we are leaving cold path OOL now
+                  self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
+                  virtualRegister->setBackingStorage(NULL);
+                  }
+               else
+                  {
+                  TR_ASSERT(comp, " OOL HPR spill: currentAssignedRegister is NULL but virtual reg is not spilled?");
                   }
                }
+            else
+               {
+               // the virtual register is currently assigned to a 64 bit real reg
+               // simply spill it to HPR and decompress
+               TR_ASSERT(currentAssignedRegister->isLowWordRegister(), " OOL HPR spill: 64-bit reg assigned to HPR and is not spilled to HPR");
+               cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
+               self()->cg()->traceRAInstruction(cursor);
+               cursor = generateRILInstruction(self()->cg(), TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
+               self()->cg()->traceRAInstruction(cursor);
+
+               // fix up states
+               currentAssignedRegister->setAssignedRegister(NULL);
+               currentAssignedRegister->setState(TR::RealRegister::Free);
+               currentAssignedRegisterHW->setAssignedRegister(NULL);
+               currentAssignedRegisterHW->setState(TR::RealRegister::Free);
+               }
+
             // fix up the states
             virtualRegister->setAssignedRegister(NULL);
             targetRegister->setAssignedRegister(virtualRegister);
@@ -4453,19 +4398,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             // the target HPR is now free
             if (currentAssignedRegister == NULL)
                {
-               // the 32-bit virtual register is spilled
-               TR::RealRegister  * currentHighWordReg = self()->findVirtRegInHighWordRegister(virtualRegister);
-               if (currentHighWordReg)
-                  {
-                  // if it is spilled to HPR, simply move it
-                  cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHHR, currentHighWordReg, targetRegister, 0, currentInstruction);
-                  self()->cg()->traceRAInstruction(cursor);
-
-                  //fix up states
-                  currentHighWordReg->setState(TR::RealRegister::Free);
-                  currentHighWordReg->setAssignedRegister(NULL);
-                  }
-               else if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
+               if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
                   {
                   // if it is spilled to stack, load it back into HPR
                   TR_ASSERT(virtualRegister->getBackingStorage(), " OOL HPR spill: virtual reg is not spilled to stack nor HPR");

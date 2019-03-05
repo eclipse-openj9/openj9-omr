@@ -88,8 +88,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    bool is64BitReg();
    void setIs64BitReg(bool b = true);
 
-   bool assignToHPR();
-   void setAssignToHPR(bool b = true)              {_flags.set(AssignToHPR, b);}
    bool assignToGPR();
 
    bool isSpilledToHPR() {return (_flags.testAny(SpilledToHPR));}
@@ -136,7 +134,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
       {
          IsUsedInMemRef                = 0x0800, // 390 cannot associate GPR0 to regs used in memrefs
          Is64Bit                       = 0x0002, // 390 flag indicates that this Register contained a 64-bit value
-         AssignToHPR                   = 0x0004, // 390 flag indicates that this virtual register needs to be assigned to an HPR
          SpilledToHPR                  = 0x4000, // 390 flag indicates that this virtual register is spilled to
          DependencySet                 = 0x0200,  // 390 flag, post dependancy was assigned
 

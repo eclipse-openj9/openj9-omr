@@ -695,10 +695,8 @@ TR_S390RegisterDependencyGroup::checkRegisterPairSufficiencyAndHPRAssignment(TR:
             virtRegI->setIs64BitReg(true);
             }
 
-         virtRegI->setAssignToHPR(false);
          if (TR::RealRegister::isHPR(realRegI))
             {
-            virtRegI->setAssignToHPR(true);
             cg->maskAvailableHPRSpillMask(~(machine->getRealRegister(realRegI)->getRealRegisterMask()));
             }
          else if (TR::RealRegister::isGPR(realRegI) && virtRegI->is64BitReg())
@@ -1509,7 +1507,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
          if(virtReg->isUsedInMemRef())
            {
-           virtReg->setAssignToHPR(false);
            uint32_t availRegMask =~TR::RealRegister::GPR0Mask;
 
             // No bookkeeping on assignment call as we do bookkeeping at end of this method

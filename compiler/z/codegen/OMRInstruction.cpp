@@ -1469,8 +1469,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
       if (!_targetReg[i]->getRegisterPair())
          continue;
 
-      if (self()->cg()->supportsHighWordFacility())
-         _targetReg[i]->setAssignToHPR(false);
       TR::Register *virtReg=_targetReg[i];
       _targetReg[i] = self()->assignRegisterNoDependencies(virtReg);
       _targetReg[i]->block();
@@ -1497,8 +1495,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
       if (!_sourceReg[i]->getRegisterPair())
          continue;
 
-      if (self()->cg()->supportsHighWordFacility())
-         (_sourceReg[i])->setAssignToHPR(false);
       (_sourceReg[i]) = self()->assignRegisterNoDependencies(_sourceReg[i]);
       (_sourceReg[i])->block();
 
@@ -1516,22 +1512,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
             continue;
 
          registerOperandNum = (_targetReg < _sourceReg) ? i+1 : _sourceRegSize+i+1;
-
-         if (self()->cg()->supportsHighWordFacility())
-            {
-            if ((self()->getOpCodeValue() == TR::InstOpCode::RISBLG || self()->getOpCodeValue() == TR::InstOpCode::RISBHG) &&
-                ((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
-               {
-               if (((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().isOperandHW(registerOperandNum))
-                  _targetReg[i]->setAssignToHPR(true);
-               else
-                  _targetReg[i]->setAssignToHPR(false);
-               }
-            else if (_opcode.isOperandHW(registerOperandNum))
-               _targetReg[i]->setAssignToHPR(true);
-            else
-               _targetReg[i]->setAssignToHPR(false);
-            }
 
          if (_targetReg[i]->is64BitReg() && _targetReg[i]->getRealRegister() == NULL &&
              _targetReg[i]->getKind() != TR_FPR && _targetReg[i]->getKind() != TR_VRF)

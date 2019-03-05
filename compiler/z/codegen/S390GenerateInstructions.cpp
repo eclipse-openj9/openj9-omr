@@ -151,11 +151,6 @@ TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg,
                               TR::LabelSymbol * sym, TR::Instruction * preced)
    {
-   if (op == TR::InstOpCode::BRCT && targetReg->assignToHPR())
-      {
-      // upgrade to Highword branch on count
-      op = TR::InstOpCode::BRCTH;
-      }
    if (preced)
       {
       return new (INSN_HEAP) TR::S390BranchOnCountInstruction(op, n, targetReg, sym, preced, cg);
@@ -167,11 +162,6 @@ TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg,
                               TR::RegisterDependencyConditions *cond, TR::LabelSymbol * sym, TR::Instruction * preced)
    {
-   if (op == TR::InstOpCode::BRCT && targetReg->assignToHPR())
-      {
-      // upgrade to Highword branch on count
-      op = TR::InstOpCode::BRCTH;
-      }
    if (preced)
       {
       return new (INSN_HEAP) TR::S390BranchOnCountInstruction(op, n, targetReg, cond, sym, preced, cg);
@@ -475,81 +465,6 @@ generateRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    switch(op)
       {
-      case TR::InstOpCode::AR:
-         if (treg->assignToHPR())
-            {
-            if (sreg->assignToHPR())
-               {
-               return generateRRRInstruction(cg, TR::InstOpCode::AHHHR, n, treg, treg, sreg, preced);
-               }
-            //cracked insn
-            //return generateRRRInstruction(cg, TR::InstOpCode::AHHLR, n, treg, treg, sreg, preced);
-            }
-         break;
-      case TR::InstOpCode::ALR:
-         if (treg->assignToHPR())
-            {
-            if (sreg->assignToHPR())
-               {
-               return generateRRRInstruction(cg, TR::InstOpCode::ALHHHR, n, treg, treg, sreg, preced);
-               }
-            //return generateRRRInstruction(cg, TR::InstOpCode::ALHHLR, n, treg, treg, sreg, preced);
-            }
-         break;
-      case TR::InstOpCode::CR:
-         if (treg->assignToHPR())
-            {
-            op = TR::InstOpCode::CHLR;
-            if (sreg->assignToHPR())
-               {
-               op = TR::InstOpCode::CHHR;
-               }
-            }
-         break;
-      case TR::InstOpCode::CLR:
-         if (treg->assignToHPR())
-            {
-            op = TR::InstOpCode::CLHLR;
-            if (sreg->assignToHPR())
-               {
-               op = TR::InstOpCode::CLHHR;
-               }
-            }
-         break;
-      case TR::InstOpCode::LR:
-         if (treg->assignToHPR())
-            {
-            if (sreg->assignToHPR())
-               {
-               return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHHR, treg, sreg, 0, preced);
-               }
-            return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHLR, treg, sreg, 0, preced);
-            }
-         if (sreg->assignToHPR())
-            {
-            return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LLHFR, treg, sreg, 0, preced);
-            }
-         break;
-      case TR::InstOpCode::SR:
-         if (treg->assignToHPR())
-            {
-            if (sreg->assignToHPR())
-               {
-               return generateRRRInstruction(cg, TR::InstOpCode::SHHHR, n, treg, treg, sreg, preced);
-               }
-            //return generateRRRInstruction(cg, TR::InstOpCode::SHHLR, n, treg, treg, sreg, preced);
-            }
-         break;
-      case TR::InstOpCode::SLR:
-         if (treg->assignToHPR())
-            {
-            if (sreg->assignToHPR())
-               {
-               return generateRRRInstruction(cg, TR::InstOpCode::SLHHHR, n, treg, treg, sreg, preced);
-               }
-            //return generateRRRInstruction(cg, TR::InstOpCode::SLHHLR, n, treg, treg, sreg, preced);
-            }
-         break;
       case TR::InstOpCode::LHHR:
          return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHHR, treg, sreg, 0, preced);
          break;
@@ -747,60 +662,6 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    TR_ASSERT(treg->getRealRegister()!=NULL || // Not in RA
            op != TR::InstOpCode::L || !n->isExtendedTo64BitAtSource(), "Generating an TR::InstOpCode::L, when LLGF|LGF should be used");
 
-   if (treg->assignToHPR())
-      {
-      switch(op)
-         {
-         case TR::InstOpCode::C:
-            op = TR::InstOpCode::CHF;
-            break;
-         case TR::InstOpCode::CL:
-            op = TR::InstOpCode::CLHF;
-            break;
-         case TR::InstOpCode::L:
-            op = TR::InstOpCode::LFH;
-            break;
-         case TR::InstOpCode::LB:
-            op = TR::InstOpCode::LBH;
-            break;
-         case TR::InstOpCode::LH:
-            op = TR::InstOpCode::LHH;
-            break;
-         case TR::InstOpCode::LHY:
-            op = TR::InstOpCode::LHH;
-            break;
-         case TR::InstOpCode::LLC:
-            op = TR::InstOpCode::LLCH;
-            break;
-         case TR::InstOpCode::LLH:
-            op = TR::InstOpCode::LLHH;
-            break;
-         case TR::InstOpCode::LY:
-            op = TR::InstOpCode::LFH;
-            break;
-         case TR::InstOpCode::ST:
-            op = TR::InstOpCode::STFH;
-            break;
-         case TR::InstOpCode::STC:
-            op = TR::InstOpCode::STCH;
-            break;
-         case TR::InstOpCode::STCY:
-            op = TR::InstOpCode::STCH;
-            break;
-         case TR::InstOpCode::STH:
-            op = TR::InstOpCode::STHH;
-            break;
-         case TR::InstOpCode::STHY:
-            op = TR::InstOpCode::STHH;
-            break;
-         case TR::InstOpCode::STY:
-            op = TR::InstOpCode::STFH;
-            break;
-         default:
-            break;
-         }
-      }
-
    // Handle long displacement if necessary
    op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
@@ -911,21 +772,6 @@ generateRIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 TR::Instruction *
 generateRIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, int32_t imm, TR::Instruction * preced)
    {
-   TR::Compilation *comp = cg->comp();
-   if (treg->assignToHPR())
-      {
-      switch(op)
-         {
-         case TR::InstOpCode::LHI:
-            return generateRILInstruction(cg, TR::InstOpCode::IIHF, n, treg, imm, preced);
-            break;
-         case TR::InstOpCode::AHI:
-            return generateRILInstruction(cg, TR::InstOpCode::AIH, n, treg, imm, preced);
-            break;
-         default:
-            break;
-         }
-      }
    if (preced)
       {
       return new (INSN_HEAP) TR::S390RIInstruction(op, n, treg, imm, preced, cg);

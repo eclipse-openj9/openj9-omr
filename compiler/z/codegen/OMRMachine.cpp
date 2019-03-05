@@ -1193,32 +1193,8 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
             {
             appendInst = currInst->getPrev();
             }
-         //for 32-bit Registers, we need to make sure that the register is in the correct low/high word
-         if (assignedRegister->isLowWordRegister() && targetRegister->assignToHPR())
-            {
-            // need to find a free HPR and move assignedRegister there
-            TR::RealRegister * assignedHighWordRegister = NULL;
-
-            if ((assignedHighWordRegister = self()->findBestFreeRegister(currInst, kindOfRegister, targetRegister, availRegMask)) == NULL)
-               {
-               //assignedRegister->block();
-               assignedHighWordRegister = self()->freeBestRegister(currInst, targetRegister, kindOfRegister, availRegMask);
-               //assignedRegister->unblock();
-               }
-
-            TR::Instruction * cursor = generateExtendedHighWordInstruction(currInst->getNode(), self()->cg(), TR::InstOpCode::LLHFR, assignedRegister, assignedHighWordRegister, 0, appendInst);
-
-            self()->addToUpgradedBlockedList(assignedRegister) ? 
-               assignedRegister->setState(TR::RealRegister::Blocked) :
-               assignedRegister->setState(TR::RealRegister::Free);
-            targetRegister->setAssignedRegister(assignedHighWordRegister);
-            assignedHighWordRegister->setAssignedRegister(targetRegister);
-            assignedHighWordRegister->setState(TR::RealRegister::Assigned);
-            assignedRegister->setAssignedRegister(NULL);
-            assignedRegister = assignedHighWordRegister;
-            self()->cg()->traceRAInstruction(cursor);
-            }
-         else if (assignedRegister->isHighWordRegister() && targetRegister->assignToGPR())
+         
+         if (assignedRegister->isHighWordRegister() && targetRegister->assignToGPR())
             {
            // special case for RISBG, we can change the rotate amount to shuffle low word/ high word
             if (currInst->getOpCodeValue() == TR::InstOpCode::RISBG || currInst->getOpCodeValue() == TR::InstOpCode::RISBGN)
@@ -2757,7 +2733,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             TR::RealRegister * candidate = NULL;
             if (preference != 0 && (prefRegMask & availRegMask) && _registerFile[preference] != NULL)
                {
-               if (virtualReg->assignToHPR() || needsHighWord)
+               if (needsHighWord)
                   candidate = _registerFile[preference]->getHighWordRegister();
                else
                   candidate = _registerFile[preference]->getLowWordRegister();
@@ -2874,7 +2850,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             }
          else
             {
-            if (virtualReg->assignToHPR() || needsHighWord)
+            if (needsHighWord)
                {
                candidate = _registerFile[i]->getHighWordRegister();
                tRegMask = candidate->getRealRegisterMask();
@@ -3183,33 +3159,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
          {
          TR::RealRegister * realRegHW = realReg->getHighWordRegister();
 
-         if (virtReg->assignToHPR())
-            {
-            if (realRegHW->getState() == TR::RealRegister::Assigned)
-               {
-               TR::Register * associatedVirtual = realRegHW->getAssignedRegister();
-
-               if ((!iInterfere && i==preference && pref_favored) || (realReg->getState() == TR::RealRegister::Free))
-                  {
-                  if (numCandidates == 0)
-                     {
-                     candidates[0] = associatedVirtual;
-                     }
-                  else
-                     {
-                     tempReg       = candidates[0];
-                     candidates[0] = associatedVirtual;
-                     candidates[numCandidates] = tempReg;
-                     }
-                  }
-               else
-                  {
-                  candidates[numCandidates] = associatedVirtual;
-                  }
-               numCandidates++;
-               }
-            }
-         else if (virtReg->assignToGPR())
+         if (virtReg->assignToGPR())
             {
             if (realReg->getState() == TR::RealRegister::Assigned)
                {
@@ -3371,10 +3321,6 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       // bug can't spill 2ice yet
       self()->cg()->traceRegisterAssignment("HW RA: freeBestReg Spill %R for fullsize reg: %R ", best->getHighWordRegister(), virtReg);
       self()->spillRegister(currentInstruction, best->getHighWordRegister()->getAssignedRegister());
-      }
-   else if (virtReg->assignToHPR())
-      {
-      best = best->getHighWordRegister();
       }
    else if ((rk != TR_FPR && rk != TR_VRF) && (virtReg->is64BitReg() || virtReg->assignToGPR()))
       {
@@ -3779,7 +3725,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
          dataSize = TR::Compiler->om.sizeofReferenceAddress();
          opCode = TR::InstOpCode::getStoreOpCode();
 
-         if (spilledRegister->assignToHPR() || targetRegister->isHighWordRegister())
+         if (targetRegister->isHighWordRegister())
             {
             //dataSize = 4;
             opCode = TR::InstOpCode::STFH;

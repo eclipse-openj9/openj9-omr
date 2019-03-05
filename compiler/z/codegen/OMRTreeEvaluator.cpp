@@ -787,11 +787,6 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             // LL: If Golden Eagle - can use Add Immediate with max 32-bit value.
             ei_immOp = TR::InstOpCode::AFI;
             }
-         if (targetRegister != NULL && targetRegister->assignToHPR())
-            {
-            immOp = TR::InstOpCode::BAD;
-            ei_immOp = TR::InstOpCode::AIH;
-            }
          break;
       case TR::InstOpCode::AG:
          if (value == 0) return cursor;
@@ -854,11 +849,6 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             // LL: If Golden Eagle - can use Compare Immediate with max 32-bit value.
             ei_immOp = TR::InstOpCode::CFI;
             }
-         if (targetRegister != NULL && targetRegister->assignToHPR())
-            {
-            immOp = TR::InstOpCode::BAD;
-            ei_immOp = TR::InstOpCode::CIH;
-            }
          break;
 
       case TR::InstOpCode::CL:
@@ -879,11 +869,6 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
                cursor = generateRRInstruction(cg, TR::InstOpCode::LTR, node, sourceRegister, sourceRegister, preced);
                return cursor;
                }
-            }
-         if (targetRegister != NULL && targetRegister->assignToHPR())
-            {
-            immOp = TR::InstOpCode::BAD;
-            ei_immOp = TR::InstOpCode::CIH;
             }
          else
             {
@@ -11999,8 +11984,6 @@ OMR::Z::TreeEvaluator::iRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
          }
 
       node->setRegister(globalReg);
-
-      globalReg->setAssignToHPR(false);
       }
 
    return globalReg;

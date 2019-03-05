@@ -80,15 +80,9 @@ OMR::Z::Register::setPlaceholderReg()
    }
 
 bool
-OMR::Z::Register::assignToHPR()
-   {
-   return (!(self()->is64BitReg()) && _flags.testAny(AssignToHPR));
-   }
-
-bool
 OMR::Z::Register::assignToGPR()
    {
-   return (!(self()->is64BitReg()) && !_flags.testAny(AssignToHPR));
+   return !(self()->is64BitReg());
    }
 
 ncount_t

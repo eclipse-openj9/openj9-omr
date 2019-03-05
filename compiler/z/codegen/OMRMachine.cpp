@@ -3212,19 +3212,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
                }
 
             bool doNotSpillHPR = realRegHW->getAssignedRegister() == virtReg && realReg->getAssignedRegister() != virtReg;
-
-            /*
-            // do not to spill an HPR that contains a compressed ref when shift !=0.
-            // We have to first decompress the pointer, which means we need an extra 64-bit register or at least the low word register.
-            // for shift = 0 case, we can load LFH from stack directly
-            if (realRegHW->getAssignedRegister() &&
-                realRegHW->getAssignedRegister()->isSpilledToHPR() &&
-                realRegHW->getAssignedRegister()->containsCollectedReference())
-               {
-               //doNotSpillHPR = true;
-               }
-            */
-
+            
             if ((realReg->getState() == TR::RealRegister::Assigned || realReg->getState() == TR::RealRegister::Free) &&
                 (realRegHW->getState() == TR::RealRegister::Assigned || realRegHW->getState() == TR::RealRegister::Free) &&
                 !doNotSpillHPR)
@@ -3846,7 +3834,6 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       self()->cg()->traceRAInstruction(cursor);
       cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, generateS390MemoryReference(*tempMR, 4, self()->cg()), cursor);
       self()->cg()->traceRAInstruction(cursor);
-      spilledRegister->setSpilledToHPR(true);
       }
    else
       {
@@ -4028,7 +4015,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                      // don't need to worry about protecting backing storage because we are leaving cold path OOL now
                      self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
                      virtualRegister->setBackingStorage(NULL);
-                     virtualRegister->setSpilledToHPR(true);
                      }
                   else
                      {
@@ -4054,7 +4040,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                }
             // fix up the states
             virtualRegister->setAssignedRegister(NULL);
-            virtualRegister->setSpilledToHPR(true);
             targetRegister->setAssignedRegister(virtualRegister);
             return cursor;
             }
@@ -4435,7 +4420,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                      // don't need to worry about protecting backing storage because we are leaving cold path OOL now
                      self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
                      virtualRegister->setBackingStorage(NULL);
-                     virtualRegister->setSpilledToHPR(true);
                      }
                   else
                      {
@@ -4461,7 +4445,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                }
             // fix up the states
             virtualRegister->setAssignedRegister(NULL);
-            virtualRegister->setSpilledToHPR(true);
             targetRegister->setAssignedRegister(virtualRegister);
             }
          else
@@ -4481,7 +4464,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   //fix up states
                   currentHighWordReg->setState(TR::RealRegister::Free);
                   currentHighWordReg->setAssignedRegister(NULL);
-                  virtualRegister->setSpilledToHPR(false);
                   }
                else if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
                   {
@@ -4500,7 +4482,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   // don't need to worry about protecting backing storage because we are leaving cold path OOL now
                   self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
                   virtualRegister->setBackingStorage(NULL);
-                  virtualRegister->setSpilledToHPR(true);
                   }
                // and do nothing in case virtual reg is a placeholder
                }
@@ -5810,11 +5791,6 @@ OMR::Z::Machine::restoreRegisterStateFromSnapShot()
             {
             _registerFile[i]->getAssignedRegister()->setAssignedRegister(_registerFile[i]);
             }
-         }
-
-      if (_containsHPRSpillSnapShot[i])
-         {
-         _registerFile[i]->getAssignedRegister()->setSpilledToHPR(true);
          }
 
       // If a register is only created and used in multiple OOL hot paths (created in one OOL hot path

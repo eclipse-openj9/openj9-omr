@@ -90,9 +90,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
 
    bool assignToGPR();
 
-   bool isSpilledToHPR() {return (_flags.testAny(SpilledToHPR));}
-   void setSpilledToHPR(bool b = true)             {_flags.set(SpilledToHPR, b);}
-
    bool isDependencySet()    {return _flags.testAny(DependencySet);}
    void setDependencySet(bool v) {if (v) _flags.set(DependencySet);}
 
@@ -134,7 +131,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
       {
          IsUsedInMemRef                = 0x0800, // 390 cannot associate GPR0 to regs used in memrefs
          Is64Bit                       = 0x0002, // 390 flag indicates that this Register contained a 64-bit value
-         SpilledToHPR                  = 0x4000, // 390 flag indicates that this virtual register is spilled to
          DependencySet                 = 0x0200,  // 390 flag, post dependancy was assigned
 
          AlreadySignExtended           = 0x1000, // determine whether i2l should be nops

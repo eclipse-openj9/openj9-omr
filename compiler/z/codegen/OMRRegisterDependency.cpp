@@ -937,7 +937,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                                 "virtReg is assigned to HPR but is not a spilled compress pointer");
                         // we need to decompress pointer
                         tempMR = generateS390MemoryReference(*tempMR, 4, cg);
-                        virtReg->setSpilledToHPR(false);
                         }
                      }
                   }
@@ -1684,7 +1683,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                TR_ASSERT(virtReg, "\nOOL HPR spill: spilled HPR should have a virt Reg assigned!");
                TR_ASSERT(highWordReg->isHighWordRegister(), "\nOOL HPR spill: spilled HPR should be a real HPR!");
                virtReg->setAssignedRegister(NULL);
-               virtReg->setSpilledToHPR(true);
                }
             }
          }

@@ -331,7 +331,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
                          TR::RealRegister *targetReal,
                          bool is64BitReg);
 
-   void spillRegister(TR::Instruction *currentInstruction, TR::Register *virtReg, uint32_t availHighWordRegMap = -1);
+   void spillRegister(TR::Instruction *currentInstruction, TR::Register *virtReg);
 
    TR::RealRegister *reverseSpillState(TR::Instruction      *currentInstruction,
                                           TR::Register         *spilledRegister,

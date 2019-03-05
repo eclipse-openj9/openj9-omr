@@ -3223,16 +3223,8 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       best = best->getLowWordRegister();
       }
 
-   // If we spill into highword, make sure to not to spill it into the one that will clobber fullsize reg
-   if (virtReg->is64BitReg() || doNotSpillToSiblingHPR)
-      {
-      uint32_t availHighWordRegMap = ~(toRealRegister(best->getHighWordRegister())->getRealRegisterMask()) & availRegMask & 0xffff0000;
-      self()->spillRegister(currentInstruction, candidates[0], availHighWordRegMap);
-      }
-   else
-      {
-      self()->spillRegister(currentInstruction, candidates[0]);
-      }
+   self()->spillRegister(currentInstruction, candidates[0]);
+
    return best;
    }
 
@@ -3244,15 +3236,7 @@ void OMR::Z::Machine::freeRealRegister(TR::Instruction *currentInstruction, TR::
   TR::Compilation *comp = self()->cg()->comp();
   TR::Register *virtReg=targetReal->getAssignedRegister();
 
-  if (is64BitReg)
-     {
-     uint32_t availHighWordRegMap = ~(toRealRegister(targetReal->getHighWordRegister())->getRealRegisterMask()) & 0xffff0000;
-     self()->spillRegister(currentInstruction, virtReg, availHighWordRegMap);
-     }
-  else
-     {
-     self()->spillRegister(currentInstruction, virtReg);
-     }
+  self()->spillRegister(currentInstruction, virtReg);
   }
 
 /**
@@ -3264,7 +3248,7 @@ void OMR::Z::Machine::freeRealRegister(TR::Instruction *currentInstruction, TR::
  *  A GPRX, ....      // use GPRX
  */
 void
-OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Register* virtReg, uint32_t availHighWordRegMap)
+OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Register* virtReg)
    {
    TR::Compilation *comp = self()->cg()->comp();
    TR::InstOpCode::Mnemonic opCode;
@@ -4311,24 +4295,15 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   spillTargetHWReg = true;
                   }
                }
-            // In zLinux, GPR6 may be used for param passing, in this case, we can't spill to it
-            if (TR::Compiler->target.isLinux())
-               {
-               // HPR7-12 are available
-               self()->spillRegister(currentInstruction, currentTargetVirtual, availHWRegs & 0x1F800000);
-               }
-            else
-               {
-               // can only spill to preserved registers (HPR6-HPR12)
-               self()->spillRegister(currentInstruction, currentTargetVirtual, availHWRegs & 0x1FC00000);
-               //spillRegister(currentInstruction, currentTargetVirtual, 0x1FC00000);
-               }
+
+            self()->spillRegister(currentInstruction, currentTargetVirtual);
+
             targetRegister->setState(TR::RealRegister::Unlatched);
             targetRegister->setAssignedRegister(NULL);
 
             if (spillTargetHWReg)
                {
-               self()->spillRegister(currentInstruction, targetRegisterHW->getAssignedRegister(), 0);
+               self()->spillRegister(currentInstruction, targetRegisterHW->getAssignedRegister());
                }
 
             if (currentTargetVirtual->is64BitReg())

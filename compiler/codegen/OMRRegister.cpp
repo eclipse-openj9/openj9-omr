@@ -45,8 +45,7 @@ OMR::Register::Register(uint32_t f):
    _outOfLineUseCount(0),
    _association(0),
    _kind(TR_GPR),
-   _index(0),
-   _cc(NULL)
+   _index(0)
    {}
 
 OMR::Register::Register(TR_RegisterKinds rk):
@@ -63,8 +62,7 @@ OMR::Register::Register(TR_RegisterKinds rk):
    _outOfLineUseCount(0),
    _association(0),
    _kind(rk),
-   _index(0),
-   _cc(NULL)
+   _index(0)
    {}
 
 OMR::Register::Register(TR_RegisterKinds rk, uint16_t ar):
@@ -81,8 +79,7 @@ OMR::Register::Register(TR_RegisterKinds rk, uint16_t ar):
    _outOfLineUseCount(0),
    _association(ar),
    _kind(rk),
-   _index(0),
-   _cc(NULL)
+   _index(0)
    {}
 
 TR::Register*

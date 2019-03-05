@@ -65,8 +65,6 @@ extern TR::Register *inlineLongRotateLeft(TR::Node *node, TR::CodeGenerator *cg)
 static TR::Register *ldiv64Evaluator(TR::Node *node, TR::CodeGenerator *cg);
 static TR::Register *lrem64Evaluator(TR::Node *node, TR::CodeGenerator *cg);
 
-TR::Register *computeCC_bitwise(TR::CodeGenerator *cg, TR::Node *node, TR::Register *targetReg, bool needsZeroExtension = true);
-
 void generateZeroExtendInstruction(TR::Node *node,
                                    TR::Register *trgReg,
                                    TR::Register *srcReg,
@@ -105,37 +103,6 @@ void generateSignExtendInstruction(TR::Node *node,
    generateTrg1Src1Instruction(cg, signExtendOp, node, trgReg, srcReg);
    }
 
-TR::Register *computeCC_setNotZero(TR::CodeGenerator *cg, TR::Node *node, TR::Register *ccReg, TR::Register *testReg, bool needsZeroExtension)
-   {
-   if (ccReg == NULL)
-      ccReg = cg->allocateRegister();
-   int32_t size = node->getOpCode().getSize();
-
-   if (size < 8 && needsZeroExtension)
-      {
-      // this sequence doesn't work if there is any garbage in the top part of the testReg
-      generateZeroExtendInstruction(node, ccReg, testReg, size*8, cg);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, ccReg, ccReg, -1);
-      }
-   else
-      {
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, ccReg, testReg, -1);
-      }
-   generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, ccReg, 0);
-   generateTrg1Src1Instruction(cg, TR::InstOpCode::addze, node, ccReg, ccReg);
-
-   return ccReg;
-   }
-
-TR::Register *computeCC_bitwise(TR::CodeGenerator *cg, TR::Node *node, TR::Register *testReg, bool needsZeroExtension)
-   {
-   // Condition code settings:
-   // 0 - Result is zero
-   // 1 - Result is not zero
-   TR::Register *ccReg = computeCC_setNotZero(cg, node, NULL, testReg, needsZeroExtension);
-   testReg->setCCRegister(ccReg);
-   return ccReg;
-   }
 
 // Do the work for evaluating integer or and exclusive or
 // Also called for long or and exclusive or when the upper

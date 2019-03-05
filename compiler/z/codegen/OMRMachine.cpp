@@ -1059,7 +1059,7 @@ OMR::Z::Machine::findBestRegisterForShuffle(TR::Instruction *currentInstruction,
    // find a free register
    if ((newRegister = self()->findBestFreeRegister(currentInstruction, kindOfRegister, currentAssignedRegister, availRegMask)) == NULL)
       {
-      newRegister = self()->freeBestRegister(currentInstruction, currentAssignedRegister, kindOfRegister, availRegMask);
+      newRegister = self()->freeBestRegister(currentInstruction, currentAssignedRegister, kindOfRegister);
       }
    // unblock if we blocked target reg of the instruction
    if (blockingRegister)
@@ -1192,7 +1192,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
                if ((assignedLowWordRegister = self()->findBestFreeRegister(currInst, kindOfRegister, targetRegister, availRegMask)) == NULL)
                   {
                   //assignedRegister->block();
-                  assignedLowWordRegister = self()->freeBestRegister(currInst, targetRegister, kindOfRegister, availRegMask);
+                  assignedLowWordRegister = self()->freeBestRegister(currInst, targetRegister, kindOfRegister);
                   //assignedRegister->unblock();
                   }
 
@@ -1262,17 +1262,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          // If no free reg available,  free one up
          if ((assignedRegister = self()->findBestFreeRegister(currInst, kindOfRegister, targetRegister, availRegMask)) == NULL)
             {
-            if (targetRegister->is64BitReg())
-               {
-               // do not highword spill to itself for 64bit reg
-               //traceMsg(comp,"\nDo not spill to its own HPR!");
-               assignedRegister = self()->freeBestRegister(currInst, targetRegister, kindOfRegister, availRegMask, false, true);
-               }
-            else
-               {
-               //traceMsg(comp,"\nCan spill to its own HPR!");
-               assignedRegister = self()->freeBestRegister(currInst, targetRegister, kindOfRegister, availRegMask);
-               }
+            assignedRegister = self()->freeBestRegister(currInst, targetRegister, kindOfRegister);
             }
          }
 
@@ -2971,8 +2961,7 @@ OMR::Z::Machine::spillAllVolatileHighRegisters(TR::Instruction *currentInstructi
 ////////////////////////////////////////////////////
 
 TR::RealRegister *
-OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Register * virtReg, TR_RegisterKinds rk,
-                                 uint64_t availRegMask, bool allowNullReturn, bool doNotSpillToSiblingHPR)
+OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Register * virtReg, TR_RegisterKinds rk, bool allowNullReturn)
    {
    self()->cg()->traceRegisterAssignment("FREE BEST REGISTER FOR %R", virtReg);
    TR::Compilation *comp = self()->cg()->comp();
@@ -3911,14 +3900,14 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             {
             // if we end up spilling currentTargetVirtual to HPR, make sure to not pick the HPR of targetRegister since it will not
             // free up the full 64 bit register
-            spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), availHighWordRegMap, true, true);
+            spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), true);
             }
          else
             {
             // we can allow freeBestRegister() to return NULL here, as long as we can perform register exchange later via memory
             // and take a bad OSC penalty
             // todo: fix HW RA to enable register exchange later
-            spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), 0xffff, true);
+            spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), true);
             }
          virtualRegister->unblock();
          currentTargetVirtual->unblock();
@@ -4166,11 +4155,11 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   {
                   // if we end up spilling currentTargetVirtual to HPR, make sure to not pick the HPR of targetRegister since it will not
                   // free up the full 64 bit register
-                  spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), availHighWordRegMap, false, true);
+                  spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind());
                   }
                else
                   {
-                  spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), availHighWordRegMap, true);
+                  spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), true);
                   }
 
                // For some reason (blocked/locked regs etc), we couldn't find a spare reg so spill the virtual in the target and use it for coercion
@@ -4327,11 +4316,11 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   {
                   // if we end up spilling currentTargetVirtual to HPR, make sure to not pick the HPR of targetRegister since it will not
                   // free up the full 64 bit register
-                  spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), availHighWordRegMap, false, true);
+                  spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind());
                   }
                else
                   {
-                  spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), availHighWordRegMap, true);
+                  spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), true);
                   }
 
                // For some reason (blocked/locked regs etc), we couldn't find a spare reg so spill the virtual in the target and use it for coercion

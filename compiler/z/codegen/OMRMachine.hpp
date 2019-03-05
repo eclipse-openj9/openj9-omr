@@ -314,9 +314,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::RealRegister *freeBestRegister(TR::Instruction   *currentInstruction,
                                          TR::Register     *virtReg,
                                          TR_RegisterKinds rk,
-                                         uint64_t availRegMask = 0xffffffff,
-                                         bool allowNullReturn = false,
-                                         bool doNotSpillToSiblingHPR = false);
+                                         bool allowNullReturn = false);
 
    TR::RealRegister *findBestRegisterForShuffle(TR::Instruction  *currentInstruction,
                                                    TR::Register         *currentAssignedRegister,

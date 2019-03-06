@@ -71,13 +71,10 @@ class S390SystemLinkage : public TR::Linkage
    TR::RealRegister::RegNum _debugHooksRegister;
    int16_t _GPRSaveMask;
    int16_t _FPRSaveMask;
-   int16_t _HPRSaveMask;
    int32_t _incomingParmAreaBeginOffset;
    int32_t _incomingParmAreaEndOffset;
    int32_t _FPRSaveAreaBeginOffset;
    int32_t _FPRSaveAreaEndOffset;
-   int32_t _HPRSaveAreaBeginOffset;
-   int32_t _HPRSaveAreaEndOffset;
    int32_t _LocalsAreaBeginOffset;
    int32_t _LocalsAreaEndOffset;
    int32_t _OutgoingParmAreaBeginOffset;
@@ -108,9 +105,6 @@ public:
    int16_t setFPRSaveMask(int16_t FPRSaveMask)  { return _FPRSaveMask = FPRSaveMask; }
    int16_t getFPRSaveMask()                     { return _FPRSaveMask; }
 
-   int16_t setHPRSaveMask(int16_t HPRSaveMask)  { return _HPRSaveMask = HPRSaveMask; }
-   int16_t getHPRSaveMask()                     { return _HPRSaveMask; }
-
    static uint16_t flipBitsRegisterSaveMask(uint16_t mask);
 
    int32_t setGPRSaveAreaBeginOffset(int32_t GPRSaveAreaBeginOffset)  { return _GPRSaveAreaBeginOffset = GPRSaveAreaBeginOffset; }
@@ -122,11 +116,6 @@ public:
    int32_t getFPRSaveAreaBeginOffset()                                { return _FPRSaveAreaBeginOffset; }
    int32_t setFPRSaveAreaEndOffset(int32_t FPRSaveAreaEndOffset)  { return _FPRSaveAreaEndOffset = FPRSaveAreaEndOffset; }
    int32_t getFPRSaveAreaEndOffset()                              { return _FPRSaveAreaEndOffset; }
-
-   int32_t setHPRSaveAreaBeginOffset(int32_t HPRSaveAreaBeginOffset)  { return _HPRSaveAreaBeginOffset = HPRSaveAreaBeginOffset; }
-   int32_t getHPRSaveAreaBeginOffset()                                { return _HPRSaveAreaBeginOffset; }
-   int32_t setHPRSaveAreaEndOffset(int32_t HPRSaveAreaEndOffset)  { return _HPRSaveAreaEndOffset = HPRSaveAreaEndOffset; }
-   int32_t getHPRSaveAreaEndOffset()                              { return _HPRSaveAreaEndOffset; }
 
    int32_t setOutgoingParmAreaBeginOffset(int32_t OutgoingParmAreaBeginOffset)    { return _OutgoingParmAreaBeginOffset = OutgoingParmAreaBeginOffset; }
    int32_t getOutgoingParmAreaBeginOffset()                                 { return _OutgoingParmAreaBeginOffset; }
@@ -164,9 +153,9 @@ public:
 public:
    S390SystemLinkage(TR::CodeGenerator * cg, TR_S390LinkageConventions elc=TR_S390LinkageDefault, TR_LinkageConventions lc=TR_System)
       : TR::Linkage(cg, elc,lc),
-        _GPRSaveMask(0), _FPRSaveMask(0), _HPRSaveMask(0)
-      {
-      }
+      _GPRSaveMask(0), 
+      _FPRSaveMask(0)
+      {}
 
    virtual uint32_t
    getIntArgOffset(int32_t index)
@@ -228,7 +217,6 @@ public:
    // == General utilities (linkage independent)
    virtual TR::Instruction *addImmediateToRealRegister(TR::RealRegister * targetReg, int32_t immediate, TR::RealRegister *tempReg, TR::Node *node, TR::Instruction *cursor, bool *checkTempNeeded=NULL);
    virtual TR::Instruction *getputFPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction *cursor, TR::Node *node, TR::RealRegister *spReg=0);
-   virtual TR::Instruction *getputHPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction *cursor, TR::Node *node, TR::RealRegister *spReg=0);
 
    };
 

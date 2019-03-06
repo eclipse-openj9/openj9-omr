@@ -1367,7 +1367,6 @@ class S390RegInstruction : public TR::Instruction
          // if we are matching real regs
          if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && getFirstRegister()->getRealRegister())
             {
-            // reg pairs do not use HPRs
             targetReg1 = (TR::RealRegister *)getFirstRegister();
             targetReg2 = toRealRegister(getLastRegister());
             return realReg == targetReg1 || realReg == targetReg2;

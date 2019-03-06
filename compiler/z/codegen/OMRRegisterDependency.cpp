@@ -1361,31 +1361,27 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          }
       }
 
-
-   // OOL slow path HPR spills
    if (!comp->getOption(TR_DisableOOL))
       {
-      for (i = 0; i< numOfDependencies; i++)
+      // TODO: Is this HPR related? Do we need this code?
+      for (i = 0; i < numOfDependencies; i++)
          {
-         // we put {real HPR:SpilledReg} as deps for OOL HPR spills
          if (_dependencies[i].getRegister()->getRealRegister())
             {
-            TR::RealRegister * highWordReg = toRealRegister(_dependencies[i].getRegister());
+            TR::RealRegister* realReg = toRealRegister(_dependencies[i].getRegister());
             dependentRegNum = _dependencies[i].getRealRegister();
             if (dependentRegNum == TR::RealRegister::SpilledReg)
                {
-               virtReg = highWordReg->getAssignedRegister();
-               //printf ("\nOOL HPR Spill in %s", comp->signature());fflush(stdout);
-               traceMsg(comp,"\nOOL HPR Spill: %s", cg->getDebug()->getName(highWordReg));
+               virtReg = realReg->getAssignedRegister();
+
+               traceMsg(comp,"\nOOL HPR Spill: %s", cg->getDebug()->getName(realReg));
                traceMsg(comp,":%s\n", cg->getDebug()->getName(virtReg));
-               TR_ASSERT(virtReg, "\nOOL HPR spill: spilled HPR should have a virt Reg assigned!");
-               // TR_ASSERT(highWordReg->isHighWordRegister(), "\nOOL HPR spill: spilled HPR should be a real HPR!");
+
                virtReg->setAssignedRegister(NULL);
                }
             }
          }
       }
-
    }
 
 /**

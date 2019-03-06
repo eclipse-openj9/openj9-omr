@@ -2634,9 +2634,8 @@ OMR::Z::Linkage::setupRegisterDepForLinkage(TR::Node * callNode, TR_DispatchType
    TR::RegisterDependencyConditions * &deps, int64_t & killMask, TR::SystemLinkage * systemLinkage,
    TR::Node * &GlobalRegDeps, bool &hasGlRegDeps, TR::Register ** methodAddressReg, TR::Register * &JavaLitOffsetReg)
    {
-   int32_t numDeps = systemLinkage->getNumberOfDependencyGPRegisters();
-
-   numDeps += 16; //HPRs need to be spilled
+   // Extra dependency for killing volatile high registers (see KillVolHighRegs)
+   int32_t numDeps = systemLinkage->getNumberOfDependencyGPRegisters() + 1;
 
    if (self()->cg()->getSupportsVectorRegisters())
       numDeps += 32; //VRFs need to be spilled

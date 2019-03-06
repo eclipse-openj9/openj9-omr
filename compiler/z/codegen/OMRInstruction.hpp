@@ -436,14 +436,8 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    uint32_t useTargetRegister(TR::Register* reg);
    uint32_t useSourceMemoryReference(TR::MemoryReference* memRef);
    uint32_t useTargetMemoryReference(TR::MemoryReference* memRef, TR::MemoryReference* sourceMemRef);
-
-
-   bool isHPRUpgradable(uint16_t regType);
-
+   
    bool checkRegForGPR0Disable(TR::InstOpCode::Mnemonic op, TR::Register* reg);
-
-
-
    };
 
 }

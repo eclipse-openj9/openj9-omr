@@ -54,7 +54,6 @@ template <typename ListKind> class List;
 
 // Number of machine registers
 #define NUM_S390_GPR 16
-#define NUM_S390_HPR 16
 #define NUM_S390_FPR 16
 #define NUM_S390_VRF 16 ///< 32 after full RA complete
 #define NUM_S390_FPR_PAIRS 8
@@ -179,7 +178,7 @@ namespace Z
 class OMR_EXTENSIBLE Machine : public OMR::Machine
    {
    TR::Register                *_registerAssociations[TR::RealRegister::NumRegisters];
-   uint32_t                     _globalRegisterNumberToRealRegisterMap[NUM_S390_GPR+NUM_S390_FPR+NUM_S390_VRF+NUM_S390_HPR];
+   uint32_t                     _globalRegisterNumberToRealRegisterMap[NUM_S390_GPR+NUM_S390_FPR+NUM_S390_VRF];
    TR::RealRegister::RegNum     _S390FirstOfFPRegisterPairs[NUM_S390_FPR_PAIRS];
    TR::RealRegister::RegNum     _S390SecondOfFPRegisterPairs[NUM_S390_FPR_PAIRS];
 
@@ -232,8 +231,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
    uint8_t getGPRSize();
    uint8_t getFPRSize() const { return 8;}
-   uint8_t getARSize() const { return 4;}
-   uint8_t getHPRSize() const { return 4;}
    uint8_t getVRFSize() const { return 16;}
 
    TR::RegisterDependencyConditions * createDepCondForLiveGPRs(TR::list<TR::Register*> *spilledRegisterList);

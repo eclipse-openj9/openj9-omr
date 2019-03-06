@@ -549,8 +549,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
 
-   TR::DebugCounter::incStaticDebugCounter(comp, "hpr/total-compilations");
-
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
 

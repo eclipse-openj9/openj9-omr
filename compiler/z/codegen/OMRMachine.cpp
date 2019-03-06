@@ -148,11 +148,9 @@ OMR::Z::Machine::registerCopy(TR::CodeGenerator* cg,
          }
       case TR_FPR:
          cursor = generateRRInstruction(cg, TR::InstOpCode::LDR, node, targetReg, sourceReg, precedingInstruction);
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/FPR");
          break;
       case TR_VRF:
          cursor = generateVRRaInstruction(cg, TR::InstOpCode::VLR, node, targetReg, sourceReg, precedingInstruction);
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/VRF");         
          break;
       }
 
@@ -208,8 +206,6 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          }
       else
          {
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/FPR", 3);
-
          TR::Instruction * currentInstruction = precedingInstruction;
          TR_BackingStore * location;
          location = cg->allocateSpill(8, false, NULL);
@@ -246,8 +242,6 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          }
       else
          {
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/VRF", 3);
-
          TR_BackingStore * location;
          location = cg->allocateSpill(16, false, NULL);
          TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, location->getSymbolReference(), cg);
@@ -1029,7 +1023,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
            assignedRegister = newAssignedRegister;
            }
          }
-      } // end if(enabledHighWordRA && assignedRegister != NULL)
+      }
    else if(assignedRegister != NULL && (assignedRegister->getRealRegisterMask() & availRegMask) == 0)
       {
       // Oh no.. targetRegister is assigned something it shouldn't be assigned to
@@ -2190,7 +2184,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             }
          bestRegister = NULL;
          }
-      else // Pre zG+ machine don't support Highword facility
+      else
          {
          if (bestRegister != NULL &&
              (bestRegister->getState() == TR::RealRegister::Free || bestRegister->getState() == TR::RealRegister::Unlatched))
@@ -2408,7 +2402,6 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             }
          else
             {
-            // Only need LW or HW
             TR::RealRegister * candidate = NULL;
             if (preference != 0 && (prefRegMask & availRegMask) && _registerFile[preference] != NULL)
                {
@@ -2753,7 +2746,6 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
 
             if (realReg->getState() == TR::RealRegister::Assigned)
                {
-               // candidate is LW's virtReg in case if both LW and HW need to be spilled
                associatedVirtual = realReg->getAssignedRegister();
                usedInMemRef      = associatedVirtual->isUsedInMemRef();
                }
@@ -2947,7 +2939,6 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          }
        else
          {
-          TR::DebugCounter::incStaticDebugCounter(comp, "hpr/spill/FPR");
          location = self()->cg()->allocateSpill(8, false, NULL, true); // TODO: Use 4 for single-precision values
          if (debugObj)
            self()->cg()->traceRegisterAssignment("\nSpilling FPR %s to (%p)\n", debugObj->getName(virtReg),location);
@@ -2955,7 +2946,6 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
        opCode = TR::InstOpCode::LD;
        break;
      case TR_VRF:
-        TR::DebugCounter::incStaticDebugCounter(comp, "hpr/spill/VRF");
        // Spill of size 16 has never been done before. The call hierarchy seems to support it but this should be watched closely.
        location = self()->cg()->allocateSpill(16, false, NULL, true);
        if (debugObj)
@@ -3368,19 +3358,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          virtualRegister->block();
          currentTargetVirtual->block();
 
-         if (virtualRegister->is64BitReg())
-            {
-            // if we end up spilling currentTargetVirtual to HPR, make sure to not pick the HPR of targetRegister since it will not
-            // free up the full 64 bit register
-            spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), true);
-            }
-         else
-            {
-            // we can allow freeBestRegister() to return NULL here, as long as we can perform register exchange later via memory
-            // and take a bad OSC penalty
-            // todo: fix HW RA to enable register exchange later
-            spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), true);
-            }
+         spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind(), true);
+
          virtualRegister->unblock();
          currentTargetVirtual->unblock();
          }
@@ -3390,8 +3369,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       // virtual register is currently assigned to a different register,
       if (currentAssignedRegister != NULL)
          {
-
-         // todo :HW fix
          if (!self()->isAssignable(currentTargetVirtual, currentAssignedRegister))
             {
                {
@@ -3465,7 +3442,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
       if (rk != TR_FPR && rk != TR_VRF && currentTargetVirtual)
          {
-         // this happens for OOL HPR spill, simply return
+         // this happens for OOL spill, simply return
          if (currentTargetVirtual == virtualRegister)
             {
             virtualRegister->setAssignedRegister(targetRegister);
@@ -3489,7 +3466,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          {
          //  We may not be able to do an exchange as the target virtReg is not
          //  allowed to be assigned to the source's realReg (e.g. GPR0).
-         //  reg exchange with HW not implemented yet
          if (!self()->isAssignable(currentTargetVirtual, currentAssignedRegister) || (rk != TR_FPR && rk != TR_VRF))
             {
             // There is an alternative to blindly spilling because:
@@ -3503,8 +3479,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                virtualRegister->block();
                if (virtualRegister->is64BitReg())
                   {
-                  // if we end up spilling currentTargetVirtual to HPR, make sure to not pick the HPR of targetRegister since it will not
-                  // free up the full 64 bit register
+                  // TODO: Can we allow a null return here? Why are the two paths different?
                   spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind());
                   }
                else
@@ -3614,8 +3589,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                virtualRegister->block();
                if (virtualRegister->is64BitReg())
                   {
-                  // if we end up spilling currentTargetVirtual to HPR, make sure to not pick the HPR of targetRegister since it will not
-                  // free up the full 64 bit register
+                  // TODO: Can we allow a null return here? Why are the two paths different? There is a similar case
+                  // above.
                   spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual, currentTargetVirtual->getKind());
                   }
                else
@@ -3714,9 +3689,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          {
          // virtual register is currently assigned to a different register,
          // override it with the target reg
-
-         // todo: HW copy, LW copy or 64bit?
-         // if targetReg is HW, copy need to be HW
          cursor = self()->registerCopy(self()->cg(), rk, currentAssignedRegister, targetRegister, currentInstruction);
 
          currentAssignedRegister->setState(TR::RealRegister::Free);
@@ -4274,7 +4246,7 @@ OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
    self()->setFirstOverlappedGlobalVRFRegisterNumber(firstOverlappingVecOffset); // equiv to VRF0
    self()->setLastOverlappedGlobalVRFRegisterNumber(lastOverlappingVecOffset);   // equiv to VRF16
 
-   // Similar to HPR/GPR overlap, FPR and VRF will have same 'lastOverlapping' grn.
+   // Similar FPR and VRF will have same 'lastOverlapping' grn.
    self()->setLastGlobalFPRRegisterNumber(self()->getLastOverlappedGlobalVRFRegisterNumber());
 
    if (traceVectorGRN)

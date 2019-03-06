@@ -639,7 +639,6 @@ class InstOpCode: public OMR::InstOpCode
    /* Queries for instruction properties */
    uint32_t hasBypass();
    uint32_t isAdmin();
-   uint32_t isHighWordInstruction();
    uint64_t isOperandHW(uint32_t i);
    uint64_t setsOperand(uint32_t opNum);
 

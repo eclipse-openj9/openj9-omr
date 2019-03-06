@@ -4237,10 +4237,6 @@ TR_Debug::getLinkageConventionName(uint8_t lc)
          return "Private";
       case TR_System:
          return "System";
-      case TR_AllRegister:
-         return "AllRegister";
-      case TR_InterpretedStatic:
-         return "InterpretedStatic";
       case TR_Helper:
          return "Helper";
       default:

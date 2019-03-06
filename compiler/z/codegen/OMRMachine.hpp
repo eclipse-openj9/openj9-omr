@@ -187,11 +187,9 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::RealRegister::RegState   _registerStatesSnapShot[TR::RealRegister::NumRegisters];
    TR::Register                *_registerAssociationsSnapShot[TR::RealRegister::NumRegisters];
    bool                         _registerAssignedSnapShot[TR::RealRegister::NumRegisters];
-   bool                         _registerAssignedHighSnapShot[TR::RealRegister::NumRegisters];
    uint16_t                     _registerWeightSnapShot[TR::RealRegister::NumRegisters];
    TR::Register                *_assignedRegisterSnapShot[TR::RealRegister::NumRegisters];
    uint32_t                     _globalRegisterNumberToRealRegisterMapSnapShot[TR::RealRegister::NumRegisters];
-   bool                         _containsHPRSpillSnapShot[TR::RealRegister::NumRegisters];
    
    TR_GlobalRegisterNumber  _firstGlobalGPRRegisterNumber;
    TR_GlobalRegisterNumber  _lastGlobalGPRRegisterNumber;

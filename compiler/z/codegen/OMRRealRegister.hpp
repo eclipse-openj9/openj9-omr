@@ -56,25 +56,11 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
    RealRegister(TR_RegisterKinds, uint16_t, RegState, RegNum, RegMask, TR::CodeGenerator *);
 
    public:
-
-   // getters/setters
-   void setHighWordRegister(TR::RealRegister *r) {_highWordRegister = r;}
-   void setLowWordRegister(TR::RealRegister *r) {_lowWordRegister = r;}
-
-   TR::RealRegister * getLowWordRegister();
-   TR::RealRegister * getSiblingWordRegister();
-
-   bool isLowWordRegister();
-
-
-
+      
    // methods for manipulating flags
    bool getModified() {return _modified.testAny(isModified);}
    bool setModified(bool b)  { (b)? _modified.set(isModified) : _modified.reset(isModified);  return b; }
-
-   bool getAssignedHigh() {return _realRegFlags.testAny(isAssignedHigh);}
-   bool setAssignedHigh(bool b) {b? _realRegFlags.set(isAssignedHigh) : _realRegFlags.reset(isAssignedHigh); return b;}
-
+   
    bool setHasBeenAssignedInMethod(bool b); // derived from base class
 
 
@@ -114,13 +100,9 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
 
    enum
       {
-      isAssignedHigh  = 0x02,  // Indicates use of high word on 32-bit platform
       isModified      = 0x01,
       };
-
-   TR::RealRegister *_highWordRegister;
-   TR::RealRegister *_lowWordRegister;
-
+   
    flags8_t        _modified;
    static const uint8_t _fullRegBinaryEncodings[NumRegisters];
 

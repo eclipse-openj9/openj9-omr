@@ -134,27 +134,16 @@ OMR::Z::Machine::registerCopy(TR::CodeGenerator* cg,
       {
       case TR_GPR:
          {
-         TR_ASSERT_FATAL(targetReg->isLowWordRegister(), "Attempting GPR register copy with target real register (%s) which is not a GPR", getRegisterName(targetReg, cg));
+         // TODO: Once above is fixed we can always rely on targetReg->getAssignedRegister()
+         auto nonNullAssignedReg = targetReg->getAssignedRegister() != NULL ?
+            targetReg->getAssignedRegister() :
+            sourceReg->getAssignedRegister();
 
-         if (sourceReg->isLowWordRegister())
-            {
-            // TODO: Once above is fixed we can always rely on targetReg->getAssignedRegister()
-            auto nonNullAssignedReg = targetReg->getAssignedRegister() != NULL ?
-               targetReg->getAssignedRegister() :
-               sourceReg->getAssignedRegister();
+         auto mnemonic = nonNullAssignedReg->is64BitReg() ?
+            TR::InstOpCode::LGR :
+            TR::InstOpCode::LR;
 
-            auto mnemonic = nonNullAssignedReg->is64BitReg() ?
-               TR::InstOpCode::LGR :
-               TR::InstOpCode::LR;
-
-            cursor = generateRRInstruction(cg, mnemonic, node, targetReg, sourceReg, precedingInstruction);
-            TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/GPR");
-            }
-         else
-            {
-            cursor = generateExtendedHighWordInstruction(node, cg, TR::InstOpCode::LLHFR, targetReg, sourceReg, 0, precedingInstruction);
-            TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/HPR");
-            }
+         cursor = generateRRInstruction(cg, mnemonic, node, targetReg, sourceReg, precedingInstruction);
          break;
          }
       case TR_FPR:
@@ -1014,8 +1003,8 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
             }
 
          targetRegister->setAssignedRegister(assignedRegister);
-         assignedRegister->getLowWordRegister()->setAssignedRegister(targetRegister);
-         assignedRegister->getLowWordRegister()->setState(TR::RealRegister::Assigned);
+         assignedRegister->setAssignedRegister(targetRegister);
+         assignedRegister->setState(TR::RealRegister::Assigned);
          }
       else
          {
@@ -2424,7 +2413,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             TR::RealRegister * candidate = NULL;
             if (preference != 0 && (prefRegMask & availRegMask) && _registerFile[preference] != NULL)
                {
-               candidate = _registerFile[preference]->getLowWordRegister();
+               candidate = _registerFile[preference];
                }
             if (candidate != NULL &&
                 (prefRegMask & availRegMask) &&
@@ -2527,7 +2516,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             }
          else
             {
-            candidate = _registerFile[i]->getLowWordRegister();
+            candidate = _registerFile[i];
 
             //self()->cg()->traceRegWeight(candidate, candidate->getWeight());
             // Don't consider registers that can't be assigned.
@@ -2852,23 +2841,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       }
 
    TR::RealRegister * best = toRealRegister(candidates[0]->getAssignedRegister());
-
-   // Shortcut the selection when a virtReg is specified, and it is already assigned a real, we spill
-   // that real
-   if ( virtReg && virtReg->getRealRegister() )
-      {
-      // TODO: I'm fairly certain this should never happen as the input parameter virtReg to this function must be a
-      // virtual register, and calling virtReg->getRealRegister() should always return NULL so we should not be able
-      // to get into this if statement. Leaving the fatal assert here however so this gets baked in for a while. We
-      // need to remove this eventually.
-      TR_ASSERT_FATAL(false, "Virtual register (%s) is really a real register (%s)?", getRegisterName(virtReg, self()->cg()), getRegisterName(virtReg->getRealRegister(), self()->cg()));
-      candidates[0] = virtReg;
-      }
-   else if ((rk != TR_FPR && rk != TR_VRF) && (virtReg->is64BitReg() || virtReg->assignToGPR()))
-      {
-      best = best->getLowWordRegister();
-      }
-
+   
    self()->spillRegister(currentInstruction, candidates[0]);
 
    return best;
@@ -3153,14 +3126,8 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       {
       case TR_GPR:
          dataSize = TR::Compiler->om.sizeofReferenceAddress();
-         opCode = TR::InstOpCode::getStoreOpCode();
+         opCode = TR::InstOpCode::ST;
 
-         if (spilledRegister->assignToGPR() || targetRegister->isLowWordRegister())
-            {
-            // dont want to involve halfslot spills yet
-            //dataSize = 4;
-            opCode = TR::InstOpCode::ST;
-            }
          if (spilledRegister->is64BitReg())
             {
             dataSize = 8;
@@ -3293,9 +3260,9 @@ OMR::Z::Machine::isAssignable(TR::Register * virtReg, TR::RealRegister * realReg
       // it there already. That code needs to be cleaned up and consolidated into the registerExchange API.
       if (virtReg->getKind() != TR_FPR && virtReg->getKind() != TR_VRF)
          {
-         if (realReg->getLowWordRegister()->getAssignedRegister() != NULL)
+         if (realReg->getAssignedRegister() != NULL)
             {
-            return virtReg->is64BitReg() == realReg->getLowWordRegister()->getAssignedRegister()->is64BitReg();
+            return virtReg->is64BitReg() == realReg->getAssignedRegister()->is64BitReg();
             }
          }
 
@@ -3441,8 +3408,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
                if (currentTargetVirtual->is64BitReg())
                   {
-                  targetRegister->getLowWordRegister()->setState(TR::RealRegister::Unlatched);
-                  targetRegister->getLowWordRegister()->setAssignedRegister(NULL);
+                  targetRegister->setState(TR::RealRegister::Unlatched);
+                  targetRegister->setAssignedRegister(NULL);
                   }
                currentAssignedRegister->setState(TR::RealRegister::Unlatched);
                currentAssignedRegister->setAssignedRegister(NULL);
@@ -3472,8 +3439,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
          if (currentTargetVirtual->is64BitReg())
             {
-            targetRegister->getLowWordRegister()->setState(TR::RealRegister::Unlatched);
-            targetRegister->getLowWordRegister()->setAssignedRegister(NULL);
+            targetRegister->setState(TR::RealRegister::Unlatched);
+            targetRegister->setAssignedRegister(NULL);
             }
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
             {
@@ -3567,8 +3534,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                cursor = self()->registerCopy(self()->cg(), rk, targetRegister, spareReg, currentInstruction);
                if (currentTargetVirtual->is64BitReg())
                   {
-                  targetRegister->getLowWordRegister()->setState(TR::RealRegister::Unlatched);
-                  targetRegister->getLowWordRegister()->setAssignedRegister(NULL);
+                  targetRegister->setState(TR::RealRegister::Unlatched);
+                  targetRegister->setAssignedRegister(NULL);
                   }
                spareReg->setState(TR::RealRegister::Assigned);
                spareReg->setAssignedRegister(currentTargetVirtual);
@@ -3633,8 +3600,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
             if (currentTargetVirtual->is64BitReg())
                {
-               targetRegister->getLowWordRegister()->setState(TR::RealRegister::Unlatched);
-               targetRegister->getLowWordRegister()->setAssignedRegister(NULL);
+               targetRegister->setState(TR::RealRegister::Unlatched);
+               targetRegister->setAssignedRegister(NULL);
                }
             }
          else
@@ -3683,8 +3650,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
                if (currentTargetVirtual->is64BitReg())
                   {
-                  targetRegister->getLowWordRegister()->setState(TR::RealRegister::Unlatched);
-                  targetRegister->getLowWordRegister()->setAssignedRegister(NULL);
+                  targetRegister->setState(TR::RealRegister::Unlatched);
+                  targetRegister->setAssignedRegister(NULL);
                   }
                currentTargetVirtual->setAssignedRegister(spareReg);
                self()->cg()->recordRegisterAssignment(spareReg,currentTargetVirtual);
@@ -4007,39 +3974,7 @@ OMR::Z::Machine::initializeRegisterFile()
 
   _registerFile[TR::RealRegister::VRF31] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
                                                      TR::RealRegister::VRF31, TR::RealRegister::VRF31Mask, self()->cg());
-   _registerFile[TR::RealRegister::HPR0]->setLowWordRegister(_registerFile[TR::RealRegister::GPR0]);
-   _registerFile[TR::RealRegister::HPR1]->setLowWordRegister(_registerFile[TR::RealRegister::GPR1]);
-   _registerFile[TR::RealRegister::HPR2]->setLowWordRegister(_registerFile[TR::RealRegister::GPR2]);
-   _registerFile[TR::RealRegister::HPR3]->setLowWordRegister(_registerFile[TR::RealRegister::GPR3]);
-   _registerFile[TR::RealRegister::HPR4]->setLowWordRegister(_registerFile[TR::RealRegister::GPR4]);
-   _registerFile[TR::RealRegister::HPR5]->setLowWordRegister(_registerFile[TR::RealRegister::GPR5]);
-   _registerFile[TR::RealRegister::HPR6]->setLowWordRegister(_registerFile[TR::RealRegister::GPR6]);
-   _registerFile[TR::RealRegister::HPR7]->setLowWordRegister(_registerFile[TR::RealRegister::GPR7]);
-   _registerFile[TR::RealRegister::HPR8]->setLowWordRegister(_registerFile[TR::RealRegister::GPR8]);
-   _registerFile[TR::RealRegister::HPR9]->setLowWordRegister(_registerFile[TR::RealRegister::GPR9]);
-   _registerFile[TR::RealRegister::HPR10]->setLowWordRegister(_registerFile[TR::RealRegister::GPR10]);
-   _registerFile[TR::RealRegister::HPR11]->setLowWordRegister(_registerFile[TR::RealRegister::GPR11]);
-   _registerFile[TR::RealRegister::HPR12]->setLowWordRegister(_registerFile[TR::RealRegister::GPR12]);
-   _registerFile[TR::RealRegister::HPR13]->setLowWordRegister(_registerFile[TR::RealRegister::GPR13]);
-   _registerFile[TR::RealRegister::HPR14]->setLowWordRegister(_registerFile[TR::RealRegister::GPR14]);
-   _registerFile[TR::RealRegister::HPR15]->setLowWordRegister(_registerFile[TR::RealRegister::GPR15]);
 
-   _registerFile[TR::RealRegister::GPR0]->setHighWordRegister(_registerFile[TR::RealRegister::HPR0]);
-   _registerFile[TR::RealRegister::GPR1]->setHighWordRegister(_registerFile[TR::RealRegister::HPR1]);
-   _registerFile[TR::RealRegister::GPR2]->setHighWordRegister(_registerFile[TR::RealRegister::HPR2]);
-   _registerFile[TR::RealRegister::GPR3]->setHighWordRegister(_registerFile[TR::RealRegister::HPR3]);
-   _registerFile[TR::RealRegister::GPR4]->setHighWordRegister(_registerFile[TR::RealRegister::HPR4]);
-   _registerFile[TR::RealRegister::GPR5]->setHighWordRegister(_registerFile[TR::RealRegister::HPR5]);
-   _registerFile[TR::RealRegister::GPR6]->setHighWordRegister(_registerFile[TR::RealRegister::HPR6]);
-   _registerFile[TR::RealRegister::GPR7]->setHighWordRegister(_registerFile[TR::RealRegister::HPR7]);
-   _registerFile[TR::RealRegister::GPR8]->setHighWordRegister(_registerFile[TR::RealRegister::HPR8]);
-   _registerFile[TR::RealRegister::GPR9]->setHighWordRegister(_registerFile[TR::RealRegister::HPR9]);
-   _registerFile[TR::RealRegister::GPR10]->setHighWordRegister(_registerFile[TR::RealRegister::HPR10]);
-   _registerFile[TR::RealRegister::GPR11]->setHighWordRegister(_registerFile[TR::RealRegister::HPR11]);
-   _registerFile[TR::RealRegister::GPR12]->setHighWordRegister(_registerFile[TR::RealRegister::HPR12]);
-   _registerFile[TR::RealRegister::GPR13]->setHighWordRegister(_registerFile[TR::RealRegister::HPR13]);
-   _registerFile[TR::RealRegister::GPR14]->setHighWordRegister(_registerFile[TR::RealRegister::HPR14]);
-   _registerFile[TR::RealRegister::GPR15]->setHighWordRegister(_registerFile[TR::RealRegister::HPR15]);
    // set siblings for Floating Point register pairs used by long doubles
    _registerFile[TR::RealRegister::FPR0]->setSiblingRegister(_registerFile[TR::RealRegister::FPR2]);
    _registerFile[TR::RealRegister::FPR1]->setSiblingRegister(_registerFile[TR::RealRegister::FPR3]);
@@ -4566,15 +4501,7 @@ OMR::Z::Machine::takeRegisterStateSnapShot()
       _registerAssociationsSnapShot[i] = self()->getVirtualAssociatedWithReal((TR::RealRegister::RegNum)(i));
       _assignedRegisterSnapShot[i] = _registerFile[i]->getAssignedRegister();
       _registerAssignedSnapShot[i] = _registerFile[i]->getHasBeenAssignedInMethod();
-      _registerAssignedHighSnapShot[i] = _registerFile[i]->getAssignedHigh();
       _registerWeightSnapShot[i] = _registerFile[i]->getWeight();
-      _containsHPRSpillSnapShot[i] = false;
-      if (_assignedRegisterSnapShot[i] && _assignedRegisterSnapShot[i]->getAssignedRegister() == NULL)
-         {
-         self()->cg()->traceRegisterAssignment("\nOOL: %R : %R", _registerFile[i], _assignedRegisterSnapShot[i]);
-         // TR_ASSERT(_registerFile[i]->isHighWordRegister(), "OOL: HPR spill?? %d", i);
-         _containsHPRSpillSnapShot[i] = true;
-         }
       }
    }
 
@@ -4625,15 +4552,11 @@ OMR::Z::Machine::restoreRegisterStateFromSnapShot()
          }
       _registerFile[i]->setAssignedRegister(_assignedRegisterSnapShot[i]);
       //_registerFile[i]->setHasBeenAssignedInMethod(_registerAssignedSnapShot[i]);
-      //_registerFile[i]->setAssignedHigh(_registerAssignedHighSnapShot[i]);
       // make sure to double link virt - real reg if assigned
-      if (_registerFile[i]->getState() == TR::RealRegister::Assigned && !_containsHPRSpillSnapShot[i])
+      if (_registerFile[i]->getState() == TR::RealRegister::Assigned)
          {
          //self()->cg()->traceRegisterAssignment("\nOOL: restoring %R : %R", _registerFile[i], _registerFile[i]->getAssignedRegister());
-         if (!_registerFile[i]->getAssignedRegister()->is64BitReg())
-            {
-            _registerFile[i]->getAssignedRegister()->setAssignedRegister(_registerFile[i]);
-            }
+         _registerFile[i]->getAssignedRegister()->setAssignedRegister(_registerFile[i]);
          }
 
       // If a register is only created and used in multiple OOL hot paths (created in one OOL hot path

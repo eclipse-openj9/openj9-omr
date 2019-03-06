@@ -1381,7 +1381,7 @@ class S390RegInstruction : public TR::Instruction
          // if we are matching real regs
          if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && getRegisterOperand(1)->getRealRegister())
             {
-            targetReg1 = ((TR::RealRegister *)getRegisterOperand(1))->getLowWordRegister();
+            targetReg1 = (TR::RealRegister *)getRegisterOperand(1);
             return realReg == targetReg1;
             }
 
@@ -2454,7 +2454,7 @@ class S390RILInstruction : public TR::Instruction
       // if we are matching real regs
       if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && getRegisterOperand(1) && getRegisterOperand(1)->getRealRegister())
          {
-         targetReg = ((TR::RealRegister *)getRegisterOperand(1))->getLowWordRegister();
+         targetReg = (TR::RealRegister *)getRegisterOperand(1);
          return realReg == targetReg;
          }
       // if we are matching virt regs

@@ -59,7 +59,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    Register(TR_RegisterKinds rk);
    Register(TR_RegisterKinds rk, uint16_t ar);
 
-
    public:
 
    /*
@@ -75,9 +74,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    TR::MemoryReference *getMemRef() { return _memRef; }
    void setMemRef(TR::MemoryReference *memRef) { _memRef = memRef; }
 
-
-
-
    /*
     * Methods for manipulating flags
     */
@@ -88,18 +84,13 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    bool is64BitReg();
    void setIs64BitReg(bool b = true);
 
-   bool assignToGPR();
-
    bool isDependencySet()    {return _flags.testAny(DependencySet);}
    void setDependencySet(bool v) {if (v) _flags.set(DependencySet);}
 
    bool alreadySignExtended()           {return _flags.testAny(AlreadySignExtended);}
    void setAlreadySignExtended()        {_flags.set(AlreadySignExtended);}
    void resetAlreadySignExtended()      {_flags.reset(AlreadySignExtended);}
-
-   bool isUpperBitsAreDirty()                 {return _flags.testAny(UpperBitsAreDirty);}
-   void setIsUpperBitsAreDirty(bool b = true) {_flags.set(UpperBitsAreDirty, b);}
-
+   
    /*
     * Overriding Base Class Implementation of these methods
     */
@@ -109,7 +100,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
 
    bool containsCollectedReference();
    void setContainsCollectedReference();
-
 
    /*
     * Methods specialized in derived classes
@@ -134,7 +124,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
          DependencySet                 = 0x0200,  // 390 flag, post dependancy was assigned
 
          AlreadySignExtended           = 0x1000, // determine whether i2l should be nops
-         UpperBitsAreDirty             = 0x8000, // Bits 63-32 were clobbered
       };
 
    //Both x and z have this field, but power has own specialization, may move to base
@@ -146,11 +135,8 @@ class OMR_EXTENSIBLE Register: public OMR::Register
 
    // Both x and z have this, but power doesn't, so duplicating in both x and z
    TR::MemoryReference *_memRef;
-
    };
-
 }
-
 }
 
 #endif /* OMR_Z_REGISTER_INCL */

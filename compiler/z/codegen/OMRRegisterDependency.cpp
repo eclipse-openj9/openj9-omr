@@ -695,11 +695,7 @@ TR_S390RegisterDependencyGroup::checkRegisterPairSufficiencyAndHPRAssignment(TR:
             virtRegI->setIs64BitReg(true);
             }
 
-         if (TR::RealRegister::isHPR(realRegI))
-            {
-            cg->maskAvailableHPRSpillMask(~(machine->getRealRegister(realRegI)->getRealRegisterMask()));
-            }
-         else if (TR::RealRegister::isGPR(realRegI) && virtRegI->is64BitReg())
+         if (virtRegI->is64BitReg())
             {
             cg->maskAvailableHPRSpillMask(~(machine->getRealRegister(realRegI)->getRealRegisterMask() << 16));
             }
@@ -936,7 +932,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
       }
    
    uint32_t numGPRs = 0;
-   uint32_t numHPRs = 0;
    uint32_t numFPRs = 0;
    uint32_t numVRFs = 0;
 
@@ -958,9 +953,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             {
             case TR_GPR:
                ++numGPRs;
-               break;
-            case TR_HPR:
-               ++numHPRs;
                break;
             case TR_FPR:
                ++numFPRs;

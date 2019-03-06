@@ -1987,7 +1987,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       {
       if (self()->getDebug())
          {
-         TR_RegisterKinds rks = (TR_RegisterKinds)(TR_GPR_Mask | TR_HPR_Mask | TR_FPR_Mask | TR_VRF_Mask);
+         TR_RegisterKinds rks = (TR_RegisterKinds)(TR_GPR_Mask | TR_FPR_Mask | TR_VRF_Mask);
 
          self()->getDebug()->startTracingRegisterAssignment("backward", rks);
          }

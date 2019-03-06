@@ -2310,38 +2310,6 @@ getRegisterName(TR::RealRegister::RegNum num, bool isVRF = false)
          return "VRF30";
       case TR::RealRegister::VRF31:
          return "VRF31";
-      case TR::RealRegister::HPR0:
-         return "HPR0";
-      case TR::RealRegister::HPR1:
-         return "HPR1";
-      case TR::RealRegister::HPR2:
-         return "HPR2";
-      case TR::RealRegister::HPR3:
-         return "HPR3";
-      case TR::RealRegister::HPR4:
-         return "HPR4";
-      case TR::RealRegister::HPR5:
-         return "HPR5";
-      case TR::RealRegister::HPR6:
-         return "HPR6";
-      case TR::RealRegister::HPR7:
-         return "HPR7";
-      case TR::RealRegister::HPR8:
-         return "HPR8";
-      case TR::RealRegister::HPR9:
-         return "HPR9";
-      case TR::RealRegister::HPR10:
-         return "HPR10";
-      case TR::RealRegister::HPR11:
-         return "HPR11";
-      case TR::RealRegister::HPR12:
-         return "HPR12";
-      case TR::RealRegister::HPR13:
-         return "HPR13";
-      case TR::RealRegister::HPR14:
-         return "HPR14";
-      case TR::RealRegister::HPR15:
-         return "HPR15";
       case TR::RealRegister::FPPair:
          return "FPPair";
       case TR::RealRegister::LegalFirstOfFPPair:

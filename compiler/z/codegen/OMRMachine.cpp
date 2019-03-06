@@ -2099,7 +2099,6 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
    if (!useGPR0)
       {
       availRegMask &= ~TR::RealRegister::GPR0Mask;
-      availRegMask &= ~TR::RealRegister::HPR0Mask;
       }
 
    // We can't use FPRs for vector registers when current instruction is a call
@@ -2747,14 +2746,21 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
          }
       else
          {
-         if (virtReg->assignToGPR())
+         if (virtReg->is64BitReg())
             {
+            TR::Register * associatedVirtual = NULL;
+            bool          usedInMemRef = false;
+
             if (realReg->getState() == TR::RealRegister::Assigned)
                {
-               TR::Register * associatedVirtual = realReg->getAssignedRegister();
-               bool          usedInMemRef      = associatedVirtual->isUsedInMemRef();
-
-               if ((!iInterfere && i==preference && pref_favored) || !usedInMemRef)
+               // candidate is LW's virtReg in case if both LW and HW need to be spilled
+               associatedVirtual = realReg->getAssignedRegister();
+               usedInMemRef      = associatedVirtual->isUsedInMemRef();
+               }
+                        
+            if ((realReg->getState() == TR::RealRegister::Assigned || realReg->getState() == TR::RealRegister::Free))
+               {
+               if ((!iInterfere && i==preference && pref_favored) || (!usedInMemRef))
                   {
                   if (numCandidates == 0)
                      {
@@ -2774,21 +2780,14 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
                numCandidates++;
                }
             }
-         else if (virtReg->is64BitReg())
+         else
             {
-            TR::Register * associatedVirtual = NULL;
-            bool          usedInMemRef = false;
-
             if (realReg->getState() == TR::RealRegister::Assigned)
                {
-               // candidate is LW's virtReg in case if both LW and HW need to be spilled
-               associatedVirtual = realReg->getAssignedRegister();
-               usedInMemRef      = associatedVirtual->isUsedInMemRef();
-               }
-                        
-            if ((realReg->getState() == TR::RealRegister::Assigned || realReg->getState() == TR::RealRegister::Free))
-               {
-               if ((!iInterfere && i==preference && pref_favored) || (!usedInMemRef))
+               TR::Register * associatedVirtual = realReg->getAssignedRegister();
+               bool          usedInMemRef      = associatedVirtual->isUsedInMemRef();
+
+               if ((!iInterfere && i==preference && pref_favored) || !usedInMemRef)
                   {
                   if (numCandidates == 0)
                      {
@@ -3858,55 +3857,6 @@ OMR::Z::Machine::initializeRegisterFile()
 
    _registerFile[TR::RealRegister::FPR15] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
                                                       TR::RealRegister::FPR15, TR::RealRegister::FPR15Mask, self()->cg());
-
-   // Initialize High Regs
-   _registerFile[TR::RealRegister::HPR0] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR0, TR::RealRegister::HPR0Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR1] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR1, TR::RealRegister::HPR1Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR2] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR2, TR::RealRegister::HPR2Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR3] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR3, TR::RealRegister::HPR3Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR4] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR4, TR::RealRegister::HPR4Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR5] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR5, TR::RealRegister::HPR5Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR6] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR6, TR::RealRegister::HPR6Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR7] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR7, TR::RealRegister::HPR7Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR8] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR8, TR::RealRegister::HPR8Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR9] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR9, TR::RealRegister::HPR9Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR10] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR10, TR::RealRegister::HPR10Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR11] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR11, TR::RealRegister::HPR11Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR12] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR12, TR::RealRegister::HPR12Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR13] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR13, TR::RealRegister::HPR13Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR14] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR14, TR::RealRegister::HPR14Mask, self()->cg());
-
-   _registerFile[TR::RealRegister::HPR15] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR15, TR::RealRegister::HPR15Mask, self()->cg());
 
    // Initialize Vector Regs
    // first 16 overlaps with FPRs

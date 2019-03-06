@@ -3186,11 +3186,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Register * reg, TR_RegisterSizes size)
 /* TODO: Work in progress, column based, side-by-side traceRA={*} format that looks like this (note order will change, columns will widen etc):
    Initially for Java on z, then sTR on z, then Java on other platforms.
    S = State; W = Weight; V = Virtual Register; RC = Ref Count)
-   +---------------------------------+----------------------------------+------------------------------+------------------------------+
-   | Name   S   W  Flag     V    RC  | Name   S   W  Flag     V     RC  | Name   S   W Flag   V    RC  | Name   S  W Flag    V    RC  |
-   +---------------------------------+----------------------------------+------------------------------+------------------------------+
-   | GPR0       80 Free              | HPR0       80 Free               | VRF16     80 Free            | FPR0     80 Free FPR_34  4/5 |
-   | GPR1       80 Free              | HPR1       80 Free               | VRF17     80 Free            | FPR1     80 Free             |
+   +---------------------------------+------------------------------+------------------------------+
+   | Name   S   W  Flag     V    RC  | Name   S   W Flag   V    RC  | Name   S  W Flag    V    RC  |
+   +---------------------------------+------------------------------+------------------------------+
+   | GPR0       80 Free              | VRF16     80 Free            | FPR0     80 Free FPR_34  4/5 |
+   | GPR1       80 Free              | VRF17     80 Free            | FPR1     80 Free             |
    ..
 */
 void TR_Debug::printFullRegInfoNewFormat(TR::FILE *pOutFile, TR::Register * rr)
@@ -4691,7 +4691,6 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
 #if 0
 /* Work in progress side-by side traceRA={*} */
             const bool isGPR = _registerKindsToAssign & TR_GPR_Mask;
-            const bool isHPR = _registerKindsToAssign & TR_HPR_Mask;
             const bool isVRF = _registerKindsToAssign & TR_VRF_Mask;
             const bool isFPR = _registerKindsToAssign & TR_FPR_Mask;
             const bool isX87 = _registerKindsToAssign & TR_X87_Mask;

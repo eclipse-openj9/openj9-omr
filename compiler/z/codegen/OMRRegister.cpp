@@ -79,12 +79,6 @@ OMR::Z::Register::setPlaceholderReg()
    OMR::Register::setPlaceholderReg();
    }
 
-bool
-OMR::Z::Register::assignToGPR()
-   {
-   return !(self()->is64BitReg());
-   }
-
 ncount_t
 OMR::Z::Register::decFutureUseCount(ncount_t fuc)
    {

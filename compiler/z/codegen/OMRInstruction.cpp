@@ -394,22 +394,11 @@ OMR::Z::Instruction::useRegister(TR::Register * reg, bool isDummy)
             "[%p] Register Pairs should be allocated using allocateConsecutivePair.\n", self());
          }
 
-      if (_opcode.is64bit() || _opcode.is32to64bit())
-         {
-         firstRegister->setIsUpperBitsAreDirty(true);
-         lastRegister->setIsUpperBitsAreDirty(true);
-         }
-
       OMR::Instruction::useRegister(firstRegister);
       OMR::Instruction::useRegister(lastRegister);
       }
    else
       {
-      if (_opcode.is64bit() || _opcode.is32to64bit())
-         {
-         reg->setIsUpperBitsAreDirty(true);
-         }
-
       OMR::Instruction::useRegister(reg);
 
       // If an instruction uses a dummy register, that register should no longer be considered dummy.

@@ -895,22 +895,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                      break;
                   }
                
-               if (rk != TR_FPR && rk != TR_VRF)
-                  {
-                  if (assignedReg->isHighWordRegister())
-                     {
-                     // virtReg was spilled to an HPR and now we need it spilled to stack
-                     opCode = TR::InstOpCode::LFH;
-                     if (virtReg->is64BitReg())
-                        {
-                        TR_ASSERT(virtReg->containsCollectedReference(),
-                                "virtReg is assigned to HPR but is not a spilled compress pointer");
-                        // we need to decompress pointer
-                        tempMR = generateS390MemoryReference(*tempMR, 4, cg);
-                        }
-                     }
-                  }
-               bool isVector = rk == TR_VRF ? true : false;
+               bool isVector = (rk == TR_VRF);
 
                TR::Instruction *inst = isVector ? generateVRXInstruction(cg, opCode, currentNode, assignedReg, tempMR, 0, currentInstruction) :
                                                      generateRXInstruction (cg, opCode, currentNode, assignedReg, tempMR, currentInstruction);
@@ -1589,7 +1574,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                traceMsg(comp,"\nOOL HPR Spill: %s", cg->getDebug()->getName(highWordReg));
                traceMsg(comp,":%s\n", cg->getDebug()->getName(virtReg));
                TR_ASSERT(virtReg, "\nOOL HPR spill: spilled HPR should have a virt Reg assigned!");
-               TR_ASSERT(highWordReg->isHighWordRegister(), "\nOOL HPR spill: spilled HPR should be a real HPR!");
+               // TR_ASSERT(highWordReg->isHighWordRegister(), "\nOOL HPR spill: spilled HPR should be a real HPR!");
                virtReg->setAssignedRegister(NULL);
                }
             }

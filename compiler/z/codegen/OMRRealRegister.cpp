@@ -138,12 +138,6 @@ OMR::Z::RealRegister::setHasBeenAssignedInMethod(bool b)
    }
 
 bool
-OMR::Z::RealRegister::isHighWordRegister()
-   {
-   return false;
-   }
-
-bool
 OMR::Z::RealRegister::isLowWordRegister()
    {
    return self() == self()->getLowWordRegister();

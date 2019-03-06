@@ -1361,11 +1361,6 @@ class S390RegInstruction : public TR::Instruction
       if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && reg->getRealRegister())
          {
          realReg = toRealRegister(reg);
-         if (realReg->isHighWordRegister())
-            {
-            // Highword aliasing low word regs
-            realReg = realReg->getLowWordRegister();
-            }
          }
       if (isTargetPair())
          {
@@ -2454,11 +2449,6 @@ class S390RILInstruction : public TR::Instruction
       if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && reg->getRealRegister())
          {
          realReg = (TR::RealRegister *)reg;
-         if (realReg->isHighWordRegister())
-            {
-            // Highword aliasing low word regs
-            realReg = realReg->getLowWordRegister();
-            }
          }
 
       // if we are matching real regs

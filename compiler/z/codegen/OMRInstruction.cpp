@@ -1676,19 +1676,6 @@ OMR::Z::Instruction::renameRegister(TR::Register *from, TR::Register *to)
   return numReplaced;
   }
 
-
-void
-OMR::Z::Instruction::blockHPR(TR::Register * reg)
-   {
-   
-   }
-
-void
-OMR::Z::Instruction::unblockHPR(TR::Register * reg)
-   {
-   
-   }
-
 void
 OMR::Z::Instruction::block(TR::Register **sourceReg, int sourceRegSize, TR::Register** targetReg, int targetRegSize,
    TR::MemoryReference ** sourceMem, TR::MemoryReference ** targetMem)
@@ -1699,39 +1686,21 @@ OMR::Z::Instruction::block(TR::Register **sourceReg, int sourceRegSize, TR::Regi
    for (i = 0; i < targetRegSize; ++i)
       {
       (targetReg[i])->block();
-      self()->blockHPR(targetReg[i]);
       }
 
    for (i = 0; i < sourceRegSize; ++i)
       {
       (sourceReg[i])->block();
-      self()->blockHPR(sourceReg[i]);
       }
 
    for (i = 0; i < _targetMemSize; ++i)
       {
       targetMem[i]->blockRegisters();
-      if (targetMem[i]->getBaseRegister())
-         {
-         self()->blockHPR(targetMem[i]->getBaseRegister());
-         }
-      if (targetMem[i]->getIndexRegister())
-         {
-         self()->blockHPR(targetMem[i]->getIndexRegister());
-         }
       }
 
    for (i = 0; i < _sourceMemSize; ++i)
       {
       sourceMem[i]->blockRegisters();
-      if (sourceMem[i]->getBaseRegister())
-         {
-         self()->blockHPR(sourceMem[i]->getBaseRegister());
-         }
-      if (sourceMem[i]->getIndexRegister())
-         {
-         self()->blockHPR(sourceMem[i]->getIndexRegister());
-         }
       }
    }
 
@@ -1747,39 +1716,21 @@ OMR::Z::Instruction::unblock(TR::Register **sourceReg, int sourceRegSize, TR::Re
    for (i = 0; i < targetRegSize; ++i)
       {
       targetReg[i]->unblock();
-      self()->unblockHPR(targetReg[i]);
       }
 
    for (i = 0; i < sourceRegSize; ++i)
       {
       (sourceReg[i])->unblock();
-      self()->unblockHPR(sourceReg[i]);
       }
 
    for (i = 0; i < _targetMemSize; ++i)
       {
       targetMem[i]->unblockRegisters();
-      if (targetMem[i]->getBaseRegister())
-         {
-         self()->unblockHPR(targetMem[i]->getBaseRegister());
-         }
-      if (targetMem[i]->getIndexRegister())
-         {
-         self()->unblockHPR(targetMem[i]->getIndexRegister());
-         }
       }
 
    for (i = 0; i < _sourceMemSize; ++i)
       {
       sourceMem[i]->unblockRegisters();
-      if (sourceMem[i]->getBaseRegister())
-         {
-         self()->unblockHPR(sourceMem[i]->getBaseRegister());
-         }
-      if (sourceMem[i]->getIndexRegister())
-         {
-         self()->unblockHPR(sourceMem[i]->getIndexRegister());
-         }
       }
    }
 

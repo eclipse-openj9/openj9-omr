@@ -3408,6 +3408,19 @@ OMR::Z::Machine::isAssignable(TR::Register * virtReg, TR::RealRegister * realReg
       }
    else
       {
+      // TODO: This is needlessly restrictive. The registerExchange API cannot handle register exchanges with one
+      // 32-bit and one 64-bit register and the code below effectively guards against calling the registerExchange
+      // API in such situations. This can definitely be relaxed and the registerExchange API taught how to handle
+      // those cases. If you look at the places this API (isAssignable) is used you will see we effectively handle
+      // it there already. That code needs to be cleaned up and consolidated into the registerExchange API.
+      if (virtReg->getKind() != TR_FPR && virtReg->getKind() != TR_VRF)
+         {
+         if (realReg->getLowWordRegister()->getAssignedRegister() != NULL)
+            {
+            return virtReg->is64BitReg() == realReg->getLowWordRegister()->getAssignedRegister()->is64BitReg();
+            }
+         }
+
       return true;
       }
    }

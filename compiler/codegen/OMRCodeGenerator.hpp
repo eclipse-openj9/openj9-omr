@@ -241,9 +241,6 @@ namespace TR
       };
    }
 
-TR::Node* generatePoisonNode(TR::Compilation *comp, TR::Block *currentBlock, TR::SymbolReference *liveAutoSymRef);
-
-
 
 namespace OMR
 {

@@ -446,9 +446,6 @@ public:
    virtual bool getSupportsBitPermute();
    int32_t getEstimatedExtentOfLitLoop()  {return _extentOfLitPool;}
 
-   int64_t setAvailableHPRSpillMask(int64_t i)  {return _availableHPRSpillMask = i;}
-   int64_t maskAvailableHPRSpillMask(int64_t i) {return _availableHPRSpillMask &= i;}
-   int64_t getAvailableHPRSpillMask()           {return _availableHPRSpillMask;}
    int32_t getPreprologueOffset()               { return _preprologueOffset; }
    int32_t setPreprologueOffset(int32_t offset) { return _preprologueOffset = offset; }
 
@@ -819,7 +816,6 @@ public:
 
    TR::S390ImmInstruction          *_returnTypeInfoInstruction;
    int32_t                        _extentOfLitPool;  // excludes snippets
-   uint64_t                       _availableHPRSpillMask;
 
 protected:
    TR::list<TR::S390ConstantDataSnippet*>  _constantList;

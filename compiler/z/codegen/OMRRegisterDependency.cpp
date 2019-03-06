@@ -627,6 +627,10 @@ TR_S390RegisterDependencyGroup::genBitMapOfAssignableGPRs(TR::CodeGenerator * cg
    {
    TR::Machine* machine = cg->machine();
 
+   // TODO: This looks like it can be cached as it should be the same value every time in a single compilation. Should
+   // also investigate whether we even need this? Don't we already block registers which are part of a dependency? I
+   // suppose with a mask we can avoid shuffling things into GPRs which are part of the dependency and may need to get
+   // other virtual registers shuffled into such GPRs. Need to think about this. Are other codegens doing this?
    uint32_t availRegMap = machine->genBitMapOfAssignableGPRs();
 
    for (uint32_t i = 0; i < numberOfRegisters; i++)
@@ -639,197 +643,6 @@ TR_S390RegisterDependencyGroup::genBitMapOfAssignableGPRs(TR::CodeGenerator * cg
       }
 
    return availRegMap;
-   }
-
-
-/** \brief
- *     Checks to ensure that we have enough register pairs available to satisfy all register
- *     dependencies in the current dependency group and aborts the
- *     compilation if not enough register pairs are available.
- *
- *     Also, if highword facility is supported, this function checks the type of each register
- *     dependency condition and sets HPR related flags for future register assignment steps.
- *
- *  \param cg
- *     The code generator used to query various machine state.
- *
- *  \param currentInstruction
- *     The instruction on which the register dependency group is attached.
- *
- *  \param availableGPRMap
- *     The bitmask of available GRP registers.
- *
- *  \param numOfDependencies
- *     The number of pre or post dependencies in the register dependency group.
- **/
-void
-TR_S390RegisterDependencyGroup::checkRegisterPairSufficiencyAndHPRAssignment(TR::CodeGenerator *cg,
-                                                             TR::Instruction* currentInstruction,
-                                                             const uint32_t availableGPRMap,
-                                                             uint32_t numOfDependencies)
-   {
-   TR::Machine* machine = cg->machine();
-
-   uint32_t numReqPairs = 0, numAvailPairs = 0;
-
-   // Count the number of required pairs to be assigned in reg deps
-   for (int32_t i = 0; i < numOfDependencies; i++)
-      {
-      TR::RealRegister::RegNum realRegI = _dependencies[i].getRealRegister();
-      TR::Register* virtRegI            = _dependencies[i].getRegister();
-
-      if (realRegI == TR::RealRegister::EvenOddPair)
-         numReqPairs++;
-
-      if (virtRegI &&
-            virtRegI->getKind() != TR_FPR &&
-            virtRegI->getKind() != TR_VRF)
-         {
-         // on 64-bit conservatively assume rEP and rRA are going to clobber highword
-         if (TR::Compiler->target.is64Bit() &&
-               !(currentInstruction->isLabel() &&
-               toS390LabelInstruction(currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream()) &&
-               (realRegI == cg->getReturnAddressRegister() ||
-               realRegI == cg->getEntryPointRegister()))
-            {
-            virtRegI->setIs64BitReg(true);
-            }
-
-         if (virtRegI->is64BitReg())
-            {
-            cg->maskAvailableHPRSpillMask(~(machine->getRealRegister(realRegI)->getRealRegisterMask() << 16));
-            }
-         }
-      }
-
-   // Count the number of even-odd GPR pairs remaining after deps are filled and breaks early if the
-   // number of register pairs in available is sufficient.
-   bool isRegPairSufficient = false;
-
-   if (numReqPairs > 0)
-      {
-      for (int32_t i = 0; i < NUM_S390_GPR; i += 2)
-         {
-         if ((availableGPRMap >> i) & 0x3 == 0x3)
-            {
-            numAvailPairs++;
-            if (numAvailPairs >= numReqPairs)
-               {
-               isRegPairSufficient = true;
-               break;
-               }
-            }
-         }
-      }
-   else
-      {
-      isRegPairSufficient = true;
-      }
-
-   if (!isRegPairSufficient)
-      {
-      TR::Compilation *comp = cg->comp();
-      if (cg->getDebug())
-         {
-         trfprintf(comp->getOutFile(), "\nNum AVAIL PAIRS %d, Num REQ PAIRS %d\n", numAvailPairs, numReqPairs);
-         trfprintf(comp->getOutFile(), "AVAIL REG MAP %x\n", availableGPRMap);
-         cg->getDebug()->printRegisterDependencies(comp->getOutFile(), this, numOfDependencies);
-         }
-      TR_ASSERT( 0, "checkDependencyGroup::Insufficient available pairs to satisfy all reg deps.\n");
-      comp->failCompilation<TR::CompilationException>("checkDependencyGroup::Insufficient available pairs to satisfy all reg deps, abort compilation\n");
-      }
-   }
-
-/**
- *
- * \brief
- *      Performs pairwise checks in dependencies to find duplicates
- *
- *      1. If the duplicated registers are virtual registers or real registers, assert fail.
- *      2. If the duplicated registers are GPR/HPR dependencies, remove the duplicates.
- *
- * \param cg
- *      The CodeGenerator object used to query machine states
- *
- * \param numOfDependencies
- *      The number of register dependency conditions to examine.
- */
-void
-TR_S390RegisterDependencyGroup::checkRegisterDependencyDuplicates(TR::CodeGenerator* cg,
-                                                                  const uint32_t numOfDependencies)
-   {
-   TR::Compilation *comp = cg->comp();
-
-   if (numOfDependencies <= 1)
-      return;
-
-   for (uint32_t i = 0; i < numOfDependencies - 1; ++i)
-      {
-      TR::Register* virtRegI = _dependencies[i].getRegister();
-      TR::Register* virtRegJ;
-      TR::RealRegister::RegNum realRegI = _dependencies[i].getRealRegister();
-      TR::RealRegister::RegNum realRegJ;
-
-      for (uint32_t j = i + 1; j < numOfDependencies; ++j)
-         {
-         virtRegJ = _dependencies[j].getRegister();
-         realRegJ = _dependencies[j].getRealRegister();
-
-         if (virtRegI == virtRegJ
-               && realRegI != TR::RealRegister::SpilledReg
-               && realRegJ != TR::RealRegister::SpilledReg)
-            {
-            TR_ASSERT(false, "Virtual register duplicate found in a register dependency\n");
-            }
-
-         if (realRegI == realRegJ &&
-               TR::RealRegister::isRealReg(realRegI))
-            {
-            TR_ASSERT(false, "Real register duplicate found in a register dependency\n");
-            }
-         }
-      }
-   }
-
-/**
- *
- * \brief
- *      Generates a uint32_t bit map for available GPR registers.
- *      This function also checks to make sure that there are enough register pairs
- *      for assignment, and that there are no duplicates in real, virtual, and
- *      HPR registers.
- *
- * \param cg
- *      The CodeGenerator object used to query machine states
- *
- * \param currentInstruction
- *      The current instruction on which the register dependency group is attached.
- *
- * \param numOfDependencies
- *      The number of register dependency conditions to examine.
- *
- * \return
- *      a bit mask of available GPR map.
- *      Bit is set to 1 if the GPR is available, and 0 otherwise.
-*/
-uint32_t
-TR_S390RegisterDependencyGroup::checkDependencyGroup(TR::CodeGenerator * cg,
-                                                     TR::Instruction * currentInstruction,
-                                                     uint32_t          numOfDependencies)
-   {
-   // availableGPRMap is a bitmap of all available (not locked) GPRs on the machine
-   // excluding the real registers already specified in the _dependencies.
-   uint32_t availableGPRMap = genBitMapOfAssignableGPRs(cg, numOfDependencies);
-   cg->setAvailableHPRSpillMask(0xFFFF0000);
-
-   ///// Check the number of register pairs. The compilation may fail due to insufficient register pairs
-   checkRegisterPairSufficiencyAndHPRAssignment(cg, currentInstruction, availableGPRMap,
-                                                numOfDependencies);
-
-   ///// Check and remove duplicates
-   checkRegisterDependencyDuplicates(cg, numOfDependencies);
-
-   return availableGPRMap;
    }
 
 void
@@ -845,7 +658,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
    TR::RealRegister * dependentRealReg, * assignedRegister;
    int32_t i, j;
    bool changed;
-   uint32_t availRegMask = checkDependencyGroup(cg, currentInstruction, numOfDependencies);
+   uint32_t availRegMask = genBitMapOfAssignableGPRs(cg, numOfDependencies);
 
    if (!comp->getOption(TR_DisableOOL))
       {

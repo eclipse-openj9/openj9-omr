@@ -157,18 +157,6 @@ class TR_S390RegisterDependencyGroup
       _dependencies[index].setRealRegister(regNum);
       }
 
-   void checkRegisterPairSufficiencyAndHPRAssignment(TR::CodeGenerator *cg,
-                                     TR::Instruction  *currentInstruction,
-                                     const uint32_t availableGPRMap,
-                                     uint32_t numOfDependencies);
-
-   void checkRegisterDependencyDuplicates(TR::CodeGenerator* cg,
-                                          const uint32_t numOfDependencies);
-
-   uint32_t checkDependencyGroup(TR::CodeGenerator *cg,
-                                 TR::Instruction  *currentInstruction,
-                                 uint32_t numOfDependencies);
-
    void assignRegisters(TR::Instruction  *currentInstruction,
                         TR_RegisterKinds kindToBeAssigned,
                         uint32_t         numberOfRegisters,

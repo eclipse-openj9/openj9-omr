@@ -74,11 +74,15 @@
 #define VMEM_PROC_MEMINFO_FNAME	"/proc/meminfo"
 #define VMEM_PROC_MAPS_FNAME	"/proc/self/maps"
 
+#define VMEM_TRANSPARENT_HUGEPAGE_FNAME "/sys/kernel/mm/transparent_hugepage/enabled"
+#define VMEM_TRANSPARENT_HUGEPAGE_MADVISE "always [madvise] never"
+#define VMEM_TRANSPARENT_HUGEPAGE_MADVISE_LENGTH 22
+
 typedef struct vmem_hugepage_info_t {
-	uintptr_t	enabled; /*!< boolean enabling j9 large page support */
-	uintptr_t	pages_total; /*!< total number of pages maintained by the kernel */
-	uintptr_t	pages_free; /*!< number of free pages that may be allocated by us */
-	uintptr_t	page_size;	 /*!< page size in bytes */
+	uintptr_t	enabled;		/*!< boolean enabling j9 large page support */
+	uintptr_t	pages_total;	/*!< total number of pages maintained by the kernel */
+	uintptr_t	pages_free;		/*!< number of free pages that may be allocated by us */
+	uintptr_t	page_size;		/*!< page size in bytes */
 } vmem_hugepage_info_t;
 
 typedef void *ADDRESS;
@@ -128,6 +132,7 @@ static void port_numa_interleave_memory(struct OMRPortLibrary *portLibrary, void
 #endif /* OMR_PORT_NUMA_SUPPORT */
 static void update_vmemIdentifier(J9PortVmemIdentifier *identifier, void *address, void *handle, uintptr_t byteAmount, uintptr_t mode, uintptr_t pageSize, uintptr_t pageFlags, uintptr_t allocator, OMRMemCategory *category, int fd);
 static uintptr_t get_hugepages_info(struct OMRPortLibrary *portLibrary, vmem_hugepage_info_t *page_info);
+static uintptr_t get_transparent_hugepage_info(struct OMRPortLibrary *portLibrary);
 static int get_protectionBits(uintptr_t mode);
 
 #if defined(OMR_PORT_NUMA_SUPPORT)
@@ -582,6 +587,9 @@ omrvmem_startup(struct OMRPortLibrary *portLibrary)
 	/* set default value to advise OS about vmem that is no longer needed */
 	portLibrary->portGlobals->vmemAdviseOSonFree = 1;
 
+	/* set value to advise OS about vmem to consider for Transparent HugePage (Only for Linux) */
+	portLibrary->portGlobals->vmemEnableMadvise = get_transparent_hugepage_info(portLibrary);
+
 	return 0;
 }
 
@@ -898,6 +906,42 @@ uintptr_t *
 omrvmem_supported_page_flags(struct OMRPortLibrary *portLibrary)
 {
 	return PPG_vmem_pageFlags;
+}
+
+/* Get the state of Transparent HugePage (THP) from OS
+ *
+ * return 0 if THP is set to never/always
+ * 		- (always will handled by OS automatically, treat same as never)
+ * retrun 1 if THP is set to madvise
+ */
+static uintptr_t
+get_transparent_hugepage_info(struct OMRPortLibrary *portLibrary)
+{
+	int fd;
+	int bytes_read;
+	char read_buf[VMEM_MEMINFO_SIZE_MAX];
+
+	fd = omrfile_open(portLibrary, VMEM_TRANSPARENT_HUGEPAGE_FNAME, EsOpenRead, 0);
+	if (fd < 0) {
+		return 0;
+	}
+
+	bytes_read = omrfile_read(portLibrary, fd, read_buf, VMEM_MEMINFO_SIZE_MAX - 1);
+
+	omrfile_close(portLibrary, fd);
+
+	if (bytes_read <= 0) {
+		return 0;
+	}
+
+	/* make sure its null terminated */
+	read_buf[bytes_read] = 0;
+
+	if (!strncmp(read_buf, VMEM_TRANSPARENT_HUGEPAGE_MADVISE, VMEM_TRANSPARENT_HUGEPAGE_MADVISE_LENGTH)) {
+		return 1;
+	}
+
+	return 0;
 }
 
 static uintptr_t

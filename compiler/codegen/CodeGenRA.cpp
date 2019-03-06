@@ -2882,19 +2882,6 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
             TR::Symbol * rcSymbol = state->_candidate->getSymbolReference()->getSymbol();
             TR::Linkage *linkage = self()->getLinkage();
 
-#if defined(TR_TARGET_S390)
-            TR_BitVector* killedRegisters = linkage->getKilledRegisters(node);
-            if (killedRegisters)
-               {
-               TR_BitVectorIterator bvi;
-               bvi.setBitVector(*killedRegisters);
-               while (bvi.hasMoreElements())
-                  {
-                  int32_t realRegNum = bvi.getNextElement();   // GPR0..GPR15, realRegNum 0..15
-                  summary->spill((TR_SpillKinds)(TR_gpr0Spill + realRegNum), self());
-                  }
-               }
-#endif
             // In Xplink, 31-bit mode, each call has a special argument passed in GPR12
             // Incoming special argument can be  passed to the call,
             // otherwise, TR_linkageSpill has to be set so that other candidates don't get

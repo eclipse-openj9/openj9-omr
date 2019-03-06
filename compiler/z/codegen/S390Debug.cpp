@@ -564,15 +564,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RIEInstruction * instr)
    printPrefix(pOutFile, instr);
 
    // print the opcode
-   if (RIE5 && instr->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
-      {
-      // print extended-mnemonics for highword rotate instructions on zG
-      trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getExtendedHighWordOpCode().getMnemonicName());
-      }
-   else
-      {
-      trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
-      }
+   
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // grab the registers.
    TR::Register * targetRegister = instr->getRegisterOperand(1);
@@ -611,34 +604,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RIEInstruction * instr)
       // print the source regiser (R2)
       print(pOutFile, sourceRegister);
 
-      // do not print out the rest for highword extended-mnemonics
-      if (instr->getExtendedHighWordOpCode().getOpCodeValue() == TR::InstOpCode::BAD)
-         {
-         trfprintf(pOutFile, ",");
-         // print the immediate value
-         trfprintf(pOutFile, "%u,", (uint8_t)instr->getSourceImmediate8One());
-         // print the immediate value
-         trfprintf(pOutFile, "%u,", (uint8_t)instr->getSourceImmediate8Two());
-         }
-      if (instr->getExtendedHighWordOpCode().getOpCodeValue() == TR::InstOpCode::SLLHH)
-         {
-         trfprintf(pOutFile, ",");
-         // print the immediate value
-         trfprintf(pOutFile, "%u", (uint8_t)instr->getSourceImmediate8());
-         }
-      if (instr->getExtendedHighWordOpCode().getOpCodeValue() == TR::InstOpCode::SLLLH)
-         {
-         trfprintf(pOutFile, ",");
-         // print the immediate value
-         trfprintf(pOutFile, "%u", (uint8_t)instr->getSourceImmediate8()-32);
-         }
-      if (instr->getExtendedHighWordOpCode().getOpCodeValue() == TR::InstOpCode::SRLHH ||
-          instr->getExtendedHighWordOpCode().getOpCodeValue() == TR::InstOpCode::SRLLH)
-         {
-         trfprintf(pOutFile, ",");
-         // print the immediate value
-         trfprintf(pOutFile, "%u", (uint8_t)instr->getSourceImmediate8One());
-         }
+      trfprintf(pOutFile, ",");
+      // print the immediate value
+      trfprintf(pOutFile, "%u,", (uint8_t)instr->getSourceImmediate8One());
+      // print the immediate value
+      trfprintf(pOutFile, "%u,", (uint8_t)instr->getSourceImmediate8Two());
       }
    else
       {
@@ -648,11 +618,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RIEInstruction * instr)
 
    if (RIE5)
       {
-      if (instr->getExtendedHighWordOpCode().getOpCodeValue() == TR::InstOpCode::BAD)
-         {
-         // print the immediate value
-         trfprintf(pOutFile, "%u", (uint8_t)instr->getSourceImmediate8());
-         }
+      // print the immediate value
+      trfprintf(pOutFile, "%u", (uint8_t)instr->getSourceImmediate8());
       }
    else if(!RIE4)
       {

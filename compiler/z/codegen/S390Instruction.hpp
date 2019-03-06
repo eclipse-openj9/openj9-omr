@@ -3129,7 +3129,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
    private:
    /** This member will determine which form  of RIE you have based on how we get constructed */
    RIEForm _instructionFormat;
-   TR::InstOpCode _extendedHighWordOpCode; ///< for zG highword rotate instructions
 
    public:
 
@@ -3220,7 +3219,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::CodeGenerator * cg)
            : S390RegInstruction(op, n, targetRegister, cg),
              _instructionFormat(RIE_IMM),
-             _extendedHighWordOpCode(TR::InstOpCode::BAD),
              _branchDestination(0),
              _branchCondition(TR::InstOpCode::COND_NOPR),
              _sourceImmediate8(sourceImmediate),
@@ -3243,7 +3241,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::CodeGenerator * cg)
            : S390RegInstruction(op, n, targetRegister, precedingInstruction, cg),
              _instructionFormat(RIE_IMM),
-             _extendedHighWordOpCode(TR::InstOpCode::BAD),
              _branchDestination(0),
              _branchCondition(TR::InstOpCode::COND_NOPR),
              _sourceImmediate8(sourceImmediate),
@@ -3305,7 +3302,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::CodeGenerator * cg)
       : S390RegInstruction(op, n, targetRegister, precedingInstruction, cg),
         _instructionFormat(RIE_RRI16),
-        _extendedHighWordOpCode(TR::InstOpCode::BAD),
         _branchDestination(0),
         _branchCondition(TR::InstOpCode::COND_NOPR),
         _sourceImmediate8(0),
@@ -3325,7 +3321,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::CodeGenerator * cg)
       : S390RegInstruction(op, n, targetRegister, cg),
         _instructionFormat(RIE_RRI16),
-        _extendedHighWordOpCode(TR::InstOpCode::BAD),
         _branchDestination(0),
         _branchCondition(TR::InstOpCode::COND_NOPR),
         _sourceImmediate8(0),
@@ -3344,10 +3339,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
    virtual char *description() { return "S390RIEInstruction"; }
    virtual Kind getKind() { return IsRIE; }
    virtual RIEForm getRieForm() { return _instructionFormat; }
-
-   /** For zGryphon highword rotate instructions, extended mnemonics */
-   virtual void setExtendedHighWordOpCode(TR::InstOpCode op) {_extendedHighWordOpCode = op;}
-   virtual TR::InstOpCode& getExtendedHighWordOpCode() { return _extendedHighWordOpCode;}
 
    // get register information
    //virtual TR::Register * getSourceRegister() { return (_sourceRegSize!=0) ? (sourceRegBase())[0] : NULL; }

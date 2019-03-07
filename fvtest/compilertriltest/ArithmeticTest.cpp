@@ -273,10 +273,10 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatArithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
     ::testing::Values(
-        std::make_tuple("fadd", fadd),
-        std::make_tuple("fsub", fsub),
-        std::make_tuple("fmul", fmul),
-        std::make_tuple("fdiv", fdiv)
+        std::make_tuple("fadd", static_cast<float (*)(float, float)>(fadd)),
+        std::make_tuple("fsub", static_cast<float (*)(float, float)>(fsub)),
+        std::make_tuple("fmul", static_cast<float (*)(float, float)>(fmul)),
+        std::make_tuple("fdiv", static_cast<float (*)(float, float)>(fdiv))
     )));
 
 double dadd(double l, double r) {

@@ -354,6 +354,8 @@ public:
 
    inline bool isRecognizedShadow();
 
+   inline bool isRecognizedKnownObjectShadow();
+
    inline void setArrayletShadowSymbol();
    inline bool isArrayletShadowSymbol();
 
@@ -512,7 +514,7 @@ public:
       ArrayShadow               = 0x80000000,
       RecognizedShadow          = 0x40000000, // recognized field
       ArrayletShadow            = 0x20000000,
-      // Available              = 0x10000000,
+      RecognizedKnownObjectShadow = 0x10000000,
       GlobalFragmentShadow      = 0x08000000,
       MemoryTypeShadow          = 0x04000000,
       Ordered                   = 0x02000000,

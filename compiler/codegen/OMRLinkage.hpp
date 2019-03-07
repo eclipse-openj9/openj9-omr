@@ -75,27 +75,17 @@ class OMR_EXTENSIBLE Linkage
 
    virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol> &parm)
       {
-      TR_ASSERT(0, "setParameterLinkageRegisterIndex has to be implemented for this linkage\n");
+      TR_UNIMPLEMENTED();
       }
-
-   virtual int32_t numArgumentRegisters(TR_RegisterKinds kind) = 0;
-   virtual TR_RegisterKinds argumentRegisterKind(TR::Node *argumentNode);
 
    virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method)
       {
-      TR_ASSERT(0, "setParameterLinkageRegisterIndex(2) has to be implemented for this linkage\n");
+      TR_UNIMPLEMENTED();
       }
 
-   virtual  TR_BitVector * getKilledRegisters(TR::Node *node)
-      {
-      return NULL;
-      }
-   virtual  TR_BitVector * getSavedRegisters(TR::Node *node, int32_t entryId = 0)
-      {
-      return NULL;
-      }
-   
-   virtual bool isSpecialNonVolatileArgumentRegister(int8_t) { return false; }
+   virtual int32_t numArgumentRegisters(TR_RegisterKinds kind) = 0;
+
+   virtual TR_RegisterKinds argumentRegisterKind(TR::Node *argumentNode);
 
    };
 }

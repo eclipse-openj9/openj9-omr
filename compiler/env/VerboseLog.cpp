@@ -62,6 +62,7 @@ const char * TR_VerboseLog::_vlogTable[] =
    "#RECLAMATION: ",
    "#PROFILING: ",
    "#JITaaS: ",
+   "#SelectInliner: "
    };
 
 void TR_VerboseLog::writeLine(TR_VlogTag tag, const char *format, ...)

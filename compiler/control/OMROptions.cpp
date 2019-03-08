@@ -636,6 +636,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableAOTStats",                     "O\tenable AOT statistics",                      SET_OPTION_BIT(TR_EnableAOTStats), "F"},
    {"enableApplicationThreadYield",       "O\tinsert yield points in application threads", SET_OPTION_BIT(TR_EnableAppThreadYield), "F", NOT_IN_SUBSET},
    {"enableBasicBlockHoisting",           "O\tenable basic block hoisting",                    TR::Options::enableOptimization, basicBlockHoisting, 0, "P"},
+   {"enableBenefitInliner",               "O\tenable benefit inliner", SET_OPTION_BIT(TR_EnableBenefitInliner), "F"},
    {"enableBlockShuffling",               "O\tenable random rearrangement of blocks",         TR::Options::enableOptimization, blockShuffling, 0, "P"},
    {"enableBranchPreload",                "O\tenable return branch preload for each method (for func testing)",  SET_OPTION_BIT(TR_EnableBranchPreload), "F"},
    {"enableCFGEdgeCounters",              "O\tenable CFG edge counters to keep track of taken and non taken branches in compiled code",      SET_OPTION_BIT(TR_EnableCFGEdgeCounters), "F"},

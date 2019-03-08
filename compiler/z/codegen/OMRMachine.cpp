@@ -983,48 +983,21 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          {
          appendInst = currInst->getPrev();
          }
-      if (targetRegister->is64BitReg())
-         {
-         if ((assignedRegister->getRealRegisterMask() & availRegMask) == 0)
-            {
-            // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
-            // find a new register to shuffle to
-            TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
-            TR::Instruction *cursor = self()->registerCopy(self()->cg(), kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, appendInst);
-            assignedRegister->setAssignedRegister(NULL);
-            assignedRegister->setState(TR::RealRegister::Free);
-            assignedRegister = newAssignedRegister;
-            }
 
-         targetRegister->setAssignedRegister(assignedRegister);
-         assignedRegister->setAssignedRegister(targetRegister);
-         assignedRegister->setState(TR::RealRegister::Assigned);
-         }
-      else
+      if ((assignedRegister->getRealRegisterMask() & availRegMask) == 0)
          {
-         // if the register we are assigning is a source register of the instruction,
-         // the high-low word shuffling should happen before this instruction
-         TR::Instruction *appendInst = currInst;
-         if (!defsRegister && currInst->usesRegister(targetRegister) )
-            {
-            appendInst = currInst->getPrev();
-            }
-         
-         if ((assignedRegister->getRealRegisterMask() & availRegMask) == 0)
-           {
-           // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
-           // find a new register to shuffle to
-           TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
-           TR::Instruction *cursor = self()->registerCopy(self()->cg(), kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, appendInst);
-           newAssignedRegister->setAssignedRegister(targetRegister);
-           newAssignedRegister->setState(TR::RealRegister::Assigned);
-           assignedRegister->setAssignedRegister(NULL);
-           assignedRegister->setState(TR::RealRegister::Free);
-           assignedRegister = newAssignedRegister;
-           }
+         // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
+         // find a new register to shuffle to
+         TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
+         TR::Instruction *cursor = self()->registerCopy(self()->cg(), kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, appendInst);
+         newAssignedRegister->setAssignedRegister(targetRegister);
+         newAssignedRegister->setState(TR::RealRegister::Assigned);
+         assignedRegister->setAssignedRegister(NULL);
+         assignedRegister->setState(TR::RealRegister::Free);
+         assignedRegister = newAssignedRegister;
          }
       }
-   else if(assignedRegister != NULL && (assignedRegister->getRealRegisterMask() & availRegMask) == 0)
+   else if (assignedRegister != NULL && (assignedRegister->getRealRegisterMask() & availRegMask) == 0)
       {
       // Oh no.. targetRegister is assigned something it shouldn't be assigned to
       // Do some shuffling
@@ -2168,34 +2141,15 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
        *    4. TR::RealRegister::LegalSecondOfFPPair
        *    5. None of the above
        */
-      if (virtualReg->is64BitReg())
+      if (bestRegister != NULL &&
+            (bestRegister->getState() == TR::RealRegister::Free || bestRegister->getState() == TR::RealRegister::Unlatched))
          {
-         if (bestRegister != NULL &&
-             (bestRegister->getState() == TR::RealRegister::Free ||
-              bestRegister->getState() == TR::RealRegister::Unlatched))
+         if (bestRegister->getState() == TR::RealRegister::Unlatched)
             {
-            if (bestRegister->getState() == TR::RealRegister::Unlatched)
-               {
-               bestRegister->setAssignedRegister(NULL);
-               bestRegister->setState(TR::RealRegister::Free);
-               }
-
-            return bestRegister;
+            bestRegister->setAssignedRegister(NULL);
+            bestRegister->setState(TR::RealRegister::Free);
             }
-         bestRegister = NULL;
-         }
-      else
-         {
-         if (bestRegister != NULL &&
-             (bestRegister->getState() == TR::RealRegister::Free || bestRegister->getState() == TR::RealRegister::Unlatched))
-            {
-            if (bestRegister->getState() == TR::RealRegister::Unlatched)
-               {
-               bestRegister->setAssignedRegister(NULL);
-               bestRegister->setState(TR::RealRegister::Free);
-               }
-            return bestRegister;
-            }
+         return bestRegister;
          }
       }
    else if (self()->cg()->enableRegisterPairAssociation() && preference == TR::RealRegister::LegalOddOfPair)
@@ -2227,34 +2181,15 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
 
       // If the desired register is indeed free use it.
       // If not, default to standard search
-      if (virtualReg->is64BitReg())
+      if (bestRegister != NULL &&
+            (bestRegister->getState() == TR::RealRegister::Free || bestRegister->getState() == TR::RealRegister::Unlatched))
          {
-         if (bestRegister != NULL &&
-             (bestRegister->getState() == TR::RealRegister::Free ||
-              bestRegister->getState() == TR::RealRegister::Unlatched))
+         if (bestRegister->getState() == TR::RealRegister::Unlatched)
             {
-            if (bestRegister->getState() == TR::RealRegister::Unlatched)
-               {
-               bestRegister->setAssignedRegister(NULL);
-               bestRegister->setState(TR::RealRegister::Free);
-               }
-
-            return bestRegister;
+            bestRegister->setAssignedRegister(NULL);
+            bestRegister->setState(TR::RealRegister::Free);
             }
-         bestRegister = NULL;
-         }
-      else
-         {
-         if (bestRegister != NULL &&
-             (bestRegister->getState() == TR::RealRegister::Free || bestRegister->getState() == TR::RealRegister::Unlatched))
-            {
-            if (bestRegister->getState() == TR::RealRegister::Unlatched)
-               {
-               bestRegister->setAssignedRegister(NULL);
-               bestRegister->setState(TR::RealRegister::Free);
-               }
-            return bestRegister;
-            }
+         return bestRegister;
          }
       }
    else if (self()->cg()->enableRegisterPairAssociation() && preference == TR::RealRegister::LegalFirstOfFPPair)
@@ -2347,89 +2282,28 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
          prefRegMask = TR::RealRegister::isRealReg((TR::RealRegister::RegNum)preference) ? _registerFile[preference]->getRealRegisterMask() : 0;
          }
 
-      if (rk != TR_GPR)
+      // Check if the preferred register is free
+      if ((prefRegMask & availRegMask) && _registerFile[preference] != NULL && 
+            (_registerFile[preference]->getState() == TR::RealRegister::Free ||
+               _registerFile[preference]->getState() == TR::RealRegister::Unlatched))
          {
-         if ((prefRegMask & availRegMask) && _registerFile[preference] != NULL &&
-             ((_registerFile[preference]->getState() == TR::RealRegister::Free) ||
-              (_registerFile[preference]->getState() == TR::RealRegister::Unlatched)))
+         bestWeightSoFar = 0x0fffffff;
+         bestRegister = _registerFile[preference];
+
+         if (bestRegister->getState() == TR::RealRegister::Unlatched)
             {
-            bestWeightSoFar = 0x0fffffff;
-
-            bestRegister = _registerFile[preference];
-            if (bestRegister != NULL && bestRegister->getState() == TR::RealRegister::Unlatched)
-               {
-               bestRegister->setAssignedRegister(NULL);
-               bestRegister->setState(TR::RealRegister::Free);
-               }
-            self()->cg()->setRegisterAssignmentFlag(TR_ByAssociation);
-            return bestRegister;
+            bestRegister->setAssignedRegister(NULL);
+            bestRegister->setState(TR::RealRegister::Free);
             }
-         }
-      else
-         {
-         if (virtualReg->is64BitReg())
-            {
-            bool candidateLWFree = true;
 
-            // if we have a preferred association
-            if (preference != 0 && (prefRegMask & availRegMask) && _registerFile[preference] != NULL)
-               {
-               candidateLWFree =
-                  (_registerFile[preference]->getState() == TR::RealRegister::Free) ||
-                  (_registerFile[preference]->getState() == TR::RealRegister::Unlatched);
-               }
+         self()->cg()->setRegisterAssignmentFlag(TR_ByAssociation);
 
-            // check if the preferred Full size reg is free
-            if ((prefRegMask & availRegMask) && candidateLWFree && _registerFile[preference] != NULL)
-               {
-               bestWeightSoFar = 0x0fffffff;
-               bestRegister = _registerFile[preference];
-               if (bestRegister != NULL && bestRegister->getState() == TR::RealRegister::Unlatched)
-                  {
-                  bestRegister->setAssignedRegister(NULL);
-                  bestRegister->setState(TR::RealRegister::Free);
-                  }
-
-               self()->cg()->setRegisterAssignmentFlag(TR_ByAssociation);
-
-               if (bestRegister != NULL)
-                  self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
-               else
-                  self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is NULL", virtualReg);
-
-               return bestRegister;
-               }
-            }
+         if (bestRegister != NULL)
+            self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
          else
-            {
-            TR::RealRegister * candidate = NULL;
-            if (preference != 0 && (prefRegMask & availRegMask) && _registerFile[preference] != NULL)
-               {
-               candidate = _registerFile[preference];
-               }
-            if (candidate != NULL &&
-                (prefRegMask & availRegMask) &&
-                ((candidate->getState() == TR::RealRegister::Free) ||
-                 (candidate->getState() == TR::RealRegister::Unlatched)))
-               {
-               bestWeightSoFar = 0x0fffffff;
-               bestRegister = candidate;
-               if (bestRegister != NULL && bestRegister->getState() == TR::RealRegister::Unlatched)
-                  {
-                  bestRegister->setAssignedRegister(NULL);
-                  bestRegister->setState(TR::RealRegister::Free);
-                  }
-               self()->cg()->setRegisterAssignmentFlag(TR_ByAssociation);
+            self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is NULL", virtualReg);
 
-
-               if (bestRegister != NULL)
-                  self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
-               else
-                  self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is NULL", virtualReg);
-
-               return bestRegister;
-               }
-            }
+         return bestRegister;
          }
       }
 
@@ -2441,100 +2315,30 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
       {
       uint64_t tRegMask = _registerFile[i]->getRealRegisterMask();
 
-      if (rk != TR_GPR)
+      // Don't consider registers that can't be assigned.
+      if ((_registerFile[i]->getState() == TR::RealRegister::Locked) || ((tRegMask & availRegMask) == 0))
          {
-         // Don't consider registers that can't be assigned.
-         if ((_registerFile[i]->getState() == TR::RealRegister::Locked) || ((tRegMask & availRegMask) == 0))
-            {
-            continue;
-            }
-         //self()->cg()->traceRegWeight(_registerFile[i], _registerFile[i]->getWeight());
-
-         iNew = interference & (1 << (i - maskI));
-         if ((_registerFile[i]->getState() == TR::RealRegister::Free || (_registerFile[i]->getState() == TR::RealRegister::Unlatched)) &&
-             (freeRegister == NULL || (iOld && !iNew) || ((iOld || !iNew) && _registerFile[i]->getWeight() < bestWeightSoFar)))
-            {
-            iOld = iNew;
-
-            freeRegister = _registerFile[i];
-            bestWeightSoFar = freeRegister->getWeight();
-            if (comp->getOption(TR_Randomize))
-               {
-               randomWeight = self()->cg()->randomizer.randomInt(0, 0xFFF);
-               if (performTransformation(comp, "O^O Random Codegen - Randomizing Weight for %s, Original bestWeightSoFar: %x randomized to: %x\n", self()->cg()->getDebug()->getName(_registerFile[i]), bestWeightSoFar, randomWeight))
-                  {
-                  bestWeightSoFar =  randomWeight;
-                  }
-               }
-
-            }
+         continue;
          }
-      else
+      //self()->cg()->traceRegWeight(_registerFile[i], _registerFile[i]->getWeight());
+
+      iNew = interference & (1 << (i - maskI));
+      if ((_registerFile[i]->getState() == TR::RealRegister::Free || (_registerFile[i]->getState() == TR::RealRegister::Unlatched)) &&
+            (freeRegister == NULL || (iOld && !iNew) || ((iOld || !iNew) && _registerFile[i]->getWeight() < bestWeightSoFar)))
          {
-         TR::RealRegister * candidate = _registerFile[i];
+         iOld = iNew;
 
-         if (virtualReg->is64BitReg())
+         freeRegister = _registerFile[i];
+         bestWeightSoFar = freeRegister->getWeight();
+         if (comp->getOption(TR_Randomize))
             {
-            bool candidateLWFree =
-               (candidate->getState() == TR::RealRegister::Free) ||
-               (candidate->getState() == TR::RealRegister::Unlatched);
-
-
-            // Don't consider registers that can't be assigned.
-            if ((candidate->getState() == TR::RealRegister::Locked) ||
-                ((tRegMask & availRegMask) == 0))
+            randomWeight = self()->cg()->randomizer.randomInt(0, 0xFFF);
+            if (performTransformation(comp, "O^O Random Codegen - Randomizing Weight for %s, Original bestWeightSoFar: %x randomized to: %x\n", self()->cg()->getDebug()->getName(_registerFile[i]), bestWeightSoFar, randomWeight))
                {
-               continue;
-               }
-            //self()->cg()->traceRegWeight(candidate, candidate->getWeight());
-
-            iNew = interference & (1 << (i - maskI));
-            if (candidateLWFree &&
-                (freeRegister == NULL || (iOld && !iNew) || ((iOld || !iNew) && candidate->getWeight() < bestWeightSoFar)))
-               {
-               iOld = iNew;
-
-               freeRegister = candidate;
-               bestWeightSoFar = freeRegister->getWeight();
-               if (comp->getOption(TR_Randomize))
-                  {
-                  randomWeight = self()->cg()->randomizer.randomInt(0, 0xFFF);
-                  if (performTransformation(comp, "O^O Random Codegen - Randomizing Weight for %s, Original bestWeightSoFar: %x randomized to: %x\n", self()->cg()->getDebug()->getName(_registerFile[i]), bestWeightSoFar, randomWeight))
-                     {
-                     bestWeightSoFar =  randomWeight;
-                     }
-                  }
+               bestWeightSoFar =  randomWeight;
                }
             }
-         else
-            {
-            candidate = _registerFile[i];
 
-            //self()->cg()->traceRegWeight(candidate, candidate->getWeight());
-            // Don't consider registers that can't be assigned.
-            if ((candidate->getState() == TR::RealRegister::Locked) || ((tRegMask & availRegMask) == 0))
-               {
-               continue;
-               }
-
-            iNew = interference & (1 << (i - maskI));
-            if ((candidate->getState() == TR::RealRegister::Free || (candidate->getState() == TR::RealRegister::Unlatched)) &&
-                (freeRegister == NULL || (iOld && !iNew) || ((iOld || !iNew) && candidate->getWeight() < bestWeightSoFar)))
-               {
-               iOld = iNew;
-
-               freeRegister = candidate;
-               bestWeightSoFar = freeRegister->getWeight();
-               if (comp->getOption(TR_Randomize))
-                  {
-                  randomWeight = self()->cg()->randomizer.randomInt(0, 0xFFF);
-                  if (performTransformation(comp, "O^O Random Codegen - Randomizing Weight for %s, Original bestWeightSoFar: %x randomized to: %x\n", self()->cg()->getDebug()->getName(_registerFile[i]), bestWeightSoFar, randomWeight))
-                     {
-                     bestWeightSoFar =  randomWeight;
-                     }
-                  }
-               }
-            }
          }
       }
 
@@ -2701,104 +2505,38 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       int32_t iInterfere = interference & (1 << (i - maskI));
       TR::RealRegister * realReg = machine->getRealRegister((TR::RealRegister::RegNum) i);
 
-      if (rk == TR_FPR || rk == TR_VRF)
+      // TODO: This assert was added as it existed in a path which was guarded by is64BitReg. I'm fairly certain
+      // this assert should never fire because otherwise we would be trying to free the best register when a free
+      // register already exists, meaning that the caller is to blame for not checking if a free register was
+      // available. An alternative would be to just return the free register right away? In either event we'll
+      // leave this assert here for a little while and we can remove it once it has had time to bake.
+      TR_ASSERT_FATAL(realReg->getState() != TR::RealRegister::Free, "Attempting to free best register for virtual register (%s) when a free register (%s) already exists",
+         getRegisterName(virtReg, self()->cg()),
+         getRegisterName(realReg, self()->cg()));
+
+      if (realReg->getState() == TR::RealRegister::Assigned)
          {
-         if (realReg->getState() == TR::RealRegister::Assigned)
+         TR::Register * associatedVirtual = realReg->getAssignedRegister();
+         bool          usedInMemRef      = associatedVirtual->isUsedInMemRef();
+
+         if ((!iInterfere && i==preference && pref_favored) || !usedInMemRef)
             {
-            TR::Register * associatedVirtual = realReg->getAssignedRegister();
-            bool          usedInMemRef      = associatedVirtual->isUsedInMemRef();
-
-            if (currentInstruction->getDependencyConditions() &&
-                currentInstruction->getDependencyConditions()->searchPostConditionRegister(associatedVirtual))
+            if (numCandidates == 0)
                {
-               // we just assigned this virtual in the reg deps, do not free it
-               traceMsg(self()->cg(), "  Reg[@%d] associatedVirtual[%s] was excluded from spill target because of reg dependency\n",
-                       realReg->getRegisterNumber()-1, self()->cg()->getDebug()->getName(associatedVirtual));
-               continue;
-               }
-
-            if ((!iInterfere && i==preference && pref_favored) || !usedInMemRef)
-               {
-               if (numCandidates == 0)
-                  {
-                  candidates[0] = associatedVirtual;
-                  }
-               else
-                  {
-                  tempReg       = candidates[0];
-                  candidates[0] = associatedVirtual;
-                  candidates[numCandidates] = tempReg;
-                  }
+               candidates[0] = associatedVirtual;
                }
             else
                {
-               candidates[numCandidates] = associatedVirtual;
-               }
-            numCandidates++;
-            }
-         }
-      else
-         {
-         if (virtReg->is64BitReg())
-            {
-            TR::Register * associatedVirtual = NULL;
-            bool          usedInMemRef = false;
-
-            if (realReg->getState() == TR::RealRegister::Assigned)
-               {
-               associatedVirtual = realReg->getAssignedRegister();
-               usedInMemRef      = associatedVirtual->isUsedInMemRef();
-               }
-                        
-            if ((realReg->getState() == TR::RealRegister::Assigned || realReg->getState() == TR::RealRegister::Free))
-               {
-               if ((!iInterfere && i==preference && pref_favored) || (!usedInMemRef))
-                  {
-                  if (numCandidates == 0)
-                     {
-                     candidates[0] = associatedVirtual;
-                     }
-                  else
-                     {
-                     tempReg       = candidates[0];
-                     candidates[0] = associatedVirtual;
-                     candidates[numCandidates] = tempReg;
-                     }
-                  }
-               else
-                  {
-                  candidates[numCandidates] = associatedVirtual;
-                  }
-               numCandidates++;
+               tempReg       = candidates[0];
+               candidates[0] = associatedVirtual;
+               candidates[numCandidates] = tempReg;
                }
             }
          else
             {
-            if (realReg->getState() == TR::RealRegister::Assigned)
-               {
-               TR::Register * associatedVirtual = realReg->getAssignedRegister();
-               bool          usedInMemRef      = associatedVirtual->isUsedInMemRef();
-
-               if ((!iInterfere && i==preference && pref_favored) || !usedInMemRef)
-                  {
-                  if (numCandidates == 0)
-                     {
-                     candidates[0] = associatedVirtual;
-                     }
-                  else
-                     {
-                     tempReg       = candidates[0];
-                     candidates[0] = associatedVirtual;
-                     candidates[numCandidates] = tempReg;
-                     }
-                  }
-               else
-                  {
-                  candidates[numCandidates] = associatedVirtual;
-                  }
-               numCandidates++;
-               }
+            candidates[numCandidates] = associatedVirtual;
             }
+         numCandidates++;
          }
       }
 
@@ -2837,17 +2575,6 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
 
    return best;
    }
-
-/**
- * Free up a real register
- */
-void OMR::Z::Machine::freeRealRegister(TR::Instruction *currentInstruction, TR::RealRegister *targetReal, bool is64BitReg)
-  {
-  TR::Compilation *comp = self()->cg()->comp();
-  TR::Register *virtReg=targetReal->getAssignedRegister();
-
-  self()->spillRegister(currentInstruction, virtReg);
-  }
 
 /**
  *  Spill in a virt register, which frees up the assigned real reg, as we do
@@ -3382,11 +3109,9 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                currentTargetVirtual->setAssignedRegister(spareReg);
                spareReg->setAssignedRegister(currentTargetVirtual);
 
-               if (currentTargetVirtual->is64BitReg())
-                  {
-                  targetRegister->setState(TR::RealRegister::Unlatched);
-                  targetRegister->setAssignedRegister(NULL);
-                  }
+               targetRegister->setState(TR::RealRegister::Unlatched);
+               targetRegister->setAssignedRegister(NULL);
+
                currentAssignedRegister->setState(TR::RealRegister::Unlatched);
                currentAssignedRegister->setAssignedRegister(NULL);
                }
@@ -3413,11 +3138,9 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          spareReg->setAssignedRegister(currentTargetVirtual);
          currentTargetVirtual->setAssignedRegister(spareReg);
 
-         if (currentTargetVirtual->is64BitReg())
-            {
-            targetRegister->setState(TR::RealRegister::Unlatched);
-            targetRegister->setAssignedRegister(NULL);
-            }
+         targetRegister->setState(TR::RealRegister::Unlatched);
+         targetRegister->setAssignedRegister(NULL);
+
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
             {
             self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
@@ -3506,11 +3229,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
                cursor = self()->registerCopy(self()->cg(), rk, targetRegister, spareReg, currentInstruction);
-               if (currentTargetVirtual->is64BitReg())
-                  {
-                  targetRegister->setState(TR::RealRegister::Unlatched);
-                  targetRegister->setAssignedRegister(NULL);
-                  }
+
+               targetRegister->setState(TR::RealRegister::Unlatched);
+               targetRegister->setAssignedRegister(NULL);
+
                spareReg->setState(TR::RealRegister::Assigned);
                spareReg->setAssignedRegister(currentTargetVirtual);
                currentTargetVirtual->setAssignedRegister(spareReg);
@@ -3571,12 +3293,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
             targetRegister->setState(TR::RealRegister::Unlatched);
             targetRegister->setAssignedRegister(NULL);
-
-            if (currentTargetVirtual->is64BitReg())
-               {
-               targetRegister->setState(TR::RealRegister::Unlatched);
-               targetRegister->setAssignedRegister(NULL);
-               }
             }
          else
             {
@@ -3622,11 +3338,9 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                spareReg->setState(TR::RealRegister::Assigned);
                spareReg->setAssignedRegister(currentTargetVirtual);
 
-               if (currentTargetVirtual->is64BitReg())
-                  {
-                  targetRegister->setState(TR::RealRegister::Unlatched);
-                  targetRegister->setAssignedRegister(NULL);
-                  }
+               targetRegister->setState(TR::RealRegister::Unlatched);
+               targetRegister->setAssignedRegister(NULL);
+
                currentTargetVirtual->setAssignedRegister(spareReg);
                self()->cg()->recordRegisterAssignment(spareReg,currentTargetVirtual);
                }

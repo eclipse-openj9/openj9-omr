@@ -319,11 +319,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
                                             TR::Register * toFreeReg,
                                             uint64_t availRegMask);
 
-
-   void freeRealRegister(TR::Instruction *currentInstruction,
-                         TR::RealRegister *targetReal,
-                         bool is64BitReg);
-
    void spillRegister(TR::Instruction *currentInstruction, TR::Register *virtReg);
 
    TR::RealRegister *reverseSpillState(TR::Instruction      *currentInstruction,

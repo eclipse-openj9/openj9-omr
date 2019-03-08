@@ -2375,7 +2375,7 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 #if !defined(OMRZTPF)
 		resource = RLIMIT_CORE;
 #else /* !defined(OMRZTPF) */
-		rc = -1;
+		rc = OMRPORT_LIMIT_UNKNOWN;
 #endif /* !defined(OMRZTPF) */
 		break;
 	default:
@@ -2400,6 +2400,22 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 			if (hardLimitRequested) {
 				lim.rlim_max = limit;
 			} else {
+#if defined(OSX)
+				/* MacOS doesn't allow the soft file limit to be unlimited */
+				if ((OMRPORT_RESOURCE_FILE_DESCRIPTORS == resourceRequested)
+						&& (RLIM_INFINITY == limit)) {
+					int32_t maxFiles = 0;
+					size_t resultSize = sizeof(maxFiles);
+					int name[] = {CTL_KERN, KERN_MAXFILESPERPROC};
+					rc = sysctl(name, 2, &maxFiles, &resultSize, NULL, 0);
+					if (-1 == rc) {
+						portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
+						Trc_PRT_sysinfo_setrlimit_error(resource, limit, findError(errno));
+					} else {
+						limit = maxFiles;
+					}
+				}
+#endif
 				lim.rlim_cur = limit;
 			}
 
@@ -2409,7 +2425,7 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 				Trc_PRT_sysinfo_setrlimit_error(resource, limit, findError(errno));
 			}
 #else /* !defined(OMRZTPF) */
-			rc = -1;
+			rc = OMRPORT_LIMIT_UNKNOWN;
 #endif /* !defined(OMRZTPF) */
 			break;
 		}
@@ -2426,14 +2442,14 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 			}
 #else
 			/* unsupported so return error */
-			rc = -1;
+			rc = OMRPORT_LIMIT_UNKNOWN;
 #endif
 			break;
 		}
 
 		default:
 			Trc_PRT_sysinfo_setLimit_unrecognised_resourceID(resourceID);
-			rc = -1;
+			rc = OMRPORT_LIMIT_UNKNOWN;
 		}
 	}
 

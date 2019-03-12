@@ -3731,7 +3731,7 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
             while (bvi.hasMoreElements())
                {
                int32_t reg = bvi.getNextElement();
-               if (reg != parmReg && (reg >= comp()->cg()->getFirstGlobalGPR() && reg <= comp()->cg()->getLastGlobalGPR()))
+               if (reg != parmReg)
                   _liveOnEntryConflicts[reg].set(entryBlockNumber);
                }
             }

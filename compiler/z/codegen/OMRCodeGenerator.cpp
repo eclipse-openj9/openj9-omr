@@ -3317,7 +3317,6 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
    return srcRegister;
    }
 
-
 /**
  * Different from evaluate in that it returns a clobberable register
  */

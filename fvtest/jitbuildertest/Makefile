@@ -38,7 +38,8 @@ OBJECTS := \
 	IfThenElseTest \
 	CallReturnTest \
 	FieldNameTest \
-	ConvertBitsTest
+	ConvertBitsTest \
+	UnsignedDivRemTest
 
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 

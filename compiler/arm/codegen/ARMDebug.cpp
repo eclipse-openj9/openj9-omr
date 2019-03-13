@@ -423,7 +423,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMImmSymInstruction * instr)
 
    bool longJump = imm &&
                    _cg->directCallRequiresTrampoline((intptrj_t)imm, (intptrj_t)bufferPos) &&
-                   (!callee || !callee->isSameMethod(_comp->getCurrentMethod()));
+                   !_comp->isRecursiveMethodTarget(sym);
 
    if (bufferPos != NULL && longJump)
       {

@@ -2426,7 +2426,6 @@ TR::S390RILInstruction::generateBinaryEncoding()
          }
 #endif
 
-      i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
       (*(uint16_t *) cursor) = bos(0xC005);
       toRealRegister(getRegisterOperand(1))->setRegister1Field((uint32_t *) cursor);
 
@@ -2445,16 +2444,8 @@ TR::S390RILInstruction::generateBinaryEncoding()
           *     If targetAddress is not provided, TargetSymbol should be a method symbol.
           */
          TR_ASSERT(getTargetPtr() || (getTargetSymbol() && getTargetSymbol()->isMethod()),"targetAddress or method symbol should be provided for BRASL\n");
-         bool isRecursiveCall = false;
-         TR::MethodSymbol * callSymbol = NULL;
-         if (getTargetSymbol())
-            {
-            callSymbol = getTargetSymbol()->isMethod() ? getTargetSymbol()->castToMethodSymbol() : NULL;
-            TR::ResolvedMethodSymbol * sym = (callSymbol) ? callSymbol->getResolvedMethodSymbol() : NULL;
-            TR_ResolvedMethod * fem = sym ? sym->getResolvedMethod() : NULL;
-            isRecursiveCall = (fem != NULL && fem->isSameMethod(comp->getCurrentMethod()) && !comp->isDLT());
-            }
-         if (isRecursiveCall)
+
+         if (comp->isRecursiveMethodTarget(getTargetSymbol()))
             {
             // call myself case
             uint8_t * jitTojitStart = cg()->getCodeStart();
@@ -2465,6 +2456,14 @@ TR::S390RILInstruction::generateBinaryEncoding()
             }
          else
             {
+            TR::MethodSymbol *callSymbol = NULL;
+            if (getTargetSymbol())
+               {
+               callSymbol = getTargetSymbol()->isMethod() ? getTargetSymbol()->castToMethodSymbol() : NULL;
+               }
+
+            i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
+
             if (getTargetPtr() == 0 && callSymbol)
                {
                i2 = (int32_t)(((uintptrj_t)(callSymbol->getMethodAddress()) - (uintptrj_t)cursor) / 2);

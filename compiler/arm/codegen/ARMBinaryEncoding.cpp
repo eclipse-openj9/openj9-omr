@@ -256,9 +256,6 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
 
    if (getOpCodeValue() == ARMOp_bl)
       {
-      TR::ResolvedMethodSymbol *sym = getSymbolReference()->getSymbol()->getResolvedMethodSymbol();
-      TR_ResolvedMethod *resolvedMethod = (sym==NULL)?NULL:sym->getResolvedMethod();
-
       label = getSymbolReference()->getSymbol()->getLabelSymbol();
 
       if (cg()->hasCodeCacheSwitched())
@@ -281,7 +278,9 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
             }
          }
 
-      if (resolvedMethod != NULL && resolvedMethod->isSameMethod(comp->getCurrentMethod()) && !comp->isDLT())
+      TR::ResolvedMethodSymbol *sym = getSymbolReference()->getSymbol()->getResolvedMethodSymbol();
+
+      if (comp->isRecursiveMethodTarget(sym))
          {
          uint32_t jitTojitStart = (uintptr_t) cg()->getCodeStart();
 

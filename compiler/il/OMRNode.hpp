@@ -67,6 +67,7 @@ namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class TreeTop; }
 namespace TR { class NodeExtension; }
+namespace TR { class NodeChecklist; }
 template <class T> class List;
 
 #define NUM_DEFAULT_CHILDREN    2
@@ -1830,6 +1831,7 @@ protected:
 // Private functionality.
 private:
    TR::Node * getExtendedChild(int32_t c);
+   TR_YesNoMaybe computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected);
 
    friend class ::TR_DebugExt;
    friend class TR::NodePool;

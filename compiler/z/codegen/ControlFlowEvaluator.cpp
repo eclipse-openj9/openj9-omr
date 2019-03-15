@@ -89,18 +89,6 @@ generateS390PackedCompareAndBranchOps(TR::Node * node,
                                       TR::InstOpCode::S390BranchCondition &retBranchOpCond,
                                       TR::LabelSymbol *branchTarget = NULL);
 
-//#define TRACE_EVAL
-#if defined(TRACE_EVAL)
-#define EVAL_BLOCK
-#if defined (EVAL_BLOCK)
-#define PRINT_ME(string,node,cg) TR::Delimiter evalDelimiter(TR::comp(),TR::comp()->getOption(TR_TraceCG),"EVAL", string)
-#else
-extern void PRINT_ME(char * string, TR::Node * node, TR::CodeGenerator * cg);
-#endif
-#else
-#define PRINT_ME(string,node,cg)
-#endif
-
 extern TR::Register *
 iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision, TR::MemoryReference * divchkDivisorMR);
 
@@ -289,7 +277,6 @@ generateS390lcmpEvaluator64(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpC
 TR::Register *
 OMR::Z::TreeEvaluator::fcmplEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("fcmpl", node, cg);
    TR::InstOpCode::Mnemonic branchOp;
    TR::InstOpCode::S390BranchCondition brCond ;
 
@@ -531,7 +518,6 @@ OMR::Z::TreeEvaluator::mbranchEvaluator(TR::Node * node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::gotoEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("goto", node, cg);
    TR::Node * temp = node->getBranchDestination()->getNode();
 
    if (node->getNumChildren() > 0)
@@ -556,7 +542,6 @@ OMR::Z::TreeEvaluator::gotoEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::igotoEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("igoto", node, cg);
    TR_ASSERT( node->getNumChildren() >= 1, "at least one child expected for igoto");
 
    TR::Node * child = node->getFirstChild();
@@ -591,7 +576,6 @@ OMR::Z::TreeEvaluator::igotoEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("return", node, cg);
    TR::Compilation *comp = cg->comp();
 
    if ((node->getOpCodeValue() == TR::Return) && node->isReturnDummy()) return NULL;
@@ -803,7 +787,6 @@ static inline void generateMergedGuardCodeIfNeeded(TR::Node *node, TR::CodeGener
 TR::Register *
 OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ificmpeq", node, cg);
    TR::Compilation *comp = cg->comp();
 
    if (virtualGuardHelper(node, cg))
@@ -923,8 +906,6 @@ TR::Register* OMR::Z::TreeEvaluator::ifFoldingHelper(TR::Node *node, TR::CodeGen
 TR::Register *
 OMR::Z::TreeEvaluator::ificmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ificmplt", node, cg);
-
    bool inlined = false;
    TR::Register *reg;
 
@@ -946,7 +927,6 @@ OMR::Z::TreeEvaluator::ificmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ificmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ificmpge", node, cg);
    bool inlined = false;
 
    TR::Register *reg;
@@ -969,7 +949,6 @@ OMR::Z::TreeEvaluator::ificmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ificmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ificmpgt", node, cg);
    bool inlined = false;
 
    TR::Register *reg;
@@ -992,7 +971,6 @@ OMR::Z::TreeEvaluator::ificmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ificmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ificmple", node, cg);
    bool inlined = false;
 
    TR::Register *reg;
@@ -1014,7 +992,6 @@ OMR::Z::TreeEvaluator::ificmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmpeq", node, cg);
    generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
    generateMergedGuardCodeIfNeeded(node, cg);
    return NULL;
@@ -1026,8 +1003,6 @@ OMR::Z::TreeEvaluator::iflcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmpne", node, cg);
-
    if (virtualGuardHelper(node, cg))
       {
       return NULL;
@@ -1044,7 +1019,6 @@ OMR::Z::TreeEvaluator::iflcmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmple", node, cg);
    generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNH, TR::InstOpCode::COND_BNL);
    return NULL;
    }
@@ -1055,7 +1029,6 @@ OMR::Z::TreeEvaluator::iflcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmplt", node, cg);
    generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, TR::InstOpCode::COND_BH);
    return NULL;
    }
@@ -1066,7 +1039,6 @@ OMR::Z::TreeEvaluator::iflcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmpge", node, cg);
    generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, TR::InstOpCode::COND_BNH);
    return NULL;
    }
@@ -1077,7 +1049,6 @@ OMR::Z::TreeEvaluator::iflcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmpgt", node, cg);
    generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BH, TR::InstOpCode::COND_BL);
    return NULL;
    }
@@ -1088,7 +1059,6 @@ OMR::Z::TreeEvaluator::iflcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifacmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifacmpeq", node, cg);
    return TR::TreeEvaluator::ificmpeqEvaluator(node, cg);
    }
 
@@ -1098,7 +1068,6 @@ OMR::Z::TreeEvaluator::ifacmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifacmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifacmpne", node, cg);
    return TR::TreeEvaluator::ificmpeqEvaluator(node, cg);
    }
 
@@ -1109,7 +1078,6 @@ OMR::Z::TreeEvaluator::ifacmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifbcmpeq", node, cg);
    if (node->getOpCodeValue() == TR::ifbcmpeq || node->getOpCodeValue() == TR::ifbucmpeq)
       {
       return generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1130,7 +1098,6 @@ OMR::Z::TreeEvaluator::ifbcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifbcmplt", node, cg);
    return TR::TreeEvaluator::ificmpltEvaluator(node, cg);
    }
 
@@ -1140,7 +1107,6 @@ OMR::Z::TreeEvaluator::ifbcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifbcmpge", node, cg);
    return TR::TreeEvaluator::ificmpgeEvaluator(node, cg);
    }
 
@@ -1150,7 +1116,6 @@ OMR::Z::TreeEvaluator::ifbcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifbcmpgt", node, cg);
    return TR::TreeEvaluator::ificmpgtEvaluator(node, cg);
    }
 
@@ -1160,7 +1125,6 @@ OMR::Z::TreeEvaluator::ifbcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifbcmple", node, cg);
    return TR::TreeEvaluator::ificmpleEvaluator(node, cg);
    }
 
@@ -1171,7 +1135,6 @@ OMR::Z::TreeEvaluator::ifbcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifscmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifscmpeq", node, cg);
    if (node->getOpCodeValue() == TR::ifscmpeq)
       {
       return generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1188,7 +1151,6 @@ OMR::Z::TreeEvaluator::ifscmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifscmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifscmplt", node, cg);
    return TR::TreeEvaluator::ificmpltEvaluator(node, cg);
    }
 
@@ -1198,7 +1160,6 @@ OMR::Z::TreeEvaluator::ifscmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifscmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifscmpge", node, cg);
    return TR::TreeEvaluator::ificmpgeEvaluator(node, cg);
    }
 
@@ -1208,7 +1169,6 @@ OMR::Z::TreeEvaluator::ifscmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifscmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifscmpgt", node, cg);
    return TR::TreeEvaluator::ificmpgtEvaluator(node, cg);
    }
 
@@ -1218,7 +1178,6 @@ OMR::Z::TreeEvaluator::ifscmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifscmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifscmple", node, cg);
    return TR::TreeEvaluator::ificmpleEvaluator(node, cg);
    }
 
@@ -1229,7 +1188,6 @@ OMR::Z::TreeEvaluator::ifscmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifsucmpeq", node, cg);
    if (node->getOpCodeValue() == TR::ifsucmpeq)
       {
       return generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1246,7 +1204,6 @@ OMR::Z::TreeEvaluator::ifsucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifsucmplt", node, cg);
    return TR::TreeEvaluator::ificmpltEvaluator(node, cg);
    }
 
@@ -1256,7 +1213,6 @@ OMR::Z::TreeEvaluator::ifsucmpltEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifsucmpge", node, cg);
    return TR::TreeEvaluator::ificmpgeEvaluator(node, cg);
    }
 
@@ -1266,7 +1222,6 @@ OMR::Z::TreeEvaluator::ifsucmpgeEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifsucmpgt", node, cg);
    return TR::TreeEvaluator::ificmpgtEvaluator(node, cg);
    }
 
@@ -1276,7 +1231,6 @@ OMR::Z::TreeEvaluator::ifsucmpgtEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifsucmple", node, cg);
    return TR::TreeEvaluator::ificmpleEvaluator(node, cg);
    }
 
@@ -1289,7 +1243,6 @@ OMR::Z::TreeEvaluator::ifsucmpleEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("icmpeq", node, cg);
    if (node->getOpCodeValue() == TR::icmpeq ||
          node->getOpCodeValue() == TR::iucmpeq ||
          node->getOpCodeValue() == TR::acmpeq)
@@ -1346,8 +1299,6 @@ OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::icmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("icmplt", node, cg);
-
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
 
@@ -1378,7 +1329,6 @@ OMR::Z::TreeEvaluator::icmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::icmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("icmpge", node, cg);
    return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, TR::InstOpCode::COND_BNH);
    }
 
@@ -1388,8 +1338,6 @@ OMR::Z::TreeEvaluator::icmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::icmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("icmpgt", node, cg);
-
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
 
@@ -1420,7 +1368,6 @@ OMR::Z::TreeEvaluator::icmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::icmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("icmple", node, cg);
    return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNH, TR::InstOpCode::COND_BNL);
    }
 
@@ -1430,7 +1377,6 @@ OMR::Z::TreeEvaluator::icmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmpeq", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, CMP4BOOLEAN);
    }
 
@@ -1440,7 +1386,6 @@ OMR::Z::TreeEvaluator::lcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmpne", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, CMP4BOOLEAN);
    }
 
@@ -1450,7 +1395,6 @@ OMR::Z::TreeEvaluator::lcmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmple", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNH, CMP4BOOLEAN);
    }
 
@@ -1460,7 +1404,6 @@ OMR::Z::TreeEvaluator::lcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmplt", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, CMP4BOOLEAN);
    }
 
@@ -1470,7 +1413,6 @@ OMR::Z::TreeEvaluator::lcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmpge", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, CMP4BOOLEAN);
    }
 
@@ -1480,7 +1422,6 @@ OMR::Z::TreeEvaluator::lcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmpgt", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BH, CMP4BOOLEAN);
    }
 
@@ -1491,7 +1432,6 @@ OMR::Z::TreeEvaluator::lcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::acmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("acmpeq", node, cg);
    return TR::TreeEvaluator::icmpeqEvaluator(node, cg);
    }
 
@@ -1506,7 +1446,6 @@ OMR::Z::TreeEvaluator::acmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bcmpeq", node, cg);
    if (node->getOpCodeValue() == TR::bcmpeq || node->getOpCodeValue() == TR::bucmpeq)
       {
       return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1523,7 +1462,6 @@ OMR::Z::TreeEvaluator::bcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bcmplt", node, cg);
    return TR::TreeEvaluator::icmpltEvaluator(node, cg);
    }
 
@@ -1533,7 +1471,6 @@ OMR::Z::TreeEvaluator::bcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bcmpge", node, cg);
    return TR::TreeEvaluator::icmpgeEvaluator(node, cg);
    }
 
@@ -1543,7 +1480,6 @@ OMR::Z::TreeEvaluator::bcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bcmpgt", node, cg);
    return TR::TreeEvaluator::icmpgtEvaluator(node, cg);
    }
 
@@ -1553,7 +1489,6 @@ OMR::Z::TreeEvaluator::bcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bcmple", node, cg);
    return TR::TreeEvaluator::icmpleEvaluator(node, cg);
    }
 
@@ -1564,7 +1499,6 @@ OMR::Z::TreeEvaluator::bcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::scmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("scmpeq", node, cg);
    if (node->getOpCodeValue() == TR::scmpeq)
       {
       return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1581,7 +1515,6 @@ OMR::Z::TreeEvaluator::scmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::scmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("scmplt", node, cg);
    return TR::TreeEvaluator::icmpltEvaluator(node, cg);
    }
 
@@ -1591,7 +1524,6 @@ OMR::Z::TreeEvaluator::scmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::scmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("scmpge", node, cg);
    return TR::TreeEvaluator::icmpgeEvaluator(node, cg);
    }
 
@@ -1601,7 +1533,6 @@ OMR::Z::TreeEvaluator::scmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::scmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("scmpgt", node, cg);
    return TR::TreeEvaluator::icmpgtEvaluator(node, cg);
    }
 
@@ -1611,7 +1542,6 @@ OMR::Z::TreeEvaluator::scmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::scmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("scmple", node, cg);
    return TR::TreeEvaluator::icmpleEvaluator(node, cg);
    }
 
@@ -1622,7 +1552,6 @@ OMR::Z::TreeEvaluator::scmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sucmpeq", node, cg);
    if (node->getOpCodeValue() == TR::sucmpeq)
       {
       return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1639,7 +1568,6 @@ OMR::Z::TreeEvaluator::sucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sucmplt", node, cg);
    return TR::TreeEvaluator::icmpltEvaluator(node, cg);
    }
 
@@ -1649,7 +1577,6 @@ OMR::Z::TreeEvaluator::sucmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sucmpge", node, cg);
    return TR::TreeEvaluator::icmpgeEvaluator(node, cg);
    }
 
@@ -1659,7 +1586,6 @@ OMR::Z::TreeEvaluator::sucmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sucmpgt", node, cg);
    return TR::TreeEvaluator::icmpgtEvaluator(node, cg);
    }
 
@@ -1669,7 +1595,6 @@ OMR::Z::TreeEvaluator::sucmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sucmple", node, cg);
    return TR::TreeEvaluator::icmpleEvaluator(node, cg);
    }
 
@@ -1680,7 +1605,6 @@ OMR::Z::TreeEvaluator::sucmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmp", node, cg);
    return lcmpHelper64(node, cg);
    }
 
@@ -1718,7 +1642,6 @@ void OMR::Z::TreeEvaluator::tableEvaluatorCaseLabelHelper(TR::Node * node, TR::C
 TR::Register *
 OMR::Z::TreeEvaluator::tableEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("table", node, cg);
    TR::Compilation *comp = cg->comp();
    int32_t i;
    uint32_t upperBound = node->getCaseIndexUpperBound();
@@ -1890,8 +1813,6 @@ bool isSwitchFoldableNoncall(TR::Node * node)
 TR::Register *
 OMR::Z::TreeEvaluator::lookupEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lookup", node, cg);
-
    //fold builtin if possible
    TR::Node* firstChild = node->getFirstChild();
 
@@ -2456,7 +2377,6 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
 TR::Register *
 OMR::Z::TreeEvaluator::NULLCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("NULLCHK", node, cg);
    return TR::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(node, false, cg);
    }
 
@@ -2466,8 +2386,6 @@ OMR::Z::TreeEvaluator::NULLCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::ZEROCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ZEROCHK", node, cg);
-
    // Labels for OOL path with helper and the merge point back from OOL path
    TR::LabelSymbol *slowPathOOLLabel = generateLabelSymbol(cg);;
    TR::LabelSymbol *doneLabel  = generateLabelSymbol(cg);;
@@ -2527,7 +2445,6 @@ OMR::Z::TreeEvaluator::ZEROCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::resolveAndNULLCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("resolveAndNULLCHK", node, cg);
    return TR::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(node, true, cg);
    }
 
@@ -2754,8 +2671,6 @@ TR::Node* OMR::Z::TreeEvaluator::DAAAddressPointer(TR::Node* callNode, TR::CodeG
 TR::Register *
 OMR::Z::TreeEvaluator::butestEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("butest", node, cg);
-
    TR::TreeEvaluator::commonButestEvaluator(node, cg);
    TR::Register *ccReg = getConditionCode(node, cg);
 

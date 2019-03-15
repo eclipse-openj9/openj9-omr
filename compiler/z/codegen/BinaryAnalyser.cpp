@@ -49,8 +49,6 @@
 
 namespace TR { class Instruction; }
 
-#define   ENABLE_ZARCH_FOR_32    1
-
 void
 TR_S390BinaryAnalyser::remapInputs(TR::Node * firstChild, TR::Register * firstRegister,
                                     TR::Node * secondChild, TR::Register * secondRegister)

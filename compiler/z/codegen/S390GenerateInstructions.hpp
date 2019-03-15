@@ -1529,8 +1529,4 @@ void generateShiftAndKeepSelected31Bit(
       int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode);
 
 TR::Instruction *generateZeroVector(TR::Node *node, TR::CodeGenerator *cg, TR::Register *vecZeroReg);
-
-#ifdef DEBUG
-#define TRACE_EVAL
-#endif
 #endif

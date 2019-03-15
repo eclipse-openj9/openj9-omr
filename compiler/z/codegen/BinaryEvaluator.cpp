@@ -531,8 +531,6 @@ generic32BitAddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             value = secondChild->getInt();
             break;
             }
-         case TR::Address:
-            TR_ASSERT_FATAL(TR::Compiler->target.is32Bit(), "Unexpected address data type for generic32BitAddEvaluator");
          default:
             TR_ASSERT_FATAL(false, "Unexpected data type (%s) in generic32BitAddEvaluator", secondChild->getDataType().toString());
             break;
@@ -647,8 +645,6 @@ generic32BitSubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             value = secondChild->getInt();
             break;
             }
-         case TR::Address:
-            TR_ASSERT_FATAL(TR::Compiler->target.is32Bit(), "Unexpected address data type for generic32BitSubEvaluator");
          default:
             TR_ASSERT_FATAL(false, "Unexpected data type (%s) in generic32BitSubEvaluator", secondChild->getDataType().toString());
             break;
@@ -1427,23 +1423,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::laddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    return laddHelper64(node, cg);
-   }
-
-
-/**
- * address add helper function
- */
-TR::Register *
-OMR::Z::TreeEvaluator::addrAddHelper(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getOpCodeValue() == TR::aiadd)
-      return generic32BitAddEvaluator(node, cg);
-   else if (node->getOpCodeValue() == TR::aladd)
-      return TR::TreeEvaluator::laddEvaluator(node, cg);
-   else
-      TR_ASSERT(0,"Wrong il-opCode for calling addAddHelper!\n");
-
-   return NULL;
    }
 
 TR::Register *

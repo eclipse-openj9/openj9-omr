@@ -122,46 +122,6 @@ generateS390PackedCompareAndBranchOps(TR::Node * node,
                                       TR::LabelSymbol *branchTarget = NULL);
 #endif
 
-//#define TRACE_EVAL
-#if defined(TRACE_EVAL)
-//
-// this is a handy thing to turn on if you want to figure out what the common
-// code generator is mapping nodes to and what is really being driven through
-// evaluation.
-// It is not on by default (too noisy and expensive) but can be enabled
-// by just defining TRACE_EVAL for this file
-//
-// If we wanted to enable this by default, it would make sense to create a
-// new 'phase' for debugging that could be queried and to have the macro
-// be a test of the tracing before making a function call out, e.g.
-// instead of PRINT_ME(...) we would have:
-// if (compilation->getOutFile() != NULL && compilation->getTraceEval())
-//   {
-//     print("iadd", compilation->getOutFile());
-//   }
-// and then traceEval would be a forced no-inline method
-//
-// Add another version of PRINT_ME, undef EVAL_BLOCK to go back to the old one
-#define EVAL_BLOCK
-#if defined (EVAL_BLOCK)
-#include "ras/Delimiter.hpp"
-#define PRINT_ME(string,node,cg) TR::Delimiter evalDelimiter(cg->comp(), cg->comp()->getOption(TR_TraceCG), "EVAL", string)
-#else
-void
-PRINT_ME(char * string, TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR::Compilation * comp = cg->comp();
-   TR::FILE *outFile = comp->getOutFile();
-   if (outFile != NULL)
-      {
-      diagnostic("EVAL: %s\n", string);
-      }
-   }
-#endif
-#else
-#define PRINT_ME(string,node,cg)
-#endif
-
 TR::Instruction*
 generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node, int32_t value, TR::Register* targetRegister, bool canSetConditionCode, TR::Instruction* cursor, TR::RegisterDependencyConditions* dependencies, TR::Register* literalPoolRegister)
    {
@@ -4499,13 +4459,6 @@ genericLoad(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       return genericLoadHelper<numberOfBits, 32, MemReg>(node, cg, tempMR, srcRegister, nodeSigned, false);
    }
 
-#if defined(TRACE_EVAL)
-#define CASE(x) if (cg->comp()->getOption(TR_TraceCG)) traceMsg(cg, "\t\t\tCase %d\n", x)
-#else
-#define CASE(x)
-#endif
-
-
 /**
  * This function may be used directly. However, there are couple of known wrappers for the big consumers
  *   - genericLoad -- wrapper for b-,s-,i-,l-... loadEvaluator
@@ -4704,7 +4657,6 @@ template<uint32_t otherSize, bool dirToAddr>
 TR::Register *
 OMR::Z::TreeEvaluator::addressCastEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("addressCast", node, cg);
    TR::Compilation *comp = cg->comp();
 
    // use getSize instead of getAddressPrecision since for some cases the address type node symbol size will be different than the address precesion value (RTC: 34855)
@@ -6024,7 +5976,6 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::aloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("aload", node, cg);
    return aloadHelper(node, cg, NULL);
    }
 
@@ -6141,7 +6092,6 @@ OMR::Z::TreeEvaluator::aladdEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::riloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("riload", node, cg);
    return iloadHelper(node, cg, NULL, true);
    }
 
@@ -6152,7 +6102,6 @@ OMR::Z::TreeEvaluator::riloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::rlloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("rlload", node, cg);
    return lloadHelper64(node, cg, NULL, true);
    }
 
@@ -6163,7 +6112,6 @@ OMR::Z::TreeEvaluator::rlloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::rsloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("rsload", node, cg);
    return sloadHelper(node, cg, NULL, true);
    }
 
@@ -6174,7 +6122,6 @@ OMR::Z::TreeEvaluator::rsloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::iloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iload", node, cg);
    return iloadHelper(node, cg, NULL);
    }
 
@@ -6186,7 +6133,6 @@ OMR::Z::TreeEvaluator::iloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lload", node, cg);
    return lloadHelper64(node, cg, NULL);
    }
 
@@ -6197,7 +6143,6 @@ OMR::Z::TreeEvaluator::lloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sload", node, cg);
    return sloadHelper(node, cg, NULL);
    }
 
@@ -6208,7 +6153,6 @@ OMR::Z::TreeEvaluator::sloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bload", node, cg);
    TR::Compilation *comp = cg->comp();
 
    TR::Register * tempReg;
@@ -6239,7 +6183,6 @@ OMR::Z::TreeEvaluator::bloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::ristoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ristore", node, cg);
    istoreHelper(node, cg, true);
    return NULL;
    }
@@ -6250,7 +6193,6 @@ OMR::Z::TreeEvaluator::ristoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::rlstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("rlstore", node, cg);
    lstoreHelper64(node, cg, true);
    return NULL;
    }
@@ -6261,7 +6203,6 @@ OMR::Z::TreeEvaluator::rlstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::rsstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("rsstore", node, cg);
    sstoreHelper(node, cg, true);
    return NULL;
    }
@@ -6273,7 +6214,6 @@ OMR::Z::TreeEvaluator::rsstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::istoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("istore", node, cg);
    TR::Compilation *comp = cg->comp();
    bool adjustRefCnt = false;
 
@@ -6292,7 +6232,6 @@ OMR::Z::TreeEvaluator::istoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lstore", node, cg);
    lstoreHelper64(node, cg);
 
    return NULL;
@@ -6305,7 +6244,6 @@ OMR::Z::TreeEvaluator::lstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sstore", node, cg);
    sstoreHelper(node, cg);
    return NULL;
    }
@@ -6317,7 +6255,6 @@ OMR::Z::TreeEvaluator::sstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::cstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("cstore", node, cg);
    sstoreHelper(node, cg);
    return NULL;
    }
@@ -6329,7 +6266,6 @@ OMR::Z::TreeEvaluator::cstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::astoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("astore", node, cg);
    astoreHelper(node, cg);
    return NULL;
    }
@@ -6341,8 +6277,6 @@ OMR::Z::TreeEvaluator::astoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bstore", node, cg);
-
    if (directMemoryStoreHelper(cg, node))
       {
       return NULL;
@@ -9505,7 +9439,6 @@ OMR::Z::TreeEvaluator::directCallEvaluator(TR::Node * node, TR::CodeGenerator * 
 TR::Register *
 OMR::Z::TreeEvaluator::indirectCallEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("indirectCall", node, cg);
    // If the method to be called is marked as an inline method, see if it can
    // actually be generated inline.
    //
@@ -9537,7 +9470,6 @@ OMR::Z::TreeEvaluator::indirectCallEvaluator(TR::Node * node, TR::CodeGenerator 
 TR::Register *
 OMR::Z::TreeEvaluator::treetopEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("treetop", node, cg);
    TR::Compilation *comp = cg->comp();
 
    if (node->getFirstChild()->getReferenceCount() == 1)
@@ -9605,7 +9537,6 @@ OMR::Z::TreeEvaluator::treetopEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::fenceEvaluator(TR::Node * node, TR::CodeGenerator *cg)
    {
-   PRINT_ME("fence", node, cg);
    return NULL;
    }
 
@@ -9618,7 +9549,6 @@ OMR::Z::TreeEvaluator::fenceEvaluator(TR::Node * node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("loadaddr", node, cg);
    TR::Register * targetRegister = NULL;
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Compilation *comp = cg->comp();
@@ -9758,7 +9688,6 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::passThroughEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("passThrough", node, cg);
    TR::Register * targetRegister = NULL;
    TR::Compilation *comp = cg->comp();
    if ((node->getOpCodeValue() != TR::PassThrough && cg->useClobberEvaluate()))
@@ -9852,12 +9781,6 @@ OMR::Z::TreeEvaluator::passThroughEvaluator(TR::Node * node, TR::CodeGenerator *
 TR::Register *
 OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-#if defined(TRACE_EVAL)
-   char bbString[22];
-   sprintf(bbString, "BBStart >>> %d", node->getBlock()->getNumber());
-   PRINT_ME(bbString, node, cg);
-#endif
-
    TR::Instruction * firstInstr = NULL;
    TR::Block * block = node->getBlock();
    cg->setCurrentBlockIndex(block->getNumber());
@@ -9991,11 +9914,6 @@ OMR::Z::TreeEvaluator::BBEndEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    TR::Block *nextBlock = block->getNextBlock();
 
-#if defined(TRACE_EVAL)
-   char bbString[22];
-   sprintf(bbString, "BBEnd   <<< %d", block->getNumber());
-   PRINT_ME(bbString, node, cg);
-#endif
    TR::TreeTop * nextTT = cg->getCurrentEvaluationTreeTop()->getNextTreeTop();
    TR::RegisterDependencyConditions * deps = NULL;
 
@@ -12220,7 +12138,6 @@ OMR::Z::TreeEvaluator::GlRegDepsEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::NOPEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("NOP", node, cg);
    return NULL;
    }
 

@@ -35,13 +35,16 @@ add_executable(jitbuildertest
 	WorklistTest.cpp
 	FieldNameTest.cpp
 	ConvertBitsTest.cpp
-	UnsignedDivRemTest.cpp
 )
 
 if(OMR_HOST_ARCH STREQUAL "x86")
 	if(OMR_HOST_OS STREQUAL "linux" OR OMR_HOST_OS STREQUAL "osx")
 		target_sources(jitbuildertest PUBLIC CallReturnTest.cpp)
 	endif()
+endif()
+
+if(NOT OMR_HOST_ARCH STREQUAL "ppc")
+	target_sources(jitbuildertest PUBLIC UnsignedDivRemTest.cpp)
 endif()
 
 target_link_libraries(jitbuildertest

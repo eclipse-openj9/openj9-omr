@@ -1505,15 +1505,6 @@ TR::Instruction *generateRuntimeInstrumentationInstruction(
                    TR::Register      *target = NULL,
                    TR::Instruction   *preced = NULL);
 
-TR::Instruction *generateExtendedHighWordInstruction(
-                   TR::Node * node,
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic op,
-                   TR::Register * targetReg,
-                   TR::Register * srcReg,
-                   int8_t imm8,
-                   TR::Instruction *preced = 0);
-
 TR::Instruction *
 generateReplicateNodeInVectorReg(TR::Node * node, TR::CodeGenerator *cg, TR::Register * targetVRF, TR::Node * srcElementNode,
                                  int elementSize, TR::Register *zeroReg=NULL, TR::Instruction * preced=NULL);

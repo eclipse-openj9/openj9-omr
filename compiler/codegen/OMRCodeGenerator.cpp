@@ -1071,7 +1071,7 @@ OMR::CodeGenerator::isGlobalVRF(TR_GlobalRegisterNumber n)
 bool
 OMR::CodeGenerator::isGlobalFPR(TR_GlobalRegisterNumber n)
    {
-   return !self()->isGlobalGPR(n) && !self()->isGlobalHPR(n);
+   return !self()->isGlobalGPR(n);
    }
 
 TR_BitVector *
@@ -1096,7 +1096,6 @@ bool OMR::CodeGenerator::supportsInternalPointers()
    return self()->internalPointerSupportImplemented();
    }
 
-
 uint16_t
 OMR::CodeGenerator::getNumberOfGlobalRegisters()
    {
@@ -1106,24 +1105,11 @@ OMR::CodeGenerator::getNumberOfGlobalRegisters()
       return _lastGlobalFPR + 1;
    }
 
-
-#ifdef TR_HOST_S390
-uint16_t OMR::CodeGenerator::getNumberOfGlobalGPRs()
-   {
-   if (self()->supportsHighWordFacility())
-      {
-      return _firstGlobalHPR;
-      }
-   return _lastGlobalGPR + 1;
-   }
-#endif
-
 int32_t OMR::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Block *block)
    {
    TR::Node *node = block->getLastRealTreeTop()->getNode();
    return self()->getMaximumNumberOfGPRsAllowedAcrossEdge(node);
    }
-
 
 TR::Register *OMR::CodeGenerator::allocateCollectedReferenceRegister()
    {

@@ -649,11 +649,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
       _callsForPreloadList = new (self()->trHeapMemory()) TR::list<TR_BranchPreloadCallData*>(getTypedAllocator<TR_BranchPreloadCallData*>(comp->allocator()));
       }
 
-   if (TR::Compiler->target.cpu.getS390SupportsHPRDebug() && !comp->getOption(TR_DisableHighWordRA) && !comp->getOption(TR_MimicInterpreterFrameShape))
-      {
-      self()->setSupportsHighWordFacility(true);
-      }
-
    self()->setOnDemandLiteralPoolRun(true);
    self()->setGlobalStaticBaseRegisterOn(false);
 
@@ -810,7 +805,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
       {
       self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
       self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
-      self()->setHPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstHPR, TR::RealRegister::LastHPR));
       self()->setVRFRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstVRF, TR::RealRegister::LastVRF));
       }
 
@@ -836,27 +830,6 @@ OMR::Z::CodeGenerator::getSupportsBitPermute()
    return true;
    }
 
-TR_GlobalRegisterNumber
-OMR::Z::CodeGenerator::getGlobalHPRFromGPR (TR_GlobalRegisterNumber n)
-   {
-   TR_ASSERT(self()->isGlobalGPR(n), "getGlobalHPRFromGPR:  n != GPR?");
-   TR::RealRegister *gpr = toRealRegister(self()->machine()->getGPRFromGlobalRegisterNumber(n));
-   TR::RealRegister *hpr = gpr->getHighWordRegister();
-   return self()->machine()->getGlobalReg(hpr->getRegisterNumber());
-   }
-
-TR_GlobalRegisterNumber
-OMR::Z::CodeGenerator::getGlobalGPRFromHPR (TR_GlobalRegisterNumber n)
-   {
-   TR_ASSERT(self()->isGlobalHPR(n), "getGlobalGPRFromHPR:  n != HPR?");
-   //traceMsg(comp(), "getGlobalGPRFromHPR called with n=%d ",n);
-   TR::RealRegister *hpr = toRealRegister(self()->machine()->getHPRFromGlobalRegisterNumber(n));
-   //traceMsg(comp(), "hpr = %s ", getDebug()->getName(hpr));
-   TR::RealRegister *gpr = hpr->getLowWordRegister();
-   //traceMsg(comp(), "gpr = %s\n", getDebug()->getName(gpr));
-   return self()->machine()->getGlobalReg(gpr->getRegisterNumber());
-   }
-
 bool OMR::Z::CodeGenerator::prepareForGRA()
    {
    bool enableVectorGRA = self()->getSupportsVectorRegisters() && !self()->comp()->getOption(TR_DisableVectorRegGRA);
@@ -865,8 +838,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
       {
       self()->machine()->initializeGlobalRegisterTable();
       self()->setGlobalRegisterTable(self()->machine()->getGlobalRegisterTable());
-      self()->setFirstGlobalHPR(self()->machine()->getFirstGlobalHPRRegisterNumber());
-      self()->setLastGlobalHPR(self()->machine()->getLastGlobalHPRRegisterNumber());
       self()->setLastGlobalGPR(self()->machine()->getLastGlobalGPRRegisterNumber());
       self()->setLast8BitGlobalGPR(self()->machine()->getLast8BitGlobalGPRRegisterNumber());
       self()->setFirstGlobalFPR(self()->machine()->getFirstGlobalFPRRegisterNumber());
@@ -912,16 +883,8 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
       // Initialize _globalGPRsPreservedAcrossCalls and _globalFPRsPreservedAcrossCalls
       // We call init here because getNumberOfGlobal[FG]PRs() is initialized during the call to initialize() above.
       //
-      if (self()->supportsHighWordFacility())
-         {
-         _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR + NUM_S390_HPR, self()->trMemory());
-         _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR + NUM_S390_HPR, self()->trMemory());
-         }
-      else
-         {
-         _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
-         _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
-         }
+      _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
+      _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
 
       TR_GlobalRegisterNumber grn;
       for (grn = self()->getFirstGlobalGPR(); grn <= self()->getLastGlobalGPR(); grn++)
@@ -953,15 +916,7 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
             TR_ASSERT(reg != -1, "Register pressure simulator doesn't support gaps in the global register table; reg %d must be removed", grn);
             if (self()->getFirstGlobalGPR() <= grn && grn <= self()->getLastGlobalGPR())
                {
-               if (self()->supportsHighWordFacility() && self()->getFirstGlobalHPR() <= grn)
-                  {
-                  // this is a bit tricky, we consider Global HPRs part of Global GPRs
-                  _globalRegisterBitVectors[ TR_hprSpill ].set(grn);
-                  }
-               else
-                  {
-                  _globalRegisterBitVectors[ TR_gprSpill ].set(grn);
-                  }
+               _globalRegisterBitVectors[ TR_gprSpill ].set(grn);
                }
             else if (self()->getFirstGlobalFPR() <= grn && grn <= self()->getLastGlobalFPR())
                {
@@ -976,11 +931,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
                _globalRegisterBitVectors[ TR_volatileSpill ].set(grn);
             if (linkage->getIntegerArgument(reg) || linkage->getFloatArgument(reg))
                {
-               if ((self()->supportsHighWordFacility()) && (grn >= self()->getFirstGlobalGPR() && grn <= self()->getLastGlobalGPR()))
-                  {
-                  TR_GlobalRegisterNumber grnHPR = self()->getFirstGlobalHPR() - self()->getFirstGlobalGPR() + grn;
-                  _globalRegisterBitVectors[ TR_linkageSpill  ].set(grnHPR);
-                  }
                _globalRegisterBitVectors[ TR_linkageSpill  ].set(grn);
                }
             if (reg == linkage->getMethodMetaDataRegister())
@@ -1819,541 +1769,6 @@ OMR::Z::CodeGenerator::isLitPoolFreeForAssignment()
    return litPoolRegIsFree;
    }
 
-
-TR::Instruction *
-OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
-   {
-   TR::Instruction * s390Inst = inst;
-   TR::Register * targetReg = s390Inst->getRegisterOperand(1);
-   TR::Register * srcReg = s390Inst->getRegisterOperand(2);
-   bool targetUpgradable = false;
-   bool srcUpgradable = false;
-   TR::InstOpCode::Mnemonic newOpCode  = TR::InstOpCode::BAD;
-   TR::Instruction * newInst = NULL;
-   TR::Node * node = inst->getNode();
-   int32_t immValue = 0;
-   TR::MemoryReference *mr;
-
-   if (s390Inst->getOpCode().is64bit() ||
-       (targetReg && targetReg->is64BitReg()) ||
-       (srcReg && srcReg->is64BitReg()))
-      {
-      return NULL;
-      }
-
-   if (targetReg && targetReg->isHighWordUpgradable())
-      {
-      targetUpgradable = true;
-      TR::RealRegister * targetRealReg = targetReg->getAssignedRealRegister();
-
-      if (targetRealReg)
-         {
-         if (targetRealReg->getState() == TR::RealRegister::Locked)
-            {
-            targetUpgradable = false;
-            }
-         }
-      }
-
-   if (srcReg && srcReg->isHighWordUpgradable())
-      {
-      srcUpgradable = true;
-
-      TR::RealRegister * srcRealReg = srcReg->getAssignedRealRegister();;
-      if (srcRealReg)
-         {
-         if (srcRealReg->getState() == TR::RealRegister::Locked)
-            {
-            srcUpgradable = false;
-            }
-         }
-      }
-
-   if (targetUpgradable)
-      {
-      switch (s390Inst->getOpCodeValue())
-         {
-         case TR::InstOpCode::AR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::AHHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::AHHLR;
-               }
-            newInst = generateRRRInstruction(self(), newOpCode, node, targetReg, targetReg, srcReg, inst->getPrev());
-            srcReg->decTotalUseCount();
-            targetReg->decTotalUseCount();
-            targetReg->incFutureUseCount();
-            break;
-         case TR::InstOpCode::ALR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::ALHHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::ALHHLR;
-               }
-            newInst = generateRRRInstruction(self(), newOpCode, node, targetReg, targetReg, srcReg, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            targetReg->incFutureUseCount();
-            break;
-         case TR::InstOpCode::AHI:
-         case TR::InstOpCode::AFI:
-            newOpCode = TR::InstOpCode::AIH;
-            immValue = ((TR::S390RIInstruction*)inst)->getSourceImmediate();
-            // signed extend 32-bit
-            newInst = generateRILInstruction(self(), newOpCode, node, targetReg, immValue,inst->getPrev());
-            targetReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::BRCT:
-            newOpCode = TR::InstOpCode::BRCTH;
-            //BRCTH has extended immediate
-            newInst= generateS390BranchInstruction(self(), TR::InstOpCode::BRCTH, node, targetReg, ((TR::S390LabeledInstruction*)inst)->getLabelSymbol(), inst->getPrev());
-            targetReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::CR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::CHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::CHLR;
-               }
-            newInst = generateRRInstruction(self(), newOpCode, node, targetReg, srcReg, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::CLR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::CLHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::CLHLR;
-               }
-            newInst = generateRRInstruction(self(), newOpCode, node, targetReg, srcReg, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::C:
-         case TR::InstOpCode::CY:
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newOpCode = TR::InstOpCode::CHF;
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::CL:
-         case TR::InstOpCode::CLY:
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newOpCode = TR::InstOpCode::CLHF;
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::CFI:
-            immValue = ((TR::S390RILInstruction*)inst)->getSourceImmediate();
-            newOpCode = TR::InstOpCode::CIH;
-            newInst = generateRILInstruction(self(), newOpCode, node, targetReg, immValue, inst->getPrev());
-            targetReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::CLFI:
-            immValue = ((TR::S390RILInstruction*)inst)->getSourceImmediate();
-            newOpCode = TR::InstOpCode::CLIH;
-            newInst = generateRILInstruction(self(), newOpCode, node, targetReg, immValue, inst->getPrev());
-            targetReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::LB:
-            newOpCode = TR::InstOpCode::LBH;
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::LH:
-         case TR::InstOpCode::LHY:
-            newOpCode = TR::InstOpCode::LHH;
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::L:
-         case TR::InstOpCode::LY:
-            newOpCode = TR::InstOpCode::LFH;
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::LAT:
-            newOpCode = TR::InstOpCode::LFHAT;
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::LLC:
-            newOpCode = TR::InstOpCode::LLCH;
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::LLH:
-            newOpCode = TR::InstOpCode::LLHH;
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::LR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::LHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::LHLR;
-               }
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::LLCR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::LLCHHR;
-               srcReg->decTotalUseCount();
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::LLCHLR;
-               }
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::LLHR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::LLHHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::LLHHLR;
-               }
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::LHI:
-            //IIHF need to be sign-extend
-            newOpCode = TR::InstOpCode::IIHF;
-            immValue = ((TR::S390RIInstruction*)inst)->getSourceImmediate();
-            newInst = generateRILInstruction(self(), newOpCode, node, targetReg, immValue, inst->getPrev());
-            targetReg->decTotalUseCount();
-            break;
-            /*-------- these guys are cracked instructions, not worth it
-         case TR::InstOpCode::NR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::NHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::NHLR;
-               }
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::OR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::OHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::OHLR;
-               }
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::XR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::XHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::XHLR;
-               }
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-            --------------*/
-         case TR::InstOpCode::ST:
-         case TR::InstOpCode::STY:
-            newOpCode = TR::InstOpCode::STFH;
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::STC:
-         case TR::InstOpCode::STCY:
-            newOpCode = TR::InstOpCode::STCH;
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::STH:
-         case TR::InstOpCode::STHY:
-            newOpCode = TR::InstOpCode::STHH;
-            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
-            mr->resetMemRefUsedBefore();
-            // mr re-use?
-            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
-            targetReg->decTotalUseCount();
-            // mem ref need to dec ref count too
-            if (mr->getBaseRegister())
-               {
-               mr->getBaseRegister()->decTotalUseCount();
-               }
-            if (mr->getIndexRegister())
-               {
-               mr->getIndexRegister()->decTotalUseCount();
-               }
-            break;
-         case TR::InstOpCode::SR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::SHHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::SHHLR;
-               }
-            newInst = generateRRRInstruction(self(), newOpCode, node, targetReg, targetReg, srcReg, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            targetReg->incFutureUseCount();
-            break;
-         case TR::InstOpCode::SLR:
-            if (srcUpgradable)
-               {
-               newOpCode = TR::InstOpCode::SLHHHR;
-               }
-            else
-               {
-               newOpCode = TR::InstOpCode::SLHHLR;
-               }
-            newInst = generateRRRInstruction(self(), newOpCode, node, targetReg, targetReg, srcReg, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            targetReg->incFutureUseCount();
-            break;
-         case TR::InstOpCode::SLFI:
-            //ALSIH
-            newOpCode = TR::InstOpCode::ALSIH;
-            immValue = ((TR::S390RILInstruction*)inst)->getSourceImmediate();
-            newInst = generateRILInstruction(self(), newOpCode, node, targetReg, -immValue, inst->getPrev());
-            targetReg->decTotalUseCount();
-            break;
-         }
-      }
-   else if (srcUpgradable)
-      {
-      switch (s390Inst->getOpCodeValue())
-         {
-         case TR::InstOpCode::LR:
-            newOpCode = TR::InstOpCode::LLHFR;
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::LLCR:
-            newOpCode = TR::InstOpCode::LLCLHR;
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::LLHR:
-            newOpCode = TR::InstOpCode::LLHLHR;
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-            /*---- these guys are cracked instructions, not worth it
-         case TR::InstOpCode::NR:
-            newOpCode = TR::InstOpCode::NLHR;
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::OR:
-            newOpCode = TR::InstOpCode::OLHR;
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-         case TR::InstOpCode::XR:
-            newOpCode = TR::InstOpCode::XLHR;
-            newInst = generateExtendedHighWordInstruction(node, self(), newOpCode, targetReg, srcReg, 0, inst->getPrev());
-            targetReg->decTotalUseCount();
-            srcReg->decTotalUseCount();
-            break;
-            ----*/
-         }
-      }
-
-   if (newInst)
-      {
-      // make sure the registers will keep on getting upgraded for other instructions
-      if (targetUpgradable)
-         targetReg->setIsNotHighWordUpgradable(false);
-      if (srcUpgradable)
-         srcReg->setIsNotHighWordUpgradable(false);
-
-      TR::Instruction * s390NewInst = newInst;
-      //traceMsg(comp(), "\n Old inst: %p, new inst : %p", inst, newInst);
-      s390NewInst->setBlockIndex(s390Inst->getBlockIndex());
-      if (s390Inst->getDependencyConditions())
-         s390NewInst->setDependencyConditionsNoBookKeeping(s390Inst->getDependencyConditions());
-      if (s390Inst->throwsImplicitNullPointerException())
-         s390NewInst->setThrowsImplicitNullPointerException();
-      if (s390Inst->throwsImplicitException())
-         s390NewInst->setThrowsImplicitException();
-      if (s390Inst->isOutOfLineEX())
-         s390NewInst->setOutOfLineEX();
-      if (s390Inst->getIndex())
-         s390NewInst->setIndex(s390Inst->getIndex());
-      if (s390Inst->getGCMap())
-         s390NewInst->setGCMap(s390Inst->getGCMap());
-      if (s390Inst->needsGCMap())
-         s390NewInst->setNeedsGCMap(s390Inst->getGCRegisterMask());
-
-      self()->replaceInst(inst, newInst);
-
-      if (self()->getDebug())
-         self()->getDebug()->addInstructionComment(s390NewInst, "HPR Upgraded");
-
-      return newInst;
-      }
-
-   return NULL;
-   }
-
 static TR::Instruction *skipInternalControlFlow(TR::Instruction *insertInstr)
   {
   int32_t nestingDepth=1;
@@ -2501,7 +1916,6 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
        }
 
    int32_t lockedGPRs = 0;
-   int32_t lockedHPRs = 0;
    int32_t lockedFPRs = 0;
    int32_t lockedVRFs = 0;
 
@@ -2511,13 +1925,6 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
       TR::RealRegister* realReg = machine->getRealRegister((TR::RealRegister::RegNum)i);
       if (realReg->getState() == TR::RealRegister::Locked)
          ++lockedGPRs;
-      }
-
-   for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; ++i)
-      {
-      TR::RealRegister* realReg = machine->getRealRegister((TR::RealRegister::RegNum)i);
-      if (realReg->getState() == TR::RealRegister::Locked)
-         ++lockedHPRs;
       }
 
    for (int32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; ++i)
@@ -2535,7 +1942,6 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
       }
 
    machine->setNumberOfLockedRegisters(TR_GPR, lockedGPRs);
-   machine->setNumberOfLockedRegisters(TR_HPR, lockedHPRs);
    machine->setNumberOfLockedRegisters(TR_FPR, lockedFPRs);
    machine->setNumberOfLockedRegisters(TR_VRF, lockedVRFs);
 
@@ -2579,7 +1985,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       {
       if (self()->getDebug())
          {
-         TR_RegisterKinds rks = (TR_RegisterKinds)(TR_GPR_Mask | TR_HPR_Mask | TR_FPR_Mask | TR_VRF_Mask);
+         TR_RegisterKinds rks = (TR_RegisterKinds)(TR_GPR_Mask | TR_FPR_Mask | TR_VRF_Mask);
 
          self()->getDebug()->startTracingRegisterAssignment("backward", rks);
          }
@@ -2590,9 +1996,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
      {
      currBlock->setHasBeenVisited(false);
      }
-
-   // Be stingy with allocating the blocked list (for HPR upgrades). Space requirement is small, but it adds up
-   self()->machine()->allocateUpgradedBlockedList(new (self()->comp()->trStackMemory()) TR_Stack<TR::RealRegister *>(self()->comp()->trMemory(), 16, true, stackAlloc));
 
    while (instructionCursor)
       {
@@ -2635,7 +2038,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
             {
             realReg = self()->machine()->realRegister(static_cast<TR::RealRegister::RegNum>(i));
 
-            if ( realReg->getState() == TR::RealRegister::Free && realReg->getHighWordRegister()->getState() == TR::RealRegister::Free)
+            if ( realReg->getState() == TR::RealRegister::Free)
                {
                dcbInstr->setAssignableReg(realReg);
                realReg->setHasBeenAssignedInMethod(true);
@@ -2647,17 +2050,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
          }
 
       self()->tracePreRAInstruction(instructionCursor);
-
-      if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHPRUpgrade))
-         {
-         TR::Instruction * newInst = self()->upgradeToHPRInstruction(instructionCursor);
-         if (newInst)
-            {
-            instructionCursor = newInst;
-            }
-         }
-      if (self()->supportsHighWordFacility())
-         self()->setAvailableHPRSpillMask(0xffff0000);
 
       prevInstruction = instructionCursor->getPrev();
 
@@ -3925,7 +3317,6 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
    return srcRegister;
    }
 
-
 /**
  * Different from evaluate in that it returns a clobberable register
  */
@@ -5013,24 +4404,6 @@ OMR::Z::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
    TR_InternalPointerMap * internalPtrMap = NULL;
    TR::GCStackAtlas * atlas = self()->getStackAtlas();
 
-
-   if (self()->supportsHighWordFacility())
-      {
-      for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
-         {
-         TR::RealRegister * realReg = self()->machine()->getRealRegister((TR::RealRegister::RegNum) i);
-         if (realReg->getHasBeenAssignedInMethod())
-            {
-            TR::Register * virtReg = realReg->getAssignedRegister();
-            if (virtReg && virtReg->containsCollectedReference() && virtReg->getAssignedRegister() == NULL)
-               {
-               // 2 bits per register, '10' means HPR has collectible, '11' means both HPR and GPR have collectibles
-               map->setHighWordRegisterBits(1 << ((i - TR::RealRegister::FirstHPR)*2 +1) );
-               //traceMsg(comp(), "\nsetting HPR regmap 0x%x\n", 1 << ((i - TR::RealRegister::FirstHPR)*2 + 1));
-               }
-            }
-         }
-      }
    for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i++)
       {
       TR::RealRegister * realReg = self()->machine()->getRealRegister((TR::RealRegister::RegNum) i);

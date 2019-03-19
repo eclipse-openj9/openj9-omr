@@ -412,26 +412,16 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
    //  -> set means free
    // Keep a list of global registers
    //
-   if (self()->cg()->supportsHighWordFacility())
+   if (enableVectorLinkage)
       {
-      freeScratchable.init(TR::RealRegister::LastHPR + 1, self()->trMemory());
-      globalAllocatedRegisters.init(TR::RealRegister::LastHPR + 1, self()->trMemory());
-      lastReg = TR::RealRegister::LastHPR;
+      freeScratchable.init(TR::RealRegister::LastVRF + 1, self()->trMemory());
+      globalAllocatedRegisters.init(TR::RealRegister::LastVRF + 1, self()->trMemory());
       }
    else
       {
-      if (enableVectorLinkage)
-         {
-         freeScratchable.init(TR::RealRegister::LastVRF + 1, self()->trMemory());
-         globalAllocatedRegisters.init(TR::RealRegister::LastVRF + 1, self()->trMemory());
-         }
-      else
-         {
-         freeScratchable.init(TR::RealRegister::LastFPR + 1, self()->trMemory());
-         globalAllocatedRegisters.init(TR::RealRegister::LastFPR + 1, self()->trMemory());
-         }
+      freeScratchable.init(TR::RealRegister::LastFPR + 1, self()->trMemory());
+      globalAllocatedRegisters.init(TR::RealRegister::LastFPR + 1, self()->trMemory());
       }
-
 
    for (i1 = TR::RealRegister::FirstGPR; i1 <= lastReg; i1++)
       {
@@ -573,10 +563,6 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
             loadOpCode = TR::InstOpCode::VL;
             break;
          }
-
-      if (ai >= 0 &&
-         loadOpCode == TR::InstOpCode::L && self()->cg()->supportsHighWordFacility() && self()->getRealRegister(REGNUM(ai))->isHighWordRegister())
-         loadOpCode = TR::InstOpCode::LFH;
 
       if (((self()->isSmallIntParmsAlignedRight() && paramCursor->getType().isIntegral()) ||
            (self()->isPadFloatParms() &&  paramCursor->getType().isFloatingPoint())) && (gprSize > paramCursor->getSize()))
@@ -923,16 +909,8 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                         }
                      else
                         {
-                        if (self()->cg()->supportsHighWordFacility() && self()->getRealRegister(REGNUM(ai))->isHighWordRegister())
-                           {
-                           cursor = generateExtendedHighWordInstruction(firstNode, self()->cg(), TR::InstOpCode::LHLR, self()->getRealRegister(REGNUM(ai)),
-                                                          self()->getRealRegister(regNum), 0, (TR::Instruction *) cursor);
-                           }
-                        else
-                           {
-                           cursor = generateRRInstruction(self()->cg(), TR::InstOpCode::getLoadRegOpCode(), firstNode, self()->getRealRegister(REGNUM(ai)),
-                                                          self()->getRealRegister(regNum), (TR::Instruction *) cursor);
-                           }
+                        cursor = generateRRInstruction(self()->cg(), TR::InstOpCode::getLoadRegOpCode(), firstNode, self()->getRealRegister(REGNUM(ai)),
+                           self()->getRealRegister(regNum), (TR::Instruction *) cursor);
 
                         freeScratchable.reset(ai);
                         freeScratchable.set(regNum);
@@ -1215,19 +1193,13 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
             switch(busyMoves[2][i1])
                {
                case 0: // Reg 2 Reg
-                  if (self()->cg()->supportsHighWordFacility() && self()->getRealRegister(REGNUM(target))->isHighWordRegister())
-                     {
-                     cursor = generateExtendedHighWordInstruction(firstNode, self()->cg(), TR::InstOpCode::LHLR, self()->getRealRegister(REGNUM(target)),
-                                                                  self()->getRealRegister(REGNUM(source)), 0, (TR::Instruction *) cursor);
-                     }
-                  else
-                     {
-                     cursor = generateRRInstruction(self()->cg(),  TR::InstOpCode::getLoadRegOpCode(), firstNode, self()->getRealRegister(REGNUM(target)),
-                                                    self()->getRealRegister(REGNUM(source)), (TR::Instruction *) cursor);
+                  {
+                  cursor = generateRRInstruction(self()->cg(), TR::InstOpCode::getLoadRegOpCode(), firstNode, self()->getRealRegister(REGNUM(target)),
+                     self()->getRealRegister(REGNUM(source)), (TR::Instruction *) cursor);
 
-                     }
                   freeScratchable.set(source);
                   break;
+                  }
                case 1: // Int or Addr  Reg from Stack Slot
                   {
                   TR::MemoryReference *mr = generateS390MemoryReference(stackPtr, source, self()->cg());
@@ -2478,38 +2450,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          }
       }
 
-   dummyReg = NULL;
-   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR0), self()->cg(), true, true );
-   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR1), self()->cg(), true, true );
-   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR2), self()->cg(), true, true );
-   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR3), self()->cg(), true, true );
-   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR14), self()->cg(), true, true );
-
-   // consider all HPR volatile on 31-bit
-   if (TR::Compiler->target.is32Bit())
-      {
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR6), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR7), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR8), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR9), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR10), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR11), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR12), self()->cg(), true, true );
-      }
-
-   if (TR::Compiler->target.isZOS())
-      {
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR15), self()->cg(), true, true );
-      if (self()->cg()->supportsJITFreeSystemStackPointer())
-         {
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4),self()->cg(), true, true );
-         }
-      }
-   else
-      {
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4), self()->cg(), true, true );
-      }
-
    // spill all overlapped vector registers if vector linkage is enabled
    if (enableVectorLinkage)
       {
@@ -2616,9 +2556,7 @@ OMR::Z::Linkage::killAndAssignRegister(int64_t killMask, TR::RegisterDependencyC
       {
       if (isAllocate)
          {
-         if (regNum >= TR::RealRegister::FirstHPR && regNum <= TR::RealRegister::LastHPR)
-            *virtualRegPtr = self()->cg()->allocateRegister();
-         else if (regNum <= TR::RealRegister::LastGPR)
+         if (regNum <= TR::RealRegister::LastGPR)
             *virtualRegPtr = self()->cg()->allocateRegister();
          else if (regNum <= TR::RealRegister::LastFPR)
             *virtualRegPtr = self()->cg()->allocateRegister(TR_FPR);
@@ -2696,9 +2634,8 @@ OMR::Z::Linkage::setupRegisterDepForLinkage(TR::Node * callNode, TR_DispatchType
    TR::RegisterDependencyConditions * &deps, int64_t & killMask, TR::SystemLinkage * systemLinkage,
    TR::Node * &GlobalRegDeps, bool &hasGlRegDeps, TR::Register ** methodAddressReg, TR::Register * &JavaLitOffsetReg)
    {
-   int32_t numDeps = systemLinkage->getNumberOfDependencyGPRegisters();
-
-   numDeps += 16; //HPRs need to be spilled
+   // Extra dependency for killing volatile high registers (see KillVolHighRegs)
+   int32_t numDeps = systemLinkage->getNumberOfDependencyGPRegisters() + 1;
 
    if (self()->cg()->getSupportsVectorRegisters())
       numDeps += 32; //VRFs need to be spilled
@@ -2882,11 +2819,6 @@ OMR::Z::Linkage::lockRegister(TR::RealRegister * lpReal)
    lpReal->setState(TR::RealRegister::Locked);
    lpReal->setAssignedRegister(lpReal);
    lpReal->setHasBeenAssignedInMethod(true);
-
-   TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
-   lpRealHigh->setState(TR::RealRegister::Locked);
-   lpRealHigh->setAssignedRegister(lpRealHigh);
-   lpRealHigh->setHasBeenAssignedInMethod(true);
    }
 
 void
@@ -2896,11 +2828,6 @@ OMR::Z::Linkage::unlockRegister(TR::RealRegister * lpReal)
    lpReal->resetState(TR::RealRegister::Free);
    lpReal->setAssignedRegister(NULL);
    lpReal->setHasBeenAssignedInMethod(false);
-
-   TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
-   lpRealHigh->resetState(TR::RealRegister::Free);
-   lpRealHigh->setAssignedRegister(NULL);
-   lpRealHigh->setHasBeenAssignedInMethod(false);
    }
 
 bool OMR::Z::Linkage::needsAlignment(TR::DataType dt, TR::CodeGenerator * cg)
@@ -2934,13 +2861,9 @@ OMR::Z::Linkage::getFirstSavedRegister(int32_t fromreg, int32_t toreg)
    {
    TR::RealRegister::RegNum firstUsedReg = TR::RealRegister::NoReg;
 
-   // if the first saved reg is an HPR, we will return the corresponding GPR
-   bool checkHPR = ((self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
-                    (self()->getRealRegister(REGNUM(toreg)))->isLowWordRegister());
    for (int32_t i = fromreg; i <= toreg; ++i)
       {
-      if ((self()->getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod() ||
-          (checkHPR && (self()->getRealRegister(REGNUM(i)))->getHighWordRegister()->getHasBeenAssignedInMethod()))
+      if ((self()->getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
          {
          firstUsedReg = REGNUM(i);
          return firstUsedReg;
@@ -2958,14 +2881,9 @@ OMR::Z::Linkage::getLastSavedRegister(int32_t fromreg, int32_t toreg)
    {
    TR::RealRegister::RegNum lastUsedReg = TR::RealRegister::NoReg;
 
-   // if the last saved reg is an HPR, we will return the corresponding GPR
-   bool checkHPR = ((self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
-                    (self()->getRealRegister(REGNUM(toreg)))->isLowWordRegister());
-
    for (int32_t i = fromreg; i <= toreg; ++i)
       {
-      if ((self()->getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod() ||
-          (checkHPR && (self()->getRealRegister(REGNUM(i)))->getHighWordRegister()->getHasBeenAssignedInMethod()))
+      if ((self()->getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
          {
          lastUsedReg = REGNUM(i);
          }

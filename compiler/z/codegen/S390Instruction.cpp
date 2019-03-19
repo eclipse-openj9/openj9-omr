@@ -3239,11 +3239,7 @@ TR::S390MemInstruction::refsRegister(TR::Register * reg)
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
-      if (realReg->isHighWordRegister())
-         {
-         // Highword aliasing low word regs
-         regMem = realReg->getLowWordRegister();
-         }
+
       if (getMemoryReference()->refsRegister(regMem))
          {
          return true;
@@ -3292,11 +3288,7 @@ TR::S390RXInstruction::refsRegister(TR::Register * reg)
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
-      if (realReg->isHighWordRegister())
-         {
-         // Highword aliasing low word regs
-         regMem = (TR::Register *)(realReg->getLowWordRegister());
-         }
+
       if (getMemoryReference()->refsRegister(regMem))
          {
          return true;
@@ -3476,11 +3468,7 @@ TR::S390RXFInstruction::refsRegister(TR::Register * reg)
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
-      if (realReg->isHighWordRegister())
-         {
-         // Highword aliasing low word regs
-         regMem = (TR::Register *)(realReg->getLowWordRegister());
-         }
+
       if (getMemoryReference()->refsRegister(regMem))
          {
          return true;
@@ -4845,11 +4833,7 @@ TR::S390SSFInstruction::refsRegister(TR::Register * reg)
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
-      if (realReg->isHighWordRegister())
-         {
-         // Highword aliasing low word regs
-         regMem = (TR::Register *)(realReg->getLowWordRegister());
-         }
+
       if (getMemoryReference()->refsRegister(regMem))
          {
          return true;

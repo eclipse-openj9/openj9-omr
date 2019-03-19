@@ -290,9 +290,6 @@ public:
 
    bool shouldYankCompressedRefs() { return true; }
 
-   TR::RegisterIterator *getHPRegisterIterator()                            {return  _hpRegisterIterator;         }
-   TR::RegisterIterator *setHPRegisterIterator(TR::RegisterIterator *iter)   {return _hpRegisterIterator = iter; }
-
    bool supportsJITFreeSystemStackPointer() { return false; }
    TR::RegisterIterator *getVRFRegisterIterator()                           {return  _vrfRegisterIterator;        }
    TR::RegisterIterator *setVRFRegisterIterator(TR::RegisterIterator *iter)  {return _vrfRegisterIterator = iter;}
@@ -449,9 +446,6 @@ public:
    virtual bool getSupportsBitPermute();
    int32_t getEstimatedExtentOfLitLoop()  {return _extentOfLitPool;}
 
-   int64_t setAvailableHPRSpillMask(int64_t i)  {return _availableHPRSpillMask = i;}
-   int64_t maskAvailableHPRSpillMask(int64_t i) {return _availableHPRSpillMask &= i;}
-   int64_t getAvailableHPRSpillMask()           {return _availableHPRSpillMask;}
    int32_t getPreprologueOffset()               { return _preprologueOffset; }
    int32_t setPreprologueOffset(int32_t offset) { return _preprologueOffset = offset; }
 
@@ -479,8 +473,6 @@ public:
    // Query to codegen to know if regs are available or not
    bool isLitPoolFreeForAssignment();
 
-   // zGryphon HPR
-   TR::Instruction * upgradeToHPRInstruction(TR::Instruction * inst);
    // REG ASSOCIATION
    //
    bool enableRegisterAssociations();
@@ -502,9 +494,6 @@ public:
 
    TR_BitVector *getGlobalGPRsPreservedAcrossCalls(){ return &_globalGPRsPreservedAcrossCalls; }
    TR_BitVector *getGlobalFPRsPreservedAcrossCalls(){ return &_globalFPRsPreservedAcrossCalls; }
-
-   TR_GlobalRegisterNumber getGlobalHPRFromGPR (TR_GlobalRegisterNumber n);
-   TR_GlobalRegisterNumber getGlobalGPRFromHPR (TR_GlobalRegisterNumber n);
 
    bool considerTypeForGRA(TR::Node *node);
    bool considerTypeForGRA(TR::DataType dt);
@@ -718,9 +707,6 @@ public:
 
    bool supportsDirectIntegralLoadStoresFromLiteralPool();
 
-   void setSupportsHighWordFacility(bool val)  { _cgFlags.set(S390CG_supportsHighWordFacility, val); }
-   bool supportsHighWordFacility()     { return _cgFlags.testAny(S390CG_supportsHighWordFacility); }
-
    void setCanExceptByTrap(bool val) { _cgFlags.set(S390CG_canExceptByTrap, val); }
    virtual bool canExceptByTrap()    { return _cgFlags.testAny(S390CG_canExceptByTrap); }
 
@@ -830,7 +816,6 @@ public:
 
    TR::S390ImmInstruction          *_returnTypeInfoInstruction;
    int32_t                        _extentOfLitPool;  // excludes snippets
-   uint64_t                       _availableHPRSpillMask;
 
 protected:
    TR::list<TR::S390ConstantDataSnippet*>  _constantList;
@@ -854,7 +839,6 @@ private:
 
    TR_HashTab * _interfaceSnippetToPICsListHashTab;
 
-   TR::RegisterIterator            *_hpRegisterIterator;
    TR::RegisterIterator            *_vrfRegisterIterator;
 
    TR_Array<TR::Register *>        _transientLongRegisters;
@@ -911,7 +895,7 @@ protected:
       S390CG_condCodeShouldBePreserved   = 0x00004000,
       S390CG_enableBranchPreload         = 0x00008000,
       S390CG_globalStaticBaseRegisterOn  = 0x00010000,
-      S390CG_supportsHighWordFacility    = 0x00020000,
+      // Available                       = 0x00020000,
       S390CG_canExceptByTrap             = 0x00040000,
       S390CG_enableTLHPrefetching        = 0x00080000,
       S390CG_enableBranchPreloadForCalls = 0x00100000,

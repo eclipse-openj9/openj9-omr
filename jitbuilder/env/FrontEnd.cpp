@@ -125,9 +125,6 @@ FrontEnd::mapsAreIdentical(
        mapCursor != stackAtlas->getParameterMap() &&
        mapCursor->getMapSizeInBytes() == nextMapCursor->getMapSizeInBytes() &&
        mapCursor->getRegisterMap() == nextMapCursor->getRegisterMap() &&
-#ifdef TR_HOST_S390
-       (mapCursor->getHighWordRegisterMap() == nextMapCursor->getHighWordRegisterMap()) &&
-#endif
        !memcmp(mapCursor->getMapBits(), nextMapCursor->getMapBits(), mapCursor->getMapSizeInBytes()))
       {
       return true;

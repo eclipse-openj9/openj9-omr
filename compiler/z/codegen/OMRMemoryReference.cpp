@@ -2381,12 +2381,6 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
          assignedBaseRegister->setAssignedRegister(NULL);
          assignedBaseRegister->setState(TR::RealRegister::Free);
          cg->traceRegFreed(_baseRegister, assignedBaseRegister);
-         if (_baseRegister->is64BitReg())
-            {
-            toRealRegister(assignedBaseRegister)->getHighWordRegister()->setAssignedRegister(NULL);
-            toRealRegister(assignedBaseRegister)->getHighWordRegister()->setState(TR::RealRegister::Free);
-            cg->traceRegFreed(_baseRegister, toRealRegister(assignedBaseRegister)->getHighWordRegister());
-            }
          }
       self()->setBaseRegister(assignedBaseRegister, cg);
       }

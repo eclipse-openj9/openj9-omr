@@ -97,11 +97,6 @@ TR::S390SystemLinkage::initS390RealRegisterLinkage()
    spReal->setAssignedRegister(spReal);
    spReal->setHasBeenAssignedInMethod(true);
 
-   TR::RealRegister * tempHigh = toRealRegister(spReal)->getHighWordRegister();
-   tempHigh->setState(TR::RealRegister::Locked);
-   tempHigh->setAssignedRegister(tempHigh);
-   tempHigh->setHasBeenAssignedInMethod(true);
-
    // set register weight
    for (icount = TR::RealRegister::FirstGPR; icount >= TR::RealRegister::LastAssignableGPR; icount++)
       {
@@ -203,55 +198,6 @@ TR::S390SystemLinkage::getputFPRs(TR::InstOpCode::Mnemonic opcode, TR::Instructi
                node, getRealRegister(REGNUM(i+TR::RealRegister::FirstFPR)), rsa, cursor);
          j++;
          }
-      }
-
-   return cursor;
-   }
-
-TR::Instruction *
-TR::S390SystemLinkage::getputHPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction * cursor, TR::Node *node, TR::RealRegister *spReg)
-   {
-   int16_t HPRSaveMask;
-   int32_t offset, firstSaved, lastSaved, beginSaveOffset;
-   TR::MemoryReference *rsa;
-   int32_t i, j, hprSize;
-
-   if (spReg == NULL)
-      {
-      spReg = getNormalStackPointerRealRegister();
-      }
-
-   HPRSaveMask = getHPRSaveMask();
-   beginSaveOffset = getHPRSaveAreaEndOffset(); // following suit, see other getput functions, map stack
-
-   lastSaved = TR::Linkage::getLastMaskedBit(HPRSaveMask);
-   firstSaved = TR::Linkage::getFirstMaskedBit(HPRSaveMask);
-   hprSize = cg()->machine()->getHPRSize();
-
-   j = 0;
-   uint8_t k = firstSaved; // dispel warning
-   bool previousWasOne = false;
-   offset = beginSaveOffset; // dispel warning
-   for(i = firstSaved; i <= lastSaved; ++i)
-      {
-      if(HPRSaveMask & (1 << i))
-         {
-         if(!previousWasOne)
-            {
-            offset = beginSaveOffset + (j*hprSize);
-            k = i;
-            }
-         j++;
-         }
-      if(previousWasOne && (i == lastSaved || !(HPRSaveMask & (1 << i))))
-         {
-         rsa = generateS390MemoryReference(spReg, offset, cg());
-         int shift = (i == lastSaved) && (HPRSaveMask & (1 << i)) ? 0 : 1;
-         cursor = generateRSInstruction(cg(), opcode,
-               node, getRealRegister(REGNUM(k+TR::RealRegister::FirstGPR)),
-               getRealRegister(REGNUM(i-shift+TR::RealRegister::FirstGPR)), rsa, cursor);
-         }
-      previousWasOne = HPRSaveMask & (1 << i);
       }
 
    return cursor;
@@ -1671,10 +1617,10 @@ TR::S390zLinuxSystemLinkage::checkLeafRoutine(int32_t stackFrameSize, TR::Instru
    // c) ensure stack pointer isn't used.
    TR::RealRegister * spReg = getStackPointerRealRegister();
 
-   if(spReg->isUsedInMemRef() || getHPRSaveMask())       //don't need to check gprmask or hpr mask as these are saved in caller stack.
+   if (spReg->isUsedInMemRef())       //don't need to check gprmask as these are saved in caller stack.
       {
       if(comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "LeafRoutine: stack pointer isUsedInMemRef = %d or hprsavemask = %d is set to 1\n",spReg->isUsedInMemRef(),getHPRSaveMask());
+         traceMsg(comp(), "LeafRoutine: stack pointer isUsedInMemRef = %d is set to 1\n",spReg->isUsedInMemRef());
 
       return ft;
       }

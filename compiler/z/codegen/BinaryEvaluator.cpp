@@ -1348,29 +1348,7 @@ genericIntShift(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mnemoni
          {
          if (trgReg != srcReg && canUseAltShiftOp )
             {
-            if (cg->supportsHighWordFacility() && srcReg->assignToHPR() &&
-                (altShiftOp == TR::InstOpCode::SLLK || altShiftOp == TR::InstOpCode::SRLK ))
-               {
-               if (altShiftOp == TR::InstOpCode::SLLK)
-                  {
-                  if (trgReg->assignToHPR())
-                     altShiftOp = TR::InstOpCode::SLLHH;
-                  else
-                     altShiftOp = TR::InstOpCode::SLLLH;
-                  }
-               else
-                  {
-                  if (trgReg->assignToHPR())
-                     altShiftOp = TR::InstOpCode::SRLHH;
-                  else
-                     altShiftOp = TR::InstOpCode::SRLLH;
-                  }
-               generateExtendedHighWordInstruction(node, cg, altShiftOp, trgReg, srcReg, shiftAmount);
-               }
-            else
-               {
-               generateRSInstruction(cg, altShiftOp, node, trgReg, srcReg, shiftAmount);
-               }
+            generateRSInstruction(cg, altShiftOp, node, trgReg, srcReg, shiftAmount);
             }
          else
             {
@@ -1656,15 +1634,6 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
           secondChild->getOpCode().isLoadConst() &&
           firstChild->getSecondChild()->getOpCode().isLoadConst())
          {
-         // if GRA had decided to assign HPR to these nodes, we cannot use RISBG because they are 64-bit
-         // instructions
-         if (cg->supportsHighWordFacility() &&
-             firstChild->getFirstChild()->getRegister() &&
-             firstChild->getFirstChild()->getRegister()->assignToHPR())
-            {
-            return NULL;
-            }
-
          uint64_t value = 0;
 
          // Mask

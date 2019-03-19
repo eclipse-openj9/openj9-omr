@@ -2412,23 +2412,6 @@ TR_S390PostRAPeephole::attemptZ7distinctOperants()
          // AHIK    GPR6,GPR0, -1
          return false;
          }
-      if (!comp()->getOption(TR_DisableHighWordRA) && instr->getOpCodeValue() == TR::InstOpCode::LGR)
-         {
-         // handles this case:
-         // LGR     GPR2,GPR9        ; LR=Clobber_eval
-         // LFH     HPR9,#366#SPILL8 Auto[<spill temp 0x84571FDB0>] ?+0(GPR5) ; Load Spill
-         // AGHI    GPR2,16
-         //
-         // cannot transform this into:
-         // LFH     HPR9,#366#SPILL8 Auto[<spill temp 0x84571FDB0>] 96(GPR5) ; Load Spill
-         // AGHIK   GPR2,GPR9,16,
-
-         TR::RealRegister * lgrSourceHighWordRegister = toRealRegister(lgrSourceReg)->getHighWordRegister();
-         if (current->defsRegister(lgrSourceHighWordRegister))
-            {
-            return false;
-            }
-         }
       // found the first next use/def of lgrTargetRegister
       if (current->usesRegister(lgrTargetReg))
          {

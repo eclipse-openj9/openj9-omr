@@ -393,7 +393,7 @@ enum TR_CompilationOptions
    TR_Randomize                           = 0x00200000 + 9,
    TR_BreakOnWriteBarrier                 = 0x00400000 + 9,
    BreakOnWriteBarrierSnippet             = 0x00800000 + 9,
-   TR_Enable64BitRegsOn32Bit              = 0x01000000 + 9,
+   // Available                           = 0x01000000 + 9,
    TR_CountWriteBarriersRT                = 0x02000000 + 9,
    TR_DisableNoServerDuringStartup        = 0x04000000 + 9,  // set TR_NoOptServer during startup and insert GCR trees
    TR_BreakOnNew                          = 0x08000000 + 9,
@@ -418,7 +418,7 @@ enum TR_CompilationOptions
    // Available                           = 0x00010000 + 10,
    TR_EnableSequentialLoadStoreWarm       = 0x00020000 + 10,
    TR_EnableSequentialLoadStoreCold       = 0x00040000 + 10,
-   TR_Enable64BitRegsOn32BitHeuristic     = 0x00080000 + 10,
+   // Available                           = 0x00080000 + 10,
    TR_EnableNewX86PrefetchTLH             = 0x00100000 + 10,
    // Available                           = 0x00200000 + 10,
    TR_ConservativeCompilation             = 0x00400000 + 10,

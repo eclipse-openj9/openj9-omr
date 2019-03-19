@@ -1160,7 +1160,8 @@ TR::Instruction * generateVRRiInstruction(
                       TR::Node                * n          ,
                       TR::Register            * targetReg  ,    /* GPR */
                       TR::Register            * sourceReg2 ,    /* VRF */
-                      uint8_t                   mask3);         /* 4 bits*/
+                      uint8_t                   mask3      ,    /* 4 bits*/
+                      uint8_t                   mask4 = 0);
 
 /****** VRS ******/
 TR::Instruction * generateVRSaInstruction(
@@ -1299,7 +1300,7 @@ TR::Instruction *generateVirtualGuardNOPInstruction(
                    TR::Instruction                     *preced = 0);
 
 bool
-canThrowDecimalOverflowException(TR::InstOpCode::Mnemonic op);
+canThrowDecimalOverflowException(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op);
 
 void
 generateS390DAAExceptionRestoreSnippet(TR::CodeGenerator* cg,

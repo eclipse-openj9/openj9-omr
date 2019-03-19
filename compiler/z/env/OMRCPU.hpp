@@ -71,6 +71,8 @@ public:
 
    bool getS390SupportsZ14() { return false; }
 
+   bool getS390SupportsZ15() { return false; }
+
    bool getS390SupportsZNext() { return false; }
 
    bool getS390SupportsHPRDebug() { return false; }

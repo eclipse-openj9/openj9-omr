@@ -5604,10 +5604,13 @@ class S390VRRhInstruction: public S390VRRInstruction
 
 /**
  * VRR-i
- *    __________________________________________________________
- *   |Op Code | R1 | V2 | ///////// | M3  | ////// |RXB |Op Code|
- *   |________|____|____|___________|_____|________|____|_______|
+ *    ___________________________________________________________
+ *   |Op Code | R1 | V2 | ///////// | M3  | M4 |/// |RXB |Op Code|
+ *   |________|____|____|___________|_____|____|____|____|_______|
  *   0        8    12   16           24    28       36   40    47
+ *
+ * z15 and above have an optional M4 if the vector-packed-decimal-enhancement facility
+ * is installed.
  */
 class S390VRRiInstruction: public S390VRRInstruction
    {
@@ -5618,8 +5621,9 @@ class S390VRRiInstruction: public S390VRRInstruction
                           TR::Node                * n          = NULL,
                           TR::Register            * r1Reg      = NULL, /* GPR */
                           TR::Register            * v2Reg      = NULL,
-                           uint8_t                   mask3     = 0)
-   : S390VRRInstruction(cg, op, n, r1Reg, v2Reg, mask3, 0, 0, 0)
+                          uint8_t                   mask3      = 0,
+                          uint8_t                   mask4      = 0)
+   : S390VRRInstruction(cg, op, n, r1Reg, v2Reg, mask3, mask4, 0, 0)
       {
       }
 

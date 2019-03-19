@@ -352,7 +352,7 @@ enum TR_CompilationOptions
    // Available                           = 0x00000800 + 8,
    TR_DisableLinkageRegisterAllocation    = 0x00001000 + 8,
    // Available                           = 0x00002000 + 8,
-   // Available                           = 0x00004000 + 8,
+   TR_DisableZ15                          = 0x00004000 + 8,
    TR_DisableCompilationAfterDLT          = 0x00008000 + 8,
    TR_DLTMostOnce                         = 0x00010000 + 8,
    TR_DisableSelectiveNoOptServer         = 0x00020000 + 8,

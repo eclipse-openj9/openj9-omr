@@ -2033,9 +2033,10 @@ TR::Instruction * generateVRRiInstruction(
                       TR::Node                * n          ,
                       TR::Register            * targetReg  ,    /* GPR */
                       TR::Register            * sourceReg2 ,    /* VRF */
-                      uint8_t                   mask3)          /* 4 bits*/
+                      uint8_t                   mask3      ,    /* 4 bits*/
+                      uint8_t                   mask4)
    {
-   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRRiInstruction(cg, op, n, targetReg, sourceReg2, mask3);
+   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRRiInstruction(cg, op, n, targetReg, sourceReg2, mask3, mask4);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::VCVB || op == TR::InstOpCode::VCVBG)
@@ -3399,6 +3400,9 @@ TR::Instruction *generateZeroVector(TR::Node *node, TR::CodeGenerator *cg, TR::R
  * \brief
  *    Determines if an instruction can throw a decimal overflow exceptions.
  *
+ * \param cg
+ *    The code generator used to generate the instructions.
+ *
  * \param op
  *    The instruction to check.
  *
@@ -3411,7 +3415,7 @@ TR::Instruction *generateZeroVector(TR::Node *node, TR::CodeGenerator *cg, TR::R
  *    whether to rely on condition code in such cases.
 */
 bool
-canThrowDecimalOverflowException(TR::InstOpCode::Mnemonic op)
+canThrowDecimalOverflowException(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op)
    {
    switch(op)
       {
@@ -3434,7 +3438,7 @@ canThrowDecimalOverflowException(TR::InstOpCode::Mnemonic op)
       // Fixed point overflow exception instructions
       case TR::InstOpCode::VCVB:
       case TR::InstOpCode::VCVBG:
-          return true;
+          return !cg->getIgnoreDecimalOverflowException();
       default:
           return false;
       }
@@ -3469,7 +3473,13 @@ generateS390DAAExceptionRestoreSnippet(TR::CodeGenerator* cg,
          TR::Instruction * nop = new (INSN_HEAP) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, cg);
          }
 
-      TR::InstOpCode::S390BranchCondition bc = canThrowDecimalOverflowException(op) ? TR::InstOpCode::COND_CC3 : TR::InstOpCode::COND_NOP;
+      auto bc = TR::InstOpCode::COND_NOP;
+
+      if (canThrowDecimalOverflowException(cg, op))
+         {
+         bc = TR::InstOpCode::COND_CC3;
+         }
+
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreGPR7SnippetHandler);
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, bc, n, handlerLabel);
 

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -106,3 +106,19 @@ macro(omr_toolconfig_global_setup)
 	# Hack up output dir to fix dll dependency issues on windows
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 endmacro(omr_toolconfig_global_setup)
+
+function(_omr_toolchain_process_exports TARGET_NAME)
+	# we only need to do something if we are dealing with a shared library
+	get_target_property(target_type ${TARGET_NAME} TYPE)
+	if(NOT target_type STREQUAL "SHARED_LIBRARY")
+		return()
+	endif()
+
+	set(def_file "$<TARGET_PROPERTY:${TARGET_NAME},BINARY_DIR>/${TARGET_NAME}.def")
+
+	file(READ "${omr_SOURCE_DIR}/cmake/modules/platform/toolcfg/msvc_exports.def.in" template)
+	string(CONFIGURE "${template}" configured_template)
+	file(GENERATE OUTPUT "${def_file}" CONTENT "${configured_template}")
+
+	target_sources("${TARGET_NAME}" PRIVATE "${def_file}")
+endfunction()

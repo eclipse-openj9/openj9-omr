@@ -185,7 +185,7 @@ if(OMR_HOST_OS STREQUAL win)
 	enable_language(RC)
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/win32/omrsyslogmessages.rc
-		COMMAND mc  ${CMAKE_CURRENT_SOURCE_DIR}/win32/omrsyslogmessages.mc
+		COMMAND ${CMAKE_MC_COMPILER}  ${CMAKE_CURRENT_SOURCE_DIR}/win32/omrsyslogmessages.mc
 		DEPENDS win32/omrsyslogmessages.mc
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/win32
 	)

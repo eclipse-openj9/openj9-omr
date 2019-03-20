@@ -3921,11 +3921,11 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
                if (!shouldOnlySpecializeLoops())
                   e->setFrequency((*edge)->getFrequency());
                else
-               {
-               int32_t specializedBlockFrequency = TR::Block::getScaledSpecializedFrequency((*edge)->getFrequency());
+                  {
+                  int32_t specializedBlockFrequency = TR::Block::getScaledSpecializedFrequency((*edge)->getFrequency());
 
-               e->setFrequency(specializedBlockFrequency);
-               }
+                  e->setFrequency(specializedBlockFrequency);
+                  }
                }
 
             nextClonedBlock->getLastRealTreeTop()->adjustBranchOrSwitchTreeTop(comp(), succ->getEntry(), clonedSucc->getEntry());
@@ -4414,35 +4414,35 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             child->setNumChildren(2);
             }
 
-      TR::TreeTop *secondNewTree = NULL;
-      if (arrayStoreCheckNode->getNumChildren() > 1)
-         {
-         TR_ASSERT((arrayStoreCheckNode->getNumChildren() == 2), "Unknown array store check tree\n");
-         secondNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, arrayStoreCheckNode->getSecondChild()), NULL, NULL);
-         child = arrayStoreCheckNode->getSecondChild();
-         if (child->getOpCodeValue() == TR::awrtbari && TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_none &&
-             performTransformation(comp(), "%sChanging awrtbari node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
+         TR::TreeTop *secondNewTree = NULL;
+         if (arrayStoreCheckNode->getNumChildren() > 1)
             {
-            TR::Node::recreate(child, TR::astorei);
-            child->getChild(2)->recursivelyDecReferenceCount();
-            child->setNumChildren(2);
+            TR_ASSERT((arrayStoreCheckNode->getNumChildren() == 2), "Unknown array store check tree\n");
+            secondNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, arrayStoreCheckNode->getSecondChild()), NULL, NULL);
+            child = arrayStoreCheckNode->getSecondChild();
+            if (child->getOpCodeValue() == TR::awrtbari && TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_none &&
+                performTransformation(comp(), "%sChanging awrtbari node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
+               {
+               TR::Node::recreate(child, TR::astorei);
+               child->getChild(2)->recursivelyDecReferenceCount();
+               child->setNumChildren(2);
+               }
             }
+
+         prevTreeTop->join(firstNewTree);
+         if (secondNewTree)
+            {
+            firstNewTree->join(secondNewTree);
+            secondNewTree->join(nextTreeTop);
+            }
+         else
+            firstNewTree->join(nextTreeTop);
+
+         arrayStoreCheckNode->recursivelyDecReferenceCount();
+
+         nextTree = nextTree->getNextElement();
          }
-
-      prevTreeTop->join(firstNewTree);
-      if (secondNewTree)
-         {
-         firstNewTree->join(secondNewTree);
-         secondNewTree->join(nextTreeTop);
-         }
-      else
-         firstNewTree->join(nextTreeTop);
-
-      arrayStoreCheckNode->recursivelyDecReferenceCount();
-
-      nextTree = nextTree->getNextElement();
       }
-   }
 
    // Construct tests for invariant expressions
    //
@@ -4825,7 +4825,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    clonedInvariantBlockStructure->setCreatedByVersioning(true);
 
    if (!_neitherLoopCold)
-   clonedInnerWhileLoops->deleteAll();
+      clonedInnerWhileLoops->deleteAll();
    clonedInvariantBlockStructure->setAsLoopInvariantBlock(true);
    TR_RegionStructure *parentStructure = whileLoop->getParent()->asRegion();
    TR_RegionStructure *properRegion = new (_cfg->structureRegion()) TR_RegionStructure(comp(), chooserBlock->getNumber());

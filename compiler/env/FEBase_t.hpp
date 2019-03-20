@@ -65,6 +65,13 @@ FEBase<Derived>::allocateRelocationData(TR::Compilation* comp, uint32_t size)
             size,
             MEM_COMMIT,
             PAGE_READWRITE));
+// TODO: Why is there no OMR_OS_ZOS? Or any other OS for that matter?
+#elif defined(J9ZOS390)
+   // TODO: This is an absolute hack to get z/OS JITBuilder building and even remotely close to working. We really
+   // ought to be using the port library to allocate such memory. This was the quickest "workaround" I could think
+   // of to just get us off the ground.
+   return reinterpret_cast<uint8_t *>(
+         malloc(size));
 #else
    return reinterpret_cast<uint8_t *>(
          mmap(0,

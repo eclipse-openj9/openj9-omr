@@ -22,7 +22,7 @@
 #ifndef OMR_STATEMENTNAMES_INCL
 #define OMR_STATEMENTNAMES_INCL
 
-#include <cstdint>
+#include <stdint.h>
 
 namespace OMR
 {

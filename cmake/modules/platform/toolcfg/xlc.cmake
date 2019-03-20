@@ -60,6 +60,9 @@ if(OMR_HOST_ARCH STREQUAL "ppc")
 		-qsuppress=1540-1087:1540-1088:1540-1090:1540-029:1500-029
 		-qdebug=nscrep
 	)
+
+	# Configure the platform dependent library for multithreading
+	set(OMR_PLATFORM_THREAD_LIBRARY -lpthread)
 elseif(OMR_HOST_ARCH STREQUAL "s390")
 	# TODO: This should technically be -qhalt=w however c89 compiler used to compile the C sources does not like this
 	# flag. We'll need to investigate whether we actually need c89 for C sources or if we can use xlc and what to do
@@ -137,6 +140,9 @@ elseif(OMR_HOST_ARCH STREQUAL "s390")
 		-Wc,EXH
 		-qhaltonmsg=CCN6102
 	)
+
+	# Configure the platform dependent library for multithreading
+	set(OMR_PLATFORM_THREAD_LIBRARY "")
 endif()
 
 if(OMR_HOST_OS STREQUAL "aix")
@@ -166,6 +172,3 @@ endif()
 
 set(SPP_CMD ${CMAKE_C_COMPILER})
 set(SPP_FLAGS -E -P)
-
-# Configure the platform dependent library for multithreading
-set(OMR_PLATFORM_THREAD_LIBRARY -lpthread)

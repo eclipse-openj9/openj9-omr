@@ -620,7 +620,7 @@ OMR::MethodBuilder::getParameterTypes()
       TR_ASSERT_FATAL(symNamesIterator != _symbolNameFromSlot.end(), "No symbol found in slot %d", p);
       const char *name = symNamesIterator->second;
 
-      std::map<const char *, TR::IlType *, StrComparator>::iterator symTypesIterator = _symbolTypes.find(name);
+      auto symTypesIterator = _symbolTypes.find(name);
       TR_ASSERT_FATAL(symTypesIterator != _symbolTypes.end(), "No matching symbol type for parameter '%s'", name);
       paramTypesArray[p] = symTypesIterator->second;
       }

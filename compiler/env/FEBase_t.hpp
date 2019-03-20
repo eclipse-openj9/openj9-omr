@@ -39,7 +39,7 @@ namespace TR
 // We should be relying on the port library to allocate memory, but this connection
 // has not yet been made, so as a quick workaround for platforms like OS X <= 10.9,
 // where MAP_ANONYMOUS is not defined, is to map MAP_ANON to MAP_ANONYMOUS ourselves
-#if !defined(OMR_OS_WINDOWS)
+#if defined(__APPLE__)
    #if !defined(MAP_ANONYMOUS)
       #define NO_MAP_ANONYMOUS
       #if defined(MAP_ANON)
@@ -48,7 +48,7 @@ namespace TR
          #error unexpectedly, no MAP_ANONYMOUS or MAP_ANON definition
       #endif
    #endif
-#endif /* OMR_OS_WINDOWS */
+#endif /* defined(__APPLE__) */
 
 template <class Derived>
 uint8_t *

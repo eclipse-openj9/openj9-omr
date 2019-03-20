@@ -827,6 +827,48 @@ public:
 	}
 
 	/**
+	 * Returns the field offset of the hottest field of the object referred to by the forwarded header.
+	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled.
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return the offset of the hottest field of the given object referred to by the forwarded header, return U_8_MAX if a hot field does not exist
+	 */
+	MMINLINE uint8_t
+	getHotFieldOffset(MM_ForwardedHeader *forwardedHeader)
+	{
+		//return _delegate.getHotFieldOffset(forwardedHeader); //TODO: will be populated once Language specific implementation is ready
+		return U_8_MAX;
+	}
+
+	/**
+	 * Returns the field offset of the second hottest field of the object referred to by the forwarded header.
+	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return the offset of the second hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
+	 */
+	MMINLINE uint8_t
+	getHotFieldOffset2(MM_ForwardedHeader *forwardedHeader)
+	{
+		//return _delegate.getHotFieldOffset2(forwardedHeader); //TODO: will be populated once Language specific implementation is ready
+		return U_8_MAX;
+	}
+
+		/**
+	 * Returns the field offset of the third hottest field of the object referred to by the forwarded header.
+	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return the offset of the third hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
+	 */
+	MMINLINE uint8_t
+	getHotFieldOffset3(MM_ForwardedHeader *forwardedHeader)
+	{
+		//return _delegate.getHotFieldOffset3(forwardedHeader); //TODO: will be populated once Language specific implementation is ready
+		return U_8_MAX;
+	}
+
+	/**
 	 * Extract the flag bits from an unforwarded object. Flag bits are returned in the low-order byte of the returned value.
 	 *
 	 * This method will assert if the object has been marked as forwarded.

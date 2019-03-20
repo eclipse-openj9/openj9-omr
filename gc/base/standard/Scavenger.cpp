@@ -105,6 +105,9 @@
 #define FLIP_TENURE_LARGE_SCAN 4
 #define FLIP_TENURE_LARGE_SCAN_DEFERRED 5
 
+/* If scavenger dynamicBreadthFirstScanOrdering and alwaysDepthCopyFirstOffset is enabled, always copy the first offset of each object after the object itself is copied */
+#define DEFAULT_HOT_FIELD_OFFSET 1
+
 /* VM Design 1774: Ideally we would pull these cache line values from the port library but this will suffice for
  * a quick implementation
  */
@@ -246,6 +249,7 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 	 * will contain a valid entry. We set the appropriate number of caches per thread here */
 	switch (_extensions->scavengerScanOrdering) {
 	case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_BREADTH_FIRST:
+	case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_DYNAMIC_BREADTH_FIRST:
 		_cachesPerThread = FLIP_TENURE_LARGE_SCAN;
 		break;
 	case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL:
@@ -1647,6 +1651,9 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 			scavStats->_flipBytes += objectCopySizeInBytes;
 			scavStats->getFlipHistory(0)->_flipBytes[oldObjectAge + 1] += objectReserveSizeInBytes;
 		}
+
+		/* depth copy the hot fields of an object if scavenger dynamicBreadthFirstScanOrdering is enabled */	
+		depthCopyHotFields(env, forwardedHeader, destinationObjectPtr);
 	} else {
 		/* We have not used the reserved space now, but we will for subsequent allocations. If this space was reserved for an individual object,
 		 * we might have created a TLH remainder from previous cache just before reserving this space. This space eventaully can create another remainder.
@@ -1668,6 +1675,42 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	}
 	/* return value for updating the slot */
 	return destinationObjectPtr;
+}
+
+MMINLINE void
+MM_Scavenger::depthCopyHotFields(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHeader, omrobjectptr_t destinationObjectPtr) {
+	/* depth copy the hot fields of an object up to a depth specified by depthCopyMax */
+	if (env->_hotFieldCopyDepthCount < _extensions->depthCopyMax) {
+		uint8_t hotFieldOffset = _extensions->objectModel.getHotFieldOffset(forwardedHeader);
+		if (U_8_MAX != hotFieldOffset) {
+			copyHotField(env, destinationObjectPtr, hotFieldOffset);
+			uint8_t hotFieldOffset2 = _extensions->objectModel.getHotFieldOffset2(forwardedHeader);
+			if (U_8_MAX != hotFieldOffset2) {
+				copyHotField(env, destinationObjectPtr, hotFieldOffset2);
+				uint8_t hotFieldOffset3 = _extensions->objectModel.getHotFieldOffset3(forwardedHeader);
+				if (U_8_MAX != hotFieldOffset3) {
+					copyHotField(env, destinationObjectPtr, hotFieldOffset3);
+				}
+			}
+		} else if (_extensions->alwaysDepthCopyFirstOffset && !_extensions->objectModel.isIndexable(forwardedHeader)) {
+			copyHotField(env, destinationObjectPtr, DEFAULT_HOT_FIELD_OFFSET);
+		}
+	}
+}
+
+MMINLINE void
+MM_Scavenger::copyHotField(MM_EnvironmentStandard *env, omrobjectptr_t destinationObjectPtr, uint8_t offset) {
+	GC_SlotObject hotFieldObject(_omrVM, (fomrobject_t*)(destinationObjectPtr + offset));
+	omrobjectptr_t objectPtr = hotFieldObject.readReferenceFromSlot();
+	if (isObjectInEvacuateMemory(objectPtr)) {
+		/* Hot field needs to be copy and forwarded.  Check if the work has already been done */
+		MM_ForwardedHeader forwardHeaderHotField(objectPtr, _extensions->compressObjectReferences());
+		if (!forwardHeaderHotField.isForwardedPointer()) {
+			env->_hotFieldCopyDepthCount += 1;
+			copyObject(env, &forwardHeaderHotField);
+			env->_hotFieldCopyDepthCount -= 1;
+		}
+	}
 }
 
 /****************************************
@@ -2336,6 +2379,7 @@ MM_Scavenger::completeScan(MM_EnvironmentStandard *env)
 
 		switch (_extensions->scavengerScanOrdering) {
 		case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_BREADTH_FIRST:
+		case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_DYNAMIC_BREADTH_FIRST:
 			completeScanCache(env, scanCache);
 			break;
 		case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL:

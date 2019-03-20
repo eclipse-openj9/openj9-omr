@@ -4842,6 +4842,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    properRegion->addSubNode(clonedInvariantNode);
 
    TR_StructureSubGraphNode *prevComparisonNode = NULL;
+   TR_StructureSubGraphNode *regionEntryNode = NULL;
    currComparisonBlock = comparisonBlocks.getListHead();
    currCriticalEdgeBlock = criticalEdgeBlocks.getListHead();
 
@@ -4862,7 +4863,10 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       if (prevComparisonNode)
          TR::CFGEdge::createEdge(prevComparisonNode,  comparisonNode, trMemory());
       else
-         properRegion->setEntry(comparisonNode);
+         {
+         regionEntryNode = comparisonNode;
+         properRegion->setEntry(regionEntryNode);
+         }
 
       //TR::CFGEdge::createEdge(comparisonNode,  clonedInvariantNode, trMemory());
       prevComparisonNode = comparisonNode;
@@ -4886,7 +4890,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 
    // Since the new proper region replaced the original loop invariant
    // block in the parent structure, the successor of the loop
-   // invariant block strcuture (the natural loop originally) must now  be removed
+   // invariant block structure (the natural loop originally) must now be removed
    // from the parent structure as the natural loop would be moved into the proper
    // region.
    //
@@ -4905,8 +4909,29 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          succNode->removePredecessor(succEdge);
          subNode->removeSuccessor(succEdge);
 
+         TR::CFGEdge *toInvariantEdge = NULL;
+
          for (auto changedSuccEdge = succNode->getSuccessors().begin(); changedSuccEdge != succNode->getSuccessors().end(); ++changedSuccEdge)
+            {
+            TR::CFGEdge *currEdge = *changedSuccEdge;
+
+            // Keep track of any edge from the original loop to the invariant
+            // block - it must be discarded from the list of successors of the
+            // new proper region in the context of the parent structure, as a
+            // subgraph node must not have an edge to itself
+            if (currEdge->getTo() == properNode)
+               {
+               toInvariantEdge = currEdge;
+               }
+
             (*changedSuccEdge)->setFrom(properNode);
+            }
+
+         if (toInvariantEdge)
+            {
+            properNode->removeSuccessor(toInvariantEdge);
+            properNode->removePredecessor(toInvariantEdge);
+            }
 
          for (auto changedSuccEdge = succNode->getExceptionSuccessors().begin(); changedSuccEdge != succNode->getExceptionSuccessors().end(); ++changedSuccEdge)
             (*changedSuccEdge)->setExceptionFrom(properNode);
@@ -4980,15 +5005,39 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          bool isExceptionEdge = false;
          if (exitEdge->getFrom()->hasExceptionSuccessor(node))
             isExceptionEdge = true;
-         properRegion->addExitEdge(whileNode, node->getNumber(), isExceptionEdge);
+
+         // Check whether this exit is from the while loop to the new region
+         // If it is, it should not be added as an exit from the region itself,
+         // but rather as an edge from the while loop to the start of the new
+         // region
+         if (node->getNumber() == regionEntryNode->getNumber())
+            {
+            TR::CFGEdge::createEdge(whileNode, regionEntryNode, trMemory());
+            }
+         else
+            {
+            properRegion->addExitEdge(whileNode, node->getNumber(), isExceptionEdge);
+            }
          seenExitNodes.set(node->getNumber());
+         }
+      }
+
+   // If the original while loop exited to the loop invariant block, ensure the
+   // structure of the cloned version of the loop exits to the new proper region
+   ei.set(&clonedWhileLoop->getExitEdges());
+   for (exitEdge = ei.getCurrent(); exitEdge; exitEdge = ei.getNext())
+      {
+      if (exitEdge->getTo()->getNumber() == invariantBlockStructure->getNumber())
+         {
+         clonedWhileLoop->replaceExitPart(invariantBlockStructure->getNumber(), properRegion->getNumber());
+         break;
          }
       }
 
    // Patch up the cloned while loop edges properly
    //
    seenExitNodes.empty();
-   ei.set(&clonedWhileLoop->getExitEdges());
+   ei.reset();
    for (exitEdge = ei.getCurrent(); exitEdge; exitEdge = ei.getNext())
       {
       TR_StructureSubGraphNode *node = toStructureSubGraphNode(exitEdge->getTo());
@@ -4997,7 +5046,19 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          bool isExceptionEdge = false;
          if (exitEdge->getFrom()->hasExceptionSuccessor(node))
             isExceptionEdge = true;
-         properRegion->addExitEdge(clonedWhileNode, node->getNumber(), isExceptionEdge);
+
+         // Check whether this exit is from the while loop to the new region
+         // If it is, it should not be added as an exit from the region itself,
+         // but rather as an edge from the while loop to the start of the new
+         // region
+         if (node->getNumber() == regionEntryNode->getNumber())
+            {
+            TR::CFGEdge::createEdge(clonedWhileNode, regionEntryNode, trMemory());
+            }
+         else
+            {
+            properRegion->addExitEdge(clonedWhileNode, node->getNumber(), isExceptionEdge);
+            }
          seenExitNodes.set(node->getNumber());
          }
       }

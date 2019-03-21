@@ -1529,6 +1529,7 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
                   TR::VPKnownObject::createForJavaLangClass(vp, knownObjectIndex),
                   TR::VPNonNullObject::create(vp), NULL, NULL,
                   TR::VPObjectLocation::create(vp, TR::VPObjectLocation::JavaLangClassObject));
+               vp->addGlobalConstraint(node, constraint);
                }
             }
          else
@@ -1539,8 +1540,10 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
                   TR::VPKnownObject::create(vp, knownObjectIndex),
                   TR::VPNonNullObject::create(vp), NULL, NULL,
                   TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject));
+               vp->addBlockConstraint(node, constraint);
                }
             }
+
          if (constraint)
             {
             if (vp->trace())
@@ -1549,7 +1552,6 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
                constraint->print(vp);
                traceMsg(vp->comp(), "\n");
                }
-            vp->addGlobalConstraint(node, constraint);
             return true;
             }
          }

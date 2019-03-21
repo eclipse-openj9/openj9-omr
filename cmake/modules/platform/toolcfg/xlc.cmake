@@ -139,6 +139,7 @@ elseif(OMR_HOST_ARCH STREQUAL "s390")
 		"\"-Wc,TMPLPARSE(NO)\""
 		-Wc,EXH
 		-qhaltonmsg=CCN6102
+		-qnocsect
 	)
 
 	# Configure the platform dependent library for multithreading

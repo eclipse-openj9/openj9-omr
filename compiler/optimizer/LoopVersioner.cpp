@@ -3445,21 +3445,29 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
                }
             else if (currentOpCode.isCheckCast()) // (currentOpCode.getOpCodeValue() == TR::checkcast)
                {
-               TR_ASSERT(currentNode->getSecondChild()->getOpCodeValue() == TR::loadaddr, "second child should be LOADADDR");
-               void* clazz = currentNode->getSecondChild()->
-                  getSymbolReference()->getSymbol()->getStaticSymbol()->getStaticAddress();
-               if (!comp()->fe()->isUnloadAssumptionRequired((TR_OpaqueClassBlock*)clazz, comp()->getCurrentMethod()))
+               if (currentNode->getSecondChild()->getOpCodeValue() == TR::loadaddr)
+	          {
+                  void* clazz = currentNode->getSecondChild()->
+                     getSymbolReference()->getSymbol()->getStaticSymbol()->getStaticAddress();
+                  if (!comp()->fe()->isUnloadAssumptionRequired((TR_OpaqueClassBlock*)clazz, comp()->getCurrentMethod()))
+                     {
+                     checkCastTrees->add(currentTree);
+   
+                     if (dupOfThisBlockAlreadyExecutedBeforeLoop)
+                        _checksInDupHeader.add(currentTree);
+                     }
+                  else
+                     {
+                     if (trace()) //if we move the checkcast before the inlined body instanceof might fail because the class might not exist in the original code
+                         traceMsg(comp(), "Class for Checkcast %p is not loaded by the same classloader as the compiled method\n", currentTree->getNode());
+                     }
+                  }
+               else
                   {
                   checkCastTrees->add(currentTree);
-
                   if (dupOfThisBlockAlreadyExecutedBeforeLoop)
                      _checksInDupHeader.add(currentTree);
                   }
-              else
-                 {
-                 if (trace()) //if we move the checkcast before the inlined body instanceof might fail because the class might not exist in the original code
-                     traceMsg(comp(), "Class for Checkcast %p is not loaded by the same classloader as the compiled method\n", currentTree->getNode());
-                 }
                }
             else if (currentOpCode.getOpCodeValue() == TR::ArrayStoreCHK)
                {

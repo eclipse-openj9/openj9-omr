@@ -580,6 +580,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableZ13LoadAndMask",              "O\tdisable load-and-mask instruction generation on z13",   SET_OPTION_BIT(TR_DisableZ13LoadAndMask), "F"},
    {"disableZ13LoadImmediateOnCond",      "O\tdisable load halfword immediate on condition instruction generation on z13",   SET_OPTION_BIT(TR_DisableZ13LoadImmediateOnCond), "F"},
    {"disableZ14",                         "O\tdisable z14 support",                            SET_OPTION_BIT(TR_DisableZ14), "F"},
+   {"disableZ15",                         "O\tdisable z15 support",                        SET_OPTION_BIT(TR_DisableZ15), "F"},
    {"disableZ196",                        "O\tdisable z196 support",                           SET_OPTION_BIT(TR_DisableZ196), "F"},
    {"disableZArraySetUnroll",             "O\tdisable arraySet unrolling on 390.",             SET_OPTION_BIT(TR_DisableZArraySetUnroll), "F"},
    {"disableZealousCodegenOpts",          "O\tdisable use of zealous codegen optimizations.", SET_OPTION_BIT(TR_DisableZealousCodegenOpts), "F"},

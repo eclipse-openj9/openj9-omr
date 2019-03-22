@@ -370,15 +370,38 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
 
    if (node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::imin)
       {
-      registerA = cg->gprClobberEvaluate(node->getFirstChild());
-      generateRRInstruction(cg, TR::InstOpCode::CR, node, registerA, registerB);
-      generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA, registerB, mask, true);
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
+         {
+         registerA = cg->allocateRegister();
+
+         // Load into a tmp instead of clobberEvaluating into registerA to avoid an extra register shuffle
+         TR::Register* tmpRegister = cg->evaluate(node->getFirstChild());
+
+         generateRRInstruction(cg, TR::InstOpCode::CR, node, tmpRegister, registerB);
+         generateRRFInstruction(cg, TR::InstOpCode::SELR, node, registerA, registerB, tmpRegister, mask);
+         }
+      else
+         {
+         registerA = cg->gprClobberEvaluate(node->getFirstChild());
+
+         generateRRInstruction(cg, TR::InstOpCode::CR, node, registerA, registerB);
+         generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA, registerB, mask, true);
+         }
       }
    else if (node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lmin)
       {
       registerA = cg->gprClobberEvaluate(node->getFirstChild());
       generateRREInstruction(cg, TR::InstOpCode::CGR, node, registerA, registerB);
-      generateRRFInstruction(cg, TR::InstOpCode::LOCGR, node, registerA, registerB, mask, true);
+
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
+         {
+         generateRRFInstruction(cg, TR::InstOpCode::SELGR, node, registerA, registerA, registerB, mask);
+         }
+      else
+         {
+         generateRRFInstruction(cg, TR::InstOpCode::LOCGR, node, registerA, registerB, mask, true);
+         }
+      
       }
    else
       {
@@ -2938,8 +2961,7 @@ OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::N
 TR::Register *
 OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   // Sanity check
-   TR_ASSERT(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10), "ternary IL only supported on z10 and up");
+   TR_ASSERT_FATAL(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10), "TR::ternary IL only supported on z10+");
 
    TR::Compilation *comp = cg->comp();
 
@@ -2985,25 +3007,21 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       TR::Register *firstReg = cg->evaluate(firstChild);
       TR::Register *secondReg = cg->evaluate(secondChild);
 
-      cg->decReferenceCount(firstChild);
-      cg->decReferenceCount(secondChild);
+      auto bc = TR::TreeEvaluator::getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
 
-      TR::InstOpCode::S390BranchCondition bc = TR::TreeEvaluator::getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
-
-      // Load on condition is supported on z196 and up
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
          {
-         if (comp->getOption(TR_TraceCG))
-            traceMsg(comp, "Emitting a compare between reg %p and %p instruction\n", firstReg, secondReg);
-
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
-         if (comp->getOption(TR_TraceCG))
-            {
-            traceMsg(comp, "Emitting a Load on condition with condtion based on compare type\n");
-            }
-
-         generateRRFInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR, node, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)), true);
+         auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
+         generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
+         }
+      else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+         {
+         generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
+         
+         auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
+         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)), true);
          }
       else
          {
@@ -3043,6 +3061,9 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             traceMsg(comp, "firstReg = %p secondReg = %p trueReg = %p falseReg = %p trueReg->is64BitReg() = %d falseReg->is64BitReg() = %d isLongCompare = %d\n", firstReg, secondReg, trueReg, falseReg, trueReg->is64BitReg(), falseReg->is64BitReg(), condition->getOpCode().isLongCompare());
             }
          }
+
+      cg->decReferenceCount(firstChild);
+      cg->decReferenceCount(secondChild);
       }
    else
       {
@@ -3056,17 +3077,15 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       TR::Instruction *compareInst = generateRILInstruction(cg,condition->getOpCode().isLongCompare() ? TR::InstOpCode::CGFI : TR::InstOpCode::CFI,condition,condition->getRegister(), 0);
 
-      // Load on condition is supported on z196 and up
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
          {
-         if (comp->getOption(TR_TraceCG))
-            {
-            traceMsg(comp, "Emmitting a LOCR with resulReg = %p falseReg->getRegister = %p\n",trueReg,falseReg->getRegister());
-            }
-
+         auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
+         generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
+         }     
+      else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+         {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
-
-         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg->getRegister(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
+         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
          }
       else
          {

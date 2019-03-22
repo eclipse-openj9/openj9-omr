@@ -11568,11 +11568,71 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
    TR::Instruction *cursor = NULL;
    TR::RegisterDependencyConditions *deps = NULL;
    bool genStartICFLabel = node->isBackwardArrayCopy() && byteLenNode->getOpCode().isLoadConst();
-   if (!cg->getSupportsVectorRegisters())
+
+   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
       {
-      deps = TR::TreeEvaluator::generateMemToMemElementCopy(node, cg, byteSrcReg, byteDstReg, byteLenReg, srm, false, false, genStartICFLabel);
+      TR::Register* loopIterReg = srm->findOrCreateScratchRegister();
+
+      cursor = generateShiftRightImmediate(cg, node, loopIterReg, byteLenReg, 8);
+      iComment("Calculate loop iterations");
+
+      if (genStartICFLabel)
+         {
+         TR::LabelSymbol* cFlowRegionStart = generateLabelSymbol(cg);
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+         cFlowRegionStart->setStartInternalControlFlow();
+         }
+      
+      TR::LabelSymbol* handleResidueLabel = generateLabelSymbol(cg);
+
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, handleResidueLabel);
+      iComment("If length < 256 then jump to handle residue");
+      
+      // loadBytesReg is used to store number of bytes used by MVCRL instruction
+      TR::Register* loadBytesReg = cg->allocateRegister();
+
+      deps = generateRegisterDependencyConditions(0, 1, cg);
+      deps->addPostCondition(loadBytesReg, TR::RealRegister::GPR0);
+
+      cursor = generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), node, loadBytesReg, 255);
+      iComment("GPR0 is the length in bytes that will be loaded in one iteration of loop");
+
+      cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, byteSrcReg, generateS390MemoryReference(byteSrcReg, byteLenReg, 0, cg));
+      cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, byteDstReg, generateS390MemoryReference(byteDstReg, byteLenReg, 0, cg));
+      
+      TR::LabelSymbol* loopLabel = generateLabelSymbol(cg);
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, loopLabel);
+
+      generateRXInstruction(cg, TR::InstOpCode::LA, node, byteSrcReg, generateS390MemoryReference(byteSrcReg, -256, cg));
+      generateRXInstruction(cg, TR::InstOpCode::LA, node, byteDstReg, generateS390MemoryReference(byteDstReg, -256, cg));
+
+      cursor = generateSSEInstruction(cg, TR::InstOpCode::MVCRL, node,
+         generateS390MemoryReference(byteDstReg, 0, cg),
+         generateS390MemoryReference(byteSrcReg, 0, cg)); 
+
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRCT, node, loopIterReg, loopLabel);
+      
+      cursor = generateRILInstruction(cg, TR::InstOpCode::NILF, node, byteLenReg, 0xFF);
+
+      TR::LabelSymbol *skipResidueLabel = generateLabelSymbol(cg);
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, skipResidueLabel);
+
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), node, byteSrcReg, byteLenReg);
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), node, byteDstReg, byteLenReg);
+
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, handleResidueLabel);
+      iComment("Handle residue");
+
+      cursor = generateRIEInstruction(cg, TR::InstOpCode::getAddHalfWordImmDistinctOperandOpCode(), node, loadBytesReg, byteLenReg, -1, cursor);
+      cursor = generateSSEInstruction(cg, TR::InstOpCode::MVCRL, node, 
+         generateS390MemoryReference(byteDstReg, 0, cg),
+         generateS390MemoryReference(byteSrcReg, 0, cg)); 
+
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipResidueLabel);
+
+      srm->reclaimScratchRegister(loopIterReg);
       }
-   else
+   else if (cg->getSupportsVectorRegisters())
       {
       TR::Register *loopIterReg = srm->findOrCreateScratchRegister();
       cursor = generateShiftRightImmediate(cg, node, loopIterReg, byteLenReg, 4);
@@ -11615,6 +11675,10 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipResidueLabel);
       srm->reclaimScratchRegister(loopIterReg);
       srm->reclaimScratchRegister(vectorBuffer);
+      }
+   else 
+      {
+      deps = TR::TreeEvaluator::generateMemToMemElementCopy(node, cg, byteSrcReg, byteDstReg, byteLenReg, srm, false, false, genStartICFLabel);
       }
    return deps;
    #undef iComment
@@ -14178,8 +14242,19 @@ TR::Register *OMR::Z::TreeEvaluator::integerNumberOfTrailingZeros(TR::Node *node
 
 TR::Register *OMR::Z::TreeEvaluator::integerBitCount(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_UNIMPLEMENTED();
-   return NULL;
+   TR_ASSERT_FATAL(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15), "TR::popcnt IL only supported on z15+");
+
+   TR::Register* resultReg = cg->allocateRegister();
+   TR::Register* valueReg = cg->gprClobberEvaluate(node->getChild(0));
+
+   generateRRInstruction(cg, TR::InstOpCode::LGFR, node, valueReg, valueReg);
+   generateRRFInstruction(cg, TR::InstOpCode::POPCNT, node, resultReg, valueReg, static_cast<uint8_t>(0x8), static_cast<uint8_t>(0x0), NULL);
+
+   node->setRegister(resultReg);
+
+   cg->decReferenceCount(node->getChild(0));
+
+   return resultReg;
    }
 
 TR::Register *OMR::Z::TreeEvaluator::longHighestOneBit(TR::Node *node, TR::CodeGenerator *cg)
@@ -14199,8 +14274,14 @@ TR::Register *OMR::Z::TreeEvaluator::longNumberOfTrailingZeros(TR::Node *node, T
 
 TR::Register *OMR::Z::TreeEvaluator::longBitCount(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_UNIMPLEMENTED();
-   return NULL;
+   TR::Register* resultReg = cg->allocateRegister();
+   TR::Register* valueReg = cg->evaluate(node->getChild(0));
+
+   generateRRFInstruction(cg, TR::InstOpCode::POPCNT, node, resultReg, valueReg, (uint8_t)0x8, (uint8_t)0, NULL);
+   node->setRegister(resultReg);
+
+   cg->decReferenceCount(node->getChild(0));
+   return resultReg;
    }
 
 TR::Register *OMR::Z::TreeEvaluator::inlineIfTestDataClassHelper(TR::Node *node, TR::CodeGenerator *cg, bool &inlined)

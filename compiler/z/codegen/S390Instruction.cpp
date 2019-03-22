@@ -4332,8 +4332,8 @@ TR::S390VRRiInstruction::generateBinaryEncoding()
    // Copy binary
    getOpCode().copyBinaryToBuffer(instructionStart);
 
-   // Masks
    setMaskField(reinterpret_cast<uint32_t *>(cursor), getM3(), 1);
+   setMaskField(reinterpret_cast<uint32_t *>(cursor), getM4(), 2);
 
    // Operands
    toRealRegister(r1Reg)->setRegister1Field(reinterpret_cast<uint32_t *>(cursor));

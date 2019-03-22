@@ -58,7 +58,8 @@ class TR_S390ProcessorInfo
       TR_zEC12 = 7,
       TR_z13 = 8,
       TR_z14 = 9,
-      TR_zNext = 10,
+      TR_z15 = 10,
+      TR_zNext = 11,
 
       TR_LatestArchitecture = TR_zNext
       };
@@ -108,12 +109,15 @@ class TR_S390ProcessorInfo
    bool checkzEC12();
    bool checkZ13();
    bool checkZ14();
+   bool checkZ15();
    bool checkZNext();
 
    void initialize()
       {
       if (checkZNext())
          _processorArchitecture = TR_zNext;
+      else if (checkZ15())
+          _processorArchitecture = TR_z15;
       else if (checkZ14())
          _processorArchitecture = TR_z14;
       else if (checkZ13())

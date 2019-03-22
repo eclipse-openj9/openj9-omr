@@ -475,6 +475,15 @@ TR_S390ProcessorInfo::checkZ14()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TR_S390ProcessorInfo::checkZ15: returns true if it's z15, otherwise false.
+////////////////////////////////////////////////////////////////////////////////
+bool
+TR_S390ProcessorInfo::checkZ15()
+   {
+   return TR::Compiler->target.cpu.getS390SupportsZ15();
+   }
+
+////////////////////////////////////////////////////////////////////////////////
 // TR_S390ProcessorInfo::checkZNext: returns true if it's zNext, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
@@ -492,6 +501,10 @@ TR_S390ProcessorInfo::getProcessor()
    TR_Processor result = TR_s370gp7;
 
    if (supportsArch(TR_S390ProcessorInfo::TR_zNext))
+      {
+      result = TR_s370gp14;
+      }
+   else if (supportsArch(TR_S390ProcessorInfo::TR_z15))
       {
       result = TR_s370gp13;
       }
@@ -578,6 +591,11 @@ OMR::Z::CodeGenerator::CodeGenerator()
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z14);
       }
 
+   if (comp->getOption(TR_DisableZ15))
+      {
+      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z15);
+      }
+
    if (comp->getOption(TR_DisableZNext))
       {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
@@ -618,6 +636,13 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
          case 5:
             {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z15);
+            traceMsg(comp, "RandomGen: Disabling z15 processor architecture.");
+            break;
+            }
+
+         case 6:
+            {
             _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
             traceMsg(comp, "RandomGen: Disabling zNext processor architecture.");
             break;
@@ -625,8 +650,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
          }
       }
 
-   _unlatchedRegisterList =
-      (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters));
+   _unlatchedRegisterList = (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters));
    _unlatchedRegisterList[0] = 0; // mark that list is empty
 
    bool enableBranchPreload = comp->getOption(TR_EnableBranchPreload);

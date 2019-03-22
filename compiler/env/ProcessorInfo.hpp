@@ -51,9 +51,10 @@ enum TR_S390MachineType
    TR_Z13s                    =  2965,  // z13s
    TR_Z14                     =  3906,
    TR_Z14s                    =  3907,
+   TR_Z15                     =  8561,
+   TR_Z15s                    =  8562,
    TR_ZNEXT                   =  9998,
    TR_ZNEXTs                  =  9999,
-
    TR_ZH                      =  2458,  // reserve for zHybrid
    TR_DATAPOWER               =  2462,  // reserve for DataPower on 2458
    TR_ZH_RESERVE1             =  2459,  // reserve for zHybrid

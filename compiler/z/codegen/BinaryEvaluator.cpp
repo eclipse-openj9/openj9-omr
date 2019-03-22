@@ -799,7 +799,10 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
          if (isDivision)
             {
             firstRegister = cg->gprClobberEvaluate(firstChild);
-            if (!firstChild->isNonNegative())
+
+            // This adjustment only applies to signed division as we are effctively trying to skirt the sign bit during
+            // the shift operation below
+            if (!isUnsigned && !firstChild->isNonNegative())
                {
                TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
                TR::LabelSymbol * skipSet = generateLabelSymbol(cg);
@@ -832,7 +835,10 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
 
             TR::LabelSymbol * done = generateLabelSymbol(cg);
             TR::RegisterDependencyConditions *deps = NULL;
-            if (!firstChild->isNonNegative())
+
+            // This adjustment only applies to signed division as we are effctively trying to skirt the sign bit during
+            // the shift operation below
+            if (!isUnsigned && !firstChild->isNonNegative())
                {
                TR::Register * tempRegister1 = cg->allocateRegister();
                TR::Register * tempRegister2 = cg->allocateRegister();
@@ -901,7 +907,8 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
    dependencies->addPostCondition(remRegister, TR::RealRegister::LegalEvenOfPair);
    dependencies->addPostCondition(quoRegister, TR::RealRegister::LegalOddOfPair);
 
-   if (!doConditionalRemainder &&
+   // TODO: Remove this Java-ism from OMR and push it into OpenJ9
+   if (!isUnsigned && !doConditionalRemainder &&
          !node->isSimpleDivCheck() &&
          !firstChild->isNonNegative() &&
          !secondChild->isNonNegative() &&
@@ -1045,7 +1052,8 @@ iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
    //    R1+1 -> Quotient
    //
    // Note:  D and DR require that R1=0 before executing the division
-   bool needCheck = (!node->isSimpleDivCheck()            &&
+   // TODO: Remove this Java-ism from OMR and push it into OpenJ9
+   bool needCheck = (!node->getOpCode().isUnsigned() && !node->isSimpleDivCheck()            &&
                      !firstChild->isNonNegative()         &&
                      !secondChild->isNonNegative());
 

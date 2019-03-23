@@ -2059,22 +2059,17 @@ OMR::CodeGenerator::compute64BitMagicValues(
 
    // Cache some common denominators and their magic values.  The key values in this
    // array MUST be in numerically increasing order for the binary search to work.
-   //
-   // The table is composed of 32-bit values because the compiler seems to have a problem
-   // statically initializing it with int64_t constant values.
 
    #define NUM_64BIT_MAGIC_VALUES 6
-   #define TOINT64(x) (*( (int64_t *) &x))
-   static uint32_t div64BitMagicValues[NUM_64BIT_MAGIC_VALUES][6] =
+   static int64_t div64BitMagicValues[NUM_64BIT_MAGIC_VALUES][3] =
+   //     Denominator                     Magic Value   Shift
 
-   //     Denominator        Magic Value          Shift
-
-      { {    3, 0,    0x55555556, 0x55555555,    0, 0 },
-        {    5, 0,    0x66666667, 0x66666666,    1, 0 },
-        {    7, 0,    0x24924925, 0x49249249,    1, 0 },
-        {    9, 0,    0x71c71c72, 0x1c71c71c,    0, 0 },
-        {   10, 0,    0x66666667, 0x66666666,    2, 0 },
-        {   12, 0,    0xaaaaaaab, 0x2aaaaaaa,    1, 0 } };
+      { {           3, CONSTANT64(0x5555555555555556),      0 },
+        {           5, CONSTANT64(0x6666666666666667),      1 },
+        {           7, CONSTANT64(0x4924924924924925),      1 },
+        {           9, CONSTANT64(0x1c71c71c71c71c72),      0 },
+        {          10, CONSTANT64(0x6666666666666667),      2 },
+        {          12, CONSTANT64(0x2aaaaaaaaaaaaaab),      1 } };
 
    // Quick check if 'd' is cached.
    first = 0;
@@ -2082,13 +2077,13 @@ OMR::CodeGenerator::compute64BitMagicValues(
    while (first <= last)
       {
       mid = (first + last) / 2;
-      if (TOINT64(div64BitMagicValues[mid][0]) == d)
+      if (div64BitMagicValues[mid][0] == d)
          {
-         *m = TOINT64(div64BitMagicValues[mid][2]);
-         *s = TOINT64(div64BitMagicValues[mid][4]);
+         *m = div64BitMagicValues[mid][1];
+         *s = div64BitMagicValues[mid][2];
          return;
          }
-      else if (d > TOINT64(div64BitMagicValues[mid][0]))
+      else if (d > div64BitMagicValues[mid][0])
          {
          first = mid+1;
          }

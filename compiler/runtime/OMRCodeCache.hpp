@@ -152,6 +152,21 @@ public:
     */
    CodeCacheTrampolineCode *reserveSpaceForTrampoline();
 
+   /**
+    * @brief Reserve space for a trampoline in the current code cache.
+    *
+    * @details
+    *    Space for multiple trampolines can be reserved at once.
+    *    Upon a reservation failure, the code cache is marked as nearing capacity.
+    *
+    * @param[in] numTrampolines : optional parameter for the number of trampolines to
+    *               request at once.  Default value is 1.
+    *
+    * @return : ERRORCODE_SUCCESS on success; ERRORCODE_INSUFFICIENTSPACE on failure
+    */
+   CodeCacheErrorCode::ErrorCode reserveSpaceForTrampoline_bridge(int32_t numTrampolines = 1);
+
+
    CodeCacheErrorCode::ErrorCode reserveNTrampolines(int64_t n);
 
    /**

@@ -64,7 +64,7 @@ function(omr_add_tracegen input)
 
 	add_custom_command(
 		OUTPUT "${generated_filename}.c" "${generated_filename}.h" "${generated_filename}.pdat"
-		COMMAND tracegen -w2cd -treatWarningAsError -generatecfiles -threshold 1 -file ${CMAKE_CURRENT_SOURCE_DIR}/${input}
+		COMMAND ${OMR_EXE_LAUNCHER} $<TARGET_FILE:tracegen> -w2cd -treatWarningAsError -generatecfiles -threshold 1 -file ${CMAKE_CURRENT_SOURCE_DIR}/${input}
 		DEPENDS ${input} tracegen  # adding tracegen as a dependency should be automatic, but for some reason doesnt happen on ninja generators
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	)
@@ -81,7 +81,7 @@ endmacro(add_tracegen)
 # However this is really only a build order dependency in cmake. In order to have proper dependency tracking
 # based on the output .pdat files we use the generator expression.
 add_custom_command(OUTPUT tracemerge.stamp
-	COMMAND tracemerge -majorversion 5 -minorversion 1 -root ${OMR_TRACE_ROOT}
+	COMMAND ${OMR_EXE_LAUNCHER} $<TARGET_FILE:tracemerge> -majorversion 5 -minorversion 1 -root ${OMR_TRACE_ROOT}
 	COMMAND ${CMAKE_COMMAND} -E touch tracemerge.stamp
 	DEPENDS run_tracegen $<TARGET_PROPERTY:run_tracegen,OMR_TRACE_PDATS>
 	WORKING_DIRECTORY ${OMR_TRACE_ROOT}

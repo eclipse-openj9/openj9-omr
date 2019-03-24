@@ -605,52 +605,40 @@ OMR::CodeCache::replaceTrampoline(TR_OpaqueMethodBlock *method,
    //suspicious that this assertion is commented out...
    //TR_ASSERT(entry);
 
-   if (needSync)
+   if (oldTrampoline == NULL)
       {
-      // Trampoline CANNOT be safely modified in place
-      // We have to allocate a new temporary trampoline
-      // and rely on the sync later on to update the old one using the
-      // temporary data
-      if (oldTrampoline != NULL)
+      // A trampoline has not been created.  Simply allocate a new one.
+      //
+      trampoline = self()->allocateTrampoline();
+      entry->_info._resolved._currentTrampoline = trampoline;
+      }
+   else
+      {
+      if (needSync)
          {
+         // Trampoline CANNOT be safely modified in place
+         // We have to allocate a new temporary trampoline
+         // and rely on the sync later on to update the old one using the
+         // temporary data
+         //
          // A permanent trampoline already exists, create a temporary one,
-         // might fail due to lack of free slots
+         // This might fail due to lack of free slots
+         //
          trampoline = self()->allocateTempTrampoline();
 
          // Save the temporary trampoline entry for future temp->parm synchronization
          self()->saveTempTrampoline(entry);
 
          if (!trampoline)
-            // Unable to fullful the replacement request, no temp space left
+            {
+            // Unable to fulfill the replacement request, no temp space left
             return NULL;
-
+            }
          }
-      else
-         {
-         // No oldTrampoline present, ie its a new trampoline creation request
-         trampoline = self()->allocateTrampoline();
-
-         entry->_info._resolved._currentTrampoline = trampoline;
-         }
-
-      // update the hash entry for this method
-      entry->_info._resolved._currentStartPC = newTargetPC;
-
       }
-   else
-      {
-      // Trampoline CAN be safely to modified in place
-      if (oldTrampoline == NULL)
-         {
-         // no old trampoline present, simply allocate a new one
-         trampoline = self()->allocateTrampoline();
 
-         entry->_info._resolved._currentTrampoline = trampoline;
-         }
-
-      // update the hash entry for this method
-      entry->_info._resolved._currentStartPC = newTargetPC;
-      }
+   // update the hash entry for this method
+   entry->_info._resolved._currentStartPC = newTargetPC;
 
    return trampoline;
    }

@@ -34,7 +34,7 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_None
-   },   
+   },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::BAD,
@@ -45,7 +45,7 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_None
-   },   
+   },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::BREAK,
@@ -8127,7 +8127,7 @@
                         S390OpProp_SetsOperand2 |
                         S390OpProp_UsesTarget
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVIY,
    /* .name        = */ "MVIY",
@@ -8157,7 +8157,7 @@
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::NIY,
    /* .name        = */ "NIY",
@@ -8191,7 +8191,7 @@
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::OG,
    /* .name        = */ "OG",
@@ -15322,7 +15322,7 @@
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x4C,
    /* .format      = */ RXYa_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
                         S390OpProp_BranchOp |
@@ -15350,7 +15350,7 @@
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x48,
    /* .format      = */ RXYa_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
                         S390OpProp_BranchOp |
@@ -15930,7 +15930,7 @@
                         S390OpProp_IsStore |
                         S390OpProp_HasTwoMemoryReferences
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::NCGRK,
    /* .name        = */ "NCGRK",
@@ -15986,7 +15986,7 @@
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::NOGRK,
    /* .name        = */ "NOGRK",
@@ -16014,7 +16014,7 @@
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::NXGRK,
    /* .name        = */ "NXGRK",
@@ -16042,7 +16042,7 @@
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::OCGRK,
    /* .name        = */ "OCGRK",
@@ -16056,7 +16056,7 @@
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::OCRK,
    /* .name        = */ "OCRK",
@@ -16070,7 +16070,7 @@
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::SELGR,
    /* .name        = */ "SELGR",
@@ -16084,7 +16084,7 @@
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::SELHHHR,
    /* .name        = */ "SELHHHR",
@@ -16101,7 +16101,7 @@
                         S390OpProp_Src2HW |
                         S390OpProp_SetsOperand1
    },
-   
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::SELR,
    /* .name        = */ "SELR",

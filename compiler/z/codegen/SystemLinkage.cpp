@@ -277,7 +277,7 @@ TR::S390SystemLinkage::flipBitsRegisterSaveMask(uint16_t mask)
 
 
 TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
-   : TR::ZOSBaseSystemLinkageConnector(codeGen, TR_SystemXPLink)
+   : TR::SystemLinkage(codeGen, TR_SystemXPLink)
    {
    // linkage properties
    setProperties(FirstParmAtFixedOffset);
@@ -2117,7 +2117,7 @@ bool TR::S390zLinuxSystemLinkage::isSymbolPassedByReference(TR::Symbol *sym)
    }
 
 bool
-TR::Z::ZOSBaseSystemLinkage::isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth)
+TR::S390zOSSystemLinkage::isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth)
    {
    return isFastLinkLinkageType() &&
       (aggregateLenth  > (getNumIntegerArgumentRegisters()* cg()->machine()->getGPRSize()));

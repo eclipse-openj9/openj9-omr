@@ -22,8 +22,6 @@
 #ifndef S390LINKAGE_INCL
 #define S390LINKAGE_INCL
 
-#include "codegen/TRzOSSystemLinkageBase.hpp"
-
 #include <stdint.h>
 #include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
@@ -37,6 +35,7 @@
 #include "il/SymbolReference.hpp"
 
 class TR_EntryPoint;
+class TR_zOSGlobalCompilationInfo;
 namespace TR { class S390ConstantDataSnippet; }
 namespace TR { class S390JNICallDataSnippet; }
 namespace TR { class AutomaticSymbol; }
@@ -81,11 +80,21 @@ enum TR_XPLinkCallTypes {
 
 namespace TR {
 
-class S390zOSSystemLinkage : public TR::ZOSBaseSystemLinkageConnector
+class S390zOSSystemLinkage : public TR::SystemLinkage
    {
    TR::RealRegister::RegNum _environmentPointerRegister;
 
 public:
+   
+   enum
+      {
+      CEECAAPLILWS    = 640,
+      CEECAAAESS      = 788,
+      CEECAAOGETS     = 796,
+      CEECAAAGTS      = 944,
+
+      CEEDSAType1Size = 0x80,
+      };
 
    S390zOSSystemLinkage(TR::CodeGenerator * cg);
 
@@ -101,6 +110,16 @@ public:
    virtual TR::RealRegister *getEnvironmentPointerRealRegister() {return getRealRegister(_environmentPointerRegister);}
 
    virtual int32_t getRegisterSaveOffset(TR::RealRegister::RegNum);
+
+   virtual TR::RealRegister::RegNum setCAAPointerRegister (TR::RealRegister::RegNum r)         { return _CAAPointerRegister = r; }
+   virtual TR::RealRegister::RegNum getCAAPointerRegister()         { return _CAAPointerRegister; }
+   virtual TR::RealRegister *getCAAPointerRealRegister() {return getRealRegister(_CAAPointerRegister);}
+
+   virtual TR::RealRegister::RegNum setParentDSAPointerRegister (TR::RealRegister::RegNum r)         { return _parentDSAPointerRegister = r; }
+   virtual TR::RealRegister::RegNum getParentDSAPointerRegister()         { return _parentDSAPointerRegister; }
+   virtual TR::RealRegister *getParentDSAPointerRealRegister() {return getRealRegister(_parentDSAPointerRegister);}
+
+   virtual bool isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth);
 
 public:
    TR_XPLinkFrameType getFrameType() { return _frameType; }
@@ -124,6 +143,11 @@ public:
 
 private:
    enum TR_XPLinkFrameType _frameType;
+
+   TR::RealRegister::RegNum _CAAPointerRegister;
+   TR::RealRegister::RegNum _parentDSAPointerRegister;
+
+   TR_zOSGlobalCompilationInfo* _globalCompilationInfo;
 
    };
 

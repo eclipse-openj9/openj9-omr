@@ -3733,6 +3733,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_icallVMprJavaSendInvokeExactD:                   return "icallVMprJavaSendInvokeExactD";
          case TR_icallVMprJavaSendInvokeWithArguments:            return "icallVMprJavaSendInvokeWithArguments";
          case TR_icallVMprJavaSendNativeStatic:                   return "icallVMprJavaSendNativeStatic";
+         case TR_j2iTransition:                                   return "j2iTransition";
          case TR_initialInvokeExactThunk_unwrapper:               return "initialInvokeExactThunk_unwrapper";
          case TR_methodHandleJ2I_unwrapper:                       return "methodHandleJ2I_unwrapper";
          case TR_interpreterUnresolvedMethodTypeGlue:             return "interpreterUnresolvedMethodTypeGlue";

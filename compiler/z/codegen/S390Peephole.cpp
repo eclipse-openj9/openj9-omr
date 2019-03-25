@@ -2653,7 +2653,7 @@ TR_S390PostRAPeephole::reloadLiteralPoolRegisterForCatchBlock()
    // This causes a failure when we come back to a catch block because the register context will not be preserved.
    // Hence, we can not assume that R6 will still contain the lit pool register and hence need to reload it.
 
-   bool isZ10 = TR::Compiler->target.cpu.getS390SupportsZ10();
+   bool isZ10 = _cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10);
 
    // we only need to reload literal pool for Java on older z architecture on zos when on demand literal pool is off
    if ( TR::Compiler->target.isZOS() && !isZ10 && !_cg->isLiteralPoolOnDemandOn())

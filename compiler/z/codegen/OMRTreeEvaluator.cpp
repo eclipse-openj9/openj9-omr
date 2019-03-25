@@ -5222,15 +5222,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                      loadMnemonic = TR::InstOpCode::getLoadOpCode();
                      }
 
-                  if (loadMnemonic == TR::InstOpCode::LLGFSG ||
-                      loadMnemonic == TR::InstOpCode::LGG)
-                     {
-                     generateRXInstruction(cg, loadMnemonic, node, tempReg, tempMR);
-                     }
-                  else
-                     {
-                     generateRXInstruction(cg, loadMnemonic, node, tempReg, tempMR);
-                     }
+                  generateRXInstruction(cg, loadMnemonic, node, tempReg, tempMR);
                   }
                }
             }

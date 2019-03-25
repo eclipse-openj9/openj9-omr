@@ -520,27 +520,19 @@ OMR::CodeCache::reserveResolvedTrampoline(TR_OpaqueMethodBlock *method,
       CodeCacheHashEntry *entry = _resolvedMethodHT->findResolvedMethod(method);
       if (!entry)
          {
-         // reserve a new trampoline since we got no active reservation for given method */
-         CodeCacheTrampolineCode *trampoline = self()->reserveSpaceForTrampoline();
-         if (trampoline)
+         // Reserve a new trampoline since there is not an active reservation for given method
+         //
+         retValue = self()->reserveSpaceForTrampoline_bridge();
+         if (retValue == OMR::CodeCacheErrorCode::ERRORCODE_SUCCESS)
             {
             // add hashtable entry
             if (!self()->addResolvedMethod(method))
                retValue = CodeCacheErrorCode::ERRORCODE_FATALERROR; // couldn't allocate memory from VM
             }
-         else // no space in this code cache; must allocate a new one
-            {
-            _almostFull = TR_yes;
-            retValue = CodeCacheErrorCode::ERRORCODE_INSUFFICIENTSPACE;
-            if (config.verboseCodeCache())
-               {
-               TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache %p marked as full in reserveResolvedTrampoline", this);
-               }
-            }
          }
       }
 
-      return retValue;
+   return retValue;
    }
 
 
@@ -1670,6 +1662,40 @@ OMR::CodeCache::reserveNTrampolines(int64_t n)
          if (config.verboseCodeCache())
             {
             TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache %p marked as full in reserveNTrampoline", this);
+            }
+         }
+      }
+
+   return status;
+   }
+
+
+OMR::CodeCacheErrorCode::ErrorCode
+OMR::CodeCache::reserveSpaceForTrampoline_bridge(int32_t numTrampolines)
+   {
+   CacheCriticalSection ReserveSpaceForTrampoline(self());
+
+   CodeCacheErrorCode::ErrorCode status = CodeCacheErrorCode::ERRORCODE_SUCCESS;
+
+   TR::CodeCacheConfig &config = _manager->codeCacheConfig();
+   size_t size = numTrampolines * config.trampolineCodeSize();
+
+   if (size)
+      {
+      // See if we are hitting against the method body allocation pointer
+      // indicating that there is no more free space left in this code cache
+      //
+      if (_trampolineReservationMark >= _trampolineBase + size)
+         {
+         _trampolineReservationMark -= size;
+         }
+      else
+         {
+         status = CodeCacheErrorCode::ERRORCODE_INSUFFICIENTSPACE;
+         _almostFull = TR_yes;
+         if (config.verboseCodeCache())
+            {
+            TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache %p marked as full in reserveSpaceForTrampoline", self());
             }
          }
       }

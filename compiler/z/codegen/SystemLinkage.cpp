@@ -137,7 +137,15 @@ TR::S390SystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, int32_
 
       int8_t lri = parmCursor->getLinkageRegisterIndex();
       int32_t parmSize = parmCursor->getSize();
-      if (lri == -1)
+      if (isXPLinkLinkageType())
+         {
+         parmCursor->setParameterOffset(stackIndex);
+         // parameters aligned on GPR sized boundaries - set for next
+         int32_t alignedSize = parmCursor->getSize();
+         alignedSize = ((alignedSize + gprSize - 1)/gprSize)*gprSize;
+         stackIndex += alignedSize;
+         }
+      else if (lri == -1)
          {
          parmCursor->setParameterOffset(stackIndex);
          stackIndex += std::max<int32_t>(parmCursor->getSize(), cg()->machine()->getGPRSize());
@@ -247,9 +255,11 @@ TR::S390SystemLinkage::addImmediateToRealRegister(TR::RealRegister *targetReg, i
          cursor = generateRRInstruction(cg(), TR::InstOpCode::getAddRegOpCode(), node, targetReg, tempReg, cursor);
          }
       }
-
-   if (!checkTempNeeded)
-      cursor = generateRXInstruction(cg(), TR::InstOpCode::LAY, node, targetReg, generateS390MemoryReference(targetReg,value,cg()), cursor);
+   else
+      {
+      if (!checkTempNeeded)
+         cursor = generateRXInstruction(cg(), TR::InstOpCode::LAY, node, targetReg, generateS390MemoryReference(targetReg,value,cg()), cursor);
+      }
 
    return cursor;
    }
@@ -281,6 +291,7 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    {
    // linkage properties
    setProperties(FirstParmAtFixedOffset);
+   setProperty(SplitLongParm);
    setProperty(SkipGPRsForFloatParms);
    if (TR::Compiler->target.is64Bit())
       {
@@ -378,6 +389,11 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    setFrameType(TR_XPLinkUnknownFrame);
    setLargestOutgoingArgumentAreaSize(0);
    setOffsetToLongDispSlot(0);
+
+   setPrologueInfoCalculated(false);
+   setGuardPageSize   ((TR::Compiler->target.is64Bit()) ? 1024*1024 : 4096);
+   setAlternateStackPointerAdjust(0);
+   setSaveBackChain(false); // default: no forced stack pointer save by prologue
    }
 
 
@@ -814,20 +830,6 @@ TR::S390SystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDepen
       TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {
    return 0;
-   }
-
-/**
- * Front-end customization of callNativeFunction
- */
-void
-TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
-      TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-      TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
-   {
- #if defined(JITTEST)
-   TR_ASSERT(0,"Test compiler should have its own front-end customization.");
- #endif
-
    }
 
 /**
@@ -2259,4 +2261,645 @@ TR::S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
 
    callDescValue |= parmDescriptorFields;
    return callDescValue;
+   }
+
+#define  GPREGINDEX(i)   (i-TR::RealRegister::FirstGPR)
+   
+// Calculate prologue info for XPLink
+// This is only done once for multiple entry point routines
+void TR::S390zOSSystemLinkage::calculatePrologueInfo(TR::Instruction * cursor)
+   {
+   TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
+
+   // Logic for main most of which applies to secondary entry points
+   // I.E. all except for parameter offset information.
+
+   int32_t localSize, argSize;
+   int32_t stackFrameSize, alignedStackFrameSize;
+   int32_t stackFrameBias = getStackFrameBias();
+
+   // Set for initParamOffset() - relative offset from start of frame
+   setOutgoingParmAreaBeginOffset(getOffsetToFirstParm()-stackFrameBias);
+
+   {
+   //
+   // Calculate size of locals - determined in prior call to mapStack()
+   // We make the size a multiple of the strictest alignment symbol
+   // So that backwards mapping of auto symbols will follow the alignment
+   //
+   localSize =  -1 * (int32_t) (bodySymbol->getLocalMappingCursor());  // Auto+Spill size
+   int32_t strictestAutoAlign = 8;
+   localSize = (localSize + strictestAutoAlign - 1) & ~(strictestAutoAlign-1);
+
+   //
+   // Calculate size of outgoing argument area
+   //
+   argSize = getOutgoingParameterBlockSize();
+
+   //
+   // Calculate stack frame size
+   //
+   int32_t outGoingAreaOffsetUnbiased = (TR::Compiler->target.is64Bit()) ? 128 : 64;
+   stackFrameSize = outGoingAreaOffsetUnbiased + argSize + localSize;
+   int32_t minFrameAlign = (TR::Compiler->target.is64Bit()) ? 32 : 16;
+   TR_ASSERT( minFrameAlign >= strictestAutoAlign,"automatic symbol has alignment that cannot be satisfied");
+   alignedStackFrameSize = (stackFrameSize + minFrameAlign - 1) & ~(minFrameAlign-1);
+   stackFrameSize = alignedStackFrameSize;
+
+   setStackFrameSize(alignedStackFrameSize);
+
+   //
+   // Map stack - which is done in backwards fashion
+   //
+   int32_t stackMappingIndex = stackFrameBias + stackFrameSize;
+   mapStack(bodySymbol, stackMappingIndex);
+   }
+
+   setPrologueInfoCalculated(true);
+   }
+
+TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, TR::Node * node)
+   {
+   enum TR_XPLinkFrameType frameType;
+   int16_t GPRSaveMask;
+   TR::LabelSymbol *stmLabel;
+
+   int8_t gprSize = cg()->machine()->getGPRSize();
+   int32_t stackFrameSize, offsetToRegSaveArea, offsetToFirstSavedReg, stackFrameBias, gpr3ParmOffset;
+   int32_t  firstSaved, lastSaved, firstPossibleSaved;
+   bool saveBackChain;
+
+   // TODO: enlarge this intermediate threshold for 64 bit (up to 1M). Needs changes in code below
+   int32_t intermediateThreshold = getGuardPageSize();
+
+   TR::RealRegister *spReg = getNormalStackPointerRealRegister(); // normal sp reg used in prol/epil
+   stackFrameSize = getStackFrameSize();
+   stackFrameBias = getStackFrameBias();
+   offsetToRegSaveArea = getOffsetToRegSaveArea();
+
+   // This delta is slightly pessimistic and could be a "tad" more. But, taking
+   // into account the "tad" complicates this code more than its worth.
+   // I.E. small set of cases could be forced to being intermediate vs. small
+   // frame types because of this "tad".
+   int32_t delta = stackFrameBias - stackFrameSize;
+
+   if (stackFrameSize > getGuardPageSize())
+      // guard page option mandates explicit checking
+      frameType = TR_XPLinkStackCheckFrame;
+   else if (delta >=0)
+      // delta > 0 implies stack offset for STM will be positive and <2K
+      frameType = TR_XPLinkSmallFrame;
+   else if (stackFrameSize < intermediateThreshold)
+      frameType = TR_XPLinkIntermediateFrame;
+   else
+      frameType = TR_XPLinkStackCheckFrame;
+   setFrameType(frameType);
+
+   TR::MemoryReference *rsa, *bosRef, *extenderRef, *gpr3ParmRef;
+   int32_t rsaOffset, bosOffset, extenderOffset;
+
+   //
+   // Determine minimal Preserved GPRs. Notes:
+   //   1) an option can force the save of the stack pointer register
+   //   2) XPLink noleaf:  routines mandates the save of the entry point register (r6) & return register (r7)
+   //               leaf:  routines cannot modify r6, r7
+   //
+   GPRSaveMask = 0;
+   TR::RealRegister::RegNum lastUsedReg = TR::RealRegister::NoReg;
+   for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; ++i)
+     {
+     if (getPreserved(REGNUM(i)))
+        {
+        if (getRealRegister(REGNUM(i))->getHasBeenAssignedInMethod())
+           {
+           GPRSaveMask |= 1 << GPREGINDEX(i);
+           }
+        }
+     }
+
+   GPRSaveMask  |= 1 << GPREGINDEX(getReturnAddressRegister());
+   GPRSaveMask  |= 1 << GPREGINDEX(getEntryPointRegister());
+
+    // Determine if we need a temp register in either buying or releasing
+    // the stack frame. If so, we will save the back chain so epilogue code
+    // can just restore it from the frame and not require a temp register.
+    // We still need a temp register for prologue code though.
+    bool needAddTempReg, saveTempReg;
+    addImmediateToRealRegister(NULL, stackFrameSize, NULL, NULL, NULL, &needAddTempReg);
+
+   // For 64 bit stack checking code - need a temp reg for LAA access
+   if (TR::Compiler->target.is64Bit() && (frameType == TR_XPLinkStackCheckFrame))
+      needAddTempReg = true;
+
+   if (needAddTempReg)
+      setSaveBackChain(true);
+
+   saveBackChain = getSaveBackChain();
+   if (saveBackChain)
+      GPRSaveMask  |= 1 << GPREGINDEX(getNormalStackPointerRegister());
+   else
+      GPRSaveMask  &= ~(1 << GPREGINDEX(getNormalStackPointerRegister()));
+
+
+   // CAA is either locked or restored on RET - so remove it from mask
+   // But not in 64 bit code
+   if(!TR::Compiler->target.is64Bit())
+      {
+      GPRSaveMask  &= ~(1 << GPREGINDEX(getCAAPointerRegister()));
+      }
+   
+   if ((frameType == TR_XPLinkStackCheckFrame)
+      || ((frameType == TR_XPLinkIntermediateFrame) && saveBackChain))
+      { // GPR4 is saved but indirectly via GPR0 in stack check or medium case - so don't save GPR4 via STM
+      firstSaved = getFirstMaskedBit(GPRSaveMask&~(1 << GPREGINDEX(getNormalStackPointerRegister())));
+      }
+   else if (frameType == TR_XPLinkStackLeafFrame)
+      { // Were not decrementing stack pointer but need stack space. We need to generate
+        // STM into frame - starting with GPR4,5,6
+        // These are not added to restore mask
+      GPRSaveMask  |= 1 << GPREGINDEX(getEntryPointRegister());
+      GPRSaveMask  |= 1 << GPREGINDEX(getReturnAddressRegister());
+      firstSaved = getFirstMaskedBit(GPRSaveMask);
+      }
+   else
+      firstSaved = getFirstMaskedBit(GPRSaveMask);
+
+   setGPRSaveMask(GPRSaveMask);
+
+   if (comp()->getOption(TR_TraceCG))
+      {
+      traceMsg(comp(), "GPRSaveMask: Register context %x\n", GPRSaveMask&0xffff);
+      }
+
+   firstPossibleSaved = GPREGINDEX(TR::RealRegister::GPR4); // GPR4 is first reg in save area
+   lastSaved = getLastMaskedBit(GPRSaveMask);
+   offsetToFirstSavedReg = (firstSaved-firstPossibleSaved)*gprSize; // relative to start of save area
+
+   // variables for stack extension code - xplink spec mandates these particular registers
+   TR::RealRegister * gpr0Real = getRealRegister(TR::RealRegister::GPR0);
+   TR::RealRegister * gpr3Real = getRealRegister(TR::RealRegister::GPR3);
+   TR::RealRegister * caaReal  = getRealRegister(getCAAPointerRegister());  // 31 bit oly
+   gpr3ParmOffset = getOffsetToFirstParm() + 2 * gprSize;
+   
+   _firstSaved = REGNUM(firstSaved + TR::RealRegister::FirstGPR);
+   _lastSaved  = REGNUM(lastSaved  + TR::RealRegister::FirstGPR);
+
+   switch (frameType)
+      {
+      case TR_XPLinkNoStackLeafFrame:
+          break; // nothing to buy or save
+
+      case TR_XPLinkStackLeafFrame:
+          // STM rx,ry,offset(R4)
+          rsaOffset =  (offsetToRegSaveArea - stackFrameSize) + offsetToFirstSavedReg;
+          rsa = generateS390MemoryReference(spReg, rsaOffset, cg());
+          cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(),
+                  node, getRealRegister(REGNUM(firstSaved + TR::RealRegister::FirstGPR)),
+                  getRealRegister(REGNUM(lastSaved + TR::RealRegister::FirstGPR)), rsa, cursor);
+          break;  // not frame to buy but save regs
+
+      case TR_XPLinkSmallFrame:
+          // STM rx,ry,offset(R4)
+          rsaOffset =  (offsetToRegSaveArea - stackFrameSize) + offsetToFirstSavedReg;
+          rsa = generateS390MemoryReference(spReg, rsaOffset, cg());
+          cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(),
+                  node, getRealRegister(REGNUM(firstSaved + TR::RealRegister::FirstGPR)),
+                  getRealRegister(REGNUM(lastSaved + TR::RealRegister::FirstGPR)), rsa, cursor);
+          // AHI R4,-stackFrameSize
+          cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, NULL, node, cursor);
+          break;
+
+      case TR_XPLinkIntermediateFrame:
+          if (needAddTempReg)
+             {
+             // (saveBackChain) LR R0,R4
+             // (saveTempReg|saveBackChain) ST R3,D(R4)   <-- save temp register
+             // R4<- R4 - stackSize
+             // LR R3,R0
+             // (saveTempReg) L  R3,D(R3)   <-- load temp register
+             saveTempReg = true;  // PERFORMANCE NOTE: TODO: set to false if GPR3 is not used as a parameter
+
+             if (saveTempReg || saveBackChain)
+                {
+                cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr0Real, spReg, cursor); // LR R0,R4
+                }
+             if (saveTempReg)
+                {
+                gpr3ParmRef = generateS390MemoryReference(spReg, gpr3ParmOffset, cg()); // used for temporary register
+                cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), node, gpr3Real, gpr3ParmRef, cursor); // ST R3,parmRef(R4)
+                }
+
+             cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, gpr3Real, node, cursor);  // R4 <- R4 - stack size
+
+             if (saveTempReg)
+                {
+                cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr3Real, gpr0Real, cursor);
+                gpr3ParmRef = generateS390MemoryReference(gpr3Real, gpr3ParmOffset, cg());
+                cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), node, gpr3Real, gpr3ParmRef, cursor);
+                }
+             }
+          else
+             { // no temp reg needed
+             // (saveBackChain)    LR R0,R4
+             // AHI R4,-stackFrameSize
+             // STM rx,ry,offset(R4)
+             // (saveBackChain)    ST R0,D(R4)
+
+             if (saveBackChain) // LR R0,R4
+                cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node, gpr0Real, spReg, cursor);
+             cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, NULL, node, cursor);
+             }
+          rsaOffset =  offsetToRegSaveArea + offsetToFirstSavedReg;
+          rsa = generateS390MemoryReference(spReg, rsaOffset, cg());
+          cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(),
+                  node, getRealRegister(REGNUM(firstSaved + TR::RealRegister::FirstGPR)),
+                  getRealRegister(REGNUM(lastSaved + TR::RealRegister::FirstGPR)), rsa, cursor);
+          if (saveBackChain)
+             { // ST R0,2048(R4)
+             rsaOffset = offsetToRegSaveArea + 0; // GPR4 saved at start of RSA
+             rsa = generateS390MemoryReference(spReg, rsaOffset, cg());
+             cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), node, gpr0Real, rsa, cursor);
+             }
+          break;
+
+      case TR_XPLinkStackCheckFrame:
+          // TODO: move the code to exend stack to "cold" path
+          // Code:
+          //   important note: saveTempReg -> saveBackChain
+          //
+          //     (saveTempReg)      ST R3,parmOffsetR3(GPR4)
+          //     (saveBackChain)    LR R0,R4
+          //     AHI R4, -stackFrameSize  [this varies based on stackFrameSize]
+          //     [31 bit] C  R4,BOS(R12)           R12=CAA
+          //     [64 bit] LLGT  R3,1268            R3=control block - low mem
+          //     [64 bit] C  R4,BOS(R3)            R3=ditto
+          //     BL stmLabel
+          //     /* extension logic */
+          //     (!saveBackChain)    LR R0,R3   /* could be smarter here */
+          //     L  R3,extender(R12)
+          //     BASR R3,R3
+          //     NOP x                    [xplink noop]
+          //     (!saveBackChain)   LR R3,R0   /* could be smarter here */
+          //
+          //   stmLabel:
+          //     STM rx,ry,offset(R4)
+          //     (saveBackChain)    ST R0,2048(,R4)
+          //     (saveTempReg)      LR R3,R0   /* could be smarter here */
+          //     (saveTempReg)      L  R3,parmOffsetR3(GPR3)
+          //
+          stmLabel = generateLabelSymbol(cg());
+          saveTempReg = saveBackChain;  // TODO: and with check that R3 is used as parm
+
+          //------------------------------
+          // Stack check - prologue part 1
+          //------------------------------
+
+          if (saveTempReg)
+             {
+             gpr3ParmRef = generateS390MemoryReference(spReg, gpr3ParmOffset, cg()); // used for temporary register
+             cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), node, gpr3Real, gpr3ParmRef, cursor); // ST R3,parmRef(R4)
+             }
+          if (saveBackChain) // LR R0,R4
+              cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr0Real, spReg, cursor);
+          cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, gpr3Real, node, cursor); // AHI ...
+
+          if (TR::Compiler->target.is64Bit())
+             {
+             TR::MemoryReference *laaRef;
+             bosOffset = 64; // 64=offset in LAA to BOS
+             int32_t laaLowMemAddress = 1208; // LAA address
+             laaRef = generateS390MemoryReference(gpr0Real, laaLowMemAddress, cg());
+             cursor = generateRXInstruction(cg(), InstOpCode::LLGT, node, gpr3Real, laaRef, cursor);
+             bosRef = generateS390MemoryReference(gpr3Real, bosOffset, cg());
+             cursor = generateRXInstruction(cg(), TR::InstOpCode::getCmpOpCode(), node, spReg, bosRef, cursor); // C R4,bos(tempreg)
+             }
+          else
+             {
+             bosOffset = 868; // 868=offset in CAA to BOS
+             bosRef = generateS390MemoryReference(caaReal, bosOffset, cg());
+             cursor = generateRXInstruction(cg(), TR::InstOpCode::getCmpOpCode(), node, spReg, bosRef, cursor); // C R4,bos(R12)
+             }
+          cursor = generateS390BranchInstruction(cg(), InstOpCode::BRC, InstOpCode::COND_BNM, node, stmLabel, cursor); // BNM stmLabel
+
+          //------------------------------
+          // Stack check - extension routine logic
+          //------------------------------
+
+          // This logic should be moved out of line eventually
+          if (!saveBackChain)
+             {
+             cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr0Real, gpr3Real, cursor); // LR R0,R3
+             }
+
+          if (TR::Compiler->target.is64Bit())
+             {
+             extenderOffset = 72;  // offset of extender routine in LAA
+             extenderRef = generateS390MemoryReference(gpr3Real, extenderOffset, cg());
+             cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), node, gpr3Real, extenderRef, cursor); //  L R3,extender(R12)
+             }
+          else
+             {
+             extenderOffset = 872;  // offset of extender routine in CAA
+             extenderRef = generateS390MemoryReference(caaReal, extenderOffset, cg());
+             cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), node, gpr3Real, extenderRef, cursor); //  L R3,extender(R12)
+             }
+          cursor = generateRRInstruction(cg(), InstOpCode::BASR, node, gpr3Real, gpr3Real, cursor);
+          cursor = genCallNOPAndDescriptor(cursor, node, NULL, TR_XPLinkCallType_BASR33);
+
+          if (!saveBackChain)
+             { // LR R3,R0
+             cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr3Real, gpr0Real, cursor);
+             }
+
+          //------------------------------
+          // Stack check - prologue part 2
+          //------------------------------
+
+          // STM rx,ry,disp(R4)
+          cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, stmLabel, cursor);
+
+          rsaOffset =  offsetToRegSaveArea + offsetToFirstSavedReg;
+          rsa = generateS390MemoryReference(spReg, rsaOffset, cg());
+          cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(),
+                  node, getRealRegister(REGNUM(firstSaved + TR::RealRegister::FirstGPR)),
+                  getRealRegister(REGNUM(lastSaved + TR::RealRegister::FirstGPR)), rsa, cursor);
+          if (saveBackChain)
+             { // ST R0,2048(R4)
+             rsaOffset = offsetToRegSaveArea + 0; // GPR4 saved at start of RSA
+             rsa = generateS390MemoryReference(spReg, rsaOffset, cg());
+             cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), node, gpr0Real, rsa, cursor);
+             }
+          if (saveTempReg)
+             {
+             cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr3Real, gpr0Real, cursor);
+             gpr3ParmRef = generateS390MemoryReference(gpr3Real, gpr3ParmOffset, cg());
+             cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), node, gpr3Real, gpr3ParmRef, cursor);
+             }
+
+          break;
+
+      default:
+          TR_ASSERT( 0,"invalid xplink frame type");
+          break;
+      }
+
+   return cursor;
+   }
+   
+struct TR_XPLinkEntryPointMarker {
+      uint32_t eplEycatcher1;
+      uint32_t eplEycatcher2;
+      uint32_t eplPPA1Offset;
+      uint32_t eplFrameSizeAndFlags;
+};
+
+void
+TR::S390zOSSystemLinkage::createEntryPointMarker(TR::Instruction *cursor, TR::Node *node)
+   {
+   TR_XPLinkEntryPointMarker marker;
+
+   TR::Instruction *orgCursor = cursor;
+
+   TR::LabelSymbol * epMarkerStart = generateLabelSymbol(cg());
+   TR::LabelSymbol * epMarkerDone = generateLabelSymbol(cg());
+
+   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, node, epMarkerStart, cursor);
+
+   // TR_XPLinkEntryPointMarker
+   marker.eplEycatcher1  = 0x00C300C5;
+   marker.eplEycatcher2  = 0x00C500F1;
+   marker.eplPPA1Offset = 0;     // relocation for this
+   marker.eplFrameSizeAndFlags = getStackFrameSize();
+   
+   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eplEycatcher1, cursor);
+   orgCursor->move(cursor);  // move DC before entry point
+   
+   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eplEycatcher2, cursor);
+   orgCursor->move(cursor);  // move DC before entry point
+   
+   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eplPPA1Offset, cursor);
+   orgCursor->move(cursor);  // move DC before entry point
+   
+   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eplFrameSizeAndFlags, cursor);
+   orgCursor->move(cursor);  // move DC before entry point
+
+   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, node, epMarkerDone, cursor);
+   }
+
+TR_XPLinkCallTypes
+TR::S390zOSSystemLinkage::genWCodeCallBranchCode(TR::Node *callNode, TR::RegisterDependencyConditions * deps)
+   {
+   // WCode specific
+   //
+   // There are 4 cases for outgoing branch sequences
+   //   case 1)            pure OS linkage call using entry point
+   //                      BASR R14,R15
+   //   case 2) (indirect) Call vi function pointer
+   //                      LM R5,R6,disp(regfp)
+   //                      BASR R7,R6
+   //          where:
+   //             a) regfp is a register containing pointer to function descriptor
+   //                (most likely placed in R6)
+   //             b) disp is offset into function descriptor - 16/0 (31/64 bit respectively)
+   //   case 3) (direct) Call to (static or global) function defined in the compilation unit:
+   //                      BRASL R7,func
+   //
+   //   case 4) (direct) Call to external function referenced function
+   //                      LM R5,R6,disp(regenv)
+   //                      BASR R7,R6
+   //         where:
+   //             a) disp is an offset in the environment (aka ADA) containing the
+   //                function descriptor body (i.e. not pointer to function descriptor)
+   TR_XPLinkCallTypes callType;
+
+   // Find GPR6 (xplink) or GPR15 (os linkage) in post conditions
+   TR::Register * systemEntryPointRegister = deps->searchPostConditionRegister(getEntryPointRegister());
+   // Find GPR7 (xplik) or GPR14 (os linkage) in post conditions
+   TR::Register * systemReturnAddressRegister = deps->searchPostConditionRegister(getReturnAddressRegister());
+
+   TR::RegisterDependencyConditions * preDeps = new (trHeapMemory()) TR::RegisterDependencyConditions(deps->getPreConditions(), NULL, deps->getAddCursorForPre(), 0, cg());
+
+   if (callNode->getOpCode().isIndirect())
+      {
+      generateRRInstruction(cg(), InstOpCode::BASR, callNode, systemReturnAddressRegister, systemEntryPointRegister, preDeps);
+      callType = TR_XPLinkCallType_BASR;
+      return callType;
+      }
+
+   TR::SymbolReference *callSymRef = callNode->getSymbolReference();
+   TR::Symbol *callSymbol = callSymRef->getSymbol();
+
+   TR::Instruction * callInstr = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, systemReturnAddressRegister, callSymbol, callSymRef, cg());
+   callInstr->setDependencyConditions(preDeps);
+   callType = TR_XPLinkCallType_BRASL7;
+
+   return callType;
+   }
+
+/////////////////////////////////////////////////////////////////////////////////
+// TR::S390zOSSystemLinkage::generateInstructionsForCall - Front-end
+//  customization of callNativeFunction
+////////////////////////////////////////////////////////////////////////////////
+void
+TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
+      TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
+      TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
+   {
+   TR::CodeGenerator * codeGen = cg();
+
+    TR_XPLinkCallTypes callType;  // for XPLink calls
+
+    // only pre-dependencies from dep will be attached to the call
+    callType = genWCodeCallBranchCode(callNode, deps);
+
+    generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, returnFromJNICallLabel);
+
+    genCallNOPAndDescriptor(NULL, callNode, callNode, callType);
+
+    // Append post-dependencies after NOP
+    TR::LabelSymbol * afterNOP = generateLabelSymbol(cg());
+    TR::RegisterDependencyConditions * postDeps =
+          new (trHeapMemory()) TR::RegisterDependencyConditions(NULL,
+                deps->getPostConditions(), 0, deps->getAddCursorForPost(), cg());
+    generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, afterNOP, postDeps);
+}
+
+// Create prologue for XPLink
+void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction * cursor)
+   {
+   TR_ASSERT( cursor!=NULL,"cursor is NULL in createPrologue");
+   calculatePrologueInfo(cursor);
+
+   TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
+
+   TR::Node *firstNode = cursor->getNode();
+
+   createEntryPointMarker(cursor, firstNode);  // adds constants before cursor
+
+   setFirstPrologueInstruction(cursor);
+
+   //
+   // Generate code to acquire the stack frame
+   //
+   cursor = buyFrame(cursor, firstNode);
+
+   //
+   // Save FPRs and ARs in local automatic
+   // This is done after mapStack - as it calculates the register mask and
+   // save area offset.
+   //
+   cursor = getputFPRs(InstOpCode::STD, cursor, firstNode);
+
+   //
+   // Save arguments as required
+   //
+   cursor = (TR::Instruction *) saveArguments(cursor, false);
+   
+   // Last prologue instruction
+   setLastPrologueInstruction(cursor);
+   }
+
+void
+TR::S390zOSSystemLinkage::createEpilogue(TR::Instruction * cursor)
+   {
+   int16_t GPRSaveMask;
+   int8_t gprSize = cg()->machine()->getGPRSize();
+   enum TR_XPLinkFrameType frameType = getFrameType();
+   TR::Node * currentNode = cursor->getNode();
+   int32_t offset;
+
+   int32_t stackFrameSize, offsetToFirstSavedReg, stackFrameBias;
+   int32_t  firstSaved, lastSaved, firstPossibleSaved;
+   TR::MemoryReference *rsa;
+
+   int32_t blockNumber = -1;
+
+   TR::RealRegister *spReg = getNormalStackPointerRealRegister(); // normal sp reg used in prol/epil
+   stackFrameSize = getStackFrameSize();
+   stackFrameBias = getStackFrameBias();
+
+   //
+   // Restore FPRs and ARs from local automatic
+   //
+   cursor = getputFPRs(InstOpCode::LD, cursor, currentNode);
+
+   GPRSaveMask = getGPRSaveMask(); // restore mask is subset of save mask
+   GPRSaveMask  &= ~(1 << GPREGINDEX(getEntryPointRegister())); // entry point register not restored
+
+   firstSaved = getFirstMaskedBit(GPRSaveMask);
+   firstPossibleSaved = 4; // GPR4 is first reg in save area
+   lastSaved = getLastMaskedBit(GPRSaveMask);
+
+   if (firstSaved >= 0)
+      {
+      offsetToFirstSavedReg = (firstSaved-firstPossibleSaved)*gprSize; // relative to start of save area
+      offset = stackFrameBias + offsetToFirstSavedReg;
+      rsa = generateS390MemoryReference(spReg, offset, cg());
+
+      if (firstSaved == lastSaved)
+         {
+            cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), currentNode,
+                                           getRealRegister(REGNUM(firstSaved + TR::RealRegister::FirstGPR)), rsa, cursor);
+         }
+      else if (firstSaved < lastSaved)
+         {
+         int8_t numNeededToRestore = -1;
+
+            cursor = restorePreservedRegs(REGNUM(firstSaved + TR::RealRegister::FirstGPR),
+                                         REGNUM(lastSaved + TR::RealRegister::FirstGPR),
+                                         blockNumber, cursor, currentNode, spReg, rsa, getNormalStackPointerRegister());
+         }
+      }
+
+   if (!(GPRSaveMask &(1 << GPREGINDEX(getNormalStackPointerRegister()))))
+      { // GPR4 not restored by previous and needs restoring
+      cursor = addImmediateToRealRegister(spReg, stackFrameSize,  NULL, currentNode, cursor);
+      TR_ASSERT( cursor != NULL, "xplink retore code - should not need temp register");
+      }
+
+   // 31 bit - B 4(,7),  64 bit B 2(,7)
+   TR::RealRegister *dummyUncondMask = getRealRegister(REGNUM(TR::RealRegister::GPR15));
+   TR::RealRegister * realReturnRegister = getReturnAddressRealRegister();
+   offset = (TR::Compiler->target.is64Bit()) ? 2 : 4;
+   cursor = generateRXInstruction(cg(), InstOpCode::BC, currentNode, dummyUncondMask, generateS390MemoryReference(realReturnRegister, offset, cg()), cursor);
+   }
+
+/**
+ * General XPLink utility
+ */
+TR::Instruction *
+TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction * cursor,
+                                                    TR::Node *node,
+                                                    TR::Node *callNode,
+                                                    TR_XPLinkCallTypes callType)
+   {
+   TR::CodeGenerator * codeGen = cg();
+   // In 64 bit XPLINK, the caller returns at RetAddr+2, so add 2 byte nop
+   // In 31 bit XPLINK, the caller returns at RetAddr+4, so add 4 byte nop with last two bytes
+   // as signed offset in doublewords at or preceding NOP
+   uint32_t padSize = TR::Compiler->target.is64Bit() ? 2 : 4;
+
+   cursor = codeGen->insertPad(node, cursor, padSize, false);
+   TR::S390NOPInstruction *nop = static_cast<TR::S390NOPInstruction *>(cursor);
+
+   if (TR::Compiler->target.is32Bit())
+      {
+      uint32_t callDescValues = calculateCallDescriptorFlags(callNode);  // lower 32 bits
+
+      TR::S390ConstantDataSnippet * callDescSnippet = cg()->findOrCreate8ByteConstant(node, (int64_t)callDescValues, false);
+      nop->setTargetSnippet(callDescSnippet);
+
+      // Create a pseudo instruction that will generate
+      //      BRAS 4
+      //      DC <Call Descriptor>
+      // if the snippet is > 15k bytes away.
+
+      TR::S390PseudoInstruction *pseudoCallDesc = static_cast<TR::S390PseudoInstruction *>(generateS390PseudoInstruction(codeGen, TR::InstOpCode::XPCALLDESC, node, NULL, cursor));
+      // Assign this pseudoCallDesc to the NOP Instruction.
+      static_cast<TR::S390NOPInstruction *>(cursor)->setCallDescInstr(pseudoCallDesc);
+      cursor = pseudoCallDesc;
+      }
+
+   nop->setCallType(callType);
+   return cursor;
    }

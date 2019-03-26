@@ -141,6 +141,37 @@ public:
 
    uint32_t calculateCallDescriptorFlags(TR::Node *callNode);
 
+   public:
+
+   virtual void setPrologueInfoCalculated(bool value)  { _prologueInfoCalculated = value; }
+   virtual bool getPrologueInfoCalculated()  { return _prologueInfoCalculated; }
+   void setAlternateStackPointerAdjust(int32_t adjust) { _alternateSPAdjust = adjust; }
+   int32_t getAlternateStackPointerAdjust() { return _alternateSPAdjust; }
+   void setSaveBackChain(bool value) { _saveBackChain = value; } // for use with XPLINK(BACKCHAIN) or other
+   bool getSaveBackChain() { return _saveBackChain; }
+   uint32_t getStackFrameBias() { return 2048; }
+
+   // == Related to signature of method or call
+   uint32_t  getInterfaceMappingFlags() { return _interfaceMappingFlags; }
+   void setInterfaceMappingFlags(uint32_t flags) { _interfaceMappingFlags = flags; }
+
+   // Size of guard page can affect generation of explicit stack checking code in noleaf routines.
+   // For example, 0 size guard page means always generate stack checking in noleafs.
+   void setGuardPageSize(uint32_t size) { _guardPageSize = size; }
+   uint32_t getGuardPageSize() { return _guardPageSize; }
+
+   virtual void calculatePrologueInfo(TR::Instruction * cursor);
+   virtual TR::Instruction *buyFrame(TR::Instruction * cursor, TR::Node *node);
+   virtual void createEntryPointMarker(TR::Instruction *cursor, TR::Node *node);
+
+   // === Call or entry related
+   TR_XPLinkCallTypes genWCodeCallBranchCode(TR::Node *callNode, TR::RegisterDependencyConditions * deps);
+
+   virtual void createPrologue(TR::Instruction * cursor);
+   virtual void createEpilogue(TR::Instruction * cursor);
+
+   TR::Instruction * genCallNOPAndDescriptor(TR::Instruction * cursor, TR::Node *node, TR::Node *callNode, TR_XPLinkCallTypes callType);
+
 private:
    enum TR_XPLinkFrameType _frameType;
 
@@ -149,6 +180,18 @@ private:
 
    TR_zOSGlobalCompilationInfo* _globalCompilationInfo;
 
+private:
+   enum
+      {
+      fudgeFactor = 1800                  // see S390EarlyStackMap
+                                         // 200 is too small for povray
+      };
+   uintptr_t _actualOffsetOfFirstIncomingParm;
+   bool  _prologueInfoCalculated;        // if calculated prologue information already - i.e. multiple entry points
+   int32_t _alternateSPAdjust;           // i.e. for alloca: alternateSP <- SP + adjust
+   uint32_t _guardPageSize;              // byte size of guard page affecting explicit checking
+   bool _saveBackChain;                  // GPR4 is saved
+   uint32_t _interfaceMappingFlags;       // describing the method body
    };
 
 

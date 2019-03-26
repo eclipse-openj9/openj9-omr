@@ -799,7 +799,10 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
          if (isDivision)
             {
             firstRegister = cg->gprClobberEvaluate(firstChild);
-            if (!firstChild->isNonNegative())
+
+            // This adjustment only applies to signed division as we are effectively trying to skirt the sign bit during
+            // the shift operation below
+            if (!isUnsigned && !firstChild->isNonNegative())
                {
                TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
                TR::LabelSymbol * skipSet = generateLabelSymbol(cg);
@@ -832,7 +835,10 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
 
             TR::LabelSymbol * done = generateLabelSymbol(cg);
             TR::RegisterDependencyConditions *deps = NULL;
-            if (!firstChild->isNonNegative())
+
+            // This adjustment only applies to signed division as we are effectively trying to skirt the sign bit during
+            // the shift operation below
+            if (!isUnsigned && !firstChild->isNonNegative())
                {
                TR::Register * tempRegister1 = cg->allocateRegister();
                TR::Register * tempRegister2 = cg->allocateRegister();
@@ -901,8 +907,10 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
    dependencies->addPostCondition(remRegister, TR::RealRegister::LegalEvenOfPair);
    dependencies->addPostCondition(quoRegister, TR::RealRegister::LegalOddOfPair);
 
+   // TODO(#3685): Remove this Java-ism from OMR and push it into OpenJ9
    if (!doConditionalRemainder &&
          !node->isSimpleDivCheck() &&
+         !isUnsigned &&
          !firstChild->isNonNegative() &&
          !secondChild->isNonNegative() &&
          !(secondChild->getOpCodeValue() == TR::lconst &&
@@ -1045,7 +1053,9 @@ iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
    //    R1+1 -> Quotient
    //
    // Note:  D and DR require that R1=0 before executing the division
+   // TODO(#3685): Remove this Java-ism from OMR and push it into OpenJ9
    bool needCheck = (!node->isSimpleDivCheck()            &&
+                     !node->getOpCode().isUnsigned() && 
                      !firstChild->isNonNegative()         &&
                      !secondChild->isNonNegative());
 

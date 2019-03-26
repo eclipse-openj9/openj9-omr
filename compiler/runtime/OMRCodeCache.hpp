@@ -328,6 +328,106 @@ public:
     */
    void setFreeBlockList(CodeCacheFreeCacheBlock *fcb) { _freeBlockList = fcb; }
 
+   /**
+    * @brief Getter for the base address of temporary trampolines
+    *
+    * @returns The base address of temporary trampolines
+    */
+   uint8_t *tempTrampolineBase() { return _tempTrampolineBase; }
+
+   /**
+    * @brief Setter for the base address of temporary trampolines
+    *
+    * @param[in] address : The new base address of temporary trampolines
+    */
+   void setTempTrampolineBase(uint8_t *address) { _tempTrampolineBase = address; }
+
+   /**
+    * @brief Getter for the top address of temporary trampolines
+    *
+    * @returns The top address of temporary trampolines
+    */
+   uint8_t *tempTrampolineTop() { return _tempTrampolineTop; }
+
+   /**
+    * @brief Setter for the top address of temporary trampolines
+    *
+    * @param[in] address : The new top address of temporary trampolines
+    */
+   void setTempTrampolineTop(uint8_t *address) { _tempTrampolineTop = address; }
+
+   /**
+    * @brief Getter for the next allocation address of temporary trampolines
+    *
+    * @returns The next allocation address of temporary trampolines
+    */
+   uint8_t *tempTrampolineNext() { return _tempTrampolineNext; }
+
+   /**
+    * @brief Setter for the next allocation address of temporary trampolines
+    *
+    * @param[in] address : The new next allocation address of temporary trampolines
+    */
+   void setTempTrampolineNext(uint8_t *address) { _tempTrampolineNext = address; }
+
+   /**
+    * @brief Getter for the allocation mark for trampolines
+    *
+    * @returns The allocation mark for trampolines
+    */
+   uint8_t *trampolineAllocationMark() { return _trampolineAllocationMark; }
+
+   /**
+    * @brief Setter for the trampoline allocation mark
+    *
+    * @param[in] address : The new trampoline allocation mark
+    */
+   void setTrampolineAllocationMark(uint8_t *address) { _trampolineAllocationMark = address; }
+
+   /**
+    * @brief Adjusts the trampoline allocation mark by the specified amount
+    *
+    * @param[in] numBytes : The number of bytes to adjust the allocation mark by.  Negative
+    *              values are permitted
+    */
+   void adjustTrampolineAllocationMark(int32_t numBytes) { _trampolineAllocationMark += numBytes; }
+
+   /**
+    * @brief Getter for the reservation mark for trampolines
+    *
+    * @returns The reservation mark for trampolines
+    */
+   uint8_t *trampolineReservationMark() { return _trampolineReservationMark; }
+
+   /**
+    * @brief Setter for the trampoline reservation mark
+    *
+    * @param[in] address : The new trampoline reservation mark
+    */
+   void setTrampolineReservationMark(uint8_t *address) { _trampolineReservationMark = address; }
+
+   /**
+    * @brief Adjusts the trampoline reservation mark by the specified amount
+    *
+    * @param[in] numBytes : The number of bytes to adjust the reservation mark by.  Negative
+    *              values are permitted
+    */
+   void adjustTrampolineReservationMark(int32_t numBytes) { _trampolineReservationMark += numBytes; }
+
+   /**
+    * @brief Getter for the trampoline base address
+    *
+    * @returns The base address of trampolines
+    */
+   uint8_t *trampolineBase() { return _trampolineBase; }
+
+   /**
+    * @brief Setter for the trampoline base address
+    *
+    * @param[in] address : The new trampoline base address
+    */
+   void setTrampolineBase(uint8_t *address) { _trampolineBase = address; }
+
    TR::CodeCacheManager *_manager;
 
    TR::Monitor *_mutex;

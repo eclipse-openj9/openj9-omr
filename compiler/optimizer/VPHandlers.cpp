@@ -2824,6 +2824,8 @@ TR::Node *constrainStore(OMR::ValuePropagation *vp, TR::Node *node)
 
    if (node->getOpCode().isIndirect())
       constrainBaseObjectOfIndirectAccess(vp, node);
+   else if (vp->_curDefinedOnAllPaths && node->getSymbol()->isAutoOrParm())
+      vp->_curDefinedOnAllPaths->set(node->getSymbolReference()->getReferenceNumber());
 
    return node;
    }

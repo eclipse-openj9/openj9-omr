@@ -252,6 +252,12 @@ void OMR::ValuePropagation::initialize()
 
    _edgesToBeRemoved = new (trStackMemory()) TR_Array<TR::CFGEdge *>(trMemory(), 8, false, stackAlloc);
    _blocksToBeRemoved = new (trStackMemory()) TR_Array<TR::CFGNode*>(trMemory(), 8, false, stackAlloc);
+   _curDefinedOnAllPaths = NULL;
+   if (_isGlobalPropagation)
+      _definedOnAllPaths = new (trStackMemory()) DefinedOnAllPathsMap(std::less<TR::CFGEdge *>(), trMemory()->currentStackRegion());
+   else
+      _definedOnAllPaths = NULL;
+   _defMergedNodes = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc, growable);
    _vcHandler.setRoot(_curConstraints, NULL);
 
    _relationshipCache.setFirst(NULL);

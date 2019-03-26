@@ -1848,6 +1848,15 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
    {
    isGlobal = true; // Will be reset if local constraints found
 
+   if (_defMergedNodes->get(node->getGlobalIndex()))
+      {
+      if (trace())
+         traceMsg(comp(), "Node n%dn has already been processed by mergeDefConstraints - returning NULL\n", node->getGlobalIndex());
+      return NULL;
+      }
+
+   _defMergedNodes->set(node->getGlobalIndex());
+
    // If the node is a use node, look at its def points and merge constraints
    // from them.
    //
@@ -1963,6 +1972,16 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
             continue;
 
          defValueNumber = getValueNumber(defNode);
+         // before we can look at def nodes to build up a set of contraints we had better know that set of defs
+         // dominates the use we are considering - if not we treat the use as an unknown
+         if (node->getSymbol()->isAutoOrParm()
+             && _curDefinedOnAllPaths
+             && !_curDefinedOnAllPaths->get(node->getSymbolReference()->getReferenceNumber()))
+            {
+            if (trace())
+               traceMsg(comp(), "symRef %d is not stored on all paths - treating as unknown\n", defNode->getSymbolReference()->getReferenceNumber());
+            unseenDefsFound = true;
+            }
 
          // Only consider def nodes that are stores; other def nodes
          // (e.g. calls) will make this value unconstrained.
@@ -2293,6 +2312,13 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
          }
       }
 
+   if (relative != AbsoluteConstraint)
+      {
+      if (trace())
+         traceMsg(comp(), "we are processing a relative constraint and merging with backedge constraints is not supported\n");
+      return NULL;
+      }
+
    // Now go through the defs again and look for back-edge constraints on
    // the unseen def nodes
    //
@@ -2311,8 +2337,14 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
 
       sym = defNode->getSymbol();
       defValueNumber = getValueNumber(defNode);
-      if (!hasBeenStored(defValueNumber, sym, _curConstraints))
+      // if we haven't seen a def on this iteration along all paths we must consider the backedge constraints
+      if (node->getSymbol()->isAutoOrParm() 
+          && !unseenDefsFound
+          && !_curDefinedOnAllPaths->get(defNode->getSymbolReference()->getReferenceNumber()))
          {
+         if (trace())
+            traceMsg(comp(), "symref %d is not defined on all paths - consulting backedge constraints\n", node->getSymbolReference()->getReferenceNumber());
+
          // this def is unseen
          unseenDefsFound = true;
          LoopInfo *loopInfo;
@@ -2324,11 +2356,17 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
             // See if the unseen def was seen on a path to this back edge.
             //
             if (!loopInfo ||
-                !loopInfo->_backEdgeConstraints ||
-                !hasBeenStored(defValueNumber, sym, loopInfo->_backEdgeConstraints->valueConstraints))
+                !loopInfo->_backEdgeConstraints)
                {
                if (trace())
                   traceMsg(comp(), "not seen on this back edge, ignored\n");
+               continue;
+               }
+
+            if (!hasBeenStored(defValueNumber, sym, loopInfo->_backEdgeConstraints->valueConstraints))
+               {
+               if (trace())
+                  traceMsg(comp(), "no backedge constraint, ignored\n");
                continue;
                }
 
@@ -4282,6 +4320,7 @@ void TR::GlobalValuePropagation::processStructure(TR_StructureSubGraphNode *node
    TR_RegionStructure *region = node->getStructure()->asRegion();
    if (region)
       {
+      _defMergedNodes->empty();
       if (region->isAcyclic())
          {
          processAcyclicRegion(node, lastTimeThrough, insideLoop);
@@ -4341,6 +4380,14 @@ void TR::GlobalValuePropagation::processNaturalLoop(TR_StructureSubGraphNode *no
 
       _visitCount--;
       processRegionSubgraph(node, false, true, true);
+
+      // having processed the loop the first time we want to make sure to wipe out any
+      // seenOnAllPaths information on the back edges - we use this notion only for the current iteration
+      for (auto itr = region->getEntry()->getPredecessors().begin(), end = region->getEntry()->getPredecessors().end(); itr != end; ++itr)
+         {
+         (*_definedOnAllPaths)[*itr] = NULL;
+         }
+
       if (_reachedMaxRelationDepth)
         {
         _loopInfo = parentLoopInfo;
@@ -4395,10 +4442,79 @@ void TR::GlobalValuePropagation::processNaturalLoop(TR_StructureSubGraphNode *no
       collectInductionVariableEntryConstraints();
 
    processRegionSubgraph(node, lastTimeThrough, true, true);
+
+   // having processed the loop again we again clear out any seenOnAllPaths information on the back edges
+   for (auto itr = region->getEntry()->getPredecessors().begin(), end = region->getEntry()->getPredecessors().end(); itr != end; ++itr)
+      {
+      (*_definedOnAllPaths)[*itr] = NULL;
+      }
+
    if (_reachedMaxRelationDepth)
       {
       _loopInfo = parentLoopInfo;
       return;
+      }
+
+   // we now compute the definedOnAllPaths information for the exit edges
+   // the exit edge is a union of the exit edge seenOnAllPaths and the intersection of the entry
+   // seen on all paths
+   TR_BitVector *inboundDefinedOnAllPaths = mergeDefinedOnAllPaths(node);
+
+   // we treat exceptions conservatively for now - we know nothing
+   // this could be improved in the future
+   if (!node->getExceptionPredecessors().empty())
+      inboundDefinedOnAllPaths->empty();
+
+   if (trace())
+      {
+      traceMsg(comp(), "   defined on all paths for entry of loop %d", region->getNumber());
+      inboundDefinedOnAllPaths->print(comp());
+      traceMsg(comp(), "\n");
+      }
+
+   ListIterator<TR::CFGEdge> it(&region->getExitEdges());
+   for (TR::CFGEdge *edge = it.getFirst(); edge; edge = it.getNext())
+      {
+      if (trace())
+         traceMsg(comp(), "   defined on all paths for exit %d->%d:", edge->getFrom()->getNumber(), edge->getTo()->getNumber());
+
+      if ((*_definedOnAllPaths)[edge])
+         {
+         if (trace())
+            {
+            ((*_definedOnAllPaths)[edge])->print(comp());
+            traceMsg(comp(), "\n");
+            }
+         (*(*_definedOnAllPaths)[edge]) |= *inboundDefinedOnAllPaths;
+         }
+      else
+         {
+         if (trace())
+            traceMsg(comp(), " NULL\n");
+         (*_definedOnAllPaths)[edge] = inboundDefinedOnAllPaths;
+         }
+
+      // the exit edges in the natural loop region do not connect to the parent's nodes
+      // so we now find the matching exit edge in the parent region and copy the defined on all paths
+      // information onto those edges
+      for (auto itr = node->getSuccessors().begin(), end = node->getSuccessors().end(); itr != end; ++itr)
+         {
+         if ((*itr)->getTo()->getNumber() == edge->getTo()->getNumber())
+            {
+            TR_BitVector *parentEdgeDefinedOnAllPaths = (*_definedOnAllPaths)[*itr];
+            if (parentEdgeDefinedOnAllPaths != NULL)
+               {
+               *parentEdgeDefinedOnAllPaths &= (*(*_definedOnAllPaths)[edge]);
+               }
+            else
+               {
+               parentEdgeDefinedOnAllPaths = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
+               (*_definedOnAllPaths)[*itr] = parentEdgeDefinedOnAllPaths;
+               *parentEdgeDefinedOnAllPaths = (*(*_definedOnAllPaths)[edge]);
+               }
+            break;
+            }
+         }
       }
 
    // Back edge constraints have now been accumulated into a separate list of
@@ -4692,6 +4808,38 @@ void TR::GlobalValuePropagation::processRegionNode(TR_StructureSubGraphNode *nod
    processStructure(node, lastTimeThrough, insideLoop);
    }
 
+TR_BitVector *TR::GlobalValuePropagation::mergeDefinedOnAllPaths(TR_StructureSubGraphNode *node)
+   {
+   TR_BitVector *mergeResult = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
+
+   if (!node->getExceptionPredecessors().empty())
+      return mergeResult;
+
+   bool first = true;
+   for (auto itr = node->getPredecessors().begin(), end = node->getPredecessors().end(); itr != end; ++itr)
+      {
+      TR_BitVector *predDefinedOnAllPaths = (*_definedOnAllPaths)[*itr];
+      if (trace())
+         {
+         traceMsg(comp(), "   inbound seenOnAllpaths for edge %d->%d", (*itr)->getFrom()->getNumber(), (*itr)->getTo()->getNumber());
+         if (predDefinedOnAllPaths)
+            predDefinedOnAllPaths->print(comp());
+         else
+            traceMsg(comp(), "NULL");
+         traceMsg(comp(), "\n");
+         }
+
+      if (predDefinedOnAllPaths == NULL)
+         mergeResult->empty();
+      else if (first)
+         (*mergeResult) = *predDefinedOnAllPaths;
+      else
+         (*mergeResult) &= *predDefinedOnAllPaths;
+
+      first = false;
+      }
+   return mergeResult;
+   }
 
 void TR::GlobalValuePropagation::processBlock(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
    {
@@ -4713,6 +4861,21 @@ void TR::GlobalValuePropagation::processBlock(TR_StructureSubGraphNode *node, bo
    if (trace())
       {
       traceMsg(comp(), "GVP: Processing block_%i\n", _curBlock->getNumber());
+      }
+
+   // inside of a loop we track the defined on all paths bitvector so we know when a merge of def constraints
+   // may need to consider the backedge - here we compute the block's inbound seen on all paths set by intersecting
+   // the sets on the inbound edges
+   if (insideLoop)
+      {
+      _curDefinedOnAllPaths = mergeDefinedOnAllPaths(node);
+      }
+
+   if (insideLoop && trace())
+      {
+      traceMsg(comp(), "   defined on all paths for entry of block %d", block->getNumber());
+      _curDefinedOnAllPaths->print(comp());
+      traceMsg(comp(), "\n");
       }
 
 #if DEBUG
@@ -4779,6 +4942,22 @@ void TR::GlobalValuePropagation::processBlock(TR_StructureSubGraphNode *node, bo
    processTrees(startTree, endTree);
    if (_reachedMaxRelationDepth)
       return;
+
+   // inside a loop we will now propagate the seen on all paths definitions computed through the block onto
+   // the exit edges
+   if (insideLoop)
+      {
+      for (auto itr = node->getSuccessors().begin(), end = node->getSuccessors().end(); itr != end; ++itr)
+         {
+         if (trace())
+            {
+            traceMsg(comp(), "   outbound seenOnAllpaths for edge %d->%d", (*itr)->getFrom()->getNumber(), (*itr)->getTo()->getNumber());
+            _curDefinedOnAllPaths->print(comp());
+            traceMsg(comp(), "\n");
+            }
+         (*_definedOnAllPaths)[*itr] = _curDefinedOnAllPaths;
+         }
+      }
 
    if (!isUnreachablePath(_curConstraints))
       {

@@ -187,7 +187,23 @@ internal_initializeJit()
 int32_t
 internal_compileMethodBuilder(TR::MethodBuilder *m, void **entry)
    {
-   return m->Compile(entry);
+   auto rc = m->Compile(entry);
+
+#if defined(J9ZOS390)
+   struct FunctionDescriptor
+   {
+      uint64_t environment;
+      void* func;
+   };
+
+   FunctionDescriptor* fd = new FunctionDescriptor();
+   fd->environment = 0;
+   fd->func = *entry;
+
+   *entry = (void*) fd;
+#endif
+
+   return rc;
    }
 
 void

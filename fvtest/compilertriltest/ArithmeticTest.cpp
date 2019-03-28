@@ -128,6 +128,10 @@ TEST_P(Int32Arithmetic, UsingLoadParam) {
 TEST_P(UInt32Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
+        << "The Power codegen does not yet support iudiv/iurem (see issue #3673)";
+
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
     auto trees = parseString(inputTrees);
@@ -146,6 +150,10 @@ TEST_P(UInt32Arithmetic, UsingConst) {
 
 TEST_P(UInt32Arithmetic, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
+        << "The Power codegen does not yet support iudiv/iurem (see issue #3673)";
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
@@ -200,6 +208,10 @@ TEST_P(Int64Arithmetic, UsingLoadParam) {
 TEST_P(UInt64Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(param.opcode == "ludiv" && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
+        << "The Power codegen does not yet support ludiv (see issue #2227)";
+
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %lld) (lconst %lld)) )))", param.opcode.c_str(), param.lhs, param.rhs);
     auto trees = parseString(inputTrees);
@@ -218,6 +230,10 @@ TEST_P(UInt64Arithmetic, UsingConst) {
 
 TEST_P(UInt64Arithmetic, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(param.opcode == "ludiv" && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
+        << "The Power codegen does not yet support ludiv (see issue #2227)";
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64, Int64] (block (lreturn (%s (lload parm=0) (lload parm=1)) )))", param.opcode.c_str());

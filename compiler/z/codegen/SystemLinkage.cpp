@@ -2645,7 +2645,7 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
 
    return cursor;
    }
-   
+
 struct TR_XPLinkEntryPointMarker {
       uint32_t eplEycatcher1;
       uint32_t eplEycatcher2;

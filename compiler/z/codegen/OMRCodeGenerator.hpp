@@ -903,4 +903,7 @@ class TR_S390ScratchRegisterManager : public TR_ScratchRegisterManager
    TR_S390ScratchRegisterManager(int32_t capacity, TR::CodeGenerator *cg) : TR_ScratchRegisterManager(capacity, cg) {}
    };
 
+#ifdef J9_PROJECT_SPECIFIC
+uint32_t CalcCodeSize(TR::Instruction *start,TR::Instruction *end);
+#endif
 #endif

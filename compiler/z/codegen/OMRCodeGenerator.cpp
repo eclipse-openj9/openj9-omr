@@ -133,6 +133,7 @@
 #include "z/codegen/TRSystemLinkage.hpp"
 
 #if J9_PROJECT_SPECIFIC
+#include "z/codegen/S390Recompilation.hpp"
 #include "z/codegen/S390Register.hpp"
 #include "z/codegen/J9S390PrivateLinkage.hpp"
 #endif
@@ -2252,10 +2253,88 @@ void
 OMR::Z::CodeGenerator::doBinaryEncoding()
    {
    TR_S390BinaryEncodingData data;
+   data.cursorInstruction = self()->getFirstInstruction();
+   data.estimate = 0;
    data.loadArgSize = 0;
-   self()->fe()->generateBinaryEncodingPrologue(&data, self());
+   TR::Recompilation* recomp = self()->comp()->getRecompilationInfo();
 
-   TR::Recompilation * recomp = self()->comp()->getRecompilationInfo();
+   //  setup cursor for JIT to JIT transfer
+   //
+   if (self()->comp()->getJittedMethodSymbol()->isJNI() && !self()->comp()->getOption(TR_FullSpeedDebug))
+      {
+      data.preProcInstruction = TR::Compiler->target.is64Bit() ?
+         data.cursorInstruction->getNext()->getNext()->getNext() : 
+         data.cursorInstruction->getNext()->getNext();
+      }
+   else
+      {
+      data.preProcInstruction = data.cursorInstruction->getNext();
+      }
+
+   data.jitTojitStart = data.preProcInstruction->getNext();
+
+   // Generate code to setup argument registers for interpreter to JIT transfer
+   // This piece of code is right before JIT-JIT entry point
+   //
+   TR::Instruction * preLoadArgs, * endLoadArgs;
+   preLoadArgs = data.preProcInstruction;
+
+   // We need full prolog if there is a call or a non-constant snippet
+   //
+   TR_BitVector * callBlockBV = self()->getBlocksWithCalls();
+
+   // No exit points, hence we can
+   //
+   if (callBlockBV->isEmpty() && !self()->anyNonConstantSnippets())
+      {
+      self()->setExitPointsInMethod(false);
+      }
+
+   endLoadArgs = self()->getLinkage()->loadUpArguments(preLoadArgs);
+
+   if (recomp != NULL)
+      {
+#ifdef J9_PROJECT_SPECIFIC
+      if (preLoadArgs != endLoadArgs)
+         {
+         data.loadArgSize = CalcCodeSize(preLoadArgs->getNext(), endLoadArgs);
+         }
+
+      ((TR_S390Recompilation *) recomp)->setLoadArgSize(data.loadArgSize);
+#endif
+      recomp->generatePrePrologue();
+      }
+#ifdef J9_PROJECT_SPECIFIC
+   else if (self()->comp()->getOption(TR_FullSpeedDebug) || self()->comp()->getOption(TR_SupportSwitchToInterpreter))
+      {
+      self()->generateVMCallHelperPrePrologue(self()->getFirstInstruction());
+      }
+#endif
+
+   data.cursorInstruction = self()->getFirstInstruction();
+
+   // Padding for JIT Entry Point
+   //
+   if (!self()->comp()->compileRelocatableCode())
+      {
+      data.estimate += 256;
+      }
+
+   while (data.cursorInstruction && data.cursorInstruction->getOpCodeValue() != TR::InstOpCode::PROC)
+      {
+      data.estimate = data.cursorInstruction->estimateBinaryLength(data.estimate);
+      data.cursorInstruction = data.cursorInstruction->getNext();
+      }
+
+   TR::Instruction* cursor = data.cursorInstruction;
+
+   if (recomp != NULL)
+      {
+      cursor = recomp->generatePrologue(cursor);
+      }
+
+   self()->getLinkage()->createPrologue(cursor);
+
    bool isPrivateLinkage = (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private);
 
    TR::Instruction *instr = self()->getFirstInstruction();
@@ -2456,7 +2535,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          if (recomp != NULL && recomp->couldBeCompiledAgain())
             {
             TR_LinkageInfo * linkageInfo = TR_LinkageInfo::get(self()->getCodeStart());
-            TR_ASSERT(data.loadArgSize == argSize, "arg size %d != %d\n", data.loadArgSize, argSize);
             if (recomp->useSampling())
                {
                recompFlag = METHOD_SAMPLING_RECOMPILATION;

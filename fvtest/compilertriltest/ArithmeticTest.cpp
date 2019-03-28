@@ -92,8 +92,18 @@ class UInt64Arithmetic : public TRTest::BinaryOpTest<uint64_t> {};
 TEST_P(Int32Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (iconst %d)"
+      "        (iconst %d)))))",
+      param.opcode.c_str(),
+      param.lhs,
+      param.rhs
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -111,8 +121,16 @@ TEST_P(Int32Arithmetic, UsingConst) {
 TEST_P(Int32Arithmetic, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32 args=[Int32, Int32]"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (iload parm=0)"
+      "        (iload parm=1)))))",
+      param.opcode.c_str()
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -132,8 +150,18 @@ TEST_P(UInt32Arithmetic, UsingConst) {
     SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
         << "The Power codegen does not yet support iudiv/iurem (see issue #3673)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (iconst %d)"
+      "        (iconst %d)))))",
+      param.opcode.c_str(),
+      param.lhs,
+      param.rhs
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -155,8 +183,16 @@ TEST_P(UInt32Arithmetic, UsingLoadParam) {
     SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
         << "The Power codegen does not yet support iudiv/iurem (see issue #3673)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32 args=[Int32, Int32]"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (iload parm=0)"
+      "        (iload parm=1)))))",
+      param.opcode.c_str()
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -172,8 +208,18 @@ TEST_P(UInt32Arithmetic, UsingLoadParam) {
 TEST_P(Int64Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %lld) (lconst %lld)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int64"
+      "  (block"
+      "    (lreturn"
+      "      (%s"
+      "        (lconst %lld)"
+      "        (lconst %lld)))))",
+      param.opcode.c_str(),
+      param.lhs,
+      param.rhs
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -191,8 +237,16 @@ TEST_P(Int64Arithmetic, UsingConst) {
 TEST_P(Int64Arithmetic, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64, Int64] (block (lreturn (%s (lload parm=0) (lload parm=1)) )))", param.opcode.c_str());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int64 args=[Int64, Int64]"
+      "  (block"
+      "    (lreturn"
+      "      (%s"
+      "        (lload parm=0)"
+      "        (lload parm=1)))))",
+      param.opcode.c_str()
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -212,8 +266,18 @@ TEST_P(UInt64Arithmetic, UsingConst) {
     SKIP_IF(param.opcode == "ludiv" && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
         << "The Power codegen does not yet support ludiv (see issue #2227)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %lld) (lconst %lld)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int64"
+      "  (block"
+      "    (lreturn"
+      "      (%s"
+      "        (lconst %lld)"
+      "        (lconst %lld)))))",
+      param.opcode.c_str(),
+      param.lhs,
+      param.rhs
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -235,8 +299,16 @@ TEST_P(UInt64Arithmetic, UsingLoadParam) {
     SKIP_IF(param.opcode == "ludiv" && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
         << "The Power codegen does not yet support ludiv (see issue #2227)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64, Int64] (block (lreturn (%s (lload parm=0) (lload parm=1)) )))", param.opcode.c_str());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int64 args=[Int64, Int64]"
+      "  (block"
+      "    (lreturn"
+      "      (%s"
+      "        (lload parm=0)"
+      "        (lload parm=1)))))",
+      param.opcode.c_str()
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -357,8 +429,18 @@ class FloatArithmetic : public TRTest::BinaryOpTest<float> {};
 TEST_P(FloatArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[160] = {0};
-    std::snprintf(inputTrees, 160, "(method return=Float (block (freturn (%s (fconst %f) (fconst %f)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Float"
+      "  (block"
+      "    (freturn"
+      "      (%s"
+      "        (fconst %f)"
+      "        (fconst %f)))))",
+      param.opcode.c_str(),
+      param.lhs,
+      param.rhs
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -380,8 +462,16 @@ TEST_P(FloatArithmetic, UsingConst) {
 TEST_P(FloatArithmetic, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[160] = {0};
-    std::snprintf(inputTrees, 160, "(method return=Float args=[Float, Float] (block (freturn (%s (fload parm=0) (fload parm=1)) )))", param.opcode.c_str());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Float args=[Float, Float]"
+      "  (block"
+      "    (freturn"
+      "      (%s"
+      "        (fload parm=0)"
+      "        (fload parm=1)))))",
+      param.opcode.c_str()
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -432,7 +522,17 @@ TEST_P(DoubleArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
-    std::snprintf(inputTrees, 1024, "(method return=Double (block (dreturn (%s (dconst %f) (dconst %f)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Double"
+      "  (block"
+      "    (dreturn"
+      "      (%s"
+      "        (dconst %f)"
+      "        (dconst %f)))))",
+      param.opcode.c_str(),
+      param.lhs,
+      param.rhs
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -454,8 +554,16 @@ TEST_P(DoubleArithmetic, UsingConst) {
 TEST_P(DoubleArithmetic, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[160] = {0};
-    std::snprintf(inputTrees, 160, "(method return=Double args=[Double, Double] (block (dreturn (%s (dload parm=0) (dload parm=1)) )))", param.opcode.c_str());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Double args=[Double, Double]"
+      "  (block"
+      "    (dreturn"
+      "      (%s"
+      "        (dload parm=0)"
+      "        (dload parm=1)))))",
+      param.opcode.c_str()
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -500,8 +608,16 @@ class FloatUnaryArithmetic : public TRTest::UnaryOpTest<float> {};
 TEST_P(FloatUnaryArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[160] = {0};
-    std::snprintf(inputTrees, 160, "(method return=Float (block (freturn (%s (fconst %f)))))", param.opcode.c_str(), param.value);
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Float"
+      "  (block"
+      "    (freturn"
+      "      (%s"
+      "        (fconst %f)))))",
+      param.opcode.c_str(),
+      param.value
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -523,8 +639,15 @@ TEST_P(FloatUnaryArithmetic, UsingConst) {
 TEST_P(FloatUnaryArithmetic, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[160] = {0};
-    std::snprintf(inputTrees, 160, "(method return=Float args=[Float] (block (freturn (%s (fload parm=0)))))", param.opcode.c_str());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Float args=[Float]"
+      "  (block"
+      "    (freturn"
+      "      (%s"
+      "        (fload parm=0)))))",
+      param.opcode.c_str()
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -560,8 +683,16 @@ class DoubleUnaryArithmetic : public TRTest::UnaryOpTest<double> {};
 TEST_P(DoubleUnaryArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[512] = {0};
-    std::snprintf(inputTrees, 512, "(method return=Double (block (dreturn (%s (dconst %f)))))", param.opcode.c_str(), param.value);
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Double"
+      "  (block"
+      "    (dreturn"
+      "      (%s"
+      "        (dconst %f)))))",
+      param.opcode.c_str(),
+      param.value
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -583,8 +714,15 @@ TEST_P(DoubleUnaryArithmetic, UsingConst) {
 TEST_P(DoubleUnaryArithmetic, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[160] = {0};
-    std::snprintf(inputTrees, 160, "(method return=Double args=[Double] (block (dreturn (%s (dload parm=0)))))", param.opcode.c_str());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Double args=[Double]"
+      "  (block"
+      "    (dreturn"
+      "      (%s"
+      "        (dload parm=0)))))",
+      param.opcode.c_str()
+      );
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);

@@ -95,6 +95,12 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 		}
 	}
 
+#if defined(LINUX)
+	if(extensions->isVLHGC() && extensions->indexableObjectModel.isDoubleMappingEnabled()) {
+		mode |= OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN;
+	}
+#endif /* defined(LINUX) */
+
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	if (extensions->enableSplitHeap) {
 		/* currently (ceiling != NULL) is using to recognize CompressedRefs so must be NULL for 32 bit platforms */
@@ -545,6 +551,15 @@ MM_MemoryManager::destroyVirtualMemory(MM_EnvironmentBase* env, MM_MemoryHandle*
 	valgrindDestroyMempool(env->getExtensions());
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
+}
+
+void*
+MM_MemoryManager::doubleMapArraylet(MM_MemoryHandle* handle, MM_EnvironmentBase *env, void* arrayletLeaves[], UDATA arrayletLeafCount, UDATA arrayletLeafSize, UDATA byteAmount, struct J9PortVmemIdentifier *newIdentifier, UDATA pageSize)
+{
+	Assert_MM_true(NULL != handle);
+	MM_VirtualMemory* memory = handle->getVirtualMemory();
+	Assert_MM_true(NULL != memory);
+	return memory->doubleMapArraylet(env, arrayletLeaves, arrayletLeafCount, arrayletLeafSize, byteAmount, newIdentifier, pageSize);
 }
 
 bool

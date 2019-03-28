@@ -56,6 +56,7 @@ public:
 	virtual uintptr_t getPageFlags();
 	virtual void* getHeapBase();
 	virtual void* getHeapTop();
+	virtual void *doubleMapArraylet(MM_EnvironmentBase *env, void* arrayletLeaves[], UDATA arrayletLeafCount, UDATA arrayletLeafSize, UDATA byteAmount, struct J9PortVmemIdentifier *newIdentifier, UDATA pageSize);
 
 	virtual uintptr_t getMaximumPhysicalRange();
 

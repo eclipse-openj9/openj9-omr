@@ -914,3 +914,5 @@ TraceEvent=Trc_MM_LOAResize_contractWithRange Overhead=1 Level=1 Group=loaresize
 TraceEvent=Trc_MM_Scavenger_percolate_concurrentMarkExhausted Overhead=1 Level=1 Group=percolate Template="Percolating due to exhausted Concurrent Mark"
 TraceEvent=Trc_MM_Scavenger_percolate_preventTenureExpand Overhead=1 Level=1 Group=percolate Template="Percolating to prevent Tenure expand"
 TraceEvent=Trc_MM_Scavenger_percolate_tenureMaxFree Overhead=1 Level=1 Group=percolate Template="Percolating due to meeting Tenure max free"
+
+TraceAssert=Assert_MM_double_map_unreachable noEnv Overhead=1 Level=1 Assert="(false)"

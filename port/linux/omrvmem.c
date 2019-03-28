@@ -1057,6 +1057,121 @@ default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *addres
 }
 
 /**
+ *  Maps a contiguous region of memory to double map addresses[] passed in.
+ *
+ *  @param OMRPortLibrary       *portLibrary                            [in] The portLibrary object
+ *  @param void*                addressesOffeset[]                              [in] Addresses to be double mapped
+ *  @param uintptr_t            byteAmount                                      [in] Total size to allocate for contiguous block of memory
+ *  @param struct J9PortVmemIdentifier *oldIdentifier   [in]  old Identifier containing file descriptor
+ *  @param struct J9PortVmemIdentifier *newIdentifier   [out] new Identifier for new block of memory. The structure to be updated
+ *  @param uintptr_t            mode,           [in] Access Mode
+ *  @paramuintptr_t             pageSize,       [in] onstant describing pageSize
+ *  @param OMRMemCategory       *category       [in] Memory allocation category
+ */
+
+void *
+omrvmem_get_contiguous_region_memory(struct OMRPortLibrary *portLibrary, void* addresses[], uintptr_t addressesCount, uintptr_t addressSize, uintptr_t byteAmount, struct J9PortVmemIdentifier *oldIdentifier, struct J9PortVmemIdentifier *newIdentifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category)
+{
+	int protectionFlags = PROT_READ | PROT_WRITE;
+	int flags = MAP_PRIVATE | MAP_ANON;
+	int fd = -1;
+	void* contiguousMap = NULL;
+	byteAmount = addressesCount * addressSize;
+	BOOLEAN successfulContiguousMap = FALSE;
+	BOOLEAN shouldUnmapAddr = FALSE;
+
+	if (0 != (OMRPORT_VMEM_MEMORY_MODE_COMMIT & mode)) {
+		protectionFlags = get_protectionBits(mode);
+	}
+
+	contiguousMap = mmap(
+			NULL,
+			byteAmount,
+			protectionFlags,
+			flags,
+			fd,
+			0);
+
+	if (contiguousMap == MAP_FAILED) {
+		contiguousMap = NULL;
+		portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_VMEM_OPFAILED, "Failed to map contiguous block of memory");
+	} else {
+		shouldUnmapAddr = TRUE;
+		successfulContiguousMap = TRUE;
+		/* Update identifier and commit memory if required, else return reserved memory */
+		update_vmemIdentifier(newIdentifier, contiguousMap, contiguousMap, byteAmount, mode, pageSize, OMRPORT_VMEM_PAGE_FLAG_NOT_USED, OMRPORT_VMEM_RESERVE_USED_MMAP, category, -1);
+		omrmem_categories_increment_counters(category, byteAmount); 
+		if (0 != (OMRPORT_VMEM_MEMORY_MODE_COMMIT & mode)) {
+			if (NULL == omrvmem_commit_memory(portLibrary, contiguousMap, byteAmount, newIdentifier)) {
+				/* If the commit fails free the memory  */
+#if defined(OMRVMEM_DEBUG)
+				printf("omrvmem_commit_memory failed at contiguous_region_reserve_memory.\n");
+				fflush(stdout);
+#endif
+				successfulContiguousMap = FALSE;
+			}
+		}
+	}
+
+	/* Perform double mapping  */
+	if(contiguousMap != NULL) {
+		flags = MAP_SHARED | MAP_FIXED; // Must be shared, SIGSEGV otherwise
+		fd = oldIdentifier->fd;
+#if defined(OMRVMEM_DEBUG)
+		printf("Found %zu arraylet leaves.\n", addressesCount);
+		int j = 0;
+		for(j = 0; j < addressesCount; j++) {
+			printf("addresses[%d] = %p\n", j, addresses[j]);
+		}
+		printf("Contiguous address is: %p\n", contiguousMap);
+		printf("About to double map arraylets. File handle got from old identifier: %d\n", fd);
+		fflush(stdout);
+#endif
+		size_t i;
+		for (i = 0; i < addressesCount; i++) {
+			void *nextAddress = (void *)(contiguousMap + i * addressSize);
+			uintptr_t addressOffset = (uintptr_t)(addresses[i] - (uintptr_t)oldIdentifier->address);
+			void *address = mmap(
+					nextAddress,
+					addressSize,
+					protectionFlags,
+					flags,
+					fd,
+					addressOffset);
+
+			if (address == MAP_FAILED) {
+				successfulContiguousMap = FALSE;
+                                portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_VMEM_OPFAILED, "Failed to double map.");
+#if defined(OMRVMEM_DEBUG)
+				printf("***************************** errno: %d\n", errno);
+				printf("Failed to mmap address[%zu] at mmapContiguous()\n", i);
+				fflush(stdout);
+#endif
+				break;
+			} else if (nextAddress != address) {
+				successfulContiguousMap = FALSE;
+                                portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_VMEM_OPFAILED, "Double Map failed to provide the correct address");
+#if defined(OMRVMEM_DEBUG)
+				printf("Map failed to provide the correct address. nextAddress %p != %p\n", nextAddress, address);
+				fflush(stdout);
+#endif
+				break;
+			}
+		}
+	}
+
+	if (!successfulContiguousMap) {
+		if (shouldUnmapAddr) {
+			munmap(contiguousMap, byteAmount);
+		}
+		contiguousMap = NULL;
+	}
+
+	return contiguousMap;
+}
+
+
+/**
  * @internal
  * Update J9PortVmIdentifier structure
  *

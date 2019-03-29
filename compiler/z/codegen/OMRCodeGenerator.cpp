@@ -1305,48 +1305,32 @@ OMR::Z::CodeGenerator::insertPad(TR::Node* node, TR::Instruction* cursor, uint32
 void
 OMR::Z::CodeGenerator::beginInstructionSelection()
    {
-   TR::ResolvedMethodSymbol * methodSymbol = self()->comp()->getJittedMethodSymbol();
    TR::Node * startNode = self()->comp()->getStartTree()->getNode();
-   TR::Instruction * cursor = NULL;
 
    self()->setCurrentBlockIndex(startNode->getBlock()->getNumber());
 
    if (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private)
       {
-      if(self()->comp()->getJittedMethodSymbol()->isJNI() &&
-         !self()->comp()->getOption(TR_MimicInterpreterFrameShape))
-        {
-        intptrj_t jniMethodTargetAddress = (intptrj_t)methodSymbol->getResolvedMethod()->startAddressForJNIMethod(self()->comp());
-        if(TR::Compiler->target.is64Bit())
-          {
-          cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
-          cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
-          }
-       else
-          cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
-       }
+      TR::Instruction * cursor = NULL;
+
+      if (self()->comp()->getJittedMethodSymbol()->isJNI() &&
+          !self()->comp()->getOption(TR_MimicInterpreterFrameShape))
+         {
+         TR::ResolvedMethodSymbol * methodSymbol = self()->comp()->getJittedMethodSymbol();
+         intptrj_t jniMethodTargetAddress = (intptrj_t)methodSymbol->getResolvedMethod()->startAddressForJNIMethod(self()->comp());
+
+         cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
+
+         if (TR::Compiler->target.is64Bit())
+            {
+            cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
+            }
+         }
 
       _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, 0, NULL, cursor, self());
-      generateS390PseudoInstruction(self(), TR::InstOpCode::PROC, startNode);
-      }
-   else
-      {
-      generateS390PseudoInstruction(self(), TR::InstOpCode::PROC, startNode);
       }
 
-   //TODO vm thread work: need to add a vm thread dependency at the top of the instruction strea.
-   //x86 does this by adding a dependency on the TR::InstOpCode::PROC instruction.  This causes an assertion
-   //failure on 390 (error: node does not have block set).  One solution is to add the dependency
-   //to the first instruction that has a block set.  This can be implemented in endInstructionSelection().
-
-   // Reset the VirtualGuardLabel pointeres inside all TR_Blocks to 0
-   //
-#if TODO  // need to understand this
-   for (TR::Block *block = comp()->getStartBlock(); block; block = block->getNextBlock())
-      {
-      block->setVirtualGuardLabel(0);
-      }
-#endif
+   generateS390PseudoInstruction(self(), TR::InstOpCode::PROC, startNode);
    }
 
 ////////////////////////////////////////////////////////////////////////////////

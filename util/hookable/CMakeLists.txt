@@ -44,6 +44,11 @@ target_compile_definitions(j9hook_obj
 		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
 )
 
+omr_add_exports(j9hook_obj
+	J9HookInitializeInterface
+	omrhook_lib_control
+)
+
 add_library(j9hookstatic STATIC
 	$<TARGET_OBJECTS:j9hook_obj>
 )

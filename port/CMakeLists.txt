@@ -340,16 +340,12 @@ omr_find_files(resolvedPaths
 	FILES ${OBJECTS}
 )
 
-
 if(OMR_HOST_OS STREQUAL "win")
 	list(APPEND resolvedPaths win32/omrsyslogmessages.rc)
 endif()
 
 target_sources(omrport_obj PRIVATE ${resolvedPaths})
 
-add_library(omrport STATIC
-	$<TARGET_OBJECTS:omrport_obj>
-)
 
 if(OMR_WARNINGS_AS_ERRORS)
 	target_compile_options(omrport_obj PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
@@ -358,6 +354,32 @@ endif()
 if(OMR_ENHANCED_WARNINGS)
 	target_compile_options(omrport_obj PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
 endif()
+
+target_include_directories(omrport_obj PRIVATE
+	../nls
+)
+
+# This flag indicates that we are compiling the port library
+target_compile_definitions(omrport_obj PRIVATE -DOMRPORT_LIBRARY_DEFINE)
+
+omr_add_exports(omrport_obj
+	omrport_allocate_library
+	omrport_create_library
+	omrport_getSize
+	omrport_getVersion
+	omrport_init_library
+	omrport_isCompatible
+	omrport_startup_library
+
+)
+
+add_library(omrport STATIC
+	$<TARGET_OBJECTS:omrport_obj>
+)
+
+###
+### omrport static lib
+###
 
 target_link_libraries(omrport
 	PUBLIC
@@ -368,15 +390,6 @@ target_link_libraries(omrport
 		j9pool
 		${OMR_THREAD_LIB}
 )
-
-target_include_directories(omrport_obj PRIVATE
-	../nls
-)
-
-# This flag indicates that we are compiling the port library
-target_compile_definitions(omrport_obj PRIVATE -DOMRPORT_LIBRARY_DEFINE)
-
-
 
 #TODO hack to get to compile. Need platform checks
 if(NOT OMR_HOST_OS STREQUAL "win")

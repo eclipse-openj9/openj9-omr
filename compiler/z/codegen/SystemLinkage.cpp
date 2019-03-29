@@ -2646,44 +2646,48 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
    return cursor;
    }
 
-struct TR_XPLinkEntryPointMarker {
-      uint32_t eplEycatcher1;
-      uint32_t eplEycatcher2;
-      uint32_t eplPPA1Offset;
-      uint32_t eplFrameSizeAndFlags;
-};
-
 void
-TR::S390zOSSystemLinkage::createEntryPointMarker(TR::Instruction *cursor, TR::Node *node)
+TR::S390zOSSystemLinkage::createEntryPointMarker(TR::Instruction* cursor, TR::Node* node)
    {
-   TR_XPLinkEntryPointMarker marker;
+   struct XPLinkEntryPointMarker
+      {
+      uint32_t eyecatcher1;
+      uint32_t eyecatcher2;
+      uint32_t ppa1Offset;
+      uint32_t dsaSizeAndFlags;
+      };
 
-   TR::Instruction *orgCursor = cursor;
+   static_assert(sizeof(XPLinkEntryPointMarker) == 16, "XPLinkEntryPointMarker must be 16 bytes in length.");
 
-   TR::LabelSymbol * epMarkerStart = generateLabelSymbol(cg());
-   TR::LabelSymbol * epMarkerDone = generateLabelSymbol(cg());
+   XPLinkEntryPointMarker marker;
 
-   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, node, epMarkerStart, cursor);
+   // "C.E.E.1"
+   marker.eyecatcher1 = 0x00C300C5;
+   marker.eyecatcher2 = 0x00C500F1;
 
-   // TR_XPLinkEntryPointMarker
-   marker.eplEycatcher1  = 0x00C300C5;
-   marker.eplEycatcher2  = 0x00C500F1;
-   marker.eplPPA1Offset = 0;     // relocation for this
-   marker.eplFrameSizeAndFlags = getStackFrameSize();
+   marker.ppa1Offset = 0;
+
+   uint32_t stackFrameSize = getStackFrameSize();
+
+   TR_ASSERT_FATAL((stackFrameSize & 31) == 0, "XPLINK stack frame size (%d) has to be aligned to 32-bytes.", stackFrameSize);
    
-   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eplEycatcher1, cursor);
-   orgCursor->move(cursor);  // move DC before entry point
-   
-   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eplEycatcher2, cursor);
-   orgCursor->move(cursor);  // move DC before entry point
-   
-   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eplPPA1Offset, cursor);
-   orgCursor->move(cursor);  // move DC before entry point
-   
-   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eplFrameSizeAndFlags, cursor);
-   orgCursor->move(cursor);  // move DC before entry point
+   // DSA size is the frame size aligned to 32-bytes which means it's least significant 5 bits are zero and are used to
+   // represent the flags which are always 0 for OMR as we do not support leaf frames or direct calls to alloca()
+   marker.dsaSizeAndFlags = stackFrameSize;
 
-   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, node, epMarkerDone, cursor);
+   TR::Instruction* procInstr = cursor;
+
+   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eyecatcher1, cursor);
+
+   // TODO: The move API really needs to be taking care of this. Leaving it here for now.
+   cg()->setFirstInstruction(cursor);
+
+   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eyecatcher2, cursor);
+   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.ppa1Offset, cursor);
+   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.dsaSizeAndFlags, cursor);
+
+   // Effectively prepends the previous data constants before the original cursor
+   procInstr->move(cursor);
    }
 
 TR_XPLinkCallTypes

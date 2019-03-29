@@ -21,6 +21,7 @@
 
 #include "OpCodeTest.hpp"
 #include "default_compiler.hpp"
+#include "omrformatconsts.h"
 
 #include <cmath>
 
@@ -214,8 +215,8 @@ TEST_P(Int64Arithmetic, UsingConst) {
       "  (block"
       "    (lreturn"
       "      (%s"
-      "        (lconst %lld)"
-      "        (lconst %lld)))))",
+      "        (lconst %" OMR_PRId64 ")"
+      "        (lconst %" OMR_PRId64 ")))))",
       param.opcode.c_str(),
       param.lhs,
       param.rhs
@@ -272,8 +273,8 @@ TEST_P(UInt64Arithmetic, UsingConst) {
       "  (block"
       "    (lreturn"
       "      (%s"
-      "        (lconst %lld)"
-      "        (lconst %lld)))))",
+      "        (lconst %" OMR_PRId64 ")"
+      "        (lconst %" OMR_PRId64 ")))))",
       param.opcode.c_str(),
       param.lhs,
       param.rhs

@@ -4038,7 +4038,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    if (invariantNodes && !invariantNodes->isEmpty())
       {
       //printf("Reached here in %s\n", comp()->signature());
-      buildLoopInvariantTree(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees, invariantNodes, /*invariantTranslationNodesList*/ NULL, invariantBlock);
+      buildLoopInvariantTree(invariantNodes);
       invariantNodes->deleteAll();
       }
 
@@ -5303,33 +5303,22 @@ bool nodeTreeContainsOpCode(TR::Node *n, TR::ILOpCodes op)
 
 
 
-bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *divCheckTrees,
-                                               List<TR::TreeTop> *checkCastTrees,
-                                               List<TR::TreeTop> *arrayStoreCheckTrees,
-                                               List<TR::Node> *comparisonTrees,
-                                               List<TR_NodeParentSymRef> *invariantNodes,
-                                               List<TR_NodeParentSymRefWeightTuple> *invariantTranslationNodesList,
-                                               TR::Block *loopInvariantBlock)
+bool TR_LoopVersioner::buildLoopInvariantTree(List<TR_NodeParentSymRef> *invariantNodes)
    {
-   TR::TreeTop *placeHolderTree = loopInvariantBlock->getLastRealTreeTop();
-   TR::Node *placeHolderNode = placeHolderTree->getNode();
-   int dumped = 0;
-
-   TR::ILOpCode &placeHolderOpCode = placeHolderNode->getOpCode();
-   if (placeHolderOpCode.isBranch() ||
-       placeHolderOpCode.isJumpWithMultipleTargets() ||
-       placeHolderOpCode.isReturn() ||
-       placeHolderOpCode.getOpCodeValue() == TR::athrow)
-      {
-      }
-   else
-      placeHolderTree = loopInvariantBlock->getExit();
-
-   TR::TreeTop *treeBeforePlaceHolderTree = placeHolderTree->getPrevTreeTop();
+   TR::NodeChecklist seen(comp());
 
    ListElement<TR_NodeParentSymRef> *nextInvariantNode = invariantNodes->getListHead();
    while (nextInvariantNode)
       {
+      TR::Node *invariantNode = nextInvariantNode->getData()->_node;
+      if (seen.contains(invariantNode))
+         {
+         nextInvariantNode = nextInvariantNode->getNextElement();
+         continue;
+         }
+
+      seen.add(invariantNode);
+
       // Heuristic: Pulling out really small trees doesn't help reduce
       // the amount of computation much, and just increases register pressure.
       //
@@ -5337,7 +5326,6 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees,
       // only pull it out if there are 4 or more nodes. This number is arbitrary,
       // and could probably be tweaked.
 
-      TR::Node *invariantNode = nextInvariantNode->getData()->_node;
       if (nodeSize(invariantNode) < 4)
          {
          if (trace())
@@ -5345,150 +5333,33 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees,
          nextInvariantNode = nextInvariantNode->getNextElement();
          continue;
          }
-      if (nextInvariantNode->getData()->_symRef)
+
+      if (performTransformation(
+            comp(),
+            "%s Attempting to hoist n%un [%p] out of the loop\n",
+            OPT_DETAILS_LOOP_VERSIONER,
+            invariantNode->getGlobalIndex(),
+            invariantNode))
          {
-         nextInvariantNode = nextInvariantNode->getNextElement();
-         continue;
-         }
-      //invariant expressions might be the part of checks we already versioned.
-      //if buildXXX already removed the nodes representing the expressions
-      //ICM will assert while decrementing their ref counts which might already be 0s
-      if (nextInvariantNode->getData()->_node->getReferenceCount() < 1 || nextInvariantNode->getData()->_parent->getReferenceCount()<1)
-         {
-         if (trace())
-            traceMsg(comp(), "skipping node %p or its parent %p which were removed as a part of a versioned check (e.g. count < 1)\n", nextInvariantNode->getData()->_node, nextInvariantNode->getData()->_parent);
-         nextInvariantNode = nextInvariantNode->getNextElement();
-         continue;
-         }
+         LoopEntryPrep *prep = createLoopEntryPrep(
+            LoopEntryPrep::PRIVATIZE,
+            invariantNode->duplicateTree());
 
-      collectAllExpressionsToBeChecked(invariantNode, comparisonTrees);
-
-      //printf("Creating test for loop invariant expression %p in in block_%d %s\n", invariantNode, loopInvariantBlock->getNumber(), comp()->signature());
-
-      if (performTransformation(comp(), "%s Creating store outside the loop for loop invariant expression %p\n", OPT_DETAILS_LOOP_VERSIONER, invariantNode))
-         {
-         TR::Node *duplicateNode = invariantNode->duplicateTree();
-
-         TR::DataType dataType = invariantNode->getDataType();
-         TR::SymbolReference *newSymbolReference = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), dataType);
-
-         if (invariantNode->getOpCode().hasSymbolReference() && invariantNode->getSymbolReference()->getSymbol()->isNotCollected())
-            newSymbolReference->getSymbol()->setNotCollected();
-
-         if (comp()->useCompressedPointers())
+         if (prep == NULL)
             {
-            if (duplicateNode->getOpCode().isLoadIndirect() &&
-                  duplicateNode->getDataType() == TR::Address &&
-                  TR::TransformUtil::fieldShouldBeCompressed(duplicateNode, comp()))
-               {
-               TR::TreeTop *translateTT = TR::TreeTop::create(comp(), TR::Node::createCompressedRefsAnchor(duplicateNode), NULL, NULL);
-               treeBeforePlaceHolderTree->join(translateTT);
-               translateTT->join(placeHolderTree);
-               treeBeforePlaceHolderTree = translateTT;
-               }
-            }
-
-         TR::Node *storeForInvariantNode = TR::Node::createWithSymRef(comp()->il.opCodeForDirectStore(duplicateNode->getDataType()), 1, 1, duplicateNode, newSymbolReference);
-         TR::TreeTop *storeForInvariantTree = TR::TreeTop::create(comp(), storeForInvariantNode, 0, 0);
-         nextInvariantNode->getData()->_symRef = newSymbolReference;
-
-         treeBeforePlaceHolderTree->join(storeForInvariantTree);
-         storeForInvariantTree->join(placeHolderTree);
-         treeBeforePlaceHolderTree = storeForInvariantTree;
-
-         //printf("Creating store %p outside the loop for loop invariant expression %p in in block_%d %s\n", storeForInvariantNode, invariantNode, loopInvariantBlock->getNumber(), comp()->signature());
-         //fflush(stdout);
-
-         ListElement<TR_NodeParentSymRef> *otherInvariantNodeElem = nextInvariantNode->getNextElement();
-         ListElement<TR_NodeParentSymRef> *prevOtherInvariantNodeElem = nextInvariantNode;
-         for (;otherInvariantNodeElem;)
-            {
-            TR::Node *otherInvariantNode = otherInvariantNodeElem->getData()->_node;
-
-            if (!otherInvariantNodeElem->getData()->_symRef &&
-                optimizer()->areNodesEquivalent(otherInvariantNode, invariantNode))
-               {
-               vcount_t visitCount = comp()->incVisitCount();
-               if (optimizer()->areSyntacticallyEquivalent(otherInvariantNode, invariantNode, visitCount))
-                  {
-                  otherInvariantNodeElem->getData()->_symRef = newSymbolReference;
-
-                  /*
-                  int32_t childNum;
-                  for (childNum=0;childNum<otherInvariantNode->getNumChildren(); childNum++)
-                     otherInvariantNode->getChild(childNum)->recursivelyDecReferenceCount();
-                  otherInvariantNode->setNumChildren(0);
-                  TR::Node::recreate(otherInvariantNode, comp()->il.opCodeForDirectLoad(invariantNode->getDataType()));
-                  otherInvariantNode->setSymbolReference(newSymbolReference);
-                  if (otherInvariantNodeElem->getData()->_parent &&
-                      otherInvariantNodeElem->getData()->_parent->getOpCode().isNullCheck())
-                     TR::Node::recreate(otherInvariantNodeElem->getData()->_parent, TR::treetop);
-
-                  if (prevOtherInvariantNodeElem)
-                     prevOtherInvariantNodeElem->setNextElement(otherInvariantNodeElem->getNextElement());
-                  otherInvariantNodeElem = otherInvariantNodeElem->getNextElement();
-                  continue;
-                  */
-                  }
-               }
-
-            prevOtherInvariantNodeElem = otherInvariantNodeElem;
-            otherInvariantNodeElem = otherInvariantNodeElem->getNextElement();
-            }
-
-         /*
-         int32_t childNum;
-         for (childNum=0;childNum<invariantNode->getNumChildren(); childNum++)
-            invariantNode->getChild(childNum)->recursivelyDecReferenceCount();
-         invariantNode->setNumChildren(0);
-         TR::Node::recreate(invariantNode, comp()->il.opCodeForDirectLoad(invariantNode->getDataType()));
-         invariantNode->setSymbolReference(newSymbolReference);
-
-         if (nextInvariantNode->getData()->_parent &&
-             nextInvariantNode->getData()->_parent->getOpCode().isNullCheck())
-             TR::Node::recreate(nextInvariantNode->getData()->_parent, TR::treetop);
-         */
-
-         optimizer()->setRequestOptimization(OMR::globalValuePropagation, true);
-         optimizer()->setUseDefInfo(NULL);
-         optimizer()->setValueNumberInfo(NULL);
-         optimizer()->setAliasSetsAreValid(false);
-         }
-
-      nextInvariantNode = nextInvariantNode->getNextElement();
-      }
-
-   nextInvariantNode = invariantNodes->getListHead();
-   while (nextInvariantNode)
-      {
-      if (nextInvariantNode->getData()->_symRef)
-         {
-         if (nextInvariantNode->getData()->_parent &&
-            nextInvariantNode->getData()->_parent->getOpCode().isNullCheck())
-            TR::Node::recreate(nextInvariantNode->getData()->_parent, TR::treetop);
-
-         //invariant expressions might be the part of checks we already versioned.
-         //if buildXXX already removed the nodes representing the expressions
-         //ICM will assert while decrementing their ref counts which might already be 0s
-         if (nextInvariantNode->getData()->_node->getReferenceCount() > 0 && nextInvariantNode->getData()->_parent->getReferenceCount()> 0)
-            {
-            TR::Node *invariantNode = nextInvariantNode->getData()->_node;
-            int32_t childNum;
-
-            if(trace())
-               traceMsg(comp(), "Replacing node %p with a load of symref %p\n", invariantNode, nextInvariantNode->getData()->_symRef);
-            for (childNum=0;childNum<invariantNode->getNumChildren(); childNum++)
-               invariantNode->getChild(childNum)->recursivelyDecReferenceCount();
-            invariantNode->setNumChildren(0);
-            TR::Node::recreate(invariantNode, comp()->il.opCodeForDirectLoad(invariantNode->getDataType()));
-            invariantNode->setSymbolReference(nextInvariantNode->getData()->_symRef);
+            dumpOptDetails(
+               comp(),
+               "failed to privatize n%un [%p]\n",
+               invariantNode->getGlobalIndex(),
+               invariantNode);
             }
          else
             {
-            if (trace())
-               traceMsg(comp(), "skipping node %p or its parent %p which were removed as a part of a versioned check (e.g. count < 1)\n", nextInvariantNode->getData()->_node, nextInvariantNode->getData()->_parent);
+            _curLoop->_loopImprovements.push_back(
+               new (_curLoop->_memRegion) Hoist(this, prep));
             }
          }
+
       nextInvariantNode = nextInvariantNode->getNextElement();
       }
 

@@ -694,6 +694,23 @@ class TR_LoopVersioner : public TR_LoopTransformer
       bool _privatizationOK;
       };
 
+   class Hoist : public LoopImprovement
+      {
+      public:
+      TR_ALLOC(TR_Memory::LoopTransformer)
+
+      Hoist(TR_LoopVersioner *versioner, LoopEntryPrep *prep)
+         : LoopImprovement(versioner, prep)
+         {}
+
+      virtual void improveLoop()
+         {
+         // Nothing to do. This just pulls in a privatization, which, once
+         // emitted, makes the substitution mandatory throughout the entire
+         // loop body.
+         }
+      };
+
    bool shouldOnlySpecializeLoops() { return _onlySpecializingLoops; }
    void setOnlySpecializeLoops(bool b) { _onlySpecializingLoops = b; }
 
@@ -757,7 +774,7 @@ class TR_LoopVersioner : public TR_LoopTransformer
    void buildConditionalTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, SharedSparseBitVector &reverseBranchInLoops);
    void buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
    bool buildSpecializationTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR::Node> *, TR::Block *, TR::SymbolReference **);
-   bool buildLoopInvariantTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *, List<TR_NodeParentSymRefWeightTuple> *, TR::Block *);
+   bool buildLoopInvariantTree(List<TR_NodeParentSymRef> *);
    void convertSpecializedLongsToInts(TR::Node *, vcount_t, TR::SymbolReference **);
    void collectAllExpressionsToBeChecked(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, TR::Node *, List<TR::Node> *, TR::Block *, vcount_t);
    void collectAllExpressionsToBeChecked(TR::Node *, List<TR::Node> *);

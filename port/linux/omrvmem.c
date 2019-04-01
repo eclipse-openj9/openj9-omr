@@ -125,6 +125,7 @@ static void *allocateMemoryForLargePages(struct OMRPortLibrary *portLibrary, str
 static BOOLEAN isStrictAndOutOfRange(void *memoryPointer, void *startAddress, void *endAddress, uintptr_t vmemOptions);
 static BOOLEAN rangeIsValid(struct J9PortVmemIdentifier *identifier, void *address, uintptr_t byteAmount);
 static void *reserveLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t pageSize, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t mode);
+static uintptr_t adviseHugepage(struct OMRPortLibrary *portLibrary, void* address, uintptr_t byteAmount);
 
 static void *default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category);
 #if defined(OMR_PORT_NUMA_SUPPORT)
@@ -884,6 +885,29 @@ reserveLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifie
 	return memoryPointer;
 }
 
+static uintptr_t
+adviseHugepage(struct OMRPortLibrary *portLibrary, void* address, uintptr_t byteAmount)
+{
+#if defined(MAP_ANON) || defined(MAP_ANONYMOUS)
+	if (portLibrary->portGlobals->vmemEnableMadvise) {
+		uintptr_t start = (uintptr_t)address;
+		uintptr_t end = (uintptr_t)address + byteAmount;
+
+		/* Align start and end to hugepage size */
+		start = start + ((start % PPG_vmem_pageSize[1]) ? (PPG_vmem_pageSize[1] - (start % PPG_vmem_pageSize[1])) : 0);
+		end = end - (end % PPG_vmem_pageSize[1]);
+		if (start < end) {
+			if (0 != madvise((void *)start, end - start, MADV_HUGEPAGE)) {
+				return OMRPORT_ERROR_VMEM_OPFAILED;
+			}
+		}
+	}
+	return 0;
+#else /* defined(MAP_ANON) || defined(MAP_ANONYMOUS) */
+	return OMRPORT_ERROR_VMEM_NOT_SUPPORTED;
+#endif /* defined(MAP_ANON) || defined(MAP_ANONYMOUS) */
+}
+
 uintptr_t
 omrvmem_get_page_size(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier)
 {
@@ -1522,6 +1546,8 @@ allocAnywhere:
 		Trc_PRT_vmem_omrvmem_reserve_memory_ex_UnableToAllocateWithinSpecifiedRange(byteAmount, startAddress, endAddress);
 
 		memoryPointer = NULL;
+	} else {
+		adviseHugepage(portLibrary, memoryPointer, byteAmount);
 	}
 
 	return memoryPointer;

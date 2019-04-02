@@ -420,7 +420,9 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _currentBCDCHKHandlerLabel(NULL),
      _nodesToBeEvaluatedInRegPairs(self()->comp()->allocator()),
      _ccInstruction(NULL),
-     _previouslyAssignedTo(self()->comp()->allocator("LocalRA"))
+     _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
+     _methodBegin(NULL),
+     _methodEnd(NULL)
    {
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
@@ -2252,6 +2254,13 @@ OMR::Z::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
 void
 OMR::Z::CodeGenerator::doBinaryEncoding()
    {
+   // Generate the first label by using the placement new operator such that we are guaranteed to call the correct
+   // overload of the constructor which can accept a NULL preceding instruction. If cursor is NULL the generated
+   // label instruction will be prepended to the start of the instruction stream.
+   _methodBegin = new (self()->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::LABEL, self()->comp()->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
+   
+   _methodEnd = generateS390LabelInstruction(self(), TR::InstOpCode::LABEL, self()->comp()->findLastTree()->getNode(), generateLabelSymbol(self()));
+
    TR_S390BinaryEncodingData data;
    data.cursorInstruction = self()->getFirstInstruction();
    data.estimate = 0;
@@ -2516,9 +2525,9 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
       self()->addToAtlas(data.cursorInstruction);
 
-      if (data.cursorInstruction == data.preProcInstruction)
+      if (data.cursorInstruction->getOpCodeValue() == TR::InstOpCode::PROC)
          {
-         self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart());
+         self()->setPrePrologueSize(self()->getBinaryBufferLength());
          self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
          }
 

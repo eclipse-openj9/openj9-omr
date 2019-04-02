@@ -820,6 +820,11 @@ protected:
    TR::list<TR::S390ConstantDataSnippet*>  _snippetDataList;
 
 private:
+
+   // TODO: These should move into the base class
+   TR::Instruction* _methodBegin;
+   TR::Instruction* _methodEnd;
+
    TR::list<TR::S390WritableDataSnippet*>  _writableList;
    TR::list<TR_S390OutOfLineCodeSection*> _outOfLineCodeSectionList;
 

@@ -2675,19 +2675,10 @@ TR::S390zOSSystemLinkage::createEntryPointMarker(TR::Instruction* cursor, TR::No
    // represent the flags which are always 0 for OMR as we do not support leaf frames or direct calls to alloca()
    marker.dsaSizeAndFlags = stackFrameSize;
 
-   TR::Instruction* procInstr = cursor;
-
    cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eyecatcher1, cursor);
-
-   // TODO: The move API really needs to be taking care of this. Leaving it here for now.
-   cg()->setFirstInstruction(cursor);
-
    cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eyecatcher2, cursor);
    cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.ppa1Offset, cursor);
    cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.dsaSizeAndFlags, cursor);
-
-   // Effectively prepends the previous data constants before the original cursor
-   procInstr->move(cursor);
    }
 
 TR_XPLinkCallTypes
@@ -2776,23 +2767,23 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction * cursor)
 
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
 
-   TR::Node *firstNode = cursor->getNode();
+   TR::Node *node = cursor->getNode();
 
-   createEntryPointMarker(cursor, firstNode);  // adds constants before cursor
+   createEntryPointMarker(cursor->getPrev(), node);
 
    setFirstPrologueInstruction(cursor);
 
    //
    // Generate code to acquire the stack frame
    //
-   cursor = buyFrame(cursor, firstNode);
+   cursor = buyFrame(cursor, node);
 
    //
    // Save FPRs and ARs in local automatic
    // This is done after mapStack - as it calculates the register mask and
    // save area offset.
    //
-   cursor = getputFPRs(InstOpCode::STD, cursor, firstNode);
+   cursor = getputFPRs(InstOpCode::STD, cursor, node);
 
    //
    // Save arguments as required

@@ -360,7 +360,7 @@ target_link_libraries(omrgc
 		${OMR_PORT_LIB}
 		${OMR_HOOK_LIB}
 )
-target_enable_ddr(omrgc "${OMR_DDR_SET}")
+target_enable_ddr(omrgc "${OMR_DDR_SET}" EARLY_SOURCE_EVAL)
 
 set_target_properties(omrgc omrgc_hookgen omrgc_tracegen PROPERTIES FOLDER gc)
 

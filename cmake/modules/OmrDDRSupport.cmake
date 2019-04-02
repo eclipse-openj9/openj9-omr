@@ -61,6 +61,12 @@ function(target_enable_ddr tgt ddr_set)
 		return()
 	endif()
 
+	set(opt_EARLY_SOURCE_EVAL )
+	set(opt_UNPARSED_ARGUMENTS )
+	cmake_parse_arguments(opt "EARLY_SOURCE_EVAL" "" "" ${ARGN})
+	omr_assert(FATAL_ERROR TEST NOT opt_UNPARSED_ARGUMENTS MESSAGE "target_enable_ddr: unrecognized options ${opt_UNPARSED_ARGUMENTS}")
+
+
 	set(DDR_SET_TARGET "${ddr_set}_ddr")
 	omr_assert(FATAL_ERROR TEST TARGET ${tgt} MESSAGE "target_enable_ddr called on non-existant target ${tgt}")
 	omr_assert(FATAL_ERROR TEST TARGET "${DDR_SET_TARGET}" MESSAGE "target_enable_ddr called on non-existant ddr_set ${ddr_set}")
@@ -72,6 +78,14 @@ function(target_enable_ddr tgt ddr_set)
 
 	get_property(DDR_BIN_DIR TARGET "${DDR_SET_TARGET}" PROPERTY DDR_BIN_DIR)
 
+	if(opt_EARLY_SOURCE_EVAL)
+		set(source_property "DDR_EVAL_SOURCE")
+		get_target_property(sources "${tgt}" "SOURCES")
+		string(GENEX_STRIP "${sources}" cleaned_sources)
+		set_target_properties("${tgt}" PROPERTIES ${source_property} "${cleaned_sources}")
+	else()
+		set(source_property "SOURCES")
+	endif()
 	omr_join("\n" MAGIC_TEMPLATE
 		"SOURCE_DIR"
 		"$<TARGET_PROPERTY:${tgt},SOURCE_DIR>"
@@ -80,7 +94,7 @@ function(target_enable_ddr tgt ddr_set)
 		"DEFINES"
 		"$<JOIN:$<TARGET_PROPERTY:${tgt},COMPILE_DEFINITIONS>,\n>"
 		"SOURCES"
-		"$<JOIN:$<TARGET_PROPERTY:${tgt},SOURCES>,\n>"
+		"$<JOIN:$<TARGET_PROPERTY:${tgt},${source_property}>,\n>"
 		"HEADERS"
 		"$<JOIN:$<TARGET_PROPERTY:${tgt},DDR_HEADERS>,\n>"
 		"PREINCLUDES"

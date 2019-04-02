@@ -3853,7 +3853,8 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             _canPredictIters = false;
          }
 
-      if (!refineAliases() && _canPredictIters && comp()->getProfilingMode() != JitProfiling &&
+      if (!comp()->getOption(TR_DisableAsyncCheckVersioning) &&
+          !refineAliases() && _canPredictIters && comp()->getProfilingMode() != JitProfiling &&
           performTransformation(comp(), "%s Creating test outside loop for deciding if async check is required\n", OPT_DETAILS_LOOP_VERSIONER))
          {
          TR::Node *lowerBound = _loopTestTree->getNode()->getFirstChild()->duplicateTreeForCodeMotion();
@@ -3862,29 +3863,21 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             TR::Node::create(TR::isub, 2, upperBound, lowerBound) :
             TR::Node::create(TR::isub, 2, lowerBound, upperBound);
 
-         collectAllExpressionsToBeChecked(loopLimit, &comparisonTrees);
          TR::Node *nextComparisonNode = TR::Node::createif(comparisonOpCode, loopLimit, TR::Node::create(loopLimit, TR::iconst, 0, profiledLoopLimit), clonedLoopInvariantBlock->getEntry());
          nextComparisonNode->setIsMaxLoopIterationGuard(true);
 
-         if (trace())
+         LoopEntryPrep *prep =
+            createLoopEntryPrep(LoopEntryPrep::TEST, nextComparisonNode);
+
+         if (prep != NULL)
             {
-            traceMsg(comp(), "Removing async check %p\n", _asyncCheckTree->getNode());
+            nodeWillBeRemovedIfPossible(_asyncCheckTree->getNode(), prep);
+            _curLoop->_loopImprovements.push_back(
+               new (_curLoop->_memRegion) RemoveAsyncCheck(
+                  this,
+                  prep,
+                  _asyncCheckTree));
             }
-
-         comp()->setLoopWasVersionedWrtAsyncChecks(true);
-         comparisonTrees.add(nextComparisonNode);
-         dumpOptDetails(comp(), "The node %p has been created for testing if async check is required\n", nextComparisonNode);
-
-         if (!comp()->getOption(TR_DisableAsyncCheckVersioning))
-            {
-            TR::TreeTop *prevTree = _asyncCheckTree->getPrevTreeTop();
-            TR::TreeTop *nextTree = _asyncCheckTree->getNextTreeTop();
-            prevTree->join(nextTree);
-            }
-
-         whileLoop->getEntryBlock()->getStructureOf()->setIsEntryOfShortRunningLoop();
-         if (trace())
-            traceMsg(comp(), "Marked block %p with entry %p\n", whileLoop->getEntryBlock(), whileLoop->getEntryBlock()->getEntry()->getNode());
          }
       }
 
@@ -4907,6 +4900,32 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       //traceMsg(comp(), "Structure after versioning whileLoop : %d\n", whileLoop->getNumber());
       //if (comp()->getFlowGraph()->getStructure())
          //comp()->getFlowGraph()->getStructure()->print(comp()->getOutFile(), 6);
+      }
+   }
+
+void TR_LoopVersioner::RemoveAsyncCheck::improveLoop()
+   {
+   TR::Node *asyncCheckNode = _asyncCheckTree->getNode();
+   dumpOptDetails(
+      comp(),
+      "Removing asynccheck n%un [%p]\n",
+      asyncCheckNode->getGlobalIndex(),
+      asyncCheckNode);
+
+   comp()->setLoopWasVersionedWrtAsyncChecks(true);
+   TR::TreeTop *prevTree = _asyncCheckTree->getPrevTreeTop();
+   TR::TreeTop *nextTree = _asyncCheckTree->getNextTreeTop();
+   prevTree->join(nextTree);
+
+   TR_RegionStructure *whileLoop = _versioner->_currentNaturalLoop;
+   whileLoop->getEntryBlock()->getStructureOf()->setIsEntryOfShortRunningLoop();
+   if (_versioner->trace())
+      {
+      traceMsg(
+         comp(),
+         "Marked block %p with entry %p\n",
+         whileLoop->getEntryBlock(),
+         whileLoop->getEntryBlock()->getEntry()->getNode());
       }
    }
 

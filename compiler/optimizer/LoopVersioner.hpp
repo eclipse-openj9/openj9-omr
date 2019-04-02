@@ -711,6 +711,25 @@ class TR_LoopVersioner : public TR_LoopTransformer
          }
       };
 
+   class RemoveAsyncCheck : public LoopImprovement
+      {
+      public:
+      TR_ALLOC(TR_Memory::LoopTransformer)
+
+      RemoveAsyncCheck(
+         TR_LoopVersioner *versioner,
+         LoopEntryPrep *prep,
+         TR::TreeTop *asyncCheckTree)
+         : LoopImprovement(versioner, prep)
+         , _asyncCheckTree(asyncCheckTree)
+         {}
+
+      virtual void improveLoop();
+
+      private:
+      TR::TreeTop * const _asyncCheckTree;
+      };
+
    bool shouldOnlySpecializeLoops() { return _onlySpecializingLoops; }
    void setOnlySpecializeLoops(bool b) { _onlySpecializingLoops = b; }
 

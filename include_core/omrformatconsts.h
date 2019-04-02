@@ -24,7 +24,11 @@
 
 #include "omrcfg.h"
 
+#if !defined(_MSC_VER)
+#include <inttypes.h>
+#else
 #include <stdint.h>
+#endif
 
 /* OMR_PRId8: int8_t */
 #if defined(PRId8)
@@ -114,7 +118,7 @@
 #if defined(_MSC_VER) && (1900 <= _MSC_VER)
 /* msvc has a badly defined format macro for int32 */
 #define OMR_PRIx32 "I32x"
-#elif defined(PRIu32)
+#elif defined(PRIx32)
 #define OMR_PRIx32 PRIx32
 #else
 #define OMR_PRIx32 "x"

@@ -214,19 +214,6 @@ OMR::Symbol::isPinningArrayPointer()
    }
 
 void
-OMR::Symbol::setAutoAddressTaken()
-   {
-   TR_ASSERT(self()->isAuto(), "assertion failure");
-   _flags.set(AutoAddressTaken);
-   }
-
-bool
-OMR::Symbol::isAutoAddressTaken()
-   {
-   return self()->isAuto() && _flags.testAny(AutoAddressTaken);
-   }
-
-void
 OMR::Symbol::setSpillTempLoaded()
    {
    if (self()->isAuto()) // For non auto spills (ie. to original location) we can't optimize removing spills

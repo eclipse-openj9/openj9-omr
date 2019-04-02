@@ -42,12 +42,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <limits.h>
+
+#include <sys/mman.h>
+/* MADV_HUGEPAGE is not defined in <sys/mman.h> in RHEL 6 & CentOS 6 */
+#if !defined(MADV_HUGEPAGE)
+#define MADV_HUGEPAGE 14
+#endif /* MADV_HUGEPAGE */
 
 #if defined(OMR_PORT_NUMA_SUPPORT)
 #include <numaif.h>
@@ -893,9 +898,9 @@ adviseHugepage(struct OMRPortLibrary *portLibrary, void* address, uintptr_t byte
 		uintptr_t start = (uintptr_t)address;
 		uintptr_t end = (uintptr_t)address + byteAmount;
 
-		/* Align start and end to hugepage size */
-		start = start + ((start % PPG_vmem_pageSize[1]) ? (PPG_vmem_pageSize[1] - (start % PPG_vmem_pageSize[1])) : 0);
-		end = end - (end % PPG_vmem_pageSize[1]);
+		/* Align start and end to page size aligned */
+		start = start + ((start % PPG_vmem_pageSize[0]) ? (PPG_vmem_pageSize[0] - (start % PPG_vmem_pageSize[0])) : 0);
+		end = end - (end % PPG_vmem_pageSize[0]);
 		if (start < end) {
 			if (0 != madvise((void *)start, end - start, MADV_HUGEPAGE)) {
 				return OMRPORT_ERROR_VMEM_OPFAILED;

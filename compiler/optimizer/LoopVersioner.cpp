@@ -5309,7 +5309,13 @@ void TR_LoopVersioner::buildDivCheckComparisonsTree(List<TR::TreeTop> *nullCheck
       vcount_t visitCount = comp()->incVisitCount();
       collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, divCheckNode->getFirstChild()->getSecondChild(), comparisonTrees, exitGotoBlock, visitCount);
 
-      if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is divide by zero\n", OPT_DETAILS_LOOP_VERSIONER, divCheckNode))
+      if (performTransformation(
+            comp(),
+            "%s Creating test outside loop for checking if n%un [%p] "
+            "is divide by zero\n",
+            OPT_DETAILS_LOOP_VERSIONER,
+            divCheckNode->getGlobalIndex(),
+            divCheckNode))
          {
          TR::Node *duplicateDivisor = divCheckNode->getFirstChild()->getSecondChild()->duplicateTreeForCodeMotion();
          TR::Node *ifNode;
@@ -5319,8 +5325,8 @@ void TR_LoopVersioner::buildDivCheckComparisonsTree(List<TR::TreeTop> *nullCheck
             ifNode =  TR::Node::createif(TR::ificmpeq, duplicateDivisor, TR::Node::create(duplicateDivisor, TR::iconst, 0, 0), exitGotoBlock->getEntry());
          comparisonTrees->add(ifNode);
          dumpOptDetails(comp(), "The node %p has been created for testing if div check is required\n", ifNode);
+         TR::Node::recreate(divCheckNode, TR::treetop);
          }
-      TR::Node::recreate(divCheckNode, TR::treetop);
       nextTree = nextTree->getNextElement();
       }
    }

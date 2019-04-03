@@ -3620,11 +3620,12 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lternaryEvaluator(TR::Node *node, T
    TR::Register *falseReg = cg->evaluate(falseVal);
    TR::Register *trueReg  = cg->longClobberEvaluate(trueVal);
 
-   TR::ILOpCodes condOp = condition->getOpCodeValue();
-   if((condOp == TR::icmpeq) || (condOp == TR::icmpne))
+   auto condOp = condition->getOpCode();
+   bool longCompare = (condition->getOpCode().isBooleanCompare() && condition->getFirstChild()->getOpCode().isLong());
+   if (!longCompare && condOp.isCompareForEquality() && condition->getFirstChild()->getOpCode().isIntegerOrAddress())
       {
       compareIntegersForEquality(condition, cg);
-      if(condOp == TR::icmpeq)
+      if(condOp.isCompareTrueIfEqual())
          {
          generateRegRegInstruction(CMOVNE4RegReg, node,
                                    trueReg-> getRegisterPair()->getLowOrder(),
@@ -3642,6 +3643,16 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lternaryEvaluator(TR::Node *node, T
                                    trueReg-> getRegisterPair()->getHighOrder(),
                                    falseReg->getRegisterPair()->getHighOrder(), cg);
          }
+      }
+   else if (!longCompare && condOp.isCompareForOrder() && condition->getFirstChild()->getOpCode().isIntegerOrAddress())
+      {
+      compareIntegersForOrder(condition, cg);
+      generateRegRegInstruction((condOp.isCompareTrueIfEqual()) ? 
+                         ((condOp.isCompareTrueIfGreater()) ? CMOVL4RegReg : CMOVG4RegReg) : 
+                         ((condOp.isCompareTrueIfGreater()) ? CMOVLE4RegReg : CMOVGE4RegReg), node, trueReg->getRegisterPair()->getLowOrder(), falseReg->getRegisterPair()->getLowOrder(), cg);
+      generateRegRegInstruction((condOp.isCompareTrueIfEqual()) ? 
+                         ((condOp.isCompareTrueIfGreater()) ? CMOVL4RegReg : CMOVG4RegReg) :
+                         ((condOp.isCompareTrueIfGreater()) ? CMOVLE4RegReg : CMOVGE4RegReg), node, trueReg->getRegisterPair()->getHighOrder(), falseReg->getRegisterPair()->getHighOrder(), cg);
       }
    else
       {

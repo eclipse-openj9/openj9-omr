@@ -104,3 +104,4 @@ install(
 	LIBRARY DESTINATION ${OMR_INSTALL_LIB_DIR}/
 )
 
+target_enable_ddr(omrsig "${OMR_DDR_SET}")

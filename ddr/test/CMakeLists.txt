@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2019, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -17,9 +17,21 @@
 # [2] http://openjdk.java.net/legal/assembly-exception.html
 #
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
-###############################################################################
+#############################################################################
 
-add_subdirectory(blob_reader)
-add_subdirectory(ddrgen)
+include(OmrDDRSupport)
 
-export(TARGETS omr_blob_reader omr_ddrgen FILE "DDRTools.cmake")
+add_executable(ddrgentest
+    test_subdir/testFileInSubDir.cpp
+    sample1.cpp
+    sample2.cpp
+    sample3.cpp
+    sample4.c
+    test.cpp
+)
+
+make_ddr_set(testset)
+target_enable_ddr(ddrgentest testset)
+
+file(GLOB_RECURSE headerfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.h(pp)?")
+set_property(TARGET ddrgentest PROPERTY DDR_HEADERS ${headerfiles})

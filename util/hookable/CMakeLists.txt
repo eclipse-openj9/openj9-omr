@@ -49,6 +49,8 @@ omr_add_exports(j9hook_obj
 	omrhook_lib_control
 )
 
+target_enable_ddr(j9hook_obj "${OMR_DDR_SET}")
+
 add_library(j9hookstatic STATIC
 	$<TARGET_OBJECTS:j9hook_obj>
 )

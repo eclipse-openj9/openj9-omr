@@ -386,7 +386,7 @@ class CppGenerator:
         ```
         Constructor(...) {
             arg_set
-            auto impl = new TR::Constructor(...);
+            auto impl = ::new TR::Constructor(...);
             arg_return
             impl->setClient(this);
             initializeFromImpl(impl);
@@ -403,7 +403,7 @@ class CppGenerator:
         for parm in ctor_desc.parameters():
             self.write_arg_setup(writer, parm)
         args = self.generate_arg_list(ctor_desc.parameters())
-        writer.write("auto * impl = new {cname}({args});\n".format(cname=self.get_impl_class_name(class_desc), args=args))
+        writer.write("auto * impl = ::new {cname}({args});\n".format(cname=self.get_impl_class_name(class_desc), args=args))
         for parm in ctor_desc.parameters():
             self.write_arg_return(writer, parm)
         writer.write("{impl_cast}->setClient(this);\n".format(impl_cast=self.to_impl_cast(class_desc,"impl")))

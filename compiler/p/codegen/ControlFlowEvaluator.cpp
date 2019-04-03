@@ -1095,11 +1095,20 @@ static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg
 TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::DataType type = node->getType();
-   TR::Register *resultReg = type.getDataType() == TR::Float ?
+   bool two_reg = (TR::Compiler->target.is32Bit()) && type.getDataType() == TR::Int64;
+   TR::Register *resultReg = two_reg ?
+                            cg->allocateRegisterPair(cg->allocateRegister(),cg->allocateRegister()) :
+                            (type.getDataType() == TR::Float ?
                             cg->allocateSinglePrecisionRegister() :
                             (type.getDataType() == TR::Double ?
                             cg->allocateRegister(TR_FPR) :
-                            cg->allocateRegister(TR_GPR));
+                            cg->allocateRegister(TR_GPR)));
+
+   // Mark the result reg as collected reference if required.
+   if (!node->isNotCollected())
+      {
+      resultReg->setContainsCollectedReference();
+      }
 
    TR::InstOpCode::Mnemonic move_opcode = (type.isIntegral() || type.isAddress()) ? TR::InstOpCode::mr : TR::InstOpCode::fmr;
    TR::Node * firstChild = node->getFirstChild();
@@ -1155,34 +1164,80 @@ TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::C
                                            cmp1Reg, cmp2Reg);
                }
             }
-
-         generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, trueReg);
+         if (two_reg)
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), trueReg->getHighOrder());
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), trueReg->getLowOrder());
+            }
+         else
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, trueReg);
+            }
          generateConditionalBranchInstruction(cg, branch_opcode, node, doneLabel, ccr);
-         generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, falseReg);
+         if (two_reg)
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), falseReg->getHighOrder());
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), falseReg->getLowOrder());
+            }
+         else
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, falseReg);
+            }
          }
       else if (compare_type.isFloatingPoint())
          {
          cmp2Reg = cg->evaluate(firstChild->getSecondChild());
          if (!skip_compare)
             generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, ccr, cmp1Reg, cmp2Reg);
-         generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, trueReg);
+
+         if (two_reg)
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), trueReg->getHighOrder());
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), trueReg->getLowOrder());
+            }
+         else
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, trueReg);
+            }
+
          generateConditionalBranchInstruction(cg, branch_opcode, node, doneLabel, ccr);
          TR::InstOpCode::Mnemonic branch_opcode2 = cmp2bun(firstChild->getOpCodeValue());
          if (branch_opcode2 != TR::InstOpCode::bad)
             generateConditionalBranchInstruction(cg, branch_opcode2, node, doneLabel, ccr);
-         generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, falseReg);
+
+         if (two_reg)
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), falseReg->getHighOrder());
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), falseReg->getLowOrder());
+            }
+         else
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, falseReg);
+            }
          }
       else
          {
          TR_ASSERT(false, "Unsupported compare type for ternary\n");
          }
 
-      TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg->trMemory());
-      dep->addPostCondition(resultReg, TR::RealRegister::NoReg);
+      TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, two_reg ? 8 : 5, cg->trMemory());
+      if (two_reg)
+         {
+         dep->addPostCondition(resultReg->getHighOrder(), TR::RealRegister::NoReg);
+         dep->addPostCondition(resultReg->getLowOrder(), TR::RealRegister::NoReg);
+         dep->addPostCondition(falseReg->getHighOrder(), TR::RealRegister::NoReg);
+         dep->addPostCondition(falseReg->getLowOrder(), TR::RealRegister::NoReg);
+         dep->addPostCondition(trueReg->getHighOrder(), TR::RealRegister::NoReg);
+         dep->addPostCondition(trueReg->getLowOrder(), TR::RealRegister::NoReg);
+         }
+      else
+         {
+         dep->addPostCondition(resultReg, TR::RealRegister::NoReg);
+         dep->addPostCondition(falseReg, TR::RealRegister::NoReg);
+         dep->addPostCondition(trueReg, TR::RealRegister::NoReg);
+         }
       dep->addPostCondition(cmp1Reg, TR::RealRegister::NoReg);
       if (cmp2Reg) dep->addPostCondition(cmp2Reg, TR::RealRegister::NoReg);
-      dep->addPostCondition(falseReg, TR::RealRegister::NoReg);
-      dep->addPostCondition(trueReg, TR::RealRegister::NoReg);
 
       generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, dep);
 
@@ -1200,14 +1255,32 @@ TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::C
       TR::Register *  condReg = cg->evaluate(node->getChild(0));
 
       TR::Register *ccr       = cg->allocateRegister(TR_CCR);
+      bool useRegPairForCond = (condReg->getRegisterPair() != NULL);
       TR::PPCControlFlowInstruction *i = (TR::PPCControlFlowInstruction*)
-      generateControlFlowInstruction(cg, TR::InstOpCode::iternary, node);
+            generateControlFlowInstruction(cg, TR::InstOpCode::iternary, node, NULL, 0, two_reg, useRegPairForCond);
       i->addTargetRegister(ccr);
-      i->addTargetRegister(resultReg);
-      i->addSourceRegister(condReg->getRegisterPair() ? condReg->getLowOrder() : condReg);
-      i->addSourceRegister(trueReg);
-      i->addSourceRegister(falseReg);
-      if (condReg->getRegisterPair())
+      if (two_reg)
+         {
+         i->addTargetRegister(resultReg->getHighOrder());
+         i->addTargetRegister(resultReg->getLowOrder());
+         }
+      else
+         i->addTargetRegister(resultReg);
+      i->addSourceRegister(useRegPairForCond ? condReg->getLowOrder() : condReg);
+      if (two_reg)
+         {
+         i->addSourceRegister(trueReg->getHighOrder()); 
+         i->addSourceRegister(trueReg->getLowOrder()); 
+         i->addSourceRegister(falseReg->getHighOrder()); 
+         i->addSourceRegister(falseReg->getLowOrder()); 
+         }
+      else
+         {
+         i->addSourceRegister(trueReg); 
+         i->addSourceRegister(falseReg); 
+         }
+
+      if (useRegPairForCond)
          i->addSourceRegister(condReg->getHighOrder());
 
       i->setOpCode2Value(move_opcode);

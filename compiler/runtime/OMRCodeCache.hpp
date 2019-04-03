@@ -145,12 +145,11 @@ public:
    void setAlmostFull(TR_YesNoMaybe fullness) { _almostFull = fullness; }
 
    /**
-    * @brief Reserve space for a trampoline in the current code cache
-    *
-    * @return The returned trampoline pointer is meaningless and should not
-    *         be used to create trampoline code in just yet.
+    * @brief DEPRECATED Reserve space for a trampoline in the current code cache.
+    *        This function simply calls reserveSpaceForTrampoline and will exist only
+    *        while API uses in downstream projects are cleaned up.
     */
-   CodeCacheTrampolineCode *reserveSpaceForTrampoline();
+   CodeCacheErrorCode::ErrorCode reserveSpaceForTrampoline_bridge(int32_t numTrampolines = 1);
 
    /**
     * @brief Reserve space for a trampoline in the current code cache.
@@ -164,10 +163,7 @@ public:
     *
     * @return : ERRORCODE_SUCCESS on success; ERRORCODE_INSUFFICIENTSPACE on failure
     */
-   CodeCacheErrorCode::ErrorCode reserveSpaceForTrampoline_bridge(int32_t numTrampolines = 1);
-
-
-   CodeCacheErrorCode::ErrorCode reserveNTrampolines(int64_t n);
+   CodeCacheErrorCode::ErrorCode reserveSpaceForTrampoline(int32_t numTrampolines = 1);
 
    /**
     * @brief Reclaim the previously reserved space for a single trampoline in the

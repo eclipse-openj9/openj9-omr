@@ -4804,7 +4804,7 @@ MM_Scavenger::mutatorSetupForGC(MM_EnvironmentBase *envBase)
 }
 
 void
-MM_Scavenger::threadFinalReleaseCaches(MM_EnvironmentBase *envBase)
+MM_Scavenger::threadReleaseCaches(MM_EnvironmentBase *envBase, bool final)
 {
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
 
@@ -4849,8 +4849,13 @@ MM_Scavenger::threadFinalReleaseCaches(MM_EnvironmentBase *envBase)
 			env->_tenureCopyScanCache = NULL;
 		}
 
-		abandonSurvivorTLHRemainder(env);
-		abandonTenureTLHRemainder(env, true);
+		if (final) {
+			/* If it's an intermediate release (for example mutator threads releasing VM access in a middle of Concurrent Scavenger cycle,
+			 * keep copy cache remainders around (do not abandon yet), to be reused if the threads re-acquires VM access during the same CS cycle.
+			 */
+			abandonSurvivorTLHRemainder(env);
+			abandonTenureTLHRemainder(env, true);
+		}
 	}
 }
 
@@ -4949,7 +4954,7 @@ MM_Scavenger::workThreadProcessRoots(MM_EnvironmentStandard *env)
 	 * This is important to do only for GC threads that will not be used in concurrent phase, but at this point
 	 * we don't know which threads Scheduler will not use, so we do it for every thread.
 	 */
-	threadFinalReleaseCaches(env);
+	threadReleaseCaches(env, true);
 
 	mergeThreadGCStats(env);
 }
@@ -4970,7 +4975,7 @@ MM_Scavenger::workThreadScan(MM_EnvironmentStandard *env)
 	 * Most of the time, STW phase will have a superset of GC threads, so they could just resume the work on their own caches,
 	 * but this is not 100% guarantied (the control of what threads are inolved is in Dispatcher's domain).
 	 */
-	threadFinalReleaseCaches(env);
+	threadReleaseCaches(env, true);
 
 	mergeThreadGCStats(env);
 }

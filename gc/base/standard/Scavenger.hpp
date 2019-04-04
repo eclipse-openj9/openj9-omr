@@ -624,10 +624,10 @@ public:
 	/* methods used by either mutator or GC threads */
 	/**
 	 * All open copy caches (even if not full) are pushed onto scan queue. Unused memory is abondoned.
-	 * @param env Invoking thread. Could be master thread on behalf on mutator threads (threadEnvironment) for which copy caches are to be released, or could be mutator or GC thread itself.
-	 * @param threadEnvironment Thread for which copy caches are to be released. Could be either GC or mutator thread.
+	 * @param env Invoking thread, for which copy caches are to be released. Could be either GC or mutator thread.
+	 * @param final If true (typically at the end of a cycle), abandon TLH remainders, too. Otherwise keep them for possible future copy cache refresh.
 	 */
-	void threadFinalReleaseCaches(MM_EnvironmentBase *env);
+	void threadReleaseCaches(MM_EnvironmentBase *env, bool final);
 	
 	/**
 	 * trigger STW phase (either start or end) of a Concurrent Scavenger Cycle 

@@ -69,9 +69,9 @@ class MM_ObjectMap;
 #endif /* defined(OMR_GC_OBJECT_MAP) */
 class MM_ReferenceChainWalkerMarkMap;
 class MM_RememberedSetCardBucket;
-#if defined(OMR_GC_STACCATO)
+#if defined(OMR_GC_REALTIME)
 class MM_RememberedSetSATB;
-#endif /* OMR_GC_STACCATO */
+#endif /* defined(OMR_GC_REALTIME) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 class MM_Scavenger;
 #endif /* OMR_GC_MODRON_SCAVENGER */
@@ -254,9 +254,9 @@ public:
 	uintptr_t oldHeapSizeOnLastGlobalGC;
 	uintptr_t freeOldHeapSizeOnLastGlobalGC;
 #endif /* OMR_GC_MODRON_SCAVENGER */
-#if defined(OMR_GC_STACCATO)
+#if defined(OMR_GC_REALTIME)
 	MM_RememberedSetSATB* sATBBarrierRememberedSet; /**< The snapshot at the beginning barrier remembered set used for the write barrier */
-#endif /* OMR_GC_STACCATO */
+#endif /* defined(OMR_GC_REALTIME) */
 	ModronLnrlOptions lnrlOptions;
 
 	MM_OMRHookInterface omrHookInterface;
@@ -581,10 +581,10 @@ public:
 	uintptr_t overflowCacheCount; /**< How many entries should there be in the environments local overflow cache */
 #endif /* OMR_GC_REALTIME */
 
-#if defined(OMR_GC_STACCATO)
+#if defined(OMR_GC_REALTIME)
 	bool concurrentSweepingEnabled; /**< if this is set, the sweep phase of GC will be run concurrently */
 	bool concurrentTracingEnabled; /**< if this is set, tracing will run concurrently */
-#endif /* OMR_GC_STACCATO */
+#endif /* defined(OMR_GC_REALTIME) */
 
 	bool instrumentableAllocateHookEnabled;
 
@@ -1283,9 +1283,9 @@ public:
 		, oldHeapSizeOnLastGlobalGC(UDATA_MAX)
 		, freeOldHeapSizeOnLastGlobalGC(UDATA_MAX)
 #endif /* OMR_GC_MODRON_SCAVENGER */		
-#if defined(OMR_GC_STACCATO)
+#if defined(OMR_GC_REALTIME)
 		, sATBBarrierRememberedSet(NULL)
-#endif /* OMR_GC_STACCATO */
+#endif /* defined(OMR_GC_REALTIME) */
 		, heapBaseForBarrierRange0(NULL)
 		, heapSizeForBarrierRange0(0)
 #if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
@@ -1540,11 +1540,9 @@ public:
 		, fixHeapForWalk(false)
 		, minArraySizeToSetAsScanned(0)
 		, overflowCacheCount(0) /**< initial value of 0.  This is set in workpackets initialization or via the commandline */
-#endif /* defined(OMR_GC_REALTIME) */
-#if defined(OMR_GC_STACCATO)
 		, concurrentSweepingEnabled(false)
 		, concurrentTracingEnabled(false)
-#endif /* OMR_GC_STACCATO */
+#endif /* defined(OMR_GC_REALTIME) */
 		, instrumentableAllocateHookEnabled(false) /* by default the hook J9HOOK_VM_OBJECT_ALLOCATE_INSTRUMENTABLE is disabled */
 		, previousMarkMap(NULL)
 		, globalAllocationManager(NULL)

@@ -212,7 +212,7 @@ typedef struct J9MemorySegmentList {
 	uintptr_t flags;
 } J9MemorySegmentList;
 
-#if defined(OMR_GC_STACCATO)
+#if defined(OMR_GC_REALTIME)
 
 typedef struct MM_GCRememberedSet {
 	uintptr_t globalFragmentIndex;
@@ -228,6 +228,6 @@ typedef struct MM_GCRememberedSetFragment {
 	struct MM_GCRememberedSet* fragmentParent;
 } MM_GCRememberedSetFragment;
 
-#endif /* defined(OMR_GC_STACCATO) */
+#endif /* defined(OMR_GC_REALTIME) */
 
 #endif /* j9nongenerated_h */

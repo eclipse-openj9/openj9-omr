@@ -328,6 +328,7 @@ class CppGenerator:
 
         inherit = ": public {parent}".format(parent=self.get_class_name(class_desc.parent())) if class_desc.has_parent() else ""
         writer.write("class {name}{inherit} {{\n".format(name=name,inherit=inherit))
+        writer.indent()
 
         # write nested classes
         writer.write("public:\n")
@@ -367,6 +368,7 @@ class CppGenerator:
         if has_extras:
             writer.write(self.generate_include('{}ExtrasInsideClass.hpp'.format(class_desc.name())))
 
+        writer.outdent()
         writer.write('};\n')
 
     # source utilities ###################################################
@@ -400,6 +402,7 @@ class CppGenerator:
         inherit = ": {parent}((void *)NULL)".format(parent=self.get_class_name(class_desc.parent())) if class_desc.has_parent() else ""
 
         writer.write("{cname}::{name}({parms}){inherit} {{\n".format(cname=full_name, name=name, parms=parms, inherit=inherit))
+        writer.indent()
         for parm in ctor_desc.parameters():
             self.write_arg_setup(writer, parm)
         args = self.generate_arg_list(ctor_desc.parameters())
@@ -408,6 +411,7 @@ class CppGenerator:
             self.write_arg_return(writer, parm)
         writer.write("{impl_cast}->setClient(this);\n".format(impl_cast=self.to_impl_cast(class_desc,"impl")))
         writer.write("initializeFromImpl({});\n".format(self.to_opaque_cast("impl",class_desc)))
+        writer.outdent()
         writer.write("}\n")
 
     def write_impl_ctor_impl(self, writer, class_desc):
@@ -426,13 +430,17 @@ class CppGenerator:
         inherit = ": {parent}((void *)NULL)".format(parent=self.get_class_name(class_desc.parent())) if class_desc.has_parent() else ""
 
         writer.write("{cname}::{name}(void * impl){inherit} {{\n".format(cname=full_name, name=name, inherit=inherit))
+        writer.indent()
         writer.write("if (impl != NULL) {\n")
+        writer.indent()
         writer.write("{impl_cast}->setClient(this);\n".format(impl_cast=self.to_impl_cast(class_desc,"impl")));
 
         impl = "impl" if not class_desc.has_parent() else self.to_opaque_cast("static_cast<{}>(impl)".format(self.get_impl_type(class_desc.as_type())),class_desc)
         writer.write("initializeFromImpl({});\n".format(impl))
 
+        writer.outdent()
         writer.write("}\n")
+        writer.outdent()
         writer.write("}\n")
 
     def write_impl_initializer(self, writer, class_desc):
@@ -450,6 +458,7 @@ class CppGenerator:
         impl_cast = self.to_impl_cast(class_desc,"_impl")
 
         writer.write("void {cname}::initializeFromImpl(void * impl) {{\n".format(cname=full_name))
+        writer.indent()
 
         if class_desc.has_parent():
             writer.write("{parent}::initializeFromImpl(impl);\n".format(parent=self.get_class_name(class_desc.parent())))
@@ -471,6 +480,7 @@ class CppGenerator:
         impl_getter = self.impl_getter_name(class_desc)
         writer.write("{impl_cast}->setGetImpl(&{impl_getter});\n".format(impl_cast=impl_cast,impl_getter=impl_getter))
 
+        writer.outdent()
         writer.write("}\n")
 
     def write_arg_setup(self, writer, parm):
@@ -537,6 +547,7 @@ class CppGenerator:
         parms = self.generate_parm_list(desc.parameters())
         class_name = self.get_class_name(class_desc)
         writer.write("{rtype} {cname}::{name}({parms}) {{\n".format(rtype=rtype, cname=class_name, name=name, parms=parms))
+        writer.indent()
 
         if desc.is_impl_default():
             writer.write("return 0;\n")
@@ -562,6 +573,7 @@ class CppGenerator:
                     self.write_arg_return(writer, parm)
                 writer.write("return ret;\n")
 
+        writer.outdent()
         writer.write("}\n")
 
         if desc.is_vararg():
@@ -585,6 +597,7 @@ class CppGenerator:
 
         parms = self.generate_vararg_parm_list(desc.parameters())
         writer.write("{rtype} {cname}::{name}({parms}) {{\n".format(rtype=rtype,cname=class_name,name=name,parms=parms))
+        writer.indent()
 
         args = ", ".join([p.name() for p in desc.parameters()])
         writer.write("{t}* {arg} = new {t}[{num}];\n".format(t=vararg_type,arg=vararg.name(),num=vararg.array_len()))
@@ -597,6 +610,7 @@ class CppGenerator:
         writer.write("delete[] {arg};\n".format(arg=vararg.name()))
         if "none" != desc.return_type().name():
             writer.write("return ret;\n")
+        writer.outdent()
         writer.write("}\n")
 
     def generate_callback_parm_list(self, parm_descs):
@@ -651,8 +665,10 @@ class CppGenerator:
         parms = self.generate_callback_parm_list(callback_desc.parameters())
 
         writer.write('extern "C" {rtype} {thunk}({parms}) {{\n'.format(rtype=rtype,thunk=thunk,parms=parms))
+        writer.indent()
         writer.write("{ctype} client = {clientObj};\n".format(ctype=ctype,clientObj=self.to_client_cast(class_desc,"clientObj")))
         writer.write("return client->{callback}({args});\n".format(callback=callback,args=args))
+        writer.outdent()
         writer.write("}\n")
 
     def write_impl_getter_impl(self, writer, class_desc):
@@ -669,7 +685,9 @@ class CppGenerator:
         client_cast = self.to_client_cast(class_desc, "client")
         impl_cast = self.to_impl_cast(class_desc,"{client_cast}->_impl".format(client_cast=client_cast))
         writer.write('extern "C" void * {getter}(void * client) {{\n'.format(getter=getter))
+        writer.indent()
         writer.write("return {impl_cast};\n".format(impl_cast=impl_cast))
+        writer.outdent()
         writer.write("}\n")
 
     def write_allocator_impl(self, writer, class_desc):
@@ -682,7 +700,9 @@ class CppGenerator:
         allocator = self.get_allocator_name(class_desc)
         name = self.get_class_name(class_desc)
         writer.write('extern "C" void * {alloc}(void * impl) {{\n'.format(alloc=allocator))
+        writer.indent()
         writer.write("return new {name}(impl);\n".format(name=name))
+        writer.outdent()
         writer.write("}\n")
 
     def write_class_impl(self, writer, class_desc):
@@ -816,8 +836,10 @@ class CppGenerator:
         that has the `sets-allocators` flag.
         """
         writer.write("static void {}() {{\n".format(self.allocator_setter_name))
+        writer.indent()
         for c in api_desc.classes():
             writer.write("".join(self.generate_allocator_setting(c)))
+        writer.outdent()
         writer.write("}\n")
 
     def write_service_impl(self, writer, desc, namespace=""):
@@ -831,6 +853,7 @@ class CppGenerator:
         name = desc.name()
         parms = self.generate_parm_list(desc.parameters(), namespace)
         writer.write("{rtype} {name}({parms}) {{\n".format(rtype=rtype, name=name, parms=parms))
+        writer.indent()
 
         if desc.sets_allocators():
             writer.write("{}();\n".format(self.allocator_setter_name))
@@ -855,7 +878,7 @@ class CppGenerator:
             for parm in desc.parameters():
                 self.write_arg_return(writer, parm)
             writer.write("return ret;\n")
-
+        writer.outdent()
         writer.write("}\n")
 
         if desc.is_vararg():
@@ -959,9 +982,9 @@ class CppGenerator:
         header_path = os.path.join(header_dir, cname + ".hpp")
         source_path = os.path.join(source_dir, cname + ".cpp")
         with open(header_path, "w") as writer:
-            self.write_class_header(writer, class_desc, namespaces, class_names)
+            self.write_class_header(PrettyPrinter(writer), class_desc, namespaces, class_names)
         with open(source_path, "w") as writer:
-            self.write_class_source(writer, class_desc, namespaces, class_names)
+            self.write_class_source(PrettyPrinter(writer), class_desc, namespaces, class_names)
 
 # main generator #####################################################
 
@@ -987,9 +1010,9 @@ if __name__ == "__main__":
     for class_desc in api_description.classes():
         generator.write_class(args.headerdir, args.sourcedir, class_desc, namespaces, class_names)
     with open(os.path.join(args.headerdir, "JitBuilder.hpp"), "w") as writer:
-        generator.write_common_decl(writer, api_description)
+        generator.write_common_decl(PrettyPrinter(writer), api_description)
     with open(os.path.join(args.sourcedir, "JitBuilder.cpp"), "w") as writer:
-        generator.write_common_impl(writer, api_description)
+        generator.write_common_impl(PrettyPrinter(writer), api_description)
 
     extras_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "extras", "cpp")
     names = os.listdir(extras_dir)

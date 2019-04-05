@@ -1654,7 +1654,7 @@ public:
 		, tarokMinimumGMPWorkTargetBytes()
 		, tarokConcurrentMarkingCostWeight(0.05)
 		, tarokAutomaticDefragmentEmptinessThreshold(false)
-		, tarokEnableCopyForwardHybrid(false)
+		, tarokEnableCopyForwardHybrid(true)
 #endif /* defined (OMR_GC_VLHGC) */
 		, tarokEnableExpensiveAssertions(false)
 		, sweepPoolManagerAddressOrderedList(NULL)

@@ -285,6 +285,8 @@ enum TR_DispatchType
    void setFrameType(enum FrameType type) { _frameType = type; }
    virtual bool getIsLeafRoutine();
 
+   Linkage(TR::CodeGenerator *);
+
    Linkage(TR::CodeGenerator *, TR_S390LinkageConventions, TR_LinkageConventions);
 
    TR_S390LinkageConventions getExplicitLinkageType() { return _explicitLinkageType; }

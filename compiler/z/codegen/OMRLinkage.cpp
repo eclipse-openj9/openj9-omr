@@ -103,6 +103,37 @@ static int32_t getFirstMaskedBit(int16_t mask); ///< formward reference
 // TR::S390Linkage member functions
 ////////////////////////////////////////////////////////////////////////////////
 
+OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen)
+   : OMR::Linkage(),
+      _codeGen(codeGen), _explicitLinkageType(TR_S390LinkageDefault), _linkageType(TR_None), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
+      _integerReturnRegister(TR::RealRegister::NoReg),
+      _floatReturnRegister(TR::RealRegister::NoReg),
+      _doubleReturnRegister(TR::RealRegister::NoReg),
+      _longLowReturnRegister(TR::RealRegister::NoReg),
+      _longHighReturnRegister(TR::RealRegister::NoReg),
+      _longReturnRegister(TR::RealRegister::NoReg),
+      _stackPointerRegister(TR::RealRegister::NoReg),
+      _entryPointRegister(TR::RealRegister::NoReg),
+      _litPoolRegister(TR::RealRegister::NoReg),
+      _staticBaseRegister(TR::RealRegister::NoReg),
+      _privateStaticBaseRegister(TR::RealRegister::NoReg),
+      _returnAddrRegister(TR::RealRegister::NoReg),
+      _raContextRestoreNeeded(true),
+      _firstSaved(TR::RealRegister::NoReg),
+      _lastSaved(TR::RealRegister::NoReg),
+      _lastPrologueInstr(NULL),
+      _firstPrologueInstr(NULL),
+      _frameType(standardFrame)
+   {
+   int32_t i;
+   self()->setProperties(0);
+   for (i=0; i<TR::RealRegister::NumRegisters;i++)
+      {
+      self()->setRegisterFlags(REGNUM(i),0);
+      }
+   }
+
+
 /**
  * Get or create the TR::Linkage object that corresponds to the given linkage
  * convention.

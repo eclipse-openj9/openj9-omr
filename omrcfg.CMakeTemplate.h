@@ -141,7 +141,6 @@
 #cmakedefine OMR_GC_HYBRID_ARRAYLETS
 #cmakedefine OMR_GC_OBJECT_MAP
 #cmakedefine OMR_GC_REALTIME
-#cmakedefine OMR_GC_STACCATO
 #cmakedefine OMR_GC_TLH_PREFETCH_FTA
 #cmakedefine OMR_GC_VLHGC
 

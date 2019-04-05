@@ -230,10 +230,7 @@ uint8_t *TR::PPCDepImmSymInstruction::generateBinaryEncoding()
 
    if (getOpCodeValue() == TR::InstOpCode::bl || getOpCodeValue() == TR::InstOpCode::b)
       {
-      TR::ResolvedMethodSymbol *sym = getSymbolReference()->getSymbol()->getResolvedMethodSymbol();
-      TR_ResolvedMethod *resolvedMethod = sym == NULL ? NULL : sym->getResolvedMethod();
-
-      if (resolvedMethod != NULL && resolvedMethod->isSameMethod(cg()->comp()->getCurrentMethod()))
+      if (cg()->comp()->isRecursiveMethodTarget(getSymbolReference()->getSymbol()))
          {
          uint8_t *jitTojitStart = cg()->getCodeStart();
          jitTojitStart += ((*(int32_t *)(jitTojitStart - 4)) >> 16) & 0x0000ffff;

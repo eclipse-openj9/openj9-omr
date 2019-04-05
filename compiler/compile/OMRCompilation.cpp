@@ -2741,3 +2741,25 @@ bool OMR::Compilation::incompleteOptimizerSupportForReadWriteBarriers()
    {
    return false;
    }
+
+
+bool OMR::Compilation::isRecursiveMethodTarget(TR_ResolvedMethod *targetResolvedMethod)
+   {
+   return targetResolvedMethod && targetResolvedMethod->isSameMethod(self()->getCurrentMethod()) && !self()->isDLT();
+   }
+
+
+bool OMR::Compilation::isRecursiveMethodTarget(TR::Symbol *targetSymbol)
+   {
+   bool isRecursive = false;
+
+   if (targetSymbol)
+      {
+      TR::MethodSymbol *methodSymbol = targetSymbol->isMethod() ? targetSymbol->castToMethodSymbol() : NULL;
+      TR::ResolvedMethodSymbol *resolvedSymbol = methodSymbol ? methodSymbol->getResolvedMethodSymbol() : NULL;
+      TR_ResolvedMethod *resolvedMethod  = resolvedSymbol ? resolvedSymbol->getResolvedMethod() : NULL;
+      isRecursive = self()->isRecursiveMethodTarget(resolvedMethod);
+      }
+
+   return isRecursive;
+   }

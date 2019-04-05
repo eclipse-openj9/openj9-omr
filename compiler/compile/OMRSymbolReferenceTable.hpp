@@ -399,7 +399,7 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateOSRFearPointHelperSymbolRef();
    TR::SymbolReference * findOrCreateInduceOSRSymbolRef(TR_RuntimeHelper induceOSRHelper);
 
-   TR::ParameterSymbol * createParameterSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType);
+   TR::ParameterSymbol * createParameterSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType, TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN);
    TR::SymbolReference * findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType, bool isReference = true,
          bool isInternalPointer = false, bool reuseAuto = true, bool isAdjunct = false, size_t size = 0);
    TR::SymbolReference * createTemporary(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::DataType, bool isInternalPointer = false, size_t size = 0);
@@ -493,6 +493,12 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptrj_t *referenceLocation);
    TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptrj_t *referenceLocation, bool isArrayWithConstantElements);
    TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, TR::KnownObjectTable::Index objectIndex);
+   /*
+    * The public API that should be used when the caller needs a temp to hold a known object
+    *
+    * \note If there is a temp with the same known object already use the existing one. Otherwise, create a new temp.
+    */
+   TR::SymbolReference * findOrCreateTemporaryWithKnowObjectIndex(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::KnownObjectTable::Index knownObjectIndex);
    TR::SymbolReference * findOrCreateThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol = 0);
    TR::SymbolReference * findOrCreateContiguousArraySizeSymbolRef();
    TR::SymbolReference * findOrCreateNewArrayNoZeroInitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
@@ -574,8 +580,38 @@ class SymbolReferenceTable
    TR_BitVector *getSharedAliases(TR::SymbolReference *sr);
 
    protected:
+   /** \brief
+    *    This function creates the symbol reference given a temp symbol and the known object index
+    *
+    *  \param symbol
+    *    the temp symbol needed for creating the symbol reference
+    *
+    *  \note
+    *    This function should only be called from functions inside symbol reference table when creating new autos or temps.
+    *    Code outside symbol reference table should use the public API findOrCreateTemporaryWithKnowObjectIndex.
+    */
+   TR::SymbolReference * createTempSymRefWithKnownObject(TR::Symbol *symbol, mcount_t owningMethodIndex, int32_t slot, TR::KnownObjectTable::Index knownObjectIndex);
 
+   /**\brief
+    *
+    * This is the lowest level of function to find the symbol reference of any type with known object index
+    *
+    * \param symbol
+    *       For temp symbol reference, \p symbol can be NULL.
+    *       For symbol reference type other than temp, an original symbol is needed to find its corresponding symbol reference.
+    *       Take a static field with known object index for example, \p symbol is the original static field symbol.
+    *
+    * \param knownObjectIndex
+    *
+    */
+   TR::SymbolReference * findSymRefWithKnownObject(TR::Symbol *symbol, TR::KnownObjectTable::Index knownObjectIndex);
+   /*
+    * For finding symbol reference with known object index for a temp
+    */
+   TR::SymbolReference * findTempSymRefWithKnownObject(TR::KnownObjectTable::Index knownObjectIndex);
    TR::SymbolReference * findOrCreateCPSymbol(TR::ResolvedMethodSymbol *, int32_t, TR::DataType, bool, void *, TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN);
+   TR::SymbolReference * findOrCreateAutoSymbolImpl(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType, bool isReference = true,
+         bool isInternalPointer = false, bool reuseAuto = true, bool isAdjunct = false, size_t size = 0, TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN);
 
    bool shouldMarkBlockAsCold(TR_ResolvedMethod * owningMethod, bool isUnresolvedInCP);
    void markBlockAsCold();

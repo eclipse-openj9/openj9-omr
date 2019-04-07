@@ -30,7 +30,6 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -904,7 +903,7 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-   
+
    // Handle long displacement if necessary
    op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
@@ -936,7 +935,7 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-   
+
    // Handle long displacement if necessary
    op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
@@ -969,7 +968,7 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-   
+
    // Handle long displacement if necessary
    op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
@@ -1528,12 +1527,12 @@ generateSIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // SI and SIY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-   
+
    // Handle long displacement if necessary
    op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
    TR::Instruction* result = NULL;
-   
+
    auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
 
    if (instructionFormat == SI_FORMAT)
@@ -2602,7 +2601,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
 
    if (!LGRLinst)
       {
-      cursor = instructionFormat == RXE_FORMAT ? 
+      cursor = instructionFormat == RXE_FORMAT ?
          generateRXEInstruction(cg, op, node, treg, dataref, 0) :
          generateRXInstruction(cg, op, node, treg, dataref);
       }

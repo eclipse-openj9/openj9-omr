@@ -28,7 +28,6 @@
 #include <string.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/FrontEnd.hpp"
-#include "codegen/Linkage.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
@@ -190,7 +189,6 @@ bool TR_PartialRedundancy::ignoreNode (TR::Node *node)
    {
    TR::ILOpCodes        op      = node->getOpCodeValue();
    TR::CodeGenerator   *cg      = comp()->cg();
-   TR::Linkage         *linkage = cg->getLinkage();
    TR::SymbolReference *symRef  = node->getOpCode().hasSymbolReference()?node->getSymbolReference():NULL;
 
    TR::SparseBitVector seenNodes(comp()->allocator());

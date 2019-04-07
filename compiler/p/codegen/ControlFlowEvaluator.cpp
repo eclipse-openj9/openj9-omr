@@ -27,6 +27,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -1269,15 +1270,15 @@ TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::C
       i->addSourceRegister(useRegPairForCond ? condReg->getLowOrder() : condReg);
       if (two_reg)
          {
-         i->addSourceRegister(trueReg->getHighOrder()); 
-         i->addSourceRegister(trueReg->getLowOrder()); 
-         i->addSourceRegister(falseReg->getHighOrder()); 
-         i->addSourceRegister(falseReg->getLowOrder()); 
+         i->addSourceRegister(trueReg->getHighOrder());
+         i->addSourceRegister(trueReg->getLowOrder());
+         i->addSourceRegister(falseReg->getHighOrder());
+         i->addSourceRegister(falseReg->getLowOrder());
          }
       else
          {
-         i->addSourceRegister(trueReg); 
-         i->addSourceRegister(falseReg); 
+         i->addSourceRegister(trueReg);
+         i->addSourceRegister(falseReg);
          }
 
       if (useRegPairForCond)

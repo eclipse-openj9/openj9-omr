@@ -39,6 +39,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -960,10 +961,10 @@ OMR::Z::Instruction::useTargetRegister(TR::Register* reg)
 
    if (reg->getKind() == TR_GPR && (_opcode.is64bit() || _opcode.is32to64bit() ||
          (TR::Compiler->target.is64Bit() &&
-            (self()->getOpCodeValue() == TR::InstOpCode::LA || 
-             self()->getOpCodeValue() == TR::InstOpCode::LAY || 
+            (self()->getOpCodeValue() == TR::InstOpCode::LA ||
+             self()->getOpCodeValue() == TR::InstOpCode::LAY ||
              self()->getOpCodeValue() == TR::InstOpCode::LARL ||
-             self()->getOpCodeValue() == TR::InstOpCode::BASR || 
+             self()->getOpCodeValue() == TR::InstOpCode::BASR ||
              self()->getOpCodeValue() == TR::InstOpCode::BRASL))))
          {
          reg->setIs64BitReg(true);
@@ -974,7 +975,7 @@ OMR::Z::Instruction::useTargetRegister(TR::Register* reg)
             reg->getHighOrder()->setIs64BitReg(true);
             }
          }
-   
+
    return _targetRegSize-1;      // index into the target register array
    }
 
@@ -1324,7 +1325,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
             targetRegIs64Bit = true;
             }
          _targetReg[i] = self()->assignRegisterNoDependencies(_targetReg[i]);
-         
+
          if (_targetReg[i]->getAssignedRegister())
             {
             _targetReg[i]->getAssignedRegister()->block();

@@ -35,6 +35,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -564,7 +565,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RIEInstruction * instr)
    printPrefix(pOutFile, instr);
 
    // print the opcode
-   
+
    trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // grab the registers.
@@ -1906,7 +1907,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, TR::Instruction * 
       }
 
    // After Binary Encoding, the offset field of the MemRef has the correct final displacement. This includes all the
-   // fixups applied for long displacements. Therefore, we get the displacement value directly from the memory 
+   // fixups applied for long displacements. Therefore, we get the displacement value directly from the memory
    // reference instead of trying to compute it here.
    if (_comp->cg()->getCodeGeneratorPhase() > TR::CodeGenPhase::BinaryEncodingPhase)
       {

@@ -32,6 +32,7 @@
 #include "codegen/GCStackMap.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"

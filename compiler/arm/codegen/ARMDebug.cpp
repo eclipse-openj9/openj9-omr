@@ -29,6 +29,8 @@ int jitDebugARM;
 #endif
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GCRegisterMap.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/Snippet.hpp"
 #include "codegen/StackCheckFailureSnippet.hpp"

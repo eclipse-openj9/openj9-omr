@@ -26,6 +26,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
@@ -1014,9 +1015,9 @@ FPtoIntBitsTypeCoercionHelper(TR::Node * node, TR::CodeGenerator * cg)
           }
 
        TR::MemoryReference* nanMemRef = nodeType == TR::Int64 ?
-                 generateS390MemoryReference(static_cast<int64_t>(0x7ff8000000000000), nodeType, cg, litBase) : 
+                 generateS390MemoryReference(static_cast<int64_t>(0x7ff8000000000000), nodeType, cg, litBase) :
                  generateS390MemoryReference(static_cast<int32_t>(0x7fc00000),         nodeType, cg, litBase);
-       
+
        auto testMnemonic = nodeType == TR::Int64 ? TR::InstOpCode::TCDB : TR::InstOpCode::TCEB;
 
        if (litBase)
@@ -1025,7 +1026,7 @@ FPtoIntBitsTypeCoercionHelper(TR::Node * node, TR::CodeGenerator * cg)
           }
        deps->addPostCondition(targetReg, TR::RealRegister::AssignAny);
 
-       generateRRInstruction(cg, TR::InstOpCode::LDGR, node, targetFPR, targetReg); 
+       generateRRInstruction(cg, TR::InstOpCode::LDGR, node, targetFPR, targetReg);
 
        generateRXEInstruction(cg, testMnemonic, node, targetFPR, generateS390MemoryReference(0x00F, cg), 0);
 

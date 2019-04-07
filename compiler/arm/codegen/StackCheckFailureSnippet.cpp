@@ -27,6 +27,7 @@
 #include "il/symbol/StaticSymbol.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/StackCheckFailureSnippet.hpp"
 #include "codegen/SnippetGCMap.hpp"
 #include "codegen/GCStackAtlas.hpp" /* @@ */

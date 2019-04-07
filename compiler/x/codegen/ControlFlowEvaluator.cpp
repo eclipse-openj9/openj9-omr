@@ -27,6 +27,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
@@ -1299,7 +1300,7 @@ TR::Register *OMR::X86::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::Cod
    TR::Register *falseReg = cg->evaluate(falseVal);
    bool trueValIs64Bit = TR::TreeEvaluator::getNodeIs64Bit(trueVal, cg);
    TR::Register *trueReg  = TR::TreeEvaluator::intOrLongClobberEvaluate(trueVal, trueValIs64Bit, cg);
-   if (!node->isNotCollected()) 
+   if (!node->isNotCollected())
       trueReg->setContainsCollectedReference();
 
    // don't need to test if we're already using a compare eq or compare ne
@@ -1319,8 +1320,8 @@ TR::Register *OMR::X86::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::Cod
    else if (!longCompareOn32bit && conditionOp.isCompareForOrder() && condition->getFirstChild()->getOpCode().isIntegerOrAddress())
       {
       TR::TreeEvaluator::compareIntegersForOrder(condition, cg);
-      generateRegRegInstruction((conditionOp.isCompareTrueIfEqual()) ? 
-                   ((conditionOp.isCompareTrueIfGreater()) ? CMOVLRegReg(trueValIs64Bit) : CMOVGRegReg(trueValIs64Bit)) : 
+      generateRegRegInstruction((conditionOp.isCompareTrueIfEqual()) ?
+                   ((conditionOp.isCompareTrueIfGreater()) ? CMOVLRegReg(trueValIs64Bit) : CMOVGRegReg(trueValIs64Bit)) :
                    ((conditionOp.isCompareTrueIfGreater()) ? CMOVLERegReg(trueValIs64Bit) : CMOVGERegReg(trueValIs64Bit)), node, trueReg, falseReg, cg);
       }
    else

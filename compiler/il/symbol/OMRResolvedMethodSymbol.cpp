@@ -27,6 +27,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "compile/Compilation.hpp"

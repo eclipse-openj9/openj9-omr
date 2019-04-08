@@ -222,6 +222,7 @@
 #define OMRPORT_VMEM_MEMORY_MODE_EXECUTE 0x00000004
 #define OMRPORT_VMEM_MEMORY_MODE_COMMIT 0x00000008
 #define OMRPORT_VMEM_MEMORY_MODE_VIRTUAL 0x00000010
+#define OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN 0x000000200
 #define OMRPORT_VMEM_ALLOCATE_TOP_DOWN 0x00000020
 #define OMRPORT_VMEM_ALLOCATE_PERSIST 0x00000040
 #define OMRPORT_VMEM_NO_AFFINITY 0x00000080
@@ -961,6 +962,7 @@ typedef struct J9PortVmemIdentifier {
 	uintptr_t pageFlags;
 	uintptr_t mode;
 	uintptr_t allocator;
+	int fd;
 	OMRMemCategory *category;
 } J9PortVmemIdentifier;
 
@@ -1343,6 +1345,8 @@ typedef struct OMRPortLibrary {
 	void *(*vmem_reserve_memory)(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier, uintptr_t mode, uintptr_t pageSize,  uint32_t category) ;
 	/** see @ref omrvmem.c::omrvmem_reserve_memory_ex "omrvmem_reserve_memory_ex"*/
 	void *(*vmem_reserve_memory_ex)(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, struct J9PortVmemParams *params) ;
+	/** see @ref omrvmem.c::omrvmem_get_contiguous_region_memory "omrvmem_get_contiguous_region_memory"*/
+	void *(*vmem_get_contiguous_region_memory)(struct OMRPortLibrary *portLibrary, void* addresses[], uintptr_t addressesCount, uintptr_t addressSize, uintptr_t byteAmount, struct J9PortVmemIdentifier *oldIdentifier, struct J9PortVmemIdentifier *newIdentifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category);
 	/** see @ref omrvmem.c::omrvmem_get_page_size "omrvmem_get_page_size"*/
 	uintptr_t (*vmem_get_page_size)(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier) ;
 	/** see @ref omrvmem.c::omrvmem_get_page_flags "omrvmem_get_page_flags"*/
@@ -1916,6 +1920,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrvmem_vmem_params_init(param1) privateOmrPortLibrary->vmem_vmem_params_init(privateOmrPortLibrary, (param1))
 #define omrvmem_reserve_memory(param1,param2,param3,param4,param5,param6) privateOmrPortLibrary->vmem_reserve_memory(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5), (param6))
 #define omrvmem_reserve_memory_ex(param1,param2) privateOmrPortLibrary->vmem_reserve_memory_ex(privateOmrPortLibrary, (param1), (param2))
+#define omrvmem_get_contiguous_region_memory(param1, param2, param3, param4, param5, param6, param7, param8, param9) privateOmrPortLibrary->vmem_get_contiguous_region_memory(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5), (param6), (param7), (param8), (param9))
 #define omrvmem_get_page_size(param1) privateOmrPortLibrary->vmem_get_page_size(privateOmrPortLibrary, (param1))
 #define omrvmem_get_page_flags(param1) privateOmrPortLibrary->vmem_get_page_flags(privateOmrPortLibrary, (param1))
 #define omrvmem_supported_page_sizes() privateOmrPortLibrary->vmem_supported_page_sizes(privateOmrPortLibrary)

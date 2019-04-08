@@ -57,6 +57,12 @@ public:
 	{
 		/* No-op */
 	}
+
+	MMINLINE bool
+	isDoubleMappingEnabled()
+	{
+		return false;
+	}
 };
 
 #endif /*OMR_GC_ARRAYLETS */

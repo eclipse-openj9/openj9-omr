@@ -69,6 +69,12 @@ public:
 		Assert_MM_unimplemented();
 		return 0;
 	}
+
+	MMINLINE bool
+	isDoubleMappingEnabled()
+	{
+		return false;
+	}
 };
 
 #endif /*OMR_GC_ARRAYLETS */

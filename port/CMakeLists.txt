@@ -393,6 +393,10 @@ target_link_libraries(omrport
 		${OMR_THREAD_LIB}
 )
 
+if(OMR_HOST_OS STREQUAL "linux")
+    target_link_libraries(omrport PRIVATE rt)
+endif()
+
 #TODO hack to get to compile. Need platform checks
 if(NOT OMR_HOST_OS STREQUAL "win")
 	if(NOT OMR_HOST_OS STREQUAL "zos")

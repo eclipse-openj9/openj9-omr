@@ -231,6 +231,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableAndSimplification",           "O\tdisable and simplification",                     TR::Options::disableOptimization, andSimplification, 0, "P"},
    {DisableAnnotations,                   "O\tdisable annotation support",                     RESET_OPTION_BIT(TR_EnableAnnotations), "F"},
    {"disableAOTAtCheapWarm",              "O\tdisable AOT with cheap warm opt level", SET_OPTION_BIT(TR_DisableAotAtCheapWarm), "F", NOT_IN_SUBSET},
+   {"disableAOTBytesCompression",         "O\tdisable compressing AOT bytes",    SET_OPTION_BIT(TR_DisableAOTBytesCompression), "F"},
    {"disableAOTCheckCastInlining",        "O\tdisable AOT check cast inlining",                SET_OPTION_BIT(TR_DisableAOTCheckCastInlining), "F"},
    {"disableAOTColdCheapTacticalGRA",   "O\tdisable AOT cold cheap tactical GRA",                      SET_OPTION_BIT(TR_DisableAOTColdCheapTacticalGRA), "F"},
    {"disableAOTInstanceFieldResolution",   "O\tdisable AOT instance field resolution",                      SET_OPTION_BIT(TR_DisableAOTInstanceFieldResolution), "F"},
@@ -4793,6 +4794,7 @@ char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "sampleDensity",
    "profiling",
    "JITaaS",
+   "aotcompression",
    };
 
 

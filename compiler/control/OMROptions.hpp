@@ -454,7 +454,7 @@ enum TR_CompilationOptions
    TR_DisablePartialInlining                  = 0x00000080 + 12,
    TR_AssumeStartupPhaseUntilToldNotTo        = 0x00000100 + 12,
    // Available                               = 0x00000200 + 12,
-   // Available                               = 0x00000400 + 12,
+   TR_DisableAOTBytesCompression              = 0x00000400 + 12,
    TR_X86UseMFENCE                            = 0x00000800 + 12,
    // Available                               = 0x00001000 + 12,
    // Available                               = 0x00002000 + 12,
@@ -1139,7 +1139,7 @@ enum TR_VerboseFlags
    TR_VerboseSampleDensity,
    TR_VerboseProfiling,
    TR_VerboseJITaaS,
-
+   TR_VerboseAOTCompression,
    //If adding new options add an entry to _verboseOptionNames as well
    TR_NumVerboseOptions        // Must be the last one;
    };

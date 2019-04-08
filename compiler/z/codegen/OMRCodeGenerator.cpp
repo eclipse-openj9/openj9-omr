@@ -2478,40 +2478,12 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          }
       }
 
-
-   TR_HashTab * branchHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
-
    while (data.cursorInstruction)
       {
       uint8_t * const instructionStart = self()->getBinaryBufferCursor();
       if (data.cursorInstruction->isBreakPoint())
          {
          self()->addBreakPointAddress(instructionStart);
-         }
-
-      if (data.cursorInstruction->isBranchOp())
-         {
-         TR::LabelSymbol * branchLabelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
-         if (data.cursorInstruction->getKind() == TR::Instruction::IsRIE &&
-             (toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR::S390RIEInstruction::RIE_RR ||
-              toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR::S390RIEInstruction::RIE_RI8))
-            {
-            branchLabelSymbol = toS390RIEInstruction(data.cursorInstruction)->getBranchDestinationLabel();
-            }
-         if (branchLabelSymbol)
-            {
-            TR_HashId hashIndex = 0;
-            branchHashTable->add((void *)branchLabelSymbol, hashIndex, (void *)branchLabelSymbol);
-            }
-         }
-      else if (data.cursorInstruction->getKind() == TR::Instruction::IsRIL) // e.g. LARL/EXRL
-         {
-         if (((TR::S390RILInstruction *)data.cursorInstruction)->getTargetLabel() != NULL)
-            {
-            TR::LabelSymbol * targetLabel = ((TR::S390RILInstruction *)data.cursorInstruction)->getTargetLabel();
-            TR_HashId hashIndex = 0;
-            branchHashTable->add((void *)targetLabel, hashIndex, (void *)targetLabel);
-            }
          }
 
       self()->setBinaryBufferCursor(data.cursorInstruction->generateBinaryEncoding());

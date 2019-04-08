@@ -2329,13 +2329,13 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       data.estimate += 256;
       }
 
-   while (data.cursorInstruction && data.cursorInstruction->getOpCodeValue() != TR::InstOpCode::PROC)
-      {
-      data.estimate = data.cursorInstruction->estimateBinaryLength(data.estimate);
-      data.cursorInstruction = data.cursorInstruction->getNext();
-      }
-
    TR::Instruction* cursor = data.cursorInstruction;
+
+   // TODO: We should be caching the PROC instruction as it's used in several places and is pretty important
+   while (cursor && cursor->getOpCodeValue() != TR::InstOpCode::PROC)
+      {
+      cursor = cursor->getNext();
+      }
 
    if (recomp != NULL)
       {

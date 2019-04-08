@@ -63,7 +63,7 @@
 #undef OMR_GC_SCAVENGER_DELEGATE
 #undef OMR_GC_SEGREGATED_HEAP
 #undef OMR_GC_THREAD_LOCAL_HEAP
-#undef OMR_GC_ENABLE_DOUBLE_MAP
+#undef OMR_GC_DOUBLE_MAP_ARRAYLETS
 
 /**
  * Tells if a platform has support for Semaphores.

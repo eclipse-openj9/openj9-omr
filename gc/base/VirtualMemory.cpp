@@ -161,6 +161,7 @@ MM_VirtualMemory::reserveMemory(J9PortVmemParams* params)
 	return addressToReturn;
 }
 
+#if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
 void*
 MM_VirtualMemory::doubleMapArraylet(MM_EnvironmentBase *env, void* arrayletLeaves[], UDATA arrayletLeafCount, UDATA arrayletLeafSize, UDATA byteAmount, struct J9PortVmemIdentifier *newIdentifier, UDATA pageSize)
 {
@@ -170,6 +171,7 @@ MM_VirtualMemory::doubleMapArraylet(MM_EnvironmentBase *env, void* arrayletLeave
 
 	return omrvmem_get_contiguous_region_memory(arrayletLeaves, arrayletLeafCount, arrayletLeafSize, byteAmount, oldIdentifier, newIdentifier, mode, pageSize, omrmem_get_category(OMRMEM_CATEGORY_MM));
 }
+#endif /* defined(OMR_GC_DOUBLE_MAP_ARRAYLETS) */
 
 bool MM_VirtualMemory::freeMemory()
 {

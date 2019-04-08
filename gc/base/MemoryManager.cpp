@@ -95,11 +95,11 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 		}
 	}
 
-#if defined(OMR_GC_ENABLE_DOUBLE_MAP)
+#if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
 	if(extensions->isVLHGC() && extensions->indexableObjectModel.isDoubleMappingEnabled()) {
 		mode |= OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN;
 	}
-#endif // OMR_GC_ENABLE_DOUBLE_MAP
+#endif /* defined(OMR_GC_DOUBLE_MAP_ARRAYLETS) */
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	if (extensions->enableSplitHeap) {
@@ -553,6 +553,7 @@ MM_MemoryManager::destroyVirtualMemory(MM_EnvironmentBase* env, MM_MemoryHandle*
 
 }
 
+#if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
 void*
 MM_MemoryManager::doubleMapArraylet(MM_MemoryHandle* handle, MM_EnvironmentBase *env, void* arrayletLeaves[], UDATA arrayletLeafCount, UDATA arrayletLeafSize, UDATA byteAmount, struct J9PortVmemIdentifier *newIdentifier, UDATA pageSize)
 {
@@ -561,6 +562,7 @@ MM_MemoryManager::doubleMapArraylet(MM_MemoryHandle* handle, MM_EnvironmentBase 
 	Assert_MM_true(NULL != memory);
 	return memory->doubleMapArraylet(env, arrayletLeaves, arrayletLeafCount, arrayletLeafSize, byteAmount, newIdentifier, pageSize);
 }
+#endif /* defined(OMR_GC_DOUBLE_MAP_ARRAYLETS) */
 
 bool
 MM_MemoryManager::commitMemory(MM_MemoryHandle* handle, void* address, uintptr_t size)

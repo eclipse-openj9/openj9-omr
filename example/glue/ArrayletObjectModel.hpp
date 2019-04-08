@@ -69,13 +69,13 @@ public:
 		Assert_MM_unimplemented();
 		return 0;
 	}
-#if defined(OMR_GC_ENABLE_DOUBLE_MAP)
+#if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
 	MMINLINE bool
 	isDoubleMappingEnabled()
 	{
 		return false;
 	}
-#endif // OMR_GC_ENABLE_DOUBLE_MAP
+#endif /* defined(OMR_GC_DOUBLE_MAP_ARRAYLETS) */
 
 };
 

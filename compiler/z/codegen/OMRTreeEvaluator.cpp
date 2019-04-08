@@ -5202,7 +5202,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                   {
                   auto loadMnemonic = TR::InstOpCode::BAD;
 
-                  if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads() &&
+                  if (TR::Compiler->om.readBarrierType() != gc_modron_readbar_none &&
                       ((node->getOpCodeValue() == TR::aloadi) ||
                        (node->getOpCodeValue() == TR::aload && node->getSymbol()->isStatic())) &&
                       tempReg->containsCollectedReference())
@@ -11478,7 +11478,7 @@ void
 OMR::Z::TreeEvaluator::forwardArrayCopySequenceGenerator(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR::Node *byteLenNode, TR_S390ScratchRegisterManager *srm, TR::LabelSymbol *mergeLabel)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   bool mustGenerateOOLGuardedLoadPath = TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads() &&
+   bool mustGenerateOOLGuardedLoadPath = TR::Compiler->om.readBarrierType() != gc_modron_readbar_none &&
                                          node->getArrayCopyElementType() == TR::Address;
    if (mustGenerateOOLGuardedLoadPath)
       {
@@ -11548,7 +11548,7 @@ TR::RegisterDependencyConditions *
 OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR::Node *byteLenNode, TR_S390ScratchRegisterManager *srm, TR::LabelSymbol *mergeLabel)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   bool mustGenerateOOLGuardedLoadPath = TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads() &&
+   bool mustGenerateOOLGuardedLoadPath = TR::Compiler->om.readBarrierType() != gc_modron_readbar_none &&
                                          node->getArrayCopyElementType() == TR::Address;
    if (mustGenerateOOLGuardedLoadPath)
       {

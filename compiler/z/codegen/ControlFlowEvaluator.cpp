@@ -2268,7 +2268,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
 
                // For concurrent scavenge the source is loaded and shifted by the guarded load, thus we need to use CG
                // here for a non-zero compressedrefs shift value
-               if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
+               if (TR::Compiler->om.readBarrierType() != gc_modron_readbar_none)
                   {
                   cmpOpCode = TR::InstOpCode::getCmpOpCode();
                   }

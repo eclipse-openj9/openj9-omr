@@ -2936,7 +2936,7 @@ void canRemoveWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
    TR::VPConstraint *constraint = vp->getConstraint(node, isGlobal);
    if (constraint)
       {
-      if (constraint->isNullObject() && !vp->comp()->getOptions()->alwaysCallWriteBarrier() && !vp->comp()->getOptions()->realTimeGC())
+      if (constraint->isNullObject() && TR::Compiler->om.writeBarrierType() != gc_modron_wrtbar_always && !vp->comp()->getOptions()->realTimeGC())
          {
          if (node->getOpCode().isIndirect())
             {
@@ -2998,7 +2998,7 @@ TR::Node *constrainWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
 
    static bool doOpt = feGetEnv("TR_DisableWrtBarOpt") ? false : true;
 
-   if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
+   if (TR::Compiler->om.readBarrierType() != gc_modron_readbar_none)
       {
       // The optimization below targets the following type of code:
       // 
@@ -3015,11 +3015,11 @@ TR::Node *constrainWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
       doOpt = false;
       }
 
-   TR_WriteBarrierKind gcMode = vp->comp()->getOptions()->getGcMode();
+   auto gcMode = TR::Compiler->om.writeBarrierType();
 
    if (doOpt &&
-       ((gcMode == TR_WrtbarCardMarkAndOldCheck) ||
-        (gcMode == TR_WrtbarOldCheck)) &&
+       ((gcMode == gc_modron_wrtbar_cardmark_and_oldcheck) ||
+        (gcMode == gc_modron_wrtbar_oldcheck)) &&
        (node->getOpCodeValue() == TR::awrtbari) &&
        !node->skipWrtBar())
       {

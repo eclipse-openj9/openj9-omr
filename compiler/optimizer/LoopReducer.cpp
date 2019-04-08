@@ -968,7 +968,18 @@ TR_LoopReducer::generateArraycopy(TR_InductionVariable * indVar, TR::Block * loo
       return false;
       }
 
-   bool needWriteBarrier = comp()->getOptions()->needWriteBarriers();;
+   bool needWriteBarrier = false;
+   switch (TR::Compiler->om.writeBarrierType())
+      {
+      case gc_modron_wrtbar_oldcheck:
+      case gc_modron_wrtbar_cardmark:
+      case gc_modron_wrtbar_cardmark_and_oldcheck:
+      case gc_modron_wrtbar_cardmark_incremental:
+         needWriteBarrier = true;
+         break;
+      default:
+         break;
+      }
    //FUTURE: can eliminate wrtbar when src and dest are equal. Currently we don't reduce arraycopy like this.
    if (arraycopyLoop.hasWriteBarrier() && needWriteBarrier && !comp()->cg()->getSupportsReferenceArrayCopy())
       {

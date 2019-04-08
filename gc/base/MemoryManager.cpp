@@ -95,11 +95,11 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 		}
 	}
 
-#if defined(LINUX)
+#if defined(OMR_GC_ENABLE_DOUBLE_MAP)
 	if(extensions->isVLHGC() && extensions->indexableObjectModel.isDoubleMappingEnabled()) {
 		mode |= OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN;
 	}
-#endif /* defined(LINUX) */
+#endif // OMR_GC_ENABLE_DOUBLE_MAP
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	if (extensions->enableSplitHeap) {

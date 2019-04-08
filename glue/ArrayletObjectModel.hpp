@@ -58,11 +58,13 @@ public:
 		/* No-op */
 	}
 
+#if defined(OMR_GC_ENABLE_DOUBLE_MAP)
 	MMINLINE bool
 	isDoubleMappingEnabled()
 	{
 		return false;
 	}
+#endif // OMR_GC_ENABLE_DOUBLE_MAP
 };
 
 #endif /*OMR_GC_ARRAYLETS */

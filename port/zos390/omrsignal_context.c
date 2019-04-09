@@ -352,7 +352,7 @@ infoForControl(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int3
 #else
 	_CEECIB *conditionInfoBlock = NULL;
 	_FEEDBACK cibfc;
-	j9_31bit_mch *j9mch = NULL;
+	omr_31bit_mch *j9mch = NULL;
 #endif
 
 	*name = "";
@@ -405,7 +405,7 @@ infoForControl(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int3
 
 		/* verify that CEE3CIB was successful */
 		if (0 == _FBCHECK(cibfc , CEE000)) {
-			j9mch = (j9_31bit_mch *)conditionInfoBlock->cib_machine;
+			j9mch = (omr_31bit_mch *)conditionInfoBlock->cib_machine;
 			info->platformSignalInfo.breakingEventAddr = *(uintptr_t *)(&j9mch->bea);
 #endif
 			*name = "bea";

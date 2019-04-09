@@ -37,7 +37,7 @@
  * This was derived from fillInJumpInfo in port/zos390/omrsignal_context.c
  */
 void
-fillInLEJumpInfo(struct OMRPortLibrary *portLibrary, j9_31bit_mch *regs, void *jumpInfo)
+fillInLEJumpInfo(struct OMRPortLibrary *portLibrary, omr_31bit_mch *regs, void *jumpInfo)
 {
 	int i = 0;
 	struct __jumpinfo *farJumpInfo  = (struct __jumpinfo *)jumpInfo;
@@ -140,7 +140,7 @@ infoForFPR_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, 
 		"fpr14",
 		"fpr15"
 	};
-	j9_31bit_mch *j9mch = (j9_31bit_mch *)info->cib->cib_machine;
+	omr_31bit_mch *j9mch = (omr_31bit_mch *)info->cib->cib_machine;
 	*name = "";
 
 
@@ -211,7 +211,7 @@ infoForGPR_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, 
 		"hgpr15"
 #endif
 	};
-	j9_31bit_mch *j9mch = (j9_31bit_mch *)info->cib->cib_machine;
+	omr_31bit_mch *j9mch = (omr_31bit_mch *)info->cib->cib_machine;
 
 	*name = "";
 
@@ -271,7 +271,7 @@ infoForVR_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, i
 		"vr31"
 	};
 
-	j9_31bit_mch *j9mch = (j9_31bit_mch *)info->cib->cib_machine;
+	omr_31bit_mch *j9mch = (omr_31bit_mch *)info->cib->cib_machine;
 
 	*name = "";
 
@@ -295,7 +295,7 @@ infoForVR_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, i
 uint32_t
 infoForControl_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, int32_t index, const char **name, void **value)
 {
-	j9_31bit_mch *j9mch = (j9_31bit_mch *)info->cib->cib_machine;
+	omr_31bit_mch *j9mch = (omr_31bit_mch *)info->cib->cib_machine;
 	*name = "";
 
 	switch (index) {
@@ -361,7 +361,7 @@ infoForModule_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *inf
 	return OMRPORT_SIG_VALUE_UNDEFINED;
 
 #else
-	j9_31bit_mch *j9mch = (j9_31bit_mch *)info->cib->cib_machine;
+	omr_31bit_mch *j9mch = (omr_31bit_mch *)info->cib->cib_machine;
 
 	/* Input paramaters to CEETBCK
 	 * We don't know what the stack format was for the routine that triggered the condition,
@@ -461,7 +461,7 @@ infoForModule_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *inf
 uint32_t
 infoForSignal_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, int32_t index, const char **name, void **value)
 {
-	j9_31bit_mch *j9mch = (j9_31bit_mch *)info->cib->cib_machine;
+	omr_31bit_mch *j9mch = (omr_31bit_mch *)info->cib->cib_machine;
 	*name = "";
 
 	switch (index) {

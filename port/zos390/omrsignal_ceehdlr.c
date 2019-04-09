@@ -43,7 +43,7 @@
 /* in port/unix/omrsignal.c */
 extern uint32_t signalOptionsGlobal;
 
-void j9vm_le_condition_handler(_FEEDBACK *, _INT4 *, _INT4 *, _FEEDBACK *);
+void omrsig_le_condition_handler(_FEEDBACK *, _INT4 *, _INT4 *, _FEEDBACK *);
 static uint32_t mapZOS390ExceptionToPortlibType(uint32_t exceptionCode);
 
 static uint32_t
@@ -58,7 +58,7 @@ static void setCurrentSignal(struct OMRPortLibrary *portLibrary, uint32_t portLi
 
 /*
  *
- * Much of the following j9vm_le_condition_handler parameter documentation is from:
+ * Much of the following omrsig_le_condition_handler parameter documentation is from:
  *
  * 	"V1R11.0 Language Environment Programming Guide", p. 243, http://publibz.boulder.ibm.com/epubs/pdf/ceea21a0.pdf
  *
@@ -90,7 +90,7 @@ static void setCurrentSignal(struct OMRPortLibrary *portLibrary, uint32_t portLi
  *
 */
 void
-j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc)
+omrsig_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc)
 {
 	struct J9ZOSLEConditionHandlerRecord *thisRecord = (struct J9ZOSLEConditionHandlerRecord *)*token;
 	uint32_t handlerResult;
@@ -107,7 +107,7 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 #if defined(OMRSIGNAL_DEBUG)
 	static int count = 0;
 
-	printf("j9vm_le_condition_handler count: %i, %s%i, sev: %i\n", count, e2a_func(fc->tok_facid, 3), fc->tok_msgno, fc->tok_sev);
+	printf("omrsig_le_condition_handler count: %i, %s%i, sev: %i\n", count, e2a_func(fc->tok_facid, 3), fc->tok_msgno, fc->tok_sev);
 	fflush(NULL);
 	count++;
 #endif
@@ -180,13 +180,13 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 		signalInfo.cib = cib_ptr;
 		signalInfo.portLibrarySignalType = portlibSignalNo;
 		signalInfo.handlerAddress = (void *)thisRecord->handler;
-		signalInfo.handlerAddress2 = (void *)j9vm_le_condition_handler;
+		signalInfo.handlerAddress2 = (void *)omrsig_le_condition_handler;
 		signalInfo.messageNumber = (uint16_t)fc->tok_msgno;
 		signalInfo.facilityID = e2a_func(fc->tok_facid, 3);	/* e2a_func() uses malloc, free below */
 
 		/* Save the previous signal, set the current, restore the previous
 		 * If thisRecord->handler crashes without registering its own protection (using omrsig_protect),
-		 *  j9vm_le_condition_handler will be invoked again with thisRecord,
+		 *  omrsig_le_condition_handler will be invoked again with thisRecord,
 		 *  and the recursive check (at top of function) will reset it to zero.
 		 */
 		prevPortlibSignalNo = omrsig_get_current_signal_ceehdlr(thisRecord->portLibrary);
@@ -196,7 +196,7 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 		handlerResult = thisRecord->handler(thisRecord->portLibrary, portlibSignalNo, &signalInfo, thisRecord->handler_arg);
 		thisRecord->recursiveCheck = 0;
 
-		/* control leaves j9vm_le_condition_handler in all cases following this point, so restore the previous signal */
+		/* control leaves omrsig_le_condition_handler in all cases following this point, so restore the previous signal */
 		setCurrentSignal(thisRecord->portLibrary, prevPortlibSignalNo);
 
 		if (NULL != signalInfo.facilityID) {
@@ -260,9 +260,9 @@ omrsig_protect_ceehdlr(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn 
 		thisRecord.handler_arg = handler_arg;
 		thisRecord.flags = flags;
 
-		/* Register j9vm_le_condition_handler as an LE condition handler */
+		/* Register omrsig_le_condition_handler as an LE condition handler */
 		token = (_INT4)&thisRecord;
-		leConditionHandler.address = (_POINTER)&j9vm_le_condition_handler ;
+		leConditionHandler.address = (_POINTER)&omrsig_le_condition_handler ;
 		leConditionHandler.nesting = NULL;
 
 		CEEHDLR(&leConditionHandler, &token, &fc);
@@ -277,9 +277,9 @@ omrsig_protect_ceehdlr(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn 
 			return OMRPORT_SIG_ERROR;
 		}
 
-		/* j9vm_le_condition_handler will jump here in the case of OMRPORT_SIG_EXCEPTION_RETURN */
+		/* omrsig_le_condition_handler will jump here in the case of OMRPORT_SIG_EXCEPTION_RETURN */
 		if (setjmp(thisRecord.returnBuf)) {
-			/* j9vm_le_condition_handler jumped back here */
+			/* omrsig_le_condition_handler jumped back here */
 			*result = 0;
 			return OMRPORT_SIG_EXCEPTION_OCCURRED;
 		}

@@ -29,13 +29,13 @@
 #include <dlfcn.h>
 #undef __USE_GNU
 
-typedef struct J9PlatformSignalInfo {
+typedef struct OMRPlatformSignalInfo {
 	ucontext_t *context;
 	Dl_info dl_info;
-} J9PlatformSignalInfo;
+} OMRPlatformSignalInfo;
 
 typedef struct OMRUnixSignalInfo {
-	struct J9PlatformSignalInfo platformSignalInfo;
+	struct OMRPlatformSignalInfo platformSignalInfo;
 	uint32_t portLibrarySignalType;
 	void *handlerAddress;
 	void *handlerAddress2;

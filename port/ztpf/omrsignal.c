@@ -790,7 +790,7 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 
 			if (OMR_ARE_ANY_BITS_SET(thisRecord->flags,portLibType)) {
 				struct OMRUnixSignalInfo j9Info;
-				struct J9PlatformSignalInfo platformSignalInfo;
+				struct OMRPlatformSignalInfo platformSignalInfo;
 
 				/*
 				 * the equivalent of these memsets were here before, but were they needed? 

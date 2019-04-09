@@ -40,13 +40,13 @@
  * sigcontext structure until the uc_link structure, which
  * follows the sigcontext structure.
  */
-typedef struct J9PlatformSignalInfo {
+typedef struct OMRPlatformSignalInfo {
 	ucontext_t *context;
 	struct ld_info ldInfo[128];
-} J9PlatformSignalInfo;
+} OMRPlatformSignalInfo;
 
 typedef struct OMRUnixSignalInfo {
-	struct J9PlatformSignalInfo platformSignalInfo;
+	struct OMRPlatformSignalInfo platformSignalInfo;
 	uint32_t portLibrarySignalType;
 	void *handlerAddress;
 	void *handlerAddress2;

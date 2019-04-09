@@ -40,17 +40,17 @@
 /*
  * This structure declaration came in this file in this format from J9
  */
-typedef struct J9PlatformSignalInfo {
+typedef struct OMRPlatformSignalInfo {
 	ucontext_t *context;
 	uintptr_t breakingEventAddr;
 	Dl_info	dl_info;
-} J9PlatformSignalInfo;
+} OMRPlatformSignalInfo;
 
 /*
  * This structure declaration came in this file in this format from J9
  */
 typedef struct OMRUnixSignalInfo {
-	struct J9PlatformSignalInfo	platformSignalInfo;
+	struct OMRPlatformSignalInfo	platformSignalInfo;
 	uint32_t portLibrarySignalType;
 	void* handlerAddress;
 	void* handlerAddress2;

@@ -37,7 +37,7 @@
 #include "portnls.h"
 
 #if 0
-#define J9SIGNAL_DEBUG
+#define OMRSIGNAL_DEBUG
 #endif
 
 /* in port/unix/omrsignal.c */
@@ -104,7 +104,7 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 	const char *ceeEbcdic = "CEE";
 #pragma convlit(resume)
 
-#if defined(J9SIGNAL_DEBUG)
+#if defined(OMRSIGNAL_DEBUG)
 	static int count = 0;
 
 	printf("j9vm_le_condition_handler count: %i, %s%i, sev: %i\n", count, e2a_func(fc->tok_facid, 3), fc->tok_msgno, fc->tok_sev);
@@ -244,7 +244,7 @@ omrsig_protect_ceehdlr(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn 
 	_ENTRY leConditionHandler;
 	_INT4 token;
 
-#if defined(J9SIGNAL_DEBUG)
+#if defined(OMRSIGNAL_DEBUG)
 	printf(" \nomrsig_protect_ceehdlr\n");
 	fflush(NULL);
 #endif
@@ -270,7 +270,7 @@ omrsig_protect_ceehdlr(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn 
 
 		/* verify that CEEHDLR was successful */
 		if (_FBCHECK(fc, CEE000) != 0) {
-#if defined(J9SIGNAL_DEBUG)
+#if defined(OMRSIGNAL_DEBUG)
 			printf("CEEHDLR failed with message number %d\n", fc.tok_msgno);
 			fflush(stdout);
 #endif

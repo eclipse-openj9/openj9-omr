@@ -15236,6 +15236,12 @@ OMR::Z::TreeEvaluator::arraytranslateEncodeSIMDEvaluator(TR::Node * node, TR::Co
    // VLL and VSTL work on indices so we must subtract 1 (add 8 as saturation happened in the second input vector)
    generateRIEInstruction(cg, TR::InstOpCode::getAddLogicalRegRegImmediateOpCode(), node, inputLenMinus1, inputLen, 7);
 
+   // If we end up in this ICF block, then it means that all 8 characters in the first input vector (vInput1) can be
+   // succesfully translated and some portion of the 8 chars in vInput2 can also be translated. Currently inputLen only
+   // indicates how many chars in vInput2 will be successfully translated. We add 8 to inputLen here to account for
+   // the 8 chars that will be successfully translated in vInput1.
+   generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, inputLen, 8);
+
    // ----------------- Incoming branch -----------------
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, processUnSaturated);
@@ -15250,7 +15256,8 @@ OMR::Z::TreeEvaluator::arraytranslateEncodeSIMDEvaluator(TR::Node * node, TR::Co
    // Copy only the unsaturated results using the index we calculated earlier
    generateVRSbInstruction(cg, TR::InstOpCode::VSTL, node, vOutput, inputLenMinus1, generateS390MemoryReference(output, 0, cg), 0);
 
-   // Update the result value
+   // inputLen now holds the number of characters we were able to translate before encountering the saturated
+   // character. Add it to translated register here to update the result value.
    generateRRInstruction (cg, TR::InstOpCode::getAddRegOpCode(), node, translated, inputLen);
 
    // Set up the proper register dependencies

@@ -167,6 +167,14 @@ public:
    // === Call or entry related
    TR_XPLinkCallTypes genWCodeCallBranchCode(TR::Node *callNode, TR::RegisterDependencyConditions * deps);
 
+   /** \brief
+    *     Gets the label instruction which marks the stack pointer update instruction following it.
+    *
+    *  \return
+    *     The stack pointer update label instruction if it exists; \c NULL otherwise.
+    */
+   TR::Instruction* getStackPointerUpdate();
+
    virtual void createPrologue(TR::Instruction * cursor);
    virtual void createEpilogue(TR::Instruction * cursor);
 
@@ -180,7 +188,8 @@ private:
 
    TR_zOSGlobalCompilationInfo* _globalCompilationInfo;
 
-private:
+   TR::Instruction* _stackPointerUpdate;
+
    enum
       {
       fudgeFactor = 1800                  // see S390EarlyStackMap

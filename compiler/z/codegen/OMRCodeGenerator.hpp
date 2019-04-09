@@ -821,7 +821,10 @@ protected:
 
 private:
 
-   // TODO: These should move into the base class
+   // TODO: These should move into the base class. There also seems to be a little overlap between these and
+   // _firstInstruction and _appendInstruction. We should likely expose a getLastInstruction API as well. The former
+   // API should return _methodBegin and latter _methodEnd always. The append instruction will be the instruction
+   // preceeding _methodEnd.
    TR::Instruction* _methodBegin;
    TR::Instruction* _methodEnd;
 

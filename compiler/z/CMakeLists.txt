@@ -52,6 +52,7 @@ compiler_library(z
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRealRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRCodeGenPhase.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRCodeGenerator.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/snippet/PPA1Snippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/env/OMRCPU.cpp
 	${CMAKE_CURRENT_LIST_DIR}/env/OMRDebugEnv.cpp
 )

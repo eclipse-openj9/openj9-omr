@@ -52,6 +52,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRRealRegister.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRCodeGenPhase.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRCodeGenerator.cpp \
+    $(JIT_OMR_DIRTY_DIR)/z/codegen/snippet/PPA1Snippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/env/OMRCPU.cpp
 
 JIT_PRODUCT_SOURCE_FILES+=\

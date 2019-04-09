@@ -287,7 +287,9 @@ TR::S390SystemLinkage::flipBitsRegisterSaveMask(uint16_t mask)
 
 
 TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
-   : TR::SystemLinkage(codeGen, TR_SystemXPLink)
+   : 
+      TR::SystemLinkage(codeGen, TR_SystemXPLink),
+      _stackPointerUpdate(NULL)
    {
    // linkage properties
    setProperties(FirstParmAtFixedOffset);
@@ -2465,6 +2467,10 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
           cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(),
                   node, getRealRegister(REGNUM(firstSaved + TR::RealRegister::FirstGPR)),
                   getRealRegister(REGNUM(lastSaved + TR::RealRegister::FirstGPR)), rsa, cursor);
+
+          cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, generateLabelSymbol(cg()), cursor);
+          _stackPointerUpdate = cursor;
+
           // AHI R4,-stackFrameSize
           cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, NULL, node, cursor);
           break;
@@ -2489,6 +2495,9 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
                 cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), node, gpr3Real, gpr3ParmRef, cursor); // ST R3,parmRef(R4)
                 }
 
+             cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, generateLabelSymbol(cg()), cursor);
+             _stackPointerUpdate = cursor;
+
              cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, gpr3Real, node, cursor);  // R4 <- R4 - stack size
 
              if (saveTempReg)
@@ -2507,6 +2516,10 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
 
              if (saveBackChain) // LR R0,R4
                 cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node, gpr0Real, spReg, cursor);
+             
+             cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, generateLabelSymbol(cg()), cursor);
+             _stackPointerUpdate = cursor;
+
              cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, NULL, node, cursor);
              }
           rsaOffset =  offsetToRegSaveArea + offsetToFirstSavedReg;
@@ -2758,6 +2771,11 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
                 deps->getPostConditions(), 0, deps->getAddCursorForPost(), cg());
     generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, afterNOP, postDeps);
 }
+
+TR::Instruction* TR::S390zOSSystemLinkage::getStackPointerUpdate()
+   {
+   return _stackPointerUpdate;
+   }
 
 // Create prologue for XPLink
 void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction * cursor)

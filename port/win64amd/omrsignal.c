@@ -78,13 +78,13 @@ struct OMRSignalHandlerRecord {
 	BOOLEAN deferToTryExcept;
 } OMRSignalHandlerRecord;
 
-typedef struct J9WinAMD64AsyncHandlerRecord {
+typedef struct OMRWinAMD64AsyncHandlerRecord {
 	OMRPortLibrary *portLib;
 	omrsig_handler_fn handler;
 	void *handler_arg;
 	uint32_t flags;
-	struct J9WinAMD64AsyncHandlerRecord *next;
-} J9WinAMD64AsyncHandlerRecord;
+	struct OMRWinAMD64AsyncHandlerRecord *next;
+} OMRWinAMD64AsyncHandlerRecord;
 
 static struct {
 	uint32_t portLibSignalNo;
@@ -122,7 +122,7 @@ static uint32_t vectoredExceptionHandlerInstalled;
 /* Thread to invoke signal handlers for asynchronous signals. */
 static omrthread_t asynchSignalReporterThread;
 
-static J9WinAMD64AsyncHandlerRecord *asyncHandlerList;
+static OMRWinAMD64AsyncHandlerRecord *asyncHandlerList;
 static omrthread_monitor_t asyncMonitor;
 static uint32_t asyncThreadCount;
 static uint32_t attachedPortLibraries;
@@ -180,7 +180,7 @@ static void runHandlers(uint32_t asyncSignalFlag, int osSignal);
 static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
 static int32_t setReporterPriority(OMRPortLibrary *portLibrary, uintptr_t priority);
 
-static J9WinAMD64AsyncHandlerRecord *createAsyncHandlerRecord(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags);
+static OMRWinAMD64AsyncHandlerRecord *createAsyncHandlerRecord(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags);
 
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
@@ -303,8 +303,8 @@ int32_t
 omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
 {
 	int32_t rc = 0;
-	J9WinAMD64AsyncHandlerRecord *cursor = NULL;
-	J9WinAMD64AsyncHandlerRecord **previousLink = NULL;
+	OMRWinAMD64AsyncHandlerRecord *cursor = NULL;
+	OMRWinAMD64AsyncHandlerRecord **previousLink = NULL;
 
 	Trc_PRT_signal_omrsig_set_async_signal_handler_entered(handler, handler_arg, flags);
 
@@ -349,7 +349,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 	/* Cursor will only be NULL if we failed to find it in the list. */
 	if ((NULL == cursor) && (0 != flags)) {
-		J9WinAMD64AsyncHandlerRecord *record = createAsyncHandlerRecord(portLibrary, handler, handler_arg, flags);
+		OMRWinAMD64AsyncHandlerRecord *record = createAsyncHandlerRecord(portLibrary, handler, handler_arg, flags);
 		if (NULL != record) {
 			/* Add the new record to the end of the list. */
 			Trc_PRT_signal_omrsig_set_async_signal_handler_user_handler_added_2(handler, handler_arg, flags);
@@ -369,8 +369,8 @@ int32_t
 omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag, void **oldOSHandler)
 {
 	int32_t rc = 0;
-	J9WinAMD64AsyncHandlerRecord *cursor = NULL;
-	J9WinAMD64AsyncHandlerRecord **previousLink = NULL;
+	OMRWinAMD64AsyncHandlerRecord *cursor = NULL;
+	OMRWinAMD64AsyncHandlerRecord **previousLink = NULL;
 	BOOLEAN foundHandler = FALSE;
 
 	Trc_PRT_signal_omrsig_set_single_async_signal_handler_entered(handler, handler_arg, portlibSignalFlag);
@@ -429,7 +429,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 	}
 
 	if (!foundHandler && (0 != portlibSignalFlag)) {
-		J9WinAMD64AsyncHandlerRecord *record = createAsyncHandlerRecord(portLibrary, handler, handler_arg, portlibSignalFlag);
+		OMRWinAMD64AsyncHandlerRecord *record = createAsyncHandlerRecord(portLibrary, handler, handler_arg, portlibSignalFlag);
 		if (NULL != record) {
 			/* Add the new record to the end of the list. */
 			Trc_PRT_signal_omrsig_set_single_async_signal_handler_user_handler_added_2(handler, handler_arg, portlibSignalFlag);
@@ -1661,8 +1661,8 @@ static void
 removeAsyncHandlers(OMRPortLibrary *portLibrary)
 {
 	/* clean up the list of async handlers */
-	J9WinAMD64AsyncHandlerRecord *cursor = NULL;
-	J9WinAMD64AsyncHandlerRecord **previousLink = NULL;
+	OMRWinAMD64AsyncHandlerRecord *cursor = NULL;
+	OMRWinAMD64AsyncHandlerRecord **previousLink = NULL;
 
 	omrthread_monitor_enter(asyncMonitor);
 
@@ -1694,7 +1694,7 @@ removeAsyncHandlers(OMRPortLibrary *portLibrary)
 #if defined(OMR_PORT_ASYNC_HANDLER)
 /**
  * Given a port library signal flag, execute the associated handlers stored
- * within asyncHandlerList (list of J9WinAMD64AsyncHandlerRecord).
+ * within asyncHandlerList (list of OMRWinAMD64AsyncHandlerRecord).
  *
  * @param asyncSignalFlag port library signal flag
  *
@@ -1703,7 +1703,7 @@ removeAsyncHandlers(OMRPortLibrary *portLibrary)
 static void
 runHandlers(uint32_t asyncSignalFlag, int osSignal)
 {
-	J9WinAMD64AsyncHandlerRecord *cursor = NULL;
+	OMRWinAMD64AsyncHandlerRecord *cursor = NULL;
 
 	/* incrementing the asyncThreadCount will prevent the list from being modified while we use it */
 	omrthread_monitor_enter(asyncMonitor);
@@ -1736,7 +1736,7 @@ runHandlers(uint32_t asyncSignalFlag, int osSignal)
 
 /**
  * This is the main body of the asynchSignalReporterThread. It executes handlers
- * (J9WinAMD64AsyncHandlerRecord->handler) associated to a signal once a signal
+ * (OMRWinAMD64AsyncHandlerRecord->handler) associated to a signal once a signal
  * is raised.
  *
  * @param[in] userData the user data provided during thread creation
@@ -1883,10 +1883,10 @@ setReporterPriority(OMRPortLibrary *portLibrary, uintptr_t priority)
  *
  * @return pointer to the new async handler record on success and NULL on failure.
  */
-static J9WinAMD64AsyncHandlerRecord *
+static OMRWinAMD64AsyncHandlerRecord *
 createAsyncHandlerRecord(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
 {
-	J9WinAMD64AsyncHandlerRecord *record = (J9WinAMD64AsyncHandlerRecord *)portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+	OMRWinAMD64AsyncHandlerRecord *record = (OMRWinAMD64AsyncHandlerRecord *)portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 
 	if (NULL != record) {
 		record->portLib = portLibrary;

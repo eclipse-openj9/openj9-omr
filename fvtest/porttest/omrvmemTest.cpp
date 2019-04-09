@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -389,6 +389,100 @@ TEST(PortVmemTest, vmem_test1)
 	portTestEnv->changeIndent(-1);
 exit:
 
+	reportTestExit(OMRPORTLIB, testName);
+}
+
+/**
+ * Get all the page sizes and make sure we can allocate a memory chunk for each page size.
+ * In OpenJ9, memory for J9JNIRedirectionBlock is allocated using j9vmem_reserve_memory().
+ * After allocating the memory they copy the J9PortVmemIdentifier into the reserved memory.
+ * When j9vmem_free_memory() is called, we free the memory and then attempt to read flags
+ * from J9PortVmemIdentifier, resulting in a use-after-free bug.
+ *
+ * Checks that each allocation manipulates the memory categories appropriately.
+ */
+
+TEST(PortVmemTest, vmem_test_free_memory)
+{
+	portTestEnv->changeIndent(1);
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrvmem_test_free_memory";
+	uintptr_t *pageSizes = NULL;
+#if defined(J9ZOS390)
+	uintptr_t *pageFlags = NULL;
+#endif /* J9ZOS390 */
+	int i = 0;
+	struct J9PortVmemIdentifier vmemID;
+	int32_t rc = 0;
+	char *lastErrorMessage = NULL;
+	int32_t lastErrorNumber = 0;
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	/* First get all the supported page sizes */
+	pageSizes = omrvmem_supported_page_sizes();
+#if defined(J9ZOS390)
+	pageFlags = omrvmem_supported_page_flags();
+#endif /* J9ZOS390 */
+
+	/* reserve and commit memory for each page size */
+	for (i = 0 ; pageSizes[i] != 0 ; i++) {
+		/* reserve and commit */
+#if defined(J9ZOS390)
+		/* On z/OS skip this test for newly added large pages as obsolete omrvmem_reserve_memory() does not support them */
+		if (isNewPageSize(pageSizes[i], pageFlags[i])) {
+			continue;
+		}
+#endif /* J9ZOS390 */
+
+		if (pageSizes[i] < sizeof(struct J9PortVmemIdentifier)) {
+			outputErrorMessage(
+				PORTTEST_ERROR_ARGS,
+				"omrvmem_free_memory pageSize is smaller than sizeof(J9PortVmemIdentifier). pageSize: 0x%zx sizeof(J9PortVmemIdentifier): 0x%zx\n",
+				pageSizes[i], sizeof(struct J9PortVmemIdentifier));
+			goto exit;
+		}
+
+		J9PortVmemIdentifier *vmemID2 = (J9PortVmemIdentifier*)omrvmem_reserve_memory(
+				0, pageSizes[i], &vmemID,
+				OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT,
+				pageSizes[i], OMRMEM_CATEGORY_PORT_LIBRARY);
+
+		/* did we get any memory? */
+		if (vmemID2 == NULL) {
+			lastErrorMessage = (char *)omrerror_last_error_message();
+			lastErrorNumber = omrerror_last_error_number();
+			/* Succeed instead of error then continue since the platform is not supported */
+			if (OMRPORT_ERROR_VMEM_NOT_SUPPORTED == lastErrorNumber) {
+				goto exit;
+			}
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "unable to reserve and commit 0x%zx bytes with page size 0x%zx.\n"
+					"\tlastErrorNumber=%d, lastErrorMessage=%s\n", pageSizes[i], pageSizes[i], lastErrorNumber, lastErrorMessage);
+
+			if (OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES == lastErrorNumber) {
+				portTestEnv->log(LEVEL_ERROR, "Portable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
+				portTestEnv->changeIndent(1);
+				portTestEnv->log(LEVEL_ERROR, "REBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
+				portTestEnv->changeIndent(-1);
+			}
+			goto exit;
+		}
+
+		portTestEnv->log("reserved and committed 0x%zx bytes with page size 0x%zx at address 0x%zx\n", pageSizes[i], vmemID.pageSize, vmemID2);
+		*vmemID2 = vmemID;
+
+		/* free the memory (reuse the vmemID2) */
+		rc = omrvmem_free_memory(vmemID2, pageSizes[i], vmemID2);
+		if (rc != 0) {
+			outputErrorMessage(
+				PORTTEST_ERROR_ARGS,
+				"omrvmem_free_memory returned %i when trying to free 0x%zx bytes at 0x%zx\n",
+				rc, pageSizes[i], vmemID2);
+			goto exit;
+		}
+	}
+exit:
+	portTestEnv->changeIndent(-1);
 	reportTestExit(OMRPORTLIB, testName);
 }
 

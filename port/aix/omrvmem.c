@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -309,20 +309,26 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *userAddress, uintp
 	int32_t result = 0;
 	Trc_PRT_vmem_omrvmem_free_memory_Entry(userAddress, byteAmount);
 
-	if (OMRPORT_VMEM_RESERVE_USED_J9MEM_ALLOCATE_MEMORY == identifier->allocator) {
-		portLibrary->mem_free_memory(portLibrary, identifier->address);
+	void *address = identifier->address;
+	uintptr_t allocator = identifier->allocator;
+	uintptr_t size = identifier->size;
+	OMRMemCategory *category = identifier->category;
+	
+	update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
+
+	if (OMRPORT_VMEM_RESERVE_USED_J9MEM_ALLOCATE_MEMORY == allocator) {
+		portLibrary->mem_free_memory(portLibrary, address);
 		/* omrmem_categories_decrement_counters will be done by mem_free_memory */
-	} else if (OMRPORT_VMEM_RESERVE_USED_MMAP == identifier->allocator) {
-		result = (int32_t)munmap(identifier->address, byteAmount);
-		omrmem_categories_decrement_counters(identifier->category, identifier->size);
-	} else if (OMRPORT_VMEM_RESERVE_USED_SHM == identifier->allocator) {
-		result = (int32_t)shmdt(identifier->address);
-		omrmem_categories_decrement_counters(identifier->category, identifier->size);
+	} else if (OMRPORT_VMEM_RESERVE_USED_MMAP == allocator) {
+		result = (int32_t)munmap(address, byteAmount);
+		omrmem_categories_decrement_counters(category, size);
+	} else if (OMRPORT_VMEM_RESERVE_USED_SHM == allocator) {
+		result = (int32_t)shmdt(address);
+		omrmem_categories_decrement_counters(category, size);
 	} else {
 		result = (int32_t)OMRPORT_ERROR_VMEM_INVALID_PARAMS;
 	}
 
-	update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
 	Trc_PRT_vmem_omrvmem_free_memory_Exit(result);
 	return result;
 }

@@ -48,6 +48,19 @@ elseif(OMR_HOST_ARCH STREQUAL "s390")
 	)
 endif()
 
+# Check if OMR need to use librt.  This variable is used by containing projects
+# properly link against OMR.
+if(NOT DEFINED OMR_NEED_LIBRT)
+	check_symbol_exists(clock_gettime time.h OMR_LIBC_HAS_CLOCK_GETTIME)
+	if(OMR_LIBC_HAS_CLOCK_GETTIME)
+		set(OMR_NEED_LIBRT FALSE CACHE BOOL "")
+	else()
+		set(OMR_NEED_LIBRT TRUE CACHE BOOL "")
+		set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lrt")
+	endif()
+	mark_as_advanced(OMR_NEED_LIBRT)
+endif()
+
 # Testarossa build variables. Longer term the distinction between TR and the rest
 # of the OMR code should be heavily reduced. In the mean time, we keep
 # the distinction

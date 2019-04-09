@@ -243,7 +243,7 @@ omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint3
  * for the portlibSignalFlag signal are left unchanged when this function overrides the master
  * handler. When the master handler is re-registered with the portlibSignalFlag signal, then
  * the records associated with master handler don't need to be restored. An example of records
- * is J9*AsyncHandlerRecord(s) in asyncHandlerList.
+ * is OMR*AsyncHandlerRecord(s) in asyncHandlerList.
  *
  * Each platform variant of omrsignal.c should have a signalMap. signalMap should have a list of
  * signals, which are supported on a platform. This function supports all signals listed in

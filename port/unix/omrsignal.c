@@ -105,18 +105,18 @@ static uint32_t shutDownASynchReporter;
 
 static uint32_t attachedPortLibraries;
 
-typedef struct J9UnixAsyncHandlerRecord {
+typedef struct OMRUnixAsyncHandlerRecord {
 	OMRPortLibrary *portLib;
 	omrsig_handler_fn handler;
 	void *handler_arg;
 	uint32_t flags;
-	struct J9UnixAsyncHandlerRecord *next;
-} J9UnixAsyncHandlerRecord;
+	struct OMRUnixAsyncHandlerRecord *next;
+} OMRUnixAsyncHandlerRecord;
 
 /* holds the options set by omrsig_set_options */
 uint32_t signalOptionsGlobal;
 
-static J9UnixAsyncHandlerRecord *asyncHandlerList;
+static OMRUnixAsyncHandlerRecord *asyncHandlerList;
 
 #if !defined(J9ZOS390)
 
@@ -405,8 +405,8 @@ int32_t
 omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
 {
 	int32_t rc = 0;
-	J9UnixAsyncHandlerRecord *cursor = NULL;
-	J9UnixAsyncHandlerRecord **previousLink = NULL;
+	OMRUnixAsyncHandlerRecord *cursor = NULL;
+	OMRUnixAsyncHandlerRecord **previousLink = NULL;
 
 	Trc_PRT_signal_omrsig_set_async_signal_handler_entered(handler, handler_arg, flags);
 
@@ -465,7 +465,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 	if (NULL == cursor) {
 		/* cursor will only be NULL if we failed to find it in the list */
 		if (0 != flags) {
-			J9UnixAsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+			OMRUnixAsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 
 			if (NULL == record) {
 				rc = OMRPORT_SIG_ERROR;
@@ -493,8 +493,8 @@ int32_t
 omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag, void **oldOSHandler)
 {
 	uint32_t rc = 0;
-	J9UnixAsyncHandlerRecord *cursor = NULL;
-	J9UnixAsyncHandlerRecord **previousLink = NULL;
+	OMRUnixAsyncHandlerRecord *cursor = NULL;
+	OMRUnixAsyncHandlerRecord **previousLink = NULL;
 	BOOLEAN foundHandler = FALSE;
 
 	Trc_PRT_signal_omrsig_set_single_async_signal_handler_entered(handler, handler_arg, portlibSignalFlag);
@@ -566,7 +566,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 	}
 
 	if (!foundHandler && (0 != portlibSignalFlag)) {
-		J9UnixAsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+		OMRUnixAsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL == record) {
 			rc = OMRPORT_SIG_ERROR;
 		} else {
@@ -756,7 +756,7 @@ countInfoInCategory(struct OMRPortLibrary *portLibrary, void *info, uint32_t cat
 #if defined(OMR_PORT_ASYNC_HANDLER)
 /**
  * Given a port library signal flag and Unix signal value, execute the associated handlers
- * stored within asyncHandlerList (list of J9UnixAsyncHandlerRecord).
+ * stored within asyncHandlerList (list of OMRUnixAsyncHandlerRecord).
  *
  * @param asyncSignalFlag port library signal flag
  * @param unixSignal Unix signal value
@@ -766,7 +766,7 @@ countInfoInCategory(struct OMRPortLibrary *portLibrary, void *info, uint32_t cat
 static void
 runHandlers(uint32_t asyncSignalFlag, int unixSignal)
 {
-	J9UnixAsyncHandlerRecord *cursor = asyncHandlerList;
+	OMRUnixAsyncHandlerRecord *cursor = asyncHandlerList;
 
 	/* report the signal recorded in signalType to all registered listeners (for this signal).
 	 * incrementing the asyncThreadCount will prevent the list from being modified while we use it.
@@ -1766,8 +1766,8 @@ static void
 removeAsyncHandlers(OMRPortLibrary *portLibrary)
 {
 	/* clean up the list of async handlers */
-	J9UnixAsyncHandlerRecord *cursor = NULL;
-	J9UnixAsyncHandlerRecord **previousLink = NULL;
+	OMRUnixAsyncHandlerRecord *cursor = NULL;
+	OMRUnixAsyncHandlerRecord **previousLink = NULL;
 
 	omrthread_monitor_enter(asyncMonitor);
 

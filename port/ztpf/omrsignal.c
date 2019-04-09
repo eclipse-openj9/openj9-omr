@@ -234,18 +234,18 @@ static uint32_t	shutDownASynchReporter;
 
 static uint32_t	attachedPortLibraries;
 
-typedef struct J9UnixAsyncHandlerRecord {
+typedef struct OMRUnixAsyncHandlerRecord {
 	OMRPortLibrary* portLib;
 	omrsig_handler_fn handler;
 	void *handler_arg;
 	uint32_t flags;
-	struct J9UnixAsyncHandlerRecord	*next;
-} J9UnixAsyncHandlerRecord;
+	struct OMRUnixAsyncHandlerRecord *next;
+} OMRUnixAsyncHandlerRecord;
 
 /* holds the options set by omrsig_set_options */
 uint32_t signalOptionsGlobal;
 
-static J9UnixAsyncHandlerRecord	*asyncHandlerList = NULL;
+static OMRUnixAsyncHandlerRecord *asyncHandlerList = NULL;
 
 /* asyncSignalReporter synchronization	*/
 
@@ -462,8 +462,8 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary* portLibrary, omrsig_handl
 							   void* handler_arg, uint32_t flags)
 {
 	int32_t rc = 0;
-	J9UnixAsyncHandlerRecord *cursor;
-	J9UnixAsyncHandlerRecord **previousLink;
+	OMRUnixAsyncHandlerRecord *cursor;
+	OMRUnixAsyncHandlerRecord **previousLink;
 
 	Trc_PRT_signal_omrsig_set_async_signal_handler_entered(handler, handler_arg, flags);
 	
@@ -525,7 +525,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary* portLibrary, omrsig_handl
 
 	if (NULL == cursor) {							/* cursor will only be NULL if we failed to find it in the list */
 		if (0 != flags) {
-			J9UnixAsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record),
+			OMRUnixAsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record),
 																				OMR_GET_CALLSITE(),
 																				OMRMEM_CATEGORY_PORT_LIBRARY);
 			if (NULL == record) {
@@ -667,7 +667,7 @@ countInfoInCategory(struct OMRPortLibrary *portLibrary, void *info, uint32_t cat
 static int32_t J9THREAD_PROC
 asynchSignalReporter(void *userData) {
 
-	J9UnixAsyncHandlerRecord* cursor;
+	OMRUnixAsyncHandlerRecord *cursor;
 	uint32_t asyncSignalFlag = 0;
 	int result = 0;
 	omrthread_set_name(omrthread_self(), "Signal Reporter");
@@ -1350,8 +1350,8 @@ static void
 removeAsyncHandlers(OMRPortLibrary* portLibrary)
 {
 	/* clean up the list of async handlers */
-	J9UnixAsyncHandlerRecord* cursor;
-	J9UnixAsyncHandlerRecord** previousLink;
+	OMRUnixAsyncHandlerRecord *cursor;
+	OMRUnixAsyncHandlerRecord **previousLink;
 
 	omrthread_monitor_enter(asyncMonitor);
 

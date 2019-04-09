@@ -100,7 +100,7 @@ static uint32_t shutDownASynchReporter;
 static uint32_t mapWin32ExceptionToPortlibType(uint32_t exceptionCode);
 static uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
 static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
-static void fillInWin32SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, EXCEPTION_POINTERS *exceptionInfo, struct J9Win32SignalInfo *j9info);
+static void fillInWin32SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, EXCEPTION_POINTERS *exceptionInfo, struct J9Win32SignalInfo *signalInfo);
 static uint32_t infoForSignal(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
 static uint32_t infoForModule(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
 static uint32_t countInfoInCategory(struct OMRPortLibrary *portLibrary, void *info, uint32_t category);
@@ -485,7 +485,7 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
 	uint32_t result;
 	uint32_t type;
 	intptr_t prevSigType;
-	struct J9Win32SignalInfo j9info;
+	struct J9Win32SignalInfo signalInfo;
 
 	if ((exceptionInfo->ExceptionRecord->ExceptionCode & (ERROR_SEVERITY_ERROR | APPLICATION_ERROR_MASK)) != ERROR_SEVERITY_ERROR) {
 		return EXCEPTION_CONTINUE_SEARCH;
@@ -496,13 +496,13 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	fillInWin32SignalInfo(portLibrary, handler, exceptionInfo, &j9info);
+	fillInWin32SignalInfo(portLibrary, handler, exceptionInfo, &signalInfo);
 
 	prevSigType = portLibrary->sig_get_current_signal(portLibrary);
 	setCurrentSignal(portLibrary, type);
 
 	__try {
-		result = handler(portLibrary, j9info.type, &j9info, handler_arg);
+		result = handler(portLibrary, signalInfo.type, &signalInfo, handler_arg);
 	} __except (EXCEPTION_EXECUTE_HANDLER) {
 		/* if a recursive exception occurs, ignore it and pass control to the next handler */
 		setCurrentSignal(portLibrary, prevSigType);
@@ -560,15 +560,15 @@ mapWin32ExceptionToPortlibType(uint32_t exceptionCode)
 }
 
 static void
-fillInWin32SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, EXCEPTION_POINTERS *exceptionInfo, struct J9Win32SignalInfo *j9info)
+fillInWin32SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, EXCEPTION_POINTERS *exceptionInfo, struct J9Win32SignalInfo *signalInfo)
 {
-	memset(j9info, 0, sizeof(*j9info));
+	memset(signalInfo, 0, sizeof(*signalInfo));
 
-	j9info->type = mapWin32ExceptionToPortlibType(exceptionInfo->ExceptionRecord->ExceptionCode);
-	j9info->handlerAddress = (void *)handler;
-	j9info->handlerAddress2 = (void *)structuredExceptionHandler;
-	j9info->ExceptionRecord = exceptionInfo->ExceptionRecord;
-	j9info->ContextRecord = exceptionInfo->ContextRecord;
+	signalInfo->type = mapWin32ExceptionToPortlibType(exceptionInfo->ExceptionRecord->ExceptionCode);
+	signalInfo->handlerAddress = (void *)handler;
+	signalInfo->handlerAddress2 = (void *)structuredExceptionHandler;
+	signalInfo->ExceptionRecord = exceptionInfo->ExceptionRecord;
+	signalInfo->ContextRecord = exceptionInfo->ContextRecord;
 
 	/* module info is filled on demand */
 }

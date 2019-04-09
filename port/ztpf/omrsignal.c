@@ -81,7 +81,7 @@
  * or a "hooked" event (meaning that the Java user
  * has called for a dump on some otherwise normal event taking place, such as a 
  * JVM start or stop, or perhaps a 'soft' Java exception having been thrown, where
- * function <TT>j9dump_create()</TT> has to call for a dump from the z/TPF Control 
+ * function <TT>omrdump_create()</TT> has to call for a dump from the z/TPF Control
  * Program), we still have the <b>extremely recent</b> machine state captured for
  * us by the z/TPF SERRC processor, CCCPSE. Therefore, we <i>can</i> create a 'fake'
  * ucontext structure <b>as long as the data the structure is to contain comes from
@@ -608,7 +608,7 @@ omrsig_shutdown(struct OMRPortLibrary *portLibrary)
  * Start up the signal handling component of the port library
  *
  * Note: none of the master handlers are registered with the OS until the first call to either
- *		 omrsig_protect or j9sig_set_async_signal_handler.
+ *		 omrsig_protect or omrsig_set_async_signal_handler.
  */
 int32_t
 omrsig_startup(struct OMRPortLibrary *portLibrary)
@@ -789,26 +789,26 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 		while (NULL != thisRecord) {
 
 			if (OMR_ARE_ANY_BITS_SET(thisRecord->flags,portLibType)) {
-				struct OMRUnixSignalInfo j9Info;
+				struct OMRUnixSignalInfo signalInfo;
 				struct OMRPlatformSignalInfo platformSignalInfo;
 
 				/*
 				 * the equivalent of these memsets were here before, but were they needed? 
 				 */
-				memset(&j9Info, 0, sizeof(j9Info));
+				memset(&signalInfo, 0, sizeof(signalInfo));
 				memset(&platformSignalInfo, 0, sizeof(platformSignalInfo));
 
-				j9Info.portLibrarySignalType = portLibType;
-				j9Info.handlerAddress = (void*)thisRecord->handler;
-				j9Info.handlerAddress2 = (void*)masterSynchSignalHandler;
-				j9Info.sigInfo = sigInfo;
-				j9Info.platformSignalInfo = platformSignalInfo;
+				signalInfo.portLibrarySignalType = portLibType;
+				signalInfo.handlerAddress = (void*)thisRecord->handler;
+				signalInfo.handlerAddress2 = (void*)masterSynchSignalHandler;
+				signalInfo.sigInfo = sigInfo;
+				signalInfo.platformSignalInfo = platformSignalInfo;
 				/*
 				 * Found a suitable handler - what signal type do we want to pass 
 				 * on here? port or platform based ?
 				 */
-				fillInUnixSignalInfo(thisRecord->portLibrary, contextInfo, &j9Info);
-				j9Info.platformSignalInfo.breakingEventAddr = breakingEventAddr;
+				fillInUnixSignalInfo(thisRecord->portLibrary, contextInfo, &signalInfo);
+				signalInfo.platformSignalInfo.breakingEventAddr = breakingEventAddr;
 				/*
 				 * remove the handler we are about to invoke, now, in case the handler crashes
 				 */
@@ -817,7 +817,7 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 				Trc_PRT_signal_masterSynchSignalHandler_calling_handler
 				   (signal, sigInfo, contextInfo, thisRecord->handler, thisRecord->portLibrary);
 #endif
-				result = thisRecord->handler(thisRecord->portLibrary, portLibType, &j9Info, thisRecord->handler_arg);
+				result = thisRecord->handler(thisRecord->portLibrary, portLibType, &signalInfo, thisRecord->handler_arg);
 #if 0
 				Trc_PRT_signal_masterSynchSignalHandler_called_handler
 				   (signal, sigInfo, contextInfo, thisRecord->handler, thisRecord->portLibrary, result);
@@ -1076,7 +1076,7 @@ mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
  *
  * Note that FPE signal codes (subtypes) all map to the same signal number and are not included 
  * 
- * \param[in] portLibSignal The internal J9 Port Library signal number
+ * \param[in] portLibSignal The internal port library signal number
  * \return The corresponding Unix signal number or -1 if the portLibSignal could not be mapped
  */
 static int
@@ -1164,7 +1164,7 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		return -1;
 	}
 
-	/* use this to record the last signal that occured such that we can call jsig_handler in j9exit_shutdown_and_exit */
+	/* use this to record the last signal that occured such that we can call omrsig_handler in omrexit_shutdown_and_exit */
 	if(omrthread_tls_alloc(&tlsKeyCurrentSignal)) {
 		return -1;
 	}
@@ -1380,8 +1380,8 @@ removeAsyncHandlers(OMRPortLibrary* portLibrary)
 
 /*	@internal 
  *
- * j9exit_shutdown_and_exit needs to call this to ensure the signal is chained to jsig (the application
- *	handler in the case when the shutdown is due to a fatal signal.
+ * omrexit_shutdown_and_exit needs to call this to ensure the signal is chained to omrsig (the application
+ * handler) in the case when the shutdown is due to a fatal signal.
  * 
  * @return	
 */

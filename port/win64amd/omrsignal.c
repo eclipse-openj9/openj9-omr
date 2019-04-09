@@ -156,7 +156,7 @@ static uint32_t countInfoInCategory(struct OMRPortLibrary *portLibrary, void *in
 static BOOL WINAPI consoleCtrlHandler(DWORD dwCtrlType);
 static LONG WINAPI masterVectoredExceptionHandler(EXCEPTION_POINTERS *exceptionInfo);
 static uint32_t infoForControl(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
-static void fillInWinAMD64SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, EXCEPTION_POINTERS *exceptionInfo, struct J9Win32SignalInfo *j9info);
+static void fillInWinAMD64SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, EXCEPTION_POINTERS *exceptionInfo, struct J9Win32SignalInfo *signalInfo);
 static void sig_full_shutdown(struct OMRPortLibrary *portLibrary);
 static void destroySignalTools(OMRPortLibrary *portLibrary);
 static uint32_t addMasterVectoredExceptionHandler(struct OMRPortLibrary *portLibrary);
@@ -1183,16 +1183,16 @@ masterVectoredExceptionHandler(EXCEPTION_POINTERS *exceptionInfo)
 	/* walk the stack of registered handlers from top to bottom searching for one which handles this type of exception */
 	while (thisRecord) {
 		if (thisRecord->flags & portLibType) {
-			struct J9Win32SignalInfo j9info;
+			struct J9Win32SignalInfo signalInfo;
 			uintptr_t result;
 
 			/* found a suitable handler */
-			fillInWinAMD64SignalInfo(thisRecord->portLibrary, thisRecord->handler, exceptionInfo, &j9info);
+			fillInWinAMD64SignalInfo(thisRecord->portLibrary, thisRecord->handler, exceptionInfo, &signalInfo);
 
 			/* remove the handler we are about to invoke, now, in case the handler crashes */
 			omrthread_tls_set(thisThread, tlsKey, thisRecord->previous);
 
-			result = thisRecord->handler(thisRecord->portLibrary, portLibType, &j9info, thisRecord->handler_arg);
+			result = thisRecord->handler(thisRecord->portLibrary, portLibType, &signalInfo, thisRecord->handler_arg);
 
 			/* The only case in which we don't want the previous handler back on top is if it just returned OMRPORT_SIG_EXCEPTION_RETURN
 			 * 		In this case we will remove it from the top */
@@ -1239,7 +1239,7 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
 {
 	uintptr_t result;
 	uint32_t type;
-	struct J9Win32SignalInfo j9info;
+	struct J9Win32SignalInfo signalInfo;
 	omrthread_t thisThread;
 	struct J9SignalHandlerRecord *thisRecord;
 	struct J9CurrentSignal currentSignal;
@@ -1257,7 +1257,7 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
 	thisThread = omrthread_self();
 	thisRecord = omrthread_tls_get(thisThread, tlsKey);
 
-	fillInWinAMD64SignalInfo(portLibrary, handler, exceptionInfo, &j9info);
+	fillInWinAMD64SignalInfo(portLibrary, handler, exceptionInfo, &signalInfo);
 
 	previousSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
 
@@ -1267,7 +1267,7 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
 	omrthread_tls_set(thisThread, tlsKeyCurrentSignal, &currentSignal);
 
 	__try {
-		result = handler(portLibrary, j9info.portLibType, &j9info, handler_arg);
+		result = handler(portLibrary, signalInfo.portLibType, &signalInfo, handler_arg);
 	} __except (EXCEPTION_EXECUTE_HANDLER) {
 		/* if a recursive exception occurs, ignore it and pass control to the next handler */
 		omrthread_tls_set(thisThread, tlsKeyCurrentSignal, previousSignal);
@@ -1281,7 +1281,7 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
 		 * if it finds a handler on the stack.  Setting tryExceptHandlerIgnore=TRUE
 		 * forces it to ignore try/except handlers.
 		 */
-		j9info.tryExceptHandlerIgnore = TRUE;
+		signalInfo.tryExceptHandlerIgnore = TRUE;
 		thisRecord = thisRecord->previous;
 		while (thisRecord) {
 			if (thisRecord->flags & type) {
@@ -1289,7 +1289,7 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
 				/* remove the handler we are about to invoke, now, in case the handler crashes */
 				omrthread_tls_set(thisThread, tlsKey, thisRecord->previous);
 
-				result = thisRecord->handler(thisRecord->portLibrary, type, &j9info, thisRecord->handler_arg);
+				result = thisRecord->handler(thisRecord->portLibrary, type, &signalInfo, thisRecord->handler_arg);
 
 				/* The only case in which we don't want the previous handler back on top is if it just returned OMRPORT_SIG_EXCEPTION_RETURN
 				 * 		In this case we will remove it from the top */
@@ -1469,18 +1469,18 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 }
 
 static void
-fillInWinAMD64SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, EXCEPTION_POINTERS *exceptionInfo, struct J9Win32SignalInfo *j9info)
+fillInWinAMD64SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, EXCEPTION_POINTERS *exceptionInfo, struct J9Win32SignalInfo *signalInfo)
 {
-	memset(j9info, 0, sizeof(*j9info));
+	memset(signalInfo, 0, sizeof(*signalInfo));
 
-	j9info->systemType = exceptionInfo->ExceptionRecord->ExceptionCode;
-	j9info->portLibType = mapWin32ExceptionToPortlibType(exceptionInfo->ExceptionRecord->ExceptionCode);
-	j9info->handlerAddress = (void *)handler;
-	j9info->handlerAddress2 = (void *)masterVectoredExceptionHandler;
-	j9info->ExceptionRecord = exceptionInfo->ExceptionRecord;
-	j9info->ContextRecord = exceptionInfo->ContextRecord;
-	j9info->deferToTryExcept = FALSE;
-	j9info->tryExceptHandlerIgnore = FALSE;
+	signalInfo->systemType = exceptionInfo->ExceptionRecord->ExceptionCode;
+	signalInfo->portLibType = mapWin32ExceptionToPortlibType(exceptionInfo->ExceptionRecord->ExceptionCode);
+	signalInfo->handlerAddress = (void *)handler;
+	signalInfo->handlerAddress2 = (void *)masterVectoredExceptionHandler;
+	signalInfo->ExceptionRecord = exceptionInfo->ExceptionRecord;
+	signalInfo->ContextRecord = exceptionInfo->ContextRecord;
+	signalInfo->deferToTryExcept = FALSE;
+	signalInfo->tryExceptHandlerIgnore = FALSE;
 
 	/* module info is filled on demand */
 }

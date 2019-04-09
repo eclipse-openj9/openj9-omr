@@ -67,6 +67,6 @@ uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo
 uint32_t infoForModule(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);
 uint32_t infoForControl(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);
 uint32_t infoForSignal(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);
-void fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct OMRUnixSignalInfo *j9Info);
+void fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct OMRUnixSignalInfo *signalInfo);
 
 

@@ -986,30 +986,30 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 
 		while (NULL != thisRecord) {
 			if (OMR_ARE_ANY_BITS_SET(thisRecord->flags, portLibType)) {
-				struct OMRUnixSignalInfo j9Info;
+				struct OMRUnixSignalInfo signalInfo;
 				struct OMRPlatformSignalInfo platformSignalInfo;
 
 				/* the equivalent of these memsets were here before, but were they needed? */
-				memset(&j9Info, 0, sizeof(j9Info));
+				memset(&signalInfo, 0, sizeof(signalInfo));
 				memset(&platformSignalInfo, 0, sizeof(platformSignalInfo));
 
-				j9Info.portLibrarySignalType = portLibType;
-				j9Info.handlerAddress = (void *)thisRecord->handler;
-				j9Info.handlerAddress2 = (void *)masterSynchSignalHandler;
-				j9Info.sigInfo = sigInfo;
-				j9Info.platformSignalInfo = platformSignalInfo;
+				signalInfo.portLibrarySignalType = portLibType;
+				signalInfo.handlerAddress = (void *)thisRecord->handler;
+				signalInfo.handlerAddress2 = (void *)masterSynchSignalHandler;
+				signalInfo.sigInfo = sigInfo;
+				signalInfo.platformSignalInfo = platformSignalInfo;
 
 				/* found a suitable handler */
 				/* what signal type do we want to pass on here? port or platform based ?*/
-				fillInUnixSignalInfo(thisRecord->portLibrary, contextInfo, &j9Info);
+				fillInUnixSignalInfo(thisRecord->portLibrary, contextInfo, &signalInfo);
 #if defined(S390) && defined(LINUX)
-				j9Info.platformSignalInfo.breakingEventAddr = breakingEventAddr;
+				signalInfo.platformSignalInfo.breakingEventAddr = breakingEventAddr;
 #endif
 
 				/* remove the handler we are about to invoke, now, in case the handler crashes */
 				omrthread_tls_set(thisThread, tlsKey, thisRecord->previous);
 
-				result = thisRecord->handler(thisRecord->portLibrary, portLibType, &j9Info, thisRecord->handler_arg);
+				result = thisRecord->handler(thisRecord->portLibrary, portLibType, &signalInfo, thisRecord->handler_arg);
 
 				/* The only case in which we don't want the previous handler back on top is if it just returned OMRPORT_SIG_EXCEPTION_RETURN
 				 * 		In this case we will remove it from the top after executing the siglongjmp */
@@ -1370,7 +1370,7 @@ mapOSSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
  *
  * Note that FPE signal codes (subtypes) all map to the same signal number and are not included
  *
- * @param portLibSignal The internal J9 Port Library signal number
+ * @param portLibSignal The internal port library signal number
  *
  * @return The corresponding Unix signal number or OMRPORT_SIG_ERROR (-1) if the portLibSignal
  *         could not be mapped

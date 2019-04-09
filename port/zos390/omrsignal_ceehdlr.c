@@ -160,12 +160,11 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 	if (OMR_ARE_ANY_BITS_SET(thisRecord->flags, portlibSignalNo)
 	 || ((0 == portlibSignalNo) && OMR_ARE_ANY_BITS_SET(thisRecord->flags, OMRPORT_SIG_FLAG_SIGALLSYNC))
 	) {
-
-		J9LEConditionInfo j9Info;
+		J9LEConditionInfo signalInfo;
 		_CEECIB *cib_ptr = NULL;
 		_FEEDBACK cibfc;
 
-		memset(&j9Info, 0, sizeof(j9Info));
+		memset(&signalInfo, 0, sizeof(signalInfo));
 		memset(&cibfc, 0, sizeof(_FEEDBACK));
 
 		/* get the condition information block so that we can access the machine context */
@@ -177,13 +176,13 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 		}
 
 		/* fill in the cookie needed by omrsig_info() */
-		j9Info.fc = fc;
-		j9Info.cib = cib_ptr;
-		j9Info.portLibrarySignalType = portlibSignalNo;
-		j9Info.handlerAddress = (void *)thisRecord->handler;
-		j9Info.handlerAddress2 = (void *)j9vm_le_condition_handler;
-		j9Info.messageNumber = (uint16_t)fc->tok_msgno;
-		j9Info.facilityID = e2a_func(fc->tok_facid, 3);	/* e2a_func() uses malloc, free below */
+		signalInfo.fc = fc;
+		signalInfo.cib = cib_ptr;
+		signalInfo.portLibrarySignalType = portlibSignalNo;
+		signalInfo.handlerAddress = (void *)thisRecord->handler;
+		signalInfo.handlerAddress2 = (void *)j9vm_le_condition_handler;
+		signalInfo.messageNumber = (uint16_t)fc->tok_msgno;
+		signalInfo.facilityID = e2a_func(fc->tok_facid, 3);	/* e2a_func() uses malloc, free below */
 
 		/* Save the previous signal, set the current, restore the previous
 		 * If thisRecord->handler crashes without registering its own protection (using omrsig_protect),
@@ -194,15 +193,15 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 		setCurrentSignal(thisRecord->portLibrary, portlibSignalNo);
 
 		thisRecord->recursiveCheck = 1;
-		handlerResult = thisRecord->handler(thisRecord->portLibrary, portlibSignalNo, &j9Info, thisRecord->handler_arg);
+		handlerResult = thisRecord->handler(thisRecord->portLibrary, portlibSignalNo, &signalInfo, thisRecord->handler_arg);
 		thisRecord->recursiveCheck = 0;
 
 		/* control leaves j9vm_le_condition_handler in all cases following this point, so restore the previous signal */
 		setCurrentSignal(thisRecord->portLibrary, prevPortlibSignalNo);
 
-		if (NULL != j9Info.facilityID) {
+		if (NULL != signalInfo.facilityID) {
 			/* free the memory allocated by e2a_func() */
-			free(j9Info.facilityID);
+			free(signalInfo.facilityID);
 		}
 
 		switch (handlerResult) {

@@ -79,10 +79,10 @@ checkIfResumableTrapsSupported(struct OMRPortLibrary *portLibrary)
 
 
 void
-fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct OMRUnixSignalInfo *j9Info)
+fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct OMRUnixSignalInfo *signalInfo)
 {
 	/* __mcontext_t_ is defined in port/zos390/edcwccwi.h and appears to overlay the ucontext_t structure */
-	j9Info->platformSignalInfo.context = (__mcontext_t_ *) contextInfo;
+	signalInfo->platformSignalInfo.context = (__mcontext_t_ *) contextInfo;
 	/* module info is filled on demand */
 }
 

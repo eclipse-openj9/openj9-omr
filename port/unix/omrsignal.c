@@ -169,7 +169,7 @@ struct J9SignalHandlerRecord {
 	uint32_t flags;
 };
 
-typedef struct J9CurrentSignal {
+typedef struct OMRCurrentSignal {
 	int signal;
 	siginfo_t *sigInfo;
 	void *contextInfo;
@@ -177,7 +177,7 @@ typedef struct J9CurrentSignal {
 	uintptr_t breakingEventAddr;
 #endif
 	uint32_t portLibSignalType;
-} J9CurrentSignal;
+} OMRCurrentSignal;
 
 /* key to get the end of the synchronous handler records */
 static omrthread_tls_key_t tlsKey;
@@ -374,7 +374,7 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 		 * The only scenario where this is of real concern, is if more than one signal was handled per call to omrsig_protect. In
 		 * this case, the current signal in tls will be pointing at a stale stack frame and signal: CMVC 126838
 		 */
-		J9CurrentSignal *currentSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
+		OMRCurrentSignal *currentSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
 
 		/* setjmp/longjmp does not clear the mask setup by the OS when it delivers the signal. User sigsetjmp/siglongjmp(buf, 1) instead */
 		if (0 != sigsetjmp(thisRecord.returnBuf, 1)) {
@@ -964,8 +964,8 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 
 	if (NULL != thisThread) {
 		struct J9SignalHandlerRecord *thisRecord = NULL;
-		struct J9CurrentSignal currentSignal = {0};
-		struct J9CurrentSignal *previousSignal = NULL;
+		struct OMRCurrentSignal currentSignal = {0};
+		struct OMRCurrentSignal *previousSignal = NULL;
 		uint32_t portLibType = mapOSSignalToPortLib(signal, sigInfo);
 
 		/* record this signal in tls so that omrsig_handler can be called if any of the handlers decide we should be shutting down */
@@ -1695,7 +1695,7 @@ omrsig_get_options(struct OMRPortLibrary *portLibrary)
 intptr_t
 omrsig_get_current_signal(struct OMRPortLibrary *portLibrary)
 {
-	J9CurrentSignal *currentSignal = omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
+	OMRCurrentSignal *currentSignal = omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
 	if (NULL == currentSignal) {
 		return 0;
 	}
@@ -1804,7 +1804,7 @@ removeAsyncHandlers(OMRPortLibrary *portLibrary)
 void
 omrsig_chain_at_shutdown_and_exit(struct OMRPortLibrary *portLibrary)
 {
-	J9CurrentSignal *currentSignal = omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
+	OMRCurrentSignal *currentSignal = omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
 
 	Trc_PRT_signal_omrsig_chain_at_shutdown_and_exit_enter(portLibrary);
 

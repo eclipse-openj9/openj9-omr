@@ -59,10 +59,10 @@ typedef struct UNWIND_INFO {
 	OPTIONAL uint32_t ExceptionData[];
 } UNWIND_INFO;
 
-typedef struct J9CurrentSignal {
+typedef struct OMRCurrentSignal {
 	EXCEPTION_POINTERS *exceptionInfo;
 	uint32_t portLibSignalType;
-} J9CurrentSignal;
+} OMRCurrentSignal;
 
 /* key to get the current synchronous signal */
 static omrthread_tls_key_t tlsKeyCurrentSignal;
@@ -269,7 +269,7 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 	/* We can not use setjmp/longjmp to jump out of a VectoredExceptionHandler (CMVC 175576), so use _try/_except semantics instead */
 	if (OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_MAY_RETURN)) {
 
-		J9CurrentSignal *currentSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
+		OMRCurrentSignal *currentSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
 		int32_t exceptionStatus = OMRPORT_SIG_NO_EXCEPTION;
 
 		/* The VectoredExceptionHandler will get notified before the _except clause/block below,
@@ -646,7 +646,7 @@ intptr_t
 omrsig_get_current_signal(struct OMRPortLibrary *portLibrary)
 {
 	omrthread_t thisThread = omrthread_self();
-	struct J9CurrentSignal *currentSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
+	struct OMRCurrentSignal *currentSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
 
 	if (currentSignal != NULL) {
 		return currentSignal->portLibSignalType;
@@ -1143,8 +1143,8 @@ masterVectoredExceptionHandler(EXCEPTION_POINTERS *exceptionInfo)
 {
 	uint32_t portLibType;
 	struct J9SignalHandlerRecord *thisRecord;
-	struct J9CurrentSignal currentSignal;
-	struct J9CurrentSignal *previousSignal;
+	struct OMRCurrentSignal currentSignal;
+	struct OMRCurrentSignal *previousSignal;
 	omrthread_t thisThread = NULL;
 
 	if ((exceptionInfo->ExceptionRecord->ExceptionCode & (ERROR_SEVERITY_ERROR | APPLICATION_ERROR_MASK)) != ERROR_SEVERITY_ERROR) {
@@ -1242,8 +1242,8 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
 	struct J9Win32SignalInfo signalInfo;
 	omrthread_t thisThread;
 	struct J9SignalHandlerRecord *thisRecord;
-	struct J9CurrentSignal currentSignal;
-	struct J9CurrentSignal *previousSignal;
+	struct OMRCurrentSignal currentSignal;
+	struct OMRCurrentSignal *previousSignal;
 
 	if ((exceptionInfo->ExceptionRecord->ExceptionCode & (ERROR_SEVERITY_ERROR | APPLICATION_ERROR_MASK)) != ERROR_SEVERITY_ERROR) {
 		return EXCEPTION_CONTINUE_SEARCH;

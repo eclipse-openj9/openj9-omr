@@ -412,7 +412,7 @@ omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void
 	thisRecord.flags = flags;
 
 	if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_MAY_RETURN)) {
-		J9CurrentSignal *currentSignal;
+		OMRCurrentSignal *currentSignal;
 		/* 
 		 * Record the current signal. We need to store this value back into tls if we
 		 * jump back into this function because any signals that may have occurred 
@@ -760,8 +760,8 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 	if (NULL != thisThread) {
 		uint32_t portLibType;
 		struct J9SignalHandlerRecord* thisRecord;
-		struct J9CurrentSignal currentSignal; 
-		struct J9CurrentSignal *previousSignal;
+		struct OMRCurrentSignal currentSignal; 
+		struct OMRCurrentSignal *previousSignal;
 		
 		/* Trc_PRT_signal_masterSynchSignalHandler_entered(signal, sigInfo, contextInfo); */
 
@@ -1296,7 +1296,7 @@ omrsig_get_options(struct OMRPortLibrary *portLibrary)
 intptr_t
 omrsig_get_current_signal(struct OMRPortLibrary *portLibrary)
 {
-	J9CurrentSignal * currentSignal = omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
+	OMRCurrentSignal * currentSignal = omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
 	if (currentSignal == NULL) {
 		return 0;
 	}
@@ -1389,7 +1389,7 @@ void
 omrsig_chain_at_shutdown_and_exit(struct OMRPortLibrary *portLibrary)
 {
 
-	J9CurrentSignal *currentSignal = omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
+	OMRCurrentSignal *currentSignal = omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
 
 	Trc_PRT_signal_omrsig_chain_at_shutdown_and_exit_enter(portLibrary);
 

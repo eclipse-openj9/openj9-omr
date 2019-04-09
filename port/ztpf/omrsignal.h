@@ -40,14 +40,14 @@ struct J9SignalHandlerRecord {
 	uint32_t flags;
 };
 
-typedef struct J9CurrentSignal {
+typedef struct OMRCurrentSignal {
 	int	signal;
 	siginfo_t *sigInfo;
 	void *contextInfo;
 	uintptr_t breakingEventAddr;
 	uint32_t portLibSignalType;
 	DIB	*ptrDIB;
-} J9CurrentSignal;
+} OMRCurrentSignal;
 
 void masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, uintptr_t breakingEventAddr);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -160,7 +160,7 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 	if (OMR_ARE_ANY_BITS_SET(thisRecord->flags, portlibSignalNo)
 	 || ((0 == portlibSignalNo) && OMR_ARE_ANY_BITS_SET(thisRecord->flags, OMRPORT_SIG_FLAG_SIGALLSYNC))
 	) {
-		J9LEConditionInfo signalInfo;
+		OMRLEConditionInfo signalInfo;
 		_CEECIB *cib_ptr = NULL;
 		_FEEDBACK cibfc;
 

@@ -120,7 +120,7 @@ fillInLEJumpInfo(struct OMRPortLibrary *portLibrary, omr_31bit_mch *regs, void *
 
 /* infoForFPR_ceehdlr() follows the same convention as infoForFPR() in port/zos390/omrsignal_context.c */
 uint32_t
-infoForFPR_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, int32_t index, const char **name, void **value)
+infoForFPR_ceehdlr(struct OMRPortLibrary *portLibrary, OMRLEConditionInfo *info, int32_t index, const char **name, void **value)
 {
 	const char *n_fpr[NUM_REGS] = {
 		"fpr0",
@@ -171,7 +171,7 @@ infoForFPR_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, 
 
 /* infoForGPR_ceehdlr() follows the same convention as infoForGPR() in port/zos390/omrsignal_context.c */
 uint32_t
-infoForGPR_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, int32_t index, const char **name, void **value)
+infoForGPR_ceehdlr(struct OMRPortLibrary *portLibrary, OMRLEConditionInfo *info, int32_t index, const char **name, void **value)
 {
 
 	const char *n_gpr[NUM_REGS * 2] = {
@@ -234,7 +234,7 @@ infoForGPR_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, 
 
 /* infoForVR_ceehdlr() follows the same convention as infoForGPR() in port/zos390/omrsignal_context.c */
 uint32_t
-infoForVR_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, int32_t index, const char **name, void **value)
+infoForVR_ceehdlr(struct OMRPortLibrary *portLibrary, OMRLEConditionInfo *info, int32_t index, const char **name, void **value)
 {
 	const char *const n_vr[NUM_VECTOR_REGS] = {
 		"vr0",
@@ -293,7 +293,7 @@ infoForVR_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, i
  * for a specific register/attribute can requested.
  */
 uint32_t
-infoForControl_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, int32_t index, const char **name, void **value)
+infoForControl_ceehdlr(struct OMRPortLibrary *portLibrary, OMRLEConditionInfo *info, int32_t index, const char **name, void **value)
 {
 	omr_31bit_mch *mchRegs = (omr_31bit_mch *)info->cib->cib_machine;
 	*name = "";
@@ -351,7 +351,7 @@ infoForControl_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *in
  *
  */
 uint32_t
-infoForModule_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, int32_t index, const char **name, void **value)
+infoForModule_ceehdlr(struct OMRPortLibrary *portLibrary, OMRLEConditionInfo *info, int32_t index, const char **name, void **value)
 {
 
 #if defined(J9ZOS39064)
@@ -459,7 +459,7 @@ infoForModule_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *inf
  * for a specific register/attribute can requested.
  */
 uint32_t
-infoForSignal_ceehdlr(struct OMRPortLibrary *portLibrary, J9LEConditionInfo *info, int32_t index, const char **name, void **value)
+infoForSignal_ceehdlr(struct OMRPortLibrary *portLibrary, OMRLEConditionInfo *info, int32_t index, const char **name, void **value)
 {
 	omr_31bit_mch *mchRegs = (omr_31bit_mch *)info->cib->cib_machine;
 	*name = "";

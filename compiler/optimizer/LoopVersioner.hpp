@@ -252,7 +252,6 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
    bool replaceInductionVariable(TR::Node *, TR::Node *, int, int, TR::Node *, int);
 
-   void fixupVirtualGuardTargets(VirtualGuardInfo *vgInfo);
    TR::Block *createEmptyGoto(TR::Block *source, TR::Block *dest, TR::TreeTop *endTree);
    TR::Block *createClonedHeader(TR::Block *origHeader, TR::TreeTop **endTree);
    TR::Node *createSwitchNode(TR::Block *clonedHeader, TR::SymbolReference *tempSymRef, int32_t numCase);

@@ -293,7 +293,7 @@ enum TR_CompilationOptions
    TR_UseSamplingJProfilingForAllFirstTimeComps   = 0x02000000 + 6,
    TR_NoStoreAOT                          = 0x04000000 + 6,
    TR_NoLoadAOT                           = 0x08000000 + 6,
-   TR_DisableNewLoopTransfer              = 0x10000000 + 6, // loop versioning for virtual guards
+   // Available                           = 0x10000000 + 6,
    TR_UseSamplingJProfilingForDLT                 = 0x20000000 + 6,
    TR_UseSamplingJProfilingForInterpSampledMethods= 0x40000000 + 6,
    TR_EmitRelocatableELFFile              = 0x80000000 + 6,

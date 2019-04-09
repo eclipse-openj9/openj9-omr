@@ -441,7 +441,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableNewBVA",                      "O\tdisable structure based bit vector analysis",SET_OPTION_BIT(TR_DisableNewBVA), "F"},
    {"disableNewInliningInfrastructure",  "O\tdisable new inlining infrastructure ",        SET_OPTION_BIT(TR_DisableNewInliningInfrastructure), "F"},
    {DisableNewInstanceImplOptString,      "O\tdisable newInstanceImpl opt",                    SET_OPTION_BIT(TR_DisableNewInstanceImplOpt), "F"},
-   {"disableNewLoopTransfer",             "O\tdisable loop transfer for virtual guards",       SET_OPTION_BIT(TR_DisableNewLoopTransfer), "F"},
    {"disableNewMethodOverride",           "O\tdisable replacement for jitUpdateInlineAttribute", SET_OPTION_BIT(TR_DisableNewMethodOverride), "F"},
    {"disableNewStoreHint",                "O\tdisable re-initializing BCD nodes to a new store hint when one is available", SET_OPTION_BIT(TR_DisableNewStoreHint), "F"},
    {"disableNewX86VolatileSupport",        "O\tdisable new X86 Volatile Support", SET_OPTION_BIT(TR_DisableNewX86VolatileSupport), "F"},

@@ -64,7 +64,7 @@ static void setCurrentSignal(struct OMRPortLibrary *portLibrary, uint32_t portLi
  *
  *	@param[in]	fc		A 12-byte condition token that identifies the current condition being processed.
  * 							Language Environment uses this parameter to tell your condition handler what condition has occurred.
- *	@param[in]	token 	An J9ZOSLEConditionHandlerRecord as specified when this handler was registered by @ref omrsig_protect_ceehdlr
+ *	@param[in]	token 	An OMRZOSLEConditionHandlerRecord as specified when this handler was registered by @ref omrsig_protect_ceehdlr
  *	@param[in]	leResult	A 4-byte integer that contains instructions about responses the user-written condition
  * 							handler wants Language Environment to make when processing the condition.
  * 							The result_code is passed by reference.
@@ -92,7 +92,7 @@ static void setCurrentSignal(struct OMRPortLibrary *portLibrary, uint32_t portLi
 void
 omrsig_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc)
 {
-	struct J9ZOSLEConditionHandlerRecord *thisRecord = (struct J9ZOSLEConditionHandlerRecord *)*token;
+	struct OMRZOSLEConditionHandlerRecord *thisRecord = (struct OMRZOSLEConditionHandlerRecord *)*token;
 	uint32_t handlerResult;
 	_FEEDBACK ceemrcrFc;
 	_INT4 ceemrcrType = 0;
@@ -238,7 +238,7 @@ int32_t
 omrsig_protect_ceehdlr(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void *fn_arg, omrsig_handler_fn handler, void *handler_arg, uint32_t flags, uintptr_t *result)
 {
 
-	struct J9ZOSLEConditionHandlerRecord thisRecord;
+	struct OMRZOSLEConditionHandlerRecord thisRecord;
 	_FEEDBACK fc;
 	_ENTRY leConditionHandler;
 	_INT4 token;

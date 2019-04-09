@@ -25,13 +25,6 @@
 #include <sys/ucontext.h>
 #include "omrsignal_context.h"
 
-
-#ifdef PPC64
-#define J9SIG_VALUE_UDATA OMRPORT_SIG_VALUE_64
-#else
-#define J9SIG_VALUE_UDATA OMRPORT_SIG_VALUE_32
-#endif
-
 #define NGPRS 32
 
 void

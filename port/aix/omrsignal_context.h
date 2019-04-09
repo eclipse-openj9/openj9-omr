@@ -26,12 +26,6 @@
 #include <sys/ucontext.h>
 #include <stdlib.h>
 
-#ifdef PPC64
-#define J9SIG_VALUE_UDATA OMRPORT_SIG_VALUE_64
-#else
-#define J9SIG_VALUE_UDATA OMRPORT_SIG_VALUE_32
-#endif
-
 #define MAX_UNIX_SIGNAL_TYPES  SIGMAX32
 
 /*

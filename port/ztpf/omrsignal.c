@@ -363,7 +363,7 @@ int32_t
 omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void* fn_arg,
 					 omrsig_handler_fn handler, void* handler_arg, uint32_t flags, UDATA *result )
 {
-	struct J9SignalHandlerRecord thisRecord;
+	struct OMRSignalHandlerRecord thisRecord;
 	omrthread_t thisThread;
 	uint32_t rc = 0;
 	uint32_t flagsSignalsOnly;
@@ -759,7 +759,7 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 
 	if (NULL != thisThread) {
 		uint32_t portLibType;
-		struct J9SignalHandlerRecord* thisRecord;
+		struct OMRSignalHandlerRecord *thisRecord;
 		struct OMRCurrentSignal currentSignal; 
 		struct OMRCurrentSignal *previousSignal;
 		

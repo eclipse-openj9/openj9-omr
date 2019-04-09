@@ -157,8 +157,8 @@ static omrthread_monitor_t asyncReporterShutdownMonitor;
 static uint32_t asyncThreadCount;
 static uint32_t attachedPortLibraries;
 
-struct J9SignalHandlerRecord {
-	struct J9SignalHandlerRecord *previous;
+struct OMRSignalHandlerRecord {
+	struct OMRSignalHandlerRecord *previous;
 	struct OMRPortLibrary *portLibrary;
 	omrsig_handler_fn handler;
 	void *handler_arg;
@@ -167,7 +167,7 @@ struct J9SignalHandlerRecord {
 	struct __jumpinfo farJumpInfo;
 #endif /* defined(J9ZOS390) */
 	uint32_t flags;
-};
+} OMRSignalHandlerRecord;
 
 typedef struct OMRCurrentSignal {
 	int signal;
@@ -331,7 +331,7 @@ omrsig_info_count(struct OMRPortLibrary *portLibrary, void *info, uint32_t categ
 int32_t
 omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void *fn_arg, omrsig_handler_fn handler, void *handler_arg, uint32_t flags, uintptr_t *result)
 {
-	struct J9SignalHandlerRecord thisRecord = {0};
+	struct OMRSignalHandlerRecord thisRecord = {0};
 	omrthread_t thisThread = NULL;
 	uint32_t flagsSignalsOnly = flags & OMRPORT_SIG_FLAG_SIGALLSYNC;
 	uint32_t flagsWithoutMasterHandlers = flagsSignalsOnly & ~signalsWithMasterHandlers;
@@ -963,7 +963,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 	uint32_t result = U_32_MAX;
 
 	if (NULL != thisThread) {
-		struct J9SignalHandlerRecord *thisRecord = NULL;
+		struct OMRSignalHandlerRecord *thisRecord = NULL;
 		struct OMRCurrentSignal currentSignal = {0};
 		struct OMRCurrentSignal *previousSignal = NULL;
 		uint32_t portLibType = mapOSSignalToPortLib(signal, sigInfo);

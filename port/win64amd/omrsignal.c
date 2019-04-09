@@ -68,15 +68,15 @@ typedef struct OMRCurrentSignal {
 static omrthread_tls_key_t tlsKeyCurrentSignal;
 static RUNTIME_FUNCTION *j9SigProtectFunction = NULL;
 
-struct J9SignalHandlerRecord {
-	struct J9SignalHandlerRecord *previous;
+struct OMRSignalHandlerRecord {
+	struct OMRSignalHandlerRecord *previous;
 	struct OMRPortLibrary *portLibrary;
 	omrsig_handler_fn handler;
 	void *handler_arg;
 	jmp_buf returnBuf;
 	uint32_t flags;
 	BOOLEAN deferToTryExcept;
-};
+} OMRSignalHandlerRecord;
 
 typedef struct J9WinAMD64AsyncHandlerRecord {
 	OMRPortLibrary *portLib;
@@ -228,7 +228,7 @@ runInTryExcept(struct OMRPortLibrary *portLibrary,
 int32_t
 omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void *fn_arg, omrsig_handler_fn handler, void *handler_arg, uint32_t flags, uintptr_t *result)
 {
-	struct J9SignalHandlerRecord thisRecord;
+	struct OMRSignalHandlerRecord thisRecord;
 	uintptr_t rc = 0;
 	omrthread_t thisThread = omrthread_self();
 
@@ -1142,7 +1142,7 @@ static LONG WINAPI
 masterVectoredExceptionHandler(EXCEPTION_POINTERS *exceptionInfo)
 {
 	uint32_t portLibType;
-	struct J9SignalHandlerRecord *thisRecord;
+	struct OMRSignalHandlerRecord *thisRecord;
 	struct OMRCurrentSignal currentSignal;
 	struct OMRCurrentSignal *previousSignal;
 	omrthread_t thisThread = NULL;
@@ -1241,7 +1241,7 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
 	uint32_t type;
 	struct J9Win32SignalInfo signalInfo;
 	omrthread_t thisThread;
-	struct J9SignalHandlerRecord *thisRecord;
+	struct OMRSignalHandlerRecord *thisRecord;
 	struct OMRCurrentSignal currentSignal;
 	struct OMRCurrentSignal *previousSignal;
 

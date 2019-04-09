@@ -31,14 +31,14 @@
  *	possibly unique to z/TPF at some later time.
  */
 
-struct J9SignalHandlerRecord {
-	struct J9SignalHandlerRecord *previous;
+struct OMRSignalHandlerRecord {
+	struct OMRSignalHandlerRecord *previous;
 	struct OMRPortLibrary *portLibrary;
 	omrsig_handler_fn handler;
 	void *handler_arg;
 	jmp_buf	mark;			
 	uint32_t flags;
-};
+} OMRSignalHandlerRecord;
 
 typedef struct OMRCurrentSignal {
 	int	signal;

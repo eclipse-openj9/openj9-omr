@@ -43,6 +43,7 @@
    OPTIMIZATION(loopVersioner)
    OPTIMIZATION(loopReduction)
    OPTIMIZATION(loopReplicator)
+   OPTIMIZATION(staticFinalFieldFolding)
    OPTIMIZATION(explicitNewInitialization)
    OPTIMIZATION(globalValuePropagation)
    OPTIMIZATION(redundantMonitorElimination)

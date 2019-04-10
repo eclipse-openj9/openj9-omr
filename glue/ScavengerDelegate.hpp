@@ -209,7 +209,7 @@ public:
 	 */
 	void reverseForwardedObject(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject);
 
-#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
+#if defined (OMR_GC_COMPRESSED_POINTERS)
 	/**
 	 * This method is similar to reverseForwardedObject() but is called from a different context. The implementation
 	 * must first determine whether or not the compressed slot adjacent to the scavenger forwarding slot may contain an object
@@ -227,7 +227,7 @@ public:
 	 * @param[in] subSpaceNew Pointer to new space
 	 */
 	void fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject, MM_MemorySubSpaceSemiSpace *subSpaceNew);
-#endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
+#endif /* OMR_GC_COMPRESSED_POINTERS */
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/**

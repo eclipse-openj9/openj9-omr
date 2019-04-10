@@ -718,48 +718,43 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	}	
 
 	{
-		MM_MemoryPool *memoryPool= _extensions->heap->getDefaultMemorySpace()->getTenureMemorySubSpace()->getMemoryPool();
+		/* Tenure space dark matter trigger */
+		MM_MemorySubSpace *memorySubSpace = _extensions->heap->getDefaultMemorySpace()->getTenureMemorySubSpace();
+		uintptr_t totalSize = memorySubSpace->getActiveMemorySize();
+		MM_MemoryPool *memoryPool= memorySubSpace->getMemoryPool();
 		uintptr_t darkMatterBytes = 0;
 		if (!_extensions->concurrentSweep) {
 			darkMatterBytes = memoryPool->getDarkMatterBytes();
 		}
 		uintptr_t freeMemorySize = memoryPool->getActualFreeMemorySize();
-		float darkMatterRatio = ((float)darkMatterBytes)/((float)freeMemorySize);
+		float darkMatterRatio = ((float)darkMatterBytes)/((float)freeMemorySize + (float)totalSize / 2);
 
-		float darkMatterThreshold = _extensions->getDarkMatterCompactThreshold();
-
-		if (darkMatterRatio > darkMatterThreshold) {
+		if (darkMatterRatio > _extensions->getDarkMatterCompactThreshold()) {
 			compactReason = COMPACT_MICRO_FRAG;
 			goto compactionReqd;
 		}
-	}
 
 #if defined(OMR_GC_IDLE_HEAP_MANAGER) 
-	 if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode.getCode()) && (_extensions->gcOnIdle)){
+		if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode.getCode()) && (_extensions->gcOnIdle)){
 
-		MM_MemoryPool *memoryPool= _extensions->heap->getDefaultMemorySpace()->getTenureMemorySubSpace()->getMemoryPool();
-		MM_LargeObjectAllocateStats *stats = memoryPool->getLargeObjectAllocateStats();
+			MM_LargeObjectAllocateStats *stats = memoryPool->getLargeObjectAllocateStats();
 
-		uintptr_t pageSize = env->getExtensions()->heap->getPageSize();
-		uintptr_t freeMemory = stats->getFreeMemory();
-		uintptr_t reusableFreeMemory = stats->getPageAlignedFreeMemory(pageSize);
+			uintptr_t pageSize = env->getExtensions()->heap->getPageSize();
+			uintptr_t reusableFreeMemory = stats->getPageAlignedFreeMemory(pageSize);
 
-		uintptr_t darkMatter = 0;
-		if (!_extensions->concurrentSweep){
-			darkMatter = memoryPool->getDarkMatterBytes();
+			uintptr_t memoryFragmentationDiff = freeMemorySize - reusableFreeMemory;
+			uintptr_t totalFragmentation = memoryFragmentationDiff + darkMatterBytes;
+			float totalFragmentationRatio = ((float)totalFragmentation)/((float)freeMemorySize + (float)totalSize / 2);
+
+			Trc_ParallelGlobalGC_shouldCompactThisCycle(env->getLanguageVMThread(), totalFragmentationRatio, _extensions->gcOnIdleCompactThreshold);
+
+			if (totalFragmentationRatio > _extensions->gcOnIdleCompactThreshold) {
+				compactReason = COMPACT_PAGE;
+				goto compactionReqd;
+			}
 		}
-		uintptr_t memoryFragmentationDiff = freeMemory - reusableFreeMemory;
-		uintptr_t totalFragmentation = memoryFragmentationDiff + darkMatter;
-		float totalFragmentationRatio = ((float)totalFragmentation)/((float)freeMemory);
-
-		Trc_ParallelGlobalGC_shouldCompactThisCycle(env->getLanguageVMThread(), totalFragmentationRatio, _extensions->gcOnIdleCompactThreshold);
-
-		if (totalFragmentationRatio > _extensions->gcOnIdleCompactThreshold) {
-			compactReason = COMPACT_PAGE;
-			goto compactionReqd;
-		}
+#endif /* OMR_GC_IDLE_HEAP_MANAGER */
 	}
-#endif /* OMR_GC_IDLE_HEAP_MANAGER */	
 
 	
 nocompact:	

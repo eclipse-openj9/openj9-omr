@@ -3416,7 +3416,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 		}
 	}
 
-#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
+#if defined (OMR_GC_COMPRESSED_POINTERS)
 	GC_MemorySubSpaceRegionIteratorStandard evacuateRegionIterator1(_activeSubSpace);
 	while(NULL != (rootRegion = evacuateRegionIterator1.nextRegion())) {
 		if (isObjectInEvacuateMemory((omrobjectptr_t )rootRegion->getLowAddress())) {
@@ -3446,7 +3446,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 			}
 		}
 	}
-#endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
+#endif /* defined (OMR_GC_COMPRESSED_POINTERS) */
 }
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)

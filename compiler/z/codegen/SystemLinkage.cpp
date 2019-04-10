@@ -289,7 +289,9 @@ TR::S390SystemLinkage::flipBitsRegisterSaveMask(uint16_t mask)
 TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    : 
       TR::SystemLinkage(codeGen, TR_SystemXPLink),
-      _stackPointerUpdate(NULL)
+      _stackPointerUpdate(NULL),
+      _ppa1(NULL),
+      _ppa2(NULL)
    {
    // linkage properties
    setProperties(FirstParmAtFixedOffset);
@@ -2662,36 +2664,6 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
 void
 TR::S390zOSSystemLinkage::createEntryPointMarker(TR::Instruction* cursor, TR::Node* node)
    {
-   struct XPLinkEntryPointMarker
-      {
-      uint32_t eyecatcher1;
-      uint32_t eyecatcher2;
-      uint32_t ppa1Offset;
-      uint32_t dsaSizeAndFlags;
-      };
-
-   static_assert(sizeof(XPLinkEntryPointMarker) == 16, "XPLinkEntryPointMarker must be 16 bytes in length.");
-
-   XPLinkEntryPointMarker marker;
-
-   // "C.E.E.1"
-   marker.eyecatcher1 = 0x00C300C5;
-   marker.eyecatcher2 = 0x00C500F1;
-
-   marker.ppa1Offset = 0;
-
-   uint32_t stackFrameSize = getStackFrameSize();
-
-   TR_ASSERT_FATAL((stackFrameSize & 31) == 0, "XPLINK stack frame size (%d) has to be aligned to 32-bytes.", stackFrameSize);
-   
-   // DSA size is the frame size aligned to 32-bytes which means it's least significant 5 bits are zero and are used to
-   // represent the flags which are always 0 for OMR as we do not support leaf frames or direct calls to alloca()
-   marker.dsaSizeAndFlags = stackFrameSize;
-
-   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eyecatcher1, cursor);
-   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.eyecatcher2, cursor);
-   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.ppa1Offset, cursor);
-   cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, marker.dsaSizeAndFlags, cursor);
    }
 
 TR_XPLinkCallTypes
@@ -2772,9 +2744,22 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
     generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, afterNOP, postDeps);
 }
 
-TR::Instruction* TR::S390zOSSystemLinkage::getStackPointerUpdate()
+TR::Instruction*
+TR::S390zOSSystemLinkage::getStackPointerUpdate() const
    {
    return _stackPointerUpdate;
+   }
+
+TR::PPA1Snippet*
+TR::S390zOSSystemLinkage::getPPA1Snippet() const
+   {
+   return _ppa1;
+   }
+
+TR::PPA2Snippet*
+TR::S390zOSSystemLinkage::getPPA2Snippet() const
+   {
+   return _ppa2;
    }
 
 // Create prologue for XPLink
@@ -2787,7 +2772,32 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction * cursor)
 
    TR::Node *node = cursor->getNode();
 
-   createEntryPointMarker(cursor->getPrev(), node);
+   TR::CodeGenerator* cg = self()->cg();
+
+   _ppa1 = new (self()->trHeapMemory()) TR::PPA1Snippet(cg, this);
+   _ppa2 = new (self()->trHeapMemory()) TR::PPA2Snippet(cg, this);
+
+   cg->addSnippet(_ppa1);
+   cg->addSnippet(_ppa2);
+
+   uint32_t stackFrameSize = getStackFrameSize();
+
+   TR_ASSERT_FATAL((stackFrameSize & 31) == 0, "XPLINK stack frame size (%d) has to be aligned to 32-bytes.", stackFrameSize);
+   
+   cursor = cursor->getPrev();
+
+   // "C.E.E.1"
+   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00C300C5, cursor);
+   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00C500F1, cursor);
+   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00000000, cursor);
+
+   cg->addRelocation(new (cg->trHeapMemory()) EntryPointMarkerOffsetToPPA1Relocation(cursor, _ppa1->getSnippetLabel()));
+   
+   // DSA size is the frame size aligned to 32-bytes which means it's least significant 5 bits are zero and are used to
+   // represent the flags which are always 0 for OMR as we do not support leaf frames or direct calls to alloca()
+   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, stackFrameSize, cursor);
+
+   cursor = cursor->getNext();
 
    setFirstPrologueInstruction(cursor);
 
@@ -2915,4 +2925,20 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction * cursor,
 
    nop->setCallType(callType);
    return cursor;
+   }
+
+TR::S390zOSSystemLinkage::EntryPointMarkerOffsetToPPA1Relocation::EntryPointMarkerOffsetToPPA1Relocation(TR::Instruction* cursor, TR::LabelSymbol* ppa2)
+   :
+      TR::LabelRelocation(NULL, ppa2),
+      _cursor(cursor)
+   {
+   }
+
+void
+TR::S390zOSSystemLinkage::EntryPointMarkerOffsetToPPA1Relocation::apply(TR::CodeGenerator* cg)
+   {
+   uint8_t* cursor = _cursor->getBinaryEncoding();
+
+   // The 0x08 is the static distance from the field which we need to relocate to the start of the Entry Point Marker
+   *reinterpret_cast<int32_t*>(cursor) = static_cast<int32_t>(getLabel()->getCodeLocation() - (cursor - 0x08));
    }

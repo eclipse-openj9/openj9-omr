@@ -28,6 +28,8 @@
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
 #include "codegen/SystemLinkage.hpp"
+#include "codegen/snippet/PPA1Snippet.hpp"
+#include "codegen/snippet/PPA2Snippet.hpp"
 #include "cs2/arrayof.h"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
@@ -173,7 +175,17 @@ public:
     *  \return
     *     The stack pointer update label instruction if it exists; \c NULL otherwise.
     */
-   TR::Instruction* getStackPointerUpdate();
+   TR::Instruction* getStackPointerUpdate() const;
+   
+   /** \brief
+    *     Gets the PPA1 (Program Prologue Area) snippet for this method body.
+    */
+   TR::PPA1Snippet* getPPA1Snippet() const;
+   
+   /** \brief
+    *     Gets the PPA2 (Program Prologue Area) snippet for this method body.
+    */
+   TR::PPA2Snippet* getPPA2Snippet() const;
 
    virtual void createPrologue(TR::Instruction * cursor);
    virtual void createEpilogue(TR::Instruction * cursor);
@@ -181,6 +193,23 @@ public:
    TR::Instruction * genCallNOPAndDescriptor(TR::Instruction * cursor, TR::Node *node, TR::Node *callNode, TR_XPLinkCallTypes callType);
 
 private:
+   
+   // TODO: There seems to be a lot of similarity between this relocation and PPA1OffsetToPPA2Relocation relocation.
+   // It would be best if we common these up, perhaps adding an "offset" to to one of the existing relocation kinds
+   // which perform similar relocations. See Relocation.hpp for which relocations may fit this criteria.
+   class EntryPointMarkerOffsetToPPA1Relocation : public TR::LabelRelocation
+      {
+      public:
+
+      EntryPointMarkerOffsetToPPA1Relocation(TR::Instruction* cursor, TR::LabelSymbol* ppa2);
+
+      virtual void apply(TR::CodeGenerator* cg);
+
+      private:
+
+      TR::Instruction* _cursor;
+      };
+
    enum TR_XPLinkFrameType _frameType;
 
    TR::RealRegister::RegNum _CAAPointerRegister;
@@ -189,6 +218,9 @@ private:
    TR_zOSGlobalCompilationInfo* _globalCompilationInfo;
 
    TR::Instruction* _stackPointerUpdate;
+
+   TR::PPA1Snippet* _ppa1;
+   TR::PPA2Snippet* _ppa2;
 
    enum
       {

@@ -145,11 +145,6 @@
 #cmakedefine OMR_GC_VLHGC
 
 /**
- * Flag to indicate that on 64-bit platforms, the monitor slot and class slot in object headers are U32 rather than UDATA.
- */
-#cmakedefine OMR_INTERP_COMPRESSED_OBJECT_HEADER
-
-/**
  * Flag to indicate that on 64-bit platforms, the monitor slot in object headers is a U32 rather than a UDATA.
  * ifRemoved: The monitor slot is a UDATA.
  */

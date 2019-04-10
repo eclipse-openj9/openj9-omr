@@ -2488,6 +2488,13 @@ void OMR::ResolvedMethodSymbol::clearProfilingOffsetInfo()
    _bytecodeProfilingOffsets.clear();
    }
 
+
+TR::KnownObjectTable::Index
+OMR::ResolvedMethodSymbol::getKnownObjectIndexForParm(int32_t ordinal)
+   {
+   return TR::KnownObjectTable::UNKNOWN;
+   }
+
 //Explicit instantiations
 
 template TR::ResolvedMethodSymbol * OMR::ResolvedMethodSymbol::create(TR_StackMemory m, TR_ResolvedMethod * rm, TR::Compilation * comp);

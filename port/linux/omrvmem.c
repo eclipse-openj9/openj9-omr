@@ -687,6 +687,7 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t
 	 */
 	uintptr_t allocator = identifier->allocator;
 	int fd = identifier->fd;
+	uintptr_t mode = identifier->mode;
 	Trc_PRT_vmem_omrvmem_free_memory_Entry(address, byteAmount);
 
 	/* CMVC 180372 - Identifier must be cleared before memory is freed, see comment above */
@@ -699,7 +700,7 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t
 		ret = (int32_t)shmdt(address);
 	}
 
-	if((identifier->mode & OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN) && fd != -1) {
+	if((mode & OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN) && fd != -1) {
 		close(fd);
 	}
 

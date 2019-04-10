@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -321,13 +321,21 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t
 
 	Trc_PRT_vmem_omrvmem_free_memory_Entry(address, byteAmount);
 
+	uintptr_t pageSize = identifier->pageSize;
+	uintptr_t size = identifier->size;
+	uintptr_t pageFlags = identifier->pageFlags;
+	uintptr_t allocator = identifier->allocator;
+	OMRMemCategory *category = identifier->category;
+
+	update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
+
 #if defined(LP_DEBUG)
 	/* Using omrtty_printf in this function has caused the VM to crash on shutdown */
 	printf("omrvmem_free_memory freeing %p, pageSize 0x%x pageFlags %u using allocate %zu\n", \
-		   address, identifier->pageSize, identifier->pageFlags, identifier->allocator);
+		   address, pageSize, pageFlags, allocator);
 #endif /* LP_DEBUG */
 
-	switch (identifier->allocator) {
+	switch (allocator) {
 	/* Default page Size */
 	case OMRPORT_VMEM_RESERVE_USED_J9MEM_ALLOCATE_MEMORY:
 	{
@@ -345,14 +353,14 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t
 		void *freeAddress = GET_BASE_PTR_FROM_ALIGNED_PTR(address);
 		Trc_PRT_vmem_omrvmem_free_memory_using_mem_free_memory32(address, byteAmount);
 		free(freeAddress);
-		omrmem_categories_decrement_counters(identifier->category, identifier->size);
+		omrmem_categories_decrement_counters(category, size);
 	}
 	break;
 	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_PAGES_BELOW_BAR:  /* FALLTHROUGH */
 	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_BELOW_BAR:
 		Trc_PRT_vmem_omrvmem_free_memory_using_free_memory_below_bar(address, byteAmount);
-		rc = omrfree_memory_below_bar(address, identifier->size, OMRPORT_VMEM_SUBPOOL);
-		omrmem_categories_decrement_counters(identifier->category, identifier->size);
+		rc = omrfree_memory_below_bar(address, size, OMRPORT_VMEM_SUBPOOL);
+		omrmem_categories_decrement_counters(category, size);
 		break;
 #if defined(OMR_ENV_DATA64)
 	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_IN_2TO32G_AREA:   /* FALLTHROUGH */
@@ -361,17 +369,17 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t
 	{
 		const char *const ttkn = PPG_ipt_ttoken;
 
-		Trc_PRT_vmem_omrvmem_free_memory_using_free_memory_above_bar(address, byteAmount, identifier->allocator);
+		Trc_PRT_vmem_omrvmem_free_memory_using_free_memory_above_bar(address, byteAmount, allocator);
 		rc = omrfree_memory_above_bar(address, ttkn);
-		omrmem_categories_decrement_counters(identifier->category, identifier->size);
+		omrmem_categories_decrement_counters(category, size);
 	}
 	break;
 	case OMRPORT_VMEM_RESERVE_USED_MOSERVICES:
-		Trc_PRT_vmem_omrvmem_free_memory_using_moservices(address, byteAmount, identifier->allocator);  /* FALLTHROUGH */
+		Trc_PRT_vmem_omrvmem_free_memory_using_moservices(address, byteAmount, allocator);  /* FALLTHROUGH */
 	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_ABOVE_BAR:
-		Trc_PRT_vmem_omrvmem_free_memory_using_free_memory_above_bar(address, byteAmount, identifier->allocator);
+		Trc_PRT_vmem_omrvmem_free_memory_using_free_memory_above_bar(address, byteAmount, allocator);
 		rc = __moservices(__MO_DETACH, 0, NULL, &address);
-		omrmem_categories_decrement_counters(identifier->category, identifier->size);
+		omrmem_categories_decrement_counters(category, size);
 		break;
 #endif
 	default:
@@ -379,7 +387,6 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t
 		rc = -1;
 		break;
 	} /* switch {identifier->allocator) */
-	update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
 	Trc_PRT_vmem_omrvmem_free_memory_Exit(rc);
 
 #if defined(LP_DEBUG)

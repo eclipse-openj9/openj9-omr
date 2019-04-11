@@ -898,7 +898,7 @@ adviseHugepage(struct OMRPortLibrary *portLibrary, void* address, uintptr_t byte
 		uintptr_t start = (uintptr_t)address;
 		uintptr_t end = (uintptr_t)address + byteAmount;
 
-		/* Align start and end to page size aligned */
+		/* Align start and end to be page-size aligned */
 		start = start + ((start % PPG_vmem_pageSize[0]) ? (PPG_vmem_pageSize[0] - (start % PPG_vmem_pageSize[0])) : 0);
 		end = end - (end % PPG_vmem_pageSize[0]);
 		if (start < end) {

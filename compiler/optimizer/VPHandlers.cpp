@@ -1151,6 +1151,7 @@ TR::Node *constrainBCDAggrLoad(OMR::ValuePropagation *vp, TR::Node *node)
 TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
    {
    TR::DataType dataType = node->getDataType();
+
    // Optimize characters being loaded out of the values array of a constant string
    //
    if (dataType == TR::Int16 && node->getOpCode().isIndirect() &&
@@ -1159,52 +1160,22 @@ TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
       {
       TR::Node *array = node->getFirstChild()->getFirstChild();
       TR::Node *index = node->getFirstChild()->getSecondChild();
-      if (index->getOpCode().isLoadConst())
+      if (index->getOpCode().isLoadConst() && array->getOpCode().isIndirect())
          {
          bool isGlobal;
-         if (array->getOpCode().isIndirect())
+         TR::Node* base = array->getFirstChild();
+         TR::VPConstraint *baseVPConstraint = vp->getConstraint(base, isGlobal);
+         if (baseVPConstraint && baseVPConstraint->isConstString())
             {
-            TR::Node* base = array->getFirstChild();
-            TR::VPConstraint *baseVPConstraint = vp->getConstraint(base, isGlobal);
-            if (baseVPConstraint)
-               {
-               if (baseVPConstraint->isConstString())
-                  {
-                  TR::VPConstString *constString = baseVPConstraint->getClassType()->asConstString();
+            TR::VPConstString *constString = baseVPConstraint->getClassType()->asConstString();
 
-                  uint16_t ch = constString->charAt(((TR::Compiler->target.is64Bit() ? index->getLongIntLow() : index->getInt())
-                                                     - TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2, vp->comp());
-                  if (ch != 0)
-                     {
-                     vp->replaceByConstant(node, TR::VPIntConst::create(vp, ch), true);
-                     return node;
-                     }
-                  }
-               }
-            }
-         TR::VPConstraint *arrayVPConstraint = vp->getConstraint(array, isGlobal);
-         if (arrayVPConstraint)
-            {
-#ifdef J9_PROJECT_SPECIFIC
-            TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
-            TR::VPKnownObject *kobj = arrayVPConstraint->getKnownObject();
-            if (knot && kobj)
+            uint16_t ch = constString->charAt(((TR::Compiler->target.is64Bit() ? index->getLongIntLow() : index->getInt())
+                                               - TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2, vp->comp());
+            if (ch != 0)
                {
-               TR::KnownObjectTable::Index idx = kobj->getIndex();
-               if (kobj->isArrayWithConstantElements(vp->comp()))
-                  {
-                  TR::VMAccessCriticalSection constrainAnyIntLoadCriticalSection(vp->comp(),
-                     TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-                  if (constrainAnyIntLoadCriticalSection.hasVMAccess())
-                     {
-                     uintptrj_t array = knot->getPointer(idx);
-                     uint16_t ch = *((uint16_t*)(array + (TR::Compiler->target.is64Bit() ? index->getLongIntLow() : index->getInt())));
-                     vp->replaceByConstant(node, TR::VPIntConst::create(vp, ch), true);
-                     return node;
-                     }
-                  }
+               vp->replaceByConstant(node, TR::VPIntConst::create(vp, ch), true);
+               return node;
                }
-#endif
             }
          }
       }
@@ -4796,27 +4767,6 @@ TR::Node *constrainArraylength(OMR::ValuePropagation *vp, TR::Node *node)
          upperBoundLimit = arrayInfo->highBound();
          elementSize     = arrayInfo->elementSize();
          }
-#ifdef J9_PROJECT_SPECIFIC
-      TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
-      TR::VPKnownObject *kobj = constraint->getKnownObject();
-      if (knot && kobj)
-         {
-         TR_OpaqueClassBlock *klazz = kobj->getClass();
-         if (vp->comp()->fej9()->isPrimitiveArray(klazz)
-             || vp->comp()->fej9()->isReferenceArray(klazz))
-            {
-            TR::VMAccessCriticalSection constrainArraylengthCriticalSection(vp->comp(),
-                        TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-            if (constrainArraylengthCriticalSection.hasVMAccess())
-               {
-               uintptrj_t array = knot->getPointer(kobj->getIndex());
-               uintptrj_t length = vp->comp()->fej9()->getArrayLengthInElements(array);
-               vp->replaceByConstant(node, TR::VPIntConst::create(vp, length), true);
-               return node;
-               }
-            }
-         }
-#endif
       }
 
    // If the element size is still not known, try to get it from the node or

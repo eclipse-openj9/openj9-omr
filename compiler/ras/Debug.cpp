@@ -4309,17 +4309,26 @@ TR_Debug::getVirtualGuardTestTypeName(TR_VirtualGuardTestType testType)
 const char *
 TR_Debug::getWriteBarrierKindName(int32_t kind)
    {
-   static const char *names[TR_NumberOfWrtBars] =
+   switch (kind)
       {
-      "None",
-      "Always",
-      "OldCheck",
-      "CardMark",
-      "CardMarkAndOldCheck",
-      "CardMarkIncremental",
-      "RealTime",
-      };
-   return names[kind];
+      case gc_modron_wrtbar_none:
+         return "None";
+      case gc_modron_wrtbar_always:
+         return "Always";
+      case gc_modron_wrtbar_oldcheck:
+         return "OldCheck";
+      case gc_modron_wrtbar_cardmark:
+         return "CardMark";
+      case gc_modron_wrtbar_cardmark_incremental:
+         return "CardMarkIncremental";
+      case gc_modron_wrtbar_cardmark_and_oldcheck:
+         return "CardMarkAndOldCheck";
+      case gc_modron_wrtbar_satb:
+      case gc_modron_wrtbar_satb_and_oldcheck:
+         return "RealTime";
+      default:
+         return "UNKNOWN";
+      }
    }
 
 const char *

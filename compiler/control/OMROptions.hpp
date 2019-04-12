@@ -1891,22 +1891,11 @@ public:
    static bool createDebug();
    static TR_Debug * findOrCreateDebug();
 
-   TR_WriteBarrierKind getGcMode()           { return _gcMode; }
    uintptr_t           getGcCardSize()       { return _gcCardSize; }
    uintptr_t           getHeapBase()         { return _heapBase; }
    uintptr_t           getHeapTop()         { return _heapTop; }
 
-   bool generateWriteBarriers() { return _gcMode != TR_WrtbarNone; }
-   bool alwaysCallWriteBarrier() { return _gcMode == TR_WrtbarAlways; }
-   bool gcIsUsingConcurrentMark()
-      {
-      return    _gcMode == TR_WrtbarCardMark
-             || _gcMode == TR_WrtbarCardMarkAndOldCheck
-             || _gcMode == TR_WrtbarCardMarkIncremental;
-      }
-   bool needWriteBarriers();
-
-   void setGcMode(TR_WriteBarrierKind g) { _gcMode = g; }
+   void setGcMode(TR_WriteBarrierKind g) { /* deprecated */ }
    void setGcCardSize(uintptr_t g)       { _gcCardSize = g; }
    void setHeapBase(uintptr_t g)         { _heapBase = g; }
    void setHeapTop(uintptr_t g)          { _heapTop = g; }
@@ -2312,7 +2301,6 @@ protected:
    TR::SimpleRegex *            _memUsage;
    TR::SimpleRegex *            _classesWithFolableFinalFields;
    TR::SimpleRegex *            _disabledIdiomPatterns;
-   TR_WriteBarrierKind         _gcMode;
    uintptr_t                   _gcCardSize;
    uintptr_t                   _heapBase;
    uintptr_t                   _heapTop;

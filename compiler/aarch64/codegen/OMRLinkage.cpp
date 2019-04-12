@@ -24,6 +24,7 @@
 
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"

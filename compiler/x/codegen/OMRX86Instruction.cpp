@@ -25,7 +25,6 @@
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/Instruction.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"

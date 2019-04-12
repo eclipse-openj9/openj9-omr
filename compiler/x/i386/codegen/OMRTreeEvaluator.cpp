@@ -25,6 +25,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
@@ -3643,10 +3644,10 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lternaryEvaluator(TR::Node *node, T
    else if (!longCompare && condOp.isCompareForOrder() && condition->getFirstChild()->getOpCode().isIntegerOrAddress())
       {
       compareIntegersForOrder(condition, cg);
-      generateRegRegInstruction((condOp.isCompareTrueIfEqual()) ? 
-                         ((condOp.isCompareTrueIfGreater()) ? CMOVL4RegReg : CMOVG4RegReg) : 
+      generateRegRegInstruction((condOp.isCompareTrueIfEqual()) ?
+                         ((condOp.isCompareTrueIfGreater()) ? CMOVL4RegReg : CMOVG4RegReg) :
                          ((condOp.isCompareTrueIfGreater()) ? CMOVLE4RegReg : CMOVGE4RegReg), node, trueReg->getRegisterPair()->getLowOrder(), falseReg->getRegisterPair()->getLowOrder(), cg);
-      generateRegRegInstruction((condOp.isCompareTrueIfEqual()) ? 
+      generateRegRegInstruction((condOp.isCompareTrueIfEqual()) ?
                          ((condOp.isCompareTrueIfGreater()) ? CMOVL4RegReg : CMOVG4RegReg) :
                          ((condOp.isCompareTrueIfGreater()) ? CMOVLE4RegReg : CMOVGE4RegReg), node, trueReg->getRegisterPair()->getHighOrder(), falseReg->getRegisterPair()->getHighOrder(), cg);
       }

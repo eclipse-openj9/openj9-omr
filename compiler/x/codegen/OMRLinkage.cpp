@@ -28,6 +28,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/MemoryReference.hpp"

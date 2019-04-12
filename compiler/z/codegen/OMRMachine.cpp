@@ -38,6 +38,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/Machine_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
@@ -1831,7 +1832,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
       TR::MemoryReference * tempMRLow = generateS390MemoryReference(currentNode, locationLow->getSymbolReference(), self()->cg());
       locationLow->getSymbolReference()->getSymbol()->setSpillTempLoaded();
-         
+
       if (bestVirtCandidateLow->is64BitReg())
          {
          cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LG, currentNode, bestCandidateLow, tempMRLow, currInst);
@@ -1915,7 +1916,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
       TR::MemoryReference * tempMRHigh = generateS390MemoryReference(currentNode, locationHigh->getSymbolReference(), self()->cg());
       locationHigh->getSymbolReference()->getSymbol()->setSpillTempLoaded();
-         
+
       if (bestVirtCandidateHigh->is64BitReg())
          {
          cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LG, currentNode, bestCandidateHigh, tempMRHigh, currInst);
@@ -2016,7 +2017,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
    if (comp->getOption(TR_Randomize))
       {
       randomPreference = preference;
-      
+
       if (TR::RealRegister::isFPR((TR::RealRegister::RegNum)preference))
          {
          randomPreference = self()->cg()->randomizer.randomInt(TR::RealRegister::FirstFPR,TR::RealRegister::LastFPR);
@@ -2283,7 +2284,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
          }
 
       // Check if the preferred register is free
-      if ((prefRegMask & availRegMask) && _registerFile[preference] != NULL && 
+      if ((prefRegMask & availRegMask) && _registerFile[preference] != NULL &&
             (_registerFile[preference]->getState() == TR::RealRegister::Free ||
                _registerFile[preference]->getState() == TR::RealRegister::Unlatched))
          {
@@ -2570,7 +2571,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       }
 
    TR::RealRegister * best = toRealRegister(candidates[0]->getAssignedRegister());
-   
+
    self()->spillRegister(currentInstruction, candidates[0]);
 
    return best;
@@ -2597,7 +2598,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
    TR::Instruction * cursor = NULL;
    TR::RealRegister * best = NULL;
    TR_Debug * debugObj = self()->cg()->getDebug();
-   
+
    best = toRealRegister(virtReg->getAssignedRegister());
 
    if (virtReg->containsInternalPointer())
@@ -2781,7 +2782,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       self()->cg()->incTotalSpills();
       }
 #endif
-   
+
    // no real reg is assigned to targetRegister yet
    if (targetRegister == NULL)
       {
@@ -2817,7 +2818,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       {
       if (rk == TR_GPR)
          {
-         location = spilledRegister->is64BitReg() ? 
+         location = spilledRegister->is64BitReg() ?
             self()->cg()->allocateSpill(8, spilledRegister->containsCollectedReference(), NULL, true) :
             self()->cg()->allocateSpill(4, spilledRegister->containsCollectedReference(), NULL, true);
          }
@@ -2837,7 +2838,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
    spilledRegister->setAssignedRegister(targetRegister);
 
    TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, location->getSymbolReference(), self()->cg());
-   
+
    switch (rk)
       {
       case TR_GPR:
@@ -3013,7 +3014,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
    virtualRegister->setIsLive();
 
    self()->cg()->traceRegisterAssignment("COERCE %R into %R", virtualRegister, targetRegister);
-   
+
    if (rk != TR_FPR && rk != TR_VRF)
       {
       if (virtualRegister->is64BitReg())
@@ -3063,7 +3064,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          // virtual register is currently assigned to a different register,
          // override it with the target reg
          cursor = self()->registerCopy(self()->cg(), rk, currentAssignedRegister, targetRegister, currentInstruction);
-         
+
          currentAssignedRegister->setState(TR::RealRegister::Free);
          currentAssignedRegister->setAssignedRegister(NULL);
          }
@@ -3119,7 +3120,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          else
             {
             self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
-            
+
             cursor = self()->registerExchange(self()->cg(), rk, targetRegister, currentAssignedRegister, spareReg, currentInstruction);
 
             currentAssignedRegister->setState(TR::RealRegister::Blocked);

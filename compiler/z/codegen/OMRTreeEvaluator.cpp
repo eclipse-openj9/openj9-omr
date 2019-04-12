@@ -40,6 +40,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
@@ -11574,12 +11575,12 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
          }
-      
+
       TR::LabelSymbol* handleResidueLabel = generateLabelSymbol(cg);
 
       cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, handleResidueLabel);
       iComment("If length < 256 then jump to handle residue");
-      
+
       // loadBytesReg is used to store number of bytes used by MVCRL instruction
       TR::Register* loadBytesReg = cg->allocateRegister();
 
@@ -11591,7 +11592,7 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
 
       cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, byteSrcReg, generateS390MemoryReference(byteSrcReg, byteLenReg, 0, cg));
       cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, byteDstReg, generateS390MemoryReference(byteDstReg, byteLenReg, 0, cg));
-      
+
       TR::LabelSymbol* loopLabel = generateLabelSymbol(cg);
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, loopLabel);
 
@@ -11600,10 +11601,10 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
 
       cursor = generateSSEInstruction(cg, TR::InstOpCode::MVCRL, node,
          generateS390MemoryReference(byteDstReg, 0, cg),
-         generateS390MemoryReference(byteSrcReg, 0, cg)); 
+         generateS390MemoryReference(byteSrcReg, 0, cg));
 
       cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRCT, node, loopIterReg, loopLabel);
-      
+
       cursor = generateRILInstruction(cg, TR::InstOpCode::NILF, node, byteLenReg, 0xFF);
 
       TR::LabelSymbol *skipResidueLabel = generateLabelSymbol(cg);
@@ -11616,9 +11617,9 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
       iComment("Handle residue");
 
       cursor = generateRIEInstruction(cg, TR::InstOpCode::getAddHalfWordImmDistinctOperandOpCode(), node, loadBytesReg, byteLenReg, -1, cursor);
-      cursor = generateSSEInstruction(cg, TR::InstOpCode::MVCRL, node, 
+      cursor = generateSSEInstruction(cg, TR::InstOpCode::MVCRL, node,
          generateS390MemoryReference(byteDstReg, 0, cg),
-         generateS390MemoryReference(byteSrcReg, 0, cg)); 
+         generateS390MemoryReference(byteSrcReg, 0, cg));
 
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipResidueLabel);
 
@@ -11668,7 +11669,7 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
       srm->reclaimScratchRegister(loopIterReg);
       srm->reclaimScratchRegister(vectorBuffer);
       }
-   else 
+   else
       {
       deps = TR::TreeEvaluator::generateMemToMemElementCopy(node, cg, byteSrcReg, byteDstReg, byteLenReg, srm, false, false, genStartICFLabel);
       }
@@ -11934,7 +11935,7 @@ OMR::Z::TreeEvaluator::iRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
    if (globalReg == NULL)
       {
       globalReg = cg->allocateRegister();
-      
+
       if (cg->getExtendedToInt64GlobalRegisters().ValueAt(node->getGlobalRegisterNumber()))
          {
          // getExtendedToInt64GlobalRegisters is set by TR_LoadExtensions and it means a larger larger virtual register must be used here

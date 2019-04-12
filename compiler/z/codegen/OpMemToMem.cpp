@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/FrontEnd.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
 #include "codegen/RegisterDependency.hpp"

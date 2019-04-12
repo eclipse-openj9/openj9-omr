@@ -41,6 +41,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/Snippet.hpp"
 #include "compile/Compilation.hpp"

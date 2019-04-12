@@ -27,6 +27,7 @@
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"

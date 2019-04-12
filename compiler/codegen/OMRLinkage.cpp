@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "il/ILOps.hpp"
 #include "il/Node.hpp"

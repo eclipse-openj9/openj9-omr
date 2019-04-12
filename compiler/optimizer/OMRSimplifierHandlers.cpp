@@ -29,7 +29,6 @@
 #include <math.h>
 #include "compile/Compilation.hpp"
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
@@ -16624,7 +16623,7 @@ TR::Node *arraycopybndchkSimplifier(TR::Node * node, TR::Block * block, TR::Simp
       TR::Node * boundChild  = lhsChild;
       TR::Node * lengthChild = rhsChild->getSecondChild();
       TR::Node * indexChild  = rhsChild->getFirstChild();
-      if (lengthChild == boundChild || 
+      if (lengthChild == boundChild ||
           s->isBoundDefinitelyGELength(boundChild, lengthChild))
          {
          if (indexChild->isZero())

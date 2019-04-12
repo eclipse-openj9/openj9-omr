@@ -26,7 +26,6 @@
 #include "codegen/AheadOfTimeCompile.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/Instruction.hpp"
-#include "codegen/Linkage.hpp"
 #include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
@@ -150,7 +149,7 @@ void TR::ExternalRelocation::addExternalRelocation(TR::CodeGenerator *codeGen)
 
    TR::Compilation *comp = codeGen->comp();
    AOTcgDiag0(comp, "TR::ExternalRelocation::addExternalRelocation\n");
-  
+
    TR_LinkHead<TR::IteratedExternalRelocation>& aot = codeGen->getAheadOfTimeCompile()->getAOTRelocationTargets();
    uint32_t narrowSize = getNarrowSize();
    uint32_t wideSize = getWideSize();
@@ -233,7 +232,7 @@ void TR::ExternalRelocation::addExternalRelocation(TR::CodeGenerator *codeGen)
       AOTcgDiag5(comp, "temp=" POINTER_PRINTF_FORMAT " full=%x target=" POINTER_PRINTF_FORMAT " kind=%x modifier=%x\n",
          temp, temp->full(), temp->getTargetAddress(), temp->getTargetKind(), temp->getModifierValue());
    AOTcgDiag2(comp, "#sites=%x size=%x\n", temp->getNumberOfRelocationSites(), temp->getSizeOfRelocationData());
-      
+
    }
 
 void TR::ExternalRelocation::apply(TR::CodeGenerator *codeGen)

@@ -23,6 +23,8 @@
 
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/GenerateInstructions.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "il/Node_inlines.hpp"

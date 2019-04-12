@@ -2425,7 +2425,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
                         vp->removeChildren(node);
                         TR::Node::recreate(node, TR::aload);
                         node->setNumChildren(0);
-                        node->setSymbolReference(vp->comp()->getSymRefTab()->createKnownStaticRefereneceSymbolRef(bypassLocation, targetKOI));
+                        node->setSymbolReference(vp->comp()->getSymRefTab()->createKnownStaticReferenceSymbolRef(bypassLocation, targetKOI));
                         return node;
                         }
                      }
@@ -3030,7 +3030,7 @@ TR::Node *constrainWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
    if (TR::Compiler->om.readBarrierType() != gc_modron_readbar_none)
       {
       // The optimization below targets the following type of code:
-      // 
+      //
       //     X x = new X();
       //     x.a = new A();
       //
@@ -5868,7 +5868,7 @@ TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node)
       if (!node->getOpCode().isIndirect())
          {
          static char *enableDynamicObjectClone = feGetEnv("TR_enableDynamicObjectClone");
-         // Dynamic cloning kicks in when we attempt to make direct call to Object.clone  
+         // Dynamic cloning kicks in when we attempt to make direct call to Object.clone
          // or J9VMInternals.primitiveClone where the cloned object is an array.
          if (method->getRecognizedMethod() == TR::java_lang_Object_clone
              || method->getRecognizedMethod() == TR::java_lang_J9VMInternals_primitiveClone)
@@ -5946,7 +5946,7 @@ TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node)
                      vp->_arrayCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ArrayCloneInfo(constraint->getClass(), false));;
                      }
                   }
-#endif	       
+#endif
                }
 
             if (!constraint || (!constraint->isFixedClass()

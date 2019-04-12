@@ -473,7 +473,7 @@ class SymbolReferenceTable
    TR::SymbolReference * findArrayComponentTypeSymbolRef();
    TR::SymbolReference * findClassIsArraySymbolRef();
    TR::SymbolReference * findHeaderFlagsSymbolRef() { return element(headerFlagsSymbol); }
-   TR::SymbolReference * createKnownStaticRefereneceSymbolRef(void *address, TR::KnownObjectTable::Index knownObjectIndex=TR::KnownObjectTable::UNKNOWN);
+   TR::SymbolReference * createKnownStaticReferenceSymbolRef(void *address, TR::KnownObjectTable::Index knownObjectIndex=TR::KnownObjectTable::UNKNOWN);
 
    TR::SymbolReference * findOrCreateArrayTranslateSymbol();
    TR::SymbolReference * findOrCreateSinglePrecisionSQRTSymbol();

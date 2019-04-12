@@ -1149,7 +1149,7 @@ void OMR::CodeGenerator::apply32BitLabelTableRelocation(int32_t * cursor, TR::La
 
 void OMR::CodeGenerator::addSnippet(TR::Snippet *s)
    {
-   _snippetList.push_front(s);
+   _snippetList.push_back(s);
    }
 
 void OMR::CodeGenerator::setCurrentBlock(TR::Block *b)

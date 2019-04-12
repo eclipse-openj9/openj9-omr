@@ -694,7 +694,7 @@ OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR:
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createKnownStaticRefereneceSymbolRef(void *dataAddress, TR::KnownObjectTable::Index knownObjectIndex)
+OMR::SymbolReferenceTable::createKnownStaticReferenceSymbolRef(void *dataAddress, TR::KnownObjectTable::Index knownObjectIndex)
    {
    char *name = "<known-static-reference>";
    if (knownObjectIndex != TR::KnownObjectTable::UNKNOWN)

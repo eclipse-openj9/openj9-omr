@@ -373,7 +373,6 @@ public:
 //Convenience accessor methods
    TR::Linkage *getS390Linkage();
    TR::S390PrivateLinkage *getS390PrivateLinkage();
-   TR::SystemLinkage * getS390SystemLinkage();
 
    TR::RealRegister *getStackPointerRealRegister(TR::Symbol *symbol = NULL);
    TR::RealRegister *getEntryPointRealRegister();

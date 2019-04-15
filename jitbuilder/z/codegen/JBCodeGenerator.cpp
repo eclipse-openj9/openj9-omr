@@ -22,7 +22,6 @@
 
 
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/TRSystemLinkage.hpp"
 #include "compile/Compilation.hpp"
 #include "env/CompilerEnv.hpp"
 

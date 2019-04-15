@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,8 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef S390LINKAGE_INCL
-#define S390LINKAGE_INCL
+#ifndef OMR_Z_SYSTEMLINKAGEZOS_INCL
+#define OMR_Z_SYSTEMLINKAGEZOS_INCL
 
 #include <stdint.h>
 #include "codegen/Linkage.hpp"
@@ -51,10 +51,6 @@ namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class Symbol; }
 template <class T> class List;
 
-////////////////////////////////////////////////////////////////////////////////
-//  TR::S390zOSSystemLinkage Definition
-////////////////////////////////////////////////////////////////////////////////
-
 enum TR_XPLinkFrameType
    {
    TR_XPLinkUnknownFrame,
@@ -84,9 +80,7 @@ namespace TR {
 
 class S390zOSSystemLinkage : public TR::SystemLinkage
    {
-   TR::RealRegister::RegNum _environmentPointerRegister;
-
-public:
+   public:
    
    enum
       {
@@ -100,12 +94,9 @@ public:
 
    S390zOSSystemLinkage(TR::CodeGenerator * cg);
 
-   virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-         intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-         TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
+   virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
-   virtual TR::Register * callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-      intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
+   virtual TR::Register * callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
    virtual TR::RealRegister::RegNum setEnvironmentPointerRegister (TR::RealRegister::RegNum r) { return _environmentPointerRegister = r; }
    virtual TR::RealRegister::RegNum getEnvironmentPointerRegister() { return _environmentPointerRegister; }
@@ -123,7 +114,6 @@ public:
 
    virtual bool isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth);
 
-public:
    TR_XPLinkFrameType getFrameType() { return _frameType; }
    void setFrameType(enum TR_XPLinkFrameType type) { _frameType = type; }
    virtual bool getIsLeafRoutine() { return (getFrameType() == TR_XPLinkStackLeafFrame) || (getFrameType() == TR_XPLinkNoStackLeafFrame); }
@@ -192,7 +182,7 @@ public:
 
    TR::Instruction * genCallNOPAndDescriptor(TR::Instruction * cursor, TR::Node *node, TR::Node *callNode, TR_XPLinkCallTypes callType);
 
-private:
+   private:
    
    // TODO: There seems to be a lot of similarity between this relocation and PPA1OffsetToPPA2Relocation relocation.
    // It would be best if we common these up, perhaps adding an "offset" to to one of the existing relocation kinds
@@ -233,37 +223,9 @@ private:
    uint32_t _guardPageSize;              // byte size of guard page affecting explicit checking
    bool _saveBackChain;                  // GPR4 is saved
    uint32_t _interfaceMappingFlags;       // describing the method body
+   
+   TR::RealRegister::RegNum _environmentPointerRegister;
    };
-
-
-////////////////////////////////////////////////////////////////////////////////
-//  TR::S390zLinuxSystemLinkage Definition
-////////////////////////////////////////////////////////////////////////////////
-class S390zLinuxSystemLinkage : public TR::SystemLinkage
-   {
-   TR::RealRegister::RegNum _GOTPointerRegister;
-public:
-
-   S390zLinuxSystemLinkage(TR::CodeGenerator * cg);
-
-   virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
-         TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-         TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint);
-   virtual TR::Register * callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-      intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
-
-   virtual void setGOTPointerRegister (TR::RealRegister::RegNum r)         { _GOTPointerRegister = r; }
-   virtual TR::RealRegister::RegNum getGOTPointerRegister()         { return _GOTPointerRegister; }
-   virtual TR::RealRegister *getGOTPointerRealRegister() {return getRealRegister(_GOTPointerRegister);}
-   virtual int32_t getRegisterSaveOffset(TR::RealRegister::RegNum);
-   virtual void initParamOffset(TR::ResolvedMethodSymbol * method, int32_t stackIndex, List<TR::ParameterSymbol> *parameterList=0);
-
-   virtual FrameType checkLeafRoutine(int32_t stackFrameSize, TR::Instruction **callInstruction = 0);
-
-   virtual bool canDataTypeBePassedByReference(TR::DataType type);
-   virtual bool isSymbolPassedByReference(TR::Symbol *sym);
-   };
-
 }
 
 #endif

@@ -336,7 +336,6 @@ enum TR_DispatchType
 
    public:
 
-   virtual bool checkPreservedRegisterUsage(bool *regs, int32_t regsSize);
    virtual void replaceCallWithJumpInstruction(TR::Instruction *callInstruction);
 
    TR::InstOpCode::Mnemonic getOpCodeForLinkage(TR::Node * child, bool isStore, bool isRegReg);
@@ -387,10 +386,7 @@ enum TR_DispatchType
    virtual bool isAggregateReturnedInRegistersCall(TR::Node *callNode) { return false; }
    virtual bool isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth)   { return false; }
    virtual bool isAggregateReturnedInRegistersAndMemoryCall(TR::Node *callNode) { return false; }
-
-   virtual bool canDataTypeBePassedByReference(TR::DataType type);
-   virtual bool isSymbolPassedByReference(TR::Symbol *sym);
-
+   
    int32_t  isParmBlockRegister() { return _properties & ParmBlockRegister; }
    int32_t  isForceSaveIncomingParameters() { return _properties & ForceSaveIncomingParameters; }
    int32_t  isLongDoubleReturnedOnStorage() { return _properties & LongDoubleReturnedOnStorage; }

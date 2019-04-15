@@ -69,7 +69,7 @@
 #include "infra/List.hpp"
 #include "infra/Random.hpp"
 #include "infra/Stack.hpp"
-#include "codegen/TRSystemLinkage.hpp"
+#include "codegen/SystemLinkage.hpp"
 #include "ras/Debug.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"

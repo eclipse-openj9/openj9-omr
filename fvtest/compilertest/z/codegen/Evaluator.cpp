@@ -22,7 +22,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "env/ConcreteFE.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
-#include "z/codegen/TRSystemLinkage.hpp"
+#include "z/codegen/SystemLinkage.hpp"
 #include "codegen/S390Snippets.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"

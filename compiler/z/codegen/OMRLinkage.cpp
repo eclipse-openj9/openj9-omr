@@ -85,7 +85,7 @@
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390HelperCallSnippet.hpp"
 #include "z/codegen/S390Instruction.hpp"
-#include "z/codegen/TRSystemLinkage.hpp"
+#include "z/codegen/SystemLinkagezOS.hpp"
 
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -2520,6 +2520,26 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
 
 
    return argSize;
+   }
+
+void
+OMR::Z::Linkage::replaceCallWithJumpInstruction(TR::Instruction *callInstruction)
+   {
+   TR::InstOpCode::Mnemonic opCode = callInstruction->getOpCodeValue();
+   TR_ASSERT(opCode == TR::InstOpCode::BASSM || opCode == TR::InstOpCode::BASR || opCode == TR::InstOpCode::BALR || opCode == TR::InstOpCode::BAS || opCode == TR::InstOpCode::BAL|| opCode == TR::InstOpCode::BRAS || opCode == TR::InstOpCode::BRASL, "Wrong opcode type on instruction!\n");
+
+   TR::Node *node = (callInstruction)->getNode();
+   TR::SymbolReference *callSymRef = (callInstruction)->getNode()->getSymbolReference();
+   TR::Symbol *callSymbol = (callInstruction)->getNode()->getSymbolReference()->getSymbol();
+
+   TR::Instruction *replacementInst =0 ;
+
+   replacementInst = new (self()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRCL, node, (uint32_t)0xf, callSymbol, callSymRef, self()->cg());
+
+   if(self()->comp()->getOption(TR_TraceCG))
+      traceMsg(self()->comp(), "Replacing instruction %p to a jump %p !\n",callInstruction, replacementInst);
+
+   self()->cg()->replaceInst(callInstruction,replacementInst);
    }
 
 TR::Instruction *

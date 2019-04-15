@@ -130,7 +130,8 @@
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390Peephole.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
-#include "z/codegen/TRSystemLinkage.hpp"
+#include "z/codegen/SystemLinkageLinux.hpp"
+#include "z/codegen/SystemLinkagezOS.hpp"
 
 #if J9_PROJECT_SPECIFIC
 #include "z/codegen/S390Recompilation.hpp"
@@ -810,9 +811,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
 
 TR::Linkage * OMR::Z::CodeGenerator::getS390Linkage() {return (self()->getLinkage());}
 TR::S390PrivateLinkage * OMR::Z::CodeGenerator::getS390PrivateLinkage() {return TR::toS390PrivateLinkage(self()->getLinkage());}
-
-
-TR::SystemLinkage * OMR::Z::CodeGenerator::getS390SystemLinkage() {return toSystemLinkage(self()->getLinkage());}
 
 TR::RealRegister * OMR::Z::CodeGenerator::getStackPointerRealRegister(TR::Symbol *symbol)
    {

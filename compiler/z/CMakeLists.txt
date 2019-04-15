@@ -39,6 +39,8 @@ compiler_library(z
 	${CMAKE_CURRENT_LIST_DIR}/codegen/S390Peephole.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRLinkage.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/SystemLinkage.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/SystemLinkageLinux.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/SystemLinkagezOS.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/S390OutOfLineCodeSection.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterDependency.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRSnippet.cpp

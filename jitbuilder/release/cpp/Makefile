@@ -52,6 +52,7 @@ ALL_TESTS = \
             simple \
             structarray \
             switch \
+            tableswitch \
             thunks \
             toiltype \
             transactionaloperations \
@@ -274,6 +275,13 @@ switch : $(LIBJITBUILDER) Switch.o
 	$(CXX) -g -fno-rtti -o $@ Switch.o -L$(LIBJITBUILDERDIR) -ljitbuilder -ldl
 
 Switch.o: $(SAMPLE_SRC)/Switch.cpp $(SAMPLE_SRC)/Switch.hpp
+	$(CXX) -o $@ $(CXXFLAGS) $<
+
+
+tableswitch : $(LIBJITBUILDER) TableSwitch.o
+	$(CXX) -g -fno-rtti -o $@ TableSwitch.o -L$(LIBJITBUILDERDIR) -ljitbuilder -ldl
+
+TableSwitch.o: $(SAMPLE_SRC)/TableSwitch.cpp $(SAMPLE_SRC)/TableSwitch.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 

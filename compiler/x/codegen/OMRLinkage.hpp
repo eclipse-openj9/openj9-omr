@@ -393,13 +393,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    protected:
 
-   Linkage(TR::CodeGenerator *cg) : OMR::Linkage(cg), _minimumFirstInstructionSize(0)
-      {
-      // Initialize the movOp table based on preferred load instructions for this target.
-      //
-      TR_X86OpCodes op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : MOVSDRegMem;
-      _movOpcodes[RegMem][Float8] = op;
-      }
+   Linkage(TR::CodeGenerator *cg);
 
    void stopUsingKilledRegisters(TR::RegisterDependencyConditions  *deps, TR::Register *returnRegister);
    void associatePreservedRegisters(TR::RegisterDependencyConditions  *deps, TR::Register *returnRegister);

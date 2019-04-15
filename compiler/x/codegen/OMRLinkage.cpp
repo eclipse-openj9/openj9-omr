@@ -67,6 +67,18 @@ static uint32_t accumOrigSize = 0;
 static uint32_t accumMappedSize = 0;
 #endif
 
+
+OMR::X86::Linkage::Linkage(TR::CodeGenerator *cg) :
+      OMR::Linkage(cg),
+   _minimumFirstInstructionSize(0)
+   {
+   // Initialize the movOp table based on preferred load instructions for this target.
+   //
+   TR_X86OpCodes op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : MOVSDRegMem;
+   _movOpcodes[RegMem][Float8] = op;
+   }
+
+
 void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    {
    ListIterator<TR::AutomaticSymbol>  automaticIterator(&method->getAutomaticList());

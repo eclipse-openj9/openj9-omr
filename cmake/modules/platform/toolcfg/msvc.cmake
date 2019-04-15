@@ -88,7 +88,7 @@ macro(omr_toolconfig_global_setup)
 	omr_remove_flags(CMAKE_EXE_LINKER_FLAGS    /INCREMENTAL)
 	omr_remove_flags(CMAKE_SHARED_LINKER_FLAGS /INCREMENTAL)
 
-	foreach(build_type IN LISTS CMAKE_CONFIGURATION_TYPES)
+	foreach(build_type IN ITEMS ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
 		string(TOUPPER ${build_type} build_type)
 		omr_remove_flags(CMAKE_EXE_LINKER_FLAGS_${build_type}    /INCREMENTAL)
 		omr_remove_flags(CMAKE_SHARED_LINKER_FLAGS_${build_type} /INCREMENTAL)

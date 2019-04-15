@@ -424,7 +424,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 
    uint32_t binLocalRegs = 0x1<<14;   // Binary pattern representing reg14 as free for local alloc
 
-   int8_t gprSize = self()->cg()->machine()->getGPRSize();
+   int8_t gprSize = self()->machine()->getGPRSize();
 
    bool unconditionalSave  = false;
 
@@ -2031,7 +2031,7 @@ void
 OMR::Z::Linkage::loadIntArgumentsFromStack(TR::Node *callNode, TR::RegisterDependencyConditions *dependencies, TR::DataType argType, int32_t stackOffset, int32_t argSize, int32_t numIntegerArgs, TR::Register* stackRegister)
    {
    TR::RealRegister::RegNum argRegNum;
-   int8_t gprSize = self()->cg()->machine()->getGPRSize();
+   int8_t gprSize = self()->machine()->getGPRSize();
 
 
    argRegNum = self()->getIntegerArgumentRegister(numIntegerArgs);
@@ -2085,7 +2085,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
 
    TR::SystemLinkage * systemLinkage = (TR::SystemLinkage *) self()->cg()->getLinkage(TR_System);
 
-   int8_t gprSize = self()->cg()->machine()->getGPRSize();
+   int8_t gprSize = self()->machine()->getGPRSize();
    TR::Register * tempRegister;
    int32_t argIndex = 0, i, from, to, step, numChildren;
    int32_t argSize = 0;
@@ -2351,7 +2351,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
 
                if (self()->isAggregatesPassedInParmRegs())
                   {
-                  size_t slot = self()->cg()->machine()->getGPRSize();
+                  size_t slot = self()->machine()->getGPRSize();
                   size_t childSize = child->getSize();
                   size_t size = (childSize + slot - 1) & (~(slot - 1));
                   size_t slots = size / slot;
@@ -2992,7 +2992,7 @@ OMR::Z::Linkage::restorePreservedRegs(TR::RealRegister::RegNum firstUsedReg,
          cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::getLoadOpCode(),
                    nextNode, self()->getRealRegister(REGNUM(curReg)), rsa, cursor);
 
-         curDisp += self()->cg()->machine()->getGPRSize();
+         curDisp += self()->machine()->getGPRSize();
          curReg++;
 
          // generate the next rsa
@@ -3018,7 +3018,7 @@ OMR::Z::Linkage::restorePreservedRegs(TR::RealRegister::RegNum firstUsedReg,
       cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::getLoadOpCode(),
                 nextNode, self()->getRealRegister(REGNUM(newFirstUsedReg)), rsa, cursor);
 
-      rsa = generateS390MemoryReference(spReg, rsa->getOffset()+self()->cg()->machine()->getGPRSize(), self()->cg());
+      rsa = generateS390MemoryReference(spReg, rsa->getOffset()+self()->machine()->getGPRSize(), self()->cg());
       cursor = generateRSInstruction(self()->cg(), TR::InstOpCode::getLoadMultipleOpCode(), nextNode,
                     self()->getRealRegister(REGNUM(newFirstUsedReg+1)),
                     self()->getRealRegister(REGNUM(newLastUsedReg)), rsa, cursor);
@@ -3291,5 +3291,5 @@ OMR::Z::Linkage::getJ9MethodArgumentRegisterRealRegister()
 TR::RealRegister *
 OMR::Z::Linkage::getRealRegister(TR::RealRegister::RegNum rNum)
    {
-   return self()->cg()->machine()->getRealRegister(rNum);
+   return self()->machine()->getRealRegister(rNum);
    }

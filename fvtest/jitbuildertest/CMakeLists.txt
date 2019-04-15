@@ -43,6 +43,10 @@ if(OMR_HOST_ARCH STREQUAL "x86")
 	endif()
 endif()
 
+if(NOT OMR_HOST_ARCH STREQUAL "ppc")
+	target_sources(jitbuildertest PUBLIC UnsignedDivRemTest.cpp)
+endif()
+
 target_link_libraries(jitbuildertest
 	jitbuilder
 	omrGtest

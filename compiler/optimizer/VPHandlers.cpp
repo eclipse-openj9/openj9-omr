@@ -6682,7 +6682,7 @@ TR::Node *constrainIdiv(OMR::ValuePropagation *vp, TR::Node *node)
          {
          int32_t lhsConst = lhs->asIntConst()->getInt();
          int32_t rhsConst = rhs->asIntConst()->getInt();
-         if (lhsConst == TR::getMinSigned<TR::Int32>() && rhsConst == -1)
+         if (lhsConst == TR::getMinSigned<TR::Int32>() && rhsConst == -1 && !isUnsigned)
             constraint = TR::VPIntConst::create(vp, TR::getMinSigned<TR::Int32>());
          else if (rhsConst != 0)
             {
@@ -6765,10 +6765,15 @@ TR::Node *constrainLdiv(OMR::ValuePropagation *vp, TR::Node *node)
       TR::VPConstraint *constraint = NULL;
       int64_t lhsConst = lhs->asLongConst()->getLong();
       int64_t rhsConst = rhs->asLongConst()->getLong();
-      if (lhsConst == TR::getMinSigned<TR::Int64>() && rhsConst == -1)
+      if (lhsConst == TR::getMinSigned<TR::Int64>() && rhsConst == -1 && !isUnsigned)
          constraint = TR::VPLongConst::create(vp, TR::getMinSigned<TR::Int64>());
       else if (rhsConst != 0L)
-         constraint = TR::VPLongConst::create(vp, TR::Compiler->arith.longDivideLong(lhsConst, rhsConst));
+         {
+         if (isUnsigned)
+            constraint = TR::VPLongConst::create(vp, ((uint64_t)lhsConst/(uint64_t)rhsConst));
+         else
+            constraint = TR::VPLongConst::create(vp, TR::Compiler->arith.longDivideLong(lhsConst, rhsConst));
+         }
       if (constraint)
          {
          vp->replaceByConstant(node, constraint, lhsGlobal);
@@ -6983,7 +6988,7 @@ TR::Node *constrainIrem(OMR::ValuePropagation *vp, TR::Node *node)
       {
       int32_t lhsConst = lhs->asIntConst()->getInt();
       int32_t rhsConst = rhs->asIntConst()->getInt();
-      if (lhsConst == TR::getMinSigned<TR::Int32>() && rhsConst == -1)
+      if (lhsConst == TR::getMinSigned<TR::Int32>() && rhsConst == -1 && !isUnsigned)
          constraint = TR::VPIntConst::create(vp, 0);
       else if (rhsConst != 0)
          {

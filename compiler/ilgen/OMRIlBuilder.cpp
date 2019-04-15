@@ -1093,6 +1093,15 @@ OMR::IlBuilder::widenIntegerTo32Bits(TR::IlValue *v)
    return v;
    }
 
+TR::IlValue *
+OMR::IlBuilder::widenIntegerTo32BitsUnsigned(TR::IlValue *v)
+   {
+   if (v->getDataType() == TR::Int8 || v->getDataType() == TR::Int16)
+      return UnsignedConvertTo(Int32, v);
+
+   return v;
+   }
+
 TR::Node*
 OMR::IlBuilder::binaryOpNodeFromNodes(TR::ILOpCodes op,
                                  TR::Node *leftNode,
@@ -1474,6 +1483,26 @@ OMR::IlBuilder::Div(TR::IlValue *left, TR::IlValue *right)
    }
 
 TR::IlValue *
+OMR::IlBuilder::UnsignedDiv(TR::IlValue *left, TR::IlValue *right)
+   {
+   TR::DataType returnType = left->getDataType();
+
+   // There are no opcodes for performing unsigned division on 8-bit or 16-bit
+   // integers. Instead, widen operands to 32-bit integers, use iudiv, then
+   // truncate the result.
+   left = widenIntegerTo32BitsUnsigned(left);
+   right = widenIntegerTo32BitsUnsigned(right);
+
+   TR::IlValue *returnValue = binaryOpFromOpMap(TR::ILOpCode::unsignedDivideOpCode, left, right);
+   TraceIL("IlBuilder[ %p ]::%d is UnsignedDiv %d / %d\n", this, returnValue->getID(), left->getID(), right->getID());
+
+   if (returnValue->getDataType() != returnType)
+      returnValue = UnsignedConvertTo(_types->PrimitiveType(returnType), returnValue);
+
+   return returnValue;
+   }
+
+TR::IlValue *
 OMR::IlBuilder::Rem(TR::IlValue *left, TR::IlValue *right)
    {
    TR::DataType returnType = left->getDataType();
@@ -1490,6 +1519,43 @@ OMR::IlBuilder::Rem(TR::IlValue *left, TR::IlValue *right)
 
    if (returnValue->getDataType() != returnType)
       returnValue = ConvertTo(_types->PrimitiveType(returnType), returnValue);
+
+   return returnValue;
+   }
+
+TR::IlValue *
+OMR::IlBuilder::UnsignedRem(TR::IlValue *left, TR::IlValue *right)
+   {
+   TR::DataType returnType = left->getDataType();
+   TR::IlValue *returnValue;
+
+   if (returnType.isInt64())
+      {
+      // There is no opcode for performing unsigned remainder on 64-bit
+      // integers, so we must instead simulate the correct behaviour. First, we
+      // truncate the dividend modulo the divisor by performing unsigned
+      // division followed by multiplication...
+      TR::IlValue *truncLeft = binaryOpFromOpCode(TR::ILOpCodes::lmul, binaryOpFromOpCode(TR::ILOpCodes::ludiv, left, right), right);
+
+      // ...then we subtract that value from the original dividend to get the
+      // remainder.
+      returnValue = binaryOpFromOpCode(TR::ILOpCodes::lsub, left, truncLeft);
+      }
+   else
+      {
+      // There are no opcodes for performing unsigned remainder on 8-bit or
+      // 16-bit integers. Instead, widen operands to 32-bit integers, use iurem,
+      // then truncate the result.
+      left = widenIntegerTo32BitsUnsigned(left);
+      right = widenIntegerTo32BitsUnsigned(right);
+
+      returnValue = binaryOpFromOpCode(TR::ILOpCodes::iurem, left, right);
+      }
+
+   TraceIL("IlBuilder[ %p ]::%d is UnsignedRem %d %% %d\n", this, returnValue->getID(), left->getID(), right->getID());
+
+   if (returnValue->getDataType() != returnType)
+      returnValue = UnsignedConvertTo(_types->PrimitiveType(returnType), returnValue);
 
    return returnValue;
    }

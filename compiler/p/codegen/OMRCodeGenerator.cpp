@@ -27,6 +27,7 @@
 #include "codegen/CodeGenPhase.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/GCStackAtlas.hpp"
@@ -2942,7 +2943,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       cursor = self()->generateDebugCounterBump(cursor, counter, deltaReg, cond);
       if (cond)
          {
-         addDependency(cond, deltaReg, TR::RealRegister::NoReg, TR_GPR, self());
+         TR::addDependency(cond, deltaReg, TR::RealRegister::NoReg, TR_GPR, self());
          }
       self()->stopUsingRegister(deltaReg);
       return cursor;
@@ -2965,10 +2966,10 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       {
       uint32_t preCondCursor = cond->getAddCursorForPre();
       uint32_t postCondCursor = cond->getAddCursorForPost();
-      addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
       cond->getPreConditions()->getRegisterDependency(preCondCursor)->setExcludeGPR0();
       cond->getPostConditions()->getRegisterDependency(postCondCursor)->setExcludeGPR0();
-      addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
       }
    self()->stopUsingRegister(addrReg);
    self()->stopUsingRegister(counterReg);
@@ -2995,10 +2996,10 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       {
       uint32_t preCondCursor = cond->getAddCursorForPre();
       uint32_t postCondCursor = cond->getAddCursorForPost();
-      addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
       cond->getPreConditions()->getRegisterDependency(preCondCursor)->setExcludeGPR0();
       cond->getPostConditions()->getRegisterDependency(postCondCursor)->setExcludeGPR0();
-      addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
       }
    self()->stopUsingRegister(addrReg);
    self()->stopUsingRegister(counterReg);

@@ -401,7 +401,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    protected:
 
-   Linkage(TR::CodeGenerator *cg) : _cg(cg), _minimumFirstInstructionSize(0)
+   Linkage(TR::CodeGenerator *cg) : OMR::Linkage(cg), _minimumFirstInstructionSize(0)
       {
       // Initialize the movOp table based on preferred load instructions for this target.
       //
@@ -443,7 +443,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    private:
 
    static TR_X86OpCodes _movOpcodes[NumMovOperandTypes][NumMovDataTypes];
-   TR::CodeGenerator*   _cg;
    uint8_t              _minimumFirstInstructionSize;
 
    };

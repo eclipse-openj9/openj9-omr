@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -274,13 +274,9 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    /**
     * @brief Constructor
-    */
-   Linkage () : OMR::Linkage() {}
-   /**
-    * @brief Constructor
     * @param[in] cg : CodeGenerator
     */
-   Linkage (TR::CodeGenerator *cg) : _cg(cg) {}
+   Linkage (TR::CodeGenerator *cg) : OMR::Linkage(cg) {}
 
    /**
     * @brief Parameter has to be on stack or not
@@ -426,9 +422,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
     */
    TR_StackMemory trStackMemory();
 
-   protected:
-
-   TR::CodeGenerator*_cg;
    };
 } // ARM64
 } // TR

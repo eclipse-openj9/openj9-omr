@@ -105,8 +105,8 @@ static int32_t getFirstMaskedBit(int16_t mask); ///< formward reference
 ////////////////////////////////////////////////////////////////////////////////
 
 OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen)
-   : OMR::Linkage(),
-      _codeGen(codeGen), _explicitLinkageType(TR_S390LinkageDefault), _linkageType(TR_None), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
+   : OMR::Linkage(codeGen),
+      _explicitLinkageType(TR_S390LinkageDefault), _linkageType(TR_None), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
       _integerReturnRegister(TR::RealRegister::NoReg),
       _floatReturnRegister(TR::RealRegister::NoReg),
       _doubleReturnRegister(TR::RealRegister::NoReg),
@@ -141,8 +141,8 @@ OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen)
  * Even though this method is common, its implementation is machine-specific.
  */
 OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen,TR_S390LinkageConventions elc, TR_LinkageConventions lc)
-   : OMR::Linkage(),
-      _codeGen(codeGen), _explicitLinkageType(elc), _linkageType(lc), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
+   : OMR::Linkage(codeGen),
+      _explicitLinkageType(elc), _linkageType(lc), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
       _integerReturnRegister(TR::RealRegister::NoReg),
       _floatReturnRegister(TR::RealRegister::NoReg),
       _doubleReturnRegister(TR::RealRegister::NoReg),

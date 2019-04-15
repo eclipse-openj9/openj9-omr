@@ -381,9 +381,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    {
    public:
 
-   Linkage () : OMR::Linkage() {}
-
-   Linkage (TR::CodeGenerator *cg) : _cg(cg) {}
+   Linkage (TR::CodeGenerator *cg) : OMR::Linkage(cg) {}
 
    virtual bool hasToBeOnStack(TR::ParameterSymbol *parm);
    virtual void mapStack(TR::ResolvedMethodSymbol *method);
@@ -445,10 +443,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    virtual uintptr_t calculateParameterRegisterOffset(uintptr_t o, TR::ParameterSymbol& p) { return o; }
 
    TR_ReturnInfo getReturnInfoFromReturnType(TR::DataType);
-
-protected:
-
-   TR::CodeGenerator*_cg;
    };
 }
 }

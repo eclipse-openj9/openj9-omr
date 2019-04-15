@@ -43,7 +43,7 @@ namespace OMR { typedef OMR::Linkage LinkageConnector; }
 
 class TR_BitVector;
 namespace TR { class AutomaticSymbol; }
-namespace TR { class Compilation; }
+namespace TR { class CodeGenerator; }
 namespace TR { class Linkage; }
 namespace TR { class Instruction; }
 namespace TR { class Node; }
@@ -63,7 +63,7 @@ class OMR_EXTENSIBLE Linkage
 
    TR_ALLOC(TR_Memory::Linkage)
 
-   Linkage() { }
+   Linkage(TR::CodeGenerator *cg) : _cg(cg) { }
 
    virtual void createPrologue(TR::Instruction *cursor) = 0;
    virtual void createEpilogue(TR::Instruction *cursor) = 0;
@@ -87,6 +87,9 @@ class OMR_EXTENSIBLE Linkage
 
    virtual TR_RegisterKinds argumentRegisterKind(TR::Node *argumentNode);
 
+protected:
+
+   TR::CodeGenerator *_cg;
    };
 }
 

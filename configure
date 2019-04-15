@@ -704,7 +704,6 @@ OMR_GC_MODRON_SCAVENGER
 OMR_GC_MODRON_CONCURRENT_MARK
 OMR_GC_MODRON_COMPACTION
 OMR_GC_DYNAMIC_CLASS_UNLOADING
-OMR_GC_SCAVENGER_DELEGATE
 OMR_THR_TRACING
 OMR_THR_LOCK_NURSERY
 OMR_THR_JLM_HOLD_TIMES
@@ -852,7 +851,6 @@ enable_OMR_THR_JLM
 enable_OMR_THR_JLM_HOLD_TIMES
 enable_OMR_THR_LOCK_NURSERY
 enable_OMR_THR_TRACING
-enable_OMR_GC_SCAVENGER_DELEGATE
 enable_OMR_GC_DYNAMIC_CLASS_UNLOADING
 enable_OMR_GC_MODRON_COMPACTION
 enable_OMR_GC_MODRON_CONCURRENT_MARK
@@ -1613,8 +1611,6 @@ Optional Features:
   --disable-OMR_THR_LOCK_NURSERY
 
   --enable-OMR_THR_TRACING
-
-  --enable-OMR_GC_SCAVENGER_DELEGATE
 
   --enable-OMR_GC_DYNAMIC_CLASS_UNLOADING
 
@@ -5879,25 +5875,6 @@ fi
 
 ############### Flags that are conditionally enabled.
 # Each flag must have a corresponding entry in omrcfg.h.in
-
-# Check whether --enable-OMR_GC_SCAVENGER_DELEGATE was given.
-if test "${enable_OMR_GC_SCAVENGER_DELEGATE+set}" = set; then :
-  enableval=$enable_OMR_GC_SCAVENGER_DELEGATE; if test "x${enableval}" = xyes; then :
-  OMR_GC_SCAVENGER_DELEGATE=1
-
-   $as_echo "#define OMR_GC_SCAVENGER_DELEGATE 1" >>confdefs.h
-
-else
-  OMR_GC_SCAVENGER_DELEGATE=0
-
-
-fi
-else
-  OMR_GC_SCAVENGER_DELEGATE=0
-
-
-fi
-
 
 # Check whether --enable-OMR_GC_DYNAMIC_CLASS_UNLOADING was given.
 if test "${enable_OMR_GC_DYNAMIC_CLASS_UNLOADING+set}" = set; then :

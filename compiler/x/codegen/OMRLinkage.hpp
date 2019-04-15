@@ -388,14 +388,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
       return _movOpcodes[operandType][dataType];
       }
 
-   TR::Machine *machine() {return _cg->machine();}
-   TR::CodeGenerator *cg() {return _cg;}
-   TR::Compilation *comp() {return _cg->comp();}
-   TR_FrontEnd *fe() {return _cg->fe();}
-   TR_Memory *trMemory() {return _cg->trMemory(); }
-   TR_HeapMemory trHeapMemory();
-   TR_StackMemory trStackMemory();
-
    void alignLocalObjectWithCollectedFields(uint32_t & stackIndex) {}
    void alignLocalObjectWithoutCollectedFields(uint32_t & stackIndex) {}
 

@@ -330,14 +330,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    virtual TR::Register *buildDirectDispatch(TR::Node *callNode) = 0;
    virtual TR::Register *buildIndirectDispatch(TR::Node *callNode) = 0;
 
-   TR_Debug        *getDebug()         {return _cg->getDebug();}
-   TR::CodeGenerator *cg()               {return _cg;}
-   TR::Compilation      *comp()             {return _cg->comp();}
-   TR_FrontEnd         *fe()               {return _cg->fe();}
-   TR_Memory *          trMemory()         {return _cg->trMemory(); }
-   TR_HeapMemory        trHeapMemory();
-   TR_StackMemory       trStackMemory();
-
    protected:
 
    TR::Register *buildARMLinkageDirectDispatch(TR::Node *callNode, bool isSystem = false);

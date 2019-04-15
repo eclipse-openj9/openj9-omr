@@ -810,16 +810,3 @@ TR_ReturnInfo OMR::Power::Linkage::getReturnInfoFromReturnType(TR::DataType retu
 
    return TR_VoidReturn;
    }
-
-TR_HeapMemory
-OMR::Power::Linkage::trHeapMemory()
-   {
-   return self()->trMemory();
-   }
-
-
-TR_StackMemory
-OMR::Power::Linkage::trStackMemory()
-   {
-   return self()->trMemory();
-   }

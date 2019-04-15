@@ -390,38 +390,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
     */
    virtual TR::Register *buildIndirectDispatch(TR::Node *callNode) = 0;
 
-   /**
-    * @brief Gets the CodeGenerator
-    * @return CodeGenerator
-    */
-   TR::CodeGenerator *cg() {return _cg;}
-   /**
-    * @brief Gets the Compilation
-    * @return Compilation
-    */
-   TR::Compilation *comp() {return _cg->comp();}
-   /**
-    * @brief Gets the FrontEnd
-    * @return FrontEnd
-    */
-   TR_FrontEnd *fe() {return _cg->fe();}
-
-   /**
-    * @brief Gets the TR_Memory
-    * @return TR_Memory
-    */
-   TR_Memory *trMemory() {return _cg->trMemory();}
-   /**
-    * @brief Gets the Heap Memory
-    * @return Heap Memory
-    */
-   TR_HeapMemory trHeapMemory();
-   /**
-    * @brief Gets the Stack Memory
-    * @return Stack Memory
-    */
-   TR_StackMemory trStackMemory();
-
    };
 } // ARM64
 } // TR

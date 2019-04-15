@@ -3288,36 +3288,6 @@ OMR::Z::Linkage::getJ9MethodArgumentRegisterRealRegister()
    return self()->getRealRegister(_j9methodArgumentRegister);
    }
 
-TR::Compilation *
-OMR::Z::Linkage::comp()
-   {
-   return self()->cg()->comp();
-   }
-
-TR_FrontEnd *
-OMR::Z::Linkage::fe()
-   {
-   return self()->cg()->fe();
-   }
-
-TR_Memory *
-OMR::Z::Linkage::trMemory()
-   {
-   return self()->cg()->trMemory();
-   }
-
-TR_HeapMemory
-OMR::Z::Linkage::trHeapMemory()
-   {
-   return self()->trMemory();
-   }
-
-TR_StackMemory
-OMR::Z::Linkage::trStackMemory()
-   {
-   return self()->trMemory();
-   }
-
 TR::RealRegister *
 OMR::Z::Linkage::getRealRegister(TR::RealRegister::RegNum rNum)
    {

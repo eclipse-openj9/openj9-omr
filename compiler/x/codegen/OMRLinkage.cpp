@@ -763,20 +763,6 @@ OMR::X86::Linkage::paramMovType(TR::ParameterSymbol *param)
    }
 
 
-TR_HeapMemory
-OMR::X86::Linkage::trHeapMemory()
-   {
-   return self()->trMemory();
-   }
-
-
-TR_StackMemory
-OMR::X86::Linkage::trStackMemory()
-   {
-   return self()->trMemory();
-   }
-
-
 TR_X86OpCodes OMR::X86::Linkage::_movOpcodes[NumMovOperandTypes][NumMovDataTypes] =
    {
    //    Int4         Int8        Float4         Float8

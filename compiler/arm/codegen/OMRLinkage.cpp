@@ -1007,15 +1007,6 @@ printf("done\n"); fflush(stdout);
    return totalSize;
    }
 
-TR_HeapMemory OMR::ARM::Linkage::trHeapMemory()
-   {
-   return self()->trMemory();
-   }
-
-TR_StackMemory OMR::ARM::Linkage::trStackMemory()
-   {
-   return self()->trMemory();
-   }
 
 TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNode, bool isSystem)
    {

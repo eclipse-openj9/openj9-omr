@@ -42,9 +42,15 @@ namespace OMR { typedef OMR::Linkage LinkageConnector; }
 #include "infra/Annotations.hpp"
 
 class TR_BitVector;
+class TR_FrontEnd;
+class TR_HeapMemory;
+class TR_Memory;
+class TR_StackMemory;
 namespace TR { class AutomaticSymbol; }
 namespace TR { class CodeGenerator; }
+namespace TR { class Compilation; }
 namespace TR { class Linkage; }
+namespace TR { class Machine; }
 namespace TR { class Instruction; }
 namespace TR { class Node; }
 namespace TR { class ParameterSymbol; }
@@ -59,7 +65,42 @@ class OMR_EXTENSIBLE Linkage
    {
    public:
 
-   TR::Linkage* self();
+   inline TR::Linkage* self();
+
+   /**
+    * @return Cached CodeGenerator object
+    */
+   inline TR::CodeGenerator *cg();
+
+   /**
+    * @return Machine object from cached CodeGenerator
+    */
+   inline TR::Machine *machine();
+
+   /**
+    * @return Compilation object from cached CodeGenerator
+    */
+   inline TR::Compilation *comp();
+
+   /**
+    * @return FrontEnd object from cached CodeGenerator
+    */
+   inline TR_FrontEnd *fe();
+
+   /**
+    * @return TR_Memory object from cached CodeGenerator
+    */
+   inline TR_Memory *trMemory();
+
+   /**
+    * @return TR_HeapMemory object
+    */
+   inline TR_HeapMemory trHeapMemory();
+
+   /**
+    * @return TR_StackMemory object
+    */
+   inline TR_StackMemory trStackMemory();
 
    TR_ALLOC(TR_Memory::Linkage)
 

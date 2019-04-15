@@ -159,15 +159,3 @@ OMR::ARM64::Linkage::numArgumentRegisters(TR_RegisterKinds kind)
          return 0;
       }
    }
-
-TR_HeapMemory
-OMR::ARM64::Linkage::trHeapMemory()
-   {
-   return self()->trMemory();
-   }
-
-TR_StackMemory
-OMR::ARM64::Linkage::trStackMemory()
-   {
-   return self()->trMemory();
-   }

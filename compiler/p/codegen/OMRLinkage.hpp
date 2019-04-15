@@ -422,14 +422,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    virtual TR::Register *buildIndirectDispatch(TR::Node *callNode) = 0;
 
-   TR::CodeGenerator *cg() {return _cg;}
-   TR::Compilation *comp() {return _cg->comp();}
-   TR_FrontEnd *fe() {return _cg->fe();}
-
-   TR_Memory *trMemory() {return _cg->trMemory(); }
-   TR_HeapMemory trHeapMemory();
-   TR_StackMemory trStackMemory();
-
    // Given an offset (generally into a stack frame) of the slot used
    // to hold a parameter, compute the offset of the data itself.
    // (in the case of 32-bit slots, the offset will be 3 for a char,

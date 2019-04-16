@@ -29,6 +29,7 @@
 #ifdef J9_PROJECT_SPECIFIC
 #include "codegen/CallSnippet.hpp"
 #endif
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/GenerateInstructions.hpp"
@@ -354,8 +355,8 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
             generateTrg1ImmInstruction(self()->cg(), ARMOp_mov, child, pushReg, 0, 0);
 
             TR::RegisterDependencyConditions *deps = new (self()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, self()->trMemory());
-            addDependency(deps, pushReg, TR::RealRegister::NoReg, TR_GPR, self()->cg());
-            addDependency(deps, objReg,  TR::RealRegister::NoReg, TR_GPR, self()->cg());
+            TR::addDependency(deps, pushReg, TR::RealRegister::NoReg, TR_GPR, self()->cg());
+            TR::addDependency(deps, objReg,  TR::RealRegister::NoReg, TR_GPR, self()->cg());
 
             generateLabelInstruction(self()->cg(), ARMOp_label, child, doneLabel, deps);
             self()->cg()->decReferenceCount(child);
@@ -533,10 +534,10 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
          vftReg = self()->cg()->evaluate(child);
          self()->cg()->decReferenceCount(child);
          }
-      addDependency(dependencies, vftReg, TR::RealRegister::NoReg, TR_GPR, self()->cg());  // dep 0
+      TR::addDependency(dependencies, vftReg, TR::RealRegister::NoReg, TR_GPR, self()->cg());  // dep 0
 
 #ifndef LOCK_R14
-      addDependency(dependencies, NULL, TR::RealRegister::gr14, TR_GPR, cg());  // dep 2
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr14, TR_GPR, cg());  // dep 2
 #endif
       }
 
@@ -563,10 +564,10 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
 #endif
       }
 
-   //TODO move the addDependency(gr11) to the latter part of the method
+   //TODO move the TR::addDependency(gr11) to the latter part of the method
    if (isVirtual && (specialArgReg != TR::RealRegister::gr11))
       {
-      addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, self()->cg());  // dep 1
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, self()->cg());  // dep 1
       }
 
    if (specialArgReg != TR::RealRegister::NoReg)
@@ -693,7 +694,7 @@ printf("%s: numIntegerArgs %d numMemArgs %d\n", sig,  numIntegerArgs, numMemArgs
                   }
                else
                   {
-                  addDependency(dependencies, reg, specialArgReg, TR_GPR, self()->cg());
+                  TR::addDependency(dependencies, reg, specialArgReg, TR_GPR, self()->cg());
                   }
                }
             else
@@ -736,7 +737,7 @@ printf("%s: numIntegerArgs %d numMemArgs %d\n", sig,  numIntegerArgs, numMemArgs
                      }
                   else
                      {
-                     addDependency(dependencies, reg, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, self()->cg());
+                     TR::addDependency(dependencies, reg, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, self()->cg());
                      }
                   }
                else
@@ -783,7 +784,7 @@ printf("pushing 32-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
                   }
                else
                   {
-                  addDependency(dependencies, specialArgRegister, specialArgReg, TR_GPR, self()->cg());
+                  TR::addDependency(dependencies, specialArgRegister, specialArgReg, TR_GPR, self()->cg());
                   }
                }
             else
@@ -869,7 +870,7 @@ printf("pushing 64-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
                   generateTrg1Src1Instruction(cg(), reg, tempReg, ARMOp_fmr);
                   reg = tempReg;
                   }
-               addDependency(dependencies, reg, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
+               TR::addDependency(dependencies, reg, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
                }
             else
                {
@@ -891,7 +892,7 @@ printf("pushing 64-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
                   generateTrg1Src1Instruction(cg(), reg, tempReg, ARMOp_fmr);
                   reg = tempReg;
                   }
-               addDependency(dependencies, reg, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
+               TR::addDependency(dependencies, reg, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
                }
             else
                {
@@ -936,7 +937,7 @@ printf("pushing 64-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
             }
          else
             {
-            addDependency(dependencies, NULL, realReg, TR_GPR, self()->cg());
+            TR::addDependency(dependencies, NULL, realReg, TR_GPR, self()->cg());
             }
          }
       }
@@ -945,7 +946,7 @@ printf("pushing 64-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
    /* D0 - D7 are volatile. TODO: live register. */
    for (i = 0; i < 8 /*properties.getNumFloatArgRegs()*/; i++)
       {
-      addDependency(dependencies, NULL, (TR::RealRegister::RegNum)((uint32_t)TR::RealRegister::fp0 + i), TR_FPR, self()->cg());
+      TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)((uint32_t)TR::RealRegister::fp0 + i), TR_FPR, self()->cg());
       }
 #endif
    // add dependencies for other volatile registers; for virtual calls,
@@ -954,16 +955,16 @@ printf("pushing 64-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
       {
       case TR_Private:
          if ((!isVirtual) && (specialArgReg != TR::RealRegister::gr11))
-            addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, self()->cg());
+            TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, self()->cg());
          // deliberate fall-through
       case TR_Helper:
-         addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, self()->cg());
-         addDependency(dependencies, NULL, TR::RealRegister::gr5, TR_GPR, self()->cg());
+         TR::addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, self()->cg());
+         TR::addDependency(dependencies, NULL, TR::RealRegister::gr5, TR_GPR, self()->cg());
          // deliberate fall-through
       case TR_System:
 #ifndef LOCK_R14
          if (!isVirtual)
-            addDependency(dependencies, NULL, TR::RealRegister::gr14, TR_GPR, cg());
+            TR::addDependency(dependencies, NULL, TR::RealRegister::gr14, TR_GPR, cg());
 #endif
          break;
       }

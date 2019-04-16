@@ -54,8 +54,6 @@ template <class T> class List;
 enum TR_XPLinkFrameType
    {
    TR_XPLinkUnknownFrame,
-   TR_XPLinkStackLeafFrame,
-   TR_XPLinkNoStackLeafFrame,
    TR_XPLinkSmallFrame,
    TR_XPLinkIntermediateFrame,
    TR_XPLinkStackCheckFrame
@@ -116,7 +114,6 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
 
    TR_XPLinkFrameType getFrameType() { return _frameType; }
    void setFrameType(enum TR_XPLinkFrameType type) { _frameType = type; }
-   virtual bool getIsLeafRoutine() { return (getFrameType() == TR_XPLinkStackLeafFrame) || (getFrameType() == TR_XPLinkNoStackLeafFrame); }
    virtual int32_t getOutgoingParameterBlockSize();
 
    virtual TR::Register *loadEnvironmentIntoRegister(TR::Node * callNode, TR::RegisterDependencyConditions * deps, bool loadIntoEnvironmentReg);

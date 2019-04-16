@@ -507,57 +507,6 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
    setNumUsedArgumentVFRs(numVectorArgs);
 }
 
-TR::Linkage::FrameType
-TR::S390zLinuxSystemLinkage::checkLeafRoutine(int32_t stackFrameSize, TR::Instruction **callInstruction)
-   {
-   FrameType ft = standardFrame;
-
-
-   if(comp()->getOption(TR_DisableLeafRoutineDetection))
-      {
-      if(comp()->getOption(TR_TraceCG))
-         traceMsg(comp(),"Leaf Routine Detection Disabled\n");
-      return ft;
-      }
-
-   if(isForceSaveIncomingParameters())
-      {
-      if(comp()->getOption(TR_TraceCG))
-         traceMsg(comp(),"Force Save Incoming Parameters enabled\n");
-      return ft;
-      }
-
-   int32_t zeroArgsAndLocalsStackFrameSize = (((getOffsetToFirstParm() + 7)>>3)<<3);
-
-   if(comp()->getOption(TR_TraceCG))
-      traceMsg(comp(), "stackFrameSize = %d  default 0 arg and 0 local stack frame size = %d\n",stackFrameSize,zeroArgsAndLocalsStackFrameSize);
-
-   // a) frame size < 256 and b) no alloca()calls
-   if (stackFrameSize != zeroArgsAndLocalsStackFrameSize)
-      {
-      if(comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "LeafRoutine: stackFrameSize != zeroArgsAndLocalStackFrameSize\n");
-      return ft;
-      }
-
-   // b) not var arg
-   TR::MethodSymbol *methodSymbol = comp()->getMethodSymbol();
-
-
-   // c) ensure stack pointer isn't used.
-   TR::RealRegister * spReg = getStackPointerRealRegister();
-
-   if (spReg->isUsedInMemRef())       //don't need to check gprmask as these are saved in caller stack.
-      {
-      if(comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "LeafRoutine: stack pointer isUsedInMemRef = %d is set to 1\n",spReg->isUsedInMemRef());
-
-      return ft;
-      }
-
-   return ft;
-   }
-
 int32_t
 TR::S390zLinuxSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
    {

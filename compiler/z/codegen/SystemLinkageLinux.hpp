@@ -64,8 +64,6 @@ class S390zLinuxSystemLinkage : public TR::SystemLinkage
 
    virtual int32_t getRegisterSaveOffset(TR::RealRegister::RegNum);
    virtual void initParamOffset(TR::ResolvedMethodSymbol * method, int32_t stackIndex, List<TR::ParameterSymbol> *parameterList=0);
-
-   virtual FrameType checkLeafRoutine(int32_t stackFrameSize, TR::Instruction **callInstruction = 0);
    };
 
 }

@@ -208,16 +208,6 @@ namespace Z
  */
 class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    {
-
-public:
-   enum FrameType {
-      standardFrame,
-      noStackLeafFrame,
-      StackLeafFrame,
-      noStackForwardingFrame,         ///< This method may have a single call that forwards on to another method that can be replaced by a jmp
-      };
-
-
 private:
    TR_LinkageConventions _linkageType;
    TR_S390LinkageConventions _explicitLinkageType;
@@ -615,8 +605,6 @@ enum TR_DispatchType
                                TR::RealRegister::RegNum);
 
 private:
-
-   enum FrameType _frameType;
 
    TR::Instruction * _lastPrologueInstr;
    TR::Instruction * _firstPrologueInstr;

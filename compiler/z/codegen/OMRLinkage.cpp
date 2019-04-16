@@ -123,8 +123,7 @@ OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen)
       _firstSaved(TR::RealRegister::NoReg),
       _lastSaved(TR::RealRegister::NoReg),
       _lastPrologueInstr(NULL),
-      _firstPrologueInstr(NULL),
-      _frameType(standardFrame)
+      _firstPrologueInstr(NULL)
    {
    int32_t i;
    self()->setProperties(0);
@@ -159,8 +158,7 @@ OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen,TR_S390LinkageConventions e
       _firstSaved(TR::RealRegister::NoReg),
       _lastSaved(TR::RealRegister::NoReg),
       _lastPrologueInstr(NULL),
-      _firstPrologueInstr(NULL),
-      _frameType(standardFrame)
+      _firstPrologueInstr(NULL)
    {
    int32_t i;
    self()->setProperties(0);
@@ -699,8 +697,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
          // However, this broke some java modes (OSR,HCR).  Likely, those modes should rely on 'unconditionalSave' to ensure we always store out to the stack for whenever we need all variables on the stack.
          // This investigation will be a future todo .
 
-         if (!self()->getIsLeafRoutine() && ((ai < 0 && paramCursor->isReferencedParameter()) ||
-             self()->hasToBeOnStack(paramCursor) || unconditionalSave))
+         if ((ai < 0 && paramCursor->isReferencedParameter()) || self()->hasToBeOnStack(paramCursor) || unconditionalSave)
             {
             bool regIsUsed = false;
             switch (dtype)
@@ -3081,12 +3078,6 @@ int32_t
 OMR::Z::Linkage::getLastMaskedBit(int16_t mask)
    {
    return TR::Linkage::getLastMaskedBit(mask , 0, 15);
-   }
-
-bool
-OMR::Z::Linkage::getIsLeafRoutine()
-   {
-   return (self()->getFrameType() == StackLeafFrame) || (self()->getFrameType() == noStackLeafFrame) || (self()->getFrameType() == noStackForwardingFrame);
    }
 
 bool

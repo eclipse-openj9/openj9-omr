@@ -156,8 +156,6 @@ class SystemLinkage : public TR::Linkage
    virtual TR::Instruction* restoreGPRsInEpilogue(TR::Instruction *cursor);
    virtual TR::Instruction* restoreGPRsInEpilogue2(TR::Instruction *cursor);
 
-   virtual FrameType checkLeafRoutine(int32_t stackFrameSize, TR::Instruction **callInstruction = 0) { return standardFrame; }      // default implementation.  Should be overridden
-   virtual FrameType checkLeafRoutine(int32_t stackFrameSize) { return standardFrame; }      // default implementation.  Should be overridden
    virtual void initS390RealRegisterLinkage();
 
    virtual TR::RealRegister::RegNum setNormalStackPointerRegister  (TR::RealRegister::RegNum r) { return _normalStackPointerRegister = r; }

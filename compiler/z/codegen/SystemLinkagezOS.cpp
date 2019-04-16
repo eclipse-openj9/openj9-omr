@@ -873,14 +873,6 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
       { // GPR4 is saved but indirectly via GPR0 in stack check or medium case - so don't save GPR4 via STM
       firstSaved = getFirstMaskedBit(GPRSaveMask&~(1 << GPREGINDEX(getNormalStackPointerRegister())));
       }
-   else if (frameType == TR_XPLinkStackLeafFrame)
-      { // Were not decrementing stack pointer but need stack space. We need to generate
-        // STM into frame - starting with GPR4,5,6
-        // These are not added to restore mask
-      GPRSaveMask  |= 1 << GPREGINDEX(getEntryPointRegister());
-      GPRSaveMask  |= 1 << GPREGINDEX(getReturnAddressRegister());
-      firstSaved = getFirstMaskedBit(GPRSaveMask);
-      }
    else
       firstSaved = getFirstMaskedBit(GPRSaveMask);
 
@@ -906,18 +898,6 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
 
    switch (frameType)
       {
-      case TR_XPLinkNoStackLeafFrame:
-          break; // nothing to buy or save
-
-      case TR_XPLinkStackLeafFrame:
-          // STM rx,ry,offset(R4)
-          rsaOffset =  (offsetToRegSaveArea - stackFrameSize) + offsetToFirstSavedReg;
-          rsa = generateS390MemoryReference(spReg, rsaOffset, cg());
-          cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(),
-                  node, getRealRegister(REGNUM(firstSaved + TR::RealRegister::FirstGPR)),
-                  getRealRegister(REGNUM(lastSaved + TR::RealRegister::FirstGPR)), rsa, cursor);
-          break;  // not frame to buy but save regs
-
       case TR_XPLinkSmallFrame:
           // STM rx,ry,offset(R4)
           rsaOffset =  (offsetToRegSaveArea - stackFrameSize) + offsetToFirstSavedReg;

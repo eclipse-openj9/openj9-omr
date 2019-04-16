@@ -576,7 +576,7 @@ TR::SystemLinkage::saveGPRsInPrologue(TR::Instruction * cursor)
          if (!findStartReg && ( !(getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod() || (i == TR::RealRegister::LastGPR && firstReg != TR::RealRegister::LastGPR)) )
             {
             // LastGPR is the stack pointer on zLinux which always be saved and restored
-            if (i == TR::RealRegister::LastGPR && !getIsLeafRoutine())
+            if (i == TR::RealRegister::LastGPR)
                {
                lastReg = static_cast<TR::RealRegister::RegNum>(i);
                hasSavedSP = true;
@@ -607,7 +607,7 @@ TR::SystemLinkage::saveGPRsInPrologue(TR::Instruction * cursor)
 
 
    // LastGPR is the stack pointer on zLinux which always be saved and restored
-   if (!hasSavedSP && !getIsLeafRoutine())
+   if (!hasSavedSP)
       {
        lastReg = static_cast<TR::RealRegister::RegNum>(TR::RealRegister::LastGPR);
        offset =  getRegisterSaveOffset(REGNUM(lastReg));
@@ -663,33 +663,11 @@ void TR::SystemLinkage::createPrologue(TR::Instruction * cursor)
       traceMsg(comp(), "final stackFrameSize: stack size %d\n", stackFrameSize);
 
    setFirstPrologueInstruction(cursor);
-
-
-   //check if leaf method
-
-   TR::Instruction *callInstruction = 0;
-   FrameType ft = checkLeafRoutine(stackFrameSize, &callInstruction);
-
-   if ( ( ft == noStackLeafFrame || ft == StackLeafFrame || ft == noStackForwardingFrame ) &&
-         performTransformation(comp(), "O^O Generating method as leaf of type %d\n",ft))
-      {
-      setFrameType(ft);
-
-      if(ft == noStackForwardingFrame)
-         replaceCallWithJumpInstruction(callInstruction);
-      }
-
-
-
-   if(! (getFrameType() == noStackForwardingFrame || getFrameType() == noStackLeafFrame))
-      {
-      if(comp()->getOption(TR_LinkagePreserveStrategy2))
-         cursor = saveGPRsInPrologue2(cursor);
-      else
-         cursor = saveGPRsInPrologue(cursor);
-      }
-
-
+   
+   if(comp()->getOption(TR_LinkagePreserveStrategy2))
+      cursor = saveGPRsInPrologue2(cursor);
+   else
+      cursor = saveGPRsInPrologue(cursor);
 
    int16_t GPRSaveMask = getGPRSaveMask();
 
@@ -700,39 +678,30 @@ void TR::SystemLinkage::createPrologue(TR::Instruction * cursor)
       cursor = new (trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, firstNode, lpReg, firstSnippet, cursor, cg());
 #endif
 
+   // Check for large stack
+   bool largeStack = (stackFrameSize < MIN_IMMEDIATE_VAL || stackFrameSize > MAX_IMMEDIATE_VAL);
 
-   if(! (getFrameType() == noStackForwardingFrame || getFrameType() == noStackLeafFrame || getFrameType() == StackLeafFrame))
+   TR::RealRegister * tempReg = getRealRegister(TR::RealRegister::GPR0);
+   TR::RealRegister * backChainReg = getRealRegister(TR::RealRegister::GPR1);
+
+
+   if (!largeStack)
       {
-      // Check for large stack
-      bool largeStack = (stackFrameSize < MIN_IMMEDIATE_VAL || stackFrameSize > MAX_IMMEDIATE_VAL);
-
-      TR::RealRegister * tempReg = getRealRegister(TR::RealRegister::GPR0);
-      TR::RealRegister * backChainReg = getRealRegister(TR::RealRegister::GPR1);
-
-
-      if (!largeStack)
-         {
-         // Adjust stack pointer with LA (reduce AGI delay)
-         cursor = generateRXInstruction(cg(), TR::InstOpCode::LAY, firstNode, spReg, generateS390MemoryReference(spReg,(stackFrameSize) * -1, cg()),cursor);
-         }
-      else
-         {
-         // adjust stack frame pointer
-         if (largeStack)
-            {
-            cursor = generateS390ImmToRegister(cg(), firstNode, tempReg, (intptr_t)(stackFrameSize * -1), cursor);
-            cursor = generateRRInstruction(cg(), TR::InstOpCode::getAddRegOpCode(), firstNode, spReg, tempReg, cursor);
-            }
-         else
-            {
-            cursor = generateRIInstruction(cg(), TR::InstOpCode::getAddHalfWordImmOpCode(), firstNode, spReg, (stackFrameSize) * -1, cursor);
-            }
-         }
+      // Adjust stack pointer with LA (reduce AGI delay)
+      cursor = generateRXInstruction(cg(), TR::InstOpCode::LAY, firstNode, spReg, generateS390MemoryReference(spReg,(stackFrameSize) * -1, cg()),cursor);
       }
    else
       {
-      if(comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "Not emitting stack save because method is leaf Routine\n");
+      // adjust stack frame pointer
+      if (largeStack)
+         {
+         cursor = generateS390ImmToRegister(cg(), firstNode, tempReg, (intptr_t)(stackFrameSize * -1), cursor);
+         cursor = generateRRInstruction(cg(), TR::InstOpCode::getAddRegOpCode(), firstNode, spReg, tempReg, cursor);
+         }
+      else
+         {
+         cursor = generateRIInstruction(cg(), TR::InstOpCode::getAddHalfWordImmOpCode(), firstNode, spReg, (stackFrameSize) * -1, cursor);
+         }
       }
 
    //Save preserved FPRs
@@ -769,7 +738,7 @@ TR::SystemLinkage::restoreGPRsInEpilogue2(TR::Instruction *cursor)
    {
    int16_t GPRSaveMask = 0;
    int32_t offset = 0;
-   int32_t stackFrameSize = getIsLeafRoutine() ? 0 : getStackFrameSize();
+   int32_t stackFrameSize = getStackFrameSize();
    TR::RealRegister * spReg = getNormalStackPointerRealRegister();
    TR::Node * nextNode = cursor->getNext()->getNode();
 
@@ -832,7 +801,7 @@ TR::SystemLinkage::restoreGPRsInEpilogue(TR::Instruction *cursor)
    int16_t GPRSaveMask = 0;
    bool    hasRestoreSP = false;
    int32_t offset = 0;
-   int32_t stackFrameSize = getIsLeafRoutine() ? 0 : getStackFrameSize();
+   int32_t stackFrameSize = getStackFrameSize();
    TR::RealRegister * spReg = getNormalStackPointerRealRegister();
    TR::Node * nextNode = cursor->getNext()->getNode();
 
@@ -864,7 +833,7 @@ TR::SystemLinkage::restoreGPRsInEpilogue(TR::Instruction *cursor)
          if (!findStartReg && ( !(getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod() || (i == TR::RealRegister::LastGPR && firstReg != TR::RealRegister::LastGPR)) )
             {
             // LastGPR is the stack pointer on zLinux which always be saved and restored
-            if (i == TR::RealRegister::LastGPR && !getIsLeafRoutine())
+            if (i == TR::RealRegister::LastGPR)
                {
                hasRestoreSP = true;
                lastReg = static_cast<TR::RealRegister::RegNum>(i);
@@ -893,7 +862,7 @@ TR::SystemLinkage::restoreGPRsInEpilogue(TR::Instruction *cursor)
       }
 
     // LastGPR is the stack pointer on zLinux which always be saved and restored
-    if (!hasRestoreSP && !getIsLeafRoutine())
+    if (!hasRestoreSP)
        {
        lastReg = static_cast<TR::RealRegister::RegNum>(TR::RealRegister::LastGPR);
        offset =  getRegisterSaveOffset(REGNUM(lastReg));
@@ -946,23 +915,20 @@ void TR::SystemLinkage::createEpilogue(TR::Instruction * cursor)
         }
      }
 
-   if(! (getFrameType() == noStackForwardingFrame || getFrameType() == noStackLeafFrame))
-      {
-      // Check for large stack
-      bool largeStack = (stackFrameSize < MIN_IMMEDIATE_VAL || stackFrameSize > MAX_IMMEDIATE_VAL);
+   // Check for large stack
+   bool largeStack = (stackFrameSize < MIN_IMMEDIATE_VAL || stackFrameSize > MAX_IMMEDIATE_VAL);
 
-      TR::RealRegister * tempReg = getRealRegister(TR::RealRegister::GPR0);
+   TR::RealRegister * tempReg = getRealRegister(TR::RealRegister::GPR0);
 
-      if (comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "GPRSaveMask: Register context %x\n", GPRSaveMask&0xffff);
+   if (comp()->getOption(TR_TraceCG))
+      traceMsg(comp(), "GPRSaveMask: Register context %x\n", GPRSaveMask&0xffff);
 
 
 
-      if(comp()->getOption(TR_LinkagePreserveStrategy2))
-         cursor = restoreGPRsInEpilogue2(cursor);
-      else
-         cursor = restoreGPRsInEpilogue(cursor);
-      }
+   if(comp()->getOption(TR_LinkagePreserveStrategy2))
+      cursor = restoreGPRsInEpilogue2(cursor);
+   else
+      cursor = restoreGPRsInEpilogue(cursor);
 
    cursor = generateS390RegInstruction(cg(), TR::InstOpCode::BCR, nextNode,
           getRealRegister(REGNUM(TR::RealRegister::GPR14)), cursor);

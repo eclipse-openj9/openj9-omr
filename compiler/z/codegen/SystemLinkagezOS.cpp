@@ -1363,6 +1363,79 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction * cursor,
    return cursor;
    }
 
+TR::Instruction*
+TR::S390zOSSystemLinkage::getputFPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction * cursor, TR::Node *node, TR::RealRegister *spReg)
+   {
+   int16_t FPRSaveMask;
+   int32_t offset, firstSaved, lastSaved, beginSaveOffset;
+   TR::MemoryReference *rsa;
+   int32_t i,j, fprSize;
+
+   if (spReg == NULL)
+      {
+      spReg = getNormalStackPointerRealRegister();
+      }
+
+   FPRSaveMask = getFPRSaveMask();
+   beginSaveOffset = getFPRSaveAreaEndOffset(); // end offset is really begin offset -- see mapStack()
+
+   firstSaved = TR::Linkage::getFirstMaskedBit(FPRSaveMask);
+   lastSaved = TR::Linkage::getLastMaskedBit(FPRSaveMask);
+
+   fprSize = cg()->machine()->getFPRSize();
+   j = 0;
+   for (i = firstSaved; i <= lastSaved; ++i)
+      {
+      if (FPRSaveMask & (1 << (i)))
+         {
+         offset = beginSaveOffset + (j*fprSize);
+         rsa = generateS390MemoryReference(spReg, offset, cg());
+         cursor = generateRXInstruction(cg(), opcode,
+               node, getRealRegister(REGNUM(i+TR::RealRegister::FirstFPR)), rsa, cursor);
+         j++;
+         }
+      }
+
+   return cursor;
+   }
+
+TR::Instruction *
+TR::S390zOSSystemLinkage::addImmediateToRealRegister(TR::RealRegister *targetReg, int32_t value, TR::RealRegister *tempReg, TR::Node *node, TR::Instruction *cursor, bool *checkTempNeeded)
+   {
+   bool smallPositiveValue = (value<MAXDISP && value>=0);
+   bool largeValue = (value<MIN_IMMEDIATE_VAL || value>MAX_IMMEDIATE_VAL);
+
+   if (checkTempNeeded)
+      *checkTempNeeded = false; // assume no reg needed - change this below
+
+   if (smallPositiveValue)
+      {
+      if (!checkTempNeeded)
+         cursor = generateRXInstruction(cg(), TR::InstOpCode::LA, node, targetReg, generateS390MemoryReference(targetReg,value,cg()),cursor);
+      }
+   else if (largeValue)
+      {
+      // TODO: could reduce number of cases dependent on temporary register
+      //  For example, could generate sequence of AHI's for suitably small large value
+      if (checkTempNeeded)
+         *checkTempNeeded = true;
+      else if (!tempReg)
+         TR_ASSERT( 0,"temporary register needed for add to register");
+      else
+         {
+         cursor = generateS390ImmToRegister(cg(), node, tempReg, (intptr_t)(value), cursor);
+         cursor = generateRRInstruction(cg(), TR::InstOpCode::getAddRegOpCode(), node, targetReg, tempReg, cursor);
+         }
+      }
+   else
+      {
+      if (!checkTempNeeded)
+         cursor = generateRXInstruction(cg(), TR::InstOpCode::LAY, node, targetReg, generateS390MemoryReference(targetReg,value,cg()), cursor);
+      }
+
+   return cursor;
+   }
+
 TR::S390zOSSystemLinkage::EntryPointMarkerOffsetToPPA1Relocation::EntryPointMarkerOffsetToPPA1Relocation(TR::Instruction* cursor, TR::LabelSymbol* ppa2)
    :
       TR::LabelRelocation(NULL, ppa2),

@@ -148,12 +148,6 @@ class SystemLinkage : public TR::Linkage
    virtual void mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t & stackIndex);
    virtual bool hasToBeOnStack(TR::ParameterSymbol * parm);
 
-   virtual void createPrologue(TR::Instruction * cursor);
-   virtual void createEpilogue(TR::Instruction * cursor);
-
-   virtual TR::Instruction* saveGPRsInPrologue(TR::Instruction * cursor);
-   virtual TR::Instruction* restoreGPRsInEpilogue(TR::Instruction *cursor);
-
    virtual void initS390RealRegisterLinkage();
 
    virtual TR::RealRegister::RegNum setNormalStackPointerRegister  (TR::RealRegister::RegNum r) { return _normalStackPointerRegister = r; }
@@ -170,11 +164,8 @@ class SystemLinkage : public TR::Linkage
    virtual TR::RealRegister::RegNum getDebugHooksRegister()   { return _debugHooksRegister; }
    virtual TR::RealRegister *getDebugHooksRealRegister() {return getRealRegister(_debugHooksRegister);}
 
-   // == General utilities (linkage independent)
-   virtual TR::Instruction *addImmediateToRealRegister(TR::RealRegister * targetReg, int32_t immediate, TR::RealRegister *tempReg, TR::Node *node, TR::Instruction *cursor, bool *checkTempNeeded=NULL);
-   virtual TR::Instruction *getputFPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction *cursor, TR::Node *node, TR::RealRegister *spReg=0);
-   
    protected:
+
    int32_t _StackFrameSize;
 
    private:

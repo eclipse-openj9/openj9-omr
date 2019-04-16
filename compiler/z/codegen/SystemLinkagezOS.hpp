@@ -180,6 +180,12 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
    TR::Instruction * genCallNOPAndDescriptor(TR::Instruction * cursor, TR::Node *node, TR::Node *callNode, TR_XPLinkCallTypes callType);
 
    private:
+
+   TR::Instruction* getputFPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction *cursor, TR::Node *node, TR::RealRegister *spReg = NULL);
+
+   virtual TR::Instruction* addImmediateToRealRegister(TR::RealRegister * targetReg, int32_t immediate, TR::RealRegister *tempReg, TR::Node *node, TR::Instruction *cursor, bool *checkTempNeeded=NULL);
+
+   private:
    
    // TODO: There seems to be a lot of similarity between this relocation and PPA1OffsetToPPA2Relocation relocation.
    // It would be best if we common these up, perhaps adding an "offset" to to one of the existing relocation kinds

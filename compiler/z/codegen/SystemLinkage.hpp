@@ -152,9 +152,7 @@ class SystemLinkage : public TR::Linkage
    virtual void createEpilogue(TR::Instruction * cursor);
 
    virtual TR::Instruction* saveGPRsInPrologue(TR::Instruction * cursor);
-   virtual TR::Instruction* saveGPRsInPrologue2(TR::Instruction * cursor);
    virtual TR::Instruction* restoreGPRsInEpilogue(TR::Instruction *cursor);
-   virtual TR::Instruction* restoreGPRsInEpilogue2(TR::Instruction *cursor);
 
    virtual void initS390RealRegisterLinkage();
 

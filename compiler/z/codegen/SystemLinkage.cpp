@@ -454,89 +454,6 @@ bool TR::SystemLinkage::hasToBeOnStack(TR::ParameterSymbol * parm)
    return parm->getAllocatedIndex() >=  0 &&  parm->isParmHasToBeOnStack();
    }
 
-
-TR::Instruction*
-TR::SystemLinkage::saveGPRsInPrologue2(TR::Instruction * cursor)
-   {
-   int16_t GPRSaveMask = 0;
-   int32_t offset = 0;
-   TR::RealRegister * spReg = getNormalStackPointerRealRegister();
-   TR::Node * firstNode = comp()->getStartTree()->getNode();
-
-   TR::RealRegister::RegNum lastReg, firstReg;
-   int32_t i;
-   bool findStartReg = true;
-
-   for( i = lastReg = firstReg = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR-2; ++i )      //special case for r14, the return value
-      {
-      traceMsg(comp(), "Considering Register %d:\n",i- TR::RealRegister::FirstGPR);
-      if(getPreserved(REGNUM(i)))
-         {
-         traceMsg(comp(), "\tIt is Preserved\n");
-
-         if (findStartReg)
-            {
-            traceMsg(comp(), "\tSetting firstReg to %d\n",(i- TR::RealRegister::FirstGPR));
-            firstReg = static_cast<TR::RealRegister::RegNum>(i);
-            }
-
-         if ((getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
-            {
-            traceMsg(comp(), "\t It is Assigned. Putting in to GPRSaveMask\n");
-            GPRSaveMask |= 1 << (i - TR::RealRegister::FirstGPR);
-            findStartReg = false;
-            lastReg = static_cast<TR::RealRegister::RegNum>(i);
-            }
-
-         if ((getRealRegister(REGNUM(i)))->getModified())
-            {
-            traceMsg(comp(), "\tIt is also Modified\n");
-            }
-         traceMsg(comp(), "\n");
-         }
-      }
-
-   //Original Strategy --- use 1 store multiple operation that goes from 1st to last preserved reg.  We will preserve regs in between even if they aren't assigned.
-
-   traceMsg(comp(), "\tlastReg is %d .  firstReg = %d \n",lastReg,firstReg);
-   offset =  getRegisterSaveOffset(REGNUM(firstReg));
-   traceMsg(comp(),"\tstackFrameSize = %d offset = %d\n",getStackFrameSize(),offset);
-
-   TR::MemoryReference *retAddrMemRef = generateS390MemoryReference(spReg, offset, cg());
-
-   if (lastReg - firstReg == 0)
-      cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), firstNode, getRealRegister(REGNUM(firstReg )), retAddrMemRef, cursor);
-   else if (lastReg > firstReg)
-      cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(), firstNode, getRealRegister(REGNUM(firstReg)),  getRealRegister(REGNUM(lastReg)), retAddrMemRef, cursor);
-
-
-   //r14 is a special case.  It is the return value register.  Since we will have to save/restore it often, we will try to reduce the range above by just emiting its own save/restore
-   // should also experiment with changing preferred ordering in pickregister.
-   traceMsg(comp(), "Considering Register %d:\n",i- TR::RealRegister::FirstGPR);
-
-   if(getPreserved(REGNUM(i)) && (getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
-      {
-      traceMsg(comp(), "\t It is Assigned. Putting in to GPRSaveMask\n");
-      GPRSaveMask |= 1 << (i - TR::RealRegister::FirstGPR);
-      offset =  getRegisterSaveOffset(REGNUM(i));
-      TR::MemoryReference *retAddrMemRef = generateS390MemoryReference(spReg, offset, cg());
-      cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), firstNode, getRealRegister(REGNUM(i)), retAddrMemRef, cursor);
-      }
-
-   //r15 (stack pointer) might need to be put in to the register mask as well.  Other code will deal with how we save/restore it.
-
-   ++i;
-   traceMsg(comp(), "Considering Register %d:\n",i- TR::RealRegister::FirstGPR);
-   if(getPreserved(REGNUM(i)) && (getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
-      {
-      traceMsg(comp(), "\t It is Assigned. Putting in to GPRSaveMask\n");
-      GPRSaveMask |= 1 << (i - TR::RealRegister::FirstGPR);
-      }
-
-   setGPRSaveMask(GPRSaveMask);
-   return cursor;
-   }
-
 TR::Instruction*
 TR::SystemLinkage::saveGPRsInPrologue(TR::Instruction * cursor)
    {
@@ -664,10 +581,7 @@ void TR::SystemLinkage::createPrologue(TR::Instruction * cursor)
 
    setFirstPrologueInstruction(cursor);
    
-   if(comp()->getOption(TR_LinkagePreserveStrategy2))
-      cursor = saveGPRsInPrologue2(cursor);
-   else
-      cursor = saveGPRsInPrologue(cursor);
+   cursor = saveGPRsInPrologue(cursor);
 
    int16_t GPRSaveMask = getGPRSaveMask();
 
@@ -730,69 +644,6 @@ void TR::SystemLinkage::createPrologue(TR::Instruction * cursor)
    cursor = (TR::Instruction *) saveArguments(cursor, false);
 
    setLastPrologueInstruction(cursor);
-   }
-
-
-TR::Instruction*
-TR::SystemLinkage::restoreGPRsInEpilogue2(TR::Instruction *cursor)
-   {
-   int16_t GPRSaveMask = 0;
-   int32_t offset = 0;
-   int32_t stackFrameSize = getStackFrameSize();
-   TR::RealRegister * spReg = getNormalStackPointerRealRegister();
-   TR::Node * nextNode = cursor->getNext()->getNode();
-
-   TR::RealRegister::RegNum lastReg, firstReg;
-   int32_t i;
-   bool findStartReg = true;
-
-   for( i = lastReg = firstReg = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR-2; ++i )      //special casing r14 (ret value)
-      {
-      traceMsg(comp(), "Considering Register %d:\n",i- TR::RealRegister::FirstGPR);
-      if(getPreserved(REGNUM(i)))
-         {
-         traceMsg(comp(), "\tIt is Preserved\n");
-
-         if (findStartReg)
-            firstReg = static_cast<TR::RealRegister::RegNum>(i);
-
-         if ((getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
-            {
-            traceMsg(comp(), "\tand Assigned. ");
-            findStartReg = false;
-            lastReg = static_cast<TR::RealRegister::RegNum>(i);
-            }
-         traceMsg(comp(), "\n");
-         }
-      }
-
-   //Original Strategy --- use 1 load multiple operation that goes from 1st to last preserved reg.  We will preserve regs in between even if they aren't assigned.
-
-   traceMsg(comp(), "\tlastReg is %d .  firstReg = %d \n",lastReg,firstReg);
-   offset =  getRegisterSaveOffset(REGNUM(firstReg));
-   traceMsg(comp(),"\tstackFrameSize = %d offset = %d\n",getStackFrameSize(),offset);
-
-   TR::MemoryReference *retAddrMemRef = generateS390MemoryReference(spReg, offset + stackFrameSize, cg());
-
-   if (lastReg - firstReg == 0)
-      cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), nextNode, getRealRegister(REGNUM(firstReg)), retAddrMemRef, cursor);
-   else if (lastReg > firstReg)
-      cursor = generateRSInstruction(cg(),  TR::InstOpCode::getLoadMultipleOpCode(), nextNode, getRealRegister(REGNUM(firstReg)),  getRealRegister(REGNUM(lastReg)), retAddrMemRef, cursor);
-
-
-   //r14 is a special case.  It is the return value register.  Since we will have to save/restore it often, we will try to reduce the range above by just emiting its own save/restore
-   // should also experiment with changing preferred ordering in pickregister.
-   traceMsg(comp(), "Considering Register %d:\n",i- TR::RealRegister::FirstGPR);
-
-   if(getPreserved(REGNUM(i)) && (getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
-      {
-      traceMsg(comp(), "\t It is Assigned.\n");
-      offset =  getRegisterSaveOffset(REGNUM(i));
-      TR::MemoryReference *retAddrMemRef = generateS390MemoryReference(spReg, offset + stackFrameSize, cg());
-      cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), nextNode, getRealRegister(REGNUM(i)), retAddrMemRef, cursor);
-      }
-
-   return cursor;
    }
 
 TR::Instruction*
@@ -923,12 +774,7 @@ void TR::SystemLinkage::createEpilogue(TR::Instruction * cursor)
    if (comp()->getOption(TR_TraceCG))
       traceMsg(comp(), "GPRSaveMask: Register context %x\n", GPRSaveMask&0xffff);
 
-
-
-   if(comp()->getOption(TR_LinkagePreserveStrategy2))
-      cursor = restoreGPRsInEpilogue2(cursor);
-   else
-      cursor = restoreGPRsInEpilogue(cursor);
+   cursor = restoreGPRsInEpilogue(cursor);
 
    cursor = generateS390RegInstruction(cg(), TR::InstOpCode::BCR, nextNode,
           getRealRegister(REGNUM(TR::RealRegister::GPR14)), cursor);

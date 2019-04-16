@@ -25,6 +25,7 @@
 #include "codegen/ARM64ConditionCode.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/RegisterDependency.hpp"
@@ -310,7 +311,7 @@ static TR::Instruction *generateZeroSrc1ImmInstruction(TR::CodeGenerator *cg, TR
    {
    TR::Register *zeroReg = cg->allocateRegister();
    TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+   TR::addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
    TR::Instruction *instr =
       (preced) ?
@@ -348,7 +349,7 @@ static TR::Instruction *generateZeroSrc2Instruction(TR::CodeGenerator *cg, TR::I
    {
    TR::Register *zeroReg = cg->allocateRegister();
    TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+   TR::addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
    TR::Instruction *instr =
       (preced) ?
@@ -386,7 +387,7 @@ static TR::Instruction *generateTrg1ZeroSrc1Instruction(TR::CodeGenerator *cg, T
    {
    TR::Register *zeroReg = cg->allocateRegister();
    TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+   TR::addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
    TR::Instruction *instr =
       (preced) ?
@@ -429,7 +430,7 @@ TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node,
    /* Use xzr as the third source register */
    TR::Register *zeroReg = cg->allocateRegister();
    TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+   TR::addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
    TR::Instruction *instr =
       (preced) ?

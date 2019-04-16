@@ -22,6 +22,7 @@
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/RegisterDependency.hpp"
@@ -234,7 +235,7 @@ OMR::ARM64::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    TR::Register *zeroReg = cg->allocateRegister();
    TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+   TR::addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
    // imulh is generated for constant idiv and the second child is the magic number
    // assume magic number is usually a large odd number with little optimization opportunity

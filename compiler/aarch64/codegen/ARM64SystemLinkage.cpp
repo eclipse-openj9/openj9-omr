@@ -22,6 +22,7 @@
 #include "codegen/ARM64SystemLinkage.hpp"
 
 #include "codegen/ARM64Instruction.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
@@ -649,7 +650,7 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else
                   {
-                  addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                  TR::addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
                   }
                }
             else
@@ -698,7 +699,7 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else
                   {
-                  addDependency(dependencies, argRegister, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
+                  TR::addDependency(dependencies, argRegister, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
                   }
                }
             else
@@ -730,7 +731,7 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
          }
       else
          {
-         addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+         TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
          }
       numIntegerArgs++;
       }
@@ -741,7 +742,7 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
       if (!properties.getPreserved((TR::RealRegister::RegNum)i))
          {
          // NULL dependency for non-preserved regs
-         addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
+         TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
          }
       }
 

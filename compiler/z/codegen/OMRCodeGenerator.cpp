@@ -2493,7 +2493,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
       self()->addToAtlas(data.cursorInstruction);
 
-      if (data.cursorInstruction->getOpCodeValue() == TR::InstOpCode::PROC)
+      if (data.cursorInstruction == data.preProcInstruction)
          {
          self()->setPrePrologueSize(self()->getBinaryBufferLength());
          self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());

@@ -75,11 +75,12 @@
 #include "env/VMJ9.h"
 #endif
 
-TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator * codeGen)
-   : TR::SystemLinkage(codeGen,TR_SystemLinux)
+TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
+   :
+      TR::SystemLinkage(cg, TR_SystemLinux)
    {
-   // linkage properties
    setProperties(FirstParmAtFixedOffset);
+
    if (TR::Compiler->target.is64Bit())
       {
       setProperty(NeedsWidening);
@@ -99,24 +100,21 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator * codeGen
                                                                 // This possibly assumes that we don't shuffle the return address register around elsewhere
    setRegisterFlag(TR::RealRegister::GPR15, Preserved);
 
-   // all FP registers are not preserved for zTPF
+   if (TR::Compiler->target.is64Bit())
       {
-      if (TR::Compiler->target.is64Bit())
-         {
-         setRegisterFlag(TR::RealRegister::FPR8, Preserved);
-         setRegisterFlag(TR::RealRegister::FPR9, Preserved);
-         setRegisterFlag(TR::RealRegister::FPR10, Preserved);
-         setRegisterFlag(TR::RealRegister::FPR11, Preserved);
-         setRegisterFlag(TR::RealRegister::FPR12, Preserved);
-         setRegisterFlag(TR::RealRegister::FPR13, Preserved);
-         setRegisterFlag(TR::RealRegister::FPR14, Preserved);
-         setRegisterFlag(TR::RealRegister::FPR15, Preserved);
-         }
-      else
-         {
-         setRegisterFlag(TR::RealRegister::FPR4, Preserved);
-         setRegisterFlag(TR::RealRegister::FPR6, Preserved);
-         }
+      setRegisterFlag(TR::RealRegister::FPR8, Preserved);
+      setRegisterFlag(TR::RealRegister::FPR9, Preserved);
+      setRegisterFlag(TR::RealRegister::FPR10, Preserved);
+      setRegisterFlag(TR::RealRegister::FPR11, Preserved);
+      setRegisterFlag(TR::RealRegister::FPR12, Preserved);
+      setRegisterFlag(TR::RealRegister::FPR13, Preserved);
+      setRegisterFlag(TR::RealRegister::FPR14, Preserved);
+      setRegisterFlag(TR::RealRegister::FPR15, Preserved);
+      }
+   else
+      {
+      setRegisterFlag(TR::RealRegister::FPR4, Preserved);
+      setRegisterFlag(TR::RealRegister::FPR6, Preserved);
       }
 
    setIntegerArgumentRegister(0, TR::RealRegister::GPR2);
@@ -151,25 +149,6 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator * codeGen
 
    setFloatArgumentRegister(0, TR::RealRegister::FPR0);
    setFloatArgumentRegister(1, TR::RealRegister::FPR2);
-   setNumFloatArgumentRegisters(2);
-
-   static const bool enableVectorLinkage = codeGen->getSupportsVectorRegisters();
-
-   if (enableVectorLinkage)
-      {
-      int vecIndex = 0;
-      // The vector registers used for parameter passing are allocated in the following order to enable
-      // future exension which might operate on vector register pairs.
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF24);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF26);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF28);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF30);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF25);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF27);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF29);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF31);
-      setNumVectorArgumentRegisters(vecIndex);
-      }
 
    if (TR::Compiler->target.is64Bit())
       {
@@ -177,79 +156,110 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator * codeGen
       setFloatArgumentRegister(3, TR::RealRegister::FPR6);
       setNumFloatArgumentRegisters(4);
       }
+   else
+      {
+      setNumFloatArgumentRegisters(2);
+      }
 
-   setIntegerReturnRegister (TR::RealRegister::GPR2 );
-   setLongLowReturnRegister (TR::RealRegister::GPR3 );
-   setLongHighReturnRegister(TR::RealRegister::GPR2 );
-   setLongReturnRegister    (TR::RealRegister::GPR2 );
-   setFloatReturnRegister   (TR::RealRegister::FPR0 );
-   setDoubleReturnRegister  (TR::RealRegister::FPR0 );
-   setLongDoubleReturnRegister0  (TR::RealRegister::FPR0 );
-   setLongDoubleReturnRegister2  (TR::RealRegister::FPR2 );
-   setLongDoubleReturnRegister4  (TR::RealRegister::FPR4 );
-   setLongDoubleReturnRegister6  (TR::RealRegister::FPR6 );
-   if (enableVectorLinkage) setVectorReturnRegister  (TR::RealRegister::VRF24 );
-   setStackPointerRegister  (TR::RealRegister::GPR15 );
-   setNormalStackPointerRegister  (TR::RealRegister::GPR15 );
-   setAlternateStackPointerRegister  (TR::RealRegister::GPR11 );
-   setEntryPointRegister    (TR::RealRegister::GPR14 );
-   setLitPoolRegister       (TR::RealRegister::GPR13 );
-   setReturnAddressRegister (TR::RealRegister::GPR14 );
+   if (cg->getSupportsVectorRegisters())
+      {
+      int32_t index = 0;
+
+      // The vector registers used for parameter passing are allocated in the following order to enable future exension
+      // which might operate on vector register pairs
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF24);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF26);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF28);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF30);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF25);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF27);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF29);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF31);
+      setNumVectorArgumentRegisters(index);
+
+      setVectorReturnRegister(TR::RealRegister::VRF24);
+      }
+
+   setIntegerReturnRegister(TR::RealRegister::GPR2);
+   setLongLowReturnRegister(TR::RealRegister::GPR3);
+   setLongHighReturnRegister(TR::RealRegister::GPR2);
+   setLongReturnRegister(TR::RealRegister::GPR2);
+   setFloatReturnRegister(TR::RealRegister::FPR0);
+   setDoubleReturnRegister(TR::RealRegister::FPR0);
+   setLongDoubleReturnRegister0(TR::RealRegister::FPR0);
+   setLongDoubleReturnRegister2(TR::RealRegister::FPR2);
+   setLongDoubleReturnRegister4(TR::RealRegister::FPR4);
+   setLongDoubleReturnRegister6(TR::RealRegister::FPR6);
+   setStackPointerRegister(TR::RealRegister::GPR15);
+   setNormalStackPointerRegister(TR::RealRegister::GPR15);
+   setAlternateStackPointerRegister(TR::RealRegister::GPR11);
+   setEntryPointRegister(TR::RealRegister::GPR14);
+   setLitPoolRegister(TR::RealRegister::GPR13);
+   setReturnAddressRegister(TR::RealRegister::GPR14);
 
 #if defined(OMRZTPF)
-/*
- * z/TPF os is a 64 bit target
- */
-   setOffsetToRegSaveArea     (16);    // z/TPF is a 64 bit target only
-   setGPRSaveAreaBeginOffset  (16);    //x'10'  see ICST_R2 in tpf/icstk.h
-   setGPRSaveAreaEndOffset    (160);   //x'a0'  see ICST_PAT in tpf/icstk.h
-   setOffsetToFirstParm       (448);   //x'1c0' see ICST_PAR in tpf/icstk.h
+   // z/TPF OS is a 64-bit only target
+   setOffsetToRegSaveArea(16);
+
+   // x'10'  see ICST_R2 in tpf/icstk.h
+   setGPRSaveAreaBeginOffset(16);
+
+   // x'a0'  see ICST_PAT in tpf/icstk.h
+   setGPRSaveAreaEndOffset(160);
+
+   // x'1c0' see ICST_PAR in tpf/icstk.h
+   setOffsetToFirstParm(448);
 #else
-   setOffsetToRegSaveArea   ((TR::Compiler->target.is64Bit()) ? 16 : 8);
-   setGPRSaveAreaBeginOffset  ((TR::Compiler->target.is64Bit()) ? 48 : 24);
-   setGPRSaveAreaEndOffset  ((TR::Compiler->target.is64Bit()) ? 128 : 64 );
-   setOffsetToFirstParm   ((TR::Compiler->target.is64Bit()) ? 160 : 96);
+   if (TR::Compiler->target.is64Bit())
+      {
+      setOffsetToRegSaveArea(16);
+      setGPRSaveAreaBeginOffset(48);
+      setGPRSaveAreaEndOffset(128);
+      setOffsetToFirstParm(160);
+      setOffsetToLongDispSlot(8);
+      }
+   else
+      {
+      setOffsetToRegSaveArea(8);
+      setGPRSaveAreaBeginOffset(24);
+      setGPRSaveAreaEndOffset(64);
+      setOffsetToFirstParm(96);
+      setOffsetToLongDispSlot(4);
+      }
 #endif /* defined(OMRZTPF) */
-   setOffsetToFirstLocal  (0);
-   setOffsetToLongDispSlot(TR::Compiler->target.is64Bit() ? 8 : 4);
+
+   setOffsetToFirstLocal(0);
    setOutgoingParmAreaBeginOffset(getOffsetToFirstParm());
    setOutgoingParmAreaEndOffset(0);
    setStackFrameSize(0);
    setVarArgOffsetInParmArea(getOutgoingParmAreaBeginOffset());
    setVarArgRegSaveAreaOffset(0);
-
    setNumberOfDependencyGPRegisters(32);
    setLargestOutgoingArgumentAreaSize(0);
    }
 
 
-void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction * cursor)
+void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
    {
    TR::Delimiter delimiter (comp(), comp()->getOption(TR_TraceCG), "Prologue");
-   TR::RealRegister * spReg = getNormalStackPointerRealRegister();
-   TR::RealRegister * lpReg = getLitPoolRealRegister();
-   TR::Node * firstNode = comp()->getStartTree()->getNode();
-   int32_t i=0;
-   int32_t firstLocalOffset = getOffsetToFirstLocal();
-   TR::ResolvedMethodSymbol * bodySymbol = comp()->getJittedMethodSymbol();
+   
+   setFirstPrologueInstruction(cursor);
+
    int32_t argSize = getOutgoingParameterBlockSize();
-   TR::Snippet * firstSnippet = NULL;
-
-   int16_t FPRSaveMask = 0;
-
-   int32_t localSize; // Auto + Spill size
-
-   localSize =  -1 * (int32_t) (bodySymbol->getLocalMappingCursor());
-
    setOutgoingParmAreaEndOffset(getOutgoingParmAreaBeginOffset() + argSize);
 
-   setStackFrameSize(((getOffsetToFirstParm() +  argSize + localSize + 7)>>3)<<3);
+   TR::ResolvedMethodSymbol* bodySymbol = comp()->getJittedMethodSymbol();
+
+   // Auto + spill size
+   int32_t localSize = -1 * (int32_t) (bodySymbol->getLocalMappingCursor());
+   setStackFrameSize(((getOffsetToFirstParm() +  argSize + localSize + 7) >> 3) << 3);
+
    int32_t stackFrameSize = getStackFrameSize();
+
+   TR_ASSERT_FATAL(stackFrameSize % 8 == 0, "Misaligned stack frame size (%d) detected", stackFrameSize);
 
    if (comp()->getOption(TR_TraceCG))
       traceMsg(comp(), "initial stackFrameSize: stack size %d = offset to first parm %d + arg size %d + localSize %d, rounded up to 8\n", stackFrameSize, getOffsetToFirstParm(), argSize, localSize);
-
-   TR_ASSERT( ((int32_t) stackFrameSize % 8 == 0), "misaligned stack detected");
 
    setVarArgRegSaveAreaOffset(getStackFrameSize());
 
@@ -259,70 +269,34 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction * cursor)
 
    //Now that stackFrame size is known, map stack
    mapStack(bodySymbol, stackFrameSize);
-
-   if (comp()->getOption(TR_TraceCG))
-      traceMsg(comp(), "final stackFrameSize: stack size %d\n", stackFrameSize);
-
-   setFirstPrologueInstruction(cursor);
    
-   cursor = spillGPRsInPrologue(cursor);
-
-   int16_t GPRSaveMask = getGPRSaveMask();
+   TR::Node* node = comp()->getStartTree()->getNode();
+   
+   cursor = spillGPRsInPrologue(node, cursor);
+   cursor = spillFPRsInPrologue(node, cursor);
 
 #if defined(JITTEST)
    // Literal Pool for Test compiler
-   firstSnippet = cg()->getFirstSnippet();
+   TR::Snippet* firstSnippet = cg()->getFirstSnippet();
    if ( cg()->isLiteralPoolOnDemandOn() != true && firstSnippet != NULL )
-      cursor = new (trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, firstNode, lpReg, firstSnippet, cursor, cg());
+      cursor = new (trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, getLitPoolRealRegister(), firstSnippet, cursor, cg());
 #endif
 
+   TR::RealRegister* spReg = getNormalStackPointerRealRegister();
+
    // Check for large stack
-   bool largeStack = (stackFrameSize < MIN_IMMEDIATE_VAL || stackFrameSize > MAX_IMMEDIATE_VAL);
+   const bool largeStack = stackFrameSize < MIN_IMMEDIATE_VAL || stackFrameSize > MAX_IMMEDIATE_VAL;
 
-   TR::RealRegister * tempReg = getRealRegister(TR::RealRegister::GPR0);
-   TR::RealRegister * backChainReg = getRealRegister(TR::RealRegister::GPR1);
-
-
-   if (!largeStack)
+   if (largeStack)
       {
-      // Adjust stack pointer with LA (reduce AGI delay)
-      cursor = generateRXInstruction(cg(), TR::InstOpCode::LAY, firstNode, spReg, generateS390MemoryReference(spReg,(stackFrameSize) * -1, cg()),cursor);
+      TR::RealRegister* tempReg = getRealRegister(TR::RealRegister::GPR0);
+
+      cursor = generateS390ImmToRegister(cg(), node, tempReg, (intptr_t)(stackFrameSize * -1), cursor);
+      cursor = generateRRInstruction(cg(), TR::InstOpCode::getAddRegOpCode(), node, spReg, tempReg, cursor);
       }
    else
       {
-      // adjust stack frame pointer
-      if (largeStack)
-         {
-         cursor = generateS390ImmToRegister(cg(), firstNode, tempReg, (intptr_t)(stackFrameSize * -1), cursor);
-         cursor = generateRRInstruction(cg(), TR::InstOpCode::getAddRegOpCode(), firstNode, spReg, tempReg, cursor);
-         }
-      else
-         {
-         cursor = generateRIInstruction(cg(), TR::InstOpCode::getAddHalfWordImmOpCode(), firstNode, spReg, (stackFrameSize) * -1, cursor);
-         }
-      }
-
-   //Save preserved FPRs
-   FPRSaveMask = getFPRSaveMask();
-   int32_t firstSaved = TR::Linkage::getFirstMaskedBit(FPRSaveMask);
-   int32_t lastSaved = TR::Linkage::getLastMaskedBit(FPRSaveMask);
-   int32_t offset = 0;
-   TR::MemoryReference * retAddrMemRef ;
-
-   if (TR::Compiler->target.isLinux())
-      offset = getFPRSaveAreaEndOffset();
-   else
-      offset = getFPRSaveAreaBeginOffset() + 16*cg()->machine()->getGPRSize();
-
-   for (i = firstSaved; i <= lastSaved; ++i)
-      {
-      if (FPRSaveMask & (1 << (i)))
-         {
-         retAddrMemRef = generateS390MemoryReference(spReg, offset, cg());
-         offset += cg()->machine()->getFPRSize();
-         cursor = generateRXInstruction(cg(), TR::InstOpCode::STD,
-               firstNode, getRealRegister(REGNUM(i+TR::RealRegister::FirstFPR)), retAddrMemRef, cursor);
-         }
+      cursor = generateRXInstruction(cg(), TR::InstOpCode::LA, node, spReg, generateS390MemoryReference(spReg,(stackFrameSize) * -1, cg()),cursor);
       }
 
    cursor = (TR::Instruction *) saveArguments(cursor, false);
@@ -334,61 +308,18 @@ void TR::S390zLinuxSystemLinkage::createEpilogue(TR::Instruction * cursor)
    {
    TR::Delimiter delimiter (comp(), comp()->getOption(TR_TraceCG), "Epilogue");
 
-   TR::RealRegister * spReg = getNormalStackPointerRealRegister();
-   TR::Node * currentNode = cursor->getNode();
-   TR::Node * nextNode = cursor->getNext()->getNode();
-   TR::ResolvedMethodSymbol * bodySymbol = comp()->getJittedMethodSymbol();
-   int32_t i, offset = 0, firstSaved, lastSaved ;
-   int16_t GPRSaveMask = getGPRSaveMask();
-   int16_t FPRSaveMask = getFPRSaveMask();
-   int32_t stackFrameSize = getStackFrameSize();
+   TR::Node* node = cursor->getNext()->getNode();
 
-   TR::MemoryReference * retAddrMemRef ;
+   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, node, generateLabelSymbol(cg()), cursor);
 
-   TR::LabelSymbol * epilogBeginLabel = generateLabelSymbol(cg());
+   cursor = fillFPRsInEpilogue(node, cursor);
+   cursor = fillGPRsInEpilogue(node, cursor);
 
-   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, nextNode, epilogBeginLabel, cursor);
-
-   //Restore preserved FPRs
-   firstSaved = TR::Linkage::getFirstMaskedBit(FPRSaveMask);
-   lastSaved = TR::Linkage::getLastMaskedBit(FPRSaveMask);
-   if (TR::Compiler->target.isLinux())
-      offset = getFPRSaveAreaEndOffset();
-   else
-      offset = getFPRSaveAreaBeginOffset() + 16*cg()->machine()->getGPRSize();
-
-   for (i = firstSaved; i <= lastSaved; ++i)
-     {
-     if (FPRSaveMask & (1 << (i)))
-        {
-        retAddrMemRef = generateS390MemoryReference(spReg, offset, cg());
-
-        cursor = generateRXInstruction(cg(), TR::InstOpCode::LD,
-           nextNode, getRealRegister(REGNUM(i+TR::RealRegister::FirstFPR)), retAddrMemRef, cursor);
-
-        offset +=  cg()->machine()->getFPRSize();
-        }
-     }
-
-   // Check for large stack
-   bool largeStack = (stackFrameSize < MIN_IMMEDIATE_VAL || stackFrameSize > MAX_IMMEDIATE_VAL);
-
-   TR::RealRegister * tempReg = getRealRegister(TR::RealRegister::GPR0);
-
-   if (comp()->getOption(TR_TraceCG))
-      traceMsg(comp(), "GPRSaveMask: Register context %x\n", GPRSaveMask&0xffff);
-
-   cursor = fillGPRsInEpilogue(cursor);
-
-   cursor = generateS390RegInstruction(cg(), TR::InstOpCode::BCR, nextNode,
-          getRealRegister(REGNUM(TR::RealRegister::GPR14)), cursor);
-   ((TR::S390RegInstruction *)cursor)->setBranchCondition(TR::InstOpCode::COND_BCR);
+   cursor = generateS390BranchInstruction(cg(), TR::InstOpCode::BCR, node, TR::InstOpCode::COND_BCR, getRealRegister(TR::RealRegister::GPR14), cursor);
    }
 
 void
-TR::S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
-      TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-      TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
+TR::S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node* callNode, TR::RegisterDependencyConditions* deps, intptrj_t targetAddress, TR::Register* methodAddressReg, TR::Register* javaLitOffsetReg, TR::LabelSymbol* returnFromJNICallLabel, TR::S390JNICallDataSnippet* jniCallDataSnippet, bool isJNIGCPoint)
    {
    TR::CodeGenerator * codeGen = cg();
 
@@ -692,20 +623,17 @@ TR::S390zLinuxSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcR
    }
 
 TR::Instruction*
-TR::S390zLinuxSystemLinkage::fillGPRsInEpilogue(TR::Instruction* cursor)
+TR::S390zLinuxSystemLinkage::fillGPRsInEpilogue(TR::Node* node, TR::Instruction* cursor)
    {
    int16_t GPRSaveMask = 0;
    bool    hasRestoreSP = false;
    int32_t offset = 0;
    int32_t stackFrameSize = getStackFrameSize();
    TR::RealRegister * spReg = getNormalStackPointerRealRegister();
-   TR::Node * nextNode = cursor->getNext()->getNode();
 
    TR::RealRegister::RegNum lastReg, firstReg;
    int32_t i;
    bool findStartReg = true;
-
-   int32_t blockNumber = cursor->getNext()->getBlockIndex();
 
    for( i = lastReg = firstReg = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; ++i )
       {
@@ -744,9 +672,9 @@ TR::S390zLinuxSystemLinkage::fillGPRsInEpilogue(TR::Instruction* cursor)
             TR::MemoryReference *retAddrMemRef = generateS390MemoryReference(spReg, offset + stackFrameSize, cg());
 
             if (lastReg - firstReg == 0)
-               cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), nextNode, getRealRegister(REGNUM(firstReg )), retAddrMemRef, cursor);
+               cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), node, getRealRegister(REGNUM(firstReg )), retAddrMemRef, cursor);
             else
-               cursor = generateRSInstruction(cg(),  TR::InstOpCode::getLoadMultipleOpCode(), nextNode, getRealRegister(REGNUM(firstReg)),  getRealRegister(REGNUM(lastReg)), retAddrMemRef, cursor);
+               cursor = generateRSInstruction(cg(),  TR::InstOpCode::getLoadMultipleOpCode(), node, getRealRegister(REGNUM(firstReg)),  getRealRegister(REGNUM(lastReg)), retAddrMemRef, cursor);
 
 
             findStartReg = true;
@@ -763,25 +691,38 @@ TR::S390zLinuxSystemLinkage::fillGPRsInEpilogue(TR::Instruction* cursor)
        lastReg = static_cast<TR::RealRegister::RegNum>(TR::RealRegister::LastGPR);
        offset =  getRegisterSaveOffset(REGNUM(lastReg));
        TR::MemoryReference *retAddrMemRef = generateS390MemoryReference(spReg, offset + stackFrameSize, cg());
-       cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), nextNode, getRealRegister(REGNUM(lastReg )), retAddrMemRef, cursor);
+       cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), node, getRealRegister(REGNUM(lastReg )), retAddrMemRef, cursor);
        }
    return cursor;
    }
 
 TR::Instruction*
-TR::S390zLinuxSystemLinkage::fillFPRsInEpilogue(TR::Instruction* cursor)
+TR::S390zLinuxSystemLinkage::fillFPRsInEpilogue(TR::Node* node, TR::Instruction* cursor)
    {
+   TR::RealRegister* spReg = getNormalStackPointerRealRegister();
+   int32_t offset = getFPRSaveAreaEndOffset();
+   int16_t FPRSaveMask = getFPRSaveMask();
+   
+   for (int32_t i = TR::Linkage::getFirstMaskedBit(FPRSaveMask); i <= TR::Linkage::getLastMaskedBit(FPRSaveMask); ++i)
+     {
+     if (FPRSaveMask & (1 << (i)))
+        {
+        TR::MemoryReference* fillMemRef = generateS390MemoryReference(spReg, offset, cg());
 
+        cursor = generateRXInstruction(cg(), TR::InstOpCode::LD, node, getRealRegister(REGNUM(i + TR::RealRegister::FirstFPR)), fillMemRef, cursor);
+
+        offset += cg()->machine()->getFPRSize();
+        }
+     }
    }
 
 TR::Instruction*
-TR::S390zLinuxSystemLinkage::spillGPRsInPrologue(TR::Instruction* cursor)
+TR::S390zLinuxSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* cursor)
    {
    int16_t GPRSaveMask = 0;
    bool hasSavedSP = false;
    int32_t offset = 0;
    TR::RealRegister * spReg = getNormalStackPointerRealRegister();
-   TR::Node * firstNode = comp()->getStartTree()->getNode();
 
    TR::RealRegister::RegNum lastReg, firstReg;
    int32_t i;
@@ -830,9 +771,9 @@ TR::S390zLinuxSystemLinkage::spillGPRsInPrologue(TR::Instruction* cursor)
             TR::MemoryReference *retAddrMemRef = generateS390MemoryReference(spReg, offset, cg());
 
             if (lastReg - firstReg == 0)
-               cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), firstNode, getRealRegister(REGNUM(firstReg)), retAddrMemRef, cursor);
+               cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), node, getRealRegister(REGNUM(firstReg)), retAddrMemRef, cursor);
             else
-               cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(), firstNode, getRealRegister(REGNUM(firstReg)),  getRealRegister(REGNUM(lastReg)), retAddrMemRef, cursor);
+               cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(), node, getRealRegister(REGNUM(firstReg)),  getRealRegister(REGNUM(lastReg)), retAddrMemRef, cursor);
 
 
             findStartReg = true;
@@ -849,7 +790,7 @@ TR::S390zLinuxSystemLinkage::spillGPRsInPrologue(TR::Instruction* cursor)
        lastReg = static_cast<TR::RealRegister::RegNum>(TR::RealRegister::LastGPR);
        offset =  getRegisterSaveOffset(REGNUM(lastReg));
        TR::MemoryReference *retAddrMemRef = generateS390MemoryReference(spReg, offset, cg());
-       cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), firstNode, getRealRegister(REGNUM(lastReg)), retAddrMemRef, cursor);
+       cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), node, getRealRegister(REGNUM(lastReg)), retAddrMemRef, cursor);
       }
 
    setGPRSaveMask(GPRSaveMask);
@@ -857,7 +798,21 @@ TR::S390zLinuxSystemLinkage::spillGPRsInPrologue(TR::Instruction* cursor)
    }
 
 TR::Instruction*
-TR::S390zLinuxSystemLinkage::spillFPRsInPrologue(TR::Instruction* cursor)
+TR::S390zLinuxSystemLinkage::spillFPRsInPrologue(TR::Node* node, TR::Instruction* cursor)
    {
+   TR::RealRegister* spReg = getNormalStackPointerRealRegister();
+   int16_t FPRSaveMask = getFPRSaveMask();
+   int32_t firstSaved = TR::Linkage::getFirstMaskedBit(FPRSaveMask);
+   int32_t lastSaved = TR::Linkage::getLastMaskedBit(FPRSaveMask);
+   int32_t offset = getFPRSaveAreaEndOffset();
 
+   for (int32_t i = firstSaved; i <= lastSaved; ++i)
+      {
+      if (FPRSaveMask & (1 << (i)))
+         {
+         TR::MemoryReference* spillMemRef = generateS390MemoryReference(spReg, offset, cg());
+         offset += cg()->machine()->getFPRSize();
+         cursor = generateRXInstruction(cg(), TR::InstOpCode::STD, node, getRealRegister(REGNUM(i+TR::RealRegister::FirstFPR)), spillMemRef, cursor);
+         }
+      }
    }

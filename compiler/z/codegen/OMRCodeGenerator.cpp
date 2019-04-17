@@ -2396,10 +2396,8 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             {
             TR::Instruction * temp = data.cursorInstruction->getPrev();
             TR::Instruction *originalNextInstruction = temp->getNext();
-            if (!0)
-               {
-               self()->getLinkage()->createEpilogue(temp);
-               }
+
+            self()->getLinkage()->createEpilogue(temp);
 
             if (self()->comp()->getOption(TR_EnableLabelTargetNOPs))
                {

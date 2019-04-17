@@ -159,11 +159,6 @@ class SystemLinkage : public TR::Linkage
    virtual TR::RealRegister *getAlternateStackPointerRealRegister() {return getRealRegister(_alternateStackPointerRegister);}
    virtual void initParamOffset(TR::ResolvedMethodSymbol * method, int32_t stackIndex, List<TR::ParameterSymbol> *parameterList=0);
 
-   // Register used for EX instructions for debug hooks - set by notifyHasHooks
-   virtual TR::RealRegister::RegNum setDebugHooksRegister(TR::RealRegister::RegNum r) { return _debugHooksRegister = r; }
-   virtual TR::RealRegister::RegNum getDebugHooksRegister()   { return _debugHooksRegister; }
-   virtual TR::RealRegister *getDebugHooksRealRegister() {return getRealRegister(_debugHooksRegister);}
-
    protected:
 
    int32_t _StackFrameSize;
@@ -172,7 +167,6 @@ class SystemLinkage : public TR::Linkage
 
    TR::RealRegister::RegNum _normalStackPointerRegister;
    TR::RealRegister::RegNum _alternateStackPointerRegister;
-   TR::RealRegister::RegNum _debugHooksRegister;
    int16_t _GPRSaveMask;
    int16_t _FPRSaveMask;
    int32_t _incomingParmAreaBeginOffset;

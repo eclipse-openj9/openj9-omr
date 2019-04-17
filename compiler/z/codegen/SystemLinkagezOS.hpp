@@ -65,12 +65,7 @@ enum TR_XPLinkFrameType
  */
 enum TR_XPLinkCallTypes {
    TR_XPLinkCallType_BASR      =0,     ///< generic BASR
-   TR_XPLinkCallType_BRAS7     =1,     ///< BRAS  r7,ep
-   TR_XPLinkCallType_RESVD_2   =2,     //
    TR_XPLinkCallType_BRASL7    =3,     ///< BRASL r7,ep
-   TR_XPLinkCallType_RESVD_4   =4,     //
-   TR_XPLinkCallType_RESVD_5   =5,     //
-   TR_XPLinkCallType_BALR1415  =6,     ///< BALR  r14,r15
    TR_XPLinkCallType_BASR33    =7      ///< BASR  r3,r3
    };
 
@@ -79,45 +74,25 @@ namespace TR {
 class S390zOSSystemLinkage : public TR::SystemLinkage
    {
    public:
-   
-   enum
-      {
-      CEECAAPLILWS    = 640,
-      CEECAAAESS      = 788,
-      CEECAAOGETS     = 796,
-      CEECAAAGTS      = 944,
 
-      CEEDSAType1Size = 0x80,
-      };
+   /** \brief
+    *     Size (in bytes) of the XPLINK stack frame bias as defined by the system linkage.
+    */
+   static const size_t XPLINK_STACK_FRAME_BIAS = 2048;
 
-   S390zOSSystemLinkage(TR::CodeGenerator * cg);
+   public:
+
+   S390zOSSystemLinkage(TR::CodeGenerator* cg);
 
    virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
-   virtual TR::Register * callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
+   virtual TR::Register* callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
-   virtual TR::RealRegister::RegNum setEnvironmentPointerRegister (TR::RealRegister::RegNum r) { return _environmentPointerRegister = r; }
-   virtual TR::RealRegister::RegNum getEnvironmentPointerRegister() { return _environmentPointerRegister; }
-   virtual TR::RealRegister *getEnvironmentPointerRealRegister() {return getRealRegister(_environmentPointerRegister);}
-
+   virtual TR::RealRegister::RegNum getENVPointerRegister() { return TR::RealRegister::GPR5; }
+   virtual TR::RealRegister::RegNum getCAAPointerRegister() { return TR::RealRegister::GPR12; }
+   
    virtual int32_t getRegisterSaveOffset(TR::RealRegister::RegNum);
-
-   virtual TR::RealRegister::RegNum setCAAPointerRegister (TR::RealRegister::RegNum r)         { return _CAAPointerRegister = r; }
-   virtual TR::RealRegister::RegNum getCAAPointerRegister()         { return _CAAPointerRegister; }
-   virtual TR::RealRegister *getCAAPointerRealRegister() {return getRealRegister(_CAAPointerRegister);}
-
-   virtual TR::RealRegister::RegNum setParentDSAPointerRegister (TR::RealRegister::RegNum r)         { return _parentDSAPointerRegister = r; }
-   virtual TR::RealRegister::RegNum getParentDSAPointerRegister()         { return _parentDSAPointerRegister; }
-   virtual TR::RealRegister *getParentDSAPointerRealRegister() {return getRealRegister(_parentDSAPointerRegister);}
-
-   virtual bool isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth);
-
-   TR_XPLinkFrameType getFrameType() { return _frameType; }
-   void setFrameType(enum TR_XPLinkFrameType type) { _frameType = type; }
    virtual int32_t getOutgoingParameterBlockSize();
-
-   virtual TR::Register *loadEnvironmentIntoRegister(TR::Node * callNode, TR::RegisterDependencyConditions * deps, bool loadIntoEnvironmentReg);
-   bool isAggregateReturnedInIntRegisters(int32_t aggregateLenth);
 
    uint32_t calculateInterfaceMappingFlags(TR::ResolvedMethodSymbol *method);
 
@@ -132,29 +107,17 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
 
    public:
 
-   virtual void setPrologueInfoCalculated(bool value)  { _prologueInfoCalculated = value; }
-   virtual bool getPrologueInfoCalculated()  { return _prologueInfoCalculated; }
-   void setAlternateStackPointerAdjust(int32_t adjust) { _alternateSPAdjust = adjust; }
-   int32_t getAlternateStackPointerAdjust() { return _alternateSPAdjust; }
-   void setSaveBackChain(bool value) { _saveBackChain = value; } // for use with XPLINK(BACKCHAIN) or other
-   bool getSaveBackChain() { return _saveBackChain; }
-   uint32_t getStackFrameBias() { return 2048; }
-
    // == Related to signature of method or call
    uint32_t  getInterfaceMappingFlags() { return _interfaceMappingFlags; }
    void setInterfaceMappingFlags(uint32_t flags) { _interfaceMappingFlags = flags; }
-
-   // Size of guard page can affect generation of explicit stack checking code in noleaf routines.
-   // For example, 0 size guard page means always generate stack checking in noleafs.
-   void setGuardPageSize(uint32_t size) { _guardPageSize = size; }
-   uint32_t getGuardPageSize() { return _guardPageSize; }
-
+   
    virtual void calculatePrologueInfo(TR::Instruction * cursor);
    virtual TR::Instruction *buyFrame(TR::Instruction * cursor, TR::Node *node);
    virtual void createEntryPointMarker(TR::Instruction *cursor, TR::Node *node);
 
    // === Call or entry related
    TR_XPLinkCallTypes genWCodeCallBranchCode(TR::Node *callNode, TR::RegisterDependencyConditions * deps);
+   TR::Instruction * genCallNOPAndDescriptor(TR::Instruction * cursor, TR::Node *node, TR::Node *callNode, TR_XPLinkCallTypes callType);
 
    /** \brief
     *     Gets the label instruction which marks the stack pointer update instruction following it.
@@ -165,19 +128,17 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
    TR::Instruction* getStackPointerUpdate() const;
    
    /** \brief
-    *     Gets the PPA1 (Program Prologue Area) snippet for this method body.
+    *     Gets the PPA1 (Program Prologue Area 1) snippet for this method body.
     */
    TR::PPA1Snippet* getPPA1Snippet() const;
    
    /** \brief
-    *     Gets the PPA2 (Program Prologue Area) snippet for this method body.
+    *     Gets the PPA2 (Program Prologue Area 2) snippet for this method body.
     */
    TR::PPA2Snippet* getPPA2Snippet() const;
 
    virtual void createPrologue(TR::Instruction * cursor);
    virtual void createEpilogue(TR::Instruction * cursor);
-
-   TR::Instruction * genCallNOPAndDescriptor(TR::Instruction * cursor, TR::Node *node, TR::Node *callNode, TR_XPLinkCallTypes callType);
 
    private:
 
@@ -203,31 +164,12 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
       TR::Instruction* _cursor;
       };
 
-   enum TR_XPLinkFrameType _frameType;
-
-   TR::RealRegister::RegNum _CAAPointerRegister;
-   TR::RealRegister::RegNum _parentDSAPointerRegister;
-
-   TR_zOSGlobalCompilationInfo* _globalCompilationInfo;
-
    TR::Instruction* _stackPointerUpdate;
 
    TR::PPA1Snippet* _ppa1;
    TR::PPA2Snippet* _ppa2;
 
-   enum
-      {
-      fudgeFactor = 1800                  // see S390EarlyStackMap
-                                         // 200 is too small for povray
-      };
-   uintptr_t _actualOffsetOfFirstIncomingParm;
-   bool  _prologueInfoCalculated;        // if calculated prologue information already - i.e. multiple entry points
-   int32_t _alternateSPAdjust;           // i.e. for alloca: alternateSP <- SP + adjust
-   uint32_t _guardPageSize;              // byte size of guard page affecting explicit checking
-   bool _saveBackChain;                  // GPR4 is saved
    uint32_t _interfaceMappingFlags;       // describing the method body
-   
-   TR::RealRegister::RegNum _environmentPointerRegister;
    };
 }
 

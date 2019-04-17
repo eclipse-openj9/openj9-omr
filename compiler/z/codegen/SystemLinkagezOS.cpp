@@ -84,10 +84,11 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
       _ppa1(NULL),
       _ppa2(NULL)
    {
-   // linkage properties
    setProperties(FirstParmAtFixedOffset);
+
    setProperty(SplitLongParm);
    setProperty(SkipGPRsForFloatParms);
+
    if (TR::Compiler->target.is64Bit())
       {
       setProperty(NeedsWidening);
@@ -98,7 +99,6 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
       }
 
    setRegisterFlag(TR::RealRegister::GPR4, Preserved);
-
    setRegisterFlag(TR::RealRegister::GPR8, Preserved);
    setRegisterFlag(TR::RealRegister::GPR9, Preserved);
    setRegisterFlag(TR::RealRegister::GPR10, Preserved);
@@ -116,10 +116,8 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    setRegisterFlag(TR::RealRegister::FPR13, Preserved);
    setRegisterFlag(TR::RealRegister::FPR14, Preserved);
    setRegisterFlag(TR::RealRegister::FPR15, Preserved);
-
-   static const bool enableVectorLinkage = codeGen->getSupportsVectorRegisters();
-
-   if (enableVectorLinkage)
+   
+   if (codeGen->getSupportsVectorRegisters())
       {
       setRegisterFlag(TR::RealRegister::VRF16, Preserved);
       setRegisterFlag(TR::RealRegister::VRF17, Preserved);
@@ -141,17 +139,12 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    setLongDoubleReturnRegister2  (TR::RealRegister::FPR2 );
    setLongDoubleReturnRegister4  (TR::RealRegister::FPR4 );
    setLongDoubleReturnRegister6  (TR::RealRegister::FPR6 );
-   if (enableVectorLinkage) setVectorReturnRegister  (TR::RealRegister::VRF24);
    setStackPointerRegister  (TR::RealRegister::GPR4 );
    setNormalStackPointerRegister  (TR::RealRegister::GPR4 );
    setAlternateStackPointerRegister  (TR::RealRegister::GPR9 );
    setEntryPointRegister    (TR::RealRegister::GPR6);
    setLitPoolRegister       (TR::RealRegister::GPR8 );
    setReturnAddressRegister (TR::RealRegister::GPR7 );
-
-   setEnvironmentPointerRegister (TR::RealRegister::GPR5  );
-   setCAAPointerRegister   (TR::RealRegister::GPR12  );
-   setDebugHooksRegister(TR::Compiler->target.is64Bit() ? TR::RealRegister::GPR10 : TR::RealRegister::GPR12);
 
    setIntegerArgumentRegister(0, TR::RealRegister::GPR1);
    setIntegerArgumentRegister(1, TR::RealRegister::GPR2);
@@ -164,31 +157,28 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    setFloatArgumentRegister(3, TR::RealRegister::FPR6);
    setNumFloatArgumentRegisters(4);
 
-   if (enableVectorLinkage)
+   if (codeGen->getSupportsVectorRegisters())
       {
-      int vecIndex = 0;
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF25);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF26);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF27);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF28);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF29);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF30);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF31);
-      setVectorArgumentRegister(vecIndex++, TR::RealRegister::VRF24);
-      setNumVectorArgumentRegisters(vecIndex);
+      int32_t index = 0;
+      
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF24);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF25);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF26);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF27);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF28);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF29);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF30);
+      setVectorArgumentRegister(index++, TR::RealRegister::VRF31);
+      setNumVectorArgumentRegisters(index);
+
+      setVectorReturnRegister(TR::RealRegister::VRF24);
       }
 
    setOffsetToFirstParm   ((TR::Compiler->target.is64Bit()) ? 2176 : 2112);
    setOffsetToRegSaveArea   (2048);
    setNumberOfDependencyGPRegisters(32);
-   setFrameType(TR_XPLinkUnknownFrame);
    setLargestOutgoingArgumentAreaSize(0);
    setOffsetToLongDispSlot(0);
-
-   setPrologueInfoCalculated(false);
-   setGuardPageSize   ((TR::Compiler->target.is64Bit()) ? 1024*1024 : 4096);
-   setAlternateStackPointerAdjust(0);
-   setSaveBackChain(false); // default: no forced stack pointer save by prologue
    }
 
 
@@ -411,27 +401,6 @@ TR::S390zOSSystemLinkage::updateFloatParmDescriptorFlags(uint32_t *parmDescripto
    return false;
    }
 
-TR::Register *
-TR::S390zOSSystemLinkage::loadEnvironmentIntoRegister(TR::Node * callNode, TR::RegisterDependencyConditions * deps, bool loadIntoEnvironmentRegister)
-   {
-   // Important note: this should only be called in pre-prologue phase for routines we know are
-   // not leaf routines.
-
-   TR::Register *envReg;
-   if (loadIntoEnvironmentRegister)
-      {
-      TR::Register * systemEnvironmentRegister  = deps->searchPostConditionRegister(getEnvironmentPointerRegister()); // gpr 5
-      envReg = systemEnvironmentRegister;
-      }
-   else
-      {
-      envReg = cg()->allocateRegister();
-      }
-
-
-   return envReg;
-   }
-
 /**
  * WCode use
  */
@@ -578,20 +547,6 @@ TR::S390zOSSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
       }
    }
 
-bool
-TR::S390zOSSystemLinkage::isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth)
-   {
-   return isFastLinkLinkageType() &&
-      (aggregateLenth  > (getNumIntegerArgumentRegisters()* cg()->machine()->getGPRSize()));
-   }
-
-bool
-TR::S390zOSSystemLinkage::isAggregateReturnedInIntRegisters(int32_t aggregateLenth)
-   {
-   return aggregateLenth  <= (getNumIntegerArgumentRegisters()* cg()->machine()->getGPRSize());
-   }
-
-
 /**
  * General XPLink utility
  *
@@ -736,12 +691,10 @@ void TR::S390zOSSystemLinkage::calculatePrologueInfo(TR::Instruction * cursor)
 
    int32_t localSize, argSize;
    int32_t stackFrameSize, alignedStackFrameSize;
-   int32_t stackFrameBias = getStackFrameBias();
 
    // Set for initParamOffset() - relative offset from start of frame
-   setOutgoingParmAreaBeginOffset(getOffsetToFirstParm()-stackFrameBias);
+   setOutgoingParmAreaBeginOffset(getOffsetToFirstParm() - XPLINK_STACK_FRAME_BIAS);
 
-   {
    //
    // Calculate size of locals - determined in prior call to mapStack()
    // We make the size a multiple of the strictest alignment symbol
@@ -771,11 +724,8 @@ void TR::S390zOSSystemLinkage::calculatePrologueInfo(TR::Instruction * cursor)
    //
    // Map stack - which is done in backwards fashion
    //
-   int32_t stackMappingIndex = stackFrameBias + stackFrameSize;
+   int32_t stackMappingIndex = XPLINK_STACK_FRAME_BIAS + stackFrameSize;
    mapStack(bodySymbol, stackMappingIndex);
-   }
-
-   setPrologueInfoCalculated(true);
    }
 
 TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, TR::Node * node)
@@ -785,25 +735,23 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
    TR::LabelSymbol *stmLabel;
 
    int8_t gprSize = cg()->machine()->getGPRSize();
-   int32_t stackFrameSize, offsetToRegSaveArea, offsetToFirstSavedReg, stackFrameBias, gpr3ParmOffset;
+   int32_t stackFrameSize, offsetToRegSaveArea, offsetToFirstSavedReg, gpr3ParmOffset;
    int32_t  firstSaved, lastSaved, firstPossibleSaved;
-   bool saveBackChain;
 
-   // TODO: enlarge this intermediate threshold for 64 bit (up to 1M). Needs changes in code below
-   int32_t intermediateThreshold = getGuardPageSize();
+   // As defined by XPLINK specification
+   int32_t intermediateThreshold = TR::Compiler->target.is64Bit() ? 1024 * 1024 : 4096;
 
    TR::RealRegister *spReg = getNormalStackPointerRealRegister(); // normal sp reg used in prol/epil
    stackFrameSize = getStackFrameSize();
-   stackFrameBias = getStackFrameBias();
    offsetToRegSaveArea = getOffsetToRegSaveArea();
 
    // This delta is slightly pessimistic and could be a "tad" more. But, taking
    // into account the "tad" complicates this code more than its worth.
    // I.E. small set of cases could be forced to being intermediate vs. small
    // frame types because of this "tad".
-   int32_t delta = stackFrameBias - stackFrameSize;
+   int32_t delta = XPLINK_STACK_FRAME_BIAS - stackFrameSize;
 
-   if (stackFrameSize > getGuardPageSize())
+   if (stackFrameSize > intermediateThreshold)
       // guard page option mandates explicit checking
       frameType = TR_XPLinkStackCheckFrame;
    else if (delta >=0)
@@ -813,7 +761,6 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
       frameType = TR_XPLinkIntermediateFrame;
    else
       frameType = TR_XPLinkStackCheckFrame;
-   setFrameType(frameType);
 
    TR::MemoryReference *rsa, *bosRef, *extenderRef, *gpr3ParmRef;
    int32_t rsaOffset, bosOffset, extenderOffset;
@@ -852,10 +799,6 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
       needAddTempReg = true;
 
    if (needAddTempReg)
-      setSaveBackChain(true);
-
-   saveBackChain = getSaveBackChain();
-   if (saveBackChain)
       GPRSaveMask  |= 1 << GPREGINDEX(getNormalStackPointerRegister());
    else
       GPRSaveMask  &= ~(1 << GPREGINDEX(getNormalStackPointerRegister()));
@@ -869,7 +812,7 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
       }
    
    if ((frameType == TR_XPLinkStackCheckFrame)
-      || ((frameType == TR_XPLinkIntermediateFrame) && saveBackChain))
+      || ((frameType == TR_XPLinkIntermediateFrame) && needAddTempReg))
       { // GPR4 is saved but indirectly via GPR0 in stack check or medium case - so don't save GPR4 via STM
       firstSaved = getFirstMaskedBit(GPRSaveMask&~(1 << GPREGINDEX(getNormalStackPointerRegister())));
       }
@@ -916,14 +859,14 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
       case TR_XPLinkIntermediateFrame:
           if (needAddTempReg)
              {
-             // (saveBackChain) LR R0,R4
-             // (saveTempReg|saveBackChain) ST R3,D(R4)   <-- save temp register
+             // (needAddTempReg) LR R0,R4
+             // (saveTempReg|needAddTempReg) ST R3,D(R4)   <-- save temp register
              // R4<- R4 - stackSize
              // LR R3,R0
              // (saveTempReg) L  R3,D(R3)   <-- load temp register
              saveTempReg = true;  // PERFORMANCE NOTE: TODO: set to false if GPR3 is not used as a parameter
 
-             if (saveTempReg || saveBackChain)
+             if (saveTempReg || needAddTempReg)
                 {
                 cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr0Real, spReg, cursor); // LR R0,R4
                 }
@@ -947,12 +890,12 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
              }
           else
              { // no temp reg needed
-             // (saveBackChain)    LR R0,R4
+             // (needAddTempReg)    LR R0,R4
              // AHI R4,-stackFrameSize
              // STM rx,ry,offset(R4)
-             // (saveBackChain)    ST R0,D(R4)
+             // (needAddTempReg)    ST R0,D(R4)
 
-             if (saveBackChain) // LR R0,R4
+             if (needAddTempReg) // LR R0,R4
                 cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node, gpr0Real, spReg, cursor);
              
              cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, generateLabelSymbol(cg()), cursor);
@@ -965,7 +908,7 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
           cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(),
                   node, getRealRegister(REGNUM(firstSaved + TR::RealRegister::FirstGPR)),
                   getRealRegister(REGNUM(lastSaved + TR::RealRegister::FirstGPR)), rsa, cursor);
-          if (saveBackChain)
+          if (needAddTempReg)
              { // ST R0,2048(R4)
              rsaOffset = offsetToRegSaveArea + 0; // GPR4 saved at start of RSA
              rsa = generateS390MemoryReference(spReg, rsaOffset, cg());
@@ -976,30 +919,30 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
       case TR_XPLinkStackCheckFrame:
           // TODO: move the code to exend stack to "cold" path
           // Code:
-          //   important note: saveTempReg -> saveBackChain
+          //   important note: saveTempReg -> needAddTempReg
           //
           //     (saveTempReg)      ST R3,parmOffsetR3(GPR4)
-          //     (saveBackChain)    LR R0,R4
+          //     (needAddTempReg)    LR R0,R4
           //     AHI R4, -stackFrameSize  [this varies based on stackFrameSize]
           //     [31 bit] C  R4,BOS(R12)           R12=CAA
           //     [64 bit] LLGT  R3,1268            R3=control block - low mem
           //     [64 bit] C  R4,BOS(R3)            R3=ditto
           //     BL stmLabel
           //     /* extension logic */
-          //     (!saveBackChain)    LR R0,R3   /* could be smarter here */
+          //     (!needAddTempReg)    LR R0,R3   /* could be smarter here */
           //     L  R3,extender(R12)
           //     BASR R3,R3
           //     NOP x                    [xplink noop]
-          //     (!saveBackChain)   LR R3,R0   /* could be smarter here */
+          //     (!needAddTempReg)   LR R3,R0   /* could be smarter here */
           //
           //   stmLabel:
           //     STM rx,ry,offset(R4)
-          //     (saveBackChain)    ST R0,2048(,R4)
+          //     (needAddTempReg)    ST R0,2048(,R4)
           //     (saveTempReg)      LR R3,R0   /* could be smarter here */
           //     (saveTempReg)      L  R3,parmOffsetR3(GPR3)
           //
           stmLabel = generateLabelSymbol(cg());
-          saveTempReg = saveBackChain;  // TODO: and with check that R3 is used as parm
+          saveTempReg = needAddTempReg;  // TODO: and with check that R3 is used as parm
 
           //------------------------------
           // Stack check - prologue part 1
@@ -1010,7 +953,7 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
              gpr3ParmRef = generateS390MemoryReference(spReg, gpr3ParmOffset, cg()); // used for temporary register
              cursor = generateRXInstruction(cg(), TR::InstOpCode::getStoreOpCode(), node, gpr3Real, gpr3ParmRef, cursor); // ST R3,parmRef(R4)
              }
-          if (saveBackChain) // LR R0,R4
+          if (needAddTempReg) // LR R0,R4
               cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr0Real, spReg, cursor);
           cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, gpr3Real, node, cursor); // AHI ...
 
@@ -1037,7 +980,7 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
           //------------------------------
 
           // This logic should be moved out of line eventually
-          if (!saveBackChain)
+          if (!needAddTempReg)
              {
              cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr0Real, gpr3Real, cursor); // LR R0,R3
              }
@@ -1057,7 +1000,7 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
           cursor = generateRRInstruction(cg(), InstOpCode::BASR, node, gpr3Real, gpr3Real, cursor);
           cursor = genCallNOPAndDescriptor(cursor, node, NULL, TR_XPLinkCallType_BASR33);
 
-          if (!saveBackChain)
+          if (!needAddTempReg)
              { // LR R3,R0
              cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr3Real, gpr0Real, cursor);
              }
@@ -1074,7 +1017,7 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
           cursor = generateRSInstruction(cg(),  TR::InstOpCode::getStoreMultipleOpCode(),
                   node, getRealRegister(REGNUM(firstSaved + TR::RealRegister::FirstGPR)),
                   getRealRegister(REGNUM(lastSaved + TR::RealRegister::FirstGPR)), rsa, cursor);
-          if (saveBackChain)
+          if (needAddTempReg)
              { // ST R0,2048(R4)
              rsaOffset = offsetToRegSaveArea + 0; // GPR4 saved at start of RSA
              rsa = generateS390MemoryReference(spReg, rsaOffset, cg());
@@ -1263,11 +1206,10 @@ TR::S390zOSSystemLinkage::createEpilogue(TR::Instruction * cursor)
    {
    int16_t GPRSaveMask;
    int8_t gprSize = cg()->machine()->getGPRSize();
-   enum TR_XPLinkFrameType frameType = getFrameType();
    TR::Node * currentNode = cursor->getNode();
    int32_t offset;
 
-   int32_t stackFrameSize, offsetToFirstSavedReg, stackFrameBias;
+   int32_t stackFrameSize, offsetToFirstSavedReg;
    int32_t  firstSaved, lastSaved, firstPossibleSaved;
    TR::MemoryReference *rsa;
 
@@ -1275,7 +1217,6 @@ TR::S390zOSSystemLinkage::createEpilogue(TR::Instruction * cursor)
 
    TR::RealRegister *spReg = getNormalStackPointerRealRegister(); // normal sp reg used in prol/epil
    stackFrameSize = getStackFrameSize();
-   stackFrameBias = getStackFrameBias();
 
    //
    // Restore FPRs and ARs from local automatic
@@ -1292,7 +1233,7 @@ TR::S390zOSSystemLinkage::createEpilogue(TR::Instruction * cursor)
    if (firstSaved >= 0)
       {
       offsetToFirstSavedReg = (firstSaved-firstPossibleSaved)*gprSize; // relative to start of save area
-      offset = stackFrameBias + offsetToFirstSavedReg;
+      offset = XPLINK_STACK_FRAME_BIAS + offsetToFirstSavedReg;
       rsa = generateS390MemoryReference(spReg, offset, cg());
 
       if (firstSaved == lastSaved)

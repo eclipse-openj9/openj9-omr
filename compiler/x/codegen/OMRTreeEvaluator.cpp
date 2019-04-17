@@ -3034,6 +3034,96 @@ static TR::Register* inlineAtomicMemoryUpdate(TR::Node* node, TR_X86OpCodes op, 
    return value;
    }
 
+/** \brief
+ *    Generate instructions to do atomic compare and 64-bit memory update on X86-32.
+ *
+ *  \param node
+ *     The tree node
+ *
+ *  \param returnValue
+ *     Indicate whether the result is the old memory value or the status of memory update
+ *
+ *  \param cg
+ *     The code generator
+ */
+static TR::Register* inline64BitAtomicCompareAndMemoryUpdateOn32Bit(TR::Node* node, bool returnValue, TR::CodeGenerator* cg)
+   {
+   TR_ASSERT(TR::Compiler->target.is32Bit(), "32-bit only");
+   TR::Register* address  = cg->evaluate(node->getChild(0));
+   TR::Register* oldvalue = cg->longClobberEvaluate(node->getChild(1));
+   TR::Register* newvalue = cg->evaluate(node->getChild(2));
+
+   TR::RegisterDependencyConditions* deps = generateRegisterDependencyConditions((uint8_t)4, (uint8_t)4, cg);
+   deps->addPreCondition(oldvalue->getLowOrder(),  TR::RealRegister::eax, cg);
+   deps->addPreCondition(oldvalue->getHighOrder(), TR::RealRegister::edx, cg);
+   deps->addPreCondition(newvalue->getLowOrder(),  TR::RealRegister::ebx, cg);
+   deps->addPreCondition(newvalue->getHighOrder(), TR::RealRegister::ecx, cg);
+   deps->addPostCondition(oldvalue->getLowOrder(),  TR::RealRegister::eax, cg);
+   deps->addPostCondition(oldvalue->getHighOrder(), TR::RealRegister::edx, cg);
+   deps->addPostCondition(newvalue->getLowOrder(),  TR::RealRegister::ebx, cg);
+   deps->addPostCondition(newvalue->getHighOrder(), TR::RealRegister::ecx, cg);
+
+   generateMemInstruction(LCMPXCHG8BMem, node, generateX86MemoryReference(address, 0, cg), deps, cg);
+   if (!returnValue)
+      {
+      cg->stopUsingRegister(oldvalue->getHighOrder());
+      oldvalue = oldvalue->getLowOrder();
+      generateRegInstruction(SETE1Reg, node, oldvalue, cg);
+      generateRegRegInstruction(MOVZXReg4Reg1, node, oldvalue, oldvalue, cg);
+      }
+
+   node->setRegister(oldvalue);
+   cg->decReferenceCount(node->getChild(0));
+   cg->decReferenceCount(node->getChild(1));
+   cg->decReferenceCount(node->getChild(2));
+   return oldvalue;
+   }
+
+/** \brief
+ *    Generate instructions to do atomic compare and memory update.
+ *
+ *  \param node
+ *     The tree node
+ *
+ *  \param op
+ *     The instruction op code to perform the memory update
+ *
+ *  \param returnValue
+ *     Indicate whether the result is the old memory value or the status of memory update
+ *
+ *  \param cg
+ *     The code generator
+ */
+static TR::Register* inlineAtomicCompareAndMemoryUpdate(TR::Node* node, bool returnValue, TR::CodeGenerator* cg)
+   {
+   bool isNode64Bit = node->getChild(1)->getDataType().isInt64();
+   if (TR::Compiler->target.is32Bit() && isNode64Bit)
+      {
+      return inline64BitAtomicCompareAndMemoryUpdateOn32Bit(node, returnValue, cg);
+      }
+
+   TR::Register* address  = cg->evaluate(node->getChild(0));
+   TR::Register* oldvalue = cg->gprClobberEvaluate(node->getChild(1), MOVRegReg());
+   TR::Register* newvalue = cg->evaluate(node->getChild(2));
+
+   TR::RegisterDependencyConditions* deps = generateRegisterDependencyConditions((uint8_t)1, (uint8_t)1, cg);
+   deps->addPreCondition(oldvalue, TR::RealRegister::eax, cg);
+   deps->addPostCondition(oldvalue, TR::RealRegister::eax, cg);
+
+   generateMemRegInstruction(LCMPXCHGMemReg(isNode64Bit), node, generateX86MemoryReference(address, 0, cg), newvalue, deps, cg);
+   if (!returnValue)
+      {
+      generateRegInstruction(SETE1Reg, node, oldvalue, cg);
+      generateRegRegInstruction(MOVZXReg4Reg1, node, oldvalue, oldvalue, cg);
+      }
+
+   node->setRegister(oldvalue);
+   cg->decReferenceCount(node->getChild(0));
+   cg->decReferenceCount(node->getChild(1));
+   cg->decReferenceCount(node->getChild(2));
+   return oldvalue;
+   }
+
 // TR::icall, TR::acall, TR::lcall, TR::fcall, TR::dcall, TR::call handled by directCallEvaluator
 TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -3081,6 +3171,14 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
       if (op != BADIA32Op)
          {
          return inlineAtomicMemoryUpdate(node, op, cg);
+         }
+      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicCompareAndSwapReturnStatusSymbol))
+         {
+         return inlineAtomicCompareAndMemoryUpdate(node, false, cg);
+         }
+      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicCompareAndSwapReturnValueSymbol))
+         {
+         return inlineAtomicCompareAndMemoryUpdate(node, true, cg);
          }
       }
 

@@ -1645,8 +1645,10 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<atomicSwap32Bit>";
          case TR::SymbolReferenceTable::atomicSwap64BitSymbol:
              return "<atomicSwap64Bit>";
-         case TR::SymbolReferenceTable::atomicCompareAndSwapSymbol:
-             return "<atomicCompareAndSwap>";
+         case TR::SymbolReferenceTable::atomicCompareAndSwapReturnStatusSymbol:
+             return "<atomicCompareAndSwapReturnStatus>";
+         case TR::SymbolReferenceTable::atomicCompareAndSwapReturnValueSymbol:
+             return "<atomicCompareAndSwapReturnValue>";
          case TR::SymbolReferenceTable::potentialOSRPointHelperSymbol:
              return "<potentialOSRPointHelper>";
          case TR::SymbolReferenceTable::osrFearPointHelperSymbol:
@@ -2096,14 +2098,15 @@ static const char *commonNonhelperSymbolNames[] =
    "<startPCLinkageInfo>",
    "<instanceShapeFromROMClass>",
    "<synchronizedFieldLoad>",
-   "<atomicAdd32Bit>",
-   "<atomicAdd64Bit>",
+   "<atomicAdd>",
+   "<atomicFetchAndAdd>",
    "<atomicFetchAndAdd32Bit>",
    "<atomicFetchAndAdd64Bit>",
+   "<atomicSwap>",
    "<atomicSwap32Bit>",
    "<atomicSwap64Bit>",
-   "<atomicCompareAndSwap32Bit>",
-   "<atomicCompareAndSwap64Bit>"
+   "<atomicCompareAndSwapReturnStatus>",
+   "<atomicCompareAndSwapReturnValue>",
    };
 
 const char *

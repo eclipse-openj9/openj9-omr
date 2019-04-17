@@ -26,11 +26,6 @@
 #include "il/Node.hpp"
 #include "il/symbol/ParameterSymbol.hpp"
 
-TR::Linkage *
-OMR::Linkage::self()
-   {
-   return static_cast<TR::Linkage*>(this);
-   }
 
 bool
 OMR::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)

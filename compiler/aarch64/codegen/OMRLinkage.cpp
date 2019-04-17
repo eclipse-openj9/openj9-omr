@@ -56,7 +56,6 @@ bool OMR::ARM64::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)
 
 TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register *argMemReg, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::ARM64MemoryArgument &memArg)
    {
-   TR::Machine *machine = cg()->machine();
    const TR::ARM64LinkageProperties& properties = self()->getProperties();
 
    TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(argMemReg, 8, cg()); // post-increment
@@ -158,16 +157,4 @@ OMR::ARM64::Linkage::numArgumentRegisters(TR_RegisterKinds kind)
       default:
          return 0;
       }
-   }
-
-TR_HeapMemory
-OMR::ARM64::Linkage::trHeapMemory()
-   {
-   return self()->trMemory();
-   }
-
-TR_StackMemory
-OMR::ARM64::Linkage::trStackMemory()
-   {
-   return self()->trMemory();
    }

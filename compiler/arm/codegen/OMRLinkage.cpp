@@ -83,10 +83,10 @@ void OMR::ARM::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbo
 TR::Instruction *OMR::ARM::Linkage::saveArguments(TR::Instruction *cursor)
    {
    TR::CodeGenerator     *codeGen    = self()->cg();
-   TR::Machine           *machine    = codeGen->machine();
+   TR::Machine           *machine    = self()->machine();
    TR::RealRegister      *stackPtr   = machine->getRealRegister(self()->getProperties().getStackPointerRegister());
-   TR::ResolvedMethodSymbol   *bodySymbol = codeGen->comp()->getJittedMethodSymbol();
-   TR::Node                 *firstNode  = codeGen->comp()->getStartTree()->getNode();
+   TR::ResolvedMethodSymbol   *bodySymbol = self()->comp()->getJittedMethodSymbol();
+   TR::Node                 *firstNode  = self()->comp()->getStartTree()->getNode();
 
    const TR::ARMLinkageProperties& properties = self()->getProperties();
 
@@ -152,10 +152,10 @@ TR::Instruction *OMR::ARM::Linkage::saveArguments(TR::Instruction *cursor)
 TR::Instruction *OMR::ARM::Linkage::loadUpArguments(TR::Instruction *cursor)
    {
    TR::CodeGenerator     *codeGen    = self()->cg();
-   TR::Machine           *machine    = codeGen->machine();
+   TR::Machine           *machine    = self()->machine();
    TR::RealRegister      *stackPtr   = machine->getRealRegister(self()->getProperties().getStackPointerRegister());
-   TR::ResolvedMethodSymbol   *bodySymbol = codeGen->comp()->getJittedMethodSymbol();
-   TR::Node                 *firstNode  = codeGen->comp()->getStartTree()->getNode();
+   TR::ResolvedMethodSymbol   *bodySymbol = self()->comp()->getJittedMethodSymbol();
+   TR::Node                 *firstNode  = self()->comp()->getStartTree()->getNode();
    ListIterator<TR::ParameterSymbol>   paramIterator(&(bodySymbol->getParameterList()));
    TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
    uint32_t                 numIntArgs = 0;
@@ -215,10 +215,10 @@ TR::Instruction *OMR::ARM::Linkage::loadUpArguments(TR::Instruction *cursor)
 TR::Instruction *OMR::ARM::Linkage::flushArguments(TR::Instruction *cursor)
    {
    TR::CodeGenerator     *codeGen    = self()->cg();
-   TR::Machine           *machine    = codeGen->machine();
+   TR::Machine           *machine    = self()->machine();
    TR::RealRegister      *stackPtr   = machine->getRealRegister(self()->getProperties().getStackPointerRegister());
-   TR::ResolvedMethodSymbol   *bodySymbol = codeGen->comp()->getJittedMethodSymbol();
-   TR::Node                 *firstNode  = codeGen->comp()->getStartTree()->getNode();
+   TR::ResolvedMethodSymbol   *bodySymbol = self()->comp()->getJittedMethodSymbol();
+   TR::Node                 *firstNode  = self()->comp()->getStartTree()->getNode();
    ListIterator<TR::ParameterSymbol>   paramIterator(&(bodySymbol->getParameterList()));
    TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
    uint32_t                 numIntArgs = 0;
@@ -575,7 +575,7 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
          {
          traceMsg(comp, "Special arg %s in %s\n",
             comp->getDebug()->getName(callNode->getChild(from)),
-            comp->getDebug()->getName(self()->cg()->machine()->getRealRegister(specialArgReg)));
+            comp->getDebug()->getName(self()->machine()->getRealRegister(specialArgReg)));
          }
       // Skip the special arg in the first loop
       from += step;
@@ -1007,15 +1007,6 @@ printf("done\n"); fflush(stdout);
    return totalSize;
    }
 
-TR_HeapMemory OMR::ARM::Linkage::trHeapMemory()
-   {
-   return self()->trMemory();
-   }
-
-TR_StackMemory OMR::ARM::Linkage::trStackMemory()
-   {
-   return self()->trMemory();
-   }
 
 TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNode, bool isSystem)
    {
@@ -1033,16 +1024,16 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
    TR::SymbolReference *callSymRef = callNode->getSymbolReference();
    TR::MethodSymbol *callSymbol = callSymRef->getSymbol()->castToMethodSymbol();
 
-   bool isMyself = codeGen->comp()->isRecursiveMethodTarget(callSymbol);
+   bool isMyself = self()->comp()->isRecursiveMethodTarget(callSymbol);
 
    if (callSymRef->getReferenceNumber() >= TR_ARMnumRuntimeHelpers)
-      codeGen->comp()->fe()->reserveTrampolineIfNecessary(codeGen->comp(), callSymRef, false);
+      self()->fe()->reserveTrampolineIfNecessary(self()->comp(), callSymRef, false);
 
    TR::Instruction *gcPoint;
    TR::Register    *returnRegister;
 
    if ((callSymbol->isJITInternalNative() ||
-        (!callSymRef->isUnresolved() && !callSymbol->isInterpreted() && ((codeGen->comp()->compileRelocatableCode() && callSymbol->isHelper()) || !codeGen->comp()->compileRelocatableCode()))))
+        (!callSymRef->isUnresolved() && !callSymbol->isInterpreted() && ((self()->comp()->compileRelocatableCode() && callSymbol->isHelper()) || !self()->comp()->compileRelocatableCode()))))
       {
       gcPoint = generateImmSymInstruction(codeGen,
                                           ARMOp_bl,
@@ -1057,7 +1048,7 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
       TR::LabelSymbol *label = generateLabelSymbol(codeGen);
       TR::Snippet     *snippet;
 
-      if (callSymRef->isUnresolved() || codeGen->comp()->compileRelocatableCode())
+      if (callSymRef->isUnresolved() || self()->comp()->compileRelocatableCode())
          {
          snippet = new (self()->trHeapMemory()) TR::ARMUnresolvedCallSnippet(codeGen, callNode, label, argSize);
          }
@@ -1072,14 +1063,14 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
                                           callNode,
                                           0,
                                           dependencies,
-                                          new (self()->trHeapMemory()) TR::SymbolReference(codeGen->comp()->getSymRefTab(), label),
+                                          new (self()->trHeapMemory()) TR::SymbolReference(self()->comp()->getSymRefTab(), label),
                                           snippet);
 #else
       TR_ASSERT(false, "Attempting to handle Java in non-Java project");
 #endif
       }
    gcPoint->ARMNeedsGCMap(pp.getPreservedRegisterMapForGC());
-   codeGen->machine()->setLinkRegisterKilled(true);
+   self()->machine()->setLinkRegisterKilled(true);
    codeGen->setHasCall();
    TR::DataType resType = callNode->getType();
 

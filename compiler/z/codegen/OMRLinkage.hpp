@@ -600,15 +600,6 @@ enum TR_DispatchType
 
    virtual int32_t setupLiteralPoolRegister(TR::Snippet *firstSnippet) { return -1; }
 
-// Just for convenience
-   TR::CodeGenerator * cg() { return _codeGen; }
-   TR::Compilation *   comp();
-   TR_FrontEnd *       fe();
-
-   TR_Memory *          trMemory();
-   TR_HeapMemory        trHeapMemory();
-   TR_StackMemory       trStackMemory();
-
    TR::RealRegister *  getRealRegister(TR::RealRegister::RegNum rNum);
 
    TR::RealRegister::RegNum getFirstSavedRegister(int32_t fromreg, int32_t toreg);
@@ -631,7 +622,6 @@ private:
 
    enum FrameType _frameType;
 
-   TR::CodeGenerator * _codeGen;
    TR::Instruction * _lastPrologueInstr;
    TR::Instruction * _firstPrologueInstr;
    };

@@ -22,4 +22,61 @@
 #ifndef OMR_LINKAGE_INLINES_INCL
 #define OMR_LINKAGE_INLINES_INCL
 
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Linkage.hpp"
+#include "env/TRMemory.hpp"
+
+namespace TR { class Compilation; }
+namespace TR { class Machine; }
+class TR_FrontEnd;
+class TR_Memory;
+
+TR::Linkage *
+OMR::Linkage::self()
+   {
+   return static_cast<TR::Linkage*>(this);
+   }
+
+TR::CodeGenerator *
+OMR::Linkage::cg()
+   {
+   return _cg;
+   }
+
+TR::Machine *
+OMR::Linkage::machine()
+   {
+   return _cg->machine();
+   }
+
+TR::Compilation *
+OMR::Linkage::comp()
+   {
+   return _cg->comp();
+   }
+
+TR_FrontEnd *
+OMR::Linkage::fe()
+   {
+   return _cg->fe();
+   }
+
+TR_Memory *
+OMR::Linkage::trMemory()
+   {
+   return _cg->trMemory();
+   }
+
+TR_HeapMemory
+OMR::Linkage::trHeapMemory()
+   {
+   return self()->trMemory();
+   }
+
+TR_StackMemory
+OMR::Linkage::trStackMemory()
+   {
+   return self()->trMemory();
+   }
+
 #endif

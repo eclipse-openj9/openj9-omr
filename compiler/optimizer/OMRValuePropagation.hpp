@@ -640,6 +640,16 @@ class ValuePropagation : public TR::Optimization
 
    int32_t getValueNumber(TR::Node *node);
 
+   /**
+    * @brief Supplemental functionality for constraining an acall node.  Projects
+    *        consuming OMR can implement this function to provide project-specific
+    *        functionality.
+    *
+    * @param[in] node : TR::Node of the call to constrain
+    *
+    * @return Resulting node with constraints applied.
+    */
+   virtual TR::Node *innerConstrainAcall(TR::Node *node);
 
    void printStructureInfo(TR_Structure *structure, bool starting, bool lastTimeThrough);
    void printParentStructure(TR_Structure *structure);

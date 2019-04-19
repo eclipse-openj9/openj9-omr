@@ -96,7 +96,7 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 	uint32_t handlerResult;
 	_FEEDBACK ceemrcrFc;
 	_INT4 ceemrcrType = 0;
-	uint32_t portlibSignalNo = OMRPORT_SIG_FLAG_DOES_NOT_MAP_TO_POSIX;
+	uint32_t portlibSignalNo = 0;
 	uint32_t prevPortlibSignalNo = 0;
 
 	/* this needs to an EBCDIC string */
@@ -129,9 +129,7 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 		return;
 	}
 
-
 	if (0 == strncmp(ceeEbcdic, fc->tok_facid, 3)) {
-
 		if ((3207 <= fc->tok_msgno) && (fc->tok_msgno <= 3234)) {
 			/* hardware-raised SIGFPE */
 			portlibSignalNo = OMRPORT_SIG_FLAG_SIGFPE;
@@ -144,29 +142,23 @@ j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBAC
 		} else {
 			if ((5201 <= fc->tok_msgno) && (fc->tok_msgno <= 5238)) {
 				OMRPortLibrary *portLibrary = thisRecord->portLibrary;
-
 				char *asciiFacilityID = e2a_func(fc->tok_facid, 3);
-
 				portLibrary->nls_printf(portLibrary, J9NLS_ERROR, J9NLS_PORT_ZOS_CONDITION_FOR_SOFTWARE_RAISED_SIGNAL_RECEIVED, (NULL == asciiFacilityID) ? "NULL" : asciiFacilityID, fc->tok_msgno);
 				free(asciiFacilityID);
-
 			}
-
 		}
 	}
 
 	/*
 	 * Call the handlers that were registered with the port library.
 	 *
-	 * If at this point portlibSignalNo == OMRPORT_SIG_FLAG_DOES_NOT_MAP_TO_POSIX, we have received a condition that cannot be mapped to a harware-raised POSIX signal.
-	 * 	- in this case, only handlers that were registered against OMRPORT_SIG_FLAG_SIGALLSYNC should get called,
+	 * If portlibSignalNo is 0 at this point, we have received a condition that cannot be mapped to a hardware-raised POSIX signal.
+	 * In this case, only handlers that were registered against OMRPORT_SIG_FLAG_SIGALLSYNC should get called,
 	 *
-	 * If instead the portlibSignalNo has been set, then simply call handlers that had registered explicitly for that
-	 * 	signal type
+	 * If portlibSignalNo is set, then call handlers registered explicitly for the specified signal type.
 	 */
-	if ((0 != (thisRecord->flags & portlibSignalNo))
-	 || ((OMRPORT_SIG_FLAG_DOES_NOT_MAP_TO_POSIX == portlibSignalNo)
-	  && (0 != (thisRecord->flags & OMRPORT_SIG_FLAG_SIGALLSYNC)))
+	if (OMR_ARE_ANY_BITS_SET(thisRecord->flags, portlibSignalNo)
+	 || ((0 == portlibSignalNo) && OMR_ARE_ANY_BITS_SET(thisRecord->flags, OMRPORT_SIG_FLAG_SIGALLSYNC))
 	) {
 
 		J9LEConditionInfo j9Info;

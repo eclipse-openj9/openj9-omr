@@ -43,9 +43,9 @@
 #cmakedefine OMR_EXAMPLE
 
 #cmakedefine OMR_GC_ALLOCATION_TAX
-#cmakedefine OMR_GC_OBJECT_ALLOCATION_NOTIFY
 #cmakedefine OMR_GC_BATCH_CLEAR_TLH
 #cmakedefine OMR_GC_COMBINATION_SPEC
+#cmakedefine OMR_GC_CONCURRENT_SCAVENGER
 #cmakedefine OMR_GC_CONCURRENT_SWEEP
 #cmakedefine OMR_GC_DEBUG_ASSERTS
 #cmakedefine OMR_GC_EXPERIMENTAL_CONTEXT
@@ -58,11 +58,13 @@
 #cmakedefine OMR_GC_MODRON_COMPACTION
 #cmakedefine OMR_GC_MODRON_CONCURRENT_MARK
 #cmakedefine OMR_GC_MODRON_SCAVENGER
-#cmakedefine OMR_GC_CONCURRENT_SCAVENGER
 #cmakedefine OMR_GC_MODRON_STANDARD
 #cmakedefine OMR_GC_NON_ZERO_TLH
+#cmakedefine OMR_GC_OBJECT_ALLOCATION_NOTIFY
 #cmakedefine OMR_GC_SEGREGATED_HEAP
 #cmakedefine OMR_GC_THREAD_LOCAL_HEAP
+#cmakedefine OMR_GC_VLHGC
+#cmakedefine OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
 
 /**
  * Tells if a platform has support for Semaphores.

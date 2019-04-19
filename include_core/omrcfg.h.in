@@ -63,6 +63,7 @@
 #undef OMR_GC_SEGREGATED_HEAP
 #undef OMR_GC_THREAD_LOCAL_HEAP
 #undef OMR_GC_DOUBLE_MAP_ARRAYLETS
+#undef OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
 
 /**
  * Tells if a platform has support for Semaphores.

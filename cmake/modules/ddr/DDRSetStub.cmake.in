@@ -132,7 +132,7 @@ function(process_target target)
 	cmake_parse_arguments("OPT" "" "SOURCE_DIR;OUTPUT_FILE" "INCLUDE_PATH;DEFINES;SOURCES;HEADERS;PREINCLUDES" ${target_config})
 
 	if(OPT_OUTPUT_FILE)
-		set(target_files ${target_files} "${OPT_OUTPUT_FILE}")
+		set(target_files ${target_files} "${OPT_OUTPUT_FILE}" PARENT_SCOPE)
 	endif()
 
 

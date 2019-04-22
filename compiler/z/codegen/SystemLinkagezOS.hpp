@@ -96,11 +96,8 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
 
    uint32_t calculateCallDescriptorFlags(TR::Node *callNode);
    
-   virtual void calculatePrologueInfo(TR::Instruction * cursor);
    virtual TR::Instruction *buyFrame(TR::Instruction * cursor, TR::Node *node);
 
-   // === Call or entry related
-   TR_XPLinkCallTypes genWCodeCallBranchCode(TR::Node *callNode, TR::RegisterDependencyConditions * deps);
    TR::Instruction * genCallNOPAndDescriptor(TR::Instruction * cursor, TR::Node *node, TR::Node *callNode, TR_XPLinkCallTypes callType);
 
    /** \brief

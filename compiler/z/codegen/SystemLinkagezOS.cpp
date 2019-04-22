@@ -564,54 +564,6 @@ TR::S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
    }
 
 #define  GPREGINDEX(i)   (i-TR::RealRegister::FirstGPR)
-   
-// Calculate prologue info for XPLink
-// This is only done once for multiple entry point routines
-void TR::S390zOSSystemLinkage::calculatePrologueInfo(TR::Instruction * cursor)
-   {
-   TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
-
-   // Logic for main most of which applies to secondary entry points
-   // I.E. all except for parameter offset information.
-
-   int32_t localSize, argSize;
-   int32_t stackFrameSize, alignedStackFrameSize;
-
-   // Set for initParamOffset() - relative offset from start of frame
-   setOutgoingParmAreaBeginOffset(getOffsetToFirstParm() - XPLINK_STACK_FRAME_BIAS);
-
-   //
-   // Calculate size of locals - determined in prior call to mapStack()
-   // We make the size a multiple of the strictest alignment symbol
-   // So that backwards mapping of auto symbols will follow the alignment
-   //
-   localSize =  -1 * (int32_t) (bodySymbol->getLocalMappingCursor());  // Auto+Spill size
-   int32_t strictestAutoAlign = 8;
-   localSize = (localSize + strictestAutoAlign - 1) & ~(strictestAutoAlign-1);
-
-   //
-   // Calculate size of outgoing argument area
-   //
-   argSize = getOutgoingParameterBlockSize();
-
-   //
-   // Calculate stack frame size
-   //
-   int32_t outGoingAreaOffsetUnbiased = (TR::Compiler->target.is64Bit()) ? 128 : 64;
-   stackFrameSize = outGoingAreaOffsetUnbiased + argSize + localSize;
-   int32_t minFrameAlign = (TR::Compiler->target.is64Bit()) ? 32 : 16;
-   TR_ASSERT( minFrameAlign >= strictestAutoAlign,"automatic symbol has alignment that cannot be satisfied");
-   alignedStackFrameSize = (stackFrameSize + minFrameAlign - 1) & ~(minFrameAlign-1);
-   stackFrameSize = alignedStackFrameSize;
-
-   setStackFrameSize(alignedStackFrameSize);
-
-   //
-   // Map stack - which is done in backwards fashion
-   //
-   int32_t stackMappingIndex = XPLINK_STACK_FRAME_BIAS + stackFrameSize;
-   mapStack(bodySymbol, stackMappingIndex);
-   }
 
 TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, TR::Node * node)
    {
@@ -925,56 +877,6 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
    return cursor;
    }
 
-TR_XPLinkCallTypes
-TR::S390zOSSystemLinkage::genWCodeCallBranchCode(TR::Node *callNode, TR::RegisterDependencyConditions * deps)
-   {
-   // WCode specific
-   //
-   // There are 4 cases for outgoing branch sequences
-   //   case 1)            pure OS linkage call using entry point
-   //                      BASR R14,R15
-   //   case 2) (indirect) Call vi function pointer
-   //                      LM R5,R6,disp(regfp)
-   //                      BASR R7,R6
-   //          where:
-   //             a) regfp is a register containing pointer to function descriptor
-   //                (most likely placed in R6)
-   //             b) disp is offset into function descriptor - 16/0 (31/64 bit respectively)
-   //   case 3) (direct) Call to (static or global) function defined in the compilation unit:
-   //                      BRASL R7,func
-   //
-   //   case 4) (direct) Call to external function referenced function
-   //                      LM R5,R6,disp(regenv)
-   //                      BASR R7,R6
-   //         where:
-   //             a) disp is an offset in the environment (aka ADA) containing the
-   //                function descriptor body (i.e. not pointer to function descriptor)
-   TR_XPLinkCallTypes callType;
-
-   // Find GPR6 (xplink) or GPR15 (os linkage) in post conditions
-   TR::Register * systemEntryPointRegister = deps->searchPostConditionRegister(getEntryPointRegister());
-   // Find GPR7 (xplik) or GPR14 (os linkage) in post conditions
-   TR::Register * systemReturnAddressRegister = deps->searchPostConditionRegister(getReturnAddressRegister());
-
-   TR::RegisterDependencyConditions * preDeps = new (trHeapMemory()) TR::RegisterDependencyConditions(deps->getPreConditions(), NULL, deps->getAddCursorForPre(), 0, cg());
-
-   if (callNode->getOpCode().isIndirect())
-      {
-      generateRRInstruction(cg(), InstOpCode::BASR, callNode, systemReturnAddressRegister, systemEntryPointRegister, preDeps);
-      callType = TR_XPLinkCallType_BASR;
-      return callType;
-      }
-
-   TR::SymbolReference *callSymRef = callNode->getSymbolReference();
-   TR::Symbol *callSymbol = callSymRef->getSymbol();
-
-   TR::Instruction * callInstr = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, systemReturnAddressRegister, callSymbol, callSymRef, cg());
-   callInstr->setDependencyConditions(preDeps);
-   callType = TR_XPLinkCallType_BRASL7;
-
-   return callType;
-   }
-
 /////////////////////////////////////////////////////////////////////////////////
 // TR::S390zOSSystemLinkage::generateInstructionsForCall - Front-end
 //  customization of callNativeFunction
@@ -986,10 +888,51 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
    {
    TR::CodeGenerator * codeGen = cg();
 
-    TR_XPLinkCallTypes callType;  // for XPLink calls
+    // WCode specific
+    //
+    // There are 4 cases for outgoing branch sequences
+    //   case 1)            pure OS linkage call using entry point
+    //                      BASR R14,R15
+    //   case 2) (indirect) Call vi function pointer
+    //                      LM R5,R6,disp(regfp)
+    //                      BASR R7,R6
+    //          where:
+    //             a) regfp is a register containing pointer to function descriptor
+    //                (most likely placed in R6)
+    //             b) disp is offset into function descriptor - 16/0 (31/64 bit respectively)
+    //   case 3) (direct) Call to (static or global) function defined in the compilation unit:
+    //                      BRASL R7,func
+    //
+    //   case 4) (direct) Call to external function referenced function
+    //                      LM R5,R6,disp(regenv)
+    //                      BASR R7,R6
+    //         where:
+    //             a) disp is an offset in the environment (aka ADA) containing the
+    //                function descriptor body (i.e. not pointer to function descriptor)
+    TR_XPLinkCallTypes callType;
 
-    // only pre-dependencies from dep will be attached to the call
-    callType = genWCodeCallBranchCode(callNode, deps);
+    // Find GPR6 (xplink) or GPR15 (os linkage) in post conditions
+    TR::Register * systemEntryPointRegister = deps->searchPostConditionRegister(getEntryPointRegister());
+    // Find GPR7 (xplik) or GPR14 (os linkage) in post conditions
+    TR::Register * systemReturnAddressRegister = deps->searchPostConditionRegister(getReturnAddressRegister());
+
+    TR::RegisterDependencyConditions * preDeps = new (trHeapMemory()) TR::RegisterDependencyConditions(deps->getPreConditions(), NULL, deps->getAddCursorForPre(), 0, cg());
+
+    if (callNode->getOpCode().isIndirect())
+       {
+       generateRRInstruction(cg(), InstOpCode::BASR, callNode, systemReturnAddressRegister, systemEntryPointRegister, preDeps);
+       callType = TR_XPLinkCallType_BASR;
+       }
+    else
+       {
+
+       TR::SymbolReference *callSymRef = callNode->getSymbolReference();
+       TR::Symbol *callSymbol = callSymRef->getSymbol();
+
+       TR::Instruction * callInstr = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, systemReturnAddressRegister, callSymbol, callSymRef, cg());
+       callInstr->setDependencyConditions(preDeps);
+       callType = TR_XPLinkCallType_BRASL7;
+       }
 
     generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, returnFromJNICallLabel);
 
@@ -1025,9 +968,49 @@ TR::S390zOSSystemLinkage::getPPA2Snippet() const
 void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction * cursor)
    {
    TR_ASSERT( cursor!=NULL,"cursor is NULL in createPrologue");
-   calculatePrologueInfo(cursor);
-
+   
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
+
+   // Logic for main most of which applies to secondary entry points
+   // I.E. all except for parameter offset information.
+
+   int32_t localSize, argSize;
+   int32_t stackFrameSize, alignedStackFrameSize;
+
+   // Set for initParamOffset() - relative offset from start of frame
+   setOutgoingParmAreaBeginOffset(getOffsetToFirstParm() - XPLINK_STACK_FRAME_BIAS);
+
+   //
+   // Calculate size of locals - determined in prior call to mapStack()
+   // We make the size a multiple of the strictest alignment symbol
+   // So that backwards mapping of auto symbols will follow the alignment
+   //
+   localSize =  -1 * (int32_t) (bodySymbol->getLocalMappingCursor());  // Auto+Spill size
+   int32_t strictestAutoAlign = 8;
+   localSize = (localSize + strictestAutoAlign - 1) & ~(strictestAutoAlign-1);
+
+   //
+   // Calculate size of outgoing argument area
+   //
+   argSize = getOutgoingParameterBlockSize();
+
+   //
+   // Calculate stack frame size
+   //
+   int32_t outGoingAreaOffsetUnbiased = (TR::Compiler->target.is64Bit()) ? 128 : 64;
+   stackFrameSize = outGoingAreaOffsetUnbiased + argSize + localSize;
+   int32_t minFrameAlign = (TR::Compiler->target.is64Bit()) ? 32 : 16;
+   TR_ASSERT( minFrameAlign >= strictestAutoAlign,"automatic symbol has alignment that cannot be satisfied");
+   alignedStackFrameSize = (stackFrameSize + minFrameAlign - 1) & ~(minFrameAlign-1);
+   stackFrameSize = alignedStackFrameSize;
+
+   setStackFrameSize(alignedStackFrameSize);
+
+   //
+   // Map stack - which is done in backwards fashion
+   //
+   int32_t stackMappingIndex = XPLINK_STACK_FRAME_BIAS + stackFrameSize;
+   mapStack(bodySymbol, stackMappingIndex);
 
    TR::Node *node = cursor->getNode();
 
@@ -1039,7 +1022,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction * cursor)
    cg->addSnippet(_ppa1);
    cg->addSnippet(_ppa2);
 
-   uint32_t stackFrameSize = getStackFrameSize();
+   stackFrameSize = getStackFrameSize();
 
    TR_ASSERT_FATAL((stackFrameSize & 31) == 0, "XPLINK stack frame size (%d) has to be aligned to 32-bytes.", stackFrameSize);
    

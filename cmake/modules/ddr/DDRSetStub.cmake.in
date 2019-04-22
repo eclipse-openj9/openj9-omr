@@ -74,7 +74,11 @@ function(process_source_files src_files)
 
 
 	foreach(source_file IN LISTS OPT_UNPARSED_ARGUMENTS)
-
+		get_filename_component(extension "${source_file}" EXT)
+		# If file isnt a c/c++ file, ignore it
+		if(NOT extension MATCHES "\.[ch](pp)?$")
+			continue()
+		endif()
 		get_filename_component(abs_file "${source_file}" ABSOLUTE BASE_DIR "${OPT_SOURCE_DIR}")
 		file(RELATIVE_PATH output_file "${OPT_SOURCE_DIR}" "${abs_file}")
 		string(REGEX REPLACE "\\.\\.(/|$)" "__\\1" output_file "${output_file}")

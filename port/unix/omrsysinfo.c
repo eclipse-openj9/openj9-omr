@@ -1556,10 +1556,14 @@ retrieveAIXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *
 	/* AIX does not define buffers, so: memInfo->buffered = OMRPORT_MEMINFO_NOT_AVAILABLE; */
 
 	Trc_PRT_retrieveAIXMemoryStats_Exit(0);
-	return 0;
 #else
-	return -1; /* not supported */
+	memInfo->totalPhysical = 0;
+	memInfo->availPhysical = 0;
+	memInfo->totalSwap = 0;
+	memInfo->availSwap = 0;
+	memInfo->cached = 0;
 #endif
+	return 0;
 }
 
 #endif /* end OS specific guards */
@@ -2231,7 +2235,11 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 		return OMRPORT_ERROR_FILE_OPFAILED;
 	}
 #elif defined(J9OS_I5)
-	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+	/*call in PASE wrapper to retrieve needed information.*/
+	cpuTime->numberOfCpus = Xj9GetEntitledProcessorCapacity() / 100;
+	/*Xj9GetSysCPUTime() is newly added to retrieve System CPU Time fromILE.*/
+	cpuTime->cpuTime = Xj9GetSysCPUTime();
+	status = 0;	
 #elif defined(AIXPPC) /* AIX */
 	perfstat_cpu_total_t stats;
 	const uintptr_t NS_PER_CPU_TICK = 10000000L;

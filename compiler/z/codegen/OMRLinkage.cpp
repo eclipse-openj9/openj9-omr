@@ -1344,17 +1344,6 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
    TR::ParameterSymbol * paramCursor=paramIterator.getFirst();
    int32_t numIntArgs = 0, numFloatArgs = 0, numVectorArgs = 0;
 
-   int32_t xplinkInterfaceMappingFlags = 0;
-   if (self()->isFloatParmDescriptors())
-      {
-      // With XPLink, float register parameter usage has some constraints!!!
-      // Interface mapping flags take these constraints into account and the
-      // flags describe what float registers are used for parameter passing.
-      // Use these flags to guide decisions below.
-      TR::S390zOSSystemLinkage *zosLinkage = (TR::S390zOSSystemLinkage *)this;
-      xplinkInterfaceMappingFlags = zosLinkage->calculateInterfaceMappingFlags(method);
-      }
-
    int32_t paramNum = -1;
    while ((paramCursor != NULL) &&
           (numIntArgs < self()->getNumIntegerArgumentRegisters() ||
@@ -1391,15 +1380,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
 #endif
             if (numFloatArgs < self()->getNumFloatArgumentRegisters())
                {
-               if (self()->isFloatParmDescriptors())
-                  { // XPLink: handle large separation of float args constraint
-                  int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
-
-                  if (val != 0)
-                     index = numFloatArgs;
-                  }
-               else
-                  index = numFloatArgs;
+               index = numFloatArgs;
                }
             numFloatArgs++;
             break;
@@ -1408,14 +1389,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
          case TR::DecimalDouble:
             if (numFloatArgs < self()->getNumFloatArgumentRegisters())
                {
-               if (self()->isFloatParmDescriptors())
-                  { // XPLink: handle large separation of float args constraint
-                  int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
-                  if (val != 0)
-                     index = numFloatArgs;
-                  }
-               else
-                  index = numFloatArgs;
+               index = numFloatArgs;
                }
             numFloatArgs++;
             break;
@@ -1431,14 +1405,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
                numFloatArgs++;
             if (numFloatArgs < self()->getNumFloatArgumentRegisters())
                {
-               if (self()->isFloatParmDescriptors())
-                  { // XPLink: handle large separation of float args constraint
-                  int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
-                  if (val != 0)
-                    index = numFloatArgs;
-                  }
-               else
-                  index = numFloatArgs;
+               index = numFloatArgs;
                }
             numFloatArgs +=2;
             break;
@@ -2213,14 +2180,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
    // For now use GPR1/6 ... we should try and generalize to any reg
    //
 
-    int32_t xplinkCallDescriptorFlags = 0;
-    if (self()->isFloatParmDescriptors())
-       { // these flags are used to help determine if float parm is needs to be put in memory
-       TR_ASSERT( self()->isXPLinkLinkageType(), "invalid platform target for float parm descriptors");
-       TR::S390zOSSystemLinkage *zosLinkage = (TR::S390zOSSystemLinkage *)this;
-       xplinkCallDescriptorFlags = zosLinkage->calculateCallDescriptorFlags(callNode);
-       }
-
    //Push args onto stack
    for (i = from; (rightToLeft && i >= to) || (!rightToLeft && i <= to); i += step)
       {
@@ -2260,18 +2219,10 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          case TR::DecimalFloat:
 #endif
                {
-               if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
-                  { // XPLink: handle large separation of float args constraint
-                  uint32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
-                  if (TR::S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
-                     self()->setProperty(AllParmsOnStack); // temporarily set so float gets flushed to stack
-                  }
                argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
-               if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
-                  {
-                  self()->clearProperty(AllParmsOnStack);
-                  }
+
                numFloatArgs++;
+
                if (self()->isSkipGPRsForFloatParms())
                   {
                   if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
@@ -2284,25 +2235,17 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          case TR::Double:
 #ifdef J9_PROJECT_SPECIFIC
          case TR::DecimalDouble:
-            if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
-               { // XPLink: handle large separation of float args constraint
-               int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
-               if (TR::S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
-                  self()->setProperty(AllParmsOnStack); // temporarily set so float gets flushed to stack
-               }
             argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
-            if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
-               {
-               self()->clearProperty(AllParmsOnStack);
-               }
+
             numFloatArgs++;
-               if (self()->isSkipGPRsForFloatParms())
+
+            if (self()->isSkipGPRsForFloatParms())
+               {
+               if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
                   {
-                  if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
-                     {
-                     numIntegerArgs += (TR::Compiler->target.is64Bit()) ? 1 : 2;
-                     }
+                  numIntegerArgs += (TR::Compiler->target.is64Bit()) ? 1 : 2;
                   }
+               }
             break;
          case TR::DecimalLongDouble:
             if (numFloatArgs%2 == 1)
@@ -2312,25 +2255,17 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
                   numIntegerArgs++;
                }
 
-            if (self()->isFloatParmDescriptors() && (numFloatArgs < (self()->getNumFloatArgumentRegisters()-1)))
-               { // XPLink: handle large separation of float args constraint
-               int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
-               if (TR::S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
-                  self()->setProperty(AllParmsOnStack); // temporarily set so float gets flushed to stack
-               }
             argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
-            if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
-               {
-               self()->clearProperty(AllParmsOnStack);
-               }
+
             numFloatArgs = numFloatArgs + 2;  // long double takes up 2 fp registers
-               if (self()->isSkipGPRsForFloatParms())
+
+            if (self()->isSkipGPRsForFloatParms())
+               {
+               if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
                   {
-                  if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
-                     {
-                     numIntegerArgs += (TR::Compiler->target.is64Bit()) ? 2 : 4;
-                     }
+                  numIntegerArgs += (TR::Compiler->target.is64Bit()) ? 2 : 4;
                   }
+               }
             break;
          case TR::PackedDecimal:
          case TR::ZonedDecimal:

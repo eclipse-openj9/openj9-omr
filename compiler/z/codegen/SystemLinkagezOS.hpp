@@ -94,26 +94,10 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
    virtual int32_t getRegisterSaveOffset(TR::RealRegister::RegNum);
    virtual int32_t getOutgoingParameterBlockSize();
 
-   uint32_t calculateInterfaceMappingFlags(TR::ResolvedMethodSymbol *method);
-
-   static uint32_t shiftFloatParmDescriptorFlag(uint32_t fieldVal, int32_t floatParmNum)  { return (fieldVal) << (6*(3-floatParmNum)); } // accepts floatParmNum values 0,1,2,3
-   bool updateFloatParmDescriptorFlags(uint32_t *parmDescriptorFields, TR::Symbol *funcSymbol, int32_t parmCount, int32_t argSize, TR::DataType dataType, int32_t *floatParmNum, uint32_t *lastFloatParmAreaOffset, uint32_t *parmAreaOffset);
-
-   static uint32_t getFloatParmDescriptorFlag(uint32_t descriptorFields, int32_t floatParmNum)  { return  (descriptorFields >> (6*(3-floatParmNum))) & 0x3F; }
-   uint32_t calculateReturnValueAdjustFlag(TR::DataType dataType, int32_t aggregateLength);
-   static uint32_t isFloatDescriptorFlagUnprototyped(uint32_t flag)  { return flag == 0; }
-
    uint32_t calculateCallDescriptorFlags(TR::Node *callNode);
-
-   public:
-
-   // == Related to signature of method or call
-   uint32_t  getInterfaceMappingFlags() { return _interfaceMappingFlags; }
-   void setInterfaceMappingFlags(uint32_t flags) { _interfaceMappingFlags = flags; }
    
    virtual void calculatePrologueInfo(TR::Instruction * cursor);
    virtual TR::Instruction *buyFrame(TR::Instruction * cursor, TR::Node *node);
-   virtual void createEntryPointMarker(TR::Instruction *cursor, TR::Node *node);
 
    // === Call or entry related
    TR_XPLinkCallTypes genWCodeCallBranchCode(TR::Node *callNode, TR::RegisterDependencyConditions * deps);
@@ -168,8 +152,6 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
 
    TR::PPA1Snippet* _ppa1;
    TR::PPA2Snippet* _ppa2;
-
-   uint32_t _interfaceMappingFlags;       // describing the method body
    };
 }
 

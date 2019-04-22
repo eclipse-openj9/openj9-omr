@@ -101,7 +101,7 @@ enum TR_S390LinkageConventions
 #define SkipGPRsForFloatParms         0x040
 #define PadFloatParms                 0x080
 #define TwoStackSlotsForLongAndDouble 0x100
-#define FloatParmDescriptors          0x200
+// Available                          0x200
 #define AggregatesPassedOnParmStack   0x400
 #define AggregatesPassedInParmRegs    0x800
 #define AggregatesReturnedInRegs      0x1000
@@ -362,7 +362,6 @@ enum TR_DispatchType
    int32_t  isSkipGPRsForFloatParms()  { return _properties & SkipGPRsForFloatParms; }
    int32_t  isPadFloatParms()  { return _properties & PadFloatParms; }
    int32_t  isTwoStackSlotsForLongAndDouble()  { return _properties & TwoStackSlotsForLongAndDouble; }
-   int32_t  isFloatParmDescriptors()  { return _properties & FloatParmDescriptors; }
    int32_t  isAggregatesPassedInParmRegs() { return _properties & AggregatesPassedInParmRegs; }
    int32_t  isAggregatesPassedOnParmStack() { return _properties & AggregatesPassedOnParmStack; }
    int32_t  isAggregatesReturnedInRegs() { return _properties & AggregatesReturnedInRegs; }

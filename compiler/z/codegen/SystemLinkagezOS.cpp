@@ -93,10 +93,6 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
       {
       setProperty(NeedsWidening);
       }
-   else
-      {
-      setProperty(FloatParmDescriptors);
-      }
 
    setRegisterFlag(TR::RealRegister::GPR4, Preserved);
    setRegisterFlag(TR::RealRegister::GPR8, Preserved);
@@ -179,226 +175,6 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    setNumberOfDependencyGPRegisters(32);
    setLargestOutgoingArgumentAreaSize(0);
    setOffsetToLongDispSlot(0);
-   }
-
-
-/**
- * Non-Java use.
- * Calculate XPLink call descriptor for given method body (excl. entry offset).
- * This value is present in PPA1 block and also used for determining register
- * linkage for incoming floating point parameters.
- */
-uint32_t
-TR::S390zOSSystemLinkage::calculateInterfaceMappingFlags(TR::ResolvedMethodSymbol *method)
-   {
-   uint32_t callDescValue;
-
-   if (TR::Compiler->target.is64Bit())
-      {
-      return 0;
-      }
-
-   // Linkage field  (0 means XPLink)
-   // Bits 0-2 inclusive
-   //
-   callDescValue = 0x00000000;
-
-   //
-   // Return value adjust field
-   // Bits 3-7 inclusive
-   //
-
-   TR::DataType dataType = TR::NoType;
-   int32_t aggregateLength = 0;
-      TR_ASSERT( 0, "dont know how to get datatype of non-WCode method");
-   uint32_t rva = calculateReturnValueAdjustFlag(dataType, aggregateLength);
-   callDescValue |= rva << 24;
-
-   //
-   // Float parameter description fields
-   // Bits 8-31 inclusive
-   //
-
-   uint32_t parmDescriptorFields = 0;
-
-   ListIterator<TR::ParameterSymbol> parameterIterator(&method->getParameterList());
-   parameterIterator.reset();
-   TR::ParameterSymbol * parmCursor = parameterIterator.getFirst();
-   TR::Symbol *funcSymbol = method;
-
-   int32_t parmCount = 1;
-
-   int32_t floatParmNum = 0;
-   uint32_t parmAreaOffset = 0;
-   uint32_t lastFloatParmAreaOffset= 0;
-
-   bool done = false;
-   while ((parmCursor != NULL) && !done)
-      {
-      TR::Symbol *parmSymbol = parmCursor;
-      TR::DataType dataType = parmSymbol->getDataType();
-      int32_t argSize = parmSymbol->getSize();
-
-      done = updateFloatParmDescriptorFlags(&parmDescriptorFields, funcSymbol, parmCount, argSize, dataType, &floatParmNum, &lastFloatParmAreaOffset, &parmAreaOffset);
-
-      parmCursor = parameterIterator.getNext();
-      parmCount++;
-      }
-
-   callDescValue |= parmDescriptorFields;
-   return callDescValue;
-   }
-
-/**
- * XPLink utility
- * Calculate "Return value adjust" component of XPLink call descriptor
- */
-uint32_t
-TR::S390zOSSystemLinkage::calculateReturnValueAdjustFlag(TR::DataType dataType, int32_t aggregateLength)
-   {
-   // 5 bit values for "return value adjust" field of XPLink descriptor
-   #define XPLINK_RVA_RETURN_VOID_OR_UNUSED    0x00
-   #define XPLINK_RVA_RETURN_INT32_OR_LESS     0x01
-   #define XPLINK_RVA_RETURN_INT64             0x02
-   #define XPLINK_RVA_RETURN_FAR_POINTER       0x04
-   #define XPLINK_RVA_RETURN_FLOAT4            0x08
-   #define XPLINK_RVA_RETURN_FLOAT8            0x09
-   #define XPLINK_RVA_RETURN_FLOAT16           0x0A
-   #define XPLINK_RVA_RETURN_COMPLEX4          0x0C
-   #define XPLINK_RVA_RETURN_COMPLEX8          0x0D
-   #define XPLINK_RVA_RETURN_COMPLEX16         0x0E
-   #define XPLINK_RVA_RETURN_AGGREGATE         0x10 // lower bits have meaning
-
-   uint32_t rva = 0;
-
-   switch (dataType)
-      {
-      case TR::NoType:
-           rva = XPLINK_RVA_RETURN_VOID_OR_UNUSED;
-           break;
-      case TR::Int8:
-      case TR::Int16:
-      case TR::Int32:
-      case TR::Address:
-           rva = XPLINK_RVA_RETURN_INT32_OR_LESS;
-           break;
-      case TR::Int64:
-           rva = XPLINK_RVA_RETURN_INT64;
-           break;
-      case TR::Float:
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::DecimalFloat:
-#endif
-           rva = XPLINK_RVA_RETURN_FLOAT4;
-           break;
-      case TR::Double:
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::DecimalDouble:
-#endif
-           rva = XPLINK_RVA_RETURN_FLOAT8;
-           break;
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::DecimalLongDouble:
-           rva = XPLINK_RVA_RETURN_FLOAT16;
-           break;
-      case TR::PackedDecimal:
-      case TR::ZonedDecimal:
-      case TR::ZonedDecimalSignLeadingEmbedded:
-      case TR::ZonedDecimalSignLeadingSeparate:
-      case TR::ZonedDecimalSignTrailingSeparate:
-      case TR::UnicodeDecimal:
-      case TR::UnicodeDecimalSignLeading:
-      case TR::UnicodeDecimalSignTrailing:
-#endif
-      case TR::Aggregate:
-           TR_ASSERT( aggregateLength != 0, "aggregate length is zero");
-           rva = XPLINK_RVA_RETURN_AGGREGATE;
-           if (isAggregateReturnedInIntRegisters(aggregateLength))
-              {
-              rva = rva + aggregateLength;
-              }
-           break;
-      default:
-           TR_ASSERT( 0, "unknown datatype for parm descriptor calculation");
-           break;
-      }
-
-   return rva;
-   }
-
-/**
- * XPLink utility
- * Utility return to help float parameter fields of XPLink call descriptor
- * This routine is called once for each "parameter" unless the method returns
- * false - meaning float parameter fields of the call descriptor are now fully
- * determined.
- */
-bool
-TR::S390zOSSystemLinkage::updateFloatParmDescriptorFlags(uint32_t *parmDescriptorFields, TR::Symbol *funcSymbol, int32_t parmCount, int32_t argSize, TR::DataType dataType, int32_t *floatParmNum, uint32_t *lastFloatParmAreaOffset, uint32_t *parmAreaOffset)
-   {
-   uint32_t gprSize = cg()->machine()->getGPRSize();
-
-   // Note: complex type is attempted to be handled although other code needs
-   // to change in 390 codegen to support complex
-   //
-   // PERFORMANCE TODO: it is desirable to use the defined "parameter count" of
-   // the function symbol to help determine if we have an unprototyped argument
-   // of a call (site) to a vararg function.  Currently we overcompensate for
-   // outgoing float parms to vararg functions and always shadow in FPR and
-   // and stack/gprs as with an unprotoyped call - see pushArg(). Precise
-   // information can help remove such compensation. Changes to fix this would
-   // involve: this function, pushArg() and buildArgs().
-
-   int32_t numFPRsNeeded = 0;
-   switch (dataType)
-      {
-      case TR::Float:
-      case TR::Double:
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::DecimalFloat:
-      case TR::DecimalDouble:
-#endif
-         numFPRsNeeded = 1;
-         break;
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::DecimalLongDouble:
-         break;
-#endif
-      }
-
-   if (numFPRsNeeded != 0)
-      {
-      uint32_t unitSize = argSize / numFPRsNeeded;
-      uint32_t wordsToPreviousParm = ((*parmAreaOffset) - (*lastFloatParmAreaOffset))/gprSize;
-      if (wordsToPreviousParm > 0xF)
-         { // to big for descriptor. Will pass in stack
-         return true; // done
-         }
-      uint32_t val = wordsToPreviousParm + ((unitSize == 4) ? 0x10 : 0x20);
-
-      (*parmDescriptorFields) |= shiftFloatParmDescriptorFlag(val, (*floatParmNum));
-
-      (*floatParmNum)++;
-      if ((*floatParmNum) >= getNumFloatArgumentRegisters())
-         {
-         return true; // done
-         }
-
-      if (numFPRsNeeded == 2)
-         {
-         (*parmDescriptorFields) |= shiftFloatParmDescriptorFlag(0x33, (*floatParmNum));  // 0x33 == bits 110001
-         (*floatParmNum)++;
-         if ((*floatParmNum) >= getNumFloatArgumentRegisters())
-            {
-            return true; // done
-            }
-         }
-      }
-   (*parmAreaOffset) += argSize < gprSize ? gprSize : argSize;
-   if (numFPRsNeeded != 0)
-      (*lastFloatParmAreaOffset) = (*parmAreaOffset);
-
-   return false;
    }
 
 /**
@@ -558,7 +334,6 @@ TR::S390zOSSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
 uint32_t
 TR::S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
    {
-   #define XPLINK_FLOAT_PARM_UNPROTYPED_CALL 0x08
    uint32_t callDescValue;
 
    if (TR::Compiler->target.is64Bit())
@@ -597,7 +372,70 @@ TR::S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
    uint32_t rva;
    if (linkageIsXPLink)
       {
-      rva = calculateReturnValueAdjustFlag(dataType, aggregateLength);
+      // 5 bit values for "return value adjust" field of XPLink descriptor
+      #define XPLINK_RVA_RETURN_VOID_OR_UNUSED    0x00
+      #define XPLINK_RVA_RETURN_INT32_OR_LESS     0x01
+      #define XPLINK_RVA_RETURN_INT64             0x02
+      #define XPLINK_RVA_RETURN_FAR_POINTER       0x04
+      #define XPLINK_RVA_RETURN_FLOAT4            0x08
+      #define XPLINK_RVA_RETURN_FLOAT8            0x09
+      #define XPLINK_RVA_RETURN_FLOAT16           0x0A
+      #define XPLINK_RVA_RETURN_COMPLEX4          0x0C
+      #define XPLINK_RVA_RETURN_COMPLEX8          0x0D
+      #define XPLINK_RVA_RETURN_COMPLEX16         0x0E
+      #define XPLINK_RVA_RETURN_AGGREGATE         0x10 // lower bits have meaning
+
+      switch (dataType)
+         {
+         case TR::NoType:
+              rva = XPLINK_RVA_RETURN_VOID_OR_UNUSED;
+              break;
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Address:
+              rva = XPLINK_RVA_RETURN_INT32_OR_LESS;
+              break;
+         case TR::Int64:
+              rva = XPLINK_RVA_RETURN_INT64;
+              break;
+         case TR::Float:
+   #ifdef J9_PROJECT_SPECIFIC
+         case TR::DecimalFloat:
+   #endif
+              rva = XPLINK_RVA_RETURN_FLOAT4;
+              break;
+         case TR::Double:
+   #ifdef J9_PROJECT_SPECIFIC
+         case TR::DecimalDouble:
+   #endif
+              rva = XPLINK_RVA_RETURN_FLOAT8;
+              break;
+   #ifdef J9_PROJECT_SPECIFIC
+         case TR::DecimalLongDouble:
+              rva = XPLINK_RVA_RETURN_FLOAT16;
+              break;
+         case TR::PackedDecimal:
+         case TR::ZonedDecimal:
+         case TR::ZonedDecimalSignLeadingEmbedded:
+         case TR::ZonedDecimalSignLeadingSeparate:
+         case TR::ZonedDecimalSignTrailingSeparate:
+         case TR::UnicodeDecimal:
+         case TR::UnicodeDecimalSignLeading:
+         case TR::UnicodeDecimalSignTrailing:
+   #endif
+         case TR::Aggregate:
+              TR_ASSERT( aggregateLength != 0, "aggregate length is zero");
+              rva = XPLINK_RVA_RETURN_AGGREGATE;
+              if (isAggregateReturnedInIntRegisters(aggregateLength))
+                 {
+                 rva = rva + aggregateLength;
+                 }
+              break;
+         default:
+              TR_ASSERT( 0, "unknown datatype for parm descriptor calculation");
+              break;
+         }
       }
    else
       {
@@ -617,7 +455,6 @@ TR::S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
    // Bits 8-31 inclusive
    //
 
-   bool isPrototyped = true; // All Java calls are prototyped.
    uint32_t parmAreaOffset = 0;
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -639,12 +476,6 @@ TR::S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
 
    uint32_t parmDescriptorFields = 0;
 
-   if (!isPrototyped)
-      {
-      parmDescriptorFields = shiftFloatParmDescriptorFlag(XPLINK_FLOAT_PARM_UNPROTYPED_CALL, 0);  // FPR0 field has special value for unprototped call
-      callDescValue |= parmDescriptorFields;
-      return callDescValue;
-      }
 
    // WCode only logic follows for float parameter description fields
 
@@ -655,6 +486,7 @@ TR::S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
    int32_t parmCount = 1;
 
    int32_t floatParmNum = 0;
+   uint32_t gprSize = cg()->machine()->getGPRSize();
 
    uint32_t lastFloatParmAreaOffset= 0;
 
@@ -671,7 +503,60 @@ TR::S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
       else
          argSize = parmSymRef->getSymbol()->getSize();
 
-      done = updateFloatParmDescriptorFlags(&parmDescriptorFields, funcSymbol, parmCount, argSize, dataType, &floatParmNum, &lastFloatParmAreaOffset, &parmAreaOffset);
+
+      // Note: complex type is attempted to be handled although other code needs
+      // to change in 390 codegen to support complex
+      //
+      // PERFORMANCE TODO: it is desirable to use the defined "parameter count" of
+      // the function symbol to help determine if we have an unprototyped argument
+      // of a call (site) to a vararg function.  Currently we overcompensate for
+      // outgoing float parms to vararg functions and always shadow in FPR and
+      // and stack/gprs as with an unprotoyped call - see pushArg(). Precise
+      // information can help remove such compensation. Changes to fix this would
+      // involve: this function, pushArg() and buildArgs().
+
+      int32_t numFPRsNeeded = 0;
+      switch (dataType)
+         {
+         case TR::Float:
+         case TR::Double:
+   #ifdef J9_PROJECT_SPECIFIC
+         case TR::DecimalFloat:
+         case TR::DecimalDouble:
+   #endif
+            numFPRsNeeded = 1;
+            break;
+   #ifdef J9_PROJECT_SPECIFIC
+         case TR::DecimalLongDouble:
+            break;
+   #endif
+         }
+
+      if (numFPRsNeeded != 0)
+         {
+         uint32_t unitSize = argSize / numFPRsNeeded;
+         uint32_t wordsToPreviousParm = (parmAreaOffset - lastFloatParmAreaOffset) / gprSize;
+         if (wordsToPreviousParm > 0xF)
+            { // to big for descriptor. Will pass in stack
+            done = true; // done
+            }
+         uint32_t val = wordsToPreviousParm + ((unitSize == 4) ? 0x10 : 0x20);
+
+         parmDescriptorFields |= val << (6 * (3 - floatParmNum));
+
+         floatParmNum++;
+
+         if (floatParmNum >= getNumFloatArgumentRegisters())
+            {
+            done = true;
+            }
+         }
+      parmAreaOffset += argSize < gprSize ? gprSize : argSize;
+
+      if (numFPRsNeeded != 0)
+         {
+         lastFloatParmAreaOffset = parmAreaOffset;
+         }
       }
 
    callDescValue |= parmDescriptorFields;
@@ -1038,11 +923,6 @@ TR::Instruction * TR::S390zOSSystemLinkage::buyFrame(TR::Instruction * cursor, T
       }
 
    return cursor;
-   }
-
-void
-TR::S390zOSSystemLinkage::createEntryPointMarker(TR::Instruction* cursor, TR::Node* node)
-   {
    }
 
 TR_XPLinkCallTypes

@@ -73,19 +73,6 @@ struct J9JITConfig;
  */
 extern const char TR_BUILD_NAME[];
 
-enum TR_WriteBarrierKind
-   {
-   TR_WrtbarNone,
-   TR_WrtbarAlways,
-   TR_WrtbarOldCheck,
-   TR_WrtbarCardMark,
-   TR_WrtbarCardMarkAndOldCheck,
-   TR_WrtbarCardMarkIncremental,
-   TR_WrtbarRealTime,
-
-   TR_NumberOfWrtBars,
-   };
-
 #define TR_MAX_AVAIL_LIMITED_GRA_REGS 11
 
 enum TR_CompilationOptions
@@ -1891,11 +1878,10 @@ public:
    static bool createDebug();
    static TR_Debug * findOrCreateDebug();
 
-   uintptr_t           getGcCardSize()       { return _gcCardSize; }
-   uintptr_t           getHeapBase()         { return _heapBase; }
-   uintptr_t           getHeapTop()         { return _heapTop; }
+   uintptr_t           getGcCardSize()   { return _gcCardSize; }
+   uintptr_t           getHeapBase()     { return _heapBase; }
+   uintptr_t           getHeapTop()      { return _heapTop; }
 
-   void setGcMode(TR_WriteBarrierKind g) { /* deprecated */ }
    void setGcCardSize(uintptr_t g)       { _gcCardSize = g; }
    void setHeapBase(uintptr_t g)         { _heapBase = g; }
    void setHeapTop(uintptr_t g)          { _heapTop = g; }

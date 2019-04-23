@@ -132,41 +132,6 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
 
    private:
    
-   // TODO: There seems to be a lot of similarity between this relocation and PPA1OffsetToPPA2Relocation relocation.
-   // It would be best if we common these up, perhaps adding an "offset" to to one of the existing relocation kinds
-   // which perform similar relocations. See Relocation.hpp for which relocations may fit this criteria.
-   class InstructionLabelRelative16BitRelocation : public TR::LabelRelocation
-      {
-      public:
-
-      InstructionLabelRelative16BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor);
-      
-      virtual uint8_t* getUpdateLocation();
-      virtual void apply(TR::CodeGenerator* cg);
-
-      private:
-
-      TR::Instruction* _cursor;
-      int32_t _offset;
-      int32_t _divisor;
-      };
-
-   class InstructionLabelRelative32BitRelocation : public TR::LabelRelocation
-      {
-      public:
-
-      InstructionLabelRelative32BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor);
-      
-      virtual uint8_t* getUpdateLocation();
-      virtual void apply(TR::CodeGenerator* cg);
-
-      private:
-
-      TR::Instruction* _cursor;
-      int32_t _offset;
-      int32_t _divisor;
-      };
-
    TR::Instruction* _stackPointerUpdate;
    TR::LabelSymbol* _entryPointMarkerLabel;
 

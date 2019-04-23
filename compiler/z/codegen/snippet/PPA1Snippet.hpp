@@ -145,6 +145,7 @@ class PPA1Snippet : public TR::Snippet
 
    private:
 
+   // TODO: We need to generalize the relocations in Relocation.hpp to accept a divisor and remove this relocation
    class PPA1OffsetToPPA2Relocation : public TR::LabelRelocation
       {
       public:

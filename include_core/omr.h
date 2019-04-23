@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2018 IBM Corp. and others
+ * Copyright (c) 2013, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -149,6 +149,12 @@ typedef struct OMR_VM {
 #endif /* defined(OMR_GC_REALTIME) */
 } OMR_VM;
 
+#if defined(OMR_GC_COMPRESSED_POINTERS)
+#define OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM) TRUE
+#else /* OMR_GC_COMPRESSED_POINTERS */
+#define OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM) FALSE
+#endif /* OMR_GC_COMPRESSED_POINTERS */
+
 typedef struct OMR_VMThread {
 	struct OMR_VM *_vm;
 	uint32_t _sampleStackBackoff;
@@ -189,6 +195,12 @@ typedef struct OMR_VMThread {
 	void *_savedObject1; /**< holds new object allocation until object can be attached to reference graph (see MM_AllocationDescription::save/restoreObjects()) */
 	void *_savedObject2; /**< holds new object allocation until object can be attached to reference graph (see MM_AllocationDescription::save/restoreObjects()) */
 } OMR_VMThread;
+
+#if defined(OMR_GC_COMPRESSED_POINTERS)
+#define OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread) TRUE
+#else /* OMR_GC_COMPRESSED_POINTERS */
+#define OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread) FALSE
+#endif /* OMR_GC_COMPRESSED_POINTERS */
 
 /**
  * Perform basic structural initialization of the OMR runtime

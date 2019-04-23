@@ -804,6 +804,14 @@ public:
 	 */
 	MMINLINE OMR::GC::Forge* getForge() { return &_forge; }
 
+	MMINLINE bool const compressObjectReferences() {
+#if defined (OMR_GC_COMPRESSED_POINTERS)
+		return true;
+#else /* OMR_GC_COMPRESSED_POINTERS */
+		return false;
+#endif /* OMR_GC_COMPRESSED_POINTERS */
+	}
+
 	MMINLINE uintptr_t getRememberedCount()
 	{
 		if (isStandardGC()) {

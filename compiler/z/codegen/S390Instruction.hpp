@@ -6075,37 +6075,16 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 class S390NOPInstruction : public TR::Instruction
    {
-   /** Type of this special purpose NOP */
-   enum KindNOP
-      {
-      UnknownNOP   = 0,
-      XPLinkCallNOP,
-      FastLinkCallNOP
-      };
-   KindNOP _kindNOP;
-
-   // Following fields are used for specialized XPLink NOP following a call site
-   TR::Snippet *_targetSnippet;
-   S390PseudoInstruction *_callDescInstr;  ///<  This is the branch-around fix for JNI call descriptors on zOS-31.
-   intptrj_t _estimatedOffset;                ///<  Save estimated offset for conservative distance calc to Call Descriptor Snippet (XPLINK zOS31).
-   int8_t  _callType;                         ///<  call type for NOP
-
-   // Following fields are used for specialized FastLink NOP following a call site
-   int32_t  _argumentsLengthOnCall;           ///< length of outgoing argument list
-
    public:
+
    S390NOPInstruction(TR::InstOpCode::Mnemonic op,
                          int32_t numbytes,
                          TR::Node *n,
                          TR::CodeGenerator *cg)
       : TR::Instruction(op, n, cg)
       {
-      setTargetSnippet(NULL);
       setBinaryLength(numbytes);
       setEstimatedBinaryLength(numbytes);
-      setCallType(0);
-      setKindNOP(UnknownNOP);
-      setArgumentsLengthOnCall(0);
       }
 
    S390NOPInstruction(TR::InstOpCode::Mnemonic op,
@@ -6115,89 +6094,12 @@ class S390NOPInstruction : public TR::Instruction
                          TR::CodeGenerator                   *cg)
       : TR::Instruction(op, n, precedingInstruction, cg)
       {
-      setTargetSnippet(NULL);
       setBinaryLength(numbytes);
       setEstimatedBinaryLength(numbytes);
-      setCallType(0);
-      setKindNOP(UnknownNOP);
-      setArgumentsLengthOnCall(0);
-      }
-
-
-   S390NOPInstruction(TR::InstOpCode::Mnemonic op,
-                         int32_t numbytes,
-                         TR::Snippet *ts,
-                         TR::Node *n,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg)
-      {
-      setTargetSnippet(ts);
-      setBinaryLength(numbytes);
-      setEstimatedBinaryLength(numbytes);
-      setCallType(0);
-      setKindNOP(UnknownNOP);
-      setArgumentsLengthOnCall(0);
-      }
-
-   S390NOPInstruction(TR::InstOpCode::Mnemonic op,
-                         int32_t numbytes,
-                         TR::Snippet *ts,
-                         TR::Node * n,
-                         TR::Instruction *precedingInstruction,
-                         TR::CodeGenerator                   *cg)
-      : TR::Instruction(op, n, precedingInstruction, cg)
-      {
-      setTargetSnippet(ts);
-      setBinaryLength(numbytes);
-      setEstimatedBinaryLength(numbytes);
-      setCallType(0);
-      setKindNOP(UnknownNOP);
-      setArgumentsLengthOnCall(0);
-      }
-
-   /** Fastlink flavor */
-   S390NOPInstruction(TR::InstOpCode::Mnemonic op,
-                         int32_t numbytes,
-                         int32_t argumentsLengthOnCall,
-                         TR::Node *n,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg)
-      {
-      setTargetSnippet(NULL);
-      setBinaryLength(numbytes);
-      setEstimatedBinaryLength(numbytes);
-      setCallType(0);
-      setKindNOP(FastLinkCallNOP);
-      setArgumentsLengthOnCall(argumentsLengthOnCall);
       }
 
    virtual char *description() { return "S390NOPInstruction"; }
    virtual Kind getKind() { return IsNOP; }
-
-   TR::Snippet *getTargetSnippet()
-      { return _targetSnippet; }
-   TR::Snippet *setTargetSnippet(TR::Snippet *ts)
-      { return _targetSnippet = ts; }
-
-   S390PseudoInstruction *getCallDescInstr()
-      { return _callDescInstr; }
-   S390PseudoInstruction *setCallDescInstr(S390PseudoInstruction *cdi)
-      { return _callDescInstr = cdi; }
-
-   int8_t getCallType()
-      { return _callType; }
-   void setCallType(uint8_t callType)
-      { _callType = callType; }
-
-   void setArgumentsLengthOnCall(int32_t argumentsLengthOnCall)
-      { _argumentsLengthOnCall = argumentsLengthOnCall; }
-   int32_t getArgumentsLengthOnCall()
-      { return _argumentsLengthOnCall; }
-   enum KindNOP getKindNOP()
-      { return _kindNOP; }
-   void setKindNOP (KindNOP kindNOP)
-      { _kindNOP = kindNOP; }
-
 
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t *generateBinaryEncoding();

@@ -60,4 +60,5 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_PRODUCT_DIR)/z/codegen/JBCodeGenerator.cpp \
     $(JIT_PRODUCT_DIR)/z/codegen/Evaluator.cpp \
     $(JIT_PRODUCT_DIR)/z/codegen/snippet/PPA1Snippet.cpp \
-    $(JIT_PRODUCT_DIR)/z/codegen/snippet/PPA2Snippet.cpp
+    $(JIT_PRODUCT_DIR)/z/codegen/snippet/PPA2Snippet.cpp \
+    $(JIT_PRODUCT_DIR)/z/codegen/snippet/XPLINKCallDescriptorSnippet.cpp

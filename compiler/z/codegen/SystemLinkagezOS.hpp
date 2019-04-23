@@ -93,12 +93,15 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
    
    virtual int32_t getRegisterSaveOffset(TR::RealRegister::RegNum);
    virtual int32_t getOutgoingParameterBlockSize();
-
-   uint32_t calculateCallDescriptorFlags(TR::Node *callNode);
    
    virtual TR::Instruction *buyFrame(TR::Instruction * cursor, TR::Node *node);
 
    TR::Instruction * genCallNOPAndDescriptor(TR::Instruction * cursor, TR::Node *node, TR::Node *callNode, TR_XPLinkCallTypes callType);
+
+   /** \brief
+    *     Gets the label symbol representing the start of the Entry Point Marker in the prologue.
+    */
+   TR::LabelSymbol* getEntryPointMarkerLabel() const;
 
    /** \brief
     *     Gets the label instruction which marks the stack pointer update instruction following it.
@@ -132,20 +135,40 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
    // TODO: There seems to be a lot of similarity between this relocation and PPA1OffsetToPPA2Relocation relocation.
    // It would be best if we common these up, perhaps adding an "offset" to to one of the existing relocation kinds
    // which perform similar relocations. See Relocation.hpp for which relocations may fit this criteria.
-   class EntryPointMarkerOffsetToPPA1Relocation : public TR::LabelRelocation
+   class InstructionLabelRelative16BitRelocation : public TR::LabelRelocation
       {
       public:
 
-      EntryPointMarkerOffsetToPPA1Relocation(TR::Instruction* cursor, TR::LabelSymbol* ppa2);
-
+      InstructionLabelRelative16BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor);
+      
+      virtual uint8_t* getUpdateLocation();
       virtual void apply(TR::CodeGenerator* cg);
 
       private:
 
       TR::Instruction* _cursor;
+      int32_t _offset;
+      int32_t _divisor;
+      };
+
+   class InstructionLabelRelative32BitRelocation : public TR::LabelRelocation
+      {
+      public:
+
+      InstructionLabelRelative32BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor);
+      
+      virtual uint8_t* getUpdateLocation();
+      virtual void apply(TR::CodeGenerator* cg);
+
+      private:
+
+      TR::Instruction* _cursor;
+      int32_t _offset;
+      int32_t _divisor;
       };
 
    TR::Instruction* _stackPointerUpdate;
+   TR::LabelSymbol* _entryPointMarkerLabel;
 
    TR::PPA1Snippet* _ppa1;
    TR::PPA2Snippet* _ppa2;

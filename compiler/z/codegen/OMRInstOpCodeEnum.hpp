@@ -60,7 +60,6 @@
    XHHR,                // Exclusive OR High (High <- High)
    XHLR,                // Exclusive OR High (High <- Low)
    XLHR,                // Exclusive OR High (Low <- High)
-   XPCALLDESC,          // zOS-31 LE Call Descriptor.
 
    /* z900 Instructions */
 

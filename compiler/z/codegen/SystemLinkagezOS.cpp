@@ -70,6 +70,7 @@
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/SystemLinkagezOS.hpp"
+#include "z/codegen/snippet/XPLINKCallDescriptorSnippet.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/VMJ9.h"
@@ -321,246 +322,6 @@ TR::S390zOSSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
       TR_ASSERT(false, "ERROR: TR::S390zOSSystemLinkage::getRegisterSaveOffset called for volatile reg: %d\n",srcReg);
       return -1;
       }
-   }
-
-/**
- * General XPLink utility
- *
- * Calculate XPLink call descriptor for given call site (excl. entry offset).
- * "callNode"  can be null which means that this is a special call.
- * The retunred value is used for call descriptor emission and is also used to
- * determine floating point register likage for outgoing parameters.
- */
-uint32_t
-TR::S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
-   {
-   uint32_t callDescValue;
-
-   if (TR::Compiler->target.is64Bit())
-      {
-      return 0;
-      }
-
-   // Linkage field  (0 means XPLink)
-   // Bits 0-2 inclusive
-   //
-   bool linkageIsXPLink;
-   linkageIsXPLink = true;
-   callDescValue = 0x00000000;   // xplink (0) value here
-
-
-   //
-   // Return value adjust field
-   // Bits 3-7 inclusive
-   //
-
-   TR::DataType dataType;
-   TR::ILOpCodes opcode;
-   int32_t aggregateLength = 0;
-
-   if (callNode == NULL)  // specialized calls no real descriptor needed
-      dataType = TR::NoType;
-   else
-      {
-      dataType = callNode->getDataType();
-#ifdef J9_PROJECT_SPECIFIC
-      if (callNode->getType().isBCD())
-         aggregateLength = callNode->getSize();
-#endif
-      }
-
-   uint32_t rva;
-   if (linkageIsXPLink)
-      {
-      // 5 bit values for "return value adjust" field of XPLink descriptor
-      #define XPLINK_RVA_RETURN_VOID_OR_UNUSED    0x00
-      #define XPLINK_RVA_RETURN_INT32_OR_LESS     0x01
-      #define XPLINK_RVA_RETURN_INT64             0x02
-      #define XPLINK_RVA_RETURN_FAR_POINTER       0x04
-      #define XPLINK_RVA_RETURN_FLOAT4            0x08
-      #define XPLINK_RVA_RETURN_FLOAT8            0x09
-      #define XPLINK_RVA_RETURN_FLOAT16           0x0A
-      #define XPLINK_RVA_RETURN_COMPLEX4          0x0C
-      #define XPLINK_RVA_RETURN_COMPLEX8          0x0D
-      #define XPLINK_RVA_RETURN_COMPLEX16         0x0E
-      #define XPLINK_RVA_RETURN_AGGREGATE         0x10 // lower bits have meaning
-
-      switch (dataType)
-         {
-         case TR::NoType:
-              rva = XPLINK_RVA_RETURN_VOID_OR_UNUSED;
-              break;
-         case TR::Int8:
-         case TR::Int16:
-         case TR::Int32:
-         case TR::Address:
-              rva = XPLINK_RVA_RETURN_INT32_OR_LESS;
-              break;
-         case TR::Int64:
-              rva = XPLINK_RVA_RETURN_INT64;
-              break;
-         case TR::Float:
-   #ifdef J9_PROJECT_SPECIFIC
-         case TR::DecimalFloat:
-   #endif
-              rva = XPLINK_RVA_RETURN_FLOAT4;
-              break;
-         case TR::Double:
-   #ifdef J9_PROJECT_SPECIFIC
-         case TR::DecimalDouble:
-   #endif
-              rva = XPLINK_RVA_RETURN_FLOAT8;
-              break;
-   #ifdef J9_PROJECT_SPECIFIC
-         case TR::DecimalLongDouble:
-              rva = XPLINK_RVA_RETURN_FLOAT16;
-              break;
-         case TR::PackedDecimal:
-         case TR::ZonedDecimal:
-         case TR::ZonedDecimalSignLeadingEmbedded:
-         case TR::ZonedDecimalSignLeadingSeparate:
-         case TR::ZonedDecimalSignTrailingSeparate:
-         case TR::UnicodeDecimal:
-         case TR::UnicodeDecimalSignLeading:
-         case TR::UnicodeDecimalSignTrailing:
-   #endif
-         case TR::Aggregate:
-              TR_ASSERT( aggregateLength != 0, "aggregate length is zero");
-              rva = XPLINK_RVA_RETURN_AGGREGATE;
-              if (isAggregateReturnedInIntRegisters(aggregateLength))
-                 {
-                 rva = rva + aggregateLength;
-                 }
-              break;
-         default:
-              TR_ASSERT( 0, "unknown datatype for parm descriptor calculation");
-              break;
-         }
-      }
-   else
-      {
-      // TOBEY generates 0 for non-XPLink cases.
-      // We are consistent with TOBEY although not sure that is 100% correct
-      rva = 0;
-      }
-   callDescValue |= rva << 24;
-
-   if (callNode == NULL)
-      {
-      return callDescValue; // specialized calls - so no float requirements
-      }
-
-   //
-   // Float parameter description fields
-   // Bits 8-31 inclusive
-   //
-
-   uint32_t parmAreaOffset = 0;
-
-#ifdef J9_PROJECT_SPECIFIC
-   TR::MethodSymbol* callSymbol = callNode->getSymbol()->castToMethodSymbol();
-   if (callSymbol->isJNI() && callNode->isPreparedForDirectJNI())
-      {
-      TR::ResolvedMethodSymbol * cs = callSymbol->castToResolvedMethodSymbol();
-      TR_ResolvedMethod * resolvedMethod = cs->getResolvedMethod();
-      // JNI Calls include a JNIEnv* pointer that is not included in list of children nodes.
-      // For FastJNI, certain calls do not require us to pass the JNIEnv.
-      if (!cg()->fej9()->jniDoNotPassThread(resolvedMethod))
-         parmAreaOffset += sizeof(uintptrj_t);
-
-      // For FastJNI, certain calls do not have to pass in receiver object.
-      if (cg()->fej9()->jniDoNotPassReceiver(resolvedMethod))
-         parmAreaOffset -= sizeof(uintptrj_t);
-      }
-#endif
-
-   uint32_t parmDescriptorFields = 0;
-
-
-   // WCode only logic follows for float parameter description fields
-
-   TR::Symbol *funcSymbol = callNode->getSymbolReference()->getSymbol();
-
-   uint32_t firstArgumentChild = callNode->getFirstArgumentIndex();
-   int32_t to = callNode->getNumChildren() - 1;
-   int32_t parmCount = 1;
-
-   int32_t floatParmNum = 0;
-   uint32_t gprSize = cg()->machine()->getGPRSize();
-
-   uint32_t lastFloatParmAreaOffset= 0;
-
-   bool done = false;
-   for (int32_t i = firstArgumentChild; (i <= to) && !done; i++, parmCount++)
-      {
-      TR::Node *child = callNode->getChild(i);
-      TR::DataType dataType = child->getDataType();
-      TR::SymbolReference *parmSymRef = child->getOpCode().hasSymbolReference() ? child->getSymbolReference() : NULL;
-      int32_t argSize = 0;
-
-      if (parmSymRef==NULL)
-         argSize = child->getSize();
-      else
-         argSize = parmSymRef->getSymbol()->getSize();
-
-
-      // Note: complex type is attempted to be handled although other code needs
-      // to change in 390 codegen to support complex
-      //
-      // PERFORMANCE TODO: it is desirable to use the defined "parameter count" of
-      // the function symbol to help determine if we have an unprototyped argument
-      // of a call (site) to a vararg function.  Currently we overcompensate for
-      // outgoing float parms to vararg functions and always shadow in FPR and
-      // and stack/gprs as with an unprotoyped call - see pushArg(). Precise
-      // information can help remove such compensation. Changes to fix this would
-      // involve: this function, pushArg() and buildArgs().
-
-      int32_t numFPRsNeeded = 0;
-      switch (dataType)
-         {
-         case TR::Float:
-         case TR::Double:
-   #ifdef J9_PROJECT_SPECIFIC
-         case TR::DecimalFloat:
-         case TR::DecimalDouble:
-   #endif
-            numFPRsNeeded = 1;
-            break;
-   #ifdef J9_PROJECT_SPECIFIC
-         case TR::DecimalLongDouble:
-            break;
-   #endif
-         }
-
-      if (numFPRsNeeded != 0)
-         {
-         uint32_t unitSize = argSize / numFPRsNeeded;
-         uint32_t wordsToPreviousParm = (parmAreaOffset - lastFloatParmAreaOffset) / gprSize;
-         if (wordsToPreviousParm > 0xF)
-            { // to big for descriptor. Will pass in stack
-            done = true; // done
-            }
-         uint32_t val = wordsToPreviousParm + ((unitSize == 4) ? 0x10 : 0x20);
-
-         parmDescriptorFields |= val << (6 * (3 - floatParmNum));
-
-         floatParmNum++;
-
-         if (floatParmNum >= getNumFloatArgumentRegisters())
-            {
-            done = true;
-            }
-         }
-      parmAreaOffset += argSize < gprSize ? gprSize : argSize;
-
-      if (numFPRsNeeded != 0)
-         {
-         lastFloatParmAreaOffset = parmAreaOffset;
-         }
-      }
-
-   callDescValue |= parmDescriptorFields;
-   return callDescValue;
    }
 
 #define  GPREGINDEX(i)   (i-TR::RealRegister::FirstGPR)
@@ -945,6 +706,11 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
                 deps->getPostConditions(), 0, deps->getAddCursorForPost(), cg());
     generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, afterNOP, postDeps);
 }
+TR::LabelSymbol*
+TR::S390zOSSystemLinkage::getEntryPointMarkerLabel() const
+   {
+   return _entryPointMarkerLabel;
+   }
 
 TR::Instruction*
 TR::S390zOSSystemLinkage::getStackPointerUpdate() const
@@ -1033,7 +799,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction * cursor)
    cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00C500F1, cursor);
    cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00000000, cursor);
 
-   cg->addRelocation(new (cg->trHeapMemory()) EntryPointMarkerOffsetToPPA1Relocation(cursor, _ppa1->getSnippetLabel()));
+   cg->addRelocation(new (cg->trHeapMemory()) InstructionLabelRelative32BitRelocation(cursor, -8, _ppa1->getSnippetLabel(), 1));
    
    // DSA size is the frame size aligned to 32-bytes which means it's least significant 5 bits are zero and are used to
    // represent the flags which are always 0 for OMR as we do not support leaf frames or direct calls to alloca()
@@ -1131,39 +897,28 @@ TR::S390zOSSystemLinkage::createEpilogue(TR::Instruction * cursor)
  * General XPLink utility
  */
 TR::Instruction *
-TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction * cursor,
-                                                    TR::Node *node,
-                                                    TR::Node *callNode,
-                                                    TR_XPLinkCallTypes callType)
+TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::Node* node, TR::Node* callNode, TR_XPLinkCallTypes callType)
    {
-   TR::CodeGenerator * codeGen = cg();
-   // In 64 bit XPLINK, the caller returns at RetAddr+2, so add 2 byte nop
-   // In 31 bit XPLINK, the caller returns at RetAddr+4, so add 4 byte nop with last two bytes
-   // as signed offset in doublewords at or preceding NOP
-   uint32_t padSize = TR::Compiler->target.is64Bit() ? 2 : 4;
-
-   cursor = codeGen->insertPad(node, cursor, padSize, false);
-   TR::S390NOPInstruction *nop = static_cast<TR::S390NOPInstruction *>(cursor);
-
    if (TR::Compiler->target.is32Bit())
       {
-      uint32_t callDescValues = calculateCallDescriptorFlags(callNode);  // lower 32 bits
+      uint32_t callDescriptorValue = TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(this, callNode);
 
-      TR::S390ConstantDataSnippet * callDescSnippet = cg()->findOrCreate8ByteConstant(node, (int64_t)callDescValues, false);
-      nop->setTargetSnippet(callDescSnippet);
+      TR::Snippet* callDescriptor = new (self()->trHeapMemory()) TR::XPLINKCallDescriptorSnippet(cg(), this, callDescriptorValue);
+      cg()->addSnippet(callDescriptor);
 
-      // Create a pseudo instruction that will generate
-      //      BRAS 4
-      //      DC <Call Descriptor>
-      // if the snippet is > 15k bytes away.
+      uint32_t nopDescriptor = 0x47000000 | (static_cast<uint32_t>(callType) << 16);
+      cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, nopDescriptor, cursor);
 
-      TR::S390PseudoInstruction *pseudoCallDesc = static_cast<TR::S390PseudoInstruction *>(generateS390PseudoInstruction(codeGen, TR::InstOpCode::XPCALLDESC, node, NULL, cursor));
-      // Assign this pseudoCallDesc to the NOP Instruction.
-      static_cast<TR::S390NOPInstruction *>(cursor)->setCallDescInstr(pseudoCallDesc);
-      cursor = pseudoCallDesc;
+      cg()->addRelocation(new (cg()->trHeapMemory()) InstructionLabelRelative16BitRelocation(cursor, 2, callDescriptor->getSnippetLabel(), 8));
+      }
+   else
+      {
+      // TODO: Once we support generic TR::InstOpCode::DC of any size we need to modify this line to use it, similarly
+      // to what we do above for the 31-bit case.
+      uint16_t nopDescriptor = 0x1800 | static_cast<uint16_t>(callType);
+      cursor = new (cg()->trHeapMemory()) TR::S390Imm2Instruction(TR::InstOpCode::DC2, node, nopDescriptor, cursor, cg());
       }
 
-   nop->setCallType(callType);
    return cursor;
    }
 
@@ -1240,18 +995,62 @@ TR::S390zOSSystemLinkage::addImmediateToRealRegister(TR::RealRegister *targetReg
    return cursor;
    }
 
-TR::S390zOSSystemLinkage::EntryPointMarkerOffsetToPPA1Relocation::EntryPointMarkerOffsetToPPA1Relocation(TR::Instruction* cursor, TR::LabelSymbol* ppa2)
+TR::S390zOSSystemLinkage::InstructionLabelRelative16BitRelocation::InstructionLabelRelative16BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor)
    :
-      TR::LabelRelocation(NULL, ppa2),
-      _cursor(cursor)
+      TR::LabelRelocation(NULL, l),
+      _cursor(cursor),
+      _offset(offset),
+      _divisor(divisor)
    {
    }
 
-void
-TR::S390zOSSystemLinkage::EntryPointMarkerOffsetToPPA1Relocation::apply(TR::CodeGenerator* cg)
+uint8_t*
+TR::S390zOSSystemLinkage::InstructionLabelRelative16BitRelocation::getUpdateLocation()
    {
-   uint8_t* cursor = _cursor->getBinaryEncoding();
+   uint8_t* updateLocation = TR::LabelRelocation::getUpdateLocation();
 
-   // The 0x08 is the static distance from the field which we need to relocate to the start of the Entry Point Marker
-   *reinterpret_cast<int32_t*>(cursor) = static_cast<int32_t>(getLabel()->getCodeLocation() - (cursor - 0x08));
+   if (updateLocation == NULL && _cursor->getBinaryEncoding() != NULL)
+      {
+      updateLocation = setUpdateLocation(_cursor->getBinaryEncoding() + _offset);
+      }
+
+   return updateLocation;
+   }
+
+void
+TR::S390zOSSystemLinkage::InstructionLabelRelative16BitRelocation::apply(TR::CodeGenerator* cg)
+   {
+   uint8_t* p = getUpdateLocation();
+
+   *reinterpret_cast<int16_t*>(p) = static_cast<int16_t>(getLabel()->getCodeLocation() - p) / _divisor;
+   }
+
+TR::S390zOSSystemLinkage::InstructionLabelRelative32BitRelocation::InstructionLabelRelative32BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor)
+   :
+      TR::LabelRelocation(NULL, l),
+      _cursor(cursor),
+      _offset(offset),
+      _divisor(divisor)
+   {
+   }
+
+uint8_t*
+TR::S390zOSSystemLinkage::InstructionLabelRelative32BitRelocation::getUpdateLocation()
+   {
+   uint8_t* updateLocation = TR::LabelRelocation::getUpdateLocation();
+
+   if (updateLocation == NULL && _cursor->getBinaryEncoding() != NULL)
+      {
+      updateLocation = setUpdateLocation(_cursor->getBinaryEncoding() + _offset);
+      }
+
+   return updateLocation;
+   }
+
+void
+TR::S390zOSSystemLinkage::InstructionLabelRelative32BitRelocation::apply(TR::CodeGenerator* cg)
+   {
+   uint8_t* p = getUpdateLocation();
+
+   *reinterpret_cast<int32_t*>(p) = static_cast<int32_t>(getLabel()->getCodeLocation() - p) / _divisor;
    }

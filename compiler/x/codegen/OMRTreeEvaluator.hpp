@@ -78,6 +78,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *bloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *fwrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);

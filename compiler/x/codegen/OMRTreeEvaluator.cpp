@@ -758,9 +758,27 @@ TR::Register *OMR::X86::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGe
    return reg;
    }
 
-TR::Register *OMR::X86::TreeEvaluator::fwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *
+OMR::X86::TreeEvaluator::fwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
+   // The wrtbar IL op represents a store with side effects.
+   // Currently we don't use the side effect node. So just evaluate it and decrement the reference count.
+   TR::Node *sideEffectNode = node->getSecondChild();
+   cg->evaluate(sideEffectNode);
+   cg->decReferenceCount(sideEffectNode);
+   // Delegate the evaluation of the remaining children and the store operation to the storeEvaluator.
+   return TR::TreeEvaluator::floatingPointStoreEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::X86::TreeEvaluator::fwrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   // The wrtbar IL op represents a store with side effects.
+   // Currently we don't use the side effect node. So just evaluate it and decrement the reference count.
+   TR::Node *sideEffectNode = node->getThirdChild();
+   cg->evaluate(sideEffectNode);
+   cg->decReferenceCount(sideEffectNode);
+   // Delegate the evaluation of the remaining children and the store operation to the storeEvaluator.
    return TR::TreeEvaluator::floatingPointStoreEvaluator(node, cg);
    }
 

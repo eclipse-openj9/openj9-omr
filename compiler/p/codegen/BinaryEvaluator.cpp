@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Linkage.hpp"
@@ -2128,23 +2129,23 @@ strengthReducingLongDivideOrRemainder32BitMode(TR::Node *node,      TR::CodeGene
       }
    *dr_highReg = dr_h; *dr_lowReg = dr_l;
 
-   addDependency(dependencies, dd_h, TR::RealRegister::gr3, TR_GPR, cg);
-   addDependency(dependencies, dd_l, TR::RealRegister::gr4, TR_GPR, cg);
-   addDependency(dependencies, dr_h, TR::RealRegister::gr5, TR_GPR, cg);
-   addDependency(dependencies, dr_l, TR::RealRegister::gr6, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
+   TR::addDependency(dependencies, dd_h, TR::RealRegister::gr3, TR_GPR, cg);
+   TR::addDependency(dependencies, dd_l, TR::RealRegister::gr4, TR_GPR, cg);
+   TR::addDependency(dependencies, dr_h, TR::RealRegister::gr5, TR_GPR, cg);
+   TR::addDependency(dependencies, dr_l, TR::RealRegister::gr6, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
    tmp1Reg = cg->allocateRegister();
-   addDependency(dependencies, tmp1Reg, TR::RealRegister::gr7, TR_GPR, cg);
+   TR::addDependency(dependencies, tmp1Reg, TR::RealRegister::gr7, TR_GPR, cg);
    tmp2Reg = cg->allocateRegister();
-   addDependency(dependencies, tmp2Reg, TR::RealRegister::gr8, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr9, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+   TR::addDependency(dependencies, tmp2Reg, TR::RealRegister::gr8, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr9, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
    cr0Reg = cg->allocateRegister(TR_CCR);
-   addDependency(dependencies, cr0Reg, TR::RealRegister::cr0, TR_CCR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::cr1, TR_CCR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::cr5, TR_CCR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::cr6, TR_CCR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::cr7, TR_CCR, cg);
+   TR::addDependency(dependencies, cr0Reg, TR::RealRegister::cr0, TR_CCR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr1, TR_CCR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr5, TR_CCR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr6, TR_CCR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr7, TR_CCR, cg);
 
    // Trivial cases are caught by Simplifier or ValuePropagation. Runtime test is needed at this stage.
    int64_t ddConst = firstChild->getLongInt(), drConst = secondChild->getLongInt();

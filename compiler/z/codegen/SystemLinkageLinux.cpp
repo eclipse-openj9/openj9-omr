@@ -70,6 +70,7 @@
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/SystemLinkageLinux.hpp"
+#include "OMR/Bytes.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/VMJ9.h"
@@ -232,44 +233,54 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
    setOutgoingParmAreaBeginOffset(getOffsetToFirstParm());
    setOutgoingParmAreaEndOffset(0);
    setStackFrameSize(0);
-   setVarArgOffsetInParmArea(getOutgoingParmAreaBeginOffset());
-   setVarArgRegSaveAreaOffset(0);
    setNumberOfDependencyGPRegisters(32);
    setLargestOutgoingArgumentAreaSize(0);
    }
 
+void TR::S390zLinuxSystemLinkage::createEpilogue(TR::Instruction * cursor)
+   {
+   TR::Delimiter delimiter (comp(), comp()->getOption(TR_TraceCG), "Epilogue");
+
+   TR::Node* node = cursor->getNext()->getNode();
+
+   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, node, generateLabelSymbol(cg()), cursor);
+
+   cursor = fillFPRsInEpilogue(node, cursor);
+   cursor = fillGPRsInEpilogue(node, cursor);
+
+   cursor = generateS390BranchInstruction(cg(), TR::InstOpCode::BCR, node, TR::InstOpCode::COND_BCR, getReturnAddressRealRegister(), cursor);
+   }
 
 void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
    {
    TR::Delimiter delimiter (comp(), comp()->getOption(TR_TraceCG), "Prologue");
    
-   setFirstPrologueInstruction(cursor);
-
    int32_t argSize = getOutgoingParameterBlockSize();
    setOutgoingParmAreaEndOffset(getOutgoingParmAreaBeginOffset() + argSize);
 
    TR::ResolvedMethodSymbol* bodySymbol = comp()->getJittedMethodSymbol();
 
-   // Auto + spill size
-   int32_t localSize = -1 * (int32_t) (bodySymbol->getLocalMappingCursor());
-   setStackFrameSize(((getOffsetToFirstParm() +  argSize + localSize + 7) >> 3) << 3);
+   // Calculate size of locals determined in prior call to `mapStack`. We make the size a multiple of the strictest
+   // alignment symbol so that backwards mapping of auto symbols will follow the alignment.
+   //
+   // TODO: We should be using OMR::align here once mapStack is fixed so we don't pass negative offsets
+   size_t localSize = ((-1 * static_cast<int32_t>(bodySymbol->getLocalMappingCursor())) + (8 - 1)) & ~(8 - 1);
+   setStackFrameSize(((getOffsetToFirstParm() + argSize + localSize) + (8 - 1)) & ~(8 - 1));
 
    int32_t stackFrameSize = getStackFrameSize();
 
-   TR_ASSERT_FATAL(stackFrameSize % 8 == 0, "Misaligned stack frame size (%d) detected", stackFrameSize);
+   TR_ASSERT_FATAL((stackFrameSize & 7) == 0, "Misaligned stack frame size (%d) detected", stackFrameSize);
 
    if (comp()->getOption(TR_TraceCG))
-      traceMsg(comp(), "initial stackFrameSize: stack size %d = offset to first parm %d + arg size %d + localSize %d, rounded up to 8\n", stackFrameSize, getOffsetToFirstParm(), argSize, localSize);
-
-   setVarArgRegSaveAreaOffset(getStackFrameSize());
-
-   //  We assume frame size is less than 32k
-   //TR_ASSERT(stackFrameSize<=MAX_IMMEDIATE_VAL,
-   //      "TR::SystemLinkage::createPrologue -- Frame size (0x%x) greater than 0x7FFF\n",stackFrameSize);
-
-   //Now that stackFrame size is known, map stack
+      {
+      traceMsg(comp(), "Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, getOffsetToFirstParm(), argSize, localSize);
+      }
+   
+   // Now that we know the stack frame size, map the stack backwards
    mapStack(bodySymbol, stackFrameSize);
    
+   setFirstPrologueInstruction(cursor);
+
    TR::Node* node = comp()->getStartTree()->getNode();
    
    cursor = spillGPRsInPrologue(node, cursor);
@@ -299,23 +310,9 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
       cursor = generateRXInstruction(cg(), TR::InstOpCode::LA, node, spReg, generateS390MemoryReference(spReg,(stackFrameSize) * -1, cg()),cursor);
       }
 
-   cursor = (TR::Instruction *) saveArguments(cursor, false);
+   cursor = reinterpret_cast<TR::Instruction*>(saveArguments(cursor, false));
 
    setLastPrologueInstruction(cursor);
-   }
-
-void TR::S390zLinuxSystemLinkage::createEpilogue(TR::Instruction * cursor)
-   {
-   TR::Delimiter delimiter (comp(), comp()->getOption(TR_TraceCG), "Epilogue");
-
-   TR::Node* node = cursor->getNext()->getNode();
-
-   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, node, generateLabelSymbol(cg()), cursor);
-
-   cursor = fillFPRsInEpilogue(node, cursor);
-   cursor = fillGPRsInEpilogue(node, cursor);
-
-   cursor = generateS390BranchInstruction(cg(), TR::InstOpCode::BCR, node, TR::InstOpCode::COND_BCR, getRealRegister(TR::RealRegister::GPR14), cursor);
    }
 
 void
@@ -455,7 +452,7 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
    int32_t indexInArgRegistersArray = 0;
    TR::RealRegister::RegNum argRegNum = TR::RealRegister::NoReg;
    int8_t gprSize = cg()->machine()->getGPRSize();
-   int32_t parmInLocalAreaOffset = getParmOffsetInLocalArea();
+   int32_t parmInLocalAreaOffset = 0;
 
    setIncomingParmAreaBeginOffset(stackIndex);
    while (parmCursor != NULL)
@@ -555,10 +552,7 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
          // Check where to locate the linkage register 6 which is preserved on zLiux
           if ((getIntegerArgumentAddToPost(argRegNum) !=0 && parmCursor->isParmHasToBeOnStack()) ||
               parmCursor->getType().isVector())
-
             {
-            TR_ASSERT( getParmOffsetInLocalArea() >=0, "ParmOffsetInLocalArea is negative");
-
             // on local save area
             parmCursor->setParameterOffset(parmInLocalAreaOffset);
 
@@ -591,7 +585,6 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
       parmCursor = parameterIterator.getNext();
       }
 
-   setVarArgOffsetInParmArea(stackIndex);
    setIncomingParmAreaEndOffset(stackIndex);
    setNumUsedArgumentGPRs(numIntegerArgs);
    setNumUsedArgumentFPRs(numFloatArgs);
@@ -705,15 +698,17 @@ TR::S390zLinuxSystemLinkage::fillFPRsInEpilogue(TR::Node* node, TR::Instruction*
    
    for (int32_t i = TR::Linkage::getFirstMaskedBit(FPRSaveMask); i <= TR::Linkage::getLastMaskedBit(FPRSaveMask); ++i)
      {
-     if (FPRSaveMask & (1 << (i)))
-        {
-        TR::MemoryReference* fillMemRef = generateS390MemoryReference(spReg, offset, cg());
+      if (FPRSaveMask & (1 << (i)))
+         {
+         TR::MemoryReference* fillMemRef = generateS390MemoryReference(spReg, offset, cg());
 
-        cursor = generateRXInstruction(cg(), TR::InstOpCode::LD, node, getRealRegister(REGNUM(i + TR::RealRegister::FirstFPR)), fillMemRef, cursor);
+         cursor = generateRXInstruction(cg(), TR::InstOpCode::LD, node, getRealRegister(REGNUM(i + TR::RealRegister::FirstFPR)), fillMemRef, cursor);
 
-        offset += cg()->machine()->getFPRSize();
-        }
-     }
+         offset += cg()->machine()->getFPRSize();
+         }
+      }
+
+   return cursor;
    }
 
 TR::Instruction*
@@ -801,18 +796,20 @@ TR::Instruction*
 TR::S390zLinuxSystemLinkage::spillFPRsInPrologue(TR::Node* node, TR::Instruction* cursor)
    {
    TR::RealRegister* spReg = getNormalStackPointerRealRegister();
-   int16_t FPRSaveMask = getFPRSaveMask();
-   int32_t firstSaved = TR::Linkage::getFirstMaskedBit(FPRSaveMask);
-   int32_t lastSaved = TR::Linkage::getLastMaskedBit(FPRSaveMask);
    int32_t offset = getFPRSaveAreaEndOffset();
-
-   for (int32_t i = firstSaved; i <= lastSaved; ++i)
+   int16_t FPRSaveMask = getFPRSaveMask();
+   
+   for (int32_t i = TR::Linkage::getFirstMaskedBit(FPRSaveMask); i <= TR::Linkage::getLastMaskedBit(FPRSaveMask); ++i)
       {
       if (FPRSaveMask & (1 << (i)))
          {
          TR::MemoryReference* spillMemRef = generateS390MemoryReference(spReg, offset, cg());
+
+         cursor = generateRXInstruction(cg(), TR::InstOpCode::STD, node, getRealRegister(REGNUM(i + TR::RealRegister::FirstFPR)), spillMemRef, cursor);
+
          offset += cg()->machine()->getFPRSize();
-         cursor = generateRXInstruction(cg(), TR::InstOpCode::STD, node, getRealRegister(REGNUM(i+TR::RealRegister::FirstFPR)), spillMemRef, cursor);
          }
       }
+
+   return cursor;
    }

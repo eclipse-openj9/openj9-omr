@@ -84,17 +84,18 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
 
    S390zOSSystemLinkage(TR::CodeGenerator* cg);
 
+   virtual void createEpilogue(TR::Instruction * cursor);
+   virtual void createPrologue(TR::Instruction * cursor);
+
    virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
    virtual TR::Register* callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
-   virtual TR::RealRegister::RegNum getENVPointerRegister() { return TR::RealRegister::GPR5; }
-   virtual TR::RealRegister::RegNum getCAAPointerRegister() { return TR::RealRegister::GPR12; }
+   virtual TR::RealRegister::RegNum getENVPointerRegister();
+   virtual TR::RealRegister::RegNum getCAAPointerRegister();
    
    virtual int32_t getRegisterSaveOffset(TR::RealRegister::RegNum);
    virtual int32_t getOutgoingParameterBlockSize();
-   
-   virtual TR::Instruction *buyFrame(TR::Instruction * cursor, TR::Node *node);
 
    TR::Instruction * genCallNOPAndDescriptor(TR::Instruction * cursor, TR::Node *node, TR::Node *callNode, TR_XPLinkCallTypes callType);
 
@@ -104,12 +105,12 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
    TR::LabelSymbol* getEntryPointMarkerLabel() const;
 
    /** \brief
-    *     Gets the label instruction which marks the stack pointer update instruction following it.
+    *     Gets the label symbol representing the stack pointer update instruction following it.
     *
     *  \return
-    *     The stack pointer update label instruction if it exists; \c NULL otherwise.
+    *     The stack pointer update label symbol if it exists; \c NULL otherwise.
     */
-   TR::Instruction* getStackPointerUpdate() const;
+   TR::LabelSymbol* getStackPointerUpdateLabel() const;
    
    /** \brief
     *     Gets the PPA1 (Program Prologue Area 1) snippet for this method body.
@@ -121,22 +122,23 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
     */
    TR::PPA2Snippet* getPPA2Snippet() const;
 
-   virtual void createPrologue(TR::Instruction * cursor);
-   virtual void createEpilogue(TR::Instruction * cursor);
-
    private:
 
-   TR::Instruction* getputFPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction *cursor, TR::Node *node, TR::RealRegister *spReg = NULL);
-
    virtual TR::Instruction* addImmediateToRealRegister(TR::RealRegister * targetReg, int32_t immediate, TR::RealRegister *tempReg, TR::Node *node, TR::Instruction *cursor, bool *checkTempNeeded=NULL);
+   
+   TR::Instruction* fillGPRsInEpilogue(TR::Node* node, TR::Instruction* cursor);
+   TR::Instruction* fillFPRsInEpilogue(TR::Node* node, TR::Instruction* cursor);
+
+   TR::Instruction* spillGPRsInPrologue(TR::Node* node, TR::Instruction* cursor);
+   TR::Instruction* spillFPRsInPrologue(TR::Node* node, TR::Instruction* cursor);
 
    private:
    
-   TR::Instruction* _stackPointerUpdate;
    TR::LabelSymbol* _entryPointMarkerLabel;
+   TR::LabelSymbol* _stackPointerUpdateLabel;
 
-   TR::PPA1Snippet* _ppa1;
-   TR::PPA2Snippet* _ppa2;
+   TR::PPA1Snippet* _ppa1Snippet;
+   TR::PPA2Snippet* _ppa2Snippet;
    };
 }
 

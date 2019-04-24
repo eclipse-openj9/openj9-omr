@@ -240,7 +240,7 @@ TR::SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackInd
 
 
    // process incomming parameters
-   if (!isParmBlockRegister() && !isZLinuxLinkageType()) // ! OS (Type 1 linkage) && ! zLinux Linkage
+   if (!isZLinuxLinkageType())
        {
        initParamOffset(method,getOutgoingParmAreaBeginOffset()+ stackIndex);
        }
@@ -318,15 +318,10 @@ TR::SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackInd
    if (comp()->getOption(TR_TraceCG))
       traceMsg(comp(), "\n\nOffsetToLongDispSlot = %d\n", getOffsetToLongDispSlot());
 
-   if (isParmBlockRegister()) // OS Type 1 linkage
-       {
-       // map areas for storing registers in lower stack addresses
-       initParamOffset(method,stackIndex);
-       stackIndex -= (getIncomingParmAreaBeginOffset()-getIncomingParmAreaEndOffset());
-       }
-   else if (isZLinuxLinkageType())
-       //initParamOffset(method, stackIndex);
-       initParamOffset(method,getOutgoingParmAreaBeginOffset()+ stackIndex);
+   if (isZLinuxLinkageType())
+      {
+      initParamOffset(method,getOutgoingParmAreaBeginOffset()+ stackIndex);
+      }
 
    method->setLocalMappingCursor(stackIndex);
 

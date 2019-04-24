@@ -103,19 +103,11 @@ class SystemLinkage : public TR::Linkage
    int32_t setNumUsedArgumentVFRs(int32_t numUsedArgumentVFRs)    { return _numUsedArgumentVFRs = numUsedArgumentVFRs; }
    int32_t getNumUsedArgumentVFRs()  { return _numUsedArgumentVFRs; }
 
-   int32_t setVarArgOffsetInParmArea(int32_t varArgOffsetInParmArea)    { return _varArgOffsetInParmArea = varArgOffsetInParmArea; }
-   int32_t getVarArgOffsetInParmArea()  { return _varArgOffsetInParmArea; }
-
-   int32_t setVarArgRegSaveAreaOffset(int32_t varArgRegSaveAreaOffset)    { return _varArgRegSaveAreaOffset = varArgRegSaveAreaOffset; }
-   int32_t getVarArgRegSaveAreaOffset()  { return _varArgRegSaveAreaOffset; }
-
    void setIncomingParmAreaBeginOffset(int32_t offset) { _incomingParmAreaBeginOffset = offset; }
    int32_t getIncomingParmAreaBeginOffset() { return _incomingParmAreaBeginOffset; }
    void setIncomingParmAreaEndOffset(int32_t offset) { _incomingParmAreaEndOffset = offset; }
    int32_t getIncomingParmAreaEndOffset() { return _incomingParmAreaEndOffset; }
    virtual int32_t getIncomingParameterBlockSize() { return _incomingParmAreaEndOffset - _incomingParmAreaBeginOffset; }
-   virtual int32_t setParmOffsetInLocalArea(int32_t ParmOffsetInLocalArea)   { return _parmOffsetInLocalArea = ParmOffsetInLocalArea; }
-   virtual int32_t getParmOffsetInLocalArea()              { return _parmOffsetInLocalArea; }
 
    virtual uint32_t
    getIntArgOffset(int32_t index)
@@ -182,9 +174,6 @@ class SystemLinkage : public TR::Linkage
    int32_t _numUsedArgumentGPRs;
    int32_t _numUsedArgumentFPRs;
    int32_t _numUsedArgumentVFRs;
-   int32_t _varArgOffsetInParmArea;
-   int32_t _varArgRegSaveAreaOffset;
-   int32_t _parmOffsetInLocalArea;
    };
 }
 

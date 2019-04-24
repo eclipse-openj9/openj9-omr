@@ -96,10 +96,6 @@ extern TR::Instruction* generateS390ImmToRegister(TR::CodeGenerator * cg, TR::No
    intptr_t value, TR::Instruction * cursor);
 extern bool storeHelperImmediateInstruction(TR::Node * valueChild, TR::CodeGenerator * cg, bool isReversed, TR::InstOpCode::Mnemonic op, TR::Node * node, TR::MemoryReference * mf);
 
-static int32_t getLastMaskedBit(int16_t mask); ///< forward reference
-static int32_t getFirstMaskedBit(int16_t mask); ///< formward reference
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // TR::S390Linkage member functions
 ////////////////////////////////////////////////////////////////////////////////

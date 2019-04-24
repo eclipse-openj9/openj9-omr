@@ -107,7 +107,7 @@ enum TR_S390LinkageConventions
 #define AggregatesReturnedInRegs      0x1000
 // Available                          0x2000
 #define SmallIntParmsAlignedRight     0x4000  ///< < gprSize int parms aligned into the parmword
-#define ParmBlockRegister             0x8000  ///< Has a parameter block register: OS Linkage (non-Java)
+// Available                          0x8000
 #define ForceSaveIncomingParameters   0x10000 ///< Force parameters to be saved: example: non-Java
 #define LongDoubleReturnedOnStorage   0x20000 ///< zLinux C/C++
 #define ComplexReturnedOnStorage      0x40000 ///< zLinux C/C++
@@ -371,7 +371,6 @@ enum TR_DispatchType
    virtual bool isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth)   { return false; }
    virtual bool isAggregateReturnedInRegistersAndMemoryCall(TR::Node *callNode) { return false; }
    
-   int32_t  isParmBlockRegister() { return _properties & ParmBlockRegister; }
    int32_t  isForceSaveIncomingParameters() { return _properties & ForceSaveIncomingParameters; }
    int32_t  isLongDoubleReturnedOnStorage() { return _properties & LongDoubleReturnedOnStorage; }
    int32_t  isLongDoublePassedOnStorage() { return _properties & LongDoublePassedOnStorage; }

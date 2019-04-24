@@ -114,9 +114,9 @@ TR::PPA1Snippet::emitSnippetBody()
 
    size_t offsetToStackPointerUpdate = 0;
 
-   if (_linkage->getStackPointerUpdate() != NULL)
+   if (_linkage->getStackPointerUpdateLabel() != NULL)
       {
-      offsetToStackPointerUpdate = _linkage->getStackPointerUpdate()->getBinaryEncoding() - prologueBegin->getBinaryEncoding();
+      offsetToStackPointerUpdate = _linkage->getStackPointerUpdateLabel()->getInstruction()->getBinaryEncoding() - prologueBegin->getBinaryEncoding();
       }
 
    // We must encode this value in 4 bits as the most significant 4 bits are used for alloca register

@@ -211,8 +211,16 @@ TR::XPLINKCallDescriptorSnippet::emitSnippetBody()
    // TODO: We should not have to do this here. This should be done by the caller.
    getSnippetLabel()->setCodeLocation(cursor);
 
-   // Signed offset, in bytes, to Entry Point Marker
-   *reinterpret_cast<int32_t*>(cursor) = _linkage->getEntryPointMarkerLabel()->getInstruction()->getBinaryEncoding() - cursor;
+   // Signed offset, in bytes, to Entry Point Marker (if it exists)
+   if (_linkage->getEntryPointMarkerLabel() != NULL)
+      {
+      *reinterpret_cast<int32_t*>(cursor) = _linkage->getEntryPointMarkerLabel()->getInstruction()->getBinaryEncoding() - cursor;
+      }
+   else
+      {
+      *reinterpret_cast<int32_t*>(cursor) = 0x00000000;
+      }
+
    cursor += sizeof(int32_t);
 
    // Linkage, Return Value Adjust, and Parameter Adjust

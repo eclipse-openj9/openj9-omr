@@ -258,7 +258,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
    _entryPointMarkerLabel = generateLabelSymbol(cg);
    cursor = generateS390LabelInstruction(cg, InstOpCode::LABEL, node, _entryPointMarkerLabel, cursor);
 
-   // "C.E.E.1"
+   // "C.E.E.1."
    cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00C300C5, cursor);
    cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00C500F1, cursor);
    cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00000000, cursor);

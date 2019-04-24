@@ -101,6 +101,9 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
 
    /** \brief
     *     Gets the label symbol representing the start of the Entry Point Marker in the prologue.
+    *
+    *  \return
+    *     The Entry Point Marker label symbol if it exists; \c NULL otherwise.
     */
    TR::LabelSymbol* getEntryPointMarkerLabel() const;
 

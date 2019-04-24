@@ -54,24 +54,6 @@ namespace TR { class ParameterSymbol; }
 namespace TR { class ResolvedMethodSymbol; }
 template <class T> class List;
 
-inline void
-addDependency(
-      TR::RegisterDependencyConditions *dep,
-      TR::Register *vreg,
-      TR::RealRegister::RegNum rnum,
-      TR_RegisterKinds rk,
-      TR::CodeGenerator *cg)
-   {
-   if (vreg == NULL)
-      {
-      vreg = cg->allocateRegister(rk);
-      vreg->setPlaceholderReg();
-      }
-
-   dep->addPreCondition(vreg, rnum);
-   dep->addPostCondition(vreg, rnum);
-   }
-
 namespace TR {
 
 class PPCMemoryArgument

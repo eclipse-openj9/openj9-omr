@@ -44,18 +44,6 @@ namespace OMR { typedef OMR::ARM::Linkage LinkageConnector; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Register; }
 
-static inline void addDependency(TR::RegisterDependencyConditions *dep,
-                          TR::Register *vreg,
-                          TR::RealRegister ::RegNum rnum,
-                          TR_RegisterKinds rk,
-                          TR::CodeGenerator *codeGen)
-   {
-   if (vreg == NULL)
-      vreg = codeGen->allocateRegister(rk);
-   dep->addPreCondition(vreg, rnum);
-   dep->addPostCondition(vreg, rnum);
-   }
-
 namespace TR {
 
 class ARMMemoryArgument

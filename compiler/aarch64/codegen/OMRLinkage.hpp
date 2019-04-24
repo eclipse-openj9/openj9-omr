@@ -51,26 +51,6 @@ namespace TR { class Node; }
 namespace TR { class ParameterSymbol; }
 namespace TR { class ResolvedMethodSymbol; }
 
-/**
- * @brief Adds dependency
- */
-inline void
-addDependency(
-      TR::RegisterDependencyConditions *dep,
-      TR::Register *vreg,
-      TR::RealRegister::RegNum rnum,
-      TR_RegisterKinds rk,
-      TR::CodeGenerator *cg)
-   {
-   if (vreg == NULL)
-      {
-      vreg = cg->allocateRegister(rk);
-      }
-
-   dep->addPreCondition(vreg, rnum);
-   dep->addPostCondition(vreg, rnum);
-   }
-
 namespace TR {
 
 class ARM64MemoryArgument

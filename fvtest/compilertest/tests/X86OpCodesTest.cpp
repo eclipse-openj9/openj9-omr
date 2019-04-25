@@ -4720,8 +4720,6 @@ X86OpCodesTest::UnsupportedOpCodesTests()
    addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::lu2d, "lu2d", _argTypesUnaryLong, TR::Double);
 
    //bternary, sternary, fternary, dternary
-   addUnsupportedOpCodeTest(_numberOfTernaryArgs, TR::bternary, "bTernary", _argTypesTernaryByte, TR::Int8);
-   addUnsupportedOpCodeTest(_numberOfTernaryArgs, TR::sternary, "sTernary", _argTypesTernaryShort, TR::Int16);
    addUnsupportedOpCodeTest(_numberOfTernaryArgs, TR::fternary, "fTernary", _argTypesTernaryFloat, TR::Float);
    addUnsupportedOpCodeTest(_numberOfTernaryArgs, TR::dternary, "dTernary", _argTypesTernaryDouble, TR::Double);
 

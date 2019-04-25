@@ -56,10 +56,10 @@ public:
 	void kill(MM_EnvironmentBase *env);
 
 	/* Read Barrier Verifier specific methods */
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 	void poisonSlots(MM_EnvironmentBase *env) {}
 	void healSlots(MM_EnvironmentBase *env) {}
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 	/**
 	 * This method will be called on the master GC thread after each scavenger cycle, successful or

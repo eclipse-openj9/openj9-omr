@@ -176,10 +176,12 @@ MM_ScavengerDelegate::reverseForwardedObject(MM_EnvironmentBase *env, MM_Forward
 			(uint8_t)objectModel->getObjectFlags(forwardedObject));
 
 #if defined (OMR_GC_COMPRESSED_POINTERS)
-		/* Restore destroyed overlapped slot in the original object. This slot might need to be reversed
-		 * as well or it may be already reversed - such fixup will be completed at in a later pass.
-		 */
-		forwardedHeader->restoreDestroyedOverlap();
+		if (env->compressObjectReferences()) {
+			/* Restore destroyed overlapped slot in the original object. This slot might need to be reversed
+			 * as well or it may be already reversed - such fixup will be completed at in a later pass.
+			 */
+			forwardedHeader->restoreDestroyedOverlap();
+		}
 #endif /* defined (OMR_GC_COMPRESSED_POINTERS) */
 	}
 }

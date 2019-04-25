@@ -265,11 +265,11 @@ public:
 	void* heapBaseForBarrierRange0;
 	uintptr_t heapSizeForBarrierRange0;
 
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 	void* shadowHeapBase; 	/* Read Barrier Verifier shadow heap base address */
 	void* shadowHeapTop;	/* Read Barrier Verifier shadow heap base address */
 	MM_MemoryHandle shadowHeapHandle; /* Read Barrier Verifier shadow heap Virtual Memory handle (descriptor) */
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 	bool doOutOfLineAllocationTrace;
 	bool doFrequentObjectAllocationSampling; /**< Whether to track object allocations*/
@@ -388,13 +388,13 @@ public:
 
 	uintptr_t fvtest_forceSweepChunkArrayCommitFailure; /**< Force failure at Sweep Chunk Array commit operation */
 	uintptr_t fvtest_forceSweepChunkArrayCommitFailureCounter; /**< Force failure at Sweep Chunk Array commit operation counter */
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 	uintptr_t fvtest_enableReadBarrierVerification; /**< Forces failure at all direct memory read sites */
 	uintptr_t fvtest_enableMonitorObjectsReadBarrierVerification; /**< Forces failure at all direct memory read sites for monitor slot objects */
 	uintptr_t fvtest_enableClassStaticsReadBarrierVerification; /**< Forces failure at all direct memory read sites for class statics */
 	uintptr_t fvtest_enableJNIGlobalWeakReadBarrierVerification; /**< Forces failure at all direct memory read sites for JNI Global weak references */
 	uintptr_t fvtest_enableHeapReadBarrierVerification; /**< Forces failure at all direct memory read sites for heap references */
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 	uintptr_t fvtest_forceMarkMapCommitFailure; /**< Force failure at Mark Map commit operation */
 	uintptr_t fvtest_forceMarkMapCommitFailureCounter; /**< Force failure at Mark Map commit operation counter */
@@ -1296,11 +1296,11 @@ public:
 #endif /* defined(OMR_GC_REALTIME) */
 		, heapBaseForBarrierRange0(NULL)
 		, heapSizeForBarrierRange0(0)
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 		, shadowHeapBase(0)
 		, shadowHeapTop(0)
 		, shadowHeapHandle()
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 		, doOutOfLineAllocationTrace(true) /* Tracing after ever x bytes allocated per thread. Enabled by default. */
 		, doFrequentObjectAllocationSampling(false) /* Finds most frequently allocated classes. Disabled by default. */
 		, oolObjectSamplingBytesGranularity(16*1024*1024) /* Default granularity set to 16M (shows <1% perf loss). */
@@ -1394,13 +1394,13 @@ public:
 		, fvtest_disableInlineAllocation(0)
 		, fvtest_forceSweepChunkArrayCommitFailure(0)
 		, fvtest_forceSweepChunkArrayCommitFailureCounter(0)
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 		, fvtest_enableReadBarrierVerification(0)
 		, fvtest_enableMonitorObjectsReadBarrierVerification(0)
 		, fvtest_enableClassStaticsReadBarrierVerification(0)
 		, fvtest_enableJNIGlobalWeakReadBarrierVerification(0)
 		, fvtest_enableHeapReadBarrierVerification(0)
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 		, fvtest_forceMarkMapCommitFailure(0)
 		, fvtest_forceMarkMapCommitFailureCounter(0)
 		, fvtest_forceMarkMapDecommitFailure(0)

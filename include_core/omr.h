@@ -41,6 +41,10 @@
 #define OMR_COMPATIBLE_FUNCTION_POINTER(fp) ((void*)(fp))
 #endif /* J9ZOS390 */
 
+#if !defined(OMR_GC_COMPRESSED_POINTERS)
+#define OMR_GC_FULL_POINTERS
+#endif /* defined(J9VM_GC_FULL_POINTERS) */
+
 #ifdef __cplusplus
 extern "C" {
 #endif

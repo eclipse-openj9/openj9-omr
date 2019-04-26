@@ -271,12 +271,15 @@ MM_VerboseHandlerOutput::handleInitialized(J9HookInterface** hook, uintptr_t eve
 	writer->formatAndOutput(env, 1, "<attribute name=\"maxHeapSize\" value=\"0x%zx\" />", event->maxHeapSize);
 	writer->formatAndOutput(env, 1, "<attribute name=\"initialHeapSize\" value=\"0x%zx\" />", event->initialHeapSize);
 #if defined(OMR_GC_COMPRESSED_POINTERS)
-	writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefs\" value=\"true\" />");
-	writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefsDisplacement\" value=\"0x%zx\" />", 0);
-	writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefsShift\" value=\"0x%zx\" />", event->compressedPointersShift);
-#else /* defined(OMR_GC_COMPRESSED_POINTERS) */
-	writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefs\" value=\"false\" />");
+	if (env->compressObjectReferences()) {
+		writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefs\" value=\"true\" />");
+		writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefsDisplacement\" value=\"0x%zx\" />", 0);
+		writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefsShift\" value=\"0x%zx\" />", event->compressedPointersShift);
+	} else
 #endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
+	{
+		writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefs\" value=\"false\" />");
+	}
 	writer->formatAndOutput(env, 1, "<attribute name=\"pageSize\" value=\"0x%zx\" />", event->heapPageSize);
 	writer->formatAndOutput(env, 1, "<attribute name=\"pageType\" value=\"%s\" />", event->heapPageType);
 	writer->formatAndOutput(env, 1, "<attribute name=\"requestedPageSize\" value=\"0x%zx\" />", event->heapRequestedPageSize);

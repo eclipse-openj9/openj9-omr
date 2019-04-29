@@ -29,20 +29,20 @@
 /*
  * &NAME.HR_VALID   EQU   X'40'      High regs valid in REG_H field   @D3A
  */
-#define J9MCH_FLAGS_HGPRS_VALID 0x40
+#define OMRPORT_MCH_FLAGS_HGPRS_VALID 0x40
 /* if this bit is set in the mch_flags field of omr_31bit_mch, the values in the hgprs field in omr_31bit_mch are valid */
 /*
  * &NAME.INT_SF_VALID   EQU X'20'    Interrupt stackframe valid in    @D5A
  *                                 INT_SF field
  */
-#define J9MCH_FLAGS_INT_SF_VALID 0x20
+#define OMRPORT_MCH_FLAGS_INT_SF_VALID 0x20
 
 /*
  * If this bit is set in the mch_flags field of the omr_31bit_mch, the values in the VR registers in omr_31bit_mch are valid
  *
  * &NAME.VR_VALID	EQU X'2'	Vector registers saved in MCH
  */
-#define J9MCH_FLAGS_VR_VALID	0x2
+#define OMRPORT_MCH_FLAGS_VR_VALID	0x2
 
 /*
  * Derived from the assembler version, CEEMCH.COPY, as there is no C-mapping of the 31-bit (machine context)

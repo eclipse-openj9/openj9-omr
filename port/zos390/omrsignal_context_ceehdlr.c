@@ -67,8 +67,8 @@ fillInLEJumpInfo(struct OMRPortLibrary *portLibrary, omr_31bit_mch *regs, void *
 	farJumpInfo->__ji_fl_res1a = 0;
 
 #if !defined(OMR_ENV_DATA64)
-	if (0 != (regs->mch_flags & J9MCH_FLAGS_HGPRS_VALID)) {
-		/* The J9MCH_FLAGS_HGPRS_VALID bit was set */
+	if (0 != (regs->mch_flags & OMRPORT_MCH_FLAGS_HGPRS_VALID)) {
+		/* The OMRPORT_MCH_FLAGS_HGPRS_VALID bit was set */
 		farJumpInfo->__ji_fl_hr	= 1;
 	} else {
 		farJumpInfo->__ji_fl_hr	= 0;
@@ -275,7 +275,7 @@ infoForVR_ceehdlr(struct OMRPortLibrary *portLibrary, OMRLEConditionInfo *info, 
 
 	*name = "";
 
-	if (0 == (mchRegs->mch_flags & J9MCH_FLAGS_VR_VALID)) {
+	if (0 == (mchRegs->mch_flags & OMRPORT_MCH_FLAGS_VR_VALID)) {
 		return OMRPORT_SIG_VALUE_UNDEFINED;
 	}
 	if ((index >= 0) && (index < NUM_VECTOR_REGS)) {
@@ -316,7 +316,7 @@ infoForControl_ceehdlr(struct OMRPortLibrary *portLibrary, OMRLEConditionInfo *i
 	case OMRPORT_SIG_CONTROL_SP:
 	case 3:
 		*name = "sp";
-		if (0 != (mchRegs->mch_flags & J9MCH_FLAGS_INT_SF_VALID)) {
+		if (0 != (mchRegs->mch_flags & OMRPORT_MCH_FLAGS_INT_SF_VALID)) {
 			*value = &(mchRegs->interrupt_stack_frame);
 			return OMRPORT_SIG_VALUE_ADDRESS;
 		} else {

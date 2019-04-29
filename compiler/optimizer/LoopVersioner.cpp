@@ -4909,28 +4909,22 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          succNode->removePredecessor(succEdge);
          subNode->removeSuccessor(succEdge);
 
-         TR::CFGEdge *toInvariantEdge = NULL;
-
          for (auto changedSuccEdge = succNode->getSuccessors().begin(); changedSuccEdge != succNode->getSuccessors().end(); ++changedSuccEdge)
             {
-            TR::CFGEdge *currEdge = *changedSuccEdge;
-
-            // Keep track of any edge from the original loop to the invariant
-            // block - it must be discarded from the list of successors of the
-            // new proper region in the context of the parent structure, as a
+            // 
+            // Watch for any edge from the original loop to the invariant
+            // block - it will now refer to the proper region node, and
+            // must be discarded from the list of predecessors of the
+            // proper region node in the context of the parent structure, as a
             // subgraph node must not have an edge to itself
-            if (currEdge->getTo() == properNode)
+            if ((*changedSuccEdge)->getTo() != properNode)
                {
-               toInvariantEdge = currEdge;
+               (*changedSuccEdge)->setFrom(properNode);
                }
-
-            (*changedSuccEdge)->setFrom(properNode);
-            }
-
-         if (toInvariantEdge)
-            {
-            properNode->removeSuccessor(toInvariantEdge);
-            properNode->removePredecessor(toInvariantEdge);
+            else
+               {
+               properNode->removePredecessor(*changedSuccEdge);
+               }
             }
 
          for (auto changedSuccEdge = succNode->getExceptionSuccessors().begin(); changedSuccEdge != succNode->getExceptionSuccessors().end(); ++changedSuccEdge)

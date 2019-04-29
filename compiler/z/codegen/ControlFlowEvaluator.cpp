@@ -2147,6 +2147,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
          // i.e.  o.f == NULL
          if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) &&
              reference->getOpCode().isLoadVar() &&
+             (reference->getOpCodeValue() != TR::ardbari) &&
              reference->getRegister() == NULL)
             {
             targetRegister = cg->allocateCollectedReferenceRegister();
@@ -2203,6 +2204,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
 
          if (!firstChild->getOpCode().isCall() &&
                reference->getOpCode().isLoadVar() &&
+               (reference->getOpCodeValue() != TR::ardbari) && // ardbari needs to be evaluated before being NULLCHK'ed because of its side effect.
                reference->getOpCode().hasSymbolReference() &&
                reference->getRegister() == NULL)
             {

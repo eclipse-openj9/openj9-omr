@@ -3689,7 +3689,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_divCheck:                  return "jitThrowArithmeticException";
          case TR_arrayStoreException:       return "jitThrowArrayStoreException";
          case TR_typeCheckArrayStore:       return "jitTypeCheckArrayStore";
-         case TR_readBarrier:               return "jitReadBarrier";
+         case TR_softwareReadBarrier:       return "jitSoftwareReadBarrier";
          case TR_writeBarrierStore:         return "jitWriteBarrierStore";
          case TR_writeBarrierStoreGenerational: return "jitWriteBarrierStoreGenerational";
          case TR_writeBarrierStoreGenerationalAndConcurrentMark: return "jitWriteBarrierStoreGenerationalAndConcurrentMark";

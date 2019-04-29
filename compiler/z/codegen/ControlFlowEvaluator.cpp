@@ -391,18 +391,20 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
       }
    else if (node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lmin)
       {
-      registerA = cg->gprClobberEvaluate(node->getFirstChild());
-      generateRREInstruction(cg, TR::InstOpCode::CGR, node, registerA, registerB);
-
       if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
          {
-         generateRRFInstruction(cg, TR::InstOpCode::SELGR, node, registerA, registerA, registerB, mask);
+         registerA = cg->allocateRegister();
+         // Load into a tmp instead of clobberEvaluating into registerA to avoid an extra register shuffle
+         TR::Register* tmpRegister = cg->evaluate(node->getFirstChild());
+         generateRREInstruction(cg, TR::InstOpCode::CGR, node, tmpRegister, registerB);
+         generateRRFInstruction(cg, TR::InstOpCode::SELGR, node, registerA, registerB, tmpRegister, mask);
          }
       else
          {
+         registerA = cg->gprClobberEvaluate(node->getFirstChild());
+         generateRREInstruction(cg, TR::InstOpCode::CGR, node, registerA, registerB);
          generateRRFInstruction(cg, TR::InstOpCode::LOCGR, node, registerA, registerB, mask, true);
          }
-
       }
    else
       {

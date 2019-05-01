@@ -35,6 +35,7 @@ namespace OMR { typedef OMR::Z::InstOpCode InstOpCodeConnector; }
 
 #include <stdint.h>
 #include "compiler/codegen/OMRInstOpCode.hpp"
+#include "compiler/z/env/OMRCPU.hpp"
 #include "env/Processors.hpp"
 #include "il/DataTypes.hpp"
 #include "infra/Assert.hpp"
@@ -522,7 +523,7 @@ class InstOpCode: public OMR::InstOpCode
        *  \brief
        *      The minimum architecture level set (ALS) which introduced this instruction.
        */
-      TR_S390ProcessorInfo::TR_S390ProcessorArchitectures minimumALS;
+      CPU::Architecture minimumALS;
 
       /**
        *  \brief
@@ -540,7 +541,7 @@ class InstOpCode: public OMR::InstOpCode
     * \return
     *    The minimum ALS of this instruction.
     */
-   TR_S390ProcessorInfo::TR_S390ProcessorArchitectures getMinimumALS() const
+   CPU::Architecture getMinimumALS() const
       {
       return metadata[_mnemonic].minimumALS;
       }

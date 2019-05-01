@@ -361,7 +361,7 @@ generateS390Compare(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mne
  */
 static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool isMax)
    {
-   TR_ASSERT_FATAL(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196),
+   TR_ASSERT_FATAL(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z196),
       "cannot evaluate %s on z10 or below", node->getOpCode().getName());
 
    TR::Register *registerA;
@@ -371,7 +371,7 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
 
    if (node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::imin)
       {
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z15))
          {
          registerA = cg->allocateRegister();
 
@@ -391,7 +391,7 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
       }
    else if (node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lmin)
       {
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z15))
          {
          registerA = cg->allocateRegister();
          // Load into a tmp instead of clobberEvaluating into registerA to avoid an extra register shuffle
@@ -1274,7 +1274,7 @@ OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          node->getOpCodeValue() == TR::acmpeq)
       {
       // RXSBG only supported on z10+
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z10))
          {
          TR::Node* firstChild = node->getFirstChild();
          TR::Node* secondChild = node->getSecondChild();
@@ -2147,7 +2147,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
          // Use Load-And-Trap on zHelix if available.
          // This loads the field and performance a NULLCHK on the field value.
          // i.e.  o.f == NULL
-         if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) &&
+         if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_zEC12) &&
              reference->getOpCode().isLoadVar() &&
              (reference->getOpCodeValue() != TR::ardbari) &&
              reference->getRegister() == NULL)
@@ -2156,7 +2156,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
             appendTo = generateRXInstruction(cg, TR::InstOpCode::getLoadAndTrapOpCode(), node, targetRegister, generateS390MemoryReference(reference, cg), appendTo);
             reference->setRegister(targetRegister);
             }
-         else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) &&
+         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_zEC12) &&
                   reference->getRegister() == NULL &&
                   comp->useCompressedPointers() &&
                   reference->getOpCodeValue() == TR::l2a &&
@@ -2966,7 +2966,7 @@ OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::N
 TR::Register *
 OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT_FATAL(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10), "TR::ternary IL only supported on z10+");
+   TR_ASSERT_FATAL(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z10), "TR::ternary IL only supported on z10+");
 
    TR::Compilation *comp = cg->comp();
 
@@ -3014,14 +3014,14 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       auto bc = TR::TreeEvaluator::getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
 
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z15))
          {
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
          }
-      else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z196))
          {
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
@@ -3082,12 +3082,12 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       TR::Instruction *compareInst = generateRILInstruction(cg,condition->getOpCode().isLongCompare() ? TR::InstOpCode::CGFI : TR::InstOpCode::CFI,condition,condition->getRegister(), 0);
 
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z15))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
          }
-      else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z196))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
@@ -3242,7 +3242,7 @@ OMR::Z::TreeEvaluator::dternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Instruction *generateAlwaysTrapSequence(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions **retDeps)
    {
    // Sanity check
-   TR_ASSERT(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10), "Compare and trap instructions only supported on z10 and up");
+   TR_ASSERT(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z10), "Compare and trap instructions only supported on z10 and up");
 
    // ** Generate a NOP LR R0,R0.  The signal handler has to walk backwards to pattern match
    // the trap instructions.  All trap instructions besides CRT/CLRT are 6-bytes in length.

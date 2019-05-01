@@ -84,20 +84,6 @@ class CPU : public OMR::CPU
       TR_ZH_RESERVE1             =  2459,  // reserve for zHybrid
       TR_ZH_RESERVE2             =  2461,  // reserve for zHybrid
 
-      
-      S390SupportsUnknownArch = 0,
-      S390SupportsZ900        = 1,
-      S390SupportsZ990        = 2,
-      S390SupportsZ9          = 3,
-      S390SupportsZ10         = 4,
-      S390SupportsZ196        = 5,
-      S390SupportsZEC12       = 6,
-      S390SupportsZ13         = 7,
-      S390SupportsZ14         = 8,
-      S390SupportsZ15         = 9,
-      S390SupportsZNext       = 10,
-      S390SupportsLatestArch  = S390SupportsZNext,
-
       TR_UnknownArchitecture = 0,
       TR_z900 = 1,
       TR_z990 = 2,
@@ -121,46 +107,16 @@ protected:
 
 public:
 
-   bool getS390SupportsArch(Architecture arch)
+   bool getSupportsArch(Architecture arch)
       {
       return _supportedArch >= arch;
       }
 
-   bool setS390SupportsArch(Architecture arch)
+   bool setSupportsArch(Architecture arch)
       {
       return _supportedArch = _supportedArch >= arch ? _supportedArch : arch;
       }
-
-   bool getS390SupportsZ900() {return getS390SupportsArch(S390SupportsZ900);}
-   void setS390SupportsZ900() { setS390SupportsArch(S390SupportsZ900);}
-
-   bool getS390SupportsZ990() {return getS390SupportsArch(S390SupportsZ990);}
-   void setS390SupportsZ990() { setS390SupportsArch(S390SupportsZ990);}
-
-   bool getS390SupportsZ9() {return getS390SupportsArch(S390SupportsZ9);}
-   void setS390SupportsZ9() { setS390SupportsArch(S390SupportsZ9);}
-
-   bool getS390SupportsZ10() {return getS390SupportsArch(S390SupportsZ10);}
-   void setS390SupportsZ10() { setS390SupportsArch(S390SupportsZ10);}
-
-   bool getS390SupportsZ196() {return getS390SupportsArch(S390SupportsZ196);}
-   void setS390SupportsZ196() { setS390SupportsArch(S390SupportsZ196);}
-
-   bool getS390SupportsZEC12() {return getS390SupportsArch(S390SupportsZEC12);}
-   void setS390SupportsZEC12() { setS390SupportsArch(S390SupportsZEC12);}
-
-   bool getS390SupportsZ13() {return getS390SupportsArch(S390SupportsZ13);}
-   void setS390SupportsZ13() { setS390SupportsArch(S390SupportsZ13);}
-
-   bool getS390SupportsZ14() {return getS390SupportsArch(S390SupportsZ14);}
-   void setS390SupportsZ14() { setS390SupportsArch(S390SupportsZ14);}
-
-   bool getS390SupportsZ15() {return getS390SupportsArch(S390SupportsZ15);}
-   void setS390SupportsZ15() { setS390SupportsArch(S390SupportsZ15);}
-
-   bool getS390SupportsZNext() {return getS390SupportsArch(S390SupportsZNext);}
-   void setS390SupportsZNext() { setS390SupportsArch(S390SupportsZNext);}
-
+   
    bool getS390SupportsHPR() {return _flags.testAny(S390SupportsHPR);}
    void setS390SupportsHPR() { _flags.set(S390SupportsHPR);}
 

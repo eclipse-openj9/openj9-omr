@@ -102,7 +102,7 @@ protected:
 
    CPU() :
          OMR::CPU(),
-      _supportedArch(TR_UNDEFINED_S390_MACHINE)
+      _supportedArch(TR_z9)
       {}
 
 public:
@@ -116,6 +116,8 @@ public:
       {
       return _supportedArch = _supportedArch >= arch ? _supportedArch : arch;
       }
+
+   bool getSupportsHardwareSQRT() { return true; }
    
    bool getS390SupportsHPR() {return _flags.testAny(S390SupportsHPR);}
    void setS390SupportsHPR() { _flags.set(S390SupportsHPR);}

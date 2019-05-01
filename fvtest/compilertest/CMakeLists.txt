@@ -49,6 +49,7 @@ elseif(OMR_ARCH_S390)
 	list(APPEND COMPILERTEST_FILES 
 		z/codegen/Evaluator.cpp
 		z/codegen/TestCodeGenerator.cpp
+		${omr_SOURCE_DIR}/compiler/z/env/OMRCPU.cpp
 		${omr_SOURCE_DIR}/compiler/z/env/OMRDebugEnv.cpp
 	)
 endif()

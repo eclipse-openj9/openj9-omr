@@ -45,14 +45,90 @@ namespace Z
 
 class CPU : public OMR::CPU
    {
+   public:
+
+   enum Architecture
+      {
+      TR_UNDEFINED_S390_MACHINE  =  0,
+      TR_G5                      =  9672,
+      TR_MULTIPRISE7000          =  7060,
+      TR_FREEWAY                 =  2064,  // z900
+      TR_Z800                    =  2066,  // z800 - entry-level, less powerful variant of the z900
+      TR_MIRAGE                  =  1090,
+      TR_MIRAGE2                 =  1091,
+      TR_TREX                    =  2084,  // z990
+      TR_Z890                    =  2086,  // z890 - kneecapped version of z990
+      TR_GOLDEN_EAGLE            =  2094,  // z9
+      TR_DANU_GA2                =  2094,  // doesn't change from GoldenEagle
+      TR_Z9BC                    =  2096,  // z9 BC
+      TR_Z10                     =  2097,
+      TR_Z10BC                   =  2098,  // zMR
+      TR_ZG                      =  2817,  // zGryphon HE - z196
+      TR_ZGMR                    =  2818,  // zGryphon MR - z114
+      TR_ZG_RESERVE              =  2819,  // reserve for zGryphon
+      TR_ZEC12                   =  2827,  // zEC12 / zHelix
+      TR_ZEC12MR                 =  2828,  // zHelix MR
+      TR_ZEC12_RESERVE           =  2829,  // reserve for zHelix
+      TR_Z13                     =  2964,  // z13
+      TR_Z13s                    =  2965,  // z13s
+      TR_Z14                     =  3906,
+      TR_Z14s                    =  3907,
+      TR_Z15                     =  8561,
+      TR_Z15s                    =  8562,
+      TR_ZNEXT                   =  9998,
+      TR_ZNEXTs                  =  9999,
+      TR_ZH                      =  2458,  // reserve for zHybrid
+      TR_DATAPOWER               =  2462,  // reserve for DataPower on 2458
+      TR_ZH_RESERVE1             =  2459,  // reserve for zHybrid
+      TR_ZH_RESERVE2             =  2461,  // reserve for zHybrid
+
+      
+      S390SupportsUnknownArch = 0,
+      S390SupportsZ900        = 1,
+      S390SupportsZ990        = 2,
+      S390SupportsZ9          = 3,
+      S390SupportsZ10         = 4,
+      S390SupportsZ196        = 5,
+      S390SupportsZEC12       = 6,
+      S390SupportsZ13         = 7,
+      S390SupportsZ14         = 8,
+      S390SupportsZ15         = 9,
+      S390SupportsZNext       = 10,
+      S390SupportsLatestArch  = S390SupportsZNext,
+
+      TR_UnknownArchitecture = 0,
+      TR_z900 = 1,
+      TR_z990 = 2,
+      TR_z9 = 3,
+      TR_z10 = 4,
+      TR_z196 = 5,
+      TR_zEC12 = 6,
+      TR_z13 = 7,
+      TR_z14 = 8,
+      TR_z15 = 9,
+      TR_zNext = 10,
+
+      TR_LatestArchitecture = TR_zNext
+      };
 protected:
 
    CPU() :
          OMR::CPU(),
-      _s390MachineType(TR_UNDEFINED_S390_MACHINE)
+      _supportedArch(TR_UNDEFINED_S390_MACHINE)
       {}
 
 public:
+
+   bool getS390SupportsArch(Architecture arch)
+      {
+      return _supportedArch >= arch;
+      }
+
+   bool setS390SupportsArch(Architecture arch)
+      {
+      return _supportedArch = _supportedArch >= arch ? _supportedArch : arch;
+      }
+
    bool getSupportsHardwareSQRT() { return true; }
 
    bool getS390SupportsZ900() { return true; }
@@ -89,9 +165,6 @@ public:
 
    bool getS390SupportsGuardedStorageFacility() { return false; }
 
-   TR_S390MachineType getS390MachineType() const { return _s390MachineType; }
-   void setS390MachineType(TR_S390MachineType t) { _s390MachineType = t; }
-
    /**
     * @brief Answers whether the distance between a target and source address
     *        is within the reachable displacement range for a branch relative
@@ -110,9 +183,9 @@ public:
              (targetAddress % 2 == 0);
       }
 
-private:
+   private:
 
-   TR_S390MachineType _s390MachineType;
+   Architecture _supportedArch;
    };
 
 }

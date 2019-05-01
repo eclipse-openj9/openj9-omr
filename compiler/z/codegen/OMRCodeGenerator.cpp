@@ -402,147 +402,8 @@ bool OMR::Z::CodeGenerator::supportsDirectIntegralLoadStoresFromLiteralPool()
    return self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10);
    }
 
-////////////////////////////////////////////////////////////////////////////////
-// TR_S390ProcessorInfo::checkz900: returns true if it's zArchitecture, otherwise false.
-////////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390ProcessorInfo::checkz900()
-   {
-   return TR::Compiler->target.cpu.getS390SupportsZ900();
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// TR_S390ProcessorInfo::checkz990: returns true if it's Trex, otherwise false.
-////////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390ProcessorInfo::checkz990()
-   {
-   return TR::Compiler->target.cpu.getS390SupportsZ990();
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// TR_S390ProcessorInfo::checkz9: returns true if it's Golden Eagle, otherwise false.
-////////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390ProcessorInfo::checkz9()
-   {
-   // LL:  Enable machine check
-   return TR::Compiler->target.cpu.getS390SupportsZ9();
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// TR_S390ProcessorInfo::checkz10: returns true if it's z6, otherwise false.
-////////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390ProcessorInfo::checkz10()
-   {
-   return TR::Compiler->target.cpu.getS390SupportsZ10();
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// TR_S390ProcessorInfo::checkz196: returns true if it's zGryphon, otherwise false.
-////////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390ProcessorInfo::checkz196()
-   {
-   return TR::Compiler->target.cpu.getS390SupportsZ196();
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// TR_S390ProcessorInfo::checkzEC12: returns true if it's zHelix, otherwise false.
-////////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390ProcessorInfo::checkzEC12()
-   {
-   return TR::Compiler->target.cpu.getS390SupportsZEC12();
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// TR_S390ProcessorInfo::checkZ13: returns true if it's z13, otherwise false.
-////////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390ProcessorInfo::checkZ13()
-   {
-   return TR::Compiler->target.cpu.getS390SupportsZ13();
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// TR_S390ProcessorInfo::checkZ14: returns true if it's z14, otherwise false.
-////////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390ProcessorInfo::checkZ14()
-   {
-   return TR::Compiler->target.cpu.getS390SupportsZ14();
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// TR_S390ProcessorInfo::checkZ15: returns true if it's z15, otherwise false.
-////////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390ProcessorInfo::checkZ15()
-   {
-   return TR::Compiler->target.cpu.getS390SupportsZ15();
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// TR_S390ProcessorInfo::checkZNext: returns true if it's zNext, otherwise false.
-////////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390ProcessorInfo::checkZNext()
-   {
-   return TR::Compiler->target.cpu.getS390SupportsZNext();
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-//  TR_S390ProcessorInfo::getProcessor: returns the TR_s390gpX for current processorInfo
-////////////////////////////////////////////////////////////////////////////////
-TR_Processor
-TR_S390ProcessorInfo::getProcessor()
-   {
-   TR_Processor result = TR_s370gp7;
-
-   if (supportsArch(TR_S390ProcessorInfo::TR_zNext))
-      {
-      result = TR_s370gp14;
-      }
-   else if (supportsArch(TR_S390ProcessorInfo::TR_z15))
-      {
-      result = TR_s370gp13;
-      }
-   else if (supportsArch(TR_S390ProcessorInfo::TR_z14))
-      {
-      result = TR_s370gp12;
-      }
-   else if (supportsArch(TR_S390ProcessorInfo::TR_z13))
-      {
-      result = TR_s370gp11;
-      }
-   else if (supportsArch(TR_S390ProcessorInfo::TR_zEC12))
-      {
-      result = TR_s370gp10;
-      }
-   else if(supportsArch(TR_S390ProcessorInfo::TR_z196))
-      {
-      result = TR_s370gp9;
-      }
-   else if (supportsArch(TR_S390ProcessorInfo::TR_z10))
-      {
-      result = TR_s370gp8;
-      }
-
-   return result;
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// OMR::Z::CodeGenerator member functions
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// OMR::Z::CodeGenerator::CodeGenerator - Construct the S390 code generator
-////////////////////////////////////////////////////////////////////////////////
 OMR::Z::CodeGenerator::CodeGenerator()
    : OMR::CodeGenerator(),
-     _processorInfo(),
      _extentOfLitPool(-1),
      _recompPatchInsnList(getTypedAllocator<TR::Instruction*>(self()->comp()->allocator())),
      _constantHash(self()->comp()->allocator()),
@@ -563,91 +424,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
 
-   // Check for -Xjit disable options and target this specific compilation for the proper target
-   if (comp->getOption(TR_DisableZ10))
-      {
-      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z10);
-      }
-
-   if (comp->getOption(TR_DisableZ196))
-      {
-      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z196);
-      }
-
-   if (comp->getOption(TR_DisableZEC12))
-      {
-      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zEC12);
-      }
-
-   if (comp->getOption(TR_DisableZ13))
-      {
-      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z13);
-      }
-
-   if (comp->getOption(TR_DisableZ14))
-      {
-      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z14);
-      }
-
-   if (comp->getOption(TR_DisableZ15))
-      {
-      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z15);
-      }
-
-   if (comp->getOption(TR_DisableZNext))
-      {
-      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
-      }
-
-   // Randomly disable an architecture if we are in randomGen mode
-   if (comp->getOption(TR_Randomize))
-      {
-      switch (randomizer.randomInt(TR::Compiler->target.cpu.id() - TR_s370gp7))
-         {
-         case 1:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z196);
-            traceMsg(comp, "RandomGen: Disabling z196 processor architecture.");
-            break;
-            }
-
-         case 2:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zEC12);
-            traceMsg(comp, "RandomGen: Disabling zEC12 processor architecture.");
-            break;
-            }
-
-         case 3:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z13);
-            traceMsg(comp, "RandomGen: Disabling z13 processor architecture.");
-            break;
-            }
-
-         case 4:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z14);
-            traceMsg(comp, "RandomGen: Disabling z14 processor architecture.");
-            break;
-            }
-
-         case 5:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z15);
-            traceMsg(comp, "RandomGen: Disabling z15 processor architecture.");
-            break;
-            }
-
-         case 6:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
-            traceMsg(comp, "RandomGen: Disabling zNext processor architecture.");
-            break;
-            }
-         }
-      }
-
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
 
@@ -657,14 +433,14 @@ OMR::Z::CodeGenerator::CodeGenerator()
    bool enableBranchPreload = comp->getOption(TR_EnableBranchPreload);
    bool disableBranchPreload = comp->getOption(TR_DisableBranchPreload);
 
-   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && _processorInfo.supportsArch(TR_S390ProcessorInfo::TR_zEC12)))
+   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12)))
       self()->setEnableBranchPreload();
    else
       self()->setDisableBranchPreload();
 
    static bool bpp = (feGetEnv("TR_BPRP")!=NULL);
 
-   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && _processorInfo.supportsArch(TR_S390ProcessorInfo::TR_zEC12)))
+   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12)))
       self()->setEnableBranchPreloadForCalls();
    else
       self()->setDisableBranchPreloadForCalls();
@@ -720,7 +496,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
    self()->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
 
-   if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
+   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       self()->setSupportsTranslateAndTestCharString();
 
@@ -739,7 +515,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       comp->setOption(TR_DisableTraps);
       }
 
-   if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z196))
+   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
       {
       self()->setSupportsAtomicLoadAndAdd();
       }
@@ -750,17 +526,17 @@ OMR::Z::CodeGenerator::CodeGenerator()
       comp->setOption(TR_DisableMaxMinOptimization);
       }
 
-   if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_zEC12))
+   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12))
       {
       self()->setSupportsZonedDFPConversions();
       if (TR::Compiler->target.cpu.getS390SupportsTM() && !comp->getOption(TR_DisableTM))
          self()->setSupportsTM();
       }
 
-   if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
+   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
       self()->setSupportsFastPackedDFPConversions();
 
-   if (!_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z14))
+   if (!self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z14))
       {
       comp->setOption(TR_DisableVectorBCD);
       }
@@ -1069,7 +845,7 @@ OMR::Z::CodeGenerator::mulDecompositionCostIsJustified(int32_t numOfOperations, 
    {
    bool trace = self()->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
 
-   if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z196))
+   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
       {
       int32_t numCycles = 0;
       numCycles = numOfOperations+1;
@@ -1084,7 +860,7 @@ OMR::Z::CodeGenerator::mulDecompositionCostIsJustified(int32_t numOfOperations, 
             traceMsg(self()->comp(), "MulDecomp cost is too high. numCycle=%i(max:3)\n", numCycles);
       return numCycles <= 3;
       }
-   else if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
+   else if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       int32_t numCycles = 0;
       numCycles = numOfOperations+1;
@@ -1206,7 +982,7 @@ OMR::Z::CodeGenerator::isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild)
    {
    static char * disableASI = feGetEnv("TR_DISABLEASI");
 
-   if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
+   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       if (!disableASI && self()->isMemoryUpdate(node) && valueChild->getSecondChild()->getOpCode().isLoadConst())
          {

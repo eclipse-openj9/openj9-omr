@@ -302,7 +302,7 @@ public:
       }
 
    bool inlineNDmemcpyWithPad(TR::Node * node, int64_t * maxLengthPtr = NULL);
-   bool codegenSupportsLoadlessBNDCheck() {return _processorInfo.supportsArch(TR_S390ProcessorInfo::TR_zEC12);}
+   bool codegenSupportsLoadlessBNDCheck() {return self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12);}
    TR::Register *evaluateLengthMinusOneForMemoryOps(TR::Node *,  bool , bool &lenMinusOne);
 
    virtual TR_GlobalRegisterNumber getGlobalRegisterNumber(uint32_t realRegNum);
@@ -562,8 +562,6 @@ public:
    void printStats(int32_t);
 #endif
 
-   TR_S390ProcessorInfo *getS390ProcessorInfo() {return &_processorInfo;}
-
    TR_S390OutOfLineCodeSection *findS390OutOfLineCodeSectionFromLabel(TR::LabelSymbol *label);
 
    TR::Instruction *generateNop(TR::Node *node, TR::Instruction *preced=0, TR_NOPKind nopKind=TR_NOPStandard);
@@ -820,13 +818,6 @@ public:
 protected:
    TR::list<TR::S390ConstantDataSnippet*>  _constantList;
    TR::list<TR::S390ConstantDataSnippet*>  _snippetDataList;
-
-   /**
-    * _processorInfo contains the targeted hardware level for the compilation.
-    * This may be different than the real hardware the JIT compiler is currently running
-    * on, due to user specified options.
-    */
-   TR_S390ProcessorInfo            _processorInfo;
 
 private:
    TR::list<TR::S390WritableDataSnippet*>  _writableList;

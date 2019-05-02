@@ -37,6 +37,7 @@
 #include "testHelpers.hpp"
 #include "omrport.h"
 #include "omrmemcategories.h"
+#include "omrformatconsts.h"
 
 #if defined(AIXPPC)
 #include <sys/vminfo.h>
@@ -4205,6 +4206,24 @@ TEST(PortVmemTest, vmem_testGetProcessMemorySize)
 	result = omrvmem_get_process_memory_size(OMRPORT_VMEM_PROCESS_EnsureWideEnum, &size);
 	EXPECT_TRUE(result < 0) << "Invalid query not detected";
 	EXPECT_EQ(0u, size) << "value updated when query invalid";
+}
+
+/**
+ * Sanity test of function to obtain available physical memory.
+ */
+TEST(PortVmemTest, omrvmem_get_available_physical_memory)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	uint64_t freePhysicalMemorySize = 0;
+	int32_t status = omrvmem_get_available_physical_memory(&freePhysicalMemorySize);
+	/* omrvmem_get_available_physical_memory is not supported on zos */
+#if !defined(J9ZOS390)
+	ASSERT_EQ(0, status) << "Non-zero status from omrvmem_get_available_physical_memory";
+	portTestEnv->log("freePhysicalMemorySize = %" OMR_PRIu64 "\n", freePhysicalMemorySize);
+#else /* !defined(J9ZOS390) */
+	ASSERT_EQ(OMRPORT_ERROR_VMEM_NOT_SUPPORTED, status) << "omrvmem_get_available_physical_memory should not be supported";
+#endif /* !defined(J9ZOS390) */
+
 }
 
 /* This function is used by omrvmem_test_reserveExecutableMemory */

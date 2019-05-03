@@ -322,6 +322,18 @@ if(OMR_GC_SEGREGATED_HEAP)
 	)
 endif()
 
+if(OMR_GC_VLHGC)
+	target_sources(omrgc
+		PRIVATE
+			base/vlhgc/HeapRegionStateTable.cpp
+	)
+
+	target_include_directories(omrgc
+		PUBLIC
+			base/vlhgc
+	)
+endif()
+
 add_dependencies(omrgc omrgc_hookgen)
 
 if(OMR_WARNINGS_AS_ERRORS)

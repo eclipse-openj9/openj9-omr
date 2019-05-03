@@ -121,9 +121,9 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 			 * We can't use j9port_isFunctionOverridden to check for this because
 			 * the port library overrides sig_protect itself (with omrsig_protect_ceehdlr)
 			 * when the option OMRPORT_SIG_OPTIONS_ZOS_USE_CEEHDLR is passed into omrsig_set_options */
-			extern void j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc);
+			extern void omrsig_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc);
 
-			*(void (**)(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc))value = j9vm_le_condition_handler;
+			*(void (**)(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc))value = omrsig_le_condition_handler;
 			return 0;
 		} else {
 			return 1;

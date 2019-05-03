@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -212,11 +212,6 @@ ztpf_fireSignalHandlers(void *portlib)
 #define MAX_PORTLIB_SIGNAL_TYPES 8
 
 typedef  void (*unix_sigaction) (int, siginfo_t *, void *, UDATA);
-
-/* CMVC 96193
- * Prototyping here to avoid including j9protos.h
- */
-extern J9_CFUNC void issueWriteBarrier(void);
 
 /* Store the previous signal handlers, we need to restore them when we're done */
 static struct {

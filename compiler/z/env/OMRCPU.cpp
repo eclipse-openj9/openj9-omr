@@ -108,57 +108,271 @@ OMR::Z::CPU::getProcessorName(int32_t machineId)
    return result;
    }
 
+OMR::Z::CPU::CPU()
+   :
+   OMR::CPU(),
+   _supportedArch(TR_z9)
+   {}
+
 bool
-OMR::Z::CPU::getS390SupportsFPE()
+OMR::Z::CPU::getSupportsArch(Architecture arch)
+   {
+   return _supportedArch >= arch;
+   }
+
+bool
+OMR::Z::CPU::setSupportsArch(Architecture arch)
+   {
+   return _supportedArch = _supportedArch >= arch ? _supportedArch : arch;
+   }
+
+bool
+OMR::Z::CPU::getSupportsHardwareSQRT()
+   {
+   return true;
+   }
+
+bool
+OMR::Z::CPU::hasPopulationCountInstruction()
+   {
+   return getSupportsMiscellaneousInstructionExtensions3Facility();
+   }
+
+bool
+OMR::Z::CPU::getSupportsHighWordFacility()
+   {
+   return _flags.testAny(S390SupportsHPR);
+   }
+
+bool
+OMR::Z::CPU::setSupportsHighWordFacility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsHPR);
+      }
+   else
+      {
+      _flags.reset(S390SupportsHPR);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::getSupportsDecimalFloatingPointFacility()
+   {
+   return _flags.testAny(S390SupportsDFP);
+   }
+
+bool
+OMR::Z::CPU::setSupportsDecimalFloatingPointFacility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsDFP);
+      }
+   else
+      {
+      _flags.reset(S390SupportsDFP);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::getSupportsFloatingPointExtensionFacility()
    {
    return _flags.testAny(S390SupportsFPE);
    }
 
 bool
-OMR::Z::CPU::getS390SupportsTM()
+OMR::Z::CPU::setSupportsFloatingPointExtensionFacility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsFPE);
+      }
+   else
+      {
+      _flags.reset(S390SupportsFPE);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::getSupportsTransactionalMemoryFacility()
    {
    return _flags.testAny(S390SupportsTM);
    }
 
+
 bool
-OMR::Z::CPU::getS390SupportsRI()
+OMR::Z::CPU::setSupportsTransactionalMemoryFacility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsTM);
+      }
+   else
+      {
+      _flags.reset(S390SupportsTM);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::getSupportsRuntimeInstrumentationFacility()
    {
    return _flags.testAny(S390SupportsRI);
    }
 
 bool
-OMR::Z::CPU::getS390SupportsVectorFacility()
+OMR::Z::CPU::setSupportsRuntimeInstrumentationFacility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsRI);
+      }
+   else
+      {
+      _flags.reset(S390SupportsRI);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::getSupportsVectorFacility()
    {
    return _flags.testAny(S390SupportsVectorFacility);
    }
 
 bool
-OMR::Z::CPU::getS390SupportsVectorPackedDecimalFacility()
+OMR::Z::CPU::setSupportsVectorFacility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsVectorFacility);
+      }
+   else
+      {
+      _flags.reset(S390SupportsVectorFacility);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::getSupportsVectorPackedDecimalFacility()
    {
    return _flags.testAny(S390SupportsVectorPackedDecimalFacility);
    }
 
 bool
-OMR::Z::CPU::getS390SupportsGuardedStorageFacility()
+OMR::Z::CPU::setSupportsVectorPackedDecimalFacility(bool value)
    {
-   return (_flags.testAny(S390SupportsGuardedStorageFacility) &&
-           _flags.testAny(S390SupportsSideEffectAccessFacility));
+   if (value)
+      {
+      _flags.set(S390SupportsVectorPackedDecimalFacility);
+      }
+   else
+      {
+      _flags.reset(S390SupportsVectorPackedDecimalFacility);
+      }
+
+   return value;
    }
 
 bool
-OMR::Z::CPU::getS390SupportsMIE3()
+OMR::Z::CPU::getSupportsGuardedStorageFacility()
+   {
+   return _flags.testAny(S390SupportsGuardedStorageFacility);
+   }
+
+bool
+OMR::Z::CPU::setSupportsGuardedStorageFacility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsGuardedStorageFacility);
+      }
+   else
+      {
+      _flags.reset(S390SupportsGuardedStorageFacility);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::getSupportsMiscellaneousInstructionExtensions3Facility()
    {
    return _flags.testAny(S390SupportsMIE3);
    }
 
 bool
-OMR::Z::CPU::getS390SupportsVectorFacilityEnhancement2()
+OMR::Z::CPU::setSupportsMiscellaneousInstructionExtensions3Facility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsMIE3);
+      }
+   else
+      {
+      _flags.reset(S390SupportsMIE3);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::getSupportsVectorFacilityEnhancement2()
    {
    return _flags.testAny(S390SupportsVectorFacilityEnhancement2);
    }
 
 bool
-OMR::Z::CPU::getS390SupportsVectorPDEnhancement()
+OMR::Z::CPU::setSupportsVectorFacilityEnhancement2(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsVectorFacilityEnhancement2);
+      }
+   else
+      {
+      _flags.reset(S390SupportsVectorFacilityEnhancement2);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::getSupportsVectorPackedDecimalEnhancementFacility()
    {
    return _flags.testAny(S390SupportsVectorPDEnhancementFacility);
+   }
+
+bool
+OMR::Z::CPU::setSupportsVectorPackedDecimalEnhancementFacility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsVectorPDEnhancementFacility);
+      }
+   else
+      {
+      _flags.reset(S390SupportsVectorPDEnhancementFacility);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::isTargetWithinBranchRelativeRILRange(intptrj_t targetAddress, intptrj_t sourceAddress)
+   {
+   return (targetAddress == sourceAddress + ((intptrj_t)((int32_t)((targetAddress - sourceAddress) / 2))) * 2) &&
+            (targetAddress % 2 == 0);
    }

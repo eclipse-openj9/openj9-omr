@@ -529,7 +529,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_zEC12))
       {
       self()->setSupportsZonedDFPConversions();
-      if (TR::Compiler->target.cpu.getS390SupportsTM() && !comp->getOption(TR_DisableTM))
+      if (TR::Compiler->target.cpu.getSupportsTransactionalMemoryFacility() && !comp->getOption(TR_DisableTM))
          self()->setSupportsTM();
       }
 

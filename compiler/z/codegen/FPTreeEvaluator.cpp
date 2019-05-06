@@ -1071,7 +1071,7 @@ OMR::Z::TreeEvaluator::ibits2fEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * targetReg = cg->allocateRegister(TR_FPR);
    TR::Register * sourceReg;
    sourceReg = cg->evaluate(firstChild);
-   if (TR::Compiler->target.cpu.getS390SupportsFPE() && !disabled)
+   if (TR::Compiler->target.cpu.getSupportsFloatingPointExtensionFacility() && !disabled)
       {
       TR::Register *tempreg;
       tempreg = cg->allocateRegister();
@@ -1112,7 +1112,7 @@ OMR::Z::TreeEvaluator::lbits2dEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * sourceReg;
    TR::Node * firstChild = node->getFirstChild();
    TR::Compilation *comp = cg->comp();
-   if((TR::Compiler->target.cpu.getS390SupportsFPE()) && (!disabled))
+   if((TR::Compiler->target.cpu.getSupportsFloatingPointExtensionFacility()) && (!disabled))
       {
       sourceReg = cg->evaluate(firstChild);
       TR::Register * targetReg = cg->allocateRegister(TR_FPR);

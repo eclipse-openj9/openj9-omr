@@ -14183,7 +14183,7 @@ TR::Register *OMR::Z::TreeEvaluator::integerBitCount(TR::Node *node, TR::CodeGen
    TR::Register* resultReg = cg->allocateRegister();
    TR::Register* valueReg = cg->gprClobberEvaluate(node->getChild(0));
 
-   generateRRInstruction(cg, TR::InstOpCode::LGFR, node, valueReg, valueReg);
+   generateRRInstruction(cg, TR::InstOpCode::LLGFR, node, valueReg, valueReg);
    generateRRFInstruction(cg, TR::InstOpCode::POPCNT, node, resultReg, valueReg, static_cast<uint8_t>(0x8), static_cast<uint8_t>(0x0), NULL);
 
    node->setRegister(resultReg);

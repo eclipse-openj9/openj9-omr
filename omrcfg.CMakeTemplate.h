@@ -238,4 +238,9 @@
  */
 #cmakedefine OMRPORT_OMRSIG_SUPPORT
 
+/* Plaform config options */
+#cmakedefine OMR_USE_POSIX_SEMAPHORES
+#cmakedefine OMR_USE_OSX_SEMAPHORES
+#cmakedefine OMR_USE_ZOS_SEMAPHORES
+
 #endif /* !defined(OMRCFG_H_) */

@@ -289,6 +289,11 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 		return 0;
 	}
 
+	if (0 == strcmp(OMRPORT_CTLDATA_NLS_DISABLE, key)) {
+		portLibrary->portGlobals->nls_data.isDisabled = value;
+		return 0;
+	}
+
 	return 1;
 }
 

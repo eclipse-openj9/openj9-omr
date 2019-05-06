@@ -63,6 +63,7 @@ typedef struct J9PortControlData {
 typedef struct J9NLSDataCache {
 	char *baseCatalogPaths[4];
 	uintptr_t nPaths;
+	uintptr_t isDisabled;
 	char *baseCatalogName;
 	char *baseCatalogExtension;
 	char *catalog;

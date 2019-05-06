@@ -358,6 +358,4 @@ private:
    const int PADDING_THRESHOLD; ///< = 496;
    };
 
-TR::Instruction* generateAlwaysTrapSequence(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions **retDeps = NULL);
-
 #endif

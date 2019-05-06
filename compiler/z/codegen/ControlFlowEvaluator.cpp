@@ -2966,8 +2966,6 @@ OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::N
 TR::Register *
 OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT_FATAL(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z10), "TR::ternary IL only supported on z10+");
-
    TR::Compilation *comp = cg->comp();
 
    comp->incVisitCount();       // need this for treeContainsAllOtherUsesForNode
@@ -3233,33 +3231,4 @@ OMR::Z::TreeEvaluator::dternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->recursivelyDecReferenceCount(conditionNode);
 
    return returnReg;
-   }
-
-/**
- * Generates always trapping sequence - for conditions in WCODE Path that require always trap
- * If used in internal control flow section, caller should merge register dependencies with returned deps.
- */
-TR::Instruction *generateAlwaysTrapSequence(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions **retDeps)
-   {
-   // Sanity check
-   TR_ASSERT(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z10), "Compare and trap instructions only supported on z10 and up");
-
-   // ** Generate a NOP LR R0,R0.  The signal handler has to walk backwards to pattern match
-   // the trap instructions.  All trap instructions besides CRT/CLRT are 6-bytes in length.
-   // Insert 2-byte NOP in front of the 4-byte CLRT to ensure we do not mismatch accidentally.
-   TR::Instruction *cursor = new (cg->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cg);
-
-   TR::Register *zeroReg = cg->allocateRegister();
-   TR::RegisterDependencyConditions *regDeps =
-         new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
-   regDeps->addPostCondition(zeroReg, TR::RealRegister::AssignAny);
-   cursor = new (cg->trHeapMemory()) TR::S390RRFInstruction(TR::InstOpCode::CLRT, node, zeroReg, zeroReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true, cg);
-   cursor->setDependencyConditions(regDeps);
-
-   cg->stopUsingRegister(zeroReg);
-   cursor->setExceptBranchOp();
-   cg->setCanExceptByTrap(true);
-   if(retDeps)
-      *retDeps = regDeps;
-   return cursor;
    }

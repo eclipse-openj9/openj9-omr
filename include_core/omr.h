@@ -117,6 +117,9 @@ typedef struct OMR_ExclusiveVMAccessStats {
 typedef struct OMR_VM {
 	struct OMR_Runtime *_runtime;
 	void *_language_vm;
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	uintptr_t _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 	struct OMR_VM *_linkNext;
 	struct OMR_VM *_linkPrevious;
 	struct OMR_VMThread *_vmThreadList;
@@ -154,7 +157,11 @@ typedef struct OMR_VM {
 } OMR_VM;
 
 #if defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_GC_FULL_POINTERS)
+#define OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM) (0 != (omrVM)->_compressObjectReferences)
+#else /* OMR_GC_FULL_POINTERS */
 #define OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM) TRUE
+#endif /* OMR_GC_FULL_POINTERS */
 #else /* OMR_GC_COMPRESSED_POINTERS */
 #define OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM) FALSE
 #endif /* OMR_GC_COMPRESSED_POINTERS */
@@ -162,6 +169,9 @@ typedef struct OMR_VM {
 typedef struct OMR_VMThread {
 	struct OMR_VM *_vm;
 	uint32_t _sampleStackBackoff;
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	uint32_t _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 	void *_language_vmthread;
 	omrthread_t _os_thread;
 	struct OMR_VMThread *_linkNext;
@@ -201,7 +211,11 @@ typedef struct OMR_VMThread {
 } OMR_VMThread;
 
 #if defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_GC_FULL_POINTERS)
+#define OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread) (0 != (omrVMThread)->_compressObjectReferences)
+#else /* OMR_GC_FULL_POINTERS */
 #define OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread) TRUE
+#endif /* OMR_GC_FULL_POINTERS */
 #else /* OMR_GC_COMPRESSED_POINTERS */
 #define OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread) FALSE
 #endif /* OMR_GC_COMPRESSED_POINTERS */

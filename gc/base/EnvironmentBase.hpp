@@ -76,6 +76,9 @@ typedef enum {
 class MM_EnvironmentBase : public MM_BaseVirtual
 {
 private:
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	bool const _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 	uintptr_t _slaveID;
 	uintptr_t _environmentId;
 
@@ -247,12 +250,16 @@ public:
 		return getExtensions()->getObjectAlignmentInBytes();
 	}
 
-	MMINLINE bool const compressObjectReferences() {
-#if defined (OMR_GC_COMPRESSED_POINTERS)
+	MMINLINE bool compressObjectReferences() {
+#if defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_GC_FULL_POINTERS)
+		return _compressObjectReferences;
+#else /* defined(OMR_GC_FULL_POINTERS) */
 		return true;
-#else /* OMR_GC_COMPRESSED_POINTERS */
+#endif /* defined(OMR_GC_FULL_POINTERS) */
+#else /* defined(OMR_GC_COMPRESSED_POINTERS) */
 		return false;
-#endif /* OMR_GC_COMPRESSED_POINTERS */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
 	}
 
 	/**
@@ -596,6 +603,9 @@ public:
 	 */
 	MM_EnvironmentBase(OMR_VMThread *omrVMThread) :
 		MM_BaseVirtual()
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+		, _compressObjectReferences(OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread))
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 		,_slaveID(0)
 		,_environmentId(0)
 		,_omrVM(omrVMThread->_vm)
@@ -645,6 +655,9 @@ public:
 
 	MM_EnvironmentBase(OMR_VM *omrVM) :
 		MM_BaseVirtual()
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+		, _compressObjectReferences(OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM))
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 		,_slaveID(0)
 		,_environmentId(0)
 		,_omrVM(omrVM)

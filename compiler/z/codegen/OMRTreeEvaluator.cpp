@@ -12279,7 +12279,7 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
          else
             {
             // Same as above, but generate a RISBLG instead of RISBG for 32, 16, and 8-bit integers
-            generateShiftAndKeepSelected31Bit(node, cg, tmpReg, tmpReg, 63 - x, 63 - x, x, true, false);
+            generateShiftAndKeepSelected31Bit(node, cg, tmpReg, tmpReg, 31 - x, 31 - x, x, true, false);
             }
 
          // Now OR the result into the resultReg

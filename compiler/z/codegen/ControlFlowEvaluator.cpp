@@ -3122,6 +3122,9 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          }
       }
 
+   if (!node->isNotCollected())
+      trueReg->setContainsCollectedReference();
+
    if (comp->getOption(TR_TraceCG))
       traceMsg(comp, "Setting node %p register to %p\n",node,trueReg);
    node->setRegister(trueReg);

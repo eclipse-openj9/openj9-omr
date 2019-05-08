@@ -27,8 +27,6 @@
 #include "omrgcconsts.h"
 #include "BaseVirtual.hpp"
 
-#include <cstdint>
-#include <cstdlib>
 #include <stdint.h>
 
 namespace OMR {

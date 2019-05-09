@@ -186,7 +186,7 @@ public:
 	 * @param[out] hasNextSlotMap set this to true if this method should be called again, false if this map is known to be last
 	 * @return a pointer to the first slot mapped by the least significant bit of the map, or NULL if no more slots
 	 */
-	virtual fomrobject_t *getNextSlotMap(uintptr_t &scanMap, bool &hasNextSlotMap) = 0;
+	virtual fomrobject_t *getNextSlotMap(uintptr_t *scanMap, bool *hasNextSlotMap) = 0;
 
 	/**
 	 * Get the next object slot if one is available.
@@ -213,7 +213,7 @@ public:
 			/* slot bit map is empty -- try to refresh it */
 			if (hasMoreSlots()) {
 				bool hasNextSlotMap;
-				_scanPtr = getNextSlotMap(_scanMap, hasNextSlotMap);
+				_scanPtr = getNextSlotMap(&_scanMap, &hasNextSlotMap);
 				if (!hasNextSlotMap) {
 					setNoMoreSlots();
 				}
@@ -238,7 +238,7 @@ public:
 	 * stack.
 	 *
 	 * If leaf information is available it should be expressed in the implementation
-	 * of getNextSlotMap(uintptr_t &, uintptr_t &, bool &). This method is called to
+	 * of getNextSlotMap(uintptr_t *, uintptr_t *, bool *). This method is called to
 	 * obtain a bit map of the contained leaf slots conforming to the reference slot
 	 * map. An initial leaf map is provided to the GC_ObjectScanner constructor and
 	 * it is refreshed when required.
@@ -256,7 +256,7 @@ public:
 	 * @param[out] hasNextSlotMap set this to true if this method should be called again, false if this map is known to be last
 	 * @return a pointer to the first slot mapped by the least significant bit of the map, or NULL if no more slots
 	 */
-	virtual fomrobject_t *getNextSlotMap(uintptr_t &scanMap, uintptr_t &leafMap, bool &hasNextSlotMap) = 0;
+	virtual fomrobject_t *getNextSlotMap(uintptr_t *scanMap, uintptr_t *leafMap, bool *hasNextSlotMap) = 0;
 
 	/**
 	 * Get the next object slot if one is available.
@@ -287,7 +287,7 @@ public:
 			/* slot bit map is empty -- try to refresh it */
 			if (hasMoreSlots()) {
 				bool hasNextSlotMap;
-				_scanPtr = getNextSlotMap(_scanMap, _leafMap, hasNextSlotMap);
+				_scanPtr = getNextSlotMap(&_scanMap, &_leafMap, &hasNextSlotMap);
 				if (!hasNextSlotMap) {
 					setNoMoreSlots();
 				}

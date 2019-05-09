@@ -1123,23 +1123,24 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 	flagsSignalsOnly = flags & allowedSubsetOfFlags;
 	flagsWithoutHandlers = flagsSignalsOnly & (~signalsWithMasterHandlers);
 
-	if (0 != flagsWithoutHandlers) {		/* we be registerin' some handlers */
+	if (0 != flagsWithoutHandlers) {
+		/* Register handlers. */
 		uint32_t portSignalType = 0;
-		/*
-		 * portSignalType starts off at 0 as it is the smallest synch signal. 
-		 * In the case that we are registering an asynch signal, flagsWithoutHandlers has already
-		 * masked off the synchronous signals (eg. "0") so we are not at risk of registering a 
-		 * handler for an incorrect signal	
-		*/
-		for (portSignalType = 4; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
-			/*
-			 * Iterate through all the signals and register the master handler
-			 * for those that don't have one yet
+
+		/* OMRPORT_SIG_SMALLEST_SIGNAL_FLAG represents the smallest signal
+		 * flag. portSignalType is initialized to the smallest signal flag
+		 * in order to avoid non-signal flags. Any non-signal flags greater
+		 * than the smallest signal flag are ignored via a bitwise-and
+		 * operation with allowedSubsetOfFlags. allowedSubsetOfFlags either
+		 * represents all synchronous signal flags (OMRPORT_SIG_FLAG_SIGALLSYNC)
+		 * or all asynchronous signal flags (OMRPORT_SIG_FLAG_SIGALLASYNC).
+		 */
+		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; ((portSignalType < allowedSubsetOfFlags) && (portSignalType != 0)); portSignalType = portSignalType << 1) {
+			/* Iterate through all the signals and register the master handler
+			 * for the signals that don't have one yet.
 			 */
 			if (OMR_ARE_ANY_BITS_SET(flagsWithoutHandlers, portSignalType)) {
-				/*
-				 * we need a master handler for this (portSignalType's) signal
-				 */
+				/* We need a master handler for this (portSignalType's) signal. */
 				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler)) {
 					return OMRPORT_SIG_ERROR;
 				}

@@ -212,7 +212,8 @@ static struct {
 	{OMRPORT_SIG_FLAG_SIGXCPU, SIGXCPU},
 	{OMRPORT_SIG_FLAG_SIGVTALRM, SIGVTALRM},
 	{OMRPORT_SIG_FLAG_SIGPROF, SIGPROF},
-	{OMRPORT_SIG_FLAG_SIGIO, SIGIO}
+	{OMRPORT_SIG_FLAG_SIGIO, SIGIO},
+	{OMRPORT_SIG_FLAG_SIGSYS, SIGSYS}
 #if defined(AIXPPC)
 	, {OMRPORT_SIG_FLAG_SIGRECONFIG, SIGRECONFIG}
 #endif
@@ -1461,7 +1462,7 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 		 * represents all synchronous signal flags (OMRPORT_SIG_FLAG_SIGALLSYNC)
 		 * or all asynchronous signal flags (OMRPORT_SIG_FLAG_SIGALLASYNC).
 		 */
-		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
+		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; ((portSignalType < allowedSubsetOfFlags) && (portSignalType != 0)); portSignalType = portSignalType << 1) {
 			/* iterate through all the  signals and register the master handler for those that don't have one yet */
 
 			if (OMR_ARE_ALL_BITS_SET(flagsSignalsOnly, portSignalType)) {

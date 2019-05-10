@@ -1288,7 +1288,7 @@ TR_S390PostRAPeephole::ConditionalBranchReduction(TR::InstOpCode::Mnemonic branc
    bool disabled = comp()->getOption(TR_DisableZ13) || comp()->getOption(TR_DisableZ13LoadImmediateOnCond);
 
    // This optimization relies on hardware instructions introduced in z13
-   if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z13) || disabled)
+   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13) || disabled)
       return false;
 
    TR::S390RIEInstruction* branchInst = static_cast<TR::S390RIEInstruction*> (_cursor);
@@ -1390,7 +1390,7 @@ TR_S390PostRAPeephole::LoadAndMaskReduction(TR::InstOpCode::Mnemonic LZOpCode)
    bool disabled = comp()->getOption(TR_DisableZ13) || comp()->getOption(TR_DisableZ13LoadAndMask);
 
    // This optimization relies on hardware instructions introduced in z13
-   if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z13) || disabled)
+   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13) || disabled)
       return false;
 
    if (_cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILL)
@@ -1507,7 +1507,7 @@ bool
 TR_S390PostRAPeephole::trueCompEliminationForCompare()
    {
    // z10 specific
-   if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) || _cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) || TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
       {
       return false;
       }
@@ -1646,7 +1646,7 @@ bool
 TR_S390PostRAPeephole::trueCompEliminationForCompareAndBranch()
    {
    // z10 specific
-   if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) || _cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) || TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
       {
       return false;
       }
@@ -1788,7 +1788,7 @@ TR_S390PostRAPeephole::trueCompEliminationForCompareAndBranch()
 bool
 TR_S390PostRAPeephole::trueCompEliminationForLoadComp()
    {
-   if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) || _cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) || TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
       {
       return false;
       }
@@ -2273,7 +2273,7 @@ TR_S390PostRAPeephole::attemptZ7distinctOperants()
 
    TR::Instruction * instr = _cursor;
 
-   if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
       {
       return false;
       }
@@ -2561,7 +2561,7 @@ TR_S390PostRAPeephole::reloadLiteralPoolRegisterForCatchBlock()
    // This causes a failure when we come back to a catch block because the register context will not be preserved.
    // Hence, we can not assume that R6 will still contain the lit pool register and hence need to reload it.
 
-   bool isZ10 = _cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10);
+   bool isZ10 = TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10);
 
    // we only need to reload literal pool for Java on older z architecture on zos when on demand literal pool is off
    if ( TR::Compiler->target.isZOS() && !isZ10 && !_cg->isLiteralPoolOnDemandOn())
@@ -2793,7 +2793,7 @@ TR_S390PostRAPeephole::perform()
             {
             static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
 
-            if (_cursor->isOutOfLineEX() && !comp()->getCurrentBlock()->isCold() && !(bool)disableEXRLDispatch && _cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+            if (_cursor->isOutOfLineEX() && !comp()->getCurrentBlock()->isCold() && !(bool)disableEXRLDispatch && TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
                inlineEXtarget();
             break;
             }

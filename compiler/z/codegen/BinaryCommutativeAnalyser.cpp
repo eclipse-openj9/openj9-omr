@@ -246,7 +246,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
    bool isLoadNodeNested = false;
 
    // TODO: add MH and MHY here; outside of the z14 if check.
-   if(cg()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z14))
+   if(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z14))
       {
       bool isSetReg2Mem1 = false;
 
@@ -340,7 +340,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          }
       else
          {
-         if(cg()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z14))
+         if(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z14))
             {
             // Check for multiplications on z14
             TR::InstOpCode::Mnemonic z14OpCode = TR::InstOpCode::BAD;
@@ -739,7 +739,7 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
       }
 
    /**  Attempt to use AGH to add halfworf from memory */
-   if (cg()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z14) &&
+   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z14) &&
        secondChild->getOpCodeValue() == TR::s2l &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
        secondChild->isSingleRefUnevaluated() &&
@@ -791,7 +791,7 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
       TR::Register * tempReg = root->setRegister(allocateAddSubRegister(root, firstRegister));
       bool done = false;
 
-      if (cg()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
          if (regToRegOpCode == TR::InstOpCode::AR)
             {

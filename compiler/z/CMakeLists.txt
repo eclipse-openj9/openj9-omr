@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,5 +52,6 @@ compiler_library(z
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRealRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRCodeGenPhase.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRCodeGenerator.cpp
+	${CMAKE_CURRENT_LIST_DIR}/env/OMRCPU.cpp
 	${CMAKE_CURRENT_LIST_DIR}/env/OMRDebugEnv.cpp
 )

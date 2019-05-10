@@ -339,11 +339,7 @@ generateS390Compare(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mne
 
 /**
  *  \brief
- *     Compares 2 numbers are returns the greater of the 2.
- *     ONLY SUPPORTS imax, imin, lmax, lmin
- *
- *  \detail
- *     Uses a load and conditional store to select the correct value.
+ *     Compares two values are returns the max/min of the two.
  *     ONLY SUPPORTS imax, imin, lmax, lmin
  *
  *  \param node
@@ -353,57 +349,112 @@ generateS390Compare(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mne
  *     The code generator used to generate the instructions.
  *
  *  \param isMax
- *     Boolean representing the type of function, either a max or min call.
+ *     Determines the type of function, either a max or min call.
  *
  *  \return
- *     A register containing the return value of the Java call. The return value
- *     will be the greater or lesser of the 2 children for max and min functions, respectively.
+ *     The register containing the max/min value.
  */
-static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool isMax)
+static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool isMax)
    {
-   TR_ASSERT_FATAL(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196),
-      "cannot evaluate %s on z10 or below", node->getOpCode().getName());
+   TR::Node* lhsNode = node->getChild(0);
+   TR::Node* rhsNode = node->getChild(1);
 
-   TR::Register *registerA;
-   TR::Register *registerB = cg->evaluate(node->getSecondChild());
-   // Mask is 4 to pick b when a is Lower for max, 2 to pick b when a is higher for min
+   TR::Register* lhsReg = NULL;
+   TR::Register* rhsReg = cg->evaluate(rhsNode);
+
+   // Mask is 4 to pick rhs when lhs is less for max, 2 to pick rhs when lhs is greater for min
    const uint8_t mask = isMax ? 0x4 : 0x2;
 
    if (node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::imin)
       {
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
-         registerA = cg->allocateRegister();
+         lhsReg = cg->allocateRegister();
 
-         // Load into a tmp instead of clobberEvaluating into registerA to avoid an extra register shuffle
-         TR::Register* tmpRegister = cg->evaluate(node->getFirstChild());
+         // Load into a tmp instead of clobberEvaluating into lhsReg to avoid an extra register shuffle
+         TR::Register* tmpRegister = cg->evaluate(lhsNode);
 
-         generateRRInstruction(cg, TR::InstOpCode::CR, node, tmpRegister, registerB);
-         generateRRFInstruction(cg, TR::InstOpCode::SELR, node, registerA, registerB, tmpRegister, mask);
+         generateRRInstruction(cg, TR::InstOpCode::CR, node, tmpRegister, rhsReg);
+         generateRRFInstruction(cg, TR::InstOpCode::SELR, node, lhsReg, rhsReg, tmpRegister, mask);
+         }
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+         {
+         lhsReg = cg->gprClobberEvaluate(lhsNode);
+
+         generateRRInstruction(cg, TR::InstOpCode::CR, node, lhsReg, rhsReg);
+         generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, lhsReg, rhsReg, mask, true);
          }
       else
          {
-         registerA = cg->gprClobberEvaluate(node->getFirstChild());
+         lhsReg = cg->gprClobberEvaluate(lhsNode);
 
-         generateRRInstruction(cg, TR::InstOpCode::CR, node, registerA, registerB);
-         generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA, registerB, mask, true);
+         TR::LabelSymbol* cFlowRegionStart = generateLabelSymbol(cg);
+         TR::LabelSymbol* cFlowRegionEnd = generateLabelSymbol(cg);
+
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+         cFlowRegionStart->setStartInternalControlFlow();
+
+         auto bc = isMax ?
+            TR::InstOpCode::COND_BHR :
+            TR::InstOpCode::COND_BLR;
+
+         generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CR, node, lhsReg, rhsReg, bc, cFlowRegionEnd, false);
+
+         generateRRInstruction(cg, TR::InstOpCode::LR, node, lhsReg, rhsReg);
+         
+         TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+
+         deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
+         deps->addPostConditionIfNotAlreadyInserted(rhsReg, TR::RealRegister::AssignAny);
+
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+         cFlowRegionEnd->setEndInternalControlFlow();
          }
       }
    else if (node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lmin)
       {
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
-         registerA = cg->allocateRegister();
-         // Load into a tmp instead of clobberEvaluating into registerA to avoid an extra register shuffle
-         TR::Register* tmpRegister = cg->evaluate(node->getFirstChild());
-         generateRREInstruction(cg, TR::InstOpCode::CGR, node, tmpRegister, registerB);
-         generateRRFInstruction(cg, TR::InstOpCode::SELGR, node, registerA, registerB, tmpRegister, mask);
+         lhsReg = cg->allocateRegister();
+
+         // Load into a tmp instead of clobberEvaluating into lhsReg to avoid an extra register shuffle
+         TR::Register* tmpRegister = cg->evaluate(lhsNode);
+
+         generateRREInstruction(cg, TR::InstOpCode::CGR, node, tmpRegister, rhsReg);
+         generateRRFInstruction(cg, TR::InstOpCode::SELGR, node, lhsReg, rhsReg, tmpRegister, mask);
+         }
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+         {
+         lhsReg = cg->gprClobberEvaluate(lhsNode);
+
+         generateRREInstruction(cg, TR::InstOpCode::CGR, node, lhsReg, rhsReg);
+         generateRRFInstruction(cg, TR::InstOpCode::LOCGR, node, lhsReg, rhsReg, mask, true);
          }
       else
          {
-         registerA = cg->gprClobberEvaluate(node->getFirstChild());
-         generateRREInstruction(cg, TR::InstOpCode::CGR, node, registerA, registerB);
-         generateRRFInstruction(cg, TR::InstOpCode::LOCGR, node, registerA, registerB, mask, true);
+         lhsReg = cg->gprClobberEvaluate(lhsNode);
+
+         TR::LabelSymbol* cFlowRegionStart = generateLabelSymbol(cg);
+         TR::LabelSymbol* cFlowRegionEnd = generateLabelSymbol(cg);
+
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+         cFlowRegionStart->setStartInternalControlFlow();
+
+         auto bc = isMax ?
+            TR::InstOpCode::COND_BHR :
+            TR::InstOpCode::COND_BLR;
+
+         generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CGR, node, lhsReg, rhsReg, bc, cFlowRegionEnd, false);
+
+         generateRRInstruction(cg, TR::InstOpCode::LGR, node, lhsReg, rhsReg);
+         
+         TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+
+         deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
+         deps->addPostConditionIfNotAlreadyInserted(rhsReg, TR::RealRegister::AssignAny);
+
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+         cFlowRegionEnd->setEndInternalControlFlow();
          }
       }
    else
@@ -411,12 +462,12 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
       TR_ASSERT_FATAL(node->getOpCodeValue(), "Opcode %s cannot be evaluated by maxMinHelper\n", node->getOpCode().getName());
       }
 
-   node->setRegister(registerA);
+   node->setRegister(lhsReg);
 
-   cg->decReferenceCount(node->getFirstChild());
-   cg->decReferenceCount(node->getSecondChild());
+   cg->decReferenceCount(lhsNode);
+   cg->decReferenceCount(rhsNode);
 
-   return registerA;
+   return lhsReg;
    }
 
 TR::Register *
@@ -1274,7 +1325,7 @@ OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          node->getOpCodeValue() == TR::acmpeq)
       {
       // RXSBG only supported on z10+
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
          {
          TR::Node* firstChild = node->getFirstChild();
          TR::Node* secondChild = node->getSecondChild();
@@ -2147,7 +2198,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
          // Use Load-And-Trap on zHelix if available.
          // This loads the field and performance a NULLCHK on the field value.
          // i.e.  o.f == NULL
-         if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) &&
+         if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) &&
              reference->getOpCode().isLoadVar() &&
              (reference->getOpCodeValue() != TR::ardbari) &&
              reference->getRegister() == NULL)
@@ -2156,7 +2207,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
             appendTo = generateRXInstruction(cg, TR::InstOpCode::getLoadAndTrapOpCode(), node, targetRegister, generateS390MemoryReference(reference, cg), appendTo);
             reference->setRegister(targetRegister);
             }
-         else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) &&
+         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) &&
                   reference->getRegister() == NULL &&
                   comp->useCompressedPointers() &&
                   reference->getOpCodeValue() == TR::l2a &&
@@ -2966,8 +3017,6 @@ OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::N
 TR::Register *
 OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT_FATAL(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10), "TR::ternary IL only supported on z10+");
-
    TR::Compilation *comp = cg->comp();
 
    comp->incVisitCount();       // need this for treeContainsAllOtherUsesForNode
@@ -3014,14 +3063,14 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       auto bc = TR::TreeEvaluator::getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
 
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
          }
-      else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
@@ -3082,12 +3131,12 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       TR::Instruction *compareInst = generateRILInstruction(cg,condition->getOpCode().isLongCompare() ? TR::InstOpCode::CGFI : TR::InstOpCode::CFI,condition,condition->getRegister(), 0);
 
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
          }
-      else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
@@ -3236,33 +3285,4 @@ OMR::Z::TreeEvaluator::dternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->recursivelyDecReferenceCount(conditionNode);
 
    return returnReg;
-   }
-
-/**
- * Generates always trapping sequence - for conditions in WCODE Path that require always trap
- * If used in internal control flow section, caller should merge register dependencies with returned deps.
- */
-TR::Instruction *generateAlwaysTrapSequence(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions **retDeps)
-   {
-   // Sanity check
-   TR_ASSERT(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10), "Compare and trap instructions only supported on z10 and up");
-
-   // ** Generate a NOP LR R0,R0.  The signal handler has to walk backwards to pattern match
-   // the trap instructions.  All trap instructions besides CRT/CLRT are 6-bytes in length.
-   // Insert 2-byte NOP in front of the 4-byte CLRT to ensure we do not mismatch accidentally.
-   TR::Instruction *cursor = new (cg->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cg);
-
-   TR::Register *zeroReg = cg->allocateRegister();
-   TR::RegisterDependencyConditions *regDeps =
-         new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
-   regDeps->addPostCondition(zeroReg, TR::RealRegister::AssignAny);
-   cursor = new (cg->trHeapMemory()) TR::S390RRFInstruction(TR::InstOpCode::CLRT, node, zeroReg, zeroReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true, cg);
-   cursor->setDependencyConditions(regDeps);
-
-   cg->stopUsingRegister(zeroReg);
-   cursor->setExceptBranchOp();
-   cg->setCanExceptByTrap(true);
-   if(retDeps)
-      *retDeps = regDeps;
-   return cursor;
    }

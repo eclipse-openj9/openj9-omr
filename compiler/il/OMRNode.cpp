@@ -3512,12 +3512,7 @@ OMR::Node::nodeMightKillCondCode()
    if ((opcode.isLoadReg() || opcode.isStoreReg() || opcode.isLoadDirect() || opcode.isStoreDirect())
         && (self()->getSize() == 4 || self()->getSize() == 8) )
       return false;
-
-   // at this point, we will assume that the CC is killed if we at not on Trex or higher
-   // (we don't have LAY for long dispacement among others)
-   if (!TR::Compiler->target.cpu.getS390SupportsZ990())
-      return true;
-
+   
    // this conversion will be a no-op -> CC is not killed unless the child kills it
    if (self()->isUnneededConversion() || (opcode.isConversion() && (self()->getSize() == self()->getFirstChild()->getSize())))
       return false;
@@ -3525,7 +3520,7 @@ OMR::Node::nodeMightKillCondCode()
    // the rest were determined empirically not to kill the CC
    if (((opcode.isLoad() || opcode.isStore() || opcode.isLoadReg() || opcode.isStoreDirectOrReg() || opcode.isLoadAddr())
           && (self()->getSize() == 4 || self()->getSize() == 8 || self()->getSize() == 2 ||
-          (self()->getSize() == 1 && TR::Compiler->target.cpu.getS390SupportsZ9() ) || self()->getSize() == 0 ) ))
+          self()->getSize() == 1 || self()->getSize() == 0 ) ))
       return false;
 
    if (opcode.isArrayRef() && self()->getSecondChild()->getOpCode().isLoadConst() &&

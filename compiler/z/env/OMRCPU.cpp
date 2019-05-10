@@ -111,7 +111,7 @@ OMR::Z::CPU::getProcessorName(int32_t machineId)
 OMR::Z::CPU::CPU()
    :
    OMR::CPU(),
-   _supportedArch(TR_z9)
+   _supportedArch(z9)
    {}
 
 bool

@@ -71,7 +71,7 @@
 
 static TR::InstOpCode::Mnemonic getIntToFloatLogicalConversion(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic convertOpCode)
    {
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z196))
+   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
       {
       switch(convertOpCode)
          {
@@ -112,7 +112,7 @@ static TR::InstOpCode::Mnemonic getIntToFloatLogicalConversion(TR::CodeGenerator
  */
 static TR::InstOpCode::Mnemonic getFloatToIntLogicalConversion(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic convertOpCode)
    {
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z196))
+   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
       {
       switch(convertOpCode)
          {
@@ -185,11 +185,11 @@ unaryEvaluator(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic
 inline void
 genLogicalConversionForInt(TR::Node * node, TR::CodeGenerator * cg, TR::Register * targetRegister, int8_t shift_amount)
    {
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_zEC12))
+   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12))
       {
       generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node, targetRegister, targetRegister, shift_amount, (int8_t)(63|0x80), 0);
       }
-   else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z10))
+   else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
       {
       generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetRegister, targetRegister, shift_amount, (int8_t)(63|0x80), 0);
       }
@@ -1175,7 +1175,7 @@ l2dHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * longRegister = cg->evaluate(firstChild);
    TR::Register * targetFloatRegister = cg->allocateRegister(TR_FPR);
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z196) && node->getOpCodeValue() == TR::lu2d)
+   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196) && node->getOpCodeValue() == TR::lu2d)
       {
       generateRRFInstruction(cg, TR::InstOpCode::CDLGBR, node, targetFloatRegister, longRegister, (uint8_t)0x0, (uint8_t)0x0);
       cg->decReferenceCount(firstChild);

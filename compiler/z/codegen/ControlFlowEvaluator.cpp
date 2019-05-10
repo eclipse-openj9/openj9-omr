@@ -367,7 +367,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
 
    if (node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::imin)
       {
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
          lhsReg = cg->allocateRegister();
 
@@ -377,7 +377,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
          generateRRInstruction(cg, TR::InstOpCode::CR, node, tmpRegister, rhsReg);
          generateRRFInstruction(cg, TR::InstOpCode::SELR, node, lhsReg, rhsReg, tmpRegister, mask);
          }
-      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z196))
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
          lhsReg = cg->gprClobberEvaluate(lhsNode);
 
@@ -413,7 +413,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
       }
    else if (node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lmin)
       {
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
          lhsReg = cg->allocateRegister();
 
@@ -423,7 +423,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
          generateRREInstruction(cg, TR::InstOpCode::CGR, node, tmpRegister, rhsReg);
          generateRRFInstruction(cg, TR::InstOpCode::SELGR, node, lhsReg, rhsReg, tmpRegister, mask);
          }
-      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z196))
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
          lhsReg = cg->gprClobberEvaluate(lhsNode);
 
@@ -1325,7 +1325,7 @@ OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          node->getOpCodeValue() == TR::acmpeq)
       {
       // RXSBG only supported on z10+
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z10))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
          {
          TR::Node* firstChild = node->getFirstChild();
          TR::Node* secondChild = node->getSecondChild();
@@ -2198,7 +2198,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
          // Use Load-And-Trap on zHelix if available.
          // This loads the field and performance a NULLCHK on the field value.
          // i.e.  o.f == NULL
-         if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_zEC12) &&
+         if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) &&
              reference->getOpCode().isLoadVar() &&
              (reference->getOpCodeValue() != TR::ardbari) &&
              reference->getRegister() == NULL)
@@ -2207,7 +2207,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
             appendTo = generateRXInstruction(cg, TR::InstOpCode::getLoadAndTrapOpCode(), node, targetRegister, generateS390MemoryReference(reference, cg), appendTo);
             reference->setRegister(targetRegister);
             }
-         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_zEC12) &&
+         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) &&
                   reference->getRegister() == NULL &&
                   comp->useCompressedPointers() &&
                   reference->getOpCodeValue() == TR::l2a &&
@@ -3063,14 +3063,14 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       auto bc = TR::TreeEvaluator::getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
 
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
          }
-      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z196))
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
@@ -3131,12 +3131,12 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       TR::Instruction *compareInst = generateRILInstruction(cg,condition->getOpCode().isLongCompare() ? TR::InstOpCode::CGFI : TR::InstOpCode::CFI,condition,condition->getRegister(), 0);
 
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z15))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
          }
-      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::TR_z196))
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);

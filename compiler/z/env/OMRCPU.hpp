@@ -51,19 +51,17 @@ class CPU : public OMR::CPU
 
    enum Architecture
       {
-      TR_UnknownArchitecture = 0,
-      TR_z900 = 1,
-      TR_z990 = 2,
-      TR_z9 = 3,
-      TR_z10 = 4,
-      TR_z196 = 5,
-      TR_zEC12 = 6,
-      TR_z13 = 7,
-      TR_z14 = 8,
-      TR_z15 = 9,
-      TR_zNext = 10,
-
-      TR_LatestArchitecture = TR_zNext
+      Unknown = 0,
+      z900,
+      z990,
+      z9,
+      z10,
+      z196,
+      zEC12,
+      z13,
+      z14,
+      z15,
+      zNext,
       };
 
    /** \brief

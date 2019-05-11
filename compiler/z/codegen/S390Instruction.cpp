@@ -1203,10 +1203,9 @@ TR::S390PseudoInstruction::generateBinaryEncoding()
 int32_t
 TR::S390PseudoInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   int32_t estimate = (getOpCodeValue() == TR::InstOpCode::XPCALLDESC) ? 18 : 0;
+   setEstimatedBinaryLength(0);
 
-   setEstimatedBinaryLength(estimate);
-   return currentEstimate + estimate;
+   return currentEstimate;
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5255,9 +5254,7 @@ TR::S390NOPInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    // could have 2 byte, 4 byte or 6 byte NOP
    setEstimatedBinaryLength(6);
-   // Save the offset for Call Descriptor NOP (zOS-31 XPLINK), so that we can estimate the distance
-   // to Call Descriptor Snippet to decide whether we need to branch around.
-   _estimatedOffset = currentEstimate;
+
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -5269,13 +5266,7 @@ TR::S390NOPInstruction::generateBinaryEncoding()
    memset( (void*)cursor,0,getEstimatedBinaryLength());
    TR::Compilation *comp = cg()->comp();
 
-   if (getKindNOP() == FastLinkCallNOP)
-      { // assumes 4 byte length
-      uint32_t nopInst = 0x47000000 + (unsigned)getArgumentsLengthOnCall();
-      (*(uint32_t *) cursor) = boi(nopInst);
-      cursor += 4;
-      }
-   else if (getBinaryLength() == 2)
+   if (getBinaryLength() == 2)
       {
       uint16_t nopInst;
          nopInst = 0x1800;
@@ -5284,35 +5275,8 @@ TR::S390NOPInstruction::generateBinaryEncoding()
       }
    else if (getBinaryLength() == 4)
       {
-      uint32_t nopInst = 0x47000000 + (((unsigned)getCallType()) << 16);
+      uint32_t nopInst = 0x47000000;
       (*(uint32_t *) cursor) = boi(nopInst);
-      if (getTargetSnippet() != NULL)
-         {
-         // Check Relocation Distance, and see whether it's within 16 bits distance.
-         // The offset is a 16 bit field containg the offset in double worlds from the call site to the call descriptor.
-         // Our snippet is always emitted later than our NOP.
-         intptrj_t snippetOffset = getTargetSnippet()->getSnippetLabel()->getEstimatedCodeLocation();
-         intptrj_t currentOffset = _estimatedOffset;
-
-         intptrj_t distance = snippetOffset - currentOffset + 8;  // Add 8 to conservatively estimate the alginment of NOP.
-
-         //TODO: confirm that it's okay to have negative offset (for cases when JNI call is outofline)
-         TR_ASSERT(distance > 0, "XPLINK Call Descriptor Snippet is before NOP instruction (JNI Call).");
-
-         // If within range, we don't have to emit our psuedo branch around instruction.
-         if (distance < 0x3FFF8 && distance > 0)
-            {
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor+2, getTargetSnippet()->getSnippetLabel(),8));
-            }
-         else
-            {
-            // Snippet is beyond 16 bit relative relocation distance.
-            // In this case, we have to activate our pseudo branch around call descriptor
-            getCallDescInstr()->setCallDescValue(((TR::S390ConstantDataSnippet *)getTargetSnippet())->getDataAs8Bytes(), cg()->trMemory());
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor+2, getCallDescInstr()->getCallDescLabel(),8));
-
-            }
-         }
       cursor += 4;
       }
    else if(getBinaryLength() == 6)

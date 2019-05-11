@@ -98,6 +98,66 @@ void TR::LabelAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
    *cursor = (intptrj_t)getLabel()->getCodeLocation();
    }
 
+TR::InstructionLabelRelative16BitRelocation::InstructionLabelRelative16BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor)
+   :
+      TR::LabelRelocation(NULL, l),
+      _cursor(cursor),
+      _offset(offset),
+      _divisor(divisor)
+   {
+   }
+
+uint8_t*
+TR::InstructionLabelRelative16BitRelocation::getUpdateLocation()
+   {
+   uint8_t* updateLocation = TR::LabelRelocation::getUpdateLocation();
+
+   if (updateLocation == NULL && _cursor->getBinaryEncoding() != NULL)
+      {
+      updateLocation = setUpdateLocation(_cursor->getBinaryEncoding() + _offset);
+      }
+
+   return updateLocation;
+   }
+
+void
+TR::InstructionLabelRelative16BitRelocation::apply(TR::CodeGenerator* cg)
+   {
+   uint8_t* p = getUpdateLocation();
+
+   *reinterpret_cast<int16_t*>(p) = static_cast<int16_t>(getLabel()->getCodeLocation() - p) / _divisor;
+   }
+
+TR::InstructionLabelRelative32BitRelocation::InstructionLabelRelative32BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor)
+   :
+      TR::LabelRelocation(NULL, l),
+      _cursor(cursor),
+      _offset(offset),
+      _divisor(divisor)
+   {
+   }
+
+uint8_t*
+TR::InstructionLabelRelative32BitRelocation::getUpdateLocation()
+   {
+   uint8_t* updateLocation = TR::LabelRelocation::getUpdateLocation();
+
+   if (updateLocation == NULL && _cursor->getBinaryEncoding() != NULL)
+      {
+      updateLocation = setUpdateLocation(_cursor->getBinaryEncoding() + _offset);
+      }
+
+   return updateLocation;
+   }
+
+void
+TR::InstructionLabelRelative32BitRelocation::apply(TR::CodeGenerator* cg)
+   {
+   uint8_t* p = getUpdateLocation();
+
+   *reinterpret_cast<int32_t*>(p) = static_cast<int32_t>(getLabel()->getCodeLocation() - p) / _divisor;
+   }
+
 void TR::InstructionAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
    {
    intptrj_t *cursor = (intptrj_t*)getUpdateLocation();

@@ -828,7 +828,7 @@ enum TR_CompilationOptions
    TR_PerfTool                                        = 0x00010000 + 25,
    // Available                                       = 0x00020000 + 25,
    TR_DisableBranchOnCount                            = 0x00040000 + 25,
-   TR_LinkagePreserveStrategy2                        = 0x00080000 + 25,
+   // Available                                       = 0x00080000 + 25,
    TR_DisableLoopEntryAlignment                       = 0x00100000 + 25,
    TR_EnableLoopEntryAlignment                        = 0x00200000 + 25,
    TR_DisableLeafRoutineDetection                     = 0x00400000 + 25,

@@ -130,9 +130,11 @@
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390Peephole.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
-#include "z/codegen/TRSystemLinkage.hpp"
+#include "z/codegen/SystemLinkageLinux.hpp"
+#include "z/codegen/SystemLinkagezOS.hpp"
 
 #if J9_PROJECT_SPECIFIC
+#include "z/codegen/S390Recompilation.hpp"
 #include "z/codegen/S390Register.hpp"
 #include "z/codegen/J9S390PrivateLinkage.hpp"
 #endif
@@ -419,7 +421,9 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _currentBCDCHKHandlerLabel(NULL),
      _nodesToBeEvaluatedInRegPairs(self()->comp()->allocator()),
      _ccInstruction(NULL),
-     _previouslyAssignedTo(self()->comp()->allocator("LocalRA"))
+     _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
+     _methodBegin(NULL),
+     _methodEnd(NULL)
    {
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
@@ -807,9 +811,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
 
 TR::Linkage * OMR::Z::CodeGenerator::getS390Linkage() {return (self()->getLinkage());}
 TR::S390PrivateLinkage * OMR::Z::CodeGenerator::getS390PrivateLinkage() {return TR::toS390PrivateLinkage(self()->getLinkage());}
-
-
-TR::SystemLinkage * OMR::Z::CodeGenerator::getS390SystemLinkage() {return toSystemLinkage(self()->getLinkage());}
 
 TR::RealRegister * OMR::Z::CodeGenerator::getStackPointerRealRegister(TR::Symbol *symbol)
    {
@@ -2251,11 +2252,96 @@ OMR::Z::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
 void
 OMR::Z::CodeGenerator::doBinaryEncoding()
    {
-   TR_S390BinaryEncodingData data;
-   data.loadArgSize = 0;
-   self()->fe()->generateBinaryEncodingPrologue(&data, self());
+   // Generate the first label by using the placement new operator such that we are guaranteed to call the correct
+   // overload of the constructor which can accept a NULL preceding instruction. If cursor is NULL the generated
+   // label instruction will be prepended to the start of the instruction stream.
+   _methodBegin = new (self()->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::LABEL, self()->comp()->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
+   
+   _methodEnd = generateS390LabelInstruction(self(), TR::InstOpCode::LABEL, self()->comp()->findLastTree()->getNode(), generateLabelSymbol(self()));
 
-   TR::Recompilation * recomp = self()->comp()->getRecompilationInfo();
+   TR_S390BinaryEncodingData data;
+   data.cursorInstruction = self()->getFirstInstruction();
+   data.estimate = 0;
+   data.loadArgSize = 0;
+   TR::Recompilation* recomp = self()->comp()->getRecompilationInfo();
+
+   //  setup cursor for JIT to JIT transfer
+   //
+   if (self()->comp()->getJittedMethodSymbol()->isJNI() && !self()->comp()->getOption(TR_FullSpeedDebug))
+      {
+      data.preProcInstruction = TR::Compiler->target.is64Bit() ?
+         data.cursorInstruction->getNext()->getNext()->getNext() : 
+         data.cursorInstruction->getNext()->getNext();
+      }
+   else
+      {
+      data.preProcInstruction = data.cursorInstruction->getNext();
+      }
+
+   data.jitTojitStart = data.preProcInstruction->getNext();
+
+   // Generate code to setup argument registers for interpreter to JIT transfer
+   // This piece of code is right before JIT-JIT entry point
+   //
+   TR::Instruction * preLoadArgs, * endLoadArgs;
+   preLoadArgs = data.preProcInstruction;
+
+   // We need full prolog if there is a call or a non-constant snippet
+   //
+   TR_BitVector * callBlockBV = self()->getBlocksWithCalls();
+
+   // No exit points, hence we can
+   //
+   if (callBlockBV->isEmpty() && !self()->anyNonConstantSnippets())
+      {
+      self()->setExitPointsInMethod(false);
+      }
+
+   endLoadArgs = self()->getLinkage()->loadUpArguments(preLoadArgs);
+
+   if (recomp != NULL)
+      {
+#ifdef J9_PROJECT_SPECIFIC
+      if (preLoadArgs != endLoadArgs)
+         {
+         data.loadArgSize = CalcCodeSize(preLoadArgs->getNext(), endLoadArgs);
+         }
+
+      ((TR_S390Recompilation *) recomp)->setLoadArgSize(data.loadArgSize);
+#endif
+      recomp->generatePrePrologue();
+      }
+#ifdef J9_PROJECT_SPECIFIC
+   else if (self()->comp()->getOption(TR_FullSpeedDebug) || self()->comp()->getOption(TR_SupportSwitchToInterpreter))
+      {
+      self()->generateVMCallHelperPrePrologue(self()->getFirstInstruction());
+      }
+#endif
+
+   data.cursorInstruction = self()->getFirstInstruction();
+
+   // Padding for JIT Entry Point
+   //
+   if (!self()->comp()->compileRelocatableCode())
+      {
+      data.estimate += 256;
+      }
+
+   TR::Instruction* cursor = data.cursorInstruction;
+
+   // TODO: We should be caching the PROC instruction as it's used in several places and is pretty important
+   while (cursor && cursor->getOpCodeValue() != TR::InstOpCode::PROC)
+      {
+      cursor = cursor->getNext();
+      }
+
+   if (recomp != NULL)
+      {
+      cursor = recomp->generatePrologue(cursor);
+      }
+
+   self()->getLinkage()->createPrologue(cursor);
+
    bool isPrivateLinkage = (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private);
 
    TR::Instruction *instr = self()->getFirstInstruction();
@@ -2310,10 +2396,8 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             {
             TR::Instruction * temp = data.cursorInstruction->getPrev();
             TR::Instruction *originalNextInstruction = temp->getNext();
-            if (!0)
-               {
-               self()->getLinkage()->createEpilogue(temp);
-               }
+
+            self()->getLinkage()->createEpilogue(temp);
 
             if (self()->comp()->getOption(TR_EnableLabelTargetNOPs))
                {
@@ -2390,40 +2474,12 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          }
       }
 
-
-   TR_HashTab * branchHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
-
    while (data.cursorInstruction)
       {
       uint8_t * const instructionStart = self()->getBinaryBufferCursor();
       if (data.cursorInstruction->isBreakPoint())
          {
          self()->addBreakPointAddress(instructionStart);
-         }
-
-      if (data.cursorInstruction->isBranchOp())
-         {
-         TR::LabelSymbol * branchLabelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
-         if (data.cursorInstruction->getKind() == TR::Instruction::IsRIE &&
-             (toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR::S390RIEInstruction::RIE_RR ||
-              toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR::S390RIEInstruction::RIE_RI8))
-            {
-            branchLabelSymbol = toS390RIEInstruction(data.cursorInstruction)->getBranchDestinationLabel();
-            }
-         if (branchLabelSymbol)
-            {
-            TR_HashId hashIndex = 0;
-            branchHashTable->add((void *)branchLabelSymbol, hashIndex, (void *)branchLabelSymbol);
-            }
-         }
-      else if (data.cursorInstruction->getKind() == TR::Instruction::IsRIL) // e.g. LARL/EXRL
-         {
-         if (((TR::S390RILInstruction *)data.cursorInstruction)->getTargetLabel() != NULL)
-            {
-            TR::LabelSymbol * targetLabel = ((TR::S390RILInstruction *)data.cursorInstruction)->getTargetLabel();
-            TR_HashId hashIndex = 0;
-            branchHashTable->add((void *)targetLabel, hashIndex, (void *)targetLabel);
-            }
          }
 
       self()->setBinaryBufferCursor(data.cursorInstruction->generateBinaryEncoding());
@@ -2439,7 +2495,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
       if (data.cursorInstruction == data.preProcInstruction)
          {
-         self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart());
+         self()->setPrePrologueSize(self()->getBinaryBufferLength());
          self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
          }
 
@@ -2456,7 +2512,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          if (recomp != NULL && recomp->couldBeCompiledAgain())
             {
             TR_LinkageInfo * linkageInfo = TR_LinkageInfo::get(self()->getCodeStart());
-            TR_ASSERT(data.loadArgSize == argSize, "arg size %d != %d\n", data.loadArgSize, argSize);
             if (recomp->useSampling())
                {
                recompFlag = METHOD_SAMPLING_RECOMPILATION;

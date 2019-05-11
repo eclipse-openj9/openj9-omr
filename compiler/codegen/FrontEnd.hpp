@@ -164,7 +164,6 @@ public:
    // Codegen
    // --------------------------------------------------------------------------
 
-   virtual void generateBinaryEncodingPrologue(TR_BinaryEncodingData *beData, TR::CodeGenerator *cg) { return; }
    virtual uint8_t * allocateRelocationData(TR::Compilation *, uint32_t numBytes);
 
    // --------------------------------------------------------------------------

@@ -50,7 +50,7 @@
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
-#include "z/codegen/TRSystemLinkage.hpp"
+#include "z/codegen/SystemLinkage.hpp"
 
 TR_S390Peephole::TR_S390Peephole(TR::Compilation* comp, TR::CodeGenerator *cg)
    : _fe(comp->fe()),

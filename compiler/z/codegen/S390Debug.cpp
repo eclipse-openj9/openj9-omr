@@ -919,14 +919,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390PseudoInstruction * instr)
 #if TODO
    dumpDependencies(pOutFile, instr);
 #endif
-   if (instr->getOpCodeValue() == TR::InstOpCode::XPCALLDESC && instr->getCallDescLabel() != NULL)
-      {
-      trfprintf(pOutFile, " - BRC *+%d ; <%d-byte padding>", 12 + instr->getNumPadBytes(), instr->getNumPadBytes() / 2); // + instr->getPadBytes(), instr->getPadBytes());
-      trfflush(pOutFile);
 
-      trfprintf(pOutFile, "; DC <0x%llX>", instr->getCallDescValue());
-      trfflush(pOutFile);
-      }
    printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }

@@ -85,7 +85,7 @@
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390HelperCallSnippet.hpp"
 #include "z/codegen/S390Instruction.hpp"
-#include "z/codegen/TRSystemLinkage.hpp"
+#include "z/codegen/SystemLinkagezOS.hpp"
 
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -95,10 +95,6 @@
 extern TR::Instruction* generateS390ImmToRegister(TR::CodeGenerator * cg, TR::Node * node, TR::Register * targetRegister,
    intptr_t value, TR::Instruction * cursor);
 extern bool storeHelperImmediateInstruction(TR::Node * valueChild, TR::CodeGenerator * cg, bool isReversed, TR::InstOpCode::Mnemonic op, TR::Node * node, TR::MemoryReference * mf);
-
-static int32_t getLastMaskedBit(int16_t mask); ///< forward reference
-static int32_t getFirstMaskedBit(int16_t mask); ///< formward reference
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // TR::S390Linkage member functions
@@ -123,8 +119,7 @@ OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen)
       _firstSaved(TR::RealRegister::NoReg),
       _lastSaved(TR::RealRegister::NoReg),
       _lastPrologueInstr(NULL),
-      _firstPrologueInstr(NULL),
-      _frameType(standardFrame)
+      _firstPrologueInstr(NULL)
    {
    int32_t i;
    self()->setProperties(0);
@@ -159,8 +154,7 @@ OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen,TR_S390LinkageConventions e
       _firstSaved(TR::RealRegister::NoReg),
       _lastSaved(TR::RealRegister::NoReg),
       _lastPrologueInstr(NULL),
-      _firstPrologueInstr(NULL),
-      _frameType(standardFrame)
+      _firstPrologueInstr(NULL)
    {
    int32_t i;
    self()->setProperties(0);
@@ -699,8 +693,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
          // However, this broke some java modes (OSR,HCR).  Likely, those modes should rely on 'unconditionalSave' to ensure we always store out to the stack for whenever we need all variables on the stack.
          // This investigation will be a future todo .
 
-         if (!self()->getIsLeafRoutine() && ((ai < 0 && paramCursor->isReferencedParameter()) ||
-             self()->hasToBeOnStack(paramCursor) || unconditionalSave))
+         if ((ai < 0 && paramCursor->isReferencedParameter()) || self()->hasToBeOnStack(paramCursor) || unconditionalSave)
             {
             bool regIsUsed = false;
             switch (dtype)
@@ -1347,17 +1340,6 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
    TR::ParameterSymbol * paramCursor=paramIterator.getFirst();
    int32_t numIntArgs = 0, numFloatArgs = 0, numVectorArgs = 0;
 
-   int32_t xplinkInterfaceMappingFlags = 0;
-   if (self()->isFloatParmDescriptors())
-      {
-      // With XPLink, float register parameter usage has some constraints!!!
-      // Interface mapping flags take these constraints into account and the
-      // flags describe what float registers are used for parameter passing.
-      // Use these flags to guide decisions below.
-      TR::S390zOSSystemLinkage *zosLinkage = (TR::S390zOSSystemLinkage *)this;
-      xplinkInterfaceMappingFlags = zosLinkage->calculateInterfaceMappingFlags(method);
-      }
-
    int32_t paramNum = -1;
    while ((paramCursor != NULL) &&
           (numIntArgs < self()->getNumIntegerArgumentRegisters() ||
@@ -1394,15 +1376,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
 #endif
             if (numFloatArgs < self()->getNumFloatArgumentRegisters())
                {
-               if (self()->isFloatParmDescriptors())
-                  { // XPLink: handle large separation of float args constraint
-                  int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
-
-                  if (val != 0)
-                     index = numFloatArgs;
-                  }
-               else
-                  index = numFloatArgs;
+               index = numFloatArgs;
                }
             numFloatArgs++;
             break;
@@ -1411,14 +1385,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
          case TR::DecimalDouble:
             if (numFloatArgs < self()->getNumFloatArgumentRegisters())
                {
-               if (self()->isFloatParmDescriptors())
-                  { // XPLink: handle large separation of float args constraint
-                  int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
-                  if (val != 0)
-                     index = numFloatArgs;
-                  }
-               else
-                  index = numFloatArgs;
+               index = numFloatArgs;
                }
             numFloatArgs++;
             break;
@@ -1434,14 +1401,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
                numFloatArgs++;
             if (numFloatArgs < self()->getNumFloatArgumentRegisters())
                {
-               if (self()->isFloatParmDescriptors())
-                  { // XPLink: handle large separation of float args constraint
-                  int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
-                  if (val != 0)
-                    index = numFloatArgs;
-                  }
-               else
-                  index = numFloatArgs;
+               index = numFloatArgs;
                }
             numFloatArgs +=2;
             break;
@@ -2216,14 +2176,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
    // For now use GPR1/6 ... we should try and generalize to any reg
    //
 
-    int32_t xplinkCallDescriptorFlags = 0;
-    if (self()->isFloatParmDescriptors())
-       { // these flags are used to help determine if float parm is needs to be put in memory
-       TR_ASSERT( self()->isXPLinkLinkageType(), "invalid platform target for float parm descriptors");
-       TR::S390zOSSystemLinkage *zosLinkage = (TR::S390zOSSystemLinkage *)this;
-       xplinkCallDescriptorFlags = zosLinkage->calculateCallDescriptorFlags(callNode);
-       }
-
    //Push args onto stack
    for (i = from; (rightToLeft && i >= to) || (!rightToLeft && i <= to); i += step)
       {
@@ -2263,18 +2215,10 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          case TR::DecimalFloat:
 #endif
                {
-               if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
-                  { // XPLink: handle large separation of float args constraint
-                  uint32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
-                  if (TR::S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
-                     self()->setProperty(AllParmsOnStack); // temporarily set so float gets flushed to stack
-                  }
                argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
-               if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
-                  {
-                  self()->clearProperty(AllParmsOnStack);
-                  }
+
                numFloatArgs++;
+
                if (self()->isSkipGPRsForFloatParms())
                   {
                   if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
@@ -2287,25 +2231,17 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          case TR::Double:
 #ifdef J9_PROJECT_SPECIFIC
          case TR::DecimalDouble:
-            if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
-               { // XPLink: handle large separation of float args constraint
-               int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
-               if (TR::S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
-                  self()->setProperty(AllParmsOnStack); // temporarily set so float gets flushed to stack
-               }
             argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
-            if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
-               {
-               self()->clearProperty(AllParmsOnStack);
-               }
+
             numFloatArgs++;
-               if (self()->isSkipGPRsForFloatParms())
+
+            if (self()->isSkipGPRsForFloatParms())
+               {
+               if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
                   {
-                  if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
-                     {
-                     numIntegerArgs += (TR::Compiler->target.is64Bit()) ? 1 : 2;
-                     }
+                  numIntegerArgs += (TR::Compiler->target.is64Bit()) ? 1 : 2;
                   }
+               }
             break;
          case TR::DecimalLongDouble:
             if (numFloatArgs%2 == 1)
@@ -2315,25 +2251,17 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
                   numIntegerArgs++;
                }
 
-            if (self()->isFloatParmDescriptors() && (numFloatArgs < (self()->getNumFloatArgumentRegisters()-1)))
-               { // XPLink: handle large separation of float args constraint
-               int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
-               if (TR::S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
-                  self()->setProperty(AllParmsOnStack); // temporarily set so float gets flushed to stack
-               }
             argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
-            if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
-               {
-               self()->clearProperty(AllParmsOnStack);
-               }
+
             numFloatArgs = numFloatArgs + 2;  // long double takes up 2 fp registers
-               if (self()->isSkipGPRsForFloatParms())
+
+            if (self()->isSkipGPRsForFloatParms())
+               {
+               if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
                   {
-                  if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
-                     {
-                     numIntegerArgs += (TR::Compiler->target.is64Bit()) ? 2 : 4;
-                     }
+                  numIntegerArgs += (TR::Compiler->target.is64Bit()) ? 2 : 4;
                   }
+               }
             break;
          case TR::PackedDecimal:
          case TR::ZonedDecimal:
@@ -2520,6 +2448,26 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
 
 
    return argSize;
+   }
+
+void
+OMR::Z::Linkage::replaceCallWithJumpInstruction(TR::Instruction *callInstruction)
+   {
+   TR::InstOpCode::Mnemonic opCode = callInstruction->getOpCodeValue();
+   TR_ASSERT(opCode == TR::InstOpCode::BASSM || opCode == TR::InstOpCode::BASR || opCode == TR::InstOpCode::BALR || opCode == TR::InstOpCode::BAS || opCode == TR::InstOpCode::BAL|| opCode == TR::InstOpCode::BRAS || opCode == TR::InstOpCode::BRASL, "Wrong opcode type on instruction!\n");
+
+   TR::Node *node = (callInstruction)->getNode();
+   TR::SymbolReference *callSymRef = (callInstruction)->getNode()->getSymbolReference();
+   TR::Symbol *callSymbol = (callInstruction)->getNode()->getSymbolReference()->getSymbol();
+
+   TR::Instruction *replacementInst =0 ;
+
+   replacementInst = new (self()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRCL, node, (uint32_t)0xf, callSymbol, callSymRef, self()->cg());
+
+   if(self()->comp()->getOption(TR_TraceCG))
+      traceMsg(self()->comp(), "Replacing instruction %p to a jump %p !\n",callInstruction, replacementInst);
+
+   self()->cg()->replaceInst(callInstruction,replacementInst);
    }
 
 TR::Instruction *
@@ -3061,12 +3009,6 @@ int32_t
 OMR::Z::Linkage::getLastMaskedBit(int16_t mask)
    {
    return TR::Linkage::getLastMaskedBit(mask , 0, 15);
-   }
-
-bool
-OMR::Z::Linkage::getIsLeafRoutine()
-   {
-   return (self()->getFrameType() == StackLeafFrame) || (self()->getFrameType() == noStackLeafFrame) || (self()->getFrameType() == noStackForwardingFrame);
    }
 
 bool

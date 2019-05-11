@@ -101,13 +101,13 @@ enum TR_S390LinkageConventions
 #define SkipGPRsForFloatParms         0x040
 #define PadFloatParms                 0x080
 #define TwoStackSlotsForLongAndDouble 0x100
-#define FloatParmDescriptors          0x200
+// Available                          0x200
 #define AggregatesPassedOnParmStack   0x400
 #define AggregatesPassedInParmRegs    0x800
 #define AggregatesReturnedInRegs      0x1000
 // Available                          0x2000
 #define SmallIntParmsAlignedRight     0x4000  ///< < gprSize int parms aligned into the parmword
-#define ParmBlockRegister             0x8000  ///< Has a parameter block register: OS Linkage (non-Java)
+// Available                          0x8000
 #define ForceSaveIncomingParameters   0x10000 ///< Force parameters to be saved: example: non-Java
 #define LongDoubleReturnedOnStorage   0x20000 ///< zLinux C/C++
 #define ComplexReturnedOnStorage      0x40000 ///< zLinux C/C++
@@ -208,16 +208,6 @@ namespace Z
  */
 class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    {
-
-public:
-   enum FrameType {
-      standardFrame,
-      noStackLeafFrame,
-      StackLeafFrame,
-      noStackForwardingFrame,         ///< This method may have a single call that forwards on to another method that can be replaced by a jmp
-      };
-
-
 private:
    TR_LinkageConventions _linkageType;
    TR_S390LinkageConventions _explicitLinkageType;
@@ -280,11 +270,6 @@ enum TR_DispatchType
    TR_NumDispatchTypes       = 3
    };
 
-
-   FrameType getFrameType() { return _frameType; }
-   void setFrameType(enum FrameType type) { _frameType = type; }
-   virtual bool getIsLeafRoutine();
-
    Linkage(TR::CodeGenerator *);
 
    Linkage(TR::CodeGenerator *, TR_S390LinkageConventions, TR_LinkageConventions);
@@ -336,7 +321,6 @@ enum TR_DispatchType
 
    public:
 
-   virtual bool checkPreservedRegisterUsage(bool *regs, int32_t regsSize);
    virtual void replaceCallWithJumpInstruction(TR::Instruction *callInstruction);
 
    TR::InstOpCode::Mnemonic getOpCodeForLinkage(TR::Node * child, bool isStore, bool isRegReg);
@@ -378,7 +362,6 @@ enum TR_DispatchType
    int32_t  isSkipGPRsForFloatParms()  { return _properties & SkipGPRsForFloatParms; }
    int32_t  isPadFloatParms()  { return _properties & PadFloatParms; }
    int32_t  isTwoStackSlotsForLongAndDouble()  { return _properties & TwoStackSlotsForLongAndDouble; }
-   int32_t  isFloatParmDescriptors()  { return _properties & FloatParmDescriptors; }
    int32_t  isAggregatesPassedInParmRegs() { return _properties & AggregatesPassedInParmRegs; }
    int32_t  isAggregatesPassedOnParmStack() { return _properties & AggregatesPassedOnParmStack; }
    int32_t  isAggregatesReturnedInRegs() { return _properties & AggregatesReturnedInRegs; }
@@ -387,11 +370,7 @@ enum TR_DispatchType
    virtual bool isAggregateReturnedInRegistersCall(TR::Node *callNode) { return false; }
    virtual bool isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth)   { return false; }
    virtual bool isAggregateReturnedInRegistersAndMemoryCall(TR::Node *callNode) { return false; }
-
-   virtual bool canDataTypeBePassedByReference(TR::DataType type);
-   virtual bool isSymbolPassedByReference(TR::Symbol *sym);
-
-   int32_t  isParmBlockRegister() { return _properties & ParmBlockRegister; }
+   
    int32_t  isForceSaveIncomingParameters() { return _properties & ForceSaveIncomingParameters; }
    int32_t  isLongDoubleReturnedOnStorage() { return _properties & LongDoubleReturnedOnStorage; }
    int32_t  isLongDoublePassedOnStorage() { return _properties & LongDoublePassedOnStorage; }
@@ -585,7 +564,7 @@ enum TR_DispatchType
       return NULL;
       }
 
-   virtual TR::RealRegister::RegNum getEnvironmentPointerRegister() { return TR::RealRegister::NoReg; }
+   virtual TR::RealRegister::RegNum getENVPointerRegister() { return TR::RealRegister::NoReg; }
    virtual TR::RealRegister::RegNum getCAAPointerRegister() { return TR::RealRegister::NoReg; }
    virtual TR::RealRegister::RegNum getParentDSAPointerRegister() { return TR::RealRegister::NoReg; }
 
@@ -619,8 +598,6 @@ enum TR_DispatchType
                                TR::RealRegister::RegNum);
 
 private:
-
-   enum FrameType _frameType;
 
    TR::Instruction * _lastPrologueInstr;
    TR::Instruction * _firstPrologueInstr;

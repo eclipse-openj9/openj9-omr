@@ -40,6 +40,8 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/z/codegen/S390Peephole.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRLinkage.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/SystemLinkage.cpp \
+    $(JIT_OMR_DIRTY_DIR)/z/codegen/SystemLinkageLinux.cpp \
+    $(JIT_OMR_DIRTY_DIR)/z/codegen/SystemLinkagezOS.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/S390OutOfLineCodeSection.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRRegisterDependency.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRSnippet.cpp \
@@ -56,4 +58,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/z/env/OMRCPU.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/env/OMRDebugEnv.cpp \
     $(JIT_PRODUCT_DIR)/z/codegen/JBCodeGenerator.cpp \
-    $(JIT_PRODUCT_DIR)/z/codegen/Evaluator.cpp
+    $(JIT_PRODUCT_DIR)/z/codegen/Evaluator.cpp \
+    $(JIT_PRODUCT_DIR)/z/codegen/snippet/PPA1Snippet.cpp \
+    $(JIT_PRODUCT_DIR)/z/codegen/snippet/PPA2Snippet.cpp \
+    $(JIT_PRODUCT_DIR)/z/codegen/snippet/XPLINKCallDescriptorSnippet.cpp

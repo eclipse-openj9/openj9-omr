@@ -69,7 +69,7 @@
 #include "infra/List.hpp"
 #include "infra/Random.hpp"
 #include "infra/Stack.hpp"
-#include "codegen/TRSystemLinkage.hpp"
+#include "codegen/SystemLinkage.hpp"
 #include "ras/Debug.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
@@ -3800,7 +3800,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 
    // Special regs that add to prologue cost
    //
-   p = self()->addGlobalRegLater(linkage->getEnvironmentPointerRegister(), p);
+   p = self()->addGlobalRegLater(linkage->getENVPointerRegister(), p);
 
    //p = addGlobalRegLater(linkage->getLitPoolRegister(), p); // zOS private linkage might want this here?
 
@@ -3855,7 +3855,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
       {
       if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getCAAPointerRegister())
          self()->setGlobalCAARegisterNumber(i);
-      if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getEnvironmentPointerRegister())
+      if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getENVPointerRegister())
          self()->setGlobalEnvironmentRegisterNumber(i);
       if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getParentDSAPointerRegister())
          self()->setGlobalParentDSARegisterNumber(i);

@@ -496,17 +496,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::XPCALLDESC,
-   /* .name        = */ "XPCALLDESC",
-   /* .description = */ "zOS-31 LE Call Descriptor.",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ CPU::Architecture::Unknown,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::A,
    /* .name        = */ "A",
    /* .description = */ "ADD (32)",

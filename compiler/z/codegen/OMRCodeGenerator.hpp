@@ -373,7 +373,6 @@ public:
 //Convenience accessor methods
    TR::Linkage *getS390Linkage();
    TR::S390PrivateLinkage *getS390PrivateLinkage();
-   TR::SystemLinkage * getS390SystemLinkage();
 
    TR::RealRegister *getStackPointerRealRegister(TR::Symbol *symbol = NULL);
    TR::RealRegister *getEntryPointRealRegister();
@@ -820,6 +819,14 @@ protected:
    TR::list<TR::S390ConstantDataSnippet*>  _snippetDataList;
 
 private:
+
+   // TODO: These should move into the base class. There also seems to be a little overlap between these and
+   // _firstInstruction and _appendInstruction. We should likely expose a getLastInstruction API as well. The former
+   // API should return _methodBegin and latter _methodEnd always. The append instruction will be the instruction
+   // preceeding _methodEnd.
+   TR::Instruction* _methodBegin;
+   TR::Instruction* _methodEnd;
+
    TR::list<TR::S390WritableDataSnippet*>  _writableList;
    TR::list<TR_S390OutOfLineCodeSection*> _outOfLineCodeSectionList;
 
@@ -903,4 +910,7 @@ class TR_S390ScratchRegisterManager : public TR_ScratchRegisterManager
    TR_S390ScratchRegisterManager(int32_t capacity, TR::CodeGenerator *cg) : TR_ScratchRegisterManager(capacity, cg) {}
    };
 
+#ifdef J9_PROJECT_SPECIFIC
+uint32_t CalcCodeSize(TR::Instruction *start,TR::Instruction *end);
+#endif
 #endif

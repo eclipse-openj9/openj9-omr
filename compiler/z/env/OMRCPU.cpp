@@ -27,7 +27,7 @@
 #pragma csect(STATIC,"OMRZCPUBase#S")
 #pragma csect(TEST,"OMRZCPUBase#T")
 
-#include "compiler/z/env/OMRCPU.hpp"
+#include "env/CPU.hpp"
 
 const char*
 OMR::Z::CPU::getProcessorName(int32_t machineId)

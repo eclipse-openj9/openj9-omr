@@ -122,6 +122,12 @@ class CPU : public OMR::CPU
     *     Determines whether the Transactional Memory (TM) facility is available on the current processor.
     */
    bool getSupportsTransactionalMemoryFacility();
+
+   /** \brief
+    *     Determines whether the Transactional Memory (TM) facility is available on the current processor.
+    *     Alias of getSupportsTransactionalMemoryFacility() as a platform agnostic query.
+    */
+   bool supportsTransactionalMemoryInstructions();
    
    /** \brief
     *     Determines whether the Transactional Memory (TM) facility is available on the current processor.

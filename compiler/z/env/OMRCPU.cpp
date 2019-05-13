@@ -207,6 +207,12 @@ OMR::Z::CPU::getSupportsTransactionalMemoryFacility()
    return _flags.testAny(S390SupportsTM);
    }
 
+bool
+OMR::Z::CPU::supportsTransactionalMemoryInstructions()
+   {
+   return self()->getSupportsTransactionalMemoryFacility();
+   }
+
 
 bool
 OMR::Z::CPU::setSupportsTransactionalMemoryFacility(bool value)

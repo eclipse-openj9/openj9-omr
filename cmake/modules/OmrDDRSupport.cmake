@@ -41,13 +41,18 @@ function(make_ddr_set set_name)
 	set(DDR_TARGETS_LIST "${DDR_BIN_DIR}/targets.list")
 	set(DDR_MACRO_INPUTS_FILE "${DDR_BIN_DIR}/macros.list")
 	set(DDR_TOOLS_EXPORT "${omr_BINARY_DIR}/ddr/tools/DDRTools.cmake")
+	set(DDR_CONFIG_STAMP "${DDR_BIN_DIR}/config.stamp")
 
 	add_custom_command(
-		OUTPUT "${DDR_BIN_DIR}/config.stamp"
+		OUTPUT  "${DDR_CONFIG_STAMP}"
 		COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+		COMMAND "${CMAKE_COMMAND}" -E touch "${DDR_CONFIG_STAMP}"
 		WORKING_DIRECTORY "${DDR_BIN_DIR}"
 	)
-	add_custom_target(${DDR_TARGET_NAME} DEPENDS "${DDR_BIN_DIR}/config.stamp")
+	add_custom_target(${DDR_TARGET_NAME}
+		DEPENDS "${DDR_CONFIG_STAMP}"
+		COMMAND ${CMAKE_COMMAND} --build "${DDR_BIN_DIR}"
+	)
 	set_property(TARGET "${DDR_TARGET_NAME}" PROPERTY DDR_BIN_DIR "${DDR_BIN_DIR}")
 
 	file(READ ${OMR_MODULES_DIR}/ddr/DDRSetStub.cmake.in cmakelist_template)

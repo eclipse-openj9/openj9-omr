@@ -59,9 +59,6 @@ typedef struct OMRUnixSignalInfo {
 	siginfo_t *sigInfo;
 } OMRUnixSignalInfo;
 
-/* TODO Remove once downstream projects are updated */
-#define J9UnixSignalInfo OMRUnixSignalInfo
-
 uint32_t infoForFPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);
 uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);
 uint32_t infoForModule(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);

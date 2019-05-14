@@ -542,6 +542,8 @@ public:
 
    virtual bool isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild);
 
+   bool afterRA() { return _afterRA; }
+
 #ifdef DEBUG
    void dumpPreGPRegisterAssignment(TR::Instruction *);
    void dumpPostGPRegisterAssignment(TR::Instruction *, TR::Instruction *);
@@ -871,6 +873,8 @@ private:
    CS2::HashTable<ncount_t, bool, TR::Allocator> _nodesToBeEvaluatedInRegPairs;
 
 protected:
+
+   bool _afterRA;
    flags32_t  _cgFlags;
 
    /** Miscellaneous S390CG boolean flags. */

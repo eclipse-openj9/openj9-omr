@@ -423,7 +423,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _ccInstruction(NULL),
      _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
      _methodBegin(NULL),
-     _methodEnd(NULL)
+     _methodEnd(NULL),
+     _afterRA(false)
    {
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;

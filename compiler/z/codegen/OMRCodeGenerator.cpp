@@ -422,6 +422,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _nodesToBeEvaluatedInRegPairs(self()->comp()->allocator()),
      _ccInstruction(NULL),
      _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
+     _firstTimeLiveOOLRegisterList(NULL),
      _methodBegin(NULL),
      _methodEnd(NULL)
    {

@@ -34,6 +34,12 @@ OMR::Power::CPU::getPPCis64bit()
    }
 
 bool
+OMR::Power::CPU::supportsTransactionalMemoryInstructions()
+   {
+   return self()->getPPCSupportsTM();
+   }
+
+bool
 OMR::Power::CPU::isTargetWithinIFormBranchRange(intptrj_t targetAddress, intptrj_t sourceAddress)
    {
    intptrj_t range = targetAddress - sourceAddress;

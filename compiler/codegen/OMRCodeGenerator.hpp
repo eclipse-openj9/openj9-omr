@@ -1059,9 +1059,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::list<TR::Register*> *getSpilledRegisterList() {return _spilledRegisterList;}
    TR::list<TR::Register*> *setSpilledRegisterList(TR::list<TR::Register*> *r) {return _spilledRegisterList = r;}
-   TR::list<TR::Register*> *getFirstTimeLiveOOLRegisterList() {return _firstTimeLiveOOLRegisterList;}
-   TR::list<TR::Register*> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register*> *r) {return _firstTimeLiveOOLRegisterList = r;}
-
+   
    TR_BackingStore *allocateSpill(bool containsCollectedReference, int32_t *offset, bool reuse=true);
    TR_BackingStore *allocateSpill(int32_t size, bool containsCollectedReference, int32_t *offset, bool reuse=true);
    TR_BackingStore *allocateInternalPointerSpill(TR::AutomaticSymbol *pinningArrayPointer);
@@ -1886,7 +1884,6 @@ class OMR_EXTENSIBLE CodeGenerator
    int32_t _accumulatorNodeUsage;
 
    TR::list<TR::Register*> *_spilledRegisterList;
-   TR::list<TR::Register*> *_firstTimeLiveOOLRegisterList;
    TR::list<OMR::RegisterUsage*> *_referencedRegistersList;
    int32_t _currentPathDepth;
    TR::list<TR::Node*> _nodesSpineCheckedList;

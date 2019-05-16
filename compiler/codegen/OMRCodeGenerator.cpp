@@ -159,7 +159,6 @@ OMR::CodeGenerator::CodeGenerator() :
       _implicitExceptionPoint(0),
       _localsThatAreStored(NULL),
       _numLocalsWhenStoreAnalysisWasDone(-1),
-      _uncommmonedNodes(self()->comp()->trMemory(), stackAlloc),
       _ialoadUnneeded(self()->comp()->trMemory()),
      _symRefTab(self()->comp()->getSymRefTab()),
      _vmThreadRegister(NULL),
@@ -1291,27 +1290,6 @@ bool OMR::CodeGenerator::areAssignableGPRsScarce()
    if (c1)
       threshold = atoi(c1);
       return (self()->getMaximumNumbersOfAssignableGPRs() <= threshold);
-   }
-
-// J9
-//
-TR::Node *
-OMR::CodeGenerator::createOrFindClonedNode(TR::Node *node, int32_t numChildren)
-   {
-   TR_HashId index;
-   if (!_uncommmonedNodes.locate(node->getGlobalIndex(), index))
-      {
-      // has not been uncommoned already, clone and store for later
-      TR::Node *clone = TR::Node::copy(node, numChildren);
-      _uncommmonedNodes.add(node->getGlobalIndex(), index, clone);
-      node = clone;
-      }
-   else
-      {
-      // found previously cloned node
-      node = (TR::Node *) _uncommmonedNodes.getData(index);
-      }
-   return node;
    }
 
 

@@ -266,7 +266,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_BitVector *_localsThatAreStored;
    int32_t _numLocalsWhenStoreAnalysisWasDone;
-   TR_HashTabInt _uncommmonedNodes;               // uncommoned nodes keyed by the original nodes
    List<TR_Pair<TR::Node, int32_t> > _ialoadUnneeded;
 
    public:
@@ -1389,9 +1388,7 @@ class OMR_EXTENSIBLE CodeGenerator
       return true;
       }
 
-   // --------------------------------------------------------------------------
-
-   TR::Node *createOrFindClonedNode(TR::Node *node, int32_t numChildren);
+   // --------------------------------------------------------------------------	
 
    bool constantAddressesCanChangeSize(TR::Node *node);
    bool profiledPointersRequireRelocation();

@@ -24,6 +24,7 @@ include $(top_srcdir)/omrmakefiles/configure.mk
 
 MODULE_NAME := ddrgentest
 ARTIFACT_TYPE := cxx_executable
+USE_NATIVE_ENCODING := 1
 
 OBJECTS += $(patsubst %.cpp,%$(OBJEXT),$(wildcard *.cpp))
 OBJECTS += $(patsubst %.c,%$(OBJEXT),$(wildcard *.c))

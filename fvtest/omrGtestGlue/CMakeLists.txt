@@ -52,4 +52,16 @@ if(NOT OMR_HOST_OS STREQUAL "win")
 endif()
 #target_link_libraries(omrGtest INTERFACE omrGtestGlue)
 
+list(APPEND OMR_GTEST_DEFINITIONS
+	-DGTEST_ENV_HAS_STD_TUPLE_
+	-D__IBMCPP_TR1__
+)
+
+target_compile_options(omrGtest
+	PUBLIC
+		${OMR_GTEST_DEFINITIONS}
+		$<$<COMPILE_LANGUAGE:CXX>:${OMR_GTEST_DEFINITIONS}>
+		$<$<COMPILE_LANGUAGE:C>:${OMR_GTEST_DEFINITIONS}>
+)
+
 set_property(TARGET omrGtest PROPERTY FOLDER fvtest)

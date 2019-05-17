@@ -38,7 +38,7 @@ TEST_F(CallTest, icallOracle) {
     // do not have trampoline support, and so this call may be out of 
     // range for some architectures. 
 #ifdef TR_TARGET_X86
-    Tril::DefaultCompiler compiler{trees};
+    Tril::DefaultCompiler compiler(trees);
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
     auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t)>();

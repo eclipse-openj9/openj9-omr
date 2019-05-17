@@ -70,7 +70,7 @@ TEST_F(SimplifierFoldAndTest, FoldHappens) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::DefaultCompiler compiler{trees};
+    Tril::DefaultCompiler compiler(trees);
     NoAndIlVerifier verifier;  
 
     ASSERT_EQ(0, compiler.compileWithVerifier(&verifier)) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;

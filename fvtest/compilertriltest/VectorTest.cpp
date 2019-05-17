@@ -46,7 +46,7 @@ TEST_F(VectorTest, VDoubleAdd) {
     // at runtime is currently not possible in tril. So the test is being disabled altogether
     // on Z for now.
 #ifndef TR_TARGET_S390
-    Tril::DefaultCompiler compiler{trees};
+    Tril::DefaultCompiler compiler(trees);
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
 

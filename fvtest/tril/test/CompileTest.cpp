@@ -34,7 +34,7 @@ TEST_F(CompileTest, Return3) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::DefaultCompiler compiler{trees};
+    Tril::DefaultCompiler compiler(trees);
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed";
 
@@ -49,7 +49,7 @@ TEST_F(CompileTest, NoCodeGen) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::DefaultCompiler compiler{trees};
+    Tril::DefaultCompiler compiler(trees);
     TR::NoCodegenVerifier verifier{NULL}; 
 
     EXPECT_NE(0, compiler.compileWithVerifier(&verifier)) << "Compilation succeeded";

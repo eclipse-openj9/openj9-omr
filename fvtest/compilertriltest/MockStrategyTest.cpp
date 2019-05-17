@@ -69,7 +69,7 @@ TEST_F(MockStrategyTest, FoldDoesntHappen) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::DefaultCompiler compiler{trees};
+    Tril::DefaultCompiler compiler(trees);
     NoAndIlVerifier verifier;  
 
     ASSERT_NE(0, compiler.compileWithVerifier(&verifier)) 

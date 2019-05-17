@@ -132,11 +132,11 @@ elseif(OMR_HOST_ARCH STREQUAL "s390")
 	# TR_COMPILE_OPTIONS are variables appended to CMAKE_{C,CXX}_FLAGS, and so
 	# apply to both C and C++ compilations.
 	list(APPEND TR_COMPILE_OPTIONS
-		-D_ISOC99_SOURCE
+		-DYYLMAX=1000
 		-Wa,asa
-		"\"-Wc,INLINE(auto,noreport,600,5000)\""
-		"\"-Wc,SUPPRESS(CCN6281,CCN6090)\""
-		"\"-Wc,TMPLPARSE(NO)\""
+	)
+
+	list(APPEND TR_CXX_COMPILE_OPTIONS
 		-Wc,EXH
 		-qhaltonmsg=CCN6102
 		-qnocsect

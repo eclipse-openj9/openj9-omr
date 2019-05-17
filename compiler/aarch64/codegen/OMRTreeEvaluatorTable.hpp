@@ -104,20 +104,20 @@
     TR::TreeEvaluator::directCallEvaluator, // TR::acall		// direct call returning reference
     TR::TreeEvaluator::directCallEvaluator, // TR::call		// direct call returning void
     TR::TreeEvaluator::iaddEvaluator, // TR::iadd		// add 2 integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::laddEvaluator ,	// TR::ladd		// add 2 long integers
+    TR::TreeEvaluator::laddEvaluator ,	// TR::ladd		// add 2 long integers
     TR::TreeEvaluator::faddEvaluator, // TR::fadd		// add 2 floats
     TR::TreeEvaluator::daddEvaluator, // TR::dadd		// add 2 doubles
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::baddEvaluator ,	// TR::badd		// add 2 bytes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::saddEvaluator ,	// TR::sadd		// add 2 short integers
     TR::TreeEvaluator::isubEvaluator, // TR::isub		// subtract 2 integers                (child1 - child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lsubEvaluator ,	// TR::lsub		// subtract 2 long integers           (child1 - child2)
+    TR::TreeEvaluator::lsubEvaluator ,	// TR::lsub		// subtract 2 long integers           (child1 - child2)
     TR::TreeEvaluator::fsubEvaluator, // TR::fsub		// subtract 2 floats                  (child1 - child2)
     TR::TreeEvaluator::dsubEvaluator, // TR::dsub		// subtract 2 doubles                 (child1 - child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bsubEvaluator ,	// TR::bsub		// subtract 2 bytes                   (child1 - child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ssubEvaluator ,	// TR::ssub		// subtract 2 short integers          (child1 - child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::asubEvaluator ,	// TR::asub		// subtract 2 addresses (child1 - child2)
     TR::TreeEvaluator::imulEvaluator, // TR::imul		// multiply 2 integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lmulEvaluator ,	// TR::lmul		// multiply 2 signed or unsigned long integers
+    TR::TreeEvaluator::lmulEvaluator ,	// TR::lmul		// multiply 2 signed or unsigned long integers
     TR::TreeEvaluator::fmulEvaluator, // TR::fmul		// multiply 2 floats
     TR::TreeEvaluator::dmulEvaluator, // TR::dmul		// multiply 2 doubles
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bmulEvaluator ,	// TR::bmul		// multiply 2 bytes
@@ -163,15 +163,15 @@
     TR::TreeEvaluator::irolEvaluator, // TR::irol		// rotate integer left
     TR::TreeEvaluator::irolEvaluator, // TR::lrol		// rotate long integer left
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iandEvaluator ,	// TR::iand		// boolean and of 2 integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::landEvaluator ,	// TR::land		// boolean and of 2 long integers
+    TR::TreeEvaluator::landEvaluator ,	// TR::land		// boolean and of 2 long integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bandEvaluator ,	// TR::band		// boolean and of 2 bytes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sandEvaluator ,	// TR::sand		// boolean and of 2 short integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iorEvaluator ,	// TR::ior		// boolean or of 2 integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lorEvaluator ,	// TR::lor		// boolean or of 2 long integers
+    TR::TreeEvaluator::lorEvaluator ,	// TR::lor		// boolean or of 2 long integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::borEvaluator ,	// TR::bor		// boolean or of 2 bytes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sorEvaluator ,	// TR::sor		// boolean or of 2 short integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ixorEvaluator ,	// TR::ixor		// boolean xor of 2 integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lxorEvaluator ,	// TR::lxor		// boolean xor of 2 long integers
+    TR::TreeEvaluator::lxorEvaluator ,	// TR::lxor		// boolean xor of 2 long integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bxorEvaluator ,	// TR::bxor		// boolean xor of 2 bytes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sxorEvaluator ,	// TR::sxor		// boolean xor of 2 short integers
     TR::TreeEvaluator::i2lEvaluator, // TR::i2l		// convert integer to long integer with sign extension

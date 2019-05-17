@@ -88,7 +88,7 @@ TestCompiler::LogFileTest::fileIsNotEmpty(std::string logFile)
  */
 
 std::map<const char*, bool>
-TestCompiler::LogFileTest::buildKeywordMap(std::initializer_list <const char*> inputs)
+TestCompiler::LogFileTest::buildKeywordMap(std::vector<const char*> inputs)
    {
    std::map<const char*, bool> keywords;
    for (auto w = inputs.begin(); w != inputs.end(); w++)

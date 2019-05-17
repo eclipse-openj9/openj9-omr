@@ -21,7 +21,9 @@
  *******************************************************************************/
 #if defined(J9ZOS390)
 /* needed to expose snprintf() */
-#define _ISOC99_SOURCE
+#if !defined(_ISOC99_SOURCE)
+#define _ISOC99_SOURCE 1
+#endif
 #endif
 
 #include <stdarg.h>

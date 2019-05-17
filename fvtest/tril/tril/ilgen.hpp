@@ -30,7 +30,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <type_traits>
 
 namespace Tril {
 

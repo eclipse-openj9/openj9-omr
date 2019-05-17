@@ -25,23 +25,23 @@
 #include <string>
 
 ASTNode* createNode(const char * name, ASTNodeArg* args, ASTNode* children,  ASTNode* next) {
-    return new ASTNode{name, args, children, next};
+    return new ASTNode(name, args, children, next);
 }
 
 ASTNodeArg* createNodeArg(const char * name, ASTValue* value,  ASTNodeArg* next) {
-    return new ASTNodeArg{name, value, next};
+    return new ASTNodeArg(name, value, next);
 }
 
 ASTValue* createIntegerValue(uint64_t val) {
-    return new ASTValue{val};
+    return new ASTValue(val);
 }
 
 ASTValue* createFloatingPointValue(double val) {
-    return new ASTValue{val};
+    return new ASTValue(val);
 }
 
 ASTValue* createStrValue(const char* val) {
-    return new ASTValue{val};
+    return new ASTValue(val);
 }
 
 void appendSiblingNode(ASTNode* list, ASTNode* newNode) {

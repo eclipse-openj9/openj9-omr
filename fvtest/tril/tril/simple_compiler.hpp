@@ -34,7 +34,7 @@ namespace Tril {
 class SimpleCompiler : public Tril::MethodCompiler {
     public:
         explicit SimpleCompiler(const ASTNode* methodNode)
-            : MethodCompiler{methodNode} {}
+            : MethodCompiler(methodNode) {}
 
         /**
          * @brief Compiles the Tril method

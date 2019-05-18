@@ -458,24 +458,6 @@ TR::PPCSystemLinkage::calculateActualParameterOffset(
    }
 
 
-uintptr_t TR::PPCSystemLinkage::calculateParameterRegisterOffset(uintptr_t o, TR::ParameterSymbol& p)
-   {
-   TR::ResolvedMethodSymbol    * bodySymbol = comp()->getJittedMethodSymbol();
-   if (1 || (p.getDataType() == TR::Aggregate) || (p.getSize() >= sizeof(uint64_t)))
-      {
-      return o;
-      }
-   else
-      {
-#ifdef TR_TARGET_64BIT
-      return o & (~(uint64_t) 7);
-#else
-      return o & (~(uint32_t) 3);
-#endif
-      }
-   }
-
-
 void
 TR::PPCSystemLinkage::mapParameters(
       TR::ResolvedMethodSymbol *method,

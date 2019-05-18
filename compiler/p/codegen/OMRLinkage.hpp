@@ -411,11 +411,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    //
    virtual uintptr_t calculateActualParameterOffset(uintptr_t o, TR::ParameterSymbol& p) { return o; }
 
-   // And the reverse...Once paramaters are mapped, where do I store the
-   // actual full-sized register
-   //
-   virtual uintptr_t calculateParameterRegisterOffset(uintptr_t o, TR::ParameterSymbol& p) { return o; }
-
    TR_ReturnInfo getReturnInfoFromReturnType(TR::DataType);
    };
 }

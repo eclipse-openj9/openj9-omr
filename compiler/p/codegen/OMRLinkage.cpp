@@ -164,7 +164,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
       {
       int32_t lri = paramCursor->getLinkageRegisterIndex();
       int32_t ai  = paramCursor->getAllocatedIndex();
-      int32_t offset = self()->calculateParameterRegisterOffset(paramCursor->getParameterOffset(), *paramCursor);
+      int32_t offset = paramCursor->getParameterOffset();
       TR::DataType type = paramCursor->getType();
       int32_t dtype = type.getDataType();
 

@@ -436,28 +436,6 @@ TR::PPCSystemLinkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    }
 
 
-uintptr_t
-TR::PPCSystemLinkage::calculateActualParameterOffset(
-      uintptr_t o,
-      TR::ParameterSymbol& p)
-   {
-   TR::ResolvedMethodSymbol    * bodySymbol = comp()->getJittedMethodSymbol();
-#ifndef TR_TARGET_64BIT
-   uint32_t bound = sizeof(uint32_t);
-#else
-   size_t bound = sizeof(uint64_t);
-#endif
-   if (1 || (p.getDataType() == TR::Aggregate) || (p.getSize() >= bound))
-      {
-      return o;
-      }
-   else
-      {
-      return o + bound - p.getSize();
-      }
-   }
-
-
 void
 TR::PPCSystemLinkage::mapParameters(
       TR::ResolvedMethodSymbol *method,
@@ -485,9 +463,9 @@ TR::PPCSystemLinkage::mapParameters(
       while (parmCursor != NULL)
          {
          if (saveParmsInLocalArea)
-            parmCursor->setParameterOffset(calculateActualParameterOffset(offset_from_top + stackIndex, *parmCursor));
+            parmCursor->setParameterOffset(offset_from_top + stackIndex);
          else
-            parmCursor->setParameterOffset(calculateActualParameterOffset(offset_from_top + offsetToFirstParm + stackIndex, *parmCursor));
+            parmCursor->setParameterOffset(offset_from_top + offsetToFirstParm + stackIndex);
          offset_from_top += (parmCursor->getSize() + slot_size - 1) & (~(slot_size - 1));
          parmCursor = parameterIterator.getNext();
          }

@@ -259,10 +259,14 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename, char *dsnName)
 	/* the filename must be entirely uppercase for IEATDUMP requests */
 	convertToUpper(portLibrary, filename, strlen(filename));
 
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	/* Convert filename into EBCDIC... */
 	dsnName = a2e_func(filename, strlen(filename) + 1);
 	err = tdump(portLibrary, filename, dsnName, &returnCode, &reasonCode);
 	free(dsnName);
+#else
+	err = tdump(portLibrary, filename, filename, &returnCode, &reasonCode);
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 
 	if (0 == err) {
 		retVal = returnCode;
@@ -272,10 +276,14 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename, char *dsnName)
 			if (filenameSpecified) {
 				portLibrary->nls_printf(portLibrary, J9NLS_WARNING | J9NLS_STDERR, J9NLS_PORT_IEATDUMP_NAME_TOO_LONG);
 				filename[0] = '\0';
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 				/* Convert filename into EBCDIC... */
 				dsnName = a2e_func(filename, strlen(filename) + 1);
 				retVal = tdump_wrapper(portLibrary, filename, dsnName);
 				free(dsnName);
+#else
+				retVal = tdump_wrapper(portLibrary, filename, filename);
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 			}
 		} else if (0x8 == returnCode && 0x26 == reasonCode) {
 			/* Couldn't allocate data set (disk full) */

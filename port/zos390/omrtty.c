@@ -38,8 +38,9 @@
 #include <sys/types.h>
 #include <errno.h>
 
-
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 #include "atoe.h"
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 
 void WRITE_TTY(int fileno, char *b, int bcount);
 
@@ -47,9 +48,13 @@ void WRITE_TTY(int fileno, char *b, int bcount);
 void
 WRITE_TTY(int fileno, char *b, int bcount)
 {
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	char *s = a2e(b, bcount);
 	write(fileno, s, bcount);
 	free(s);
+#else /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+	write(fileno, b, bcount);
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 }
 
 
@@ -170,7 +175,9 @@ omrtty_printf(struct OMRPortLibrary *portLibrary, const char *format, ...)
 int32_t
 omrtty_startup(struct OMRPortLibrary *portLibrary)
 {
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	iconv_init();
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 	return 0;
 }
 /**
@@ -186,11 +193,13 @@ omrtty_startup(struct OMRPortLibrary *portLibrary)
 void
 omrtty_shutdown(struct OMRPortLibrary *portLibrary)
 {
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	/* corresponding iconv_global_init() is invoked in protectedInitializeJavaVM (setGlobalConvertersAware())
 	 * instead of omrtty_startup because a certain parameter needs to be parsed
 	 * before omrtty_startup is called.
 	 */
 	iconv_global_destroy(portLibrary);
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 }
 
 /**

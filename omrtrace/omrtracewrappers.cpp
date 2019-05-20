@@ -56,7 +56,7 @@ twThreadSelf(void)
 omr_error_t
 twE2A(char *str)
 {
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	long length = (long)strlen(str);
 	if (length > 0) {
 		char *abuf;
@@ -66,6 +66,6 @@ twE2A(char *str)
 			free(abuf);
 		}
 	}
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 	return OMR_ERROR_NONE;
 }

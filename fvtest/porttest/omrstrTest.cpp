@@ -1458,7 +1458,7 @@ TEST(PortStrTest, str_WinacpToMutf8)
 	reportTestExit(OMRPORTLIB, testName);
 }
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 /**
  * Check whether a null/non-null terminated string is properly handled by fstring().
  * It calls atoe_vsnprintf() to verify the functionalities.
@@ -1569,4 +1569,4 @@ TEST(PortStrTest, str_test_atoe_vsnprintf)
 	portTestEnv->log("\n");
 	reportTestExit(OMRPORTLIB, testName);
 }
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */

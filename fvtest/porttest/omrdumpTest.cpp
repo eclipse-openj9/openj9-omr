@@ -192,11 +192,11 @@ TEST(PortDumpTest, dump_test_create_dump_with_name)
 
 	reportTestEntry(OMRPORTLIB, testName);
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	coreFileName = atoe_getcwd(buff, EsMaxPath);
-#else
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	coreFileName = getcwd(buff, EsMaxPath);
-#endif
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	strncat(coreFileName, "/", EsMaxPath);	/* make sure the directory ends with a slash */
 	strncat(coreFileName, testName, EsMaxPath);
@@ -240,11 +240,11 @@ TEST(PortDumpTest, dump_test_create_dump_from_signal_handler)
 	simpleHandlerInfo handlerInfo;
 	uint32_t sig_protectFlags;
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	coreFileName = atoe_getcwd(buff, EsMaxPath);
-#else
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	coreFileName = getcwd(buff, EsMaxPath);
-#endif
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	strncat(coreFileName, "/", EsMaxPath);	/* make sure the directory ends with a slash */
 	strncat(coreFileName, testName, EsMaxPath);

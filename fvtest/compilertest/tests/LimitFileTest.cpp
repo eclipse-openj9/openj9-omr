@@ -250,8 +250,10 @@ TEST_F(LimitFileTest, UseLimitFileRangeTest)
    int iNegLine;
    createAndCheckVLog(limitFile, NULL, &iNegLine);
 
-   // Note VC++ 2010 doesn't support std::to_string(int).
-   std::string iNegLineStr = std::to_string(static_cast<long long>(iNegLine));
+   std::ostringstream ss;
+   ss << static_cast<long long>(iNegLine);
+
+   std::string iNegLineStr = ss.str();
    std::string limitArg = std::string("(") + limitFile + "," + iNegLineStr + "," + iNegLineStr + ")";
    createVLog(vlog, limitArg.c_str());
 
@@ -269,8 +271,11 @@ TEST_F(LimitFileTest, UseLimitFileBoundTest)
    int iNegLine;
    createAndCheckVLog(limitFile, NULL, &iNegLine);
 
+   std::ostringstream ss;
+   ss << static_cast<long long>(iNegLine);
+
    iNegLine++; // Start at line after iNeg.
-   std::string limitArg = std::string("(") + limitFile + "," + std::to_string(static_cast<long long>(iNegLine)) + ")";
+   std::string limitArg = std::string("(") + limitFile + "," + ss.str() + ")";
    createVLog(vlog, limitArg.c_str());
    checkVLogForMethod(vlog, "iNeg", NULL);
    }

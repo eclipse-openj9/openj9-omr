@@ -2290,12 +2290,12 @@ inline bool IsXDigit(wchar_t ch) {
   return ch == low_byte && isxdigit(low_byte) != 0;
 }
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 /* We need to define tolower and toupper macros for ToLower/ToUpper to use a2e tolower/toupper.
  */
 #define toupper(c)     (islower(c) ? (c & 0xDF) : c)
 #define tolower(c)     (isupper(c) ? (c | 0xDF) : c)
-#endif
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 
 inline char ToLower(char ch) {
   return static_cast<char>(tolower(static_cast<unsigned char>(ch)));
@@ -2304,12 +2304,12 @@ inline char ToUpper(char ch) {
   return static_cast<char>(toupper(static_cast<unsigned char>(ch)));
 }
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 /* We need to undefine the macros in order to avoid function definitions for tolower and toupper in xlocale.
  */
 #undef toupper
 #undef tolower
-#endif
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 
 inline std::string StripTrailingSpaces(std::string str) {
   std::string::iterator it = str.end();

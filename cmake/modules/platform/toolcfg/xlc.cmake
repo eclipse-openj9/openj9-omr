@@ -144,6 +144,19 @@ elseif(OMR_HOST_ARCH STREQUAL "s390")
 
 	# Configure the platform dependent library for multithreading
 	set(OMR_PLATFORM_THREAD_LIBRARY "")
+
+	function(_omr_toolchain_process_exports TARGET_NAME)
+		# We only need to do something if we are dealing with a shared library
+		get_target_property(target_type ${TARGET_NAME} TYPE)
+		if(NOT target_type STREQUAL "SHARED_LIBRARY")
+			return()
+		endif()
+
+		target_compile_options(${TARGET_NAME}
+			PRIVATE
+				-Wc,DLL,EXPORTALL
+		)
+	endfunction()
 endif()
 
 if(OMR_HOST_OS STREQUAL "aix")

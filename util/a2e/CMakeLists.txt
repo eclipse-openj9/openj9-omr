@@ -51,7 +51,7 @@ target_include_directories(j9a2e
 
 add_custom_command(TARGET j9a2e
 	POST_BUILD
-	COMMAND mv j9a2e.x ${CMAKE_BINARY_DIR}/j9a2e.x
+	COMMAND mv libj9a2e.x ${CMAKE_BINARY_DIR}/libj9a2e.x
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 

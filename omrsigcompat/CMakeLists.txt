@@ -86,6 +86,12 @@ if(OMR_HOST_OS MATCHES "linux|osx")
 endif()
 if(OMR_HOST_OS STREQUAL "zos")
 	target_link_libraries(omrsig PRIVATE j9a2e)
+
+	add_custom_command(TARGET omrsig
+		POST_BUILD
+		COMMAND mv libomrsig.x ${CMAKE_BINARY_DIR}/libomrsig.x
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	)
 endif()
 #TODO ensure we are linking in the same way as source makefile:
 #MODULE_STATIC_LIBS += omrutil

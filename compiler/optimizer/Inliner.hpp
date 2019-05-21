@@ -88,6 +88,7 @@ namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class TreeTop; }
+namespace OMR { class BenefitInlinerBase; }
 struct TR_CallSite;
 struct TR_CallTarget;
 struct TR_ParameterMapping;
@@ -319,7 +320,7 @@ class TR_InlinerBase: public TR_HasRandomGenerator
 
       void getSymbolAndFindInlineTargets(TR_CallStack *, TR_CallSite *, bool findNewTargets=true);
 
-      void applyPolicyToTargets(TR_CallStack *, TR_CallSite *);
+      virtual void applyPolicyToTargets(TR_CallStack *, TR_CallSite *);
       bool callMustBeInlinedRegardlessOfSize(TR_CallSite *callsite);
 
       bool forceInline(TR_CallTarget *calltarget);
@@ -576,6 +577,7 @@ class OMR_InlinerUtil : public TR::OptimizationUtil, public OMR_InlinerHelper
 class OMR_InlinerPolicy : public TR::OptimizationPolicy, public OMR_InlinerHelper
    {
    friend class TR_InlinerBase;
+   friend class OMR::BenefitInlinerBase;
    public:
       OMR_InlinerPolicy(TR::Compilation *comp);
       virtual bool inlineRecognizedMethod(TR::RecognizedMethod method);

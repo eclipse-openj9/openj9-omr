@@ -50,6 +50,8 @@
 #include "infra/Stack.hpp"
 #include "infra/CfgEdge.hpp"
 #include "infra/CfgNode.hpp"
+#include "optimizer/BenefitInliner.hpp"
+#include "optimizer/CallInfo.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/Structure.hpp"
 #include "optimizer/StructuralAnalysis.hpp"
@@ -3260,3 +3262,78 @@ OMR::CFG::findReachableBlocks(TR_BitVector *result)
          addEdge(getStart(), edge->getTo());
       }
    }
+
+
+int
+OMR::CFG::getStartBlockFrequency()
+   {
+      //TODO: no linear search.
+      for (auto cfgNode = this->getFirstNode(); cfgNode; cfgNode = cfgNode->getNext())
+      {
+         auto asBlock = cfgNode->asBlock();
+         if (!asBlock) continue;
+         if (cfgNode->getNumber() == 2)
+         return asBlock->getFrequency();
+      }
+      return 0;
+   }
+
+TR::Block*
+OMR::CFG::getCfgNodeWithByteCodeIndex(int bcIndex)
+   {
+   //TODO: no linear search
+      TR::Block *block = NULL;
+      for (auto cfgNode = this->getFirstNode(); cfgNode; cfgNode = cfgNode->getNext())
+      {
+         block = cfgNode->asBlock();
+         if (!block) continue;
+         break;
+      }
+
+      for (; block; block = block->getNextBlock())
+      {
+         
+      }
+   return NULL;
+   }
+
+int
+OMR::CFG::getBCInfoFrequency(TR_ByteCodeInfo &info, TR_HasRandomGenerator *r)
+   {
+   return comp()->convertNonDeterministicInput(comp()->fej9()->getIProfilerCallCount(info, comp()), MAX_BLOCK_COUNT + MAX_COLD_BLOCK_COUNT, r->randomGenerator(), 0);
+   }
+
+bool
+OMR::CFG::isColdCall(TR_ByteCodeInfo &info, TR_HasRandomGenerator *r)
+   {
+      int frequency = this->getBCInfoFrequency(info, r);
+      return frequency < this->getLowFrequency();
+   }
+
+bool
+OMR::CFG::isColdTarget(TR_ByteCodeInfo &info, TR_CallTarget *calltarget, TR_HasRandomGenerator *r)
+   {
+      return isColdTarget(info, calltarget->_frequencyAdjustment, r);
+   }
+
+bool
+OMR::CFG::isColdTarget(TR_ByteCodeInfo &info, float frequencyAdjustment, TR_HasRandomGenerator *r)
+   {
+      int frequency = this->getBCInfoFrequency(info, r);
+      frequency *= frequencyAdjustment;
+      return frequency < this->getLowFrequency();
+   }
+
+void
+OMR::CFG::computeMethodBranchProfileInfo(AbsEnvInlinerUtil *util, TR_CallTarget* calltarget, TR::ResolvedMethodSymbol* callerSymbol, int callerIndex, TR::Block *callBlock)
+   {
+      TR::Block *cfgBlock = NULL;
+      for (TR::CFGNode *node = this->getFirstNode(); node; node = node->getNext())
+      {
+      cfgBlock = node->asBlock();
+      if (cfgBlock->getEntry() != NULL) break;
+      }
+
+      util->computeMethodBranchProfileInfo2(cfgBlock, calltarget, callerSymbol, callerIndex, callBlock);
+   }
+

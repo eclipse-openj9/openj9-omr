@@ -2256,31 +2256,31 @@ OMR::Compilation::getNumInlinedCallSites()
 TR_InlinedCallSite &
 OMR::Compilation::getInlinedCallSite(uint32_t index)
    {
-   return _inlinedCallSites[index].site();
+   return _inlinedCallSites.element(index).site();
    }
 
 TR::ResolvedMethodSymbol  *
 OMR::Compilation::getInlinedResolvedMethodSymbol(uint32_t index)
    {
-   return _inlinedCallSites[index].resolvedMethodSymbol();
+   return _inlinedCallSites.element(index).resolvedMethodSymbol();
    }
 
 TR_ResolvedMethod  *
 OMR::Compilation::getInlinedResolvedMethod(uint32_t index)
    {
-   return _inlinedCallSites[index].resolvedMethod();
+   return _inlinedCallSites.element(index).resolvedMethod();
    }
 
 TR::SymbolReference *
 OMR::Compilation::getInlinedCallerSymRef(uint32_t index)
    {
-   return _inlinedCallSites[index].callSymRef();
+   return _inlinedCallSites.element(index).callSymRef();
    }
 
 bool
 OMR::Compilation::isInlinedDirectCall(uint32_t index)
    {
-   return _inlinedCallSites[index].directCall();
+   return _inlinedCallSites.element(index).directCall();
    }
 
 /*
@@ -2291,7 +2291,7 @@ OMR::Compilation::isInlinedDirectCall(uint32_t index)
 uint32_t
 OMR::Compilation::getOSRCallSiteRematSize(uint32_t callSiteIndex)
    {
-   if (!_inlinedCallSites[callSiteIndex].osrCallSiteRematTable())
+   if (!_inlinedCallSites.element(callSiteIndex).osrCallSiteRematTable())
       return 0;
 
    int32_t callerIndex = self()->getInlinedCallSite(callSiteIndex)._byteCodeInfo.getCallerIndex();
@@ -2307,7 +2307,7 @@ OMR::Compilation::getOSRCallSiteRematSize(uint32_t callSiteIndex)
 void
 OMR::Compilation::getOSRCallSiteRemat(uint32_t callSiteIndex, uint32_t slot, TR::SymbolReference *&ppSymRef, TR::SymbolReference *&loadSymRef)
    {
-   int32_t *table = _inlinedCallSites[callSiteIndex].osrCallSiteRematTable();
+   int32_t *table = _inlinedCallSites.element(callSiteIndex).osrCallSiteRematTable();
    if (!table)
       {
       ppSymRef = NULL;
@@ -2339,7 +2339,7 @@ OMR::Compilation::getOSRCallSiteRemat(uint32_t callSiteIndex, uint32_t slot, TR:
 void
 OMR::Compilation::setOSRCallSiteRemat(uint32_t callSiteIndex, TR::SymbolReference *ppSymRef, TR::SymbolReference *loadSymRef)
    {
-   int32_t *table = _inlinedCallSites[callSiteIndex].osrCallSiteRematTable();
+   int32_t *table = _inlinedCallSites.element(callSiteIndex).osrCallSiteRematTable();
    int32_t slot = -ppSymRef->getCPIndex() - 1;
 
    // If no table exists, allocate it based on the number of PP slots
@@ -2350,7 +2350,7 @@ OMR::Compilation::setOSRCallSiteRemat(uint32_t callSiteIndex, TR::SymbolReferenc
          self()->getInlinedResolvedMethodSymbol(callerIndex)->getNumPPSlots();
       table = (int32_t*) self()->trMemory()->allocateHeapMemory(callerNumPPSlots * 2 * sizeof(int32_t));
       memset(table, 0, callerNumPPSlots * 2 * sizeof(int32_t));
-      _inlinedCallSites[callSiteIndex].setOSRCallSiteRematTable(table);
+      _inlinedCallSites.element(callSiteIndex).setOSRCallSiteRematTable(table);
       }
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
@@ -2372,7 +2372,7 @@ OMR::Compilation::setOSRCallSiteRemat(uint32_t callSiteIndex, TR::SymbolReferenc
 bool
 OMR::Compilation::cannotAttemptOSRDuring(uint32_t index)
    {
-   return _inlinedCallSites[index].cannotAttemptOSRDuring();
+   return _inlinedCallSites.element(index).cannotAttemptOSRDuring();
    }
 
 /*
@@ -2381,13 +2381,13 @@ OMR::Compilation::cannotAttemptOSRDuring(uint32_t index)
 void
 OMR::Compilation::setCannotAttemptOSRDuring(uint32_t index, bool cannotOSR)
    {
-   _inlinedCallSites[index].setCannotAttemptOSRDuring(cannotOSR);
+   _inlinedCallSites.element(index).setCannotAttemptOSRDuring(cannotOSR);
    }
 
 TR_InlinedCallSite *
 OMR::Compilation::getCurrentInlinedCallSite()
    {
-   return _inlinedCallStack.isEmpty() ? 0 : &_inlinedCallSites[_inlinedCallStack.top()].site();
+   return _inlinedCallStack.isEmpty() ? 0 : &_inlinedCallSites.element(_inlinedCallStack.top()).site();
    }
 
 int32_t

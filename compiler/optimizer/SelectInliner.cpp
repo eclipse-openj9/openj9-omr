@@ -2,6 +2,7 @@
 #include "env/VerboseLog.hpp"
 #include "optimizer/SelectInliner.hpp"
 #include "optimizer/Inliner.hpp"
+#include "optimizer/BenefitInliner.hpp"
 
 int32_t
 OMR::SelectInliner::perform() {
@@ -35,8 +36,6 @@ OMR::SelectInliner::performMultiTargetInliner()
 int32_t
 OMR::SelectInliner::performBenefitInliner()
    {
-   TR_VerboseLog::vlogAcquire();
-   TR_VerboseLog::writeLine(TR_Vlog_SIP, "Hello world");
-   TR_VerboseLog::vlogRelease();
-   return 0;
+   OMR::BenefitInlinerWrapper *inliner = (OMR::BenefitInlinerWrapper*)OMR::BenefitInlinerWrapper::create(this->_manager);
+   return inliner->perform();
    }

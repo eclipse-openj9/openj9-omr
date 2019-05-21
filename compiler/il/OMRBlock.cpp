@@ -95,6 +95,7 @@ OMR::Block::Block(TR_Memory * m) :
    _firstInstruction(NULL),
    _lastInstruction(NULL),
    _blockSize(-1),
+   _blockBCIndex(-1),
    _debugCounters(NULL),
    _flags(0),
    _moreflags(0)
@@ -114,6 +115,7 @@ OMR::Block::Block(TR::TreeTop *entry, TR::TreeTop *exit, TR_Memory * m) :
    _firstInstruction(NULL),
    _lastInstruction(NULL),
    _blockSize(-1),
+   _blockBCIndex(-1),
    _debugCounters(NULL),
    _flags(0),
    _moreflags(0)

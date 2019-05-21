@@ -44,6 +44,7 @@ namespace OMR { typedef OMR::CFG CFGConnector; }
 #include "infra/CfgEdge.hpp"
 #include "infra/CfgNode.hpp"
 
+class TR_HasRandomGenerator;
 class TR_RegionStructure;
 class TR_Structure;
 class TR_StructureSubGraphNode;
@@ -51,6 +52,7 @@ class TR_BitVector;
 class TR_BlockCloner;
 class TR_BlockFrequencyInfo;
 class TR_ExternalProfiler;
+namespace OMR { class AbsEnvInlinerUtil; }
 namespace TR { class Block; }
 namespace TR { class CFG; }
 namespace TR { class CFGEdge; }
@@ -138,6 +140,7 @@ class CFG
    void setStartAndEnd(TR::CFGNode * s, TR::CFGNode * e) { addNode(s); addNode(e); setStart(s); setEnd(e); }
 
    TR::CFGNode *getStart() {return _pStart;}
+   virtual TR::CFGNode *getStartForReverseSnapshot() { return this->getStart(); }
    TR::CFGNode *setStart(TR::CFGNode *p) {return (_pStart = p);}
 
    TR::CFGNode *getEnd() {return _pEnd;}
@@ -149,6 +152,14 @@ class CFG
 
    TR::CFGNode *getFirstNode() {return _nodes.getFirst();}
    TR_LinkHead1<TR::CFGNode> & getNodes() {return _nodes;}
+
+   virtual int getStartBlockFrequency();
+   virtual TR::Block *getCfgNodeWithByteCodeIndex(int bcIndex);
+   virtual int getBCInfoFrequency(TR_ByteCodeInfo &, TR_HasRandomGenerator *r);
+   virtual bool isColdCall(TR_ByteCodeInfo &, TR_HasRandomGenerator *r);
+   virtual bool isColdTarget(TR_ByteCodeInfo &, TR_CallTarget *, TR_HasRandomGenerator *r);
+   virtual bool isColdTarget(TR_ByteCodeInfo &, float, TR_HasRandomGenerator *r);
+   virtual void computeMethodBranchProfileInfo(AbsEnvInlinerUtil *util, TR_CallTarget*, TR::ResolvedMethodSymbol*, int, TR::Block*);
 
    int32_t getNumberOfNodes() {return _nodes.getSize();}
    int32_t getNextNodeNumber() {return _nextNodeNumber;}
@@ -454,5 +465,6 @@ private:
    TR::Block ** _handlers;
    uint32_t _index, _dim;
    };
+
 
 #endif

@@ -29,7 +29,7 @@
 
 namespace TestCompiler {
 
-typedef std::map<const std::string, int> MethodSets;
+typedef std::map<std::string, int> MethodSets;
 
 class OptionSetTest : public LimitFileTest
    {

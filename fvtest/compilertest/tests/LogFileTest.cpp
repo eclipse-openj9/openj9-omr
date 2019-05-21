@@ -75,7 +75,7 @@ TestCompiler::LogFileTest::fileExists(std::string name)
 bool
 TestCompiler::LogFileTest::fileIsNotEmpty(std::string logFile)
    {
-   std::ifstream logFileStream(logFile);
+   std::ifstream logFileStream(logFile.c_str());
    return logFileStream.peek() != std::ifstream::traits_type::eof();
    }
 
@@ -248,15 +248,18 @@ TEST_F(LogFileTest, EmptyTFLogTest)
 TEST_F(LogFileTest, KeywordsLogTest)
    {
    std::map<const char*, std::map<const char*, bool>> logFileChecks;
+
    
    /* Additional pairs of log types and keywords to look for can be added to
       logFileChecks like this. A failure is asserted if any of the keywords
       cannot be found in the associated log type.
    */
+   const char* keywordsTraceFull[] = { "<jitlog", "<ilgen", "<trees", "</trees>", "BBStart", "BBEnd", "<block_" };
    logFileChecks.insert(std::pair<const char*, std::map<const char*, bool>>
-      ("traceFull", buildKeywordMap({"<jitlog", "<ilgen", "<trees", "</trees>", "BBStart", "BBEnd", "<block_"})));
+      ("traceFull", buildKeywordMap(std::vector<const char*>(keywordsTraceFull, keywordsTraceFull + sizeof(keywordsTraceFull) / sizeof(const char*)))));
+   const char* keywordsTraceCG[] = { "<codegen" };
    logFileChecks.insert(std::pair<const char*, std::map<const char*, bool>>
-      ("traceCG", buildKeywordMap({"<codegen"})));
+      ("traceCG", buildKeywordMap(std::vector<const char*>(keywordsTraceCG, keywordsTraceCG + sizeof(keywordsTraceCG) / sizeof(const char*)))));
 
    runKeywordTests(logFileChecks);
    }

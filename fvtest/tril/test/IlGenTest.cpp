@@ -45,11 +45,11 @@ TEST_F(IlGenTest, Return3) {
 
     TR::TypeDictionary types;
     auto Int32 = types.PrimitiveType(TR::Int32);
-    TR::IlType* argTypes[] = {Int32};
+    TR::IlType* argTypes[] = { Int32 };
 
-    Tril::TRLangBuilder injector{trees, &types};
-    TR::ResolvedMethod compilee{__FILE__, LINETOSTR(__LINE__), "Return3InIL", sizeof(argTypes)/sizeof(TR::IlType*), argTypes, Int32, 0, &injector};
-    TR::IlGeneratorMethodDetails methodDetails{&compilee};
+    Tril::TRLangBuilder injector(trees, &types);
+    TR::ResolvedMethod compilee(__FILE__, LINETOSTR(__LINE__), "Return3InIL", sizeof(argTypes)/sizeof(TR::IlType*), argTypes, Int32, 0, &injector);
+    TR::IlGeneratorMethodDetails methodDetails(&compilee);
     int32_t rc = 0;
     auto entry_point = compileMethodFromDetails(NULL, methodDetails, warm, rc);
 

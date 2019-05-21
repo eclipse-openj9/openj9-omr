@@ -74,14 +74,6 @@
 #include "p/codegen/PPCTableOfConstants.hpp"
 #include "runtime/Runtime.hpp"
 
-
-extern TR::Register *addConstantToInteger(TR::Node * node, TR::Register *srcReg, int32_t value, TR::CodeGenerator *cg);
-extern TR::Register *addConstantToInteger(TR::Node * node, TR::Register *trgReg, TR::Register *srcReg, int32_t value, TR::CodeGenerator *cg);
-extern TR::Register *addConstantToLong(TR::Node * node, TR::Register *srcReg, int64_t value, TR::Register *trgReg, TR::CodeGenerator *cg);
-extern TR::Register *addConstantToLong(TR::Node *node, TR::Register *srcHigh, TR::Register *srcLow, int32_t valHigh, int32_t valLow, TR::CodeGenerator *cg);
-extern void generateZeroExtendInstruction(TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int32_t bitsInTarget, TR::CodeGenerator *cg);
-extern void generateSignExtendInstruction(TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, TR::CodeGenerator *cg);
-
 static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg);
 static void switchDispatch(TR::Node *node, bool fromTableEval, TR::CodeGenerator *cg);
 static bool isGlDepsUnBalanced(TR::Node *node, TR::CodeGenerator *cg);
@@ -89,7 +81,6 @@ static void lookupScheme1(TR::Node *node, bool unbalanced, bool fromTableEval, T
 static void lookupScheme2(TR::Node *node, bool unbalanced, bool fromTableEval, TR::CodeGenerator *cg);
 static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg);
 static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg);
-
 
 extern TR::Register *
 generateZeroExtendedTempRegister(TR::Node *node, TR::CodeGenerator *cg)
@@ -154,6 +145,7 @@ generateSignExtendedTempRegister(TR::Node *node, TR::CodeGenerator *cg)
 
    return srcReg;
    }
+
 
 static void computeCC_xcmpStrengthReducedCC(TR::Node *node,
                                              TR::Register *trgReg,
@@ -237,8 +229,6 @@ static void computeCC_xcmpStrengthReducedCC(TR::Node *node,
          cg->stopUsingRegister(src2Reg);
       }
    }
-
-
 
 TR::Register *computeCC_compareUnsigned(TR::Node *node,
                                         TR::Register *trgReg,

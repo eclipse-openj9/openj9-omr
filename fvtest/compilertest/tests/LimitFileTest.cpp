@@ -19,6 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#if defined(GTEST_HAS_DEATH_TEST)
 #include "tests/LimitFileTest.hpp"
 
 #include <fstream>
@@ -271,13 +272,15 @@ TEST_F(LimitFileTest, UseLimitFileBoundTest)
    int iNegLine;
    createAndCheckVLog(limitFile, NULL, &iNegLine);
 
+   iNegLine++; // Start at line after iNeg.
+
    std::ostringstream ss;
    ss << static_cast<long long>(iNegLine);
 
-   iNegLine++; // Start at line after iNeg.
    std::string limitArg = std::string("(") + limitFile + "," + ss.str() + ")";
    createVLog(vlog, limitArg.c_str());
    checkVLogForMethod(vlog, "iNeg", NULL);
    }
 
 }
+#endif /* defined(GTEST_HAS_DEATH_TEST) */

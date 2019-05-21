@@ -797,20 +797,6 @@ int32_t TR_SinkStores::performStoreSinking()
       return 1;
       }
 
-   if (trace() && sinkMethodMetaDataStores())
-      {
-      ListIterator<TR::RegisterMappedSymbol> methodMetaDataSymbols(&comp()->getMethodSymbol()->getMethodMetaDataList());
-      int32_t localCount = 0;
-      for (auto *m = methodMetaDataSymbols.getFirst(); m != NULL; m = methodMetaDataSymbols.getNext())
-         {
-         TR_ASSERT(m->isMethodMetaData(), "should be method meta data");
-         // If this assume fires than the order the method meta symbols were added in LiveVariableInformation has changed and
-         // the mapping of live index to symbol name given below is wrong
-         TR_ASSERT(m->getLiveLocalIndex() == localCount,"Index mismatch for MethodMetaDataSymbol therefore this tracing output is wrong\n");
-         traceMsg(comp(), "Local #%2d is MethodMetaData symbol at %p : %s\n",localCount++,m,m->getName());
-         }
-      }
-
    _liveVarInfo->createGenAndKillSetCaches();
    if (!enablePreciseSymbolTracking())
       _liveVarInfo->trackLiveCommonedLoads();

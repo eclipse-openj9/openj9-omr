@@ -90,7 +90,6 @@
    OPTIMIZATION(inductionVariableAnalysis)
    OPTIMIZATION(basicBlockOrdering)
    OPTIMIZATION(loopSpecializer)
-   OPTIMIZATION(trivialStoreSinking)
    OPTIMIZATION(generalStoreSinking)
    OPTIMIZATION(idiomRecognition)
    OPTIMIZATION(reorderArrayIndexExpr)

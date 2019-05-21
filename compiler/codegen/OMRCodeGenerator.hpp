@@ -1139,7 +1139,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
    void apply32BitLabelTableRelocation(int32_t * cursor, TR::LabelSymbol *);
 
-   TR::list<TR_Pair<TR_ResolvedMethod,TR::Instruction> *> &getJNICallSites() { return _jniCallSites; }  // registerAssumptions()
 
    bool needClassAndMethodPointerRelocations() { return false; }
    bool needRelocationsForStatics() { return false; }
@@ -1888,7 +1887,6 @@ class OMR_EXTENSIBLE CodeGenerator
    int32_t _currentPathDepth;
    TR::list<TR::Node*> _nodesSpineCheckedList;
 
-   TR::list<TR_Pair<TR_ResolvedMethod, TR::Instruction> *> _jniCallSites; // list of instrutions representing direct jni call sites
 
    TR_Array<void *> _monitorMapping;
 

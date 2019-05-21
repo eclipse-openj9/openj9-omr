@@ -60,7 +60,6 @@ class FrontEnd : public TR::FEBase<FrontEnd>
 
 #if defined(TR_TARGET_S390)
    virtual void generateBinaryEncodingPrologue(TR_BinaryEncodingData *beData, TR::CodeGenerator *cg);
-   virtual bool getS390SupportsHPRDebug() { return false; }
 #endif
 
    virtual intptrj_t methodTrampolineLookup(TR::Compilation *comp, TR::SymbolReference *symRef,  void *currentCodeCache);

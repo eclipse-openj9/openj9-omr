@@ -25,7 +25,6 @@
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/Instruction.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -154,59 +153,59 @@ TR::RealRegister *assignGPRegister(TR::Instruction   *instr,
 ////////////////////////////////////////////////////////////////////////////////
 // TR::X86LabelInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
-
-TR::X86LabelInstruction::X86LabelInstruction(TR_X86OpCodes    op,
-                                                 TR::Node          *node,
-                                                 TR::LabelSymbol    *sym,
-                                                 TR::CodeGenerator *cg,
-                                                 bool b)
-  : TR::Instruction(node, op, cg), _symbol(sym),_needToClearFPStack(b), _outlinedInstructionBranch(NULL), _reloType(TR_NoRelocation), _permitShortening(true)
+void TR::X86LabelInstruction::initialize(TR::LabelSymbol* sym, bool b)
    {
-   if (sym && op == LABEL)
+   _symbol = sym;
+   _needToClearFPStack = b;
+   _outlinedInstructionBranch = NULL;
+   _reloType = TR_NoRelocation;
+   _permitShortening = true;
+   if (sym && self()->getOpCodeValue() == LABEL)
       sym->setInstruction(this);
    else if (sym)
       sym->setDirectlyTargeted();
    }
 
-TR::X86LabelInstruction::X86LabelInstruction(TR::Instruction   *precedingInstruction,
-                                                 TR_X86OpCodes    op,
-                                                 TR::LabelSymbol    *sym,
-                                                 TR::CodeGenerator *cg,
-                                                 bool b)
-  : TR::Instruction(op, precedingInstruction, cg), _symbol(sym), _needToClearFPStack(b), _outlinedInstructionBranch(NULL), _reloType(TR_NoRelocation), _permitShortening(true)
+TR::X86LabelInstruction::X86LabelInstruction(TR_X86OpCodes      op,
+                                             TR::Node*          node,
+                                             TR::LabelSymbol*   sym,
+                                             TR::CodeGenerator* cg,
+                                             bool               b)
+  : TR::Instruction(node, op, cg)
    {
-   if (sym && op == LABEL)
-      sym->setInstruction(this);
-   else if (sym)
-      sym->setDirectlyTargeted();
+   initialize(sym, b);
    }
 
-TR::X86LabelInstruction::X86LabelInstruction(TR_X86OpCodes                       op,
-                                                 TR::Node                             *node,
-                                                 TR::LabelSymbol                       *sym,
-                                                 TR::RegisterDependencyConditions  *cond,
-                                                 TR::CodeGenerator                    *cg,
-                                                 bool b)
-  : TR::Instruction(cond, node, op, cg), _symbol(sym), _needToClearFPStack(b), _outlinedInstructionBranch(NULL), _reloType(TR_NoRelocation), _permitShortening(true)
+TR::X86LabelInstruction::X86LabelInstruction(TR::Instruction*   precedingInstruction,
+                                             TR_X86OpCodes      op,
+                                             TR::LabelSymbol*   sym,
+                                             TR::CodeGenerator* cg,
+                                             bool               b)
+  : TR::Instruction(op, precedingInstruction, cg)
    {
-   if (sym && op == LABEL)
-      sym->setInstruction(this);
-   else if (sym)
-      sym->setDirectlyTargeted();
+   initialize(sym, b);
    }
 
-TR::X86LabelInstruction::X86LabelInstruction(TR::Instruction                      *precedingInstruction,
-                                                 TR_X86OpCodes                       op,
-                                                 TR::LabelSymbol                       *sym,
-                                                 TR::RegisterDependencyConditions  *cond,
-                                                 TR::CodeGenerator                    *cg,
-                                                 bool b)
-  : TR::Instruction(cond, op, precedingInstruction, cg), _symbol(sym), _needToClearFPStack(b), _outlinedInstructionBranch(NULL), _reloType(TR_NoRelocation), _permitShortening(true)
+TR::X86LabelInstruction::X86LabelInstruction(TR_X86OpCodes                     op,
+                                             TR::Node*                         node,
+                                             TR::LabelSymbol*                  sym,
+                                             TR::RegisterDependencyConditions* cond,
+                                             TR::CodeGenerator*                cg,
+                                             bool                              b)
+  : TR::Instruction(cond, node, op, cg)
    {
-   if (sym && op == LABEL)
-      sym->setInstruction(this);
-   else if (sym)
-      sym->setDirectlyTargeted();
+   initialize(sym, b);
+   }
+
+TR::X86LabelInstruction::X86LabelInstruction(TR::Instruction*                  precedingInstruction,
+                                             TR_X86OpCodes                     op,
+                                             TR::LabelSymbol*                  sym,
+                                             TR::RegisterDependencyConditions* cond,
+                                             TR::CodeGenerator*                cg,
+                                             bool                              b)
+  : TR::Instruction(cond, op, precedingInstruction, cg)
+   {
+   initialize(sym, b);
    }
 
 TR::X86LabelInstruction  *TR::X86LabelInstruction::getX86LabelInstruction()
@@ -3923,6 +3922,12 @@ TR::AMD64RegImm64SymInstruction::autoSetReloKind()
 ////////////////////////////////////////////////////////////////////////////////
 
 TR::Instruction  *
+generateInstruction(TR::Instruction *prev, TR_X86OpCodes op, TR::CodeGenerator *cg)
+   {
+   return new (cg->trHeapMemory()) TR::Instruction(op, prev, cg);
+   }
+
+TR::Instruction  *
 generateInstruction(TR_X86OpCodes op, TR::Node * node, TR::CodeGenerator *cg)
    {
    return new (cg->trHeapMemory()) TR::Instruction(node, op, cg);
@@ -4160,18 +4165,6 @@ generateLongLabelInstruction(TR_X86OpCodes                       op,
    }
 
 TR::X86LabelInstruction  *
-generateLongLabelInstruction(TR_X86OpCodes     op,
-                             TR::Node          *node,
-                             TR::LabelSymbol    *sym,
-                             bool              needsVMThreadRegister,
-                             TR::CodeGenerator *cg)
-   {
-   TR::X86LabelInstruction *instr = new (cg->trHeapMemory()) TR::X86LabelInstruction(op, node, sym, cg);
-   instr->prohibitShortening();
-   return instr;
-   }
-
-TR::X86LabelInstruction  *
 generateLabelInstruction(TR_X86OpCodes     opCode,
                          TR::Node           *node,
                          TR::LabelSymbol     *label,
@@ -4265,7 +4258,7 @@ generateConditionalJumpInstruction(
       }
    else
       {
-      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, false, cg);
+      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, cg);
       }
 
    return inst;

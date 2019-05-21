@@ -73,19 +73,6 @@ struct J9JITConfig;
  */
 extern const char TR_BUILD_NAME[];
 
-enum TR_WriteBarrierKind
-   {
-   TR_WrtbarNone,
-   TR_WrtbarAlways,
-   TR_WrtbarOldCheck,
-   TR_WrtbarCardMark,
-   TR_WrtbarCardMarkAndOldCheck,
-   TR_WrtbarCardMarkIncremental,
-   TR_WrtbarRealTime,
-
-   TR_NumberOfWrtBars,
-   };
-
 #define TR_MAX_AVAIL_LIMITED_GRA_REGS 11
 
 enum TR_CompilationOptions
@@ -352,7 +339,7 @@ enum TR_CompilationOptions
    TR_EnableBenefitInliner                = 0x00000800 + 8,
    TR_DisableLinkageRegisterAllocation    = 0x00001000 + 8,
    // Available                           = 0x00002000 + 8,
-   // Available                           = 0x00004000 + 8,
+   TR_DisableZ15                          = 0x00004000 + 8,
    TR_DisableCompilationAfterDLT          = 0x00008000 + 8,
    TR_DLTMostOnce                         = 0x00010000 + 8,
    TR_DisableSelectiveNoOptServer         = 0x00020000 + 8,
@@ -393,7 +380,7 @@ enum TR_CompilationOptions
    TR_Randomize                           = 0x00200000 + 9,
    TR_BreakOnWriteBarrier                 = 0x00400000 + 9,
    BreakOnWriteBarrierSnippet             = 0x00800000 + 9,
-   TR_Enable64BitRegsOn32Bit              = 0x01000000 + 9,
+   // Available                           = 0x01000000 + 9,
    TR_CountWriteBarriersRT                = 0x02000000 + 9,
    TR_DisableNoServerDuringStartup        = 0x04000000 + 9,  // set TR_NoOptServer during startup and insert GCR trees
    TR_BreakOnNew                          = 0x08000000 + 9,
@@ -418,7 +405,7 @@ enum TR_CompilationOptions
    // Available                           = 0x00010000 + 10,
    TR_EnableSequentialLoadStoreWarm       = 0x00020000 + 10,
    TR_EnableSequentialLoadStoreCold       = 0x00040000 + 10,
-   TR_Enable64BitRegsOn32BitHeuristic     = 0x00080000 + 10,
+   // Available                           = 0x00080000 + 10,
    TR_EnableNewX86PrefetchTLH             = 0x00100000 + 10,
    // Available                           = 0x00200000 + 10,
    TR_ConservativeCompilation             = 0x00400000 + 10,
@@ -841,7 +828,7 @@ enum TR_CompilationOptions
    TR_PerfTool                                        = 0x00010000 + 25,
    // Available                                       = 0x00020000 + 25,
    TR_DisableBranchOnCount                            = 0x00040000 + 25,
-   TR_LinkagePreserveStrategy2                        = 0x00080000 + 25,
+   // Available                                       = 0x00080000 + 25,
    TR_DisableLoopEntryAlignment                       = 0x00100000 + 25,
    TR_EnableLoopEntryAlignment                        = 0x00200000 + 25,
    TR_DisableLeafRoutineDetection                     = 0x00400000 + 25,
@@ -1891,22 +1878,10 @@ public:
    static bool createDebug();
    static TR_Debug * findOrCreateDebug();
 
-   TR_WriteBarrierKind getGcMode()           { return _gcMode; }
-   uintptr_t           getGcCardSize()       { return _gcCardSize; }
-   uintptr_t           getHeapBase()         { return _heapBase; }
-   uintptr_t           getHeapTop()         { return _heapTop; }
+   uintptr_t           getGcCardSize()   { return _gcCardSize; }
+   uintptr_t           getHeapBase()     { return _heapBase; }
+   uintptr_t           getHeapTop()      { return _heapTop; }
 
-   bool generateWriteBarriers() { return _gcMode != TR_WrtbarNone; }
-   bool alwaysCallWriteBarrier() { return _gcMode == TR_WrtbarAlways; }
-   bool gcIsUsingConcurrentMark()
-      {
-      return    _gcMode == TR_WrtbarCardMark
-             || _gcMode == TR_WrtbarCardMarkAndOldCheck
-             || _gcMode == TR_WrtbarCardMarkIncremental;
-      }
-   bool needWriteBarriers();
-
-   void setGcMode(TR_WriteBarrierKind g) { _gcMode = g; }
    void setGcCardSize(uintptr_t g)       { _gcCardSize = g; }
    void setHeapBase(uintptr_t g)         { _heapBase = g; }
    void setHeapTop(uintptr_t g)          { _heapTop = g; }
@@ -2312,7 +2287,6 @@ protected:
    TR::SimpleRegex *            _memUsage;
    TR::SimpleRegex *            _classesWithFolableFinalFields;
    TR::SimpleRegex *            _disabledIdiomPatterns;
-   TR_WriteBarrierKind         _gcMode;
    uintptr_t                   _gcCardSize;
    uintptr_t                   _heapBase;
    uintptr_t                   _heapTop;

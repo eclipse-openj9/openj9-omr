@@ -67,6 +67,7 @@ namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class TreeTop; }
 namespace TR { class NodeExtension; }
+namespace TR { class NodeChecklist; }
 template <class T> class List;
 
 #define NUM_DEFAULT_CHILDREN    2
@@ -1024,13 +1025,6 @@ public:
    void setIsInvalid8BitGlobalRegister(bool v);
    const char * printIsInvalid8BitGlobalRegister();
 
-   // 390 zGryphon Highword register GRA
-   bool getIsHPREligible() { return _flags.testAny(isHPREligible); }
-   void setIsHPREligible() { _flags.set(isHPREligible); }
-   void resetIsHPREligible() { _flags.reset(isHPREligible); }
-   const char * printIsHPREligible();
-   bool isEligibleForHighWordOpcode();
-
    // Result of this node is being stored into the same location as its left child
    bool isDirectMemoryUpdate();
    void setDirectMemoryUpdate(bool v);
@@ -1830,6 +1824,7 @@ protected:
 // Private functionality.
 private:
    TR::Node * getExtendedChild(int32_t c);
+   TR_YesNoMaybe computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected);
 
    friend class ::TR_DebugExt;
    friend class TR::NodePool;
@@ -1857,7 +1852,6 @@ protected:
       nodePointsToNonNull                   = 0x00000004,
       nodeContainsCall                      = 0x00000008, ///< Only used during local analysis
       invalid8BitGlobalRegister             = 0x00000010, ///< value is in a global register which cannot be used on an 8 bit instruction
-      isHPREligible                         = 0x00000010, ///< 390 zGryphon Highword register GRA
       nodeHasExtension                      = 0x00000020,
       directMemoryUpdate                    = 0x00000040, ///< Result of this node is being stored into the same
                                                           ///< location as its left child

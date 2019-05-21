@@ -2852,44 +2852,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       TR::CodeGenerator * cg = comp()->cg();
       cg->removeUnavailableRegisters(rc, blocks, availableRegisters);
 
-      if (comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableRegisterPressureSimulation))
-         {
-         if (!rc->getType().isInt8() && !rc->getType().isInt16() && !rc->getType().isInt32())
-            {
-            for (int8_t i = firstRegister; i <= lastRegister; ++i)
-               {
-               // Eliminate all GPRs from consideration whose HPRs are not available since the GPR and HPR overlap
-               // and our register candidate is a 64-bit symbol
-               if (cg->isGlobalHPR(i) && !availableRegisters.isSet(i))
-                  {
-                  TR_GlobalRegisterNumber clobberedGPR = cg->getGlobalGPRFromHPR(i);
-
-                  if (trace)
-                     {
-                     traceMsg(comp(), "RC is 64bit and %s is unavailable - removing %s from available list\n", cg->getDebug()->getGlobalRegisterName(i), cg->getDebug()->getGlobalRegisterName(clobberedGPR));
-                     }
-
-                  availableRegisters.reset(clobberedGPR);
-                  }
-               }
-
-            // Now the only candidates remaining should be GPR-HPR pairs which are both available
-            for (int8_t i = firstRegister; i <= lastRegister; ++i)
-               {
-               // We should not consider HPRs for 64-bit register candidates
-               if (cg->isGlobalHPR(i) && availableRegisters.isSet(i))
-                  {
-                  availableRegisters.reset(i);
-
-                  if (trace)
-                     {
-                     traceMsg(comp(), "RC is 64bit - removing %s from available list\n", cg->getDebug()->getGlobalRegisterName(i));
-                     }
-                  }
-               }
-            }
-         }
-
       static const char * vrbVecGRA = feGetEnv("TR_traceVectorGRA");
 
       if (enableVectorGRA)

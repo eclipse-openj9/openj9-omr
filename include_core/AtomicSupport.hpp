@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,7 +39,8 @@
 /* need this for __csg() */
 #include <builtins.h>
 #endif
-#if defined(AIXPPC)||defined(LINUXPPC)
+
+#if defined(AIXPPC)
 #if defined(__xlC__)
 #include <builtins.h>
 /* 
@@ -61,7 +62,31 @@
 /* Bytecode for: nop */
 #pragma mc_func __ppc_nop  {"60000000"}
 #endif /* #if defined(__xlC__) */
-#endif /* defined(AIXPPC)||defined(LINUXPPC) */
+#endif /* defined(AIXPPC) */
+
+#if defined(LINUXPPC)
+#if defined(__xlC__)
+#include <builtins.h>
+/* 
+   Bytecode for: or 27,27,27 
+   provides a hint that performance will probably be improved if shared resources dedicated
+   to the executing processor are released for use by other processors. 
+*/
+#pragma mc_func __ppc_yield  {"7F7BDB78"}
+/*
+   Bytecode for: or 31,31,31
+   Lower SMT thread priority.
+*/
+#pragma mc_func __ppc_dropSMT  {"7FFFFB78"}
+/*
+   Bytecode for: or 6,6,6
+   Restore SMT thread priority
+*/
+#pragma mc_func __ppc_restoreSMT  {"7CC63378"}
+/* Bytecode for: nop */
+#pragma mc_func __ppc_nop  {"60000000"}
+#endif /* #if defined(__xlC__) */
+#endif /* defined(LINUXPPC) */
 
 #if defined(_MSC_VER)
 #include <intrin.h>
@@ -78,17 +103,32 @@
  * Do not call directly, use the methods from VM_AtomicSupport.
  */
 #if !defined(ATOMIC_SUPPORT_STUB)
-#if defined(LINUXPPC) || defined(AIXPPC)
+#if defined(AIXPPC)
+/* The default hardware priorities on AIX is MEDIUM(4).
+ * For AIX, dropSMT should drop to LOW(2) and 
+ * restoreSMT should raise back to MEDIUM(4)
+ */
 #if defined(__xlC__)
-		inline void __yield() { __ppc_yield(); }
 		inline void __dropSMT() { __ppc_dropSMT(); }
 		inline void __restoreSMT() { __ppc_restoreSMT(); }
 #else
-		inline void __yield() { __asm__ volatile ("or 27,27,27"); }
 		inline void __dropSMT() {  __asm__ volatile ("or 1,1,1"); }
 		inline void __restoreSMT() {  __asm__ volatile ("or 2,2,2"); }
 #endif
-#elif defined(_MSC_VER)
+#elif defined(LINUXPPC) /* defined(AIXPPC) */
+/* The default hardware priorities on LINUXPPC is MEDIUM-LOW(3).
+ * For LINUXPPC, dropSMT should drop to VERY-LOW(1) and 
+ * restoreSMT should raise back to MEDIUM-LOW(3)
+ */
+#if defined(__xlC__)
+		inline void __dropSMT() { __ppc_dropSMT(); }
+		inline void __restoreSMT() { __ppc_restoreSMT(); }
+#else
+		inline void __dropSMT() {  __asm__ volatile ("or 31,31,31"); }
+		inline void __restoreSMT() {  __asm__ volatile ("or 6,6,6"); }
+#endif
+
+#elif defined(_MSC_VER) /* defined (LINUXPPC) */
 		inline void __yield() { _mm_pause(); }
 #elif defined(__GNUC__) && (defined(J9X86) || defined(J9HAMMER))
 		inline void __yield() { __asm volatile ("pause"); }
@@ -102,8 +142,10 @@
 #if defined(__xlC__)
 		/* XL compiler complained about generated assembly, use machine code instead. */
 		inline void __nop() { __ppc_nop(); }
+		inline void __yield() { __ppc_yield(); }
 #else
 		inline void __nop() { __asm__ volatile ("nop"); }
+		inline void __yield() { __asm__ volatile ("or 27,27,27"); }
 #endif
 #elif defined(LINUX) && (defined(S390) || defined(S39064))
 		/*

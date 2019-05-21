@@ -24,6 +24,7 @@
 #include "env/CPU.hpp"
 #include "env/JitConfig.hpp"
 #include "env/ProcessorInfo.hpp"
+#include "infra/Flags.hpp"
 #include "x/runtime/X86Runtime.hpp"
 
 
@@ -111,4 +112,11 @@ bool
 OMR::X86::CPU::testOSForSSESupport()
    {
    return false;
+   }
+
+bool
+OMR::X86::CPU::supportsTransactionalMemoryInstructions()
+   {
+   flags32_t processorFeatureFlags8(self()->getX86ProcessorFeatureFlags8());
+   return processorFeatureFlags8.testAny(TR_RTM);
    }

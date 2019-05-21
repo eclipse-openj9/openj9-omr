@@ -32,6 +32,7 @@
 #include "codegen/GCStackMap.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
@@ -1076,21 +1077,17 @@ OMR::X86::CodeGenerator::supportsMergingGuards()
 bool
 OMR::X86::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
    {
-   bool result;
-
    switch (symbol)
       {
       case TR::SymbolReferenceTable::atomicAddSymbol:
       case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
       case TR::SymbolReferenceTable::atomicSwapSymbol:
-         result = true;
-         break;
+      case TR::SymbolReferenceTable::atomicCompareAndSwapReturnStatusSymbol:
+      case TR::SymbolReferenceTable::atomicCompareAndSwapReturnValueSymbol:
+         return true;
       default:
-         result = false;
-         break;
+         return false;
       }
-
-   return result;
    }
 
 TR::RealRegister *

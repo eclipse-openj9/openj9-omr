@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2018 IBM Corp. and others
+# Copyright (c) 2016, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,6 +42,7 @@ M4_PATH?=m4
 SED_PATH?=sed
 AR_PATH?=ar
 PERL_PATH?=perl
+PYTHON_PATH?=python3
 
 # The default OS X `as` binary acts differently than clang's built-in
 # assembler, despite identifying as the same in `as --version`.

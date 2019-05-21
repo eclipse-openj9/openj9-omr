@@ -437,6 +437,13 @@ typedef enum {
 	SYSTEM_GC
 } SweepCompletionReason;
 
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+typedef enum {
+	HEAP_REGION_STATE_NONE = 0x0,
+	HEAP_REGION_STATE_COPY_FORWARD = 0x1
+} HeapRegionState;
+#endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */
+
 /**
  * @ingroup GC_Include
  * @name Cycle type flags.

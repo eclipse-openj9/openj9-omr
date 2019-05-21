@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1093,6 +1093,15 @@ OMR::IlBuilder::widenIntegerTo32Bits(TR::IlValue *v)
    return v;
    }
 
+TR::IlValue *
+OMR::IlBuilder::widenIntegerTo32BitsUnsigned(TR::IlValue *v)
+   {
+   if (v->getDataType() == TR::Int8 || v->getDataType() == TR::Int16)
+      return UnsignedConvertTo(Int32, v);
+
+   return v;
+   }
+
 TR::Node*
 OMR::IlBuilder::binaryOpNodeFromNodes(TR::ILOpCodes op,
                                  TR::Node *leftNode,
@@ -1474,6 +1483,26 @@ OMR::IlBuilder::Div(TR::IlValue *left, TR::IlValue *right)
    }
 
 TR::IlValue *
+OMR::IlBuilder::UnsignedDiv(TR::IlValue *left, TR::IlValue *right)
+   {
+   TR::DataType returnType = left->getDataType();
+
+   // There are no opcodes for performing unsigned division on 8-bit or 16-bit
+   // integers. Instead, widen operands to 32-bit integers, use iudiv, then
+   // truncate the result.
+   left = widenIntegerTo32BitsUnsigned(left);
+   right = widenIntegerTo32BitsUnsigned(right);
+
+   TR::IlValue *returnValue = binaryOpFromOpMap(TR::ILOpCode::unsignedDivideOpCode, left, right);
+   TraceIL("IlBuilder[ %p ]::%d is UnsignedDiv %d / %d\n", this, returnValue->getID(), left->getID(), right->getID());
+
+   if (returnValue->getDataType() != returnType)
+      returnValue = UnsignedConvertTo(_types->PrimitiveType(returnType), returnValue);
+
+   return returnValue;
+   }
+
+TR::IlValue *
 OMR::IlBuilder::Rem(TR::IlValue *left, TR::IlValue *right)
    {
    TR::DataType returnType = left->getDataType();
@@ -1490,6 +1519,43 @@ OMR::IlBuilder::Rem(TR::IlValue *left, TR::IlValue *right)
 
    if (returnValue->getDataType() != returnType)
       returnValue = ConvertTo(_types->PrimitiveType(returnType), returnValue);
+
+   return returnValue;
+   }
+
+TR::IlValue *
+OMR::IlBuilder::UnsignedRem(TR::IlValue *left, TR::IlValue *right)
+   {
+   TR::DataType returnType = left->getDataType();
+   TR::IlValue *returnValue;
+
+   if (returnType.isInt64())
+      {
+      // There is no opcode for performing unsigned remainder on 64-bit
+      // integers, so we must instead simulate the correct behaviour. First, we
+      // truncate the dividend modulo the divisor by performing unsigned
+      // division followed by multiplication...
+      TR::IlValue *truncLeft = binaryOpFromOpCode(TR::ILOpCodes::lmul, binaryOpFromOpCode(TR::ILOpCodes::ludiv, left, right), right);
+
+      // ...then we subtract that value from the original dividend to get the
+      // remainder.
+      returnValue = binaryOpFromOpCode(TR::ILOpCodes::lsub, left, truncLeft);
+      }
+   else
+      {
+      // There are no opcodes for performing unsigned remainder on 8-bit or
+      // 16-bit integers. Instead, widen operands to 32-bit integers, use iurem,
+      // then truncate the result.
+      left = widenIntegerTo32BitsUnsigned(left);
+      right = widenIntegerTo32BitsUnsigned(right);
+
+      returnValue = binaryOpFromOpCode(TR::ILOpCodes::iurem, left, right);
+      }
+
+   TraceIL("IlBuilder[ %p ]::%d is UnsignedRem %d %% %d\n", this, returnValue->getID(), left->getID(), right->getID());
+
+   if (returnValue->getDataType() != returnType)
+      returnValue = UnsignedConvertTo(_types->PrimitiveType(returnType), returnValue);
 
    return returnValue;
    }
@@ -2545,18 +2611,102 @@ OMR::IlBuilder::Switch(const char *selectionVar,
    TR::Node *defaultNode = TR::Node::createCase(0, (*defaultBuilder)->getEntry()->getEntry());
    TR::Node *lookupNode = TR::Node::create(TR::lookup, numCases + 2, loadValue(selectorValue), defaultNode);
 
+   generateSwitchCases(lookupNode, defaultNode, defaultBuilder, numCases, cases);
+   }
+
+void
+OMR::IlBuilder::Switch(const char *selectionVar,
+                  TR::IlBuilder **defaultBuilder,
+                  uint32_t numCases,
+                  ...)
+   {
+   va_list args;
+   va_start(args, numCases);
+   JBCase **cases = createCaseArray(numCases, args);
+   va_end(args);
+
+   Switch(selectionVar, defaultBuilder, numCases, cases);
+   }
+
+void
+OMR::IlBuilder::TableSwitch(const char *selectionVar,
+                  TR::IlBuilder **defaultBuilder,
+                  bool generateBoundsCheck,
+                  uint32_t numCases,
+                  JBCase **cases)
+   {
+   TR::IlValue *selectorValue = Load(selectionVar);
+   TR_ASSERT(selectorValue->getDataType() == TR::Int32, "TableSwitch only supports selector having type Int32");
+   TR_ASSERT(numCases > 0, "TableSwitch requires at least 1 case");
+   int32_t low = cases[0]->_value;
+   int32_t high = cases[numCases -1]->_value;
+   int32_t casesCovered = (high - low) + 1;
+   TR_ASSERT(numCases == casesCovered, "TableSwitch only supports dense case sets");
+   if (low != 0)
+      selectorValue = Sub(selectorValue, ConstInt32(low));
+
+   *defaultBuilder = createBuilderIfNeeded(*defaultBuilder);
+
+   TR::Node *defaultNode = TR::Node::createCase(0, (*defaultBuilder)->getEntry()->getEntry());
+   TR::Node *tableNode = TR::Node::create(TR::table, numCases + 2, loadValue(selectorValue), defaultNode);
+   if (!generateBoundsCheck)
+       tableNode->setIsSafeToSkipTableBoundCheck(true);
+
+   generateSwitchCases(tableNode, defaultNode, defaultBuilder, numCases, cases);
+   }
+
+void
+OMR::IlBuilder::TableSwitch(const char *selectionVar,
+                  TR::IlBuilder **defaultBuilder,
+                  bool generateBoundsCheck,
+                  uint32_t numCases,
+                  ...)
+   {
+   va_list args;
+   va_start(args, numCases);
+   JBCase **cases = createCaseArray(numCases, args);
+   va_end(args);
+
+   TableSwitch(selectionVar, defaultBuilder, generateBoundsCheck, numCases, cases);
+   }
+
+TR::IlBuilder::JBCase *
+OMR::IlBuilder::MakeCase(int32_t caseValue, TR::IlBuilder **caseBuilder, int32_t caseFallsThrough)
+   {
+   TR_ASSERT(caseBuilder != NULL, "MakeCase, needs to have non-null caseBuilder");
+   *caseBuilder = createBuilderIfNeeded(*caseBuilder);
+   auto * c = new (_comp->trHeapMemory()) JBCase(caseValue, *caseBuilder, caseFallsThrough);
+   return c;
+   }
+
+TR::IlBuilder::JBCase **
+OMR::IlBuilder::createCaseArray(uint32_t numCases, va_list args)
+   {
+   JBCase **cases = (JBCase **) _comp->trMemory()->allocateHeapMemory(numCases * sizeof(JBCase *));
+   TR_ASSERT(NULL != cases, "out of memory");
+
+   for (uint32_t c = 0; c < numCases; ++c)
+      {
+      cases[c] = va_arg(args, JBCase *);
+      }
+
+   return cases;
+   }
+
+void
+OMR::IlBuilder::generateSwitchCases(TR::Node *switchNode, TR::Node *defaultNode, TR::IlBuilder **defaultBuilder, uint32_t numCases, JBCase **cases)
+   {
    // get the lookup tree into this builder, even though we haven't completely filled it in yet
-   genTreeTop(lookupNode);
+   genTreeTop(switchNode);
    TR::Block *switchBlock = _currentBlock;
 
    // make sure no fall through edge created from the lookup
    appendNoFallThroughBlock();
 
    TR::IlBuilder *breakBuilder = OrphanBuilder();
-
    // each case handler is a sequence of two builder objects: first the one passed in via `cases`,
    //   and second a builder that branches to the breakBuilder (unless this case falls through)
-   for (int32_t c=0;c < numCases;c++)
+   for (int32_t c = 0; c < numCases; c++)
       {
       int32_t value = cases[c]->_value;
       TR::IlBuilder *handler = NULL;
@@ -2564,7 +2714,6 @@ OMR::IlBuilder::Switch(const char *selectionVar,
       if (!cases[c]->_fallsThrough)
          {
          handler = OrphanBuilder();
-
          handler->AppendBuilder(builder);
 
          // handle "break" with a separate builder so user can add whatever they want into caseBuilders[c]
@@ -2582,42 +2731,13 @@ OMR::IlBuilder::Switch(const char *selectionVar,
       AppendBuilder(handler);
 
       TR::Node *caseNode = TR::Node::createCase(0, caseBlock->getEntry(), value);
-      lookupNode->setAndIncChild(c+2, caseNode);
+      switchNode->setAndIncChild(c+2, caseNode);
       }
 
    cfg()->addEdge(switchBlock, (*defaultBuilder)->getEntry());
    AppendBuilder(*defaultBuilder);
 
    AppendBuilder(breakBuilder);
-   }
-
-TR::IlBuilder::JBCase *
-OMR::IlBuilder::MakeCase(int32_t caseValue, TR::IlBuilder **caseBuilder, int32_t caseFallsThrough)
-   {
-   TR_ASSERT(caseBuilder != NULL, "MakeCase, needs to have non-null caseBuilder");
-   *caseBuilder = createBuilderIfNeeded(*caseBuilder);
-   auto * c = new (_comp->trHeapMemory()) JBCase(caseValue, *caseBuilder, caseFallsThrough);
-   return c;
-   }
-
-void
-OMR::IlBuilder::Switch(const char *selectionVar,
-                  TR::IlBuilder **defaultBuilder,
-                  uint32_t numCases,
-                  ...)
-   {
-   JBCase **cases = (JBCase **) _comp->trMemory()->allocateHeapMemory(numCases * sizeof(JBCase *));
-   TR_ASSERT(NULL != cases, "out of memory");
-
-   va_list args;
-   va_start(args, numCases);
-   for (uint32_t c = 0; c < numCases; ++c)
-      {
-      cases[c] = va_arg(args, JBCase *);
-      }
-   va_end(args);
-
-   Switch(selectionVar, defaultBuilder, numCases, cases);
    }
 
 void

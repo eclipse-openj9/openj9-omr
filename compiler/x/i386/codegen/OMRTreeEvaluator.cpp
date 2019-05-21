@@ -25,6 +25,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
@@ -3318,8 +3319,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
       TR::Register                         *cmpRegister = NULL;
       TR::RegisterDependencyConditions  *deps        = NULL;
 
-      bool needVMThreadDep = true;
-
       if ((lowValue | highValue) == 0)
          {
          TR::Node     *landConstChild;
@@ -3368,7 +3367,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
             generateRegRegInstruction(OR4RegReg, node, targetRegister, cmpRegister->getHighOrder(), cg);
             }
 
-         generateConditionalJumpInstruction(JE4, node, cg, needVMThreadDep);
+         generateConditionalJumpInstruction(JE4, node, cg);
 
          if (targetNeedsToBeExplicitlyStopped)
             {
@@ -3409,9 +3408,9 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
             }
          else
             {
-            generateLabelInstruction(JNE4, node, doneLabel, needVMThreadDep, cg);
+            generateLabelInstruction(JNE4, node, doneLabel, cg);
             compareGPRegisterToConstantForEquality(node, highValue, cmpRegister->getHighOrder(), cg);
-            generateLabelInstruction(JE4, node, destinationLabel, needVMThreadDep, cg);
+            generateLabelInstruction(JE4, node, destinationLabel, cg);
             deps = generateRegisterDependencyConditions((uint8_t)0, 2, cg);
             deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
             deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
@@ -3456,8 +3455,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, T
       TR::Node                             *firstChild  = node->getFirstChild();
       TR::Register                         *cmpRegister = NULL;
       TR::RegisterDependencyConditions  *deps        = NULL;
-
-      bool needVMThreadDep = true;
 
       if ((lowValue | highValue) == 0)
          {
@@ -3506,7 +3503,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, T
             generateRegRegInstruction(OR4RegReg, node, targetRegister, cmpRegister->getHighOrder(), cg);
             }
 
-         generateConditionalJumpInstruction(JNE4, node, cg, needVMThreadDep);
+         generateConditionalJumpInstruction(JNE4, node, cg);
 
          if (targetNeedsToBeExplicitlyStopped)
             {
@@ -3547,9 +3544,9 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, T
             }
          else
             {
-            generateLabelInstruction(JNE4, node, destinationLabel, needVMThreadDep, cg);
+            generateLabelInstruction(JNE4, node, destinationLabel, cg);
             compareGPRegisterToConstantForEquality(node, highValue, cmpRegister->getHighOrder(), cg);
-            generateLabelInstruction(JNE4, node, destinationLabel, needVMThreadDep, cg);
+            generateLabelInstruction(JNE4, node, destinationLabel, cg);
             }
          }
 
@@ -3620,11 +3617,12 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lternaryEvaluator(TR::Node *node, T
    TR::Register *falseReg = cg->evaluate(falseVal);
    TR::Register *trueReg  = cg->longClobberEvaluate(trueVal);
 
-   TR::ILOpCodes condOp = condition->getOpCodeValue();
-   if((condOp == TR::icmpeq) || (condOp == TR::icmpne))
+   auto condOp = condition->getOpCode();
+   bool longCompare = (condition->getOpCode().isBooleanCompare() && condition->getFirstChild()->getOpCode().isLong());
+   if (!longCompare && condOp.isCompareForEquality() && condition->getFirstChild()->getOpCode().isIntegerOrAddress())
       {
       compareIntegersForEquality(condition, cg);
-      if(condOp == TR::icmpeq)
+      if(condOp.isCompareTrueIfEqual())
          {
          generateRegRegInstruction(CMOVNE4RegReg, node,
                                    trueReg-> getRegisterPair()->getLowOrder(),
@@ -3642,6 +3640,16 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lternaryEvaluator(TR::Node *node, T
                                    trueReg-> getRegisterPair()->getHighOrder(),
                                    falseReg->getRegisterPair()->getHighOrder(), cg);
          }
+      }
+   else if (!longCompare && condOp.isCompareForOrder() && condition->getFirstChild()->getOpCode().isIntegerOrAddress())
+      {
+      compareIntegersForOrder(condition, cg);
+      generateRegRegInstruction((condOp.isCompareTrueIfEqual()) ?
+                         ((condOp.isCompareTrueIfGreater()) ? CMOVL4RegReg : CMOVG4RegReg) :
+                         ((condOp.isCompareTrueIfGreater()) ? CMOVLE4RegReg : CMOVGE4RegReg), node, trueReg->getRegisterPair()->getLowOrder(), falseReg->getRegisterPair()->getLowOrder(), cg);
+      generateRegRegInstruction((condOp.isCompareTrueIfEqual()) ?
+                         ((condOp.isCompareTrueIfGreater()) ? CMOVL4RegReg : CMOVG4RegReg) :
+                         ((condOp.isCompareTrueIfGreater()) ? CMOVLE4RegReg : CMOVGE4RegReg), node, trueReg->getRegisterPair()->getHighOrder(), falseReg->getRegisterPair()->getHighOrder(), cg);
       }
    else
       {

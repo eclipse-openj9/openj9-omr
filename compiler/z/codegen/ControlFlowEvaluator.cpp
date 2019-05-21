@@ -27,6 +27,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -88,18 +89,6 @@ generateS390PackedCompareAndBranchOps(TR::Node * node,
                                       TR::InstOpCode::S390BranchCondition rBranchOpCond,
                                       TR::InstOpCode::S390BranchCondition &retBranchOpCond,
                                       TR::LabelSymbol *branchTarget = NULL);
-
-//#define TRACE_EVAL
-#if defined(TRACE_EVAL)
-#define EVAL_BLOCK
-#if defined (EVAL_BLOCK)
-#define PRINT_ME(string,node,cg) TR::Delimiter evalDelimiter(TR::comp(),TR::comp()->getOption(TR_TraceCG),"EVAL", string)
-#else
-extern void PRINT_ME(char * string, TR::Node * node, TR::CodeGenerator * cg);
-#endif
-#else
-#define PRINT_ME(string,node,cg)
-#endif
 
 extern TR::Register *
 iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision, TR::MemoryReference * divchkDivisorMR);
@@ -188,7 +177,7 @@ virtualGuardHelper(TR::Node * node, TR::CodeGenerator * cg)
       TR_VirtualGuard * virtualGuard = comp->findVirtualGuardInfo(node);
       site = virtualGuard->addNOPSite();
       }
-   else 
+   else
       {
       site = comp->addSideEffectNOPSite();
       }
@@ -289,7 +278,6 @@ generateS390lcmpEvaluator64(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpC
 TR::Register *
 OMR::Z::TreeEvaluator::fcmplEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("fcmpl", node, cg);
    TR::InstOpCode::Mnemonic branchOp;
    TR::InstOpCode::S390BranchCondition brCond ;
 
@@ -351,11 +339,7 @@ generateS390Compare(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mne
 
 /**
  *  \brief
- *     Compares 2 numbers are returns the greater of the 2.
- *     ONLY SUPPORTS imax, imin, lmax, lmin
- *
- *  \detail
- *     Uses a load and conditional store to select the correct value.
+ *     Compares two values are returns the max/min of the two.
  *     ONLY SUPPORTS imax, imin, lmax, lmin
  *
  *  \param node
@@ -365,45 +349,125 @@ generateS390Compare(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mne
  *     The code generator used to generate the instructions.
  *
  *  \param isMax
- *     Boolean representing the type of function, either a max or min call.
+ *     Determines the type of function, either a max or min call.
  *
  *  \return
- *     A register containing the return value of the Java call. The return value
- *     will be the greater or lesser of the 2 children for max and min functions, respectively.
+ *     The register containing the max/min value.
  */
-static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool isMax)
+static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool isMax)
    {
-   TR_ASSERT_FATAL(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196),
-      "cannot evaluate %s on z10 or below", node->getOpCode().getName());
+   TR::Node* lhsNode = node->getChild(0);
+   TR::Node* rhsNode = node->getChild(1);
 
-   TR::Register *registerA;
-   TR::Register *registerB = cg->evaluate(node->getSecondChild());
-   // Mask is 4 to pick b when a is Lower for max, 2 to pick b when a is higher for min
+   TR::Register* lhsReg = NULL;
+   TR::Register* rhsReg = cg->evaluate(rhsNode);
+
+   // Mask is 4 to pick rhs when lhs is less for max, 2 to pick rhs when lhs is greater for min
    const uint8_t mask = isMax ? 0x4 : 0x2;
 
    if (node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::imin)
       {
-      registerA = cg->gprClobberEvaluate(node->getFirstChild());
-      generateRRInstruction(cg, TR::InstOpCode::CR, node, registerA, registerB);
-      generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA, registerB, mask, true);
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
+         {
+         lhsReg = cg->allocateRegister();
+
+         // Load into a tmp instead of clobberEvaluating into lhsReg to avoid an extra register shuffle
+         TR::Register* tmpRegister = cg->evaluate(lhsNode);
+
+         generateRRInstruction(cg, TR::InstOpCode::CR, node, tmpRegister, rhsReg);
+         generateRRFInstruction(cg, TR::InstOpCode::SELR, node, lhsReg, rhsReg, tmpRegister, mask);
+         }
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+         {
+         lhsReg = cg->gprClobberEvaluate(lhsNode);
+
+         generateRRInstruction(cg, TR::InstOpCode::CR, node, lhsReg, rhsReg);
+         generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, lhsReg, rhsReg, mask, true);
+         }
+      else
+         {
+         lhsReg = cg->gprClobberEvaluate(lhsNode);
+
+         TR::LabelSymbol* cFlowRegionStart = generateLabelSymbol(cg);
+         TR::LabelSymbol* cFlowRegionEnd = generateLabelSymbol(cg);
+
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+         cFlowRegionStart->setStartInternalControlFlow();
+
+         auto bc = isMax ?
+            TR::InstOpCode::COND_BHR :
+            TR::InstOpCode::COND_BLR;
+
+         generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CR, node, lhsReg, rhsReg, bc, cFlowRegionEnd, false);
+
+         generateRRInstruction(cg, TR::InstOpCode::LR, node, lhsReg, rhsReg);
+         
+         TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+
+         deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
+         deps->addPostConditionIfNotAlreadyInserted(rhsReg, TR::RealRegister::AssignAny);
+
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+         cFlowRegionEnd->setEndInternalControlFlow();
+         }
       }
    else if (node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lmin)
       {
-      registerA = cg->gprClobberEvaluate(node->getFirstChild());
-      generateRREInstruction(cg, TR::InstOpCode::CGR, node, registerA, registerB);
-      generateRRFInstruction(cg, TR::InstOpCode::LOCGR, node, registerA, registerB, mask, true);
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
+         {
+         lhsReg = cg->allocateRegister();
+
+         // Load into a tmp instead of clobberEvaluating into lhsReg to avoid an extra register shuffle
+         TR::Register* tmpRegister = cg->evaluate(lhsNode);
+
+         generateRREInstruction(cg, TR::InstOpCode::CGR, node, tmpRegister, rhsReg);
+         generateRRFInstruction(cg, TR::InstOpCode::SELGR, node, lhsReg, rhsReg, tmpRegister, mask);
+         }
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+         {
+         lhsReg = cg->gprClobberEvaluate(lhsNode);
+
+         generateRREInstruction(cg, TR::InstOpCode::CGR, node, lhsReg, rhsReg);
+         generateRRFInstruction(cg, TR::InstOpCode::LOCGR, node, lhsReg, rhsReg, mask, true);
+         }
+      else
+         {
+         lhsReg = cg->gprClobberEvaluate(lhsNode);
+
+         TR::LabelSymbol* cFlowRegionStart = generateLabelSymbol(cg);
+         TR::LabelSymbol* cFlowRegionEnd = generateLabelSymbol(cg);
+
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+         cFlowRegionStart->setStartInternalControlFlow();
+
+         auto bc = isMax ?
+            TR::InstOpCode::COND_BHR :
+            TR::InstOpCode::COND_BLR;
+
+         generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CGR, node, lhsReg, rhsReg, bc, cFlowRegionEnd, false);
+
+         generateRRInstruction(cg, TR::InstOpCode::LGR, node, lhsReg, rhsReg);
+         
+         TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+
+         deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
+         deps->addPostConditionIfNotAlreadyInserted(rhsReg, TR::RealRegister::AssignAny);
+
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+         cFlowRegionEnd->setEndInternalControlFlow();
+         }
       }
    else
       {
       TR_ASSERT_FATAL(node->getOpCodeValue(), "Opcode %s cannot be evaluated by maxMinHelper\n", node->getOpCode().getName());
       }
 
-   node->setRegister(registerA);
+   node->setRegister(lhsReg);
 
-   cg->decReferenceCount(node->getFirstChild());
-   cg->decReferenceCount(node->getSecondChild());
+   cg->decReferenceCount(lhsNode);
+   cg->decReferenceCount(rhsNode);
 
-   return registerA;
+   return lhsReg;
    }
 
 TR::Register *
@@ -531,7 +595,6 @@ OMR::Z::TreeEvaluator::mbranchEvaluator(TR::Node * node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::gotoEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("goto", node, cg);
    TR::Node * temp = node->getBranchDestination()->getNode();
 
    if (node->getNumChildren() > 0)
@@ -556,7 +619,6 @@ OMR::Z::TreeEvaluator::gotoEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::igotoEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("igoto", node, cg);
    TR_ASSERT( node->getNumChildren() >= 1, "at least one child expected for igoto");
 
    TR::Node * child = node->getFirstChild();
@@ -591,7 +653,6 @@ OMR::Z::TreeEvaluator::igotoEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("return", node, cg);
    TR::Compilation *comp = cg->comp();
 
    if ((node->getOpCodeValue() == TR::Return) && node->isReturnDummy()) return NULL;
@@ -803,7 +864,6 @@ static inline void generateMergedGuardCodeIfNeeded(TR::Node *node, TR::CodeGener
 TR::Register *
 OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ificmpeq", node, cg);
    TR::Compilation *comp = cg->comp();
 
    if (virtualGuardHelper(node, cg))
@@ -923,8 +983,6 @@ TR::Register* OMR::Z::TreeEvaluator::ifFoldingHelper(TR::Node *node, TR::CodeGen
 TR::Register *
 OMR::Z::TreeEvaluator::ificmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ificmplt", node, cg);
-
    bool inlined = false;
    TR::Register *reg;
 
@@ -946,7 +1004,6 @@ OMR::Z::TreeEvaluator::ificmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ificmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ificmpge", node, cg);
    bool inlined = false;
 
    TR::Register *reg;
@@ -969,7 +1026,6 @@ OMR::Z::TreeEvaluator::ificmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ificmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ificmpgt", node, cg);
    bool inlined = false;
 
    TR::Register *reg;
@@ -992,7 +1048,6 @@ OMR::Z::TreeEvaluator::ificmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ificmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ificmple", node, cg);
    bool inlined = false;
 
    TR::Register *reg;
@@ -1014,7 +1069,6 @@ OMR::Z::TreeEvaluator::ificmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmpeq", node, cg);
    generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
    generateMergedGuardCodeIfNeeded(node, cg);
    return NULL;
@@ -1026,8 +1080,6 @@ OMR::Z::TreeEvaluator::iflcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmpne", node, cg);
-
    if (virtualGuardHelper(node, cg))
       {
       return NULL;
@@ -1044,7 +1096,6 @@ OMR::Z::TreeEvaluator::iflcmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmple", node, cg);
    generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNH, TR::InstOpCode::COND_BNL);
    return NULL;
    }
@@ -1055,7 +1106,6 @@ OMR::Z::TreeEvaluator::iflcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmplt", node, cg);
    generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, TR::InstOpCode::COND_BH);
    return NULL;
    }
@@ -1066,7 +1116,6 @@ OMR::Z::TreeEvaluator::iflcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmpge", node, cg);
    generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, TR::InstOpCode::COND_BNH);
    return NULL;
    }
@@ -1077,7 +1126,6 @@ OMR::Z::TreeEvaluator::iflcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iflcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iflcmpgt", node, cg);
    generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BH, TR::InstOpCode::COND_BL);
    return NULL;
    }
@@ -1088,7 +1136,6 @@ OMR::Z::TreeEvaluator::iflcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifacmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifacmpeq", node, cg);
    return TR::TreeEvaluator::ificmpeqEvaluator(node, cg);
    }
 
@@ -1098,7 +1145,6 @@ OMR::Z::TreeEvaluator::ifacmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifacmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifacmpne", node, cg);
    return TR::TreeEvaluator::ificmpeqEvaluator(node, cg);
    }
 
@@ -1109,7 +1155,6 @@ OMR::Z::TreeEvaluator::ifacmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifbcmpeq", node, cg);
    if (node->getOpCodeValue() == TR::ifbcmpeq || node->getOpCodeValue() == TR::ifbucmpeq)
       {
       return generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1130,7 +1175,6 @@ OMR::Z::TreeEvaluator::ifbcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifbcmplt", node, cg);
    return TR::TreeEvaluator::ificmpltEvaluator(node, cg);
    }
 
@@ -1140,7 +1184,6 @@ OMR::Z::TreeEvaluator::ifbcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifbcmpge", node, cg);
    return TR::TreeEvaluator::ificmpgeEvaluator(node, cg);
    }
 
@@ -1150,7 +1193,6 @@ OMR::Z::TreeEvaluator::ifbcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifbcmpgt", node, cg);
    return TR::TreeEvaluator::ificmpgtEvaluator(node, cg);
    }
 
@@ -1160,7 +1202,6 @@ OMR::Z::TreeEvaluator::ifbcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifbcmple", node, cg);
    return TR::TreeEvaluator::ificmpleEvaluator(node, cg);
    }
 
@@ -1171,7 +1212,6 @@ OMR::Z::TreeEvaluator::ifbcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifscmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifscmpeq", node, cg);
    if (node->getOpCodeValue() == TR::ifscmpeq)
       {
       return generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1188,7 +1228,6 @@ OMR::Z::TreeEvaluator::ifscmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifscmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifscmplt", node, cg);
    return TR::TreeEvaluator::ificmpltEvaluator(node, cg);
    }
 
@@ -1198,7 +1237,6 @@ OMR::Z::TreeEvaluator::ifscmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifscmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifscmpge", node, cg);
    return TR::TreeEvaluator::ificmpgeEvaluator(node, cg);
    }
 
@@ -1208,7 +1246,6 @@ OMR::Z::TreeEvaluator::ifscmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifscmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifscmpgt", node, cg);
    return TR::TreeEvaluator::ificmpgtEvaluator(node, cg);
    }
 
@@ -1218,7 +1255,6 @@ OMR::Z::TreeEvaluator::ifscmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifscmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifscmple", node, cg);
    return TR::TreeEvaluator::ificmpleEvaluator(node, cg);
    }
 
@@ -1229,7 +1265,6 @@ OMR::Z::TreeEvaluator::ifscmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifsucmpeq", node, cg);
    if (node->getOpCodeValue() == TR::ifsucmpeq)
       {
       return generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1246,7 +1281,6 @@ OMR::Z::TreeEvaluator::ifsucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifsucmplt", node, cg);
    return TR::TreeEvaluator::ificmpltEvaluator(node, cg);
    }
 
@@ -1256,7 +1290,6 @@ OMR::Z::TreeEvaluator::ifsucmpltEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifsucmpge", node, cg);
    return TR::TreeEvaluator::ificmpgeEvaluator(node, cg);
    }
 
@@ -1266,7 +1299,6 @@ OMR::Z::TreeEvaluator::ifsucmpgeEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifsucmpgt", node, cg);
    return TR::TreeEvaluator::ificmpgtEvaluator(node, cg);
    }
 
@@ -1276,7 +1308,6 @@ OMR::Z::TreeEvaluator::ifsucmpgtEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ifsucmple", node, cg);
    return TR::TreeEvaluator::ificmpleEvaluator(node, cg);
    }
 
@@ -1289,13 +1320,12 @@ OMR::Z::TreeEvaluator::ifsucmpleEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("icmpeq", node, cg);
    if (node->getOpCodeValue() == TR::icmpeq ||
          node->getOpCodeValue() == TR::iucmpeq ||
          node->getOpCodeValue() == TR::acmpeq)
       {
       // RXSBG only supported on z10+
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
          {
          TR::Node* firstChild = node->getFirstChild();
          TR::Node* secondChild = node->getSecondChild();
@@ -1346,8 +1376,6 @@ OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::icmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("icmplt", node, cg);
-
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
 
@@ -1378,7 +1406,6 @@ OMR::Z::TreeEvaluator::icmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::icmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("icmpge", node, cg);
    return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, TR::InstOpCode::COND_BNH);
    }
 
@@ -1388,8 +1415,6 @@ OMR::Z::TreeEvaluator::icmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::icmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("icmpgt", node, cg);
-
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
 
@@ -1420,7 +1445,6 @@ OMR::Z::TreeEvaluator::icmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::icmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("icmple", node, cg);
    return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNH, TR::InstOpCode::COND_BNL);
    }
 
@@ -1430,7 +1454,6 @@ OMR::Z::TreeEvaluator::icmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmpeq", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, CMP4BOOLEAN);
    }
 
@@ -1440,7 +1463,6 @@ OMR::Z::TreeEvaluator::lcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmpne", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, CMP4BOOLEAN);
    }
 
@@ -1450,7 +1472,6 @@ OMR::Z::TreeEvaluator::lcmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmple", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNH, CMP4BOOLEAN);
    }
 
@@ -1460,7 +1481,6 @@ OMR::Z::TreeEvaluator::lcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmplt", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, CMP4BOOLEAN);
    }
 
@@ -1470,7 +1490,6 @@ OMR::Z::TreeEvaluator::lcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmpge", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, CMP4BOOLEAN);
    }
 
@@ -1480,7 +1499,6 @@ OMR::Z::TreeEvaluator::lcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmpgt", node, cg);
    return generateS390lcmpEvaluator64(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BH, CMP4BOOLEAN);
    }
 
@@ -1491,7 +1509,6 @@ OMR::Z::TreeEvaluator::lcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::acmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("acmpeq", node, cg);
    return TR::TreeEvaluator::icmpeqEvaluator(node, cg);
    }
 
@@ -1506,7 +1523,6 @@ OMR::Z::TreeEvaluator::acmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bcmpeq", node, cg);
    if (node->getOpCodeValue() == TR::bcmpeq || node->getOpCodeValue() == TR::bucmpeq)
       {
       return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1523,7 +1539,6 @@ OMR::Z::TreeEvaluator::bcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bcmplt", node, cg);
    return TR::TreeEvaluator::icmpltEvaluator(node, cg);
    }
 
@@ -1533,7 +1548,6 @@ OMR::Z::TreeEvaluator::bcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bcmpge", node, cg);
    return TR::TreeEvaluator::icmpgeEvaluator(node, cg);
    }
 
@@ -1543,7 +1557,6 @@ OMR::Z::TreeEvaluator::bcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bcmpgt", node, cg);
    return TR::TreeEvaluator::icmpgtEvaluator(node, cg);
    }
 
@@ -1553,7 +1566,6 @@ OMR::Z::TreeEvaluator::bcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bcmple", node, cg);
    return TR::TreeEvaluator::icmpleEvaluator(node, cg);
    }
 
@@ -1564,7 +1576,6 @@ OMR::Z::TreeEvaluator::bcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::scmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("scmpeq", node, cg);
    if (node->getOpCodeValue() == TR::scmpeq)
       {
       return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1581,7 +1592,6 @@ OMR::Z::TreeEvaluator::scmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::scmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("scmplt", node, cg);
    return TR::TreeEvaluator::icmpltEvaluator(node, cg);
    }
 
@@ -1591,7 +1601,6 @@ OMR::Z::TreeEvaluator::scmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::scmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("scmpge", node, cg);
    return TR::TreeEvaluator::icmpgeEvaluator(node, cg);
    }
 
@@ -1601,7 +1610,6 @@ OMR::Z::TreeEvaluator::scmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::scmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("scmpgt", node, cg);
    return TR::TreeEvaluator::icmpgtEvaluator(node, cg);
    }
 
@@ -1611,7 +1619,6 @@ OMR::Z::TreeEvaluator::scmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::scmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("scmple", node, cg);
    return TR::TreeEvaluator::icmpleEvaluator(node, cg);
    }
 
@@ -1622,7 +1629,6 @@ OMR::Z::TreeEvaluator::scmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sucmpeq", node, cg);
    if (node->getOpCodeValue() == TR::sucmpeq)
       {
       return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
@@ -1639,7 +1645,6 @@ OMR::Z::TreeEvaluator::sucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sucmplt", node, cg);
    return TR::TreeEvaluator::icmpltEvaluator(node, cg);
    }
 
@@ -1649,7 +1654,6 @@ OMR::Z::TreeEvaluator::sucmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sucmpge", node, cg);
    return TR::TreeEvaluator::icmpgeEvaluator(node, cg);
    }
 
@@ -1659,7 +1663,6 @@ OMR::Z::TreeEvaluator::sucmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sucmpgt", node, cg);
    return TR::TreeEvaluator::icmpgtEvaluator(node, cg);
    }
 
@@ -1669,7 +1672,6 @@ OMR::Z::TreeEvaluator::sucmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sucmple", node, cg);
    return TR::TreeEvaluator::icmpleEvaluator(node, cg);
    }
 
@@ -1680,7 +1682,6 @@ OMR::Z::TreeEvaluator::sucmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lcmpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lcmp", node, cg);
    return lcmpHelper64(node, cg);
    }
 
@@ -1718,7 +1719,6 @@ void OMR::Z::TreeEvaluator::tableEvaluatorCaseLabelHelper(TR::Node * node, TR::C
 TR::Register *
 OMR::Z::TreeEvaluator::tableEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("table", node, cg);
    TR::Compilation *comp = cg->comp();
    int32_t i;
    uint32_t upperBound = node->getCaseIndexUpperBound();
@@ -1890,8 +1890,6 @@ bool isSwitchFoldableNoncall(TR::Node * node)
 TR::Register *
 OMR::Z::TreeEvaluator::lookupEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lookup", node, cg);
-
    //fold builtin if possible
    TR::Node* firstChild = node->getFirstChild();
 
@@ -2200,15 +2198,16 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
          // Use Load-And-Trap on zHelix if available.
          // This loads the field and performance a NULLCHK on the field value.
          // i.e.  o.f == NULL
-         if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) &&
+         if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) &&
              reference->getOpCode().isLoadVar() &&
+             (reference->getOpCodeValue() != TR::ardbari) &&
              reference->getRegister() == NULL)
             {
             targetRegister = cg->allocateCollectedReferenceRegister();
             appendTo = generateRXInstruction(cg, TR::InstOpCode::getLoadAndTrapOpCode(), node, targetRegister, generateS390MemoryReference(reference, cg), appendTo);
             reference->setRegister(targetRegister);
             }
-         else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) &&
+         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) &&
                   reference->getRegister() == NULL &&
                   comp->useCompressedPointers() &&
                   reference->getOpCodeValue() == TR::l2a &&
@@ -2258,6 +2257,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
 
          if (!firstChild->getOpCode().isCall() &&
                reference->getOpCode().isLoadVar() &&
+               (reference->getOpCodeValue() != TR::ardbari) && // ardbari needs to be evaluated before being NULLCHK'ed because of its side effect.
                reference->getOpCode().hasSymbolReference() &&
                reference->getRegister() == NULL)
             {
@@ -2324,7 +2324,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
 
                // For concurrent scavenge the source is loaded and shifted by the guarded load, thus we need to use CG
                // here for a non-zero compressedrefs shift value
-               if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
+               if (TR::Compiler->om.readBarrierType() != gc_modron_readbar_none)
                   {
                   cmpOpCode = TR::InstOpCode::getCmpOpCode();
                   }
@@ -2456,7 +2456,6 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
 TR::Register *
 OMR::Z::TreeEvaluator::NULLCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("NULLCHK", node, cg);
    return TR::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(node, false, cg);
    }
 
@@ -2466,8 +2465,6 @@ OMR::Z::TreeEvaluator::NULLCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::ZEROCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("ZEROCHK", node, cg);
-
    // Labels for OOL path with helper and the merge point back from OOL path
    TR::LabelSymbol *slowPathOOLLabel = generateLabelSymbol(cg);;
    TR::LabelSymbol *doneLabel  = generateLabelSymbol(cg);;
@@ -2527,7 +2524,6 @@ OMR::Z::TreeEvaluator::ZEROCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::resolveAndNULLCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("resolveAndNULLCHK", node, cg);
    return TR::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(node, true, cg);
    }
 
@@ -2754,8 +2750,6 @@ TR::Node* OMR::Z::TreeEvaluator::DAAAddressPointer(TR::Node* callNode, TR::CodeG
 TR::Register *
 OMR::Z::TreeEvaluator::butestEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("butest", node, cg);
-
    TR::TreeEvaluator::commonButestEvaluator(node, cg);
    TR::Register *ccReg = getConditionCode(node, cg);
 
@@ -3023,9 +3017,6 @@ OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::N
 TR::Register *
 OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   // Sanity check
-   TR_ASSERT(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10), "ternary IL only supported on z10 and up");
-
    TR::Compilation *comp = cg->comp();
 
    comp->incVisitCount();       // need this for treeContainsAllOtherUsesForNode
@@ -3070,25 +3061,21 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       TR::Register *firstReg = cg->evaluate(firstChild);
       TR::Register *secondReg = cg->evaluate(secondChild);
 
-      cg->decReferenceCount(firstChild);
-      cg->decReferenceCount(secondChild);
+      auto bc = TR::TreeEvaluator::getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
 
-      TR::InstOpCode::S390BranchCondition bc = TR::TreeEvaluator::getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
-
-      // Load on condition is supported on z196 and up
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
-         if (comp->getOption(TR_TraceCG))
-            traceMsg(comp, "Emitting a compare between reg %p and %p instruction\n", firstReg, secondReg);
-
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
-         if (comp->getOption(TR_TraceCG))
-            {
-            traceMsg(comp, "Emitting a Load on condition with condtion based on compare type\n");
-            }
+         auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
+         generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
+         }
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+         {
+         generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
-         generateRRFInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR, node, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)), true);
+         auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
+         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)), true);
          }
       else
          {
@@ -3128,6 +3115,9 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             traceMsg(comp, "firstReg = %p secondReg = %p trueReg = %p falseReg = %p trueReg->is64BitReg() = %d falseReg->is64BitReg() = %d isLongCompare = %d\n", firstReg, secondReg, trueReg, falseReg, trueReg->is64BitReg(), falseReg->is64BitReg(), condition->getOpCode().isLongCompare());
             }
          }
+
+      cg->decReferenceCount(firstChild);
+      cg->decReferenceCount(secondChild);
       }
    else
       {
@@ -3141,17 +3131,15 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       TR::Instruction *compareInst = generateRILInstruction(cg,condition->getOpCode().isLongCompare() ? TR::InstOpCode::CGFI : TR::InstOpCode::CFI,condition,condition->getRegister(), 0);
 
-      // Load on condition is supported on z196 and up
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
-         if (comp->getOption(TR_TraceCG))
-            {
-            traceMsg(comp, "Emmitting a LOCR with resulReg = %p falseReg->getRegister = %p\n",trueReg,falseReg->getRegister());
-            }
-
+         auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
+         generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
+         }
+      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+         {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
-
-         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg->getRegister(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
+         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
          }
       else
          {
@@ -3182,6 +3170,9 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          cFlowRegionEnd->setEndInternalControlFlow();
          }
       }
+
+   if (!node->isNotCollected())
+      trueReg->setContainsCollectedReference();
 
    if (comp->getOption(TR_TraceCG))
       traceMsg(comp, "Setting node %p register to %p\n",node,trueReg);
@@ -3294,33 +3285,4 @@ OMR::Z::TreeEvaluator::dternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->recursivelyDecReferenceCount(conditionNode);
 
    return returnReg;
-   }
-
-/**
- * Generates always trapping sequence - for conditions in WCODE Path that require always trap
- * If used in internal control flow section, caller should merge register dependencies with returned deps.
- */
-TR::Instruction *generateAlwaysTrapSequence(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions **retDeps)
-   {
-   // Sanity check
-   TR_ASSERT(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10), "Compare and trap instructions only supported on z10 and up");
-
-   // ** Generate a NOP LR R0,R0.  The signal handler has to walk backwards to pattern match
-   // the trap instructions.  All trap instructions besides CRT/CLRT are 6-bytes in length.
-   // Insert 2-byte NOP in front of the 4-byte CLRT to ensure we do not mismatch accidentally.
-   TR::Instruction *cursor = new (cg->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cg);
-
-   TR::Register *zeroReg = cg->allocateRegister();
-   TR::RegisterDependencyConditions *regDeps =
-         new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
-   regDeps->addPostCondition(zeroReg, TR::RealRegister::AssignAny);
-   cursor = new (cg->trHeapMemory()) TR::S390RRFInstruction(TR::InstOpCode::CLRT, node, zeroReg, zeroReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true, cg);
-   cursor->setDependencyConditions(regDeps);
-
-   cg->stopUsingRegister(zeroReg);
-   cursor->setExceptBranchOp();
-   cg->setCanExceptByTrap(true);
-   if(retDeps)
-      *retDeps = regDeps;
-   return cursor;
    }

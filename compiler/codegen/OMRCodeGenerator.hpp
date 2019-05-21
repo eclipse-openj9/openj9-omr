@@ -116,7 +116,6 @@ enum TR_SpillKinds // For register pressure simulation
    {
    // Mandatory spill kinds are certain to cause a spill to memory
    //
-   TR_hprSpill,       // zGryphon 390 All integer highword regs
    TR_gprSpill,       // All integer regs
    TR_fprSpill,       // All floating-point regs
    TR_vrfSpill,       // All vector regs
@@ -420,7 +419,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void identifyUnneededByteConvNodes(TR::Node*, TR::TreeTop *, vcount_t, TR::DataType);
    void identifyUnneededByteConvNodes();
 
-   bool afterRA() { return _afterRA; }
    TR::CodeGenPhase& getCodeGeneratorPhase() {return _codeGenPhase;}
 
    void prepareNodeForInstructionSelection(TR::Node*node);
@@ -915,14 +913,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_GlobalRegisterNumber getLastGlobalGPR()  {return _lastGlobalGPR;}
    TR_GlobalRegisterNumber setLastGlobalGPR(TR_GlobalRegisterNumber n) {return (_lastGlobalGPR = n);}
 
-   TR_GlobalRegisterNumber getFirstGlobalHPR() {return _firstGlobalHPR;}
-   TR_GlobalRegisterNumber setFirstGlobalHPR(TR_GlobalRegisterNumber n) {return (_firstGlobalHPR = n);}
-   TR_GlobalRegisterNumber getLastGlobalHPR() {return _lastGlobalHPR;}
-   TR_GlobalRegisterNumber setLastGlobalHPR(TR_GlobalRegisterNumber n) {return (_lastGlobalHPR = n);}
-
-   TR_GlobalRegisterNumber getGlobalHPRFromGPR (TR_GlobalRegisterNumber n) {return 0;}
-   TR_GlobalRegisterNumber getGlobalGPRFromHPR (TR_GlobalRegisterNumber n) {return 0;}
-
    TR_GlobalRegisterNumber getFirstGlobalFPR() {return _lastGlobalGPR + 1;}
    TR_GlobalRegisterNumber setFirstGlobalFPR(TR_GlobalRegisterNumber n) {return (_firstGlobalFPR = n);}
    TR_GlobalRegisterNumber getLastGlobalFPR() {return _lastGlobalFPR;}
@@ -949,11 +939,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    uint16_t getNumberOfGlobalRegisters();
 
-#ifdef TR_HOST_S390
-   uint16_t getNumberOfGlobalGPRs();
-#else
    uint16_t getNumberOfGlobalGPRs() {return _lastGlobalGPR + 1;}
-#endif
    uint16_t getNumberOfGlobalFPRs() {return _lastGlobalFPR - _lastGlobalGPR;}
    uint16_t getNumberOfGlobalVRFs() {return _lastGlobalVRF - _firstGlobalVRF;}
 
@@ -964,7 +950,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint8_t setGlobalFPRPartitionLimit(uint8_t l) {return (_globalFPRPartitionLimit = l);}
 
    bool isGlobalGPR(TR_GlobalRegisterNumber n) {return n <= _lastGlobalGPR;}
-   bool isGlobalHPR(TR_GlobalRegisterNumber n) {return (n >= _firstGlobalHPR && n <= _lastGlobalHPR);}
 
    bool isAliasedGRN(TR_GlobalRegisterNumber n);
    TR_GlobalRegisterNumber getOverlappedAliasForGRN(TR_GlobalRegisterNumber n);
@@ -1073,9 +1058,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::list<TR::Register*> *getSpilledRegisterList() {return _spilledRegisterList;}
    TR::list<TR::Register*> *setSpilledRegisterList(TR::list<TR::Register*> *r) {return _spilledRegisterList = r;}
-   TR::list<TR::Register*> *getFirstTimeLiveOOLRegisterList() {return _firstTimeLiveOOLRegisterList;}
-   TR::list<TR::Register*> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register*> *r) {return _firstTimeLiveOOLRegisterList = r;}
-
+   
    TR_BackingStore *allocateSpill(bool containsCollectedReference, int32_t *offset, bool reuse=true);
    TR_BackingStore *allocateSpill(int32_t size, bool containsCollectedReference, int32_t *offset, bool reuse=true);
    TR_BackingStore *allocateInternalPointerSpill(TR::AutomaticSymbol *pinningArrayPointer);
@@ -1350,7 +1333,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool isLiteralPoolOnDemandOn () { return false; }
    bool supportsOnDemandLiteralPool() { return false; }
    bool supportsDirectIntegralLoadStoresFromLiteralPool() { return false; }
-   bool supportsHighWordFacility() { return false; }
 
    bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg) { return false; }
 
@@ -1901,7 +1883,6 @@ class OMR_EXTENSIBLE CodeGenerator
    int32_t _accumulatorNodeUsage;
 
    TR::list<TR::Register*> *_spilledRegisterList;
-   TR::list<TR::Register*> *_firstTimeLiveOOLRegisterList;
    TR::list<OMR::RegisterUsage*> *_referencedRegistersList;
    int32_t _currentPathDepth;
    TR::list<TR::Node*> _nodesSpineCheckedList;
@@ -1936,8 +1917,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_RegisterMask _liveRealRegisters[NumRegisterKinds];
    TR_GlobalRegisterNumber _lastGlobalGPR;
-   TR_GlobalRegisterNumber _firstGlobalHPR;
-   TR_GlobalRegisterNumber _lastGlobalHPR;
    TR_GlobalRegisterNumber _firstGlobalFPR;
    TR_GlobalRegisterNumber _lastGlobalFPR;
    TR_GlobalRegisterNumber _firstOverlappedGlobalFPR;
@@ -1952,8 +1931,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint8_t _globalGPRPartitionLimit;
    uint8_t _globalFPRPartitionLimit;
    flags16_t _enabledFlags;
-
-   bool _afterRA;
 
    // MOVE TO J9 Z CodeGenerator
    // isTemporaryBased storageReferences just have a symRef but some other routines expect a node so use the below to fill in this symRef on this node

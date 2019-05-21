@@ -43,9 +43,9 @@
 #cmakedefine OMR_EXAMPLE
 
 #cmakedefine OMR_GC_ALLOCATION_TAX
-#cmakedefine OMR_GC_OBJECT_ALLOCATION_NOTIFY
 #cmakedefine OMR_GC_BATCH_CLEAR_TLH
 #cmakedefine OMR_GC_COMBINATION_SPEC
+#cmakedefine OMR_GC_CONCURRENT_SCAVENGER
 #cmakedefine OMR_GC_CONCURRENT_SWEEP
 #cmakedefine OMR_GC_DEBUG_ASSERTS
 #cmakedefine OMR_GC_EXPERIMENTAL_CONTEXT
@@ -58,12 +58,13 @@
 #cmakedefine OMR_GC_MODRON_COMPACTION
 #cmakedefine OMR_GC_MODRON_CONCURRENT_MARK
 #cmakedefine OMR_GC_MODRON_SCAVENGER
-#cmakedefine OMR_GC_CONCURRENT_SCAVENGER
 #cmakedefine OMR_GC_MODRON_STANDARD
 #cmakedefine OMR_GC_NON_ZERO_TLH
-#cmakedefine OMR_GC_SCAVENGER_DELEGATE
+#cmakedefine OMR_GC_OBJECT_ALLOCATION_NOTIFY
 #cmakedefine OMR_GC_SEGREGATED_HEAP
 #cmakedefine OMR_GC_THREAD_LOCAL_HEAP
+#cmakedefine OMR_GC_VLHGC
+#cmakedefine OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
 
 /**
  * Tells if a platform has support for Semaphores.
@@ -141,14 +142,8 @@
 #cmakedefine OMR_GC_HYBRID_ARRAYLETS
 #cmakedefine OMR_GC_OBJECT_MAP
 #cmakedefine OMR_GC_REALTIME
-#cmakedefine OMR_GC_STACCATO
 #cmakedefine OMR_GC_TLH_PREFETCH_FTA
 #cmakedefine OMR_GC_VLHGC
-
-/**
- * Flag to indicate that on 64-bit platforms, the monitor slot and class slot in object headers are U32 rather than UDATA.
- */
-#cmakedefine OMR_INTERP_COMPRESSED_OBJECT_HEADER
 
 /**
  * Flag to indicate that on 64-bit platforms, the monitor slot in object headers is a U32 rather than a UDATA.
@@ -242,5 +237,10 @@
  * will be enabled, and calls to functions in omrsig library will be disabled.
  */
 #cmakedefine OMRPORT_OMRSIG_SUPPORT
+
+/* Plaform config options */
+#cmakedefine OMR_USE_POSIX_SEMAPHORES
+#cmakedefine OMR_USE_OSX_SEMAPHORES
+#cmakedefine OMR_USE_ZOS_SEMAPHORES
 
 #endif /* !defined(OMRCFG_H_) */

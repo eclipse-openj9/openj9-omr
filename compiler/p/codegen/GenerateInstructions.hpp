@@ -344,7 +344,9 @@ TR::Instruction *generateControlFlowInstruction(
                    TR::InstOpCode::Mnemonic                       op,
                    TR::Node                            *n,
                    TR::RegisterDependencyConditions *deps=NULL,
-                   TR::Instruction                     *preced = 0);
+                   TR::Instruction                     *preced = 0,
+                   bool                                useRegPairForResult = false,
+                   bool                                useRegPairForCond = false);
 
 TR::Instruction *generateAdminInstruction(
                    TR::CodeGenerator      *cg,

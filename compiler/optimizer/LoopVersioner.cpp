@@ -3444,21 +3444,29 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
                }
             else if (currentOpCode.isCheckCast()) // (currentOpCode.getOpCodeValue() == TR::checkcast)
                {
-               TR_ASSERT(currentNode->getSecondChild()->getOpCodeValue() == TR::loadaddr, "second child should be LOADADDR");
-               void* clazz = currentNode->getSecondChild()->
-                  getSymbolReference()->getSymbol()->getStaticSymbol()->getStaticAddress();
-               if (!comp()->fe()->isUnloadAssumptionRequired((TR_OpaqueClassBlock*)clazz, comp()->getCurrentMethod()))
+               if (currentNode->getSecondChild()->getOpCodeValue() == TR::loadaddr)
+	          {
+                  void* clazz = currentNode->getSecondChild()->
+                     getSymbolReference()->getSymbol()->getStaticSymbol()->getStaticAddress();
+                  if (!comp()->fe()->isUnloadAssumptionRequired((TR_OpaqueClassBlock*)clazz, comp()->getCurrentMethod()))
+                     {
+                     checkCastTrees->add(currentTree);
+   
+                     if (dupOfThisBlockAlreadyExecutedBeforeLoop)
+                        _checksInDupHeader.add(currentTree);
+                     }
+                  else
+                     {
+                     if (trace()) //if we move the checkcast before the inlined body instanceof might fail because the class might not exist in the original code
+                         traceMsg(comp(), "Class for Checkcast %p is not loaded by the same classloader as the compiled method\n", currentTree->getNode());
+                     }
+                  }
+               else
                   {
                   checkCastTrees->add(currentTree);
-
                   if (dupOfThisBlockAlreadyExecutedBeforeLoop)
                      _checksInDupHeader.add(currentTree);
                   }
-              else
-                 {
-                 if (trace()) //if we move the checkcast before the inlined body instanceof might fail because the class might not exist in the original code
-                     traceMsg(comp(), "Class for Checkcast %p is not loaded by the same classloader as the compiled method\n", currentTree->getNode());
-                 }
                }
             else if (currentOpCode.getOpCodeValue() == TR::ArrayStoreCHK)
                {
@@ -3472,8 +3480,8 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
                }
 
             //SPECpower Work
-            if ( comp()->getOptions()->getGcMode() == TR_WrtbarCardMarkAndOldCheck ||
-                 comp()->getOptions()->getGcMode() == TR_WrtbarOldCheck)
+            if (TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_cardmark_and_oldcheck ||
+                TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_oldcheck)
                {
                TR::Node *possibleAwrtbariNode = currentTree->getNode();
                if ((currentOpCode.getOpCodeValue() != TR::awrtbari) &&
@@ -3913,11 +3921,11 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
                if (!shouldOnlySpecializeLoops())
                   e->setFrequency((*edge)->getFrequency());
                else
-               {
-               int32_t specializedBlockFrequency = TR::Block::getScaledSpecializedFrequency((*edge)->getFrequency());
+                  {
+                  int32_t specializedBlockFrequency = TR::Block::getScaledSpecializedFrequency((*edge)->getFrequency());
 
-               e->setFrequency(specializedBlockFrequency);
-               }
+                  e->setFrequency(specializedBlockFrequency);
+                  }
                }
 
             nextClonedBlock->getLastRealTreeTop()->adjustBranchOrSwitchTreeTop(comp(), succ->getEntry(), clonedSucc->getEntry());
@@ -4398,7 +4406,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          TR::TreeTop *nextTreeTop = arrayStoreCheckTree->getNextTreeTop();
          TR::TreeTop *firstNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, arrayStoreCheckNode->getFirstChild()), NULL, NULL);
          TR::Node *child = arrayStoreCheckNode->getFirstChild();
-         if (child->getOpCodeValue() == TR::awrtbari && comp()->getOptions()->getGcMode() == TR_WrtbarNone &&
+         if (child->getOpCodeValue() == TR::awrtbari && TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_none &&
             performTransformation(comp(), "%sChanging awrtbari node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
             {
             TR::Node::recreate(child, TR::astorei);
@@ -4406,35 +4414,35 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             child->setNumChildren(2);
             }
 
-      TR::TreeTop *secondNewTree = NULL;
-      if (arrayStoreCheckNode->getNumChildren() > 1)
-         {
-         TR_ASSERT((arrayStoreCheckNode->getNumChildren() == 2), "Unknown array store check tree\n");
-         secondNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, arrayStoreCheckNode->getSecondChild()), NULL, NULL);
-         child = arrayStoreCheckNode->getSecondChild();
-         if (child->getOpCodeValue() == TR::awrtbari && comp()->getOptions()->getGcMode() == TR_WrtbarNone &&
-             performTransformation(comp(), "%sChanging awrtbari node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
+         TR::TreeTop *secondNewTree = NULL;
+         if (arrayStoreCheckNode->getNumChildren() > 1)
             {
-            TR::Node::recreate(child, TR::astorei);
-            child->getChild(2)->recursivelyDecReferenceCount();
-            child->setNumChildren(2);
+            TR_ASSERT((arrayStoreCheckNode->getNumChildren() == 2), "Unknown array store check tree\n");
+            secondNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, arrayStoreCheckNode->getSecondChild()), NULL, NULL);
+            child = arrayStoreCheckNode->getSecondChild();
+            if (child->getOpCodeValue() == TR::awrtbari && TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_none &&
+                performTransformation(comp(), "%sChanging awrtbari node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
+               {
+               TR::Node::recreate(child, TR::astorei);
+               child->getChild(2)->recursivelyDecReferenceCount();
+               child->setNumChildren(2);
+               }
             }
+
+         prevTreeTop->join(firstNewTree);
+         if (secondNewTree)
+            {
+            firstNewTree->join(secondNewTree);
+            secondNewTree->join(nextTreeTop);
+            }
+         else
+            firstNewTree->join(nextTreeTop);
+
+         arrayStoreCheckNode->recursivelyDecReferenceCount();
+
+         nextTree = nextTree->getNextElement();
          }
-
-      prevTreeTop->join(firstNewTree);
-      if (secondNewTree)
-         {
-         firstNewTree->join(secondNewTree);
-         secondNewTree->join(nextTreeTop);
-         }
-      else
-         firstNewTree->join(nextTreeTop);
-
-      arrayStoreCheckNode->recursivelyDecReferenceCount();
-
-      nextTree = nextTree->getNextElement();
       }
-   }
 
    // Construct tests for invariant expressions
    //
@@ -4817,7 +4825,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    clonedInvariantBlockStructure->setCreatedByVersioning(true);
 
    if (!_neitherLoopCold)
-   clonedInnerWhileLoops->deleteAll();
+      clonedInnerWhileLoops->deleteAll();
    clonedInvariantBlockStructure->setAsLoopInvariantBlock(true);
    TR_RegionStructure *parentStructure = whileLoop->getParent()->asRegion();
    TR_RegionStructure *properRegion = new (_cfg->structureRegion()) TR_RegionStructure(comp(), chooserBlock->getNumber());
@@ -4834,6 +4842,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    properRegion->addSubNode(clonedInvariantNode);
 
    TR_StructureSubGraphNode *prevComparisonNode = NULL;
+   TR_StructureSubGraphNode *regionEntryNode = NULL;
    currComparisonBlock = comparisonBlocks.getListHead();
    currCriticalEdgeBlock = criticalEdgeBlocks.getListHead();
 
@@ -4854,7 +4863,10 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       if (prevComparisonNode)
          TR::CFGEdge::createEdge(prevComparisonNode,  comparisonNode, trMemory());
       else
-         properRegion->setEntry(comparisonNode);
+         {
+         regionEntryNode = comparisonNode;
+         properRegion->setEntry(regionEntryNode);
+         }
 
       //TR::CFGEdge::createEdge(comparisonNode,  clonedInvariantNode, trMemory());
       prevComparisonNode = comparisonNode;
@@ -4878,7 +4890,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 
    // Since the new proper region replaced the original loop invariant
    // block in the parent structure, the successor of the loop
-   // invariant block strcuture (the natural loop originally) must now  be removed
+   // invariant block structure (the natural loop originally) must now be removed
    // from the parent structure as the natural loop would be moved into the proper
    // region.
    //
@@ -4898,7 +4910,22 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          subNode->removeSuccessor(succEdge);
 
          for (auto changedSuccEdge = succNode->getSuccessors().begin(); changedSuccEdge != succNode->getSuccessors().end(); ++changedSuccEdge)
-            (*changedSuccEdge)->setFrom(properNode);
+            {
+            // 
+            // Watch for any edge from the original loop to the invariant
+            // block - it will now refer to the proper region node, and
+            // must be discarded from the list of predecessors of the
+            // proper region node in the context of the parent structure, as a
+            // subgraph node must not have an edge to itself
+            if ((*changedSuccEdge)->getTo() != properNode)
+               {
+               (*changedSuccEdge)->setFrom(properNode);
+               }
+            else
+               {
+               properNode->removePredecessor(*changedSuccEdge);
+               }
+            }
 
          for (auto changedSuccEdge = succNode->getExceptionSuccessors().begin(); changedSuccEdge != succNode->getExceptionSuccessors().end(); ++changedSuccEdge)
             (*changedSuccEdge)->setExceptionFrom(properNode);
@@ -4972,15 +4999,39 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          bool isExceptionEdge = false;
          if (exitEdge->getFrom()->hasExceptionSuccessor(node))
             isExceptionEdge = true;
-         properRegion->addExitEdge(whileNode, node->getNumber(), isExceptionEdge);
+
+         // Check whether this exit is from the while loop to the new region
+         // If it is, it should not be added as an exit from the region itself,
+         // but rather as an edge from the while loop to the start of the new
+         // region
+         if (node->getNumber() == regionEntryNode->getNumber())
+            {
+            TR::CFGEdge::createEdge(whileNode, regionEntryNode, trMemory());
+            }
+         else
+            {
+            properRegion->addExitEdge(whileNode, node->getNumber(), isExceptionEdge);
+            }
          seenExitNodes.set(node->getNumber());
+         }
+      }
+
+   // If the original while loop exited to the loop invariant block, ensure the
+   // structure of the cloned version of the loop exits to the new proper region
+   ei.set(&clonedWhileLoop->getExitEdges());
+   for (exitEdge = ei.getCurrent(); exitEdge; exitEdge = ei.getNext())
+      {
+      if (exitEdge->getTo()->getNumber() == invariantBlockStructure->getNumber())
+         {
+         clonedWhileLoop->replaceExitPart(invariantBlockStructure->getNumber(), properRegion->getNumber());
+         break;
          }
       }
 
    // Patch up the cloned while loop edges properly
    //
    seenExitNodes.empty();
-   ei.set(&clonedWhileLoop->getExitEdges());
+   ei.reset();
    for (exitEdge = ei.getCurrent(); exitEdge; exitEdge = ei.getNext())
       {
       TR_StructureSubGraphNode *node = toStructureSubGraphNode(exitEdge->getTo());
@@ -4989,7 +5040,19 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          bool isExceptionEdge = false;
          if (exitEdge->getFrom()->hasExceptionSuccessor(node))
             isExceptionEdge = true;
-         properRegion->addExitEdge(clonedWhileNode, node->getNumber(), isExceptionEdge);
+
+         // Check whether this exit is from the while loop to the new region
+         // If it is, it should not be added as an exit from the region itself,
+         // but rather as an edge from the while loop to the start of the new
+         // region
+         if (node->getNumber() == regionEntryNode->getNumber())
+            {
+            TR::CFGEdge::createEdge(clonedWhileNode, regionEntryNode, trMemory());
+            }
+         else
+            {
+            properRegion->addExitEdge(clonedWhileNode, node->getNumber(), isExceptionEdge);
+            }
          seenExitNodes.set(node->getNumber());
          }
       }

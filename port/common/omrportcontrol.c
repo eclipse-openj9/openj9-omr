@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -121,9 +121,9 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 			 * We can't use j9port_isFunctionOverridden to check for this because
 			 * the port library overrides sig_protect itself (with omrsig_protect_ceehdlr)
 			 * when the option OMRPORT_SIG_OPTIONS_ZOS_USE_CEEHDLR is passed into omrsig_set_options */
-			extern void j9vm_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc);
+			extern void omrsig_le_condition_handler(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc);
 
-			*(void (**)(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc))value = j9vm_le_condition_handler;
+			*(void (**)(_FEEDBACK *fc, _INT4 *token, _INT4 *leResult, _FEEDBACK *newfc))value = omrsig_le_condition_handler;
 			return 0;
 		} else {
 			return 1;
@@ -272,7 +272,7 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 	}
 #endif
 
-#if defined(J9ZOS390) && defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)
+#if defined(J9ZOS390) && defined(OMR_GC_COMPRESSED_POINTERS)
 	if (0 == strcmp(OMRPORT_CTLDATA_NOSUBALLOC32BITMEM, key)) {
 		portLibrary->portGlobals->disableEnsureCap32 = value;
 		return 0;
@@ -289,6 +289,18 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 		return 0;
 	}
 
+	if (0 == strcmp(OMRPORT_CTLDATA_NLS_DISABLE, key)) {
+		portLibrary->portGlobals->nls_data.isDisabled = value;
+		return 0;
+	}
+
+	if (0 == strcmp(OMRPORT_CTLDATA_VMEM_ADVISE_HUGEPAGE, key)) {
+#if defined(LINUX)
+		/* set value to advise OS about vmem to consider for Transparent HugePage (Only for Linux) */
+		portLibrary->portGlobals->vmemEnableMadvise &= value;
+#endif
+		return 0;
+	}
 	return 1;
 }
 

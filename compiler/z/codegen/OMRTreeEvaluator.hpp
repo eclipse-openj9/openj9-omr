@@ -99,6 +99,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *mbranchEvaluator(TR::Node * node, TR::CodeGenerator * cg);
    static TR::Register *iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *ardbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *floadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -124,7 +125,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *aiaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *aladdEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *addrAddHelper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *laddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *faddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -455,6 +455,13 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    
    static TR::Register *tryToReuseInputVectorRegs(TR::Node *node, TR::CodeGenerator *cg);
 
+   static TR::Register *checkAndAllocateReferenceRegister(TR::Node * node,
+                                                          TR::CodeGenerator * cg,
+                                                          bool& dynLitPoolLoad);
+   static void checkAndSetMemRefDataSnippetRelocationType(TR::Node * node,
+                                                          TR::CodeGenerator * cg,
+                                                          TR::MemoryReference* tempMR);
+
    static TR::Node* DAAAddressPointer (TR::Node* callNode, TR::CodeGenerator* cg);
 
    static void         createDAACondDeps(TR::Node * node, TR::RegisterDependencyConditions * daaDeps,
@@ -542,8 +549,14 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *  \param needsGuardedLoad
     *     Boolean stating if we need to use Guarded Load instruction
     * 
+    *  \param deps
+    *     Register dependency conditions of the external ICF. Load-and-store for array copy
+    *     itself is usually a load-store instruction pair without internal control flows.
+    *     But project specific implementations could extend this and construct an ICF.
+    *     Should an ICF be constructed, the inner ICF will use the outer ICF's dependencies and build upon it.
+    *
     */
-   static void generateLoadAndStoreForArrayCopy(TR::Node *node, TR::CodeGenerator *cg, TR::MemoryReference *srcMemRef, TR::MemoryReference *dstMemRef, TR_S390ScratchRegisterManager *srm, TR::DataType elenmentType, bool needsGuardedLoad);
+   static void generateLoadAndStoreForArrayCopy(TR::Node *node, TR::CodeGenerator *cg, TR::MemoryReference *srcMemRef, TR::MemoryReference *dstMemRef, TR_S390ScratchRegisterManager *srm, TR::DataType elenmentType, bool needsGuardedLoad, TR::RegisterDependencyConditions* deps = NULL);
 
 /** \brief
     *  Generate sequence for forward array copy using MVC memory-memory copy instruction
@@ -606,11 +619,16 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *  \param genStartICFLabel
     *     Boolean stating if we need to set the start ICF flag
     * 
+    *  \param deps
+    *     Register dependency conditions of the external ICF this mem-to-mem copy resides. Mem-to-Mem element copy
+    *     itself is a loop of load-store instructions that has its own ICF. If this ICF resides in another ICF,
+    *     the inner ICF will use the outer ICF's dependencies.
+    *
     *  \return
     *     Register depdendecy conditions containg registers allocated within Internal Control Flow
     * 
     */
-   static TR::RegisterDependencyConditions* generateMemToMemElementCopy(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR_S390ScratchRegisterManager *srm, bool isForward, bool needsGuardedLoad, bool genStartICFLabel=false);
+   static TR::RegisterDependencyConditions* generateMemToMemElementCopy(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR_S390ScratchRegisterManager *srm, bool isForward, bool needsGuardedLoad, bool genStartICFLabel=false, TR::RegisterDependencyConditions* deps = NULL);
 
 /** \brief
     *  Generates sequence for backward array copy
@@ -643,37 +661,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *     Register depdendecy conditions containg registers allocated within Internal Control Flow
     */
    static TR::RegisterDependencyConditions* backwardArrayCopySequenceGenerator(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR::Node *byteLenNode, TR_S390ScratchRegisterManager *srm, TR::LabelSymbol *mergeLabel);
-
-   /** \brief
-    *     Evaluates a reference arraycopy node by generating an MVC memory-memory copy for a forward arraycopy and a
-    *     loop based on the reference size for a backward arraycopy. For runtimes which support it, this function will
-    *     also generate write barrier checks on \p byteSrcObjNode and \p byteDstObjNode.
-    *
-    *  \param node
-    *     The reference arraycopy node.
-    *
-    *  \param cg
-    *     The code generator used to generate the instructions.
-    *
-    *  \param byteSrcNode
-    *     The source address of the array copy.
-    *
-    *  \param byteDstNode
-    *     The destination address of the array copy.
-    *
-    *  \param byteLenNode
-    *     The number of bytes to copy.
-    *
-    *  \param byteSrcObjNode
-    *     The runtime object which represents the source array.
-    *
-    *  \param byteDstObjNode
-    *     The runtime object which represents the destination array.
-    *
-    *  \note
-    *     The reference size must be explicitly specified on the \p node via the <c>getArrayCopyElementType</c> API.
-    */
-   static void referenceArraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg, TR::Node* byteSrcNode, TR::Node* byteDstNode, TR::Node* byteLenNode, TR::Node* byteSrcObjNode, TR::Node* byteDstObjNode);
 
    static TR::Register *arraysetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,7 +22,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "env/ConcreteFE.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
-#include "z/codegen/TRSystemLinkage.hpp"
+#include "z/codegen/SystemLinkage.hpp"
 #include "codegen/S390Snippets.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"

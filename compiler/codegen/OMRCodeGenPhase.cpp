@@ -41,6 +41,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/Snippet.hpp"
 #include "compile/Compilation.hpp"
@@ -438,114 +439,6 @@ void
 OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
    TR::Compilation *comp = cg->comp();
-
-   if (TR::Compiler->target.cpu.isZ() && TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
-      {
-      // TODO (GuardedStorage): We need to come up with a better solution than anchoring aloadi's
-      // to enforce certain evaluation order
-      traceMsg(comp, "GuardedStorage: in performSetupForInstructionSelectionPhase\n");
-
-      auto mapAllocator = getTypedAllocator<std::pair<TR::TreeTop*, TR::TreeTop*> >(comp->allocator());
-
-      std::map<TR::TreeTop*, TR::TreeTop*, std::less<TR::TreeTop*>, TR::typed_allocator<std::pair<TR::TreeTop* const, TR::TreeTop*>, TR::Allocator> >
-         currentTreeTopToappendTreeTop(std::less<TR::TreeTop*> (), mapAllocator);
-
-      TR_BitVector *unAnchorableAloadiNodes = comp->getBitVectorPool().get();
-
-      for (TR::PreorderNodeIterator iter(comp->getStartTree(), comp); iter != NULL; ++iter)
-         {
-         TR::Node *node = iter.currentNode();
-
-         traceMsg(comp, "GuardedStorage: Examining node = %p\n", node);
-
-         // isNullCheck handles both TR::NULLCHK and TR::ResolveAndNULLCHK
-         // both of which do not operate on their child but their
-         // grandchild (or greatgrandchild).
-         if (node->getOpCode().isNullCheck())
-            {
-            // An aloadi cannot be anchored if there is a Null Check on
-            // its child. There are two situations where this occurs.
-            // The first is when doing an aloadi off some node that is
-            // being NULLCHK'd (see Ex1). The second is when doing an
-            // icalli in which case the aloadi loads the VFT of an
-            // object that must be NULLCHK'd (see Ex2).
-            //
-            // Ex1:
-            //    n1n NULLCHK on n3n
-            //    n2n    aloadi f    <-- First Child And Parent of Null Chk'd Node
-            //    n3n       aload O
-            //
-            // Ex2:
-            //    n1n NULLCHK on n4n
-            //    n2n    icall foo        <-- First Child
-            //    n3n       aloadi <vft>  <-- Parent of Null Chk'd Node
-            //    n4n          aload O
-            //    n4n       ==> aload O
-
-            TR::Node *nodeBeingNullChkd = node->getNullCheckReference();
-            if (nodeBeingNullChkd)
-               {
-               TR::Node *firstChild = node->getFirstChild();
-               TR::Node *parentOfNullChkdNode = NULL;
-
-               if (firstChild->getOpCode().isCall() &&
-                   firstChild->getOpCode().isIndirect())
-                  {
-                  parentOfNullChkdNode = firstChild->getFirstChild();
-                  }
-               else
-                  {
-                  parentOfNullChkdNode = firstChild;
-                  }
-
-               if (parentOfNullChkdNode &&
-                   parentOfNullChkdNode->getOpCodeValue() == TR::aloadi &&
-                   parentOfNullChkdNode->getNumChildren() > 0 &&
-                   parentOfNullChkdNode->getFirstChild() == nodeBeingNullChkd)
-                  {
-                  unAnchorableAloadiNodes->set(parentOfNullChkdNode->getGlobalIndex());
-                  traceMsg(comp, "GuardedStorage: Cannot anchor  %p\n", firstChild);
-                  }
-               }
-            }
-         else
-            {
-            bool shouldAnchorNode = false;
-
-            if (node->getOpCodeValue() == TR::aloadi &&
-                !unAnchorableAloadiNodes->isSet(node->getGlobalIndex()))
-               {
-               shouldAnchorNode = true;
-               }
-            else if (node->getOpCodeValue() == TR::aload &&
-                     node->getSymbol()->isStatic() &&
-                     node->getSymbol()->isCollectedReference())
-               {
-               shouldAnchorNode = true;
-               }
-
-            if (shouldAnchorNode)
-               {
-               TR::TreeTop* anchorTreeTop = TR::TreeTop::create(comp, TR::Node::create(TR::treetop, 1, node));
-               TR::TreeTop* appendTreeTop = iter.currentTree();
-
-               if (currentTreeTopToappendTreeTop.count(appendTreeTop) > 0)
-                  {
-                  appendTreeTop = currentTreeTopToappendTreeTop[appendTreeTop];
-                  }
-
-               // Anchor the aload/aloadi before the current treetop
-               appendTreeTop->insertBefore(anchorTreeTop);
-               currentTreeTopToappendTreeTop[iter.currentTree()] = anchorTreeTop;
-
-               traceMsg(comp, "GuardedStorage: Anchored  %p to treetop = %p\n", node, anchorTreeTop);
-               }
-            }
-         }
-
-      comp->getBitVectorPool().release(unAnchorableAloadiNodes);
-      }
-
    if (cg->shouldBuildStructure() &&
        (comp->getFlowGraph()->getStructure() != NULL))
       {

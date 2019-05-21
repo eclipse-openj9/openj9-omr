@@ -29,8 +29,10 @@
 #include "codegen/CallSnippet.hpp"
 #endif
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
 #include "codegen/RegisterPair.hpp"
@@ -483,8 +485,8 @@ TR::Register *OMR::ARM::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGe
 
       generateTrg1MemInstruction(cg, ARMOp_add, node, bigEndian ? highReg: lowReg, tempMR);
       TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
-      addDependency(deps, lowReg, bigEndian ? TR::RealRegister::gr1 : TR::RealRegister::gr0, TR_GPR, cg);
-      addDependency(deps, highReg, bigEndian ? TR::RealRegister::gr0 : TR::RealRegister::gr1, TR_GPR, cg);
+      TR::addDependency(deps, lowReg, bigEndian ? TR::RealRegister::gr1 : TR::RealRegister::gr0, TR_GPR, cg);
+      TR::addDependency(deps, highReg, bigEndian ? TR::RealRegister::gr0 : TR::RealRegister::gr1, TR_GPR, cg);
 
       generateImmSymInstruction(cg, ARMOp_bl,
                                 node, (uintptr_t)vrlRef->getMethodAddress(),
@@ -662,9 +664,9 @@ TR::Register *OMR::ARM::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeG
 
       generateTrg1MemInstruction(cg, ARMOp_add, node, addrReg, tempMR);
       TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
-      addDependency(deps, addrReg, TR::RealRegister::gr0, TR_GPR, cg);
-      addDependency(deps, valueReg->getLowOrder(), TR::RealRegister::gr1, TR_GPR, cg);
-      addDependency(deps, valueReg->getHighOrder(), TR::RealRegister::gr2, TR_GPR, cg);
+      TR::addDependency(deps, addrReg, TR::RealRegister::gr0, TR_GPR, cg);
+      TR::addDependency(deps, valueReg->getLowOrder(), TR::RealRegister::gr1, TR_GPR, cg);
+      TR::addDependency(deps, valueReg->getHighOrder(), TR::RealRegister::gr2, TR_GPR, cg);
 
       generateImmSymInstruction(cg, ARMOp_bl,
                                 node, (uintptr_t)vwlRef->getMethodAddress(),
@@ -847,10 +849,10 @@ static void constLengthArrayCopyEvaluator(TR::Node *node, int32_t byteLen, TR::R
 
    TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(7,7, cg->trMemory());
 
-   addDependency(deps, src, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(deps, src, TR::RealRegister::NoReg, TR_GPR, cg);
    deps->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
    deps->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
-   addDependency(deps, dst, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(deps, dst, TR::RealRegister::NoReg, TR_GPR, cg);
    deps->getPreConditions()->getRegisterDependency(1)->setExcludeGPR0();
    deps->getPostConditions()->getRegisterDependency(1)->setExcludeGPR0();
 
@@ -861,15 +863,15 @@ static void constLengthArrayCopyEvaluator(TR::Node *node, int32_t byteLen, TR::R
       }
 
    regs[0] = cg->allocateRegister(TR_GPR); //as byteLen > 0 here, will need at least one register
-   addDependency(deps, regs[0], TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(deps, regs[0], TR::RealRegister::NoReg, TR_GPR, cg);
    if (groups != 0)
       {
       regs[1] = cg->allocateRegister(TR_GPR);
       regs[2] = cg->allocateRegister(TR_GPR);
       regs[3] = cg->allocateRegister(TR_GPR);
-      addDependency(deps, regs[1], TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(deps, regs[2], TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(deps, regs[3], TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, regs[1], TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, regs[2], TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, regs[3], TR::RealRegister::NoReg, TR_GPR, cg);
 
       TR::Register *countReg = cg->allocateRegister();
       if (groups <= UPPER_IMMED12)
@@ -970,9 +972,9 @@ TR::Register *OMR::ARM::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
    TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3,3, cg->trMemory());
    // Build up the dependency conditions
    // r0 is length in bytes, r1 is srcAddr, r2 is dstAddr
-   addDependency(deps, lengthReg, TR::RealRegister::gr0, TR_GPR, cg);
-   addDependency(deps, srcAddrReg, TR::RealRegister::gr1, TR_GPR, cg);
-   addDependency(deps, dstAddrReg, TR::RealRegister::gr2, TR_GPR, cg);
+   TR::addDependency(deps, lengthReg, TR::RealRegister::gr0, TR_GPR, cg);
+   TR::addDependency(deps, srcAddrReg, TR::RealRegister::gr1, TR_GPR, cg);
+   TR::addDependency(deps, dstAddrReg, TR::RealRegister::gr2, TR_GPR, cg);
 
    arrayCopyHelper = cg->symRefTab()->findOrCreateRuntimeHelper(TR_ARMarrayCopy, false, false, false);
 

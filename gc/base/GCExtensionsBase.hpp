@@ -61,6 +61,7 @@ class MM_GlobalCollector;
 class MM_Heap;
 class MM_HeapMap;
 class MM_HeapRegionManager;
+
 class MM_InterRegionRememberedSet;
 class MM_MemoryManager;
 class MM_MemorySubSpace;
@@ -69,9 +70,9 @@ class MM_ObjectMap;
 #endif /* defined(OMR_GC_OBJECT_MAP) */
 class MM_ReferenceChainWalkerMarkMap;
 class MM_RememberedSetCardBucket;
-#if defined(OMR_GC_STACCATO)
+#if defined(OMR_GC_REALTIME)
 class MM_RememberedSetSATB;
-#endif /* OMR_GC_STACCATO */
+#endif /* defined(OMR_GC_REALTIME) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 class MM_Scavenger;
 #endif /* OMR_GC_MODRON_SCAVENGER */
@@ -83,6 +84,14 @@ class MM_SweepPoolManagerAddressOrderedListBase;
 class MM_RealtimeGC;
 class MM_VerboseManagerBase;
 struct J9Pool;
+
+namespace OMR {
+namespace GC {
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+class HeapRegionStateTable;
+#endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */
+} // namespace OMR
+} // namespace GC
 
 #if defined(OMR_ENV_DATA64)
 #define MINIMUM_TLH_SIZE 768
@@ -181,6 +190,9 @@ public:
 class MM_GCExtensionsBase : public MM_BaseVirtual {
 	/* Data Members */
 private:
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	bool _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	void* _guaranteedNurseryStart; /**< lowest address guaranteed to be in the nursery */
 	void* _guaranteedNurseryEnd; /**< highest address guaranteed to be in the nursery */
@@ -254,9 +266,9 @@ public:
 	uintptr_t oldHeapSizeOnLastGlobalGC;
 	uintptr_t freeOldHeapSizeOnLastGlobalGC;
 #endif /* OMR_GC_MODRON_SCAVENGER */
-#if defined(OMR_GC_STACCATO)
+#if defined(OMR_GC_REALTIME)
 	MM_RememberedSetSATB* sATBBarrierRememberedSet; /**< The snapshot at the beginning barrier remembered set used for the write barrier */
-#endif /* OMR_GC_STACCATO */
+#endif /* defined(OMR_GC_REALTIME) */
 	ModronLnrlOptions lnrlOptions;
 
 	MM_OMRHookInterface omrHookInterface;
@@ -265,11 +277,11 @@ public:
 	void* heapBaseForBarrierRange0;
 	uintptr_t heapSizeForBarrierRange0;
 
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 	void* shadowHeapBase; 	/* Read Barrier Verifier shadow heap base address */
 	void* shadowHeapTop;	/* Read Barrier Verifier shadow heap base address */
 	MM_MemoryHandle shadowHeapHandle; /* Read Barrier Verifier shadow heap Virtual Memory handle (descriptor) */
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 	bool doOutOfLineAllocationTrace;
 	bool doFrequentObjectAllocationSampling; /**< Whether to track object allocations*/
@@ -388,13 +400,13 @@ public:
 
 	uintptr_t fvtest_forceSweepChunkArrayCommitFailure; /**< Force failure at Sweep Chunk Array commit operation */
 	uintptr_t fvtest_forceSweepChunkArrayCommitFailureCounter; /**< Force failure at Sweep Chunk Array commit operation counter */
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 	uintptr_t fvtest_enableReadBarrierVerification; /**< Forces failure at all direct memory read sites */
 	uintptr_t fvtest_enableMonitorObjectsReadBarrierVerification; /**< Forces failure at all direct memory read sites for monitor slot objects */
 	uintptr_t fvtest_enableClassStaticsReadBarrierVerification; /**< Forces failure at all direct memory read sites for class statics */
 	uintptr_t fvtest_enableJNIGlobalWeakReadBarrierVerification; /**< Forces failure at all direct memory read sites for JNI Global weak references */
 	uintptr_t fvtest_enableHeapReadBarrierVerification; /**< Forces failure at all direct memory read sites for heap references */
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 	uintptr_t fvtest_forceMarkMapCommitFailure; /**< Force failure at Mark Map commit operation */
 	uintptr_t fvtest_forceMarkMapCommitFailureCounter; /**< Force failure at Mark Map commit operation counter */
@@ -581,10 +593,10 @@ public:
 	uintptr_t overflowCacheCount; /**< How many entries should there be in the environments local overflow cache */
 #endif /* OMR_GC_REALTIME */
 
-#if defined(OMR_GC_STACCATO)
+#if defined(OMR_GC_REALTIME)
 	bool concurrentSweepingEnabled; /**< if this is set, the sweep phase of GC will be run concurrently */
 	bool concurrentTracingEnabled; /**< if this is set, tracing will run concurrently */
-#endif /* OMR_GC_STACCATO */
+#endif /* defined(OMR_GC_REALTIME) */
 
 	bool instrumentableAllocateHookEnabled;
 
@@ -598,7 +610,11 @@ public:
 
 #if defined(OMR_GC_SEGREGATED_HEAP)
 	MM_SizeClasses* defaultSizeClasses;
-#endif
+#endif /* defined(OMR_GC_SEGREGATED_HEAP) */
+
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+	OMR::GC::HeapRegionStateTable *heapRegionStateTable;
+#endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */
 
 /* OMR_GC_REALTIME (in for all -- see 82589) */
 	uint32_t distanceToYieldTimeCheck; /**< Number of condYield that can be skipped before actual checking for yield, when the quanta time has been relaxed */
@@ -803,6 +819,18 @@ public:
 	 * @return Pointer to the memory forge
 	 */
 	MMINLINE OMR::GC::Forge* getForge() { return &_forge; }
+
+	MMINLINE bool compressObjectReferences() {
+#if defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_GC_FULL_POINTERS)
+		return _compressObjectReferences;
+#else /* defined(OMR_GC_FULL_POINTERS) */
+		return true;
+#endif /* defined(OMR_GC_FULL_POINTERS) */
+#else /* defined(OMR_GC_COMPRESSED_POINTERS) */
+		return false;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
+	}
 
 	MMINLINE uintptr_t getRememberedCount()
 	{
@@ -1228,6 +1256,9 @@ public:
 
 	MM_GCExtensionsBase()
 		: MM_BaseVirtual()
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+		, _compressObjectReferences(false)
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		, _guaranteedNurseryStart(NULL)
 		, _guaranteedNurseryEnd(NULL)
@@ -1283,16 +1314,16 @@ public:
 		, oldHeapSizeOnLastGlobalGC(UDATA_MAX)
 		, freeOldHeapSizeOnLastGlobalGC(UDATA_MAX)
 #endif /* OMR_GC_MODRON_SCAVENGER */		
-#if defined(OMR_GC_STACCATO)
+#if defined(OMR_GC_REALTIME)
 		, sATBBarrierRememberedSet(NULL)
-#endif /* OMR_GC_STACCATO */
+#endif /* defined(OMR_GC_REALTIME) */
 		, heapBaseForBarrierRange0(NULL)
 		, heapSizeForBarrierRange0(0)
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 		, shadowHeapBase(0)
 		, shadowHeapTop(0)
 		, shadowHeapHandle()
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 		, doOutOfLineAllocationTrace(true) /* Tracing after ever x bytes allocated per thread. Enabled by default. */
 		, doFrequentObjectAllocationSampling(false) /* Finds most frequently allocated classes. Disabled by default. */
 		, oolObjectSamplingBytesGranularity(16*1024*1024) /* Default granularity set to 16M (shows <1% perf loss). */
@@ -1386,13 +1417,13 @@ public:
 		, fvtest_disableInlineAllocation(0)
 		, fvtest_forceSweepChunkArrayCommitFailure(0)
 		, fvtest_forceSweepChunkArrayCommitFailureCounter(0)
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 		, fvtest_enableReadBarrierVerification(0)
 		, fvtest_enableMonitorObjectsReadBarrierVerification(0)
 		, fvtest_enableClassStaticsReadBarrierVerification(0)
 		, fvtest_enableJNIGlobalWeakReadBarrierVerification(0)
 		, fvtest_enableHeapReadBarrierVerification(0)
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 		, fvtest_forceMarkMapCommitFailure(0)
 		, fvtest_forceMarkMapCommitFailureCounter(0)
 		, fvtest_forceMarkMapDecommitFailure(0)
@@ -1540,20 +1571,21 @@ public:
 		, fixHeapForWalk(false)
 		, minArraySizeToSetAsScanned(0)
 		, overflowCacheCount(0) /**< initial value of 0.  This is set in workpackets initialization or via the commandline */
-#endif /* defined(OMR_GC_REALTIME) */
-#if defined(OMR_GC_STACCATO)
 		, concurrentSweepingEnabled(false)
 		, concurrentTracingEnabled(false)
-#endif /* OMR_GC_STACCATO */
+#endif /* defined(OMR_GC_REALTIME) */
 		, instrumentableAllocateHookEnabled(false) /* by default the hook J9HOOK_VM_OBJECT_ALLOCATE_INSTRUMENTABLE is disabled */
 		, previousMarkMap(NULL)
 		, globalAllocationManager(NULL)
 #if defined(OMR_GC_REALTIME) || defined(OMR_GC_SEGREGATED_HEAP)
 		, managedAllocationContextCount(0)
-#endif /* OMR_GC_REALTIME || OMR_GC_SEGREGATED_HEAP */
+#endif /* defined(OMR_GC_REALTIME) || defined(OMR_GC_SEGREGATED_HEAP) */
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		, defaultSizeClasses(NULL)
-#endif /* OMR_GC_SEGREGATED_HEAP */
+#endif /* defined(OMR_GC_SEGREGATED_HEAP) */
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+		, heapRegionStateTable(NULL)
+#endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */
 		, distanceToYieldTimeCheck(0)
 		, traceCostToCheckYield(500) /* weighted sum of marked objects and scanned pointers before we check yield in main tracing loop */
 		, sweepCostToCheckYield(500) /* weighted count of free chunks/marked objects before we check yield in sweep small loop */
@@ -1654,7 +1686,7 @@ public:
 		, tarokMinimumGMPWorkTargetBytes()
 		, tarokConcurrentMarkingCostWeight(0.05)
 		, tarokAutomaticDefragmentEmptinessThreshold(false)
-		, tarokEnableCopyForwardHybrid(false)
+		, tarokEnableCopyForwardHybrid(true)
 #endif /* defined (OMR_GC_VLHGC) */
 		, tarokEnableExpensiveAssertions(false)
 		, sweepPoolManagerAddressOrderedList(NULL)
@@ -1683,5 +1715,6 @@ public:
 	{
 		_typeId = __FUNCTION__;
 	}
+
 };
 #endif /* GCEXTENSIONSBASE_HPP_ */

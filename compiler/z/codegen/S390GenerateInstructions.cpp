@@ -30,7 +30,6 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -151,11 +150,6 @@ TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg,
                               TR::LabelSymbol * sym, TR::Instruction * preced)
    {
-   if (op == TR::InstOpCode::BRCT && targetReg->assignToHPR())
-      {
-      // upgrade to Highword branch on count
-      op = TR::InstOpCode::BRCTH;
-      }
    if (preced)
       {
       return new (INSN_HEAP) TR::S390BranchOnCountInstruction(op, n, targetReg, sym, preced, cg);
@@ -167,11 +161,6 @@ TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg,
                               TR::RegisterDependencyConditions *cond, TR::LabelSymbol * sym, TR::Instruction * preced)
    {
-   if (op == TR::InstOpCode::BRCT && targetReg->assignToHPR())
-      {
-      // upgrade to Highword branch on count
-      op = TR::InstOpCode::BRCTH;
-      }
    if (preced)
       {
       return new (INSN_HEAP) TR::S390BranchOnCountInstruction(op, n, targetReg, cond, sym, preced, cg);
@@ -334,7 +323,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
    if( !cg->comp()->getOption(TR_DisableCompareAndBranchInstruction) &&
            !needsCC &&
            replacementOpCode != TR::InstOpCode::BAD &&
-           cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12))
+           TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12))
       {
       // generate a compare and branch.
       returnInstruction = (TR::S390RIEInstruction *)generateRIEInstruction(cg, replacementOpCode, node, first, second, branchDestination, bc);
@@ -429,7 +418,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
    if( !cg->comp()->getOption(TR_DisableCompareAndBranchInstruction) &&
            !needsCC &&
            replacementOpCode != TR::InstOpCode::BAD &&
-           cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12))
+           TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12))
       {
       cursor = (TR::S390RIEInstruction *)generateRIEInstruction(cg, replacementOpCode, node, first, (int8_t) second, branchDestination, bc, preced);
       }
@@ -473,94 +462,6 @@ TR::Instruction *
 generateRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::Register * sreg,
                       TR::Instruction * preced)
    {
-   switch(op)
-      {
-      case TR::InstOpCode::AR:
-         if (treg->assignToHPR())
-            {
-            if (sreg->assignToHPR())
-               {
-               return generateRRRInstruction(cg, TR::InstOpCode::AHHHR, n, treg, treg, sreg, preced);
-               }
-            //cracked insn
-            //return generateRRRInstruction(cg, TR::InstOpCode::AHHLR, n, treg, treg, sreg, preced);
-            }
-         break;
-      case TR::InstOpCode::ALR:
-         if (treg->assignToHPR())
-            {
-            if (sreg->assignToHPR())
-               {
-               return generateRRRInstruction(cg, TR::InstOpCode::ALHHHR, n, treg, treg, sreg, preced);
-               }
-            //return generateRRRInstruction(cg, TR::InstOpCode::ALHHLR, n, treg, treg, sreg, preced);
-            }
-         break;
-      case TR::InstOpCode::CR:
-         if (treg->assignToHPR())
-            {
-            op = TR::InstOpCode::CHLR;
-            if (sreg->assignToHPR())
-               {
-               op = TR::InstOpCode::CHHR;
-               }
-            }
-         break;
-      case TR::InstOpCode::CLR:
-         if (treg->assignToHPR())
-            {
-            op = TR::InstOpCode::CLHLR;
-            if (sreg->assignToHPR())
-               {
-               op = TR::InstOpCode::CLHHR;
-               }
-            }
-         break;
-      case TR::InstOpCode::LR:
-         if (treg->assignToHPR())
-            {
-            if (sreg->assignToHPR())
-               {
-               return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHHR, treg, sreg, 0, preced);
-               }
-            return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHLR, treg, sreg, 0, preced);
-            }
-         if (sreg->assignToHPR())
-            {
-            return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LLHFR, treg, sreg, 0, preced);
-            }
-         break;
-      case TR::InstOpCode::SR:
-         if (treg->assignToHPR())
-            {
-            if (sreg->assignToHPR())
-               {
-               return generateRRRInstruction(cg, TR::InstOpCode::SHHHR, n, treg, treg, sreg, preced);
-               }
-            //return generateRRRInstruction(cg, TR::InstOpCode::SHHLR, n, treg, treg, sreg, preced);
-            }
-         break;
-      case TR::InstOpCode::SLR:
-         if (treg->assignToHPR())
-            {
-            if (sreg->assignToHPR())
-               {
-               return generateRRRInstruction(cg, TR::InstOpCode::SLHHHR, n, treg, treg, sreg, preced);
-               }
-            //return generateRRRInstruction(cg, TR::InstOpCode::SLHHLR, n, treg, treg, sreg, preced);
-            }
-         break;
-      case TR::InstOpCode::LHHR:
-         return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHHR, treg, sreg, 0, preced);
-         break;
-      case TR::InstOpCode::LLHFR:
-         return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LLHFR, treg, sreg, 0, preced);
-         break;
-      case TR::InstOpCode::LHLR:
-         return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHLR, treg, sreg, 0, preced);
-         break;
-      }
-
    TR::Instruction *instr;
    if (preced)
       instr = new (INSN_HEAP) TR::S390RRInstruction(op, n, treg, sreg, preced, cg);
@@ -747,60 +648,6 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    TR_ASSERT(treg->getRealRegister()!=NULL || // Not in RA
            op != TR::InstOpCode::L || !n->isExtendedTo64BitAtSource(), "Generating an TR::InstOpCode::L, when LLGF|LGF should be used");
 
-   if (treg->assignToHPR())
-      {
-      switch(op)
-         {
-         case TR::InstOpCode::C:
-            op = TR::InstOpCode::CHF;
-            break;
-         case TR::InstOpCode::CL:
-            op = TR::InstOpCode::CLHF;
-            break;
-         case TR::InstOpCode::L:
-            op = TR::InstOpCode::LFH;
-            break;
-         case TR::InstOpCode::LB:
-            op = TR::InstOpCode::LBH;
-            break;
-         case TR::InstOpCode::LH:
-            op = TR::InstOpCode::LHH;
-            break;
-         case TR::InstOpCode::LHY:
-            op = TR::InstOpCode::LHH;
-            break;
-         case TR::InstOpCode::LLC:
-            op = TR::InstOpCode::LLCH;
-            break;
-         case TR::InstOpCode::LLH:
-            op = TR::InstOpCode::LLHH;
-            break;
-         case TR::InstOpCode::LY:
-            op = TR::InstOpCode::LFH;
-            break;
-         case TR::InstOpCode::ST:
-            op = TR::InstOpCode::STFH;
-            break;
-         case TR::InstOpCode::STC:
-            op = TR::InstOpCode::STCH;
-            break;
-         case TR::InstOpCode::STCY:
-            op = TR::InstOpCode::STCH;
-            break;
-         case TR::InstOpCode::STH:
-            op = TR::InstOpCode::STHH;
-            break;
-         case TR::InstOpCode::STHY:
-            op = TR::InstOpCode::STHH;
-            break;
-         case TR::InstOpCode::STY:
-            op = TR::InstOpCode::STFH;
-            break;
-         default:
-            break;
-         }
-      }
-
    // Handle long displacement if necessary
    op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
@@ -911,21 +758,6 @@ generateRIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 TR::Instruction *
 generateRIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, int32_t imm, TR::Instruction * preced)
    {
-   TR::Compilation *comp = cg->comp();
-   if (treg->assignToHPR())
-      {
-      switch(op)
-         {
-         case TR::InstOpCode::LHI:
-            return generateRILInstruction(cg, TR::InstOpCode::IIHF, n, treg, imm, preced);
-            break;
-         case TR::InstOpCode::AHI:
-            return generateRILInstruction(cg, TR::InstOpCode::AIH, n, treg, imm, preced);
-            break;
-         default:
-            break;
-         }
-      }
    if (preced)
       {
       return new (INSN_HEAP) TR::S390RIInstruction(op, n, treg, imm, preced, cg);
@@ -1071,7 +903,7 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-   
+
    // Handle long displacement if necessary
    op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
@@ -1103,7 +935,7 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-   
+
    // Handle long displacement if necessary
    op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
@@ -1136,7 +968,7 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-   
+
    // Handle long displacement if necessary
    op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
@@ -1695,12 +1527,12 @@ generateSIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // SI and SIY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-   
+
    // Handle long displacement if necessary
    op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
    TR::Instruction* result = NULL;
-   
+
    auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
 
    if (instructionFormat == SI_FORMAT)
@@ -2033,9 +1865,10 @@ TR::Instruction * generateVRRiInstruction(
                       TR::Node                * n          ,
                       TR::Register            * targetReg  ,    /* GPR */
                       TR::Register            * sourceReg2 ,    /* VRF */
-                      uint8_t                   mask3)          /* 4 bits*/
+                      uint8_t                   mask3      ,    /* 4 bits*/
+                      uint8_t                   mask4)
    {
-   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRRiInstruction(cg, op, n, targetReg, sourceReg2, mask3);
+   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRRiInstruction(cg, op, n, targetReg, sourceReg2, mask3, mask4);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::VCVB || op == TR::InstOpCode::VCVBG)
@@ -2258,7 +2091,7 @@ generateShiftRightImmediate(TR::CodeGenerator *cg, TR::Node *node, TR::Register 
       }
    else
       {
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
          instr = generateRSInstruction(cg, TR::InstOpCode::SRAK, node, trgReg, srcReg, imm, preced);
          }
@@ -2500,7 +2333,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    TR::S390RILInstruction *LRLinst = 0;
    if (cg->isLiteralPoolOnDemandOn() && (base == 0))
       {
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && op == TR::InstOpCode::L)
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && op == TR::InstOpCode::L)
          {
          targetsnippet = cg->findOrCreate4ByteConstant(node, imm);
          LRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LRL, node, treg, targetsnippet, 0);
@@ -2573,7 +2406,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    TR::Instruction * cursor;
    TR::Compilation *comp = cg->comp();
 
-   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
       {
       if (op == TR::InstOpCode::LG || op == TR::InstOpCode::L)
          {
@@ -2716,7 +2549,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       }
    else if (cg->isLiteralPoolOnDemandOn() && (base == 0))
       {
-      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && op == TR::InstOpCode::LG)
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && op == TR::InstOpCode::LG)
          {
          targetsnippet = cg->findOrCreate8ByteConstant(node, imm);
          LGRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LGRL, node, treg, targetsnippet, 0);
@@ -2768,7 +2601,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
 
    if (!LGRLinst)
       {
-      cursor = instructionFormat == RXE_FORMAT ? 
+      cursor = instructionFormat == RXE_FORMAT ?
          generateRXEInstruction(cg, op, node, treg, dataref, 0) :
          generateRXInstruction(cg, op, node, treg, dataref);
       }
@@ -3119,7 +2952,7 @@ generateSerializationInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Inst
    {
    // BCR R15, 0 is the defacto serialization instruction on Z, however on z196, a fast serialization
    // facilty was added, and hence BCR R14, 0 is preferred
-   TR::InstOpCode::S390BranchCondition cond = cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) ? TR::InstOpCode::COND_MASK14 : TR::InstOpCode::COND_MASK15;
+   TR::InstOpCode::S390BranchCondition cond = TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196) ? TR::InstOpCode::COND_MASK14 : TR::InstOpCode::COND_MASK15;
 
    // We needed some special handling in TR::Instruction::assignRegisterNoDependencies
    // to recognize real register GPR0 being passed in.
@@ -3132,126 +2965,6 @@ generateSerializationInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Inst
       instr = new (INSN_HEAP) TR::S390RegInstruction(TR::InstOpCode::BCR, node, cond, gpr0, cg);
 
    return instr;
-   }
-
-/**
- * Generate Highword instructions using extended-mnemonic syntax
- * for example:
- * Load (High <- Low)       LHLR R1 R2   =      RISBHGZ (R1, R2, 0, 31, 32) z7 only
- */
-TR::Instruction *
-generateExtendedHighWordInstruction(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,
-                                    TR::Register * targetReg, TR::Register * srcReg, int8_t imm8, TR::Instruction * preced)
-   {
-   TR::Instruction * cursor = NULL;
-   TR_Debug * debugObj = cg->getDebug();
-   char * COMMENT;
-   bool isTargetHWUsed, isSrcHWUsed, isTargetLWUsed, isSrcLWUsed; // make sure to not clobber the flags
-   TR::Compilation *comp = cg->comp();
-
-   switch(op)
-      {
-      case TR::InstOpCode::LHHR:         // Load (High <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 0, 31+0x80, 0, preced);
-         COMMENT = "LHHR : Load (High <- High)";
-         break;
-      case TR::InstOpCode::LHLR:         // Load (High <- Low)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 0, 31+0x80, 32, preced);
-         COMMENT = "LHLR : Load (High <- Low)";
-         break;
-      case TR::InstOpCode::LLHFR:        // Load (Low <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 0, 31+0x80, 32, preced);
-         COMMENT = "LLHFR : Load (Low <- High)";
-         break;
-      case TR::InstOpCode::LLHHHR:       // Load Logical Halfword (High <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 16, 31+0x80, 0, preced);
-         COMMENT = "LLHHHR : Load Logical Halfword (High <- High)";
-         break;
-      case TR::InstOpCode::LLHHLR:       // Load Logical Halfword (High <- Low)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 16, 31+0x80, 32, preced);
-         COMMENT = "LLHHLR : Load Logical Halfword (High <- Low)";
-         break;
-      case TR::InstOpCode::LLHLHR:       // Load Logical Halfword (Low <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 16, 31+0x80, 32, preced);
-         COMMENT = "LLHLHR : Load Logical Halfword (Low <- High)";
-         break;
-      case TR::InstOpCode::LLCHHR:       // Load Logical Character (High <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 24, 31+0x80, 0, preced);
-         COMMENT = "LLCHHR : Load Logical Character (High <- High)";
-         break;
-      case TR::InstOpCode::LLCHLR:       // Load Logical Character (High <- Low)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 24, 31+0x80, 32, preced);
-         COMMENT = "LLCHLR : Load Logical Character (High <- Low)";
-         break;
-      case TR::InstOpCode::LLCLHR:       // Load Logical Character (Low <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 24, 31+0x80, 32, preced);
-         COMMENT =  "LLCLHR : Load Logical Character (Low <- High)";
-         break;
-      case TR::InstOpCode::SLLHH:        // Shift Left Logical (High <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 0, 31-imm8+0x80, imm8, preced);
-         COMMENT = "SLLHH : Shift Left Logical (High <- High)";
-         break;
-      case TR::InstOpCode::SLLLH:        // Shift Left Logical (Low <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 0, 31-imm8+0x80, 32+imm8, preced);
-         COMMENT = "SLLLH : Shift Left Logical (Low <- High)";
-         break;
-      case TR::InstOpCode::SRLHH:        // Shift Right Logical (High <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, imm8, 31+0x80, -imm8, preced);
-         COMMENT = "SRLHH : Shift Right Logical (High <- High)";
-         break;
-      case TR::InstOpCode::SRLLH:        // Shift Right Logical (Low <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, imm8, 31+0x80, 32-imm8, preced);
-         COMMENT = "SRLHH : Shift Right Logical (Low <- High)";
-         break;
-      case TR::InstOpCode::NHHR:         // AND High (High <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RNSBG, node, targetReg, srcReg, 0, 31, 0, preced);
-         COMMENT = "NHHR : AND High (High <- High)";
-         break;
-      case TR::InstOpCode::NHLR:         // AND High (High <- Low)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RNSBG, node, targetReg, srcReg, 0, 31, 32, preced);
-         COMMENT = "NHLR : AND High (High <- Low)";
-         break;
-      case TR::InstOpCode::NLHR:         // AND High (Low <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RNSBG, node, targetReg, srcReg, 32, 63, 32, preced);
-         COMMENT = "NLHR : AND High (Low <- High)";
-         break;
-      case TR::InstOpCode::XHHR:         // XOR High (High <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, targetReg, srcReg, 0, 31, 0, preced);
-         COMMENT = "XHHR : XOR High (High <- High)";
-         break;
-      case TR::InstOpCode::XHLR:         // XOR High (High <- Low)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, targetReg, srcReg, 0, 31, 32, preced);
-         COMMENT = "XHLR : XOR High (High <- Low)";
-         break;
-      case TR::InstOpCode::XLHR:         // XOR High (Low <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, targetReg, srcReg, 32, 63, 32, preced);
-         COMMENT = "XLHR : XOR High (Low <- High)";
-         break;
-      case TR::InstOpCode::OHHR:         // OR High (High <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, targetReg, srcReg, 0, 31, 0, preced);
-         COMMENT = "OHHR : OR High (High <- High)";
-         break;
-      case TR::InstOpCode::OHLR:         // OR High (High <- Low)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, targetReg, srcReg, 0, 31, 32, preced);
-         COMMENT = "OHLR : OR High (High <- Low)";
-         break;
-      case TR::InstOpCode::OLHR:         // OR High (Low <- High)
-         cursor = generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, targetReg, srcReg, 32, 63, 32, preced);
-         COMMENT = "OLHR : OR High (Low <- High)";
-         break;
-      default:
-         TR_ASSERT(0, "OpCode not supported when calling generateExtendedHighWordInstruction()");
-         break;
-      }
-
-   ((TR::S390RIEInstruction *)cursor)->setExtendedHighWordOpCode(op);
-
-   if (debugObj)
-      {
-      debugObj->addInstructionComment(cursor, COMMENT);
-      }
-
-   return cursor;
    }
 
 /**
@@ -3353,17 +3066,18 @@ void generateShiftAndKeepSelected64Bit(TR::Node * node, TR::CodeGenerator *cg,
                                        TR::Register * aFirstRegister, TR::Register * aSecondRegister,
                                        int aFromBit, int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode)
    {
-   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) && !aSetConditionCode)
+   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) && !aSetConditionCode)
       {
       generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node, aFirstRegister, aSecondRegister, aFromBit, aToBit|(aClearOtherBits ? 0x80 : 0x00), aShiftAmount);
       }
-   else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+   else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
       {
       generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, aFirstRegister, aSecondRegister, aFromBit, aToBit|(aClearOtherBits ? 0x80 : 0x00), aShiftAmount);
       }
    else
       {
-      generateRSInstruction(cg, TR::InstOpCode::SLLG, node, aFirstRegister, aSecondRegister, aFromBit + aShiftAmount);
+      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, aFirstRegister, aSecondRegister, (63 - aToBit) + aShiftAmount);
+      generateRSInstruction(cg, TR::InstOpCode::SLLG, node, aFirstRegister, aFirstRegister, (63 - aToBit) + aShiftAmount + aFromBit);
       generateRSInstruction(cg, TR::InstOpCode::SRLG, node, aFirstRegister, aFirstRegister, aFromBit);
       }
    }
@@ -3377,13 +3091,15 @@ generateShiftAndKeepSelected31Bit(TR::Node * node, TR::CodeGenerator *cg,
                                   TR::Register * aFirstRegister, TR::Register * aSecondRegister,
                                   int aFromBit, int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode)
    {
-   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
       {
       generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, aFirstRegister, aSecondRegister, aFromBit, aToBit|(aClearOtherBits ? 0x80 : 0x00), aShiftAmount);
       }
    else
       {
-      generateRSInstruction(cg, TR::InstOpCode::SLL, node, aFirstRegister, aFromBit + aShiftAmount);
+      generateRRInstruction(cg, TR::InstOpCode::LR, node, aFirstRegister, aSecondRegister);
+      generateRSInstruction(cg, TR::InstOpCode::SRL, node, aFirstRegister, (31 - aToBit) + aShiftAmount);
+      generateRSInstruction(cg, TR::InstOpCode::SLL, node, aFirstRegister, (31 - aToBit) + aShiftAmount + aFromBit);
       generateRSInstruction(cg, TR::InstOpCode::SRL, node, aFirstRegister, aFromBit);
       }
    }
@@ -3399,6 +3115,9 @@ TR::Instruction *generateZeroVector(TR::Node *node, TR::CodeGenerator *cg, TR::R
  * \brief
  *    Determines if an instruction can throw a decimal overflow exceptions.
  *
+ * \param cg
+ *    The code generator used to generate the instructions.
+ *
  * \param op
  *    The instruction to check.
  *
@@ -3411,7 +3130,7 @@ TR::Instruction *generateZeroVector(TR::Node *node, TR::CodeGenerator *cg, TR::R
  *    whether to rely on condition code in such cases.
 */
 bool
-canThrowDecimalOverflowException(TR::InstOpCode::Mnemonic op)
+canThrowDecimalOverflowException(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op)
    {
    switch(op)
       {
@@ -3434,7 +3153,7 @@ canThrowDecimalOverflowException(TR::InstOpCode::Mnemonic op)
       // Fixed point overflow exception instructions
       case TR::InstOpCode::VCVB:
       case TR::InstOpCode::VCVBG:
-          return true;
+          return !cg->getIgnoreDecimalOverflowException();
       default:
           return false;
       }
@@ -3469,7 +3188,13 @@ generateS390DAAExceptionRestoreSnippet(TR::CodeGenerator* cg,
          TR::Instruction * nop = new (INSN_HEAP) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, cg);
          }
 
-      TR::InstOpCode::S390BranchCondition bc = canThrowDecimalOverflowException(op) ? TR::InstOpCode::COND_CC3 : TR::InstOpCode::COND_NOP;
+      auto bc = TR::InstOpCode::COND_NOP;
+
+      if (canThrowDecimalOverflowException(cg, op))
+         {
+         bc = TR::InstOpCode::COND_CC3;
+         }
+
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreGPR7SnippetHandler);
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, bc, n, handlerLabel);
 

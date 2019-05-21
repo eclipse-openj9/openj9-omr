@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2015 IBM Corp. and others
+ * Copyright (c) 2015, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -72,30 +72,6 @@ protected:
 	{
 		_typeId = __FUNCTION__;
 		if ((endPtr - scanPtr) <= _bitsPerScanMap) {
-			setNoMoreSlots();
-		}
-	}
-
-	/**
-	 * Splitting constructor sets split scan and end pointers to appropriate scanning range
-	 * @param[in] env current environment (per thread)
-	 * @param[in] objectPtr the object to be scanned
-	 * @param splitAmount The number of array elements to include
-	 */
-	GC_IndexableObjectScanner(MM_EnvironmentBase *env, GC_IndexableObjectScanner *objectScanner, uintptr_t splitAmount)
-		: GC_ObjectScanner(
-			env
-			, objectScanner->_parentObjectPtr
-			, objectScanner->_endPtr
-			, splitAmount < (uintptr_t)_bitsPerScanMap ? (((uintptr_t)1 << splitAmount) - 1) : UDATA_MAX
-			, objectScanner->_flags
-		)
-		, _endPtr(objectScanner->_endPtr + splitAmount)
-		, _basePtr(objectScanner->_basePtr)
-		, _limitPtr(objectScanner->_limitPtr)
-	{
-		_typeId = __FUNCTION__;
-		if ((_endPtr - _scanPtr) <= _bitsPerScanMap) {
 			setNoMoreSlots();
 		}
 	}

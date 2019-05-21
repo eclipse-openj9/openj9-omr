@@ -999,11 +999,7 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.append(format, node->printCannotOverflow());
    output.append(format, node->printPointsToNonNull());
 
-#ifdef TR_TARGET_S390
-   output.append(format, node->printIsHPREligible());
-#else
    output.append(format, node->printIsInvalid8BitGlobalRegister());
-#endif
    output.append(format, node->printIsDirectMemoryUpdate());
    output.append(format, node->printIsTheVirtualCallNodeForAGuardedInlinedCall());
    if (!inDebugExtension())
@@ -1649,8 +1645,10 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<atomicSwap32Bit>";
          case TR::SymbolReferenceTable::atomicSwap64BitSymbol:
              return "<atomicSwap64Bit>";
-         case TR::SymbolReferenceTable::atomicCompareAndSwapSymbol:
-             return "<atomicCompareAndSwap>";
+         case TR::SymbolReferenceTable::atomicCompareAndSwapReturnStatusSymbol:
+             return "<atomicCompareAndSwapReturnStatus>";
+         case TR::SymbolReferenceTable::atomicCompareAndSwapReturnValueSymbol:
+             return "<atomicCompareAndSwapReturnValue>";
          case TR::SymbolReferenceTable::potentialOSRPointHelperSymbol:
              return "<potentialOSRPointHelper>";
          case TR::SymbolReferenceTable::osrFearPointHelperSymbol:
@@ -2100,14 +2098,15 @@ static const char *commonNonhelperSymbolNames[] =
    "<startPCLinkageInfo>",
    "<instanceShapeFromROMClass>",
    "<synchronizedFieldLoad>",
-   "<atomicAdd32Bit>",
-   "<atomicAdd64Bit>",
+   "<atomicAdd>",
+   "<atomicFetchAndAdd>",
    "<atomicFetchAndAdd32Bit>",
    "<atomicFetchAndAdd64Bit>",
+   "<atomicSwap>",
    "<atomicSwap32Bit>",
    "<atomicSwap64Bit>",
-   "<atomicCompareAndSwap32Bit>",
-   "<atomicCompareAndSwap64Bit>"
+   "<atomicCompareAndSwapReturnStatus>",
+   "<atomicCompareAndSwapReturnValue>",
    };
 
 const char *
@@ -3190,11 +3189,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Register * reg, TR_RegisterSizes size)
 /* TODO: Work in progress, column based, side-by-side traceRA={*} format that looks like this (note order will change, columns will widen etc):
    Initially for Java on z, then sTR on z, then Java on other platforms.
    S = State; W = Weight; V = Virtual Register; RC = Ref Count)
-   +---------------------------------+----------------------------------+------------------------------+------------------------------+
-   | Name   S   W  Flag     V    RC  | Name   S   W  Flag     V     RC  | Name   S   W Flag   V    RC  | Name   S  W Flag    V    RC  |
-   +---------------------------------+----------------------------------+------------------------------+------------------------------+
-   | GPR0       80 Free              | HPR0       80 Free               | VRF16     80 Free            | FPR0     80 Free FPR_34  4/5 |
-   | GPR1       80 Free              | HPR1       80 Free               | VRF17     80 Free            | FPR1     80 Free             |
+   +---------------------------------+------------------------------+------------------------------+
+   | Name   S   W  Flag     V    RC  | Name   S   W Flag   V    RC  | Name   S  W Flag    V    RC  |
+   +---------------------------------+------------------------------+------------------------------+
+   | GPR0       80 Free              | VRF16     80 Free            | FPR0     80 Free FPR_34  4/5 |
+   | GPR1       80 Free              | VRF17     80 Free            | FPR1     80 Free             |
    ..
 */
 void TR_Debug::printFullRegInfoNewFormat(TR::FILE *pOutFile, TR::Register * rr)
@@ -3690,7 +3689,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_divCheck:                  return "jitThrowArithmeticException";
          case TR_arrayStoreException:       return "jitThrowArrayStoreException";
          case TR_typeCheckArrayStore:       return "jitTypeCheckArrayStore";
-         case TR_readBarrier:               return "jitReadBarrier";
+         case TR_softwareReadBarrier:       return "jitSoftwareReadBarrier";
          case TR_writeBarrierStore:         return "jitWriteBarrierStore";
          case TR_writeBarrierStoreGenerational: return "jitWriteBarrierStoreGenerational";
          case TR_writeBarrierStoreGenerationalAndConcurrentMark: return "jitWriteBarrierStoreGenerationalAndConcurrentMark";
@@ -3737,6 +3736,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_icallVMprJavaSendInvokeExactD:                   return "icallVMprJavaSendInvokeExactD";
          case TR_icallVMprJavaSendInvokeWithArguments:            return "icallVMprJavaSendInvokeWithArguments";
          case TR_icallVMprJavaSendNativeStatic:                   return "icallVMprJavaSendNativeStatic";
+         case TR_j2iTransition:                                   return "j2iTransition";
          case TR_initialInvokeExactThunk_unwrapper:               return "initialInvokeExactThunk_unwrapper";
          case TR_methodHandleJ2I_unwrapper:                       return "methodHandleJ2I_unwrapper";
          case TR_interpreterUnresolvedMethodTypeGlue:             return "interpreterUnresolvedMethodTypeGlue";
@@ -4312,17 +4312,26 @@ TR_Debug::getVirtualGuardTestTypeName(TR_VirtualGuardTestType testType)
 const char *
 TR_Debug::getWriteBarrierKindName(int32_t kind)
    {
-   static const char *names[TR_NumberOfWrtBars] =
+   switch (kind)
       {
-      "None",
-      "Always",
-      "OldCheck",
-      "CardMark",
-      "CardMarkAndOldCheck",
-      "CardMarkIncremental",
-      "RealTime",
-      };
-   return names[kind];
+      case gc_modron_wrtbar_none:
+         return "None";
+      case gc_modron_wrtbar_always:
+         return "Always";
+      case gc_modron_wrtbar_oldcheck:
+         return "OldCheck";
+      case gc_modron_wrtbar_cardmark:
+         return "CardMark";
+      case gc_modron_wrtbar_cardmark_incremental:
+         return "CardMarkIncremental";
+      case gc_modron_wrtbar_cardmark_and_oldcheck:
+         return "CardMarkAndOldCheck";
+      case gc_modron_wrtbar_satb:
+      case gc_modron_wrtbar_satb_and_oldcheck:
+         return "RealTime";
+      default:
+         return "UNKNOWN";
+      }
    }
 
 const char *
@@ -4334,8 +4343,6 @@ TR_Debug::getSpillKindName(uint8_t kind)
          return "gpr";
       case TR_fprSpill:
          return "fpr";
-      case TR_hprSpill:
-         return "hpr";
       case TR_vrfSpill:
          return "vrf";
       case TR_volatileSpill:
@@ -4693,7 +4700,6 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
 #if 0
 /* Work in progress side-by side traceRA={*} */
             const bool isGPR = _registerKindsToAssign & TR_GPR_Mask;
-            const bool isHPR = _registerKindsToAssign & TR_HPR_Mask;
             const bool isVRF = _registerKindsToAssign & TR_VRF_Mask;
             const bool isFPR = _registerKindsToAssign & TR_FPR_Mask;
             const bool isX87 = _registerKindsToAssign & TR_X87_Mask;
@@ -4727,16 +4733,6 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
                trfprintf(_file, "</gprs>\n");
                }
 #if defined(TR_TARGET_S390)
-            if (_registerKindsToAssign & TR_HPR_Mask)
-               {
-               trfprintf(_file, "<hprs>\n");
-               TR::RegisterIterator *iter = _cg->getHPRegisterIterator();
-               for (TR::Register *hpr = iter->getFirst(); hpr; hpr = iter->getNext())
-                  {
-                  printFullRegInfo(_file, hpr);
-                  }
-               trfprintf(_file, "</hprs>\n");
-               }
             if (_registerKindsToAssign & TR_VRF_Mask && _cg->getSupportsVectorRegisters())
                {
                trfprintf(_file, "<vrfs>\n");

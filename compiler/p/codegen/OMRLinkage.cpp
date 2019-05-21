@@ -28,6 +28,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -78,7 +79,7 @@ bool OMR::Power::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)
 
 TR::MemoryReference *OMR::Power::Linkage::getOutgoingArgumentMemRef(int32_t argSize, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::PPCMemoryArgument &memArg, uint32_t length)
    {
-   TR::Machine *machine = self()->cg()->machine();
+   TR::Machine *machine = self()->machine();
    const TR::PPCLinkageProperties& properties = self()->getProperties();
 
    TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(machine->getRealRegister(properties.getNormalStackPointerRegister()),
@@ -104,7 +105,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
    #define  REAL_REGISTER(ri)  machine->getRealRegister(ri)
    #define  REGNUM(ri)         ((TR::RealRegister::RegNum)(ri))
    const TR::PPCLinkageProperties& properties = self()->getProperties();
-   TR::Machine *machine = self()->cg()->machine();
+   TR::Machine *machine = self()->machine();
    TR::RealRegister      *stackPtr   = self()->cg()->getStackPointerRegister();
    TR::ResolvedMethodSymbol    *bodySymbol = self()->comp()->getJittedMethodSymbol();
    ListIterator<TR::ParameterSymbol>   paramIterator(&parmList);
@@ -483,7 +484,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
       // would be better to use a different linkage for this purpose
       return cursor;
 
-   TR::Machine *machine = self()->cg()->machine();
+   TR::Machine *machine = self()->machine();
    TR::RealRegister      *stackPtr   = self()->cg()->getStackPointerRegister();
    TR::ResolvedMethodSymbol      *bodySymbol = self()->comp()->getJittedMethodSymbol();
    ListIterator<TR::ParameterSymbol>   paramIterator(&(bodySymbol->getParameterList()));
@@ -577,7 +578,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
 
 TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
    {
-   TR::Machine *machine = self()->cg()->machine();
+   TR::Machine *machine = self()->machine();
    TR::RealRegister      *stackPtr   = self()->cg()->getStackPointerRegister();
    TR::ResolvedMethodSymbol      *bodySymbol = self()->comp()->getJittedMethodSymbol();
    ListIterator<TR::ParameterSymbol>   paramIterator(&(bodySymbol->getParameterList()));
@@ -808,17 +809,4 @@ TR_ReturnInfo OMR::Power::Linkage::getReturnInfoFromReturnType(TR::DataType retu
    TR_ASSERT(false, "Unhandled return type");
 
    return TR_VoidReturn;
-   }
-
-TR_HeapMemory
-OMR::Power::Linkage::trHeapMemory()
-   {
-   return self()->trMemory();
-   }
-
-
-TR_StackMemory
-OMR::Power::Linkage::trStackMemory()
-   {
-   return self()->trMemory();
    }

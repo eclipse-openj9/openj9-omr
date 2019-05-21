@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include "codegen/AheadOfTimeCompile.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
@@ -437,7 +438,7 @@ void OMR::Power::MemoryReference::adjustForResolution(TR::CodeGenerator *cg)
    {
    _modBase = cg->allocateRegister();
    _conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-   addDependency(_conditions, _modBase, TR::RealRegister::gr11, TR_GPR, cg);
+   TR::addDependency(_conditions, _modBase, TR::RealRegister::gr11, TR_GPR, cg);
    }
 
 void OMR::Power::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)

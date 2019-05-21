@@ -36,6 +36,8 @@ namespace OMR { typedef OMR::Z::CPU CPUConnector; }
 #include "compiler/env/OMRCPU.hpp"
 #include "env/jittypes.h"
 #include "env/ProcessorInfo.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
 
 namespace OMR
 {
@@ -45,51 +47,190 @@ namespace Z
 
 class CPU : public OMR::CPU
    {
-protected:
+   public:
 
-   CPU() :
-         OMR::CPU(),
-      _s390MachineType(TR_UNDEFINED_S390_MACHINE)
-      {}
+   enum Architecture
+      {
+      Unknown = 0,
+      z900,
+      z990,
+      z9,
+      z10,
+      z196,
+      zEC12,
+      z13,
+      z14,
+      z15,
+      zNext,
+      };
 
-public:
-   bool getSupportsHardwareSQRT() { return true; }
+   /** \brief
+    *     Gets the name of the processor given the four digit machine id.
+    */
+   static const char* getProcessorName(int32_t machineId);
 
-   bool getS390SupportsZ900() { return true; }
+   public:
 
-   bool getS390SupportsZ990() { return true; }
+   bool getSupportsArch(Architecture arch);
 
-   bool getS390SupportsZ9() { return true; }
+   bool setSupportsArch(Architecture arch);
 
-   bool getS390SupportsZ10() { return true; }
+   bool getSupportsHardwareSQRT();
 
-   bool getS390SupportsZ196() { return true; }
+   bool hasPopulationCountInstruction();
+   
+   /** \brief
+    *     Determines whether the High-Word facility is available on the current processor.
+    */
+   bool getSupportsHighWordFacility();
 
-   bool getS390SupportsZEC12() { return false; }
+   /** \brief
+    *     Determines whether the High-Word facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the High-Word facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsHighWordFacility(bool value);
+   
+   /** \brief
+    *     Determines whether the Decimal Floating Point (DFP) facility is available on the current processor.
+    */
+   bool getSupportsDecimalFloatingPointFacility();
+   
+   /** \brief
+    *     Determines whether the Decimal Floating Point (DFP) facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Decimal Floating Point facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsDecimalFloatingPointFacility(bool value);
+   
+   /** \brief
+    *     Determines whether the Floating Point Extension (FPE) facility is available on the current processor.
+    */
+   bool getSupportsFloatingPointExtensionFacility();
+   
+   /** \brief
+    *     Determines whether the Floating Point Extension (FPE) facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Floating Point Extension facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsFloatingPointExtensionFacility(bool value);
+   
+   /** \brief
+    *     Determines whether the Transactional Memory (TM) facility is available on the current processor.
+    */
+   bool getSupportsTransactionalMemoryFacility();
 
-   bool getS390SupportsZ13() { return false; }
-
-   bool getS390SupportsZ14() { return false; }
-
-   bool getS390SupportsZNext() { return false; }
-
-   bool getS390SupportsHPRDebug() { return false; }
-
-   bool getS390SupportsDFP() { return false; }
-
-   bool getS390SupportsFPE() {return false; }
-
-   bool getS390SupportsTM() { return false; }
-
-   bool getS390SupportsRI() { return false; }
-
-   bool getS390SupportsVectorFacility() { return false; }
-
-   bool getS390SupportsGuardedStorageFacility() { return false; }
-
-   TR_S390MachineType getS390MachineType() const { return _s390MachineType; }
-   void setS390MachineType(TR_S390MachineType t) { _s390MachineType = t; }
-
+   /** \brief
+    *     Determines whether the Transactional Memory (TM) facility is available on the current processor.
+    *     Alias of getSupportsTransactionalMemoryFacility() as a platform agnostic query.
+    */
+   bool supportsTransactionalMemoryInstructions();
+   
+   /** \brief
+    *     Determines whether the Transactional Memory (TM) facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Transactional Memory facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsTransactionalMemoryFacility(bool value);
+   
+   /** \brief
+    *     Determines whether the Runtime Instrumentation (RI) facility is available on the current processor.
+    */
+   bool getSupportsRuntimeInstrumentationFacility();
+   
+   /** \brief
+    *     Determines whether the Runtime Instrumentation (RI) facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Runtime Instrumentation facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsRuntimeInstrumentationFacility(bool value);
+   
+   /** \brief
+    *     Determines whether the Vector facility is available on the current processor.
+    */
+   bool getSupportsVectorFacility();
+   
+   /** \brief
+    *     Determines whether the Vector facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Vector facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsVectorFacility(bool value);
+   
+   /** \brief
+    *     Determines whether the Vector Packed Decimal facility is available on the current processor.
+    */
+   bool getSupportsVectorPackedDecimalFacility();
+   
+   /** \brief
+    *     Determines whether the Vector Packed Decimal facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Vector Packed Decimal facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsVectorPackedDecimalFacility(bool value);
+   
+   /** \brief
+    *     Determines whether the Miscellaneous Instruction Extensions 3 (MIE3) facility is available on the current
+    *     processor.
+    */
+   bool getSupportsMiscellaneousInstructionExtensions3Facility();
+   
+   /** \brief
+    *     Determines whether the Miscellaneous Instruction Extensions 3 (MIE3) facility is available on the current
+    *     processor.
+    *
+    *  \param value
+    *     Determines whether the Miscellaneous Instruction Extensions 3 facility is available (if \c true) or not (if 
+    *     \c false).
+    */
+   bool setSupportsMiscellaneousInstructionExtensions3Facility(bool value);
+   
+   /** \brief
+    *     Determines whether the Vector Enhancement 2 facility is available on the current processor.
+    */
+   bool getSupportsVectorFacilityEnhancement2();
+   
+   /** \brief
+    *     Determines whether the Vector Enhancement 2 facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Vector Enhancement 2 facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsVectorFacilityEnhancement2(bool value);
+   
+   /** \brief
+    *     Determines whether the Vector Packed Decimal facility is available on the current processor.
+    */
+   bool getSupportsVectorPackedDecimalEnhancementFacility();
+   
+   /** \brief
+    *     Determines whether the Vector Packed Decimal facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Vector Packed Decimal facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsVectorPackedDecimalEnhancementFacility(bool value);
+   
+   /** \brief
+    *     Determines whether the Guarded Storage (GS) facility is available on the current processor.
+    */
+   bool getSupportsGuardedStorageFacility();
+   
+   /** \brief
+    *     Determines whether the Guarded Storage (GS) facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Guarded Storage facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsGuardedStorageFacility(bool value);
+   
    /**
     * @brief Answers whether the distance between a target and source address
     *        is within the reachable displacement range for a branch relative
@@ -102,15 +243,38 @@ public:
     *
     * @return true if the target is within range; false otherwise.
     */
-   bool isTargetWithinBranchRelativeRILRange(intptrj_t targetAddress, intptrj_t sourceAddress)
+   bool isTargetWithinBranchRelativeRILRange(intptrj_t targetAddress, intptrj_t sourceAddress);
+
+   protected:
+
+   CPU();
+
+   protected:
+
+   enum
       {
-      return (targetAddress == sourceAddress + ((intptrj_t)((int32_t)((targetAddress - sourceAddress)/2)))*2) &&
-             (targetAddress % 2 == 0);
-      }
+      // Available                             = 0x00000001,
+      HasResumableTrapHandler                  = 0x00000002,
+      HasFixedFrameC_CallingConvention         = 0x00000004,
+      SupportsScaledIndexAddressing            = 0x00000080,
+      S390SupportsDFP                          = 0x00000100,
+      S390SupportsFPE                          = 0x00000200,
+      S390SupportsHPR                          = 0x00001000,
+      IsInZOSSupervisorState                   = 0x00008000,
+      S390SupportsTM                           = 0x00010000,
+      S390SupportsRI                           = 0x00020000,
+      S390SupportsVectorFacility               = 0x00040000,
+      S390SupportsVectorPackedDecimalFacility  = 0x00080000,
+      S390SupportsGuardedStorageFacility       = 0x00100000,
+      S390SupportsSideEffectAccessFacility     = 0x00200000,
+      S390SupportsMIE3                         = 0x00400000,
+      S390SupportsVectorFacilityEnhancement2   = 0x00800000,
+      S390SupportsVectorPDEnhancementFacility  = 0x01000000,
+      };
 
-private:
+   Architecture _supportedArch;
 
-   TR_S390MachineType _s390MachineType;
+   flags32_t _flags;
    };
 
 }

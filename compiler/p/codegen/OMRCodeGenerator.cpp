@@ -27,6 +27,7 @@
 #include "codegen/CodeGenPhase.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/GCStackAtlas.hpp"
@@ -34,6 +35,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
@@ -282,7 +284,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    /*
     * TODO: TM is currently not compatible with read barriers. If read barriers are required, TM is disabled until the issue is fixed.
     */
-   if (TR::Compiler->target.cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM) && !TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
+   if (TR::Compiler->target.cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
       self()->setSupportsTM();
 
    // enable LM if hardware supports instructions and running the reduced-pause GC policy
@@ -2941,7 +2943,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       cursor = self()->generateDebugCounterBump(cursor, counter, deltaReg, cond);
       if (cond)
          {
-         addDependency(cond, deltaReg, TR::RealRegister::NoReg, TR_GPR, self());
+         TR::addDependency(cond, deltaReg, TR::RealRegister::NoReg, TR_GPR, self());
          }
       self()->stopUsingRegister(deltaReg);
       return cursor;
@@ -2964,10 +2966,10 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       {
       uint32_t preCondCursor = cond->getAddCursorForPre();
       uint32_t postCondCursor = cond->getAddCursorForPost();
-      addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
       cond->getPreConditions()->getRegisterDependency(preCondCursor)->setExcludeGPR0();
       cond->getPostConditions()->getRegisterDependency(postCondCursor)->setExcludeGPR0();
-      addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
       }
    self()->stopUsingRegister(addrReg);
    self()->stopUsingRegister(counterReg);
@@ -2994,10 +2996,10 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       {
       uint32_t preCondCursor = cond->getAddCursorForPre();
       uint32_t postCondCursor = cond->getAddCursorForPost();
-      addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
       cond->getPreConditions()->getRegisterDependency(preCondCursor)->setExcludeGPR0();
       cond->getPostConditions()->getRegisterDependency(postCondCursor)->setExcludeGPR0();
-      addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
       }
    self()->stopUsingRegister(addrReg);
    self()->stopUsingRegister(counterReg);

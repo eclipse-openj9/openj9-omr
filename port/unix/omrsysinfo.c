@@ -1911,10 +1911,14 @@ retrieveAIXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *
 	memInfo->hostBuffered = memInfo->buffered;
 
 	Trc_PRT_retrieveAIXMemoryStats_Exit(0);
-	return 0;
 #else
-	return -1; /* not supported */
+	memInfo->totalPhysical = 0;
+	memInfo->availPhysical = 0;
+	memInfo->totalSwap = 0;
+	memInfo->availSwap = 0;
+	memInfo->cached = 0;
 #endif
+	return 0;
 }
 
 #endif /* end OS specific guards */
@@ -2386,7 +2390,7 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 #if !defined(OMRZTPF)
 		resource = RLIMIT_CORE;
 #else /* !defined(OMRZTPF) */
-		rc = -1;
+		rc = OMRPORT_LIMIT_UNKNOWN;
 #endif /* !defined(OMRZTPF) */
 		break;
 	default:
@@ -2411,6 +2415,22 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 			if (hardLimitRequested) {
 				lim.rlim_max = limit;
 			} else {
+#if defined(OSX)
+				/* MacOS doesn't allow the soft file limit to be unlimited */
+				if ((OMRPORT_RESOURCE_FILE_DESCRIPTORS == resourceRequested)
+						&& (RLIM_INFINITY == limit)) {
+					int32_t maxFiles = 0;
+					size_t resultSize = sizeof(maxFiles);
+					int name[] = {CTL_KERN, KERN_MAXFILESPERPROC};
+					rc = sysctl(name, 2, &maxFiles, &resultSize, NULL, 0);
+					if (-1 == rc) {
+						portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
+						Trc_PRT_sysinfo_setrlimit_error(resource, limit, findError(errno));
+					} else {
+						limit = maxFiles;
+					}
+				}
+#endif
 				lim.rlim_cur = limit;
 			}
 
@@ -2420,7 +2440,7 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 				Trc_PRT_sysinfo_setrlimit_error(resource, limit, findError(errno));
 			}
 #else /* !defined(OMRZTPF) */
-			rc = -1;
+			rc = OMRPORT_LIMIT_UNKNOWN;
 #endif /* !defined(OMRZTPF) */
 			break;
 		}
@@ -2437,14 +2457,14 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 			}
 #else
 			/* unsupported so return error */
-			rc = -1;
+			rc = OMRPORT_LIMIT_UNKNOWN;
 #endif
 			break;
 		}
 
 		default:
 			Trc_PRT_sysinfo_setLimit_unrecognised_resourceID(resourceID);
-			rc = -1;
+			rc = OMRPORT_LIMIT_UNKNOWN;
 		}
 	}
 
@@ -2612,7 +2632,11 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 		return OMRPORT_ERROR_FILE_OPFAILED;
 	}
 #elif defined(J9OS_I5)
-	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+	/*call in PASE wrapper to retrieve needed information.*/
+	cpuTime->numberOfCpus = Xj9GetEntitledProcessorCapacity() / 100;
+	/*Xj9GetSysCPUTime() is newly added to retrieve System CPU Time fromILE.*/
+	cpuTime->cpuTime = Xj9GetSysCPUTime();
+	status = 0;	
 #elif defined(AIXPPC) /* AIX */
 	perfstat_cpu_total_t stats;
 	const uintptr_t NS_PER_CPU_TICK = 10000000L;

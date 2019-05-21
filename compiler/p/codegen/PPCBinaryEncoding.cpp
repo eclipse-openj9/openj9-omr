@@ -927,10 +927,20 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
       case TR::InstOpCode::ldiv:
       case TR::InstOpCode::ifx:
       case TR::InstOpCode::iternary:
-         if (getNumSources() == 3)
-            setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 4);
+         if (useRegPairForResult())
+            {
+            if (!useRegPairForCond())
+               setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 6);
+            else
+               setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 8);
+            }
          else
-            setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 6);
+            {
+            if (!useRegPairForCond())
+               setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 4);
+            else
+               setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 6);
+            }
          break;
       case TR::InstOpCode::setbflt:
          setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 5);

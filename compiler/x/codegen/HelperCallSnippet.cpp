@@ -27,6 +27,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/RegisterConstants.hpp"
@@ -499,15 +500,4 @@ int32_t TR::X86HelperCallSnippet::branchDisplacementToHelper(
       }
 
    return (int32_t)(helperAddress - nextInstructionAddress);
-   }
-
-
-uint8_t *TR::X86CheckAsyncMessagesSnippet::genHelperCall(uint8_t *buffer)
-   {
-   // This code assumes that the superclass' genHelperCall() will only emit
-   // the call and nothing more.  This should always be true for the asynccheck
-   // helpers.
-   //
-   uint8_t *cursor = TR::X86HelperCallSnippet::genHelperCall(buffer);
-   return cursor;
    }

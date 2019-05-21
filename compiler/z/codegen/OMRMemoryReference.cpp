@@ -38,6 +38,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
@@ -2381,12 +2382,6 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
          assignedBaseRegister->setAssignedRegister(NULL);
          assignedBaseRegister->setState(TR::RealRegister::Free);
          cg->traceRegFreed(_baseRegister, assignedBaseRegister);
-         if (_baseRegister->is64BitReg())
-            {
-            toRealRegister(assignedBaseRegister)->getHighWordRegister()->setAssignedRegister(NULL);
-            toRealRegister(assignedBaseRegister)->getHighWordRegister()->setState(TR::RealRegister::Free);
-            cg->traceRegFreed(_baseRegister, toRealRegister(assignedBaseRegister)->getHighWordRegister());
-            }
          }
       self()->setBaseRegister(assignedBaseRegister, cg);
       }
@@ -3118,7 +3113,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             traceMsg(comp, "[%p] Long Disp Inst using %s as scratch reg\n", instr, cg->getDebug()->getName(scratchReg));
          }
       }
-      
+
    // Update the offset now that the correct encded displacement is known
    self()->setOffset(displacement);
 

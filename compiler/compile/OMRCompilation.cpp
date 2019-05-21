@@ -333,10 +333,10 @@ OMR::Compilation::Compilation(
    _adhocRandom = new (m->trHeapMemory()) TR_RandomGenerator(options.getRandomSeed());
    if (options.getOption(TR_RandomSeedSignatureHash))
       {
-      int32_t hash = 0;
+      uint32_t hash = 0;
       for (const char *c = self()->signature(); *c; c++)
-         hash = 33*hash + (int32_t)(*c);
-      int32_t seed = _options->getRandomSeed();
+         hash = 33*hash + (uint32_t)(*c);
+      uint32_t seed = _options->getRandomSeed();
       seed ^= hash;
       _primaryRandom->setSeed(seed);
       _adhocRandom->setSeed(_primaryRandom->getRandom());
@@ -2740,4 +2740,26 @@ void OMR::Compilation::invalidateAliasRegion()
 bool OMR::Compilation::incompleteOptimizerSupportForReadWriteBarriers()
    {
    return false;
+   }
+
+
+bool OMR::Compilation::isRecursiveMethodTarget(TR_ResolvedMethod *targetResolvedMethod)
+   {
+   return targetResolvedMethod && targetResolvedMethod->isSameMethod(self()->getCurrentMethod()) && !self()->isDLT();
+   }
+
+
+bool OMR::Compilation::isRecursiveMethodTarget(TR::Symbol *targetSymbol)
+   {
+   bool isRecursive = false;
+
+   if (targetSymbol)
+      {
+      TR::MethodSymbol *methodSymbol = targetSymbol->isMethod() ? targetSymbol->castToMethodSymbol() : NULL;
+      TR::ResolvedMethodSymbol *resolvedSymbol = methodSymbol ? methodSymbol->getResolvedMethodSymbol() : NULL;
+      TR_ResolvedMethod *resolvedMethod  = resolvedSymbol ? resolvedSymbol->getResolvedMethod() : NULL;
+      isRecursive = self()->isRecursiveMethodTarget(resolvedMethod);
+      }
+
+   return isRecursive;
    }

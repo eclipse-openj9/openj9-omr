@@ -78,7 +78,7 @@
 #include "MemcheckWrapper.hpp"
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 void
 poisonReferenceSlot(MM_EnvironmentBase *env, GC_SlotObject *slotObject)
 {
@@ -136,7 +136,7 @@ healReferenceSlots(OMR_VMThread *omrVMThread, MM_HeapRegionDescriptor *region, o
 			healReferenceSlot(env, slotObject);
 		}
 }
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 /* Define hook routines to be called on AF start and End */
 static void globalGCHookAFCycleStart(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
@@ -980,14 +980,16 @@ MM_ParallelGlobalGC::masterThreadRestartAllocationCaches(MM_EnvironmentBase *env
 void
 MM_ParallelGlobalGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode)
 {
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
-	if (1 == _extensions->fvtest_enableReadBarrierVerification) {
-		/* heal the roots slots that were not read/healed*/
-		_delegate.healSlots(env);
-		/* heal the heap object slots that were not read/healed*/
-		healHeap(env);
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
+	if (!env->compressObjectReferences()) {
+		if (1 == _extensions->fvtest_enableReadBarrierVerification) {
+			/* heal the roots slots that were not read/healed*/
+			_delegate.healSlots(env);
+			/* heal the heap object slots that were not read/healed*/
+			healHeap(env);
+		}
 	}
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 	_cycleState = MM_CycleState();
 	env->_cycleState = &_cycleState;
@@ -1067,14 +1069,16 @@ MM_ParallelGlobalGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSp
 #endif
 
 
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
-	if (1 == _extensions->fvtest_enableReadBarrierVerification) {
-		/* poison root slots */
-		_delegate.poisonSlots(env);
-		/* poison heap object slots */
-		poisonHeap(env);
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
+	if (!env->compressObjectReferences()) {
+		if (1 == _extensions->fvtest_enableReadBarrierVerification) {
+			/* poison root slots */
+			_delegate.poisonSlots(env);
+			/* poison heap object slots */
+			poisonHeap(env);
+		}
 	}
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 }
 
@@ -1808,7 +1812,7 @@ MM_ParallelGlobalGC::reportCompactEnd(MM_EnvironmentBase *env)
 }
 #endif /* OMR_GC_MODRON_COMPACTION */
 
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 void
 MM_ParallelGlobalGC::poisonHeap(MM_EnvironmentBase *env)
 {
@@ -1825,4 +1829,4 @@ MM_ParallelGlobalGC::healHeap(MM_EnvironmentBase *env)
 	 * in a sequential manner
 	 */
 }
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */

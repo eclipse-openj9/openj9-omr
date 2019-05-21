@@ -90,6 +90,9 @@ template <class T> class TR_Stack;
 typedef TR::Node* (* ValuePropagationPtr)(OMR::ValuePropagation *, TR::Node *);
 extern const ValuePropagationPtr constraintHandlers[];
 
+typedef TR::typed_allocator<std::pair<TR::CFGEdge * const, TR_BitVector*>, TR::Region &> DefinedOnAllPathsMapAllocator;
+typedef std::map<TR::CFGEdge *, TR_BitVector *, std::less<TR::CFGEdge *>, DefinedOnAllPathsMapAllocator> DefinedOnAllPathsMap;
+
 namespace TR {
 
 class ArraycopyTransformation : public TR::Optimization
@@ -637,6 +640,16 @@ class ValuePropagation : public TR::Optimization
 
    int32_t getValueNumber(TR::Node *node);
 
+   /**
+    * @brief Supplemental functionality for constraining an acall node.  Projects
+    *        consuming OMR can implement this function to provide project-specific
+    *        functionality.
+    *
+    * @param[in] node : TR::Node of the call to constrain
+    *
+    * @return Resulting node with constraints applied.
+    */
+   virtual TR::Node *innerConstrainAcall(TR::Node *node);
 
    void printStructureInfo(TR_Structure *structure, bool starting, bool lastTimeThrough);
    void printParentStructure(TR_Structure *structure);
@@ -672,6 +685,9 @@ class ValuePropagation : public TR::Optimization
    int32_t                         _firstInductionVariableValueNumber;
 
    ValueConstraints                _curConstraints;
+   TR_BitVector                    *_curDefinedOnAllPaths;
+   TR_BitVector                    *_defMergedNodes;
+   DefinedOnAllPathsMap            *_definedOnAllPaths;
    ValueConstraintHandler          _vcHandler;
 
    vcount_t                        _visitCount;

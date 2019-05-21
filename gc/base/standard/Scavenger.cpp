@@ -3416,37 +3416,39 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 		}
 	}
 
-#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
-	GC_MemorySubSpaceRegionIteratorStandard evacuateRegionIterator1(_activeSubSpace);
-	while(NULL != (rootRegion = evacuateRegionIterator1.nextRegion())) {
-		if (isObjectInEvacuateMemory((omrobjectptr_t )rootRegion->getLowAddress())) {
-			/*
-			 * CMVC 179190:
-			 * The call to "reverseForwardedObject", above, destroys our ability to detect if this object needs its destroyed slot fixed up (but
-			 * the above loop must complete before we have the information with which to fixup the destroyed slot).  Fixing up a slot in dark
-			 * matter could crash, though, since the slot could point to contracted memory or could point to corrupted data updated in a previous
-			 * backout.  The simple work-around for this problem is to check if the slot points at a readable part of the heap (specifically,
-			 * tenure or survivor - the only locations which would require us to fix up the slot) and only read and fixup the slot in those cases.
-			 * This means that we could still corrupt the slot but we will never crash during fixup and nobody else should be trusting slots found
-			 * in dead objects.
-			 */
-			GC_ObjectHeapIteratorAddressOrderedList evacuateHeapIterator(_extensions, rootRegion, false);
-			omrobjectptr_t objectPtr = NULL;
+#if defined (OMR_GC_COMPRESSED_POINTERS)
+	if (env->compressObjectReferences()) {
+		GC_MemorySubSpaceRegionIteratorStandard evacuateRegionIterator1(_activeSubSpace);
+		while(NULL != (rootRegion = evacuateRegionIterator1.nextRegion())) {
+			if (isObjectInEvacuateMemory((omrobjectptr_t )rootRegion->getLowAddress())) {
+				/*
+				 * CMVC 179190:
+				 * The call to "reverseForwardedObject", above, destroys our ability to detect if this object needs its destroyed slot fixed up (but
+				 * the above loop must complete before we have the information with which to fixup the destroyed slot).  Fixing up a slot in dark
+				 * matter could crash, though, since the slot could point to contracted memory or could point to corrupted data updated in a previous
+				 * backout.  The simple work-around for this problem is to check if the slot points at a readable part of the heap (specifically,
+				 * tenure or survivor - the only locations which would require us to fix up the slot) and only read and fixup the slot in those cases.
+				 * This means that we could still corrupt the slot but we will never crash during fixup and nobody else should be trusting slots found
+				 * in dead objects.
+				 */
+				GC_ObjectHeapIteratorAddressOrderedList evacuateHeapIterator(_extensions, rootRegion, false);
+				omrobjectptr_t objectPtr = NULL;
 
-			while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
-				MM_ForwardedHeader header(objectPtr);
+				while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
+					MM_ForwardedHeader header(objectPtr);
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
-				uint32_t originalOverlap = header.getPreservedOverlap();
+					uint32_t originalOverlap = header.getPreservedOverlap();
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
-				_delegate.fixupDestroyedSlot(env, &header, _activeSubSpace);
+_delegate.fixupDestroyedSlot(env, &header, _activeSubSpace);
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
-				omrobjectptr_t fwdObjectPtr = header.getForwardedObject();
-				omrtty_printf("{SCAV: Fixup destroyed slot %p@%p -> %u->%u}\n", objectPtr, fwdObjectPtr, originalOverlap, header.getPreservedOverlap());
+					omrobjectptr_t fwdObjectPtr = header.getForwardedObject();
+					omrtty_printf("{SCAV: Fixup destroyed slot %p@%p -> %u->%u}\n", objectPtr, fwdObjectPtr, originalOverlap, header.getPreservedOverlap());
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
+				}
 			}
 		}
 	}
-#endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
+#endif /* defined (OMR_GC_COMPRESSED_POINTERS) */
 }
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -4057,11 +4059,13 @@ MM_Scavenger::getCollectorExpandSize(MM_EnvironmentBase *env)
 void
 MM_Scavenger::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode)
 {
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
-	if (1 == _extensions->fvtest_enableReadBarrierVerification) {
-		scavenger_healSlots(env);
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
+	if (!env->compressObjectReferences()) {
+		if (1 == _extensions->fvtest_enableReadBarrierVerification) {
+			scavenger_healSlots(env);
+		}
 	}
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 	env->_cycleState = &_cycleState;
 
@@ -4102,11 +4106,13 @@ MM_Scavenger::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *su
 
 	Assert_MM_true(env->_cycleState == &_cycleState);
 
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
-	if (1 == _extensions->fvtest_enableReadBarrierVerification) {
-		scavenger_poisonSlots(env);
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
+	if (!env->compressObjectReferences()) {
+		if (1 == _extensions->fvtest_enableReadBarrierVerification) {
+			scavenger_poisonSlots(env);
+		}
 	}
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 }
 
 /**
@@ -4804,7 +4810,7 @@ MM_Scavenger::mutatorSetupForGC(MM_EnvironmentBase *envBase)
 }
 
 void
-MM_Scavenger::threadFinalReleaseCaches(MM_EnvironmentBase *envBase)
+MM_Scavenger::threadReleaseCaches(MM_EnvironmentBase *envBase, bool final)
 {
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
 
@@ -4849,8 +4855,13 @@ MM_Scavenger::threadFinalReleaseCaches(MM_EnvironmentBase *envBase)
 			env->_tenureCopyScanCache = NULL;
 		}
 
-		abandonSurvivorTLHRemainder(env);
-		abandonTenureTLHRemainder(env, true);
+		if (final) {
+			/* If it's an intermediate release (for example mutator threads releasing VM access in a middle of Concurrent Scavenger cycle,
+			 * keep copy cache remainders around (do not abandon yet), to be reused if the threads re-acquires VM access during the same CS cycle.
+			 */
+			abandonSurvivorTLHRemainder(env);
+			abandonTenureTLHRemainder(env, true);
+		}
 	}
 }
 
@@ -4949,7 +4960,7 @@ MM_Scavenger::workThreadProcessRoots(MM_EnvironmentStandard *env)
 	 * This is important to do only for GC threads that will not be used in concurrent phase, but at this point
 	 * we don't know which threads Scheduler will not use, so we do it for every thread.
 	 */
-	threadFinalReleaseCaches(env);
+	threadReleaseCaches(env, true);
 
 	mergeThreadGCStats(env);
 }
@@ -4970,7 +4981,7 @@ MM_Scavenger::workThreadScan(MM_EnvironmentStandard *env)
 	 * Most of the time, STW phase will have a superset of GC threads, so they could just resume the work on their own caches,
 	 * but this is not 100% guarantied (the control of what threads are inolved is in Dispatcher's domain).
 	 */
-	threadFinalReleaseCaches(env);
+	threadReleaseCaches(env, true);
 
 	mergeThreadGCStats(env);
 }
@@ -5166,7 +5177,7 @@ MM_Scavenger::completeConcurrentCycle(MM_EnvironmentBase *env)
 
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 void
 MM_Scavenger::scavenger_poisonSlots(MM_EnvironmentBase *env)
 {
@@ -5179,4 +5190,4 @@ MM_Scavenger::scavenger_healSlots(MM_EnvironmentBase *env)
 	/* This will heal only the root slots */
 	_delegate.healSlots(env);
 }
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */

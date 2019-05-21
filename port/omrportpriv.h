@@ -63,6 +63,7 @@ typedef struct J9PortControlData {
 typedef struct J9NLSDataCache {
 	char *baseCatalogPaths[4];
 	uintptr_t nPaths;
+	uintptr_t isDisabled;
 	char *baseCatalogName;
 	char *baseCatalogExtension;
 	char *catalog;
@@ -129,6 +130,7 @@ typedef struct OMRPortLibraryGlobalData {
 #if defined(OMR_OPT_CUDA)
 	J9CudaGlobalData cudaGlobals;
 #endif /* OMR_OPT_CUDA */
+	uintptr_t vmemEnableMadvise;					/* madvise to use Transparent HugePage (THP) for Virtual memory allocated by mmap */
 } OMRPortLibraryGlobalData;
 
 /* J9SourceJ9CPUControl*/
@@ -681,6 +683,8 @@ extern J9_CFUNC void *
 omrvmem_reserve_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier, uintptr_t mode, uintptr_t pageSize, uint32_t category);
 extern J9_CFUNC void *
 omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, struct J9PortVmemParams *params);
+extern J9_CFUNC void *
+omrvmem_get_contiguous_region_memory(struct OMRPortLibrary *portLibrary, void* addresses[], uintptr_t addressesCount, uintptr_t addressSize, uintptr_t byteAmount, struct J9PortVmemIdentifier *oldIdentifier, struct J9PortVmemIdentifier *newIdentifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category);
 extern J9_CFUNC uintptr_t
 omrvmem_get_page_size(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier);
 extern J9_CFUNC uintptr_t

@@ -54,24 +54,6 @@ namespace TR { class ParameterSymbol; }
 namespace TR { class ResolvedMethodSymbol; }
 template <class T> class List;
 
-inline void
-addDependency(
-      TR::RegisterDependencyConditions *dep,
-      TR::Register *vreg,
-      TR::RealRegister::RegNum rnum,
-      TR_RegisterKinds rk,
-      TR::CodeGenerator *cg)
-   {
-   if (vreg == NULL)
-      {
-      vreg = cg->allocateRegister(rk);
-      vreg->setPlaceholderReg();
-      }
-
-   dep->addPreCondition(vreg, rnum);
-   dep->addPostCondition(vreg, rnum);
-   }
-
 namespace TR {
 
 class PPCMemoryArgument
@@ -381,9 +363,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    {
    public:
 
-   Linkage () : OMR::Linkage() {}
-
-   Linkage (TR::CodeGenerator *cg) : _cg(cg) {}
+   Linkage (TR::CodeGenerator *cg) : OMR::Linkage(cg) {}
 
    virtual bool hasToBeOnStack(TR::ParameterSymbol *parm);
    virtual void mapStack(TR::ResolvedMethodSymbol *method);
@@ -424,14 +404,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    virtual TR::Register *buildIndirectDispatch(TR::Node *callNode) = 0;
 
-   TR::CodeGenerator *cg() {return _cg;}
-   TR::Compilation *comp() {return _cg->comp();}
-   TR_FrontEnd *fe() {return _cg->fe();}
-
-   TR_Memory *trMemory() {return _cg->trMemory(); }
-   TR_HeapMemory trHeapMemory();
-   TR_StackMemory trStackMemory();
-
    // Given an offset (generally into a stack frame) of the slot used
    // to hold a parameter, compute the offset of the data itself.
    // (in the case of 32-bit slots, the offset will be 3 for a char,
@@ -445,10 +417,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    virtual uintptr_t calculateParameterRegisterOffset(uintptr_t o, TR::ParameterSymbol& p) { return o; }
 
    TR_ReturnInfo getReturnInfoFromReturnType(TR::DataType);
-
-protected:
-
-   TR::CodeGenerator*_cg;
    };
 }
 }

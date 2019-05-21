@@ -1283,11 +1283,6 @@ void OMR::Compilation::performOptimizations()
       ((TR::Optimizer*)(_optimizer))->setRequestOptimization(OMR::trivialDeadTreeRemoval, true, block);
       }
 
-   if (_methodSymbol->hasUnkilledTemps())
-      {
-      ((TR::Optimizer*)(_optimizer))->setRequestOptimization(OMR::globalDeadStoreElimination);
-      }
-
    if (_optimizer)
       _optimizer->optimize();
    }

@@ -270,9 +270,6 @@ public:
    bool hasSnapshots()                       { return _properties.testAny(HasSnapshots); }
    void setHasSnapshots(bool v=true)         { _properties.set(HasSnapshots,v); }
 
-   bool hasUnkilledTemps()                   { return _properties.testAny(HasUnkilledTemps); }
-   void setHasUnkilledTemps(bool v=true)     { _properties.set(HasUnkilledTemps,v); }
-
    bool detectInternalCycles(TR::CFG *cfg, TR::Compilation *comp);
    bool catchBlocksHaveRealPredecessors(TR::CFG *cfg, TR::Compilation *comp);
 
@@ -316,7 +313,7 @@ protected:
       CanSkipZeroInitializationOnNewarrays      = 1 << 5,
       CanSkipArrayStoreChecks                   = 1 << 6,
       HasSnapshots                              = 1 << 7,
-      HasUnkilledTemps                          = 1 << 8,
+      // AVAILABLE                              = 1 << 8,
       CanDirectNativeCall                       = 1 << 9,
       CanReplaceWithHWInstr                     = 1 << 10,
       IsSideEffectFree                          = 1 << 12,

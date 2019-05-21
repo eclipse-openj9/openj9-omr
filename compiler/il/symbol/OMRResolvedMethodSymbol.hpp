@@ -403,9 +403,6 @@ public:
    bool        usesSinglePrecisionMode();
    void        setUsesSinglePrecisionMode(bool b);
 
-   bool        isNoTemps();
-   void        setNoTemps(bool b=true);
-
 private:
    uint32_t                                  _localMappingCursor;
    uint32_t                                  _prologuePushSlots;

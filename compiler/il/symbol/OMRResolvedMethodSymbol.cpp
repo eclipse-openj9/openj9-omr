@@ -327,11 +327,6 @@ OMR::ResolvedMethodSymbol::getThisTempForObjectCtorIndex()
    return self()->getFirstJitTempIndex() - delta;
    }
 
-List<TR::ParameterSymbol>&
-OMR::ResolvedMethodSymbol::getLogicalParameterList(TR::Compilation *comp)
-   {
-      return self()->getParameterList();
-   }
 
 template <typename AllocatorType>
 TR::ResolvedMethodSymbol *

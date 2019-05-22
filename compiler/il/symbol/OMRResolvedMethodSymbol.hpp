@@ -90,9 +90,6 @@ public:
    void setParameterList()                                                    { _resolvedMethod->makeParameterList(self()); }
    List<TR::ParameterSymbol>& getParameterList()                               { return _parameterList; }
 
-   /// With zOS type 1 linkage, the parameters in the parameter list
-   /// don't look at all like the source level (logical) parameters.
-   List<TR::ParameterSymbol>& getLogicalParameterList(TR::Compilation *comp);
    ListBase<TR::AutomaticSymbol>& getAutomaticList()                           { return _automaticList;}
    void setAutomaticList(List<TR::AutomaticSymbol> list)                       { _automaticList = list; };
 

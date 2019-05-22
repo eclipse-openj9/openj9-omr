@@ -1512,9 +1512,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getAccessStaticsIndirectly() {return _flags1.testAny(AccessStaticsIndirectly);}
    void setAccessStaticsIndirectly(bool b) {_flags1.set(AccessStaticsIndirectly, b);}
 
-   bool getSupportsBigDecimalLongLookasideVersioning() { return _flags3.testAny(SupportsBigDecimalLongLookasideVersioning);}
-   void setSupportsBigDecimalLongLookasideVersioning() { _flags3.set(SupportsBigDecimalLongLookasideVersioning);}
-
    bool getSupportsBDLLHardwareOverflowCheck() { return _flags3.testAny(SupportsBDLLHardwareOverflowCheck);}
    void setSupportsBDLLHardwareOverflowCheck() { _flags3.set(SupportsBDLLHardwareOverflowCheck);}
 
@@ -1758,7 +1755,7 @@ class OMR_EXTENSIBLE CodeGenerator
       // AVAILABLE                                        = 0x00000400,
       HasCCCarry                                          = 0x00000800,
       // AVAILABLE                                        = 0x00001000,
-      SupportsBigDecimalLongLookasideVersioning           = 0x00002000,
+      // AVAILABLE                                        = 0x00002000,
       RemoveRegisterHogsInLowerTreesWalk                  = 0x00004000,
       SupportsBDLLHardwareOverflowCheck                   = 0x00008000,
       InlinedGetCurrentThreadMethod                       = 0x00010000,

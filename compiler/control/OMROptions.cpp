@@ -1243,6 +1243,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceSamplingJProfiling",          "L\ttrace samplingjProfiling",                     TR::Options::traceOptimization, samplingJProfiling, 0, "P"},
    {"traceScalarizeSSOps",              "L\ttrace scalarization of array/SS ops", SET_OPTION_BIT(TR_TraceScalarizeSSOps), "P"},
    {"traceSEL",                         "L\ttrace sign extension load", SET_OPTION_BIT(TR_TraceSEL), "P"},
+   {"traceSelectInliner",               "L\ttrace select inliner",  TR::Options::traceOptimization, selectInliner, 0, "P"},
    {"traceSequenceSimplification",      "L\ttrace arithmetic sequence simplification",     TR::Options::traceOptimization, expressionsSimplification, 0, "P"},
    {"traceSpillCosts",                 "L\ttrace spill costs (basic) only show its activation",
         TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceSpillCosts), TR_TraceSpillCostsBasic, "F"},

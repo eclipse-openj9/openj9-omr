@@ -826,6 +826,10 @@ public:
 	 */
 	MMINLINE OMR::GC::Forge* getForge() { return &_forge; }
 
+	/**
+	 * Return back true if object references are compressed
+	 * @return true, if object references are compressed
+	 */
 	MMINLINE bool compressObjectReferences() {
 #if defined(OMR_GC_COMPRESSED_POINTERS)
 #if defined(OMR_GC_FULL_POINTERS)

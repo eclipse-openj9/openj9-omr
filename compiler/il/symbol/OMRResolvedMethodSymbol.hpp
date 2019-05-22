@@ -93,7 +93,6 @@ public:
    ListBase<TR::AutomaticSymbol>& getAutomaticList()                           { return _automaticList;}
    void setAutomaticList(List<TR::AutomaticSymbol> list)                       { _automaticList = list; };
 
-   List<TR::Block>& getTrivialDeadTreeBlocksList()                             { return _trivialDeadTreeBlocksList;}
    List<TR::AutomaticSymbol>& getVariableSizeSymbolList()                      { return _variableSizeSymbolList;}
    ListBase<TR::RegisterMappedSymbol>& getMethodMetaDataList()                 { return _methodMetaDataList;}
 
@@ -130,7 +129,6 @@ public:
 
    void addAutomatic(TR::AutomaticSymbol *p);
 
-   void addTrivialDeadTreeBlock(TR::Block *b);
    void addVariableSizeSymbol(TR::AutomaticSymbol *s);
    void addMethodMetaDataSymbol(TR::RegisterMappedSymbol*s);
 
@@ -330,7 +328,6 @@ private:
    TR_ResolvedMethod *                       _resolvedMethod;
    List<TR::AutomaticSymbol>                  _automaticList;
    List<TR::ParameterSymbol>                  _parameterList;
-   List<TR::Block>                            _trivialDeadTreeBlocksList;
    List<TR::AutomaticSymbol>                  _variableSizeSymbolList;
    List<TR::RegisterMappedSymbol>             _methodMetaDataList;
    TR_Array<List<TR::SymbolReference> >     * _autoSymRefs;

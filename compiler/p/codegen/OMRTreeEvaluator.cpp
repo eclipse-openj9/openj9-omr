@@ -871,41 +871,6 @@ TR::Register *OMR::Power::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::Code
    return tempReg;
    }
 
-TR::Register *OMR::Power::TreeEvaluator::irdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::iloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::ardbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::aloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::brdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::bloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::srdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::sloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::lrdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::lloadEvaluator(node, cg);
-   }
-
 // iiload handled by iloadEvaluator
 
 // ilload handled by lloadEvaluator

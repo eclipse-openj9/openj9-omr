@@ -108,7 +108,7 @@
  * For AIX, dropSMT should drop to LOW(2) and 
  * restoreSMT should raise back to MEDIUM(4)
  */
-#if defined(__xlC__)
+#if defined(__xlC__) && !defined(__GNUC__)
 		inline void __dropSMT() { __ppc_dropSMT(); }
 		inline void __restoreSMT() { __ppc_restoreSMT(); }
 #else
@@ -120,7 +120,7 @@
  * For LINUXPPC, dropSMT should drop to VERY-LOW(1) and 
  * restoreSMT should raise back to MEDIUM-LOW(3)
  */
-#if defined(__xlC__)
+#if defined(__xlC__) && !defined(__GNUC__)
 		inline void __dropSMT() { __ppc_dropSMT(); }
 		inline void __restoreSMT() { __ppc_restoreSMT(); }
 #else
@@ -139,7 +139,7 @@
 #if defined(_MSC_VER)
 		/* use compiler intrinsic */
 #elif defined(LINUXPPC) || defined(AIXPPC)
-#if defined(__xlC__)
+#if defined(__xlC__) && !defined(__GNUC__)
 		/* XL compiler complained about generated assembly, use machine code instead. */
 		inline void __nop() { __ppc_nop(); }
 		inline void __yield() { __ppc_yield(); }

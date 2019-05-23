@@ -435,12 +435,6 @@ class TR_SinkStores : public TR::Optimization
                                                       TR::Node *store,
                                                       List<TR_MovableStore> &potentiallyMovableStores);
 
-   void searchAndMarkFirstUses(TR::Node *node,
-                               TR::TreeTop *tt,
-                               TR_MovableStore *movableStore,
-                               TR::Block *currentBlock,
-                               TR_BitVector *firstRefsOfCommonedSymbolsForThisStore);
-
    // Data needed to sink stores that have indirect loads underneath
    TR_HashTab                       *_indirectLoadAnchorMap;
    TR_HashTab                       *_firstUseOfLoadMap;

@@ -1364,31 +1364,6 @@ bool TR_SinkStores::performThisTransformation()
 
    }
 
-void TR_SinkStores::searchAndMarkFirstUses(TR::Node *node,
-                                           TR::TreeTop *tt,
-                                           TR_MovableStore *movableStore,
-                                           TR::Block *currentBlock,
-                                            TR_BitVector *firstRefsOfCommonedSymbolsForThisStore)
-   {
-   if (0 && trace())
-      traceMsg(comp(),"      node %p, futureUseCount %d, refCount %d\n",node,node->getFutureUseCount(),node->getReferenceCount());
-   if (node->getOpCode().isLoadVarDirect() && node->getOpCode().hasSymbolReference())
-      {
-      TR::RegisterMappedSymbol *local = getSinkableSymbol(node);
-      if (!local)
-         return;
-      }
-
-   for (int32_t i = node->getNumChildren()-1; i >= 0; i--)
-      {
-      TR::Node *child = node->getChild(i);
-      // If futureUseCount > 0 then this subtree is commoned in from an earlier treetop, in which case it will not
-      // contain any first uses -- that earlier treetop will be the first uses.
-      //
-      if (child->getFutureUseCount() == 0)
-         searchAndMarkFirstUses(child, tt, movableStore, currentBlock, firstRefsOfCommonedSymbolsForThisStore);
-      }
-   }
 
 void TR_SinkStores::coalesceSimilarEdgePlacements()
    {

@@ -110,7 +110,8 @@ function begin_file(filename){
 	}
 	if(filename) { print "DDRFILE_BEGIN " filename }
 	current_file = filename
-	add_values = 0;
+
+	add_values = 1;
 	add_flags = 0;
 }
 
@@ -134,8 +135,7 @@ NR == 1 {
 
 /@ddr_options: *valuesonly/ { add_values = 1; add_flags = 0}
 /@ddr_options: *buildflagsonly/ { add_values = 0; add_flags = 1;}
-/@ddr_namespace: *(default|map_to_type=)/ { add_values = 1; add_flags = 0; }
-
+/@ddr_options: *valuesandbuildflags/ { add_values = 1; add_flags = 1;}
 
 /@ddr_namespace: *default/ {set_default_namespaces();}
 /@ddr_namespace: *map_to_type=/ {set_map_to_type_namespaces();}

@@ -333,10 +333,10 @@ OMR::Compilation::Compilation(
    _adhocRandom = new (m->trHeapMemory()) TR_RandomGenerator(options.getRandomSeed());
    if (options.getOption(TR_RandomSeedSignatureHash))
       {
-      int32_t hash = 0;
+      uint32_t hash = 0;
       for (const char *c = self()->signature(); *c; c++)
-         hash = 33*hash + (int32_t)(*c);
-      int32_t seed = _options->getRandomSeed();
+         hash = 33*hash + (uint32_t)(*c);
+      uint32_t seed = _options->getRandomSeed();
       seed ^= hash;
       _primaryRandom->setSeed(seed);
       _adhocRandom->setSeed(_primaryRandom->getRandom());
@@ -1273,20 +1273,6 @@ void OMR::Compilation::performOptimizations()
    {
 
    _optimizer = TR::Optimizer::createOptimizer(self(), self()->getJittedMethodSymbol(), false);
-
-   // This opt is needed if certain ilgen input is seen but there is no optimizer created at this point.
-   // So the block are tracked during ilgen and the opt is turned on here.
-   //
-   ListIterator<TR::Block> listIt(&_methodSymbol->getTrivialDeadTreeBlocksList());
-   for (TR::Block *block = listIt.getFirst(); block; block = listIt.getNext())
-      {
-      ((TR::Optimizer*)(_optimizer))->setRequestOptimization(OMR::trivialDeadTreeRemoval, true, block);
-      }
-
-   if (_methodSymbol->hasUnkilledTemps())
-      {
-      ((TR::Optimizer*)(_optimizer))->setRequestOptimization(OMR::globalDeadStoreElimination);
-      }
 
    if (_optimizer)
       _optimizer->optimize();
@@ -2740,4 +2726,26 @@ void OMR::Compilation::invalidateAliasRegion()
 bool OMR::Compilation::incompleteOptimizerSupportForReadWriteBarriers()
    {
    return false;
+   }
+
+
+bool OMR::Compilation::isRecursiveMethodTarget(TR_ResolvedMethod *targetResolvedMethod)
+   {
+   return targetResolvedMethod && targetResolvedMethod->isSameMethod(self()->getCurrentMethod()) && !self()->isDLT();
+   }
+
+
+bool OMR::Compilation::isRecursiveMethodTarget(TR::Symbol *targetSymbol)
+   {
+   bool isRecursive = false;
+
+   if (targetSymbol)
+      {
+      TR::MethodSymbol *methodSymbol = targetSymbol->isMethod() ? targetSymbol->castToMethodSymbol() : NULL;
+      TR::ResolvedMethodSymbol *resolvedSymbol = methodSymbol ? methodSymbol->getResolvedMethodSymbol() : NULL;
+      TR_ResolvedMethod *resolvedMethod  = resolvedSymbol ? resolvedSymbol->getResolvedMethod() : NULL;
+      isRecursive = self()->isRecursiveMethodTarget(resolvedMethod);
+      }
+
+   return isRecursive;
    }

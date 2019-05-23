@@ -26,10 +26,12 @@
 #include "codegen/BackingStore.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
@@ -729,21 +731,21 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
                generateTrg1MemInstruction (cg, TR::InstOpCode::addi2, node, highReg, tempMR);
 
             TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
-            addDependency(dependencies, lowReg, TR::RealRegister::gr4, TR_GPR, cg);
-            addDependency(dependencies, highReg, TR::RealRegister::gr3, TR_GPR, cg);
-            addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+            TR::addDependency(dependencies, lowReg, TR::RealRegister::gr4, TR_GPR, cg);
+            TR::addDependency(dependencies, highReg, TR::RealRegister::gr3, TR_GPR, cg);
+            TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
 
             if (node->getSymbolReference()->isUnresolved())
                {
                if (tempMR->getBaseRegister() != NULL)
                   {
-                  addDependency(dependencies, tempMR->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
+                  TR::addDependency(dependencies, tempMR->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
                   dependencies->getPreConditions()->getRegisterDependency(3)->setExcludeGPR0();
                   dependencies->getPostConditions()->getRegisterDependency(3)->setExcludeGPR0();
                   }
 
                if (tempMR->getIndexRegister() != NULL)
-                  addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
+                  TR::addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
                }
 
             generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
@@ -867,41 +869,6 @@ TR::Register *OMR::Power::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::Code
 
    tempMR->decNodeReferenceCounts(cg);
    return tempReg;
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::irdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::iloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::ardbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::aloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::brdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::bloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::srdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::sloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::lrdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::lloadEvaluator(node, cg);
    }
 
 // iiload handled by iloadEvaluator
@@ -1345,22 +1312,22 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
                 generateTrg1MemInstruction (cg, TR::InstOpCode::addi2, node, addrReg, tempMR);
 
             TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(7, 7, cg->trMemory());
-            addDependency(dependencies, valueReg->getHighOrder(), TR::RealRegister::gr4, TR_GPR, cg);
-            addDependency(dependencies, valueReg->getLowOrder(), TR::RealRegister::gr5, TR_GPR, cg);
-            addDependency(dependencies, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
-            addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+            TR::addDependency(dependencies, valueReg->getHighOrder(), TR::RealRegister::gr4, TR_GPR, cg);
+            TR::addDependency(dependencies, valueReg->getLowOrder(), TR::RealRegister::gr5, TR_GPR, cg);
+            TR::addDependency(dependencies, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
+            TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
 
             if (node->getSymbolReference()->isUnresolved())
                {
                if (tempMR->getBaseRegister() != NULL)
                   {
-                  addDependency(dependencies, tempMR->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
+                  TR::addDependency(dependencies, tempMR->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
                   dependencies->getPreConditions()->getRegisterDependency(4)->setExcludeGPR0();
                   dependencies->getPostConditions()->getRegisterDependency(4)->setExcludeGPR0();
                   }
 
                if (tempMR->getIndexRegister() != NULL)
-                  addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
+                  TR::addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
                }
 
             generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
@@ -2856,8 +2823,8 @@ OMR::Power::TreeEvaluator::inlineVectorCompareBranch(TR::Node * node, TR::CodeGe
    TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
    TR::Register *cndReg = cg->allocateRegister(TR_CCR);
    TR::Register *vecTmpReg = cg->allocateRegister(TR_VRF);
-   addDependency(conditions, cndReg, TR::RealRegister::cr6, TR_CCR, cg);
-   addDependency(conditions, vecTmpReg, TR::RealRegister::NoReg, TR_VRF, cg);
+   TR::addDependency(conditions, cndReg, TR::RealRegister::cr6, TR_CCR, cg);
+   TR::addDependency(conditions, vecTmpReg, TR::RealRegister::NoReg, TR_VRF, cg);
 
    TR::Register *lhsReg = cg->evaluate(firstChild);
    TR::Register *rhsReg = cg->evaluate(secondChild);
@@ -2898,8 +2865,8 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorCompareAllOrAnyOp(TR::Node 
    TR::Register *resReg = cg->allocateRegister(TR_GPR);
    TR::Register *cndReg = cg->allocateRegister(TR_CCR);
    TR::Register *vecTmpReg = cg->allocateRegister(TR_VRF);
-   addDependency(conditions, cndReg, TR::RealRegister::cr6, TR_CCR, cg);
-   addDependency(conditions, vecTmpReg, TR::RealRegister::NoReg, TR_VRF, cg);
+   TR::addDependency(conditions, cndReg, TR::RealRegister::cr6, TR_CCR, cg);
+   TR::addDependency(conditions, vecTmpReg, TR::RealRegister::NoReg, TR_VRF, cg);
 
    TR::Register *lhsReg = cg->evaluate(firstChild);
    TR::Register *rhsReg = cg->evaluate(secondChild);
@@ -3067,13 +3034,13 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
 
    TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, cg->trMemory());
 
-   addDependency(conditions, src, srcDep, TR_GPR, cg);
+   TR::addDependency(conditions, src, srcDep, TR_GPR, cg);
    conditions->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
    conditions->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
-   addDependency(conditions, dst, dstDep, TR_GPR, cg);
+   TR::addDependency(conditions, dst, dstDep, TR_GPR, cg);
    conditions->getPreConditions()->getRegisterDependency(1)->setExcludeGPR0();
    conditions->getPostConditions()->getRegisterDependency(1)->setExcludeGPR0();
-   addDependency(conditions, cndReg, cndDep, TR_CCR, cg);
+   TR::addDependency(conditions, cndReg, cndDep, TR_CCR, cg);
 
    if (TR::Compiler->target.is64Bit())
       {
@@ -3087,16 +3054,16 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
       }
 
    regs[0] = cg->allocateRegister(TR_GPR);
-   addDependency(conditions, regs[0], tempDep, TR_GPR, cg);
+   TR::addDependency(conditions, regs[0], tempDep, TR_GPR, cg);
 
    if (groups != 0)
       {
       regs[1] = cg->allocateRegister(TR_GPR);
       regs[2] = cg->allocateRegister(TR_GPR);
       regs[3] = cg->allocateRegister(TR_GPR);
-      addDependency(conditions, regs[1], TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, regs[2], TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, regs[3], TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, regs[1], TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, regs[2], TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, regs[3], TR::RealRegister::NoReg, TR_GPR, cg);
       }
 
    if (supportsLEArrayCopyInline)
@@ -3106,10 +3073,10 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
       fpRegs[2] = cg->allocateRegister(TR_FPR);
       fpRegs[3] = cg->allocateRegister(TR_FPR);
 
-      addDependency(conditions, fpRegs[0], TR::RealRegister::NoReg, TR_FPR, cg);
-      addDependency(conditions, fpRegs[1], TR::RealRegister::NoReg, TR_FPR, cg);
-      addDependency(conditions, fpRegs[2], TR::RealRegister::NoReg, TR_FPR, cg);
-      addDependency(conditions, fpRegs[3], TR::RealRegister::NoReg, TR_FPR, cg);
+      TR::addDependency(conditions, fpRegs[0], TR::RealRegister::NoReg, TR_FPR, cg);
+      TR::addDependency(conditions, fpRegs[1], TR::RealRegister::NoReg, TR_FPR, cg);
+      TR::addDependency(conditions, fpRegs[2], TR::RealRegister::NoReg, TR_FPR, cg);
+      TR::addDependency(conditions, fpRegs[3], TR::RealRegister::NoReg, TR_FPR, cg);
       }
 
    TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
@@ -4305,17 +4272,17 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
          numRegs++;
 
       TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numRegs, numRegs, cg->trMemory());
-      addDependency(dependencies, src1Reg, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(dependencies, src2Reg, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(dependencies, src1AddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(dependencies, src2AddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(dependencies, byteLenRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(dependencies, byteLenRemainingRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(dependencies, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(dependencies, ccReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(dependencies, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
+      TR::addDependency(dependencies, src1Reg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(dependencies, src2Reg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(dependencies, src1AddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(dependencies, src2AddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(dependencies, byteLenRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(dependencies, byteLenRemainingRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(dependencies, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(dependencies, ccReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(dependencies, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
       if (condReg2)
-         addDependency(dependencies, condReg2, TR::RealRegister::NoReg, TR_CCR, cg);
+         TR::addDependency(dependencies, condReg2, TR::RealRegister::NoReg, TR_CCR, cg);
 
       generateDepLabelInstruction(cg, TR::InstOpCode::label, node, residueEndLabel, dependencies);
       residueEndLabel->setEndInternalControlFlow();
@@ -4442,12 +4409,12 @@ TR::Register *OMR::Power::TreeEvaluator::setmemoryEvaluator(TR::Node *node, TR::
    int32_t numDeps = 5;
    conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, cg->trMemory());
    TR::Register *cndReg = cg->allocateRegister(TR_CCR);
-   addDependency(conditions, cndReg, TR::RealRegister::cr0, TR_CCR, cg);
-   addDependency(conditions, dstAddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(conditions, lengthReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(conditions, valueReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, cndReg, TR::RealRegister::cr0, TR_CCR, cg);
+   TR::addDependency(conditions, dstAddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, lengthReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, valueReg, TR::RealRegister::NoReg, TR_GPR, cg);
    TR::Register * tempReg = cg->allocateRegister();
-   addDependency(conditions, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
 
    // assemble the double word value from byte value
    generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, valueReg, valueReg,  8, 0xff00);
@@ -4681,63 +4648,63 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
    TR::Register *vec1Reg = NULL;
 
    // Build up the dependency conditions
-   addDependency(conditions, cndRegister, TR::RealRegister::cr0, TR_CCR, cg);
-   addDependency(conditions, lengthReg, TR::RealRegister::gr7, TR_GPR, cg);
-   addDependency(conditions, srcAddrReg, TR::RealRegister::gr8, TR_GPR, cg);
-   addDependency(conditions, dstAddrReg, TR::RealRegister::gr9, TR_GPR, cg);
-   addDependency(conditions, tmp3Reg, TR::RealRegister::gr0, TR_GPR, cg);
+   TR::addDependency(conditions, cndRegister, TR::RealRegister::cr0, TR_CCR, cg);
+   TR::addDependency(conditions, lengthReg, TR::RealRegister::gr7, TR_GPR, cg);
+   TR::addDependency(conditions, srcAddrReg, TR::RealRegister::gr8, TR_GPR, cg);
+   TR::addDependency(conditions, dstAddrReg, TR::RealRegister::gr9, TR_GPR, cg);
+   TR::addDependency(conditions, tmp3Reg, TR::RealRegister::gr0, TR_GPR, cg);
    // trampoline kills gr11
-   addDependency(conditions, tmp4Reg, TR::RealRegister::gr11, TR_GPR, cg);
+   TR::addDependency(conditions, tmp4Reg, TR::RealRegister::gr11, TR_GPR, cg);
 
    // Call the right version of arrayCopy code to do the job
-   addDependency(conditions, tmp1Reg, TR::RealRegister::gr5, TR_GPR, cg);
-   addDependency(conditions, tmp2Reg, TR::RealRegister::gr6, TR_GPR, cg);
+   TR::addDependency(conditions, tmp1Reg, TR::RealRegister::gr5, TR_GPR, cg);
+   TR::addDependency(conditions, tmp2Reg, TR::RealRegister::gr6, TR_GPR, cg);
 
    if(processor >= TR_PPCp8 && supportsVSX)
       {
       vec0Reg = cg->allocateRegister(TR_VRF);
       vec1Reg = cg->allocateRegister(TR_VRF);
-      addDependency(conditions, vec0Reg, TR::RealRegister::vr0, TR_VRF, cg);
-      addDependency(conditions, vec1Reg, TR::RealRegister::vr1, TR_VRF, cg);
+      TR::addDependency(conditions, vec0Reg, TR::RealRegister::vr0, TR_VRF, cg);
+      TR::addDependency(conditions, vec1Reg, TR::RealRegister::vr1, TR_VRF, cg);
       if (TR::Compiler->target.is32Bit())
          {
-         addDependency(conditions, NULL, TR::RealRegister::gr3, TR_GPR, cg);
-         addDependency(conditions, NULL, TR::RealRegister::gr4, TR_GPR, cg);
-         addDependency(conditions, NULL, TR::RealRegister::gr10, TR_GPR, cg);
+         TR::addDependency(conditions, NULL, TR::RealRegister::gr3, TR_GPR, cg);
+         TR::addDependency(conditions, NULL, TR::RealRegister::gr4, TR_GPR, cg);
+         TR::addDependency(conditions, NULL, TR::RealRegister::gr10, TR_GPR, cg);
          }
       if (supportsLEArrayCopy)
          {
          fp1Reg = cg->allocateSinglePrecisionRegister();
          fp2Reg = cg->allocateSinglePrecisionRegister();
-         addDependency(conditions, fp1Reg, TR::RealRegister::fp8, TR_FPR, cg);
-         addDependency(conditions, fp2Reg, TR::RealRegister::fp9, TR_FPR, cg);
+         TR::addDependency(conditions, fp1Reg, TR::RealRegister::fp8, TR_FPR, cg);
+         TR::addDependency(conditions, fp2Reg, TR::RealRegister::fp9, TR_FPR, cg);
          if (disableVSXArrayCopyInlining)
             {
-            addDependency(conditions, NULL, TR::RealRegister::fp10, TR_FPR, cg);
-            addDependency(conditions, NULL, TR::RealRegister::fp11, TR_FPR, cg);
+            TR::addDependency(conditions, NULL, TR::RealRegister::fp10, TR_FPR, cg);
+            TR::addDependency(conditions, NULL, TR::RealRegister::fp11, TR_FPR, cg);
             }
          }
       }
    else if (TR::Compiler->target.is32Bit())
       {
-      addDependency(conditions, NULL, TR::RealRegister::gr3, TR_GPR, cg);
-      addDependency(conditions, NULL, TR::RealRegister::gr4, TR_GPR, cg);
-      addDependency(conditions, NULL, TR::RealRegister::gr10, TR_GPR, cg);
+      TR::addDependency(conditions, NULL, TR::RealRegister::gr3, TR_GPR, cg);
+      TR::addDependency(conditions, NULL, TR::RealRegister::gr4, TR_GPR, cg);
+      TR::addDependency(conditions, NULL, TR::RealRegister::gr10, TR_GPR, cg);
       if (TR::Compiler->target.cpu.hasFPU())
          {
-         addDependency(conditions, NULL, TR::RealRegister::fp8, TR_FPR, cg);
-         addDependency(conditions, NULL, TR::RealRegister::fp9, TR_FPR, cg);
-         addDependency(conditions, NULL, TR::RealRegister::fp10, TR_FPR, cg);
-         addDependency(conditions, NULL, TR::RealRegister::fp11, TR_FPR, cg);
+         TR::addDependency(conditions, NULL, TR::RealRegister::fp8, TR_FPR, cg);
+         TR::addDependency(conditions, NULL, TR::RealRegister::fp9, TR_FPR, cg);
+         TR::addDependency(conditions, NULL, TR::RealRegister::fp10, TR_FPR, cg);
+         TR::addDependency(conditions, NULL, TR::RealRegister::fp11, TR_FPR, cg);
          }
       }
    else if (processor >= TR_PPCp6)
       {
       // stfdp arrayCopy used
-      addDependency(conditions, NULL, TR::RealRegister::fp8, TR_FPR, cg);
-      addDependency(conditions, NULL, TR::RealRegister::fp9, TR_FPR, cg);
-      addDependency(conditions, NULL, TR::RealRegister::fp10, TR_FPR, cg);
-      addDependency(conditions, NULL, TR::RealRegister::fp11, TR_FPR, cg);
+      TR::addDependency(conditions, NULL, TR::RealRegister::fp8, TR_FPR, cg);
+      TR::addDependency(conditions, NULL, TR::RealRegister::fp9, TR_FPR, cg);
+      TR::addDependency(conditions, NULL, TR::RealRegister::fp10, TR_FPR, cg);
+      TR::addDependency(conditions, NULL, TR::RealRegister::fp11, TR_FPR, cg);
       }
 
       if (!disableVSXArrayCopyInlining && supportsVSX)
@@ -5369,22 +5336,22 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
    //Set the conditions and dependencies
    conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions((uint16_t) numDeps, (uint16_t) numDeps, cg->trMemory());
 
-   addDependency(conditions, valueAddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(conditions, oldValueReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, valueAddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, oldValueReg, TR::RealRegister::NoReg, TR_GPR, cg);
    conditions->getPreConditions()->getRegisterDependency(1)->setExcludeGPR0();
    conditions->getPostConditions()->getRegisterDependency(1)->setExcludeGPR0();
-   addDependency(conditions, cndReg, TR::RealRegister::cr0, TR_CCR, cg);
+   TR::addDependency(conditions, cndReg, TR::RealRegister::cr0, TR_CCR, cg);
    numDeps = numDeps - 3;
 
    if (newValueReg)
       {
-      addDependency(conditions, newValueReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, newValueReg, TR::RealRegister::NoReg, TR_GPR, cg);
       numDeps--;
       }
 
    if (deltaReg)
       {
-      addDependency(conditions, deltaReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, deltaReg, TR::RealRegister::NoReg, TR_GPR, cg);
       numDeps--;
       }
 
@@ -5996,14 +5963,14 @@ void OMR::Power::TreeEvaluator::postSyncConditions(
 
       if (baseReg != NULL)
          {
-         addDependency(conditions, baseReg, TR::RealRegister::NoReg, TR_GPR, cg);
+         TR::addDependency(conditions, baseReg, TR::RealRegister::NoReg, TR_GPR, cg);
          conditions->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
          conditions->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
          }
-      addDependency(conditions, tempReg, TR::RealRegister::gr11, TR_GPR, cg);
-      addDependency(conditions, dataReg, TR::RealRegister::NoReg, dataReg->getKind(), cg);
+      TR::addDependency(conditions, tempReg, TR::RealRegister::gr11, TR_GPR, cg);
+      TR::addDependency(conditions, dataReg, TR::RealRegister::NoReg, dataReg->getKind(), cg);
       if (memRef->getIndexRegister() != NULL)
-         addDependency(conditions, memRef->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
+         TR::addDependency(conditions, memRef->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
 
       generateDepLabelInstruction(cg, TR::InstOpCode::label, node, generateLabelSymbol(cg), conditions);
       cg->stopUsingRegister(tempReg);

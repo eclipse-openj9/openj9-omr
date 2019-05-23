@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2017 IBM Corp. and others
+ * Copyright (c) 2014, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,10 +35,6 @@
 #include "runtime/CodeCache.hpp"
 #include "runtime/Runtime.hpp"
 #include "runtime/JBJitConfig.hpp"
-
-#if defined(TR_TARGET_S390)
-#include "z/codegen/TRSystemLinkage.hpp"
-#endif
 
 extern TR_RuntimeHelperTable runtimeHelpers;
 extern void setupCodeCacheParameters(int32_t *, OMR::CodeCacheCodeGenCallbacks *callBacks, int32_t *numHelpers, int32_t *CCPreLoadedCodeSize);
@@ -187,7 +183,23 @@ internal_initializeJit()
 int32_t
 internal_compileMethodBuilder(TR::MethodBuilder *m, void **entry)
    {
-   return m->Compile(entry);
+   auto rc = m->Compile(entry);
+
+#if defined(J9ZOS390)
+   struct FunctionDescriptor
+   {
+      uint64_t environment;
+      void* func;
+   };
+
+   FunctionDescriptor* fd = new FunctionDescriptor();
+   fd->environment = 0;
+   fd->func = *entry;
+
+   *entry = (void*) fd;
+#endif
+
+   return rc;
    }
 
 void

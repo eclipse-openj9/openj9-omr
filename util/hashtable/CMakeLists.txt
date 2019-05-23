@@ -57,3 +57,5 @@ target_link_libraries(j9hashtable
 )
 
 set_property(TARGET j9hashtable PROPERTY FOLDER util)
+
+target_enable_ddr(j9hashtable "${OMR_DDR_SET}")

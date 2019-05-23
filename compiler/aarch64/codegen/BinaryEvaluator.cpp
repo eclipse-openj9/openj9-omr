@@ -22,6 +22,7 @@
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/RegisterDependency.hpp"
@@ -34,7 +35,7 @@
  * Generic helper that handles a number of similar binary operations.
  * @param[in] node : calling node
  * @param[in] regOp : the target AArch64 instruction opcode
- * @param[in] regOpImm : the matching AArch64 immediate instruction opcode 
+ * @param[in] regOpImm : the matching AArch64 immediate instruction opcode
  * regOpImm == regOp indicates that the passed opcode has no immediate form.
  * @param[in] cg : codegenerator
  * @return target register
@@ -97,7 +98,7 @@ genericBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstO
       src2Reg = cg->evaluate(secondChild);
       generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
       }
-   
+
    firstChild->decReferenceCount();
    secondChild->decReferenceCount();
    node->setRegister(trgReg);
@@ -187,35 +188,73 @@ static void mulConstant32(TR::Node *node, TR::Register *treg, TR::Register *sreg
       }
    }
 
+// Multiply a register by a 64-bit constant
+static void mulConstant64(TR::Node *node, TR::Register *treg, TR::Register *sreg, int64_t value, TR::CodeGenerator *cg)
+   {
+   if (value == 0)
+      {
+      loadConstant64(cg, node, 0, treg);
+      }
+   else if (value == 1)
+      {
+      generateMovInstruction(cg, node, treg, sreg);
+      }
+   else if (value == -1)
+      {
+      generateNegInstruction(cg, node, treg, sreg);
+      }
+   else
+      {
+      TR::Register *tmpReg = cg->allocateRegister();
+      loadConstant64(cg, node, value, tmpReg);
+      generateMulInstruction(cg, node, treg, sreg, tmpReg);
+      cg->stopUsingRegister(tmpReg);
+      }
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::imulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
-   TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Node *secondChild = node->getSecondChild();
-   TR::Register *trgReg;
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *src2Reg = NULL;
+   TR::Register *trgReg = NULL;
+   int32_t value = 0;
 
    if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
       {
-      int32_t value = secondChild->getInt();
+      value = secondChild->getInt();
       if (value > 0 && cg->convertMultiplyToShift(node))
          {
-         // The multiply has been converted to a shift.
          trgReg = cg->evaluate(node);
          return trgReg;
          }
-      else
-         {
-         trgReg = cg->allocateRegister();
+      }
+
+   if(1 == firstChild->getReferenceCount())
+      {
+      trgReg = src1Reg;
+      }
+   else if(1 == secondChild->getReferenceCount() && (src2Reg = secondChild->getRegister()) != NULL)
+      {
+      trgReg = src2Reg;
+      }
+   else
+      {
+      trgReg = cg->allocateRegister();
+      }
+
+   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+      {
          mulConstant32(node, trgReg, src1Reg, value, cg);
-         }
       }
    else
       {
       TR::Register *src2Reg = cg->evaluate(secondChild);
-      trgReg = cg->allocateRegister();
       generateMulInstruction(cg, node, trgReg, src1Reg, src2Reg);
       }
+
    firstChild->decReferenceCount();
    secondChild->decReferenceCount();
    node->setRegister(trgReg);
@@ -234,7 +273,7 @@ OMR::ARM64::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    TR::Register *zeroReg = cg->allocateRegister();
    TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+   TR::addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
    // imulh is generated for constant idiv and the second child is the magic number
    // assume magic number is usually a large odd number with little optimization opportunity
@@ -268,10 +307,52 @@ OMR::ARM64::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lmulEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *src2Reg = NULL;
+   TR::Register *trgReg = NULL;
+   int64_t value = 0;
+
+   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+      {
+      value = secondChild->getLongInt();
+      if (value > 0 && cg->convertMultiplyToShift(node))
+         {
+         trgReg = cg->evaluate(node);
+         return trgReg;
+         }
+      }
+
+   if(1 == firstChild->getReferenceCount())
+      {
+      trgReg = src1Reg;
+      }
+   else if(1 == secondChild->getReferenceCount() && (src2Reg = secondChild->getRegister()) != NULL)
+      {
+      trgReg = src2Reg;
+      }
+   else
+      {
+      trgReg = cg->allocateRegister();
+      }
+
+   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+      {
+         mulConstant64(node, trgReg, src1Reg, value, cg);
+      }
+   else
+      {
+      TR::Register *src2Reg = cg->evaluate(secondChild);
+      generateMulInstruction(cg, node, trgReg, src1Reg, src2Reg);
+      }
+
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   node->setRegister(trgReg);
+   return trgReg;
+   }
 
 static TR::Register *idivHelper(TR::Node *node, bool is64bit, TR::CodeGenerator *cg)
    {
@@ -503,7 +584,7 @@ OMR::ARM64::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	// boolean and of 2 integers
 	return genericBinaryEvaluator(node, TR::InstOpCode::andx, TR::InstOpCode::andimmx, true, cg);
 	}
-	
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::iorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
@@ -524,7 +605,7 @@ OMR::ARM64::TreeEvaluator::ixorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	// boolean xor of 2 integers
 	return genericBinaryEvaluator(node, TR::InstOpCode::eorw, TR::InstOpCode::eorimmw, false, cg);
 	}
-	
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{

@@ -64,6 +64,13 @@ public:
 
    bool testOSForSSESupport();
 
+
+   /** @brief Determines whether the Transactional Memory (TM) facility is available on the current processor.
+    *
+    *  @return true if TM is available, false otherwise.
+    */
+   bool supportsTransactionalMemoryInstructions();
+
    /**
     * @brief Answers whether the distance between a target and source address
     *        is within the reachable RIP displacement range.

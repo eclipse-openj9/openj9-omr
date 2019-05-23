@@ -27,6 +27,7 @@
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
@@ -409,7 +410,14 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
          if (TR::Compiler->target.is64Bit())
             {
             TR::Register *floatConstReg = cg->allocateRegister(TR_GPR);
-            generateRegImm64Instruction(MOV8RegImm64, node, floatConstReg, valueChild->getLongInt(), cg);
+            if (valueChild->getLongInt() == 0)
+               {
+               generateRegRegInstruction(XOR8RegReg, node, floatConstReg, floatConstReg, cg);
+               }
+            else
+               {
+               generateRegImm64Instruction(MOV8RegImm64, node, floatConstReg, valueChild->getLongInt(), cg);
+               }
             exceptionPoint = generateMemRegInstruction(S8MemReg, node, tempMR, floatConstReg, cg);
             cg->stopUsingRegister(floatConstReg);
             }

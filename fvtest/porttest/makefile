@@ -51,7 +51,6 @@ OBJECTS := \
   si_numcpusTest \
   testHelpers \
   testProcessHelpers \
-  vmemTest \
   main_function
 
 vpath main_function.cpp $(top_srcdir)/util/main_function

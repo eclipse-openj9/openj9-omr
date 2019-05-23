@@ -424,8 +424,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    TR::Register* assignRegisterNoDependencies(TR::Register* reg);
    void assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned);
    virtual void assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned);
-   void blockHPR(TR::Register * reg);
-   void unblockHPR(TR::Register * reg);
+
    void block(TR::Register** sourceReg, int32_t _sourceRegSize, TR::Register** targetReg, int targetRegSize,
               TR::MemoryReference** sourceMem, TR::MemoryReference** targetMem);
    void unblock(TR::Register** sourceReg, int32_t sourceRegSize, TR::Register** targetReg, int targetRegSize,
@@ -437,14 +436,8 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    uint32_t useTargetRegister(TR::Register* reg);
    uint32_t useSourceMemoryReference(TR::MemoryReference* memRef);
    uint32_t useTargetMemoryReference(TR::MemoryReference* memRef, TR::MemoryReference* sourceMemRef);
-
-
-   bool isHPRUpgradable(uint16_t regType);
-
+   
    bool checkRegForGPR0Disable(TR::InstOpCode::Mnemonic op, TR::Register* reg);
-
-
-
    };
 
 }

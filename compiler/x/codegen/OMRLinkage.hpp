@@ -388,26 +388,12 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
       return _movOpcodes[operandType][dataType];
       }
 
-   TR::Machine *machine() {return _cg->machine();}
-   TR::CodeGenerator *cg() {return _cg;}
-   TR::Compilation *comp() {return _cg->comp();}
-   TR_FrontEnd *fe() {return _cg->fe();}
-   TR_Memory *trMemory() {return _cg->trMemory(); }
-   TR_HeapMemory trHeapMemory();
-   TR_StackMemory trStackMemory();
-
    void alignLocalObjectWithCollectedFields(uint32_t & stackIndex) {}
    void alignLocalObjectWithoutCollectedFields(uint32_t & stackIndex) {}
 
    protected:
 
-   Linkage(TR::CodeGenerator *cg) : _cg(cg), _minimumFirstInstructionSize(0)
-      {
-      // Initialize the movOp table based on preferred load instructions for this target.
-      //
-      TR_X86OpCodes op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : MOVSDRegMem;
-      _movOpcodes[RegMem][Float8] = op;
-      }
+   Linkage(TR::CodeGenerator *cg);
 
    void stopUsingKilledRegisters(TR::RegisterDependencyConditions  *deps, TR::Register *returnRegister);
    void associatePreservedRegisters(TR::RegisterDependencyConditions  *deps, TR::Register *returnRegister);
@@ -443,7 +429,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    private:
 
    static TR_X86OpCodes _movOpcodes[NumMovOperandTypes][NumMovDataTypes];
-   TR::CodeGenerator*   _cg;
    uint8_t              _minimumFirstInstructionSize;
 
    };

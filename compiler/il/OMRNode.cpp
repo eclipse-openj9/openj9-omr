@@ -2416,14 +2416,64 @@ OMR::Node::computeIsInternalPointer()
 bool
 OMR::Node::computeIsCollectedReference()
    {
+   TR::Compilation * comp = TR::comp();
+   TR::NodeChecklist processedNodesCollected(comp);
+   TR::NodeChecklist processedNodesNotCollected(comp);
+   return (self()->computeIsCollectedReferenceImpl(processedNodesCollected, processedNodesNotCollected) != TR_no);
+   }
+
+static TR_YesNoMaybe
+recordProcessedNodeResult(TR::Node *node, TR_YesNoMaybe collectedness, TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected)
+   {
+   switch (collectedness)
+      {
+      case TR_yes:
+         processedNodesCollected.add(node);
+         break;
+      case TR_no:
+         processedNodesNotCollected.add(node);
+         break;
+      case TR_maybe:
+         processedNodesCollected.add(node);
+         processedNodesNotCollected.add(node);
+         break;
+      default:
+         TR_ASSERT_FATAL(false, "Invalid collectedness result for Node %p\n", node);
+         break;
+      }
+   return collectedness;
+   }
+
+TR_YesNoMaybe
+OMR::Node::computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected)
+   {
    TR::Node *curNode = self();
+   TR::Node *receiverNode = curNode;
    if (curNode->getOpCode().isTreeTop())
-      return false;
+      return TR_no;
+
+   // In order to prevent from walking the same node repeatedly when
+   // one is referenced multiple times in a very deep tree structure
+   // (e.g. ternary whose child is a ternary and so on),
+   // Use 2 checklists to record following states:
+   // -- The node is not contained in either collected or uncollected checklists - first time encounter, process the node
+   //    and add it to the appropriate checklist(s) based on the result.
+   // -- Node is seen in both checklitsts - previously processed with result of TR_maybe
+   // -- Node is seen in processedNodesCollected - previously processed with result of TR_yes
+   // -- Node is seen in processedNodesNotCollected - previously processed with result of TR_no
+   bool ternarySeenCollected = processedNodesCollected.contains(receiverNode);
+   bool ternarySeenNotCollected = processedNodesNotCollected.contains(receiverNode);
+   if (ternarySeenCollected && ternarySeenNotCollected)
+      return TR_maybe;
+   else if (ternarySeenCollected)
+      return TR_yes;
+   else if (ternarySeenNotCollected)
+      return TR_no;
 
    while (curNode)
       {
       if (curNode->isInternalPointer())
-         return true;
+         return recordProcessedNodeResult(receiverNode, TR_yes, processedNodesCollected, processedNodesNotCollected);
 
       TR::ILOpCode op = curNode->getOpCode();
       TR::ILOpCodes opValue = curNode->getOpCodeValue();
@@ -2431,16 +2481,28 @@ OMR::Node::computeIsCollectedReference()
       // If a language can handle a collected reference going via a non-address type,
       // then the logic would need to be augmented to handle that
       if (op.isConversion())
-         return false;
+         return recordProcessedNodeResult(receiverNode, TR_no, processedNodesCollected, processedNodesNotCollected);
 
       if (op.getDataType() != TR::Address)
-         return false;
+         return recordProcessedNodeResult(receiverNode, TR_no, processedNodesCollected, processedNodesNotCollected);
       // The following are all opcodes that are address type, non-TreeTop and non-conversion
 
       if (op.isAdd())
          {
          curNode = curNode->getFirstChild();
          continue;
+         }
+
+      if (op.isTernary())
+         {
+         TR_YesNoMaybe secondChildResult = curNode->getSecondChild()->computeIsCollectedReferenceImpl(processedNodesCollected, processedNodesNotCollected);
+         if (TR_maybe == secondChildResult)
+            {
+            TR_YesNoMaybe thirdChildResult = curNode->getThirdChild()->computeIsCollectedReferenceImpl(processedNodesCollected, processedNodesNotCollected);
+            return recordProcessedNodeResult(receiverNode, thirdChildResult, processedNodesCollected, processedNodesNotCollected);
+            }
+         else
+            return recordProcessedNodeResult(receiverNode, secondChildResult, processedNodesCollected, processedNodesNotCollected);
          }
 
       // opcodes associated with a symref, we should
@@ -2452,16 +2514,17 @@ OMR::Node::computeIsCollectedReference()
          // isCollectedReference() responds false to generic int shadows because their type
          // is int. However, address type generic int shadows refer to collected slots.
          if (opValue == TR::aloadi && symbol == TR::comp()->getSymRefTab()->findGenericIntShadowSymbol())
-            return true;
+            return recordProcessedNodeResult(receiverNode, TR_yes, processedNodesCollected, processedNodesNotCollected);
          else
-            return symbol->isCollectedReference();
+            return recordProcessedNodeResult(receiverNode, (symbol->isCollectedReference() ? TR_yes : TR_no),
+                  processedNodesCollected, processedNodesNotCollected);
          }
 
       // Symbols for calls and news does not contain collectedness information.
       // Current implementation treats all object references collectable, and also
       // assumes that the return of an acall* is an object reference.
       if (op.isNew() || op.isCall() || opValue == TR::variableNew || opValue == TR::variableNewArray)
-         return true;
+         return recordProcessedNodeResult(receiverNode, TR_yes, processedNodesCollected, processedNodesNotCollected);
 
       switch (opValue)
          {
@@ -2472,15 +2535,33 @@ OMR::Node::computeIsCollectedReference()
             // only problem is: we might mark an aladd/aiadd on a temp whose value is null as
             // an internal pointer, thus creating a temp, pinning array and internal pointer
             // map for it.
-            return self() == curNode && curNode->getAddress() == 0;
+
+            // Preserve the existing logic which is as follows:
+            // true iff not under aladd and null,
+            // if non-null, always false.
+            // if under aladd, always false.
+
+            // non-null constant return false.
+            if (curNode->getAddress() != 0)
+               return recordProcessedNodeResult(receiverNode, TR_no, processedNodesCollected, processedNodesNotCollected);
+            else
+               {
+               // null constant under aladd, return false.
+               // Null constant under ternary (i.e. we reached here via recursive calls), return maybe
+               // to indicate need to check the other child.
+               if (self() != curNode)
+                  return recordProcessedNodeResult(receiverNode, TR_no, processedNodesCollected, processedNodesNotCollected);
+               else
+                  return recordProcessedNodeResult(receiverNode, TR_maybe, processedNodesCollected, processedNodesNotCollected);
+               }
          case TR::getstack:
-            return false;
+            return recordProcessedNodeResult(receiverNode, TR_no, processedNodesCollected, processedNodesNotCollected);
          default:
             TR_ASSERT(false, "Unsupported opcode %s on node " POINTER_PRINTF_FORMAT, op.getName(), curNode);
-            return false;
+            return TR_no;
          }
       }
-   return false;
+   return TR_no;
    }
 
 bool
@@ -3431,12 +3512,7 @@ OMR::Node::nodeMightKillCondCode()
    if ((opcode.isLoadReg() || opcode.isStoreReg() || opcode.isLoadDirect() || opcode.isStoreDirect())
         && (self()->getSize() == 4 || self()->getSize() == 8) )
       return false;
-
-   // at this point, we will assume that the CC is killed if we at not on Trex or higher
-   // (we don't have LAY for long dispacement among others)
-   if (!TR::Compiler->target.cpu.getS390SupportsZ990())
-      return true;
-
+   
    // this conversion will be a no-op -> CC is not killed unless the child kills it
    if (self()->isUnneededConversion() || (opcode.isConversion() && (self()->getSize() == self()->getFirstChild()->getSize())))
       return false;
@@ -3444,7 +3520,7 @@ OMR::Node::nodeMightKillCondCode()
    // the rest were determined empirically not to kill the CC
    if (((opcode.isLoad() || opcode.isStore() || opcode.isLoadReg() || opcode.isStoreDirectOrReg() || opcode.isLoadAddr())
           && (self()->getSize() == 4 || self()->getSize() == 8 || self()->getSize() == 2 ||
-          (self()->getSize() == 1 && TR::Compiler->target.cpu.getS390SupportsZ9() ) || self()->getSize() == 0 ) ))
+          self()->getSize() == 1 || self()->getSize() == 0 ) ))
       return false;
 
    if (opcode.isArrayRef() && self()->getSecondChild()->getOpCode().isLoadConst() &&
@@ -5394,109 +5470,6 @@ OMR::Node::printIsInvalid8BitGlobalRegister()
    {
    return self()->isInvalid8BitGlobalRegister() ? "invalid8BitGlobalRegister " : "";
    }
-
-
-
-const char *
-OMR::Node::printIsHPREligible ()
-   {
-   return self()->getIsHPREligible() ? "canBeAssignedToHPR " : "";
-   }
-
-/**
- * Call this after all of the node's children are simulated during GRA
- */
-bool
-OMR::Node::isEligibleForHighWordOpcode()
-   {
-   if (self()->getNumChildren() >2)
-      {
-      self()->resetIsHPREligible();
-      return false;
-      }
-
-   TR::Node * firstChild = NULL;
-   TR::Node * secondChild = NULL;
-
-   if (self()->getNumChildren() >= 1)
-      {
-      firstChild = self()->getFirstChild();
-      }
-   if (self()->getNumChildren() == 2)
-      {
-      secondChild = self()->getSecondChild();
-      }
-
-   switch (self()->getOpCodeValue())
-      {
-      case TR::iconst:
-         self()->setIsHPREligible();
-         return true;
-         break;
-      case TR::iadd:
-      case TR::isub:
-         if (firstChild->getIsHPREligible())
-            {
-            self()->setIsHPREligible();
-            return true;
-            }
-         break;
-      case TR::imul:
-      case TR::idiv:
-         if (firstChild->getIsHPREligible())
-            {
-            if (secondChild->isPowerOfTwo() ||
-                (secondChild->getOpCodeValue() == TR::iconst &&
-                 ((secondChild->getInt() % 2) == 0)))
-               {
-               // this guy can actually stay in either low or high word
-               self()->resetIsHPREligible();
-               return true;
-               }
-            }
-         break;
-      case TR::ificmpeq:
-      case TR::ificmpne:
-      case TR::ificmpge:
-      case TR::ificmpgt:
-      case TR::ificmple:
-      case TR::ificmplt:
-         if (firstChild->getIsHPREligible())
-            {
-            self()->resetIsHPREligible();
-            return true;
-            }
-         break;
-      case TR::iload:
-         self()->setIsHPREligible();
-         return true;
-      case TR::istore:
-         if (firstChild->getIsHPREligible())
-            {
-            self()->resetIsHPREligible();
-            return true;
-            }
-         break;
-      case TR::istorei:
-         if (secondChild->getIsHPREligible())
-            {
-            self()->resetIsHPREligible();
-            return true;
-            }
-         break;
-      case TR::treetop:
-         self()->resetIsHPREligible();
-         return true;
-      default:
-         self()->resetIsHPREligible();
-         return false;
-         break;
-      }
-   self()->resetIsHPREligible();
-   return false;
-   }
-
-
 
 bool
 OMR::Node::isDirectMemoryUpdate()

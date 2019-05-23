@@ -59,18 +59,6 @@
 
 namespace TR { class SymbolReference; }
 
-//#define TRACE_EVAL
-#if defined(TRACE_EVAL)
-#define EVAL_BLOCK
-#if defined (EVAL_BLOCK)
-#define PRINT_ME(string,node,cg) TR::Delimiter evalDelimiter(cg->comp(),cg->comp()->getOption(TR_TraceCG),"EVAL", string)
-#else
-extern void PRINT_ME(char * string, TR::Node * node, TR::CodeGenerator * cg);
-#endif
-#else
-#define PRINT_ME(string,node,cg)
-#endif
-
 /**
  * 64bit version lconstHelper: load long integer constant (64-bit signed 2's complement)
  */
@@ -93,7 +81,6 @@ lconstHelper64(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::iconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iconst", node, cg);
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
    generateLoad32BitConstant(cg, node, node->getInt(), tempReg, true);
    return tempReg;
@@ -105,7 +92,6 @@ OMR::Z::TreeEvaluator::iconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::aconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("aconst", node, cg);
    TR::Register* targetRegister = cg->allocateRegister();
 
    node->setRegister(targetRegister);
@@ -121,7 +107,6 @@ OMR::Z::TreeEvaluator::aconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::lconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("lconst", node, cg);
    return lconstHelper64(node, cg);
    }
 
@@ -131,7 +116,6 @@ OMR::Z::TreeEvaluator::lconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::bconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("bconst", node, cg);
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
    if (node->getOpCodeValue() == TR::buconst)
       generateLoad32BitConstant(cg, node, node->getByte() & 0xFF, tempReg, true);
@@ -149,7 +133,6 @@ OMR::Z::TreeEvaluator::bconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("sconst", node, cg);
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
    int32_t value = node->isUnsigned() ? node->getConst<uint16_t>() : node->getShortInt();
    generateLoad32BitConstant(cg, node, value, tempReg, true);
@@ -162,7 +145,6 @@ OMR::Z::TreeEvaluator::sconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::cconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("cconst", node, cg);
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
    generateLoad32BitConstant(cg, node, node->getConst<uint16_t>(), tempReg, true);
    return tempReg;
@@ -174,7 +156,6 @@ OMR::Z::TreeEvaluator::cconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::labsEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("labs", node, cg);
    TR::Node * firstChild = node->getFirstChild();
    TR::Register * targetRegister = cg->allocateRegister();;
    TR::Register * sourceRegister = cg->evaluate(firstChild);
@@ -190,7 +171,6 @@ OMR::Z::TreeEvaluator::labsEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::iabsEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("iabs", node, cg);
    TR::Node * firstChild = node->getFirstChild();
    TR::Compilation *comp = cg->comp();
 
@@ -294,7 +274,6 @@ OMR::Z::TreeEvaluator::l2aEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    //      iiload f
    //         aload O
    //
-   PRINT_ME("l2a", node, cg);
    TR::Node *firstChild = node->getFirstChild();
    // after remat changes, this assume is no longer valid
    //

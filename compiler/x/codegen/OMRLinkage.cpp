@@ -28,6 +28,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/MemoryReference.hpp"
@@ -65,6 +66,18 @@
 static uint32_t accumOrigSize = 0;
 static uint32_t accumMappedSize = 0;
 #endif
+
+
+OMR::X86::Linkage::Linkage(TR::CodeGenerator *cg) :
+      OMR::Linkage(cg),
+   _minimumFirstInstructionSize(0)
+   {
+   // Initialize the movOp table based on preferred load instructions for this target.
+   //
+   TR_X86OpCodes op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : MOVSDRegMem;
+   _movOpcodes[RegMem][Float8] = op;
+   }
+
 
 void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    {
@@ -759,20 +772,6 @@ TR_MovDataTypes
 OMR::X86::Linkage::paramMovType(TR::ParameterSymbol *param)
    {
    return self()->movType(param->getDataType());
-   }
-
-
-TR_HeapMemory
-OMR::X86::Linkage::trHeapMemory()
-   {
-   return self()->trMemory();
-   }
-
-
-TR_StackMemory
-OMR::X86::Linkage::trStackMemory()
-   {
-   return self()->trMemory();
    }
 
 

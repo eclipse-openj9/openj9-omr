@@ -18,6 +18,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
+#ifdef J9ZTPF
+#define __TPF_DO_NOT_MAP_ATOE_REMOVE
+#endif
 
 #include "optimizer/Inliner.hpp"
 
@@ -35,7 +38,6 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "env/KnownObjectTable.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/InlineBlock.hpp"
@@ -682,7 +684,7 @@ TR_InlinerBase::exceedsSizeThreshold(TR_CallSite *callsite, int bytecodeSize, TR
 void
 TR_InlinerBase::createParmMap(TR::ResolvedMethodSymbol *calleeSymbol, TR_LinkHead<TR_ParameterMapping> &map)
    {
-   ListIterator<TR::ParameterSymbol> parms(&calleeSymbol->getLogicalParameterList(comp()));
+   ListIterator<TR::ParameterSymbol> parms(&calleeSymbol->getParameterList());
 
    for (TR::ParameterSymbol * p = parms.getFirst(); p; p = parms.getNext())
       {

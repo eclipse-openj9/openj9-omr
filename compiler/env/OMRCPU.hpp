@@ -131,6 +131,12 @@ public:
    bool isI386() { return _minorArch == TR::m_arch_i386; }
    bool isAMD64() { return _minorArch == TR::m_arch_amd64; }
 
+   /** @brief Determines whether the Transactional Memory (TM) facility is available on the current processor.
+    *
+    *  @return false; this is the default answer unless overridden by an extending class.
+    */
+   bool supportsTransactionalMemoryInstructions() { return false; }
+
 private:
    TR_Processor _processor;
 

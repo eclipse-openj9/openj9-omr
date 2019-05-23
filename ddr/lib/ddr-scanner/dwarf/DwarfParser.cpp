@@ -22,6 +22,7 @@
 #include "ddr/scanner/dwarf/DwarfFunctions.hpp"
 
 /* Statics to create: */
+static bool findTool(char **buffer, const char *command);
 static void deleteDie(Dwarf_Die die);
 static void cleanUnknownDiesInCU(Dwarf_CU_Context *cu);
 static int parseDwarfInfo(char *line, Dwarf_Die *lastCreatedDie, Dwarf_Die *currentDie,
@@ -79,9 +80,25 @@ dwarf_init(int fd,
 	 */
 	FILE *fp = NULL;
 	if (DW_DLV_OK == ret) {
-		stringstream ss;
-		ss << "dwarfdump " << filepath << " 2>&1";
-		fp = popen(ss.str().c_str(), "r");
+
+		/* On some Mac machines, calling "dwarfdump" in shell calls a version named
+		 * "llvm-dwarfdump" instead of the version of dwarfdump DDR uses, which is
+		 * instead named "dwarfdump-classic" on those systems. Thus, we first try to
+		 * find "dwarfdump-classic" directly in case "dwarfdump" is linked to
+		 * "llvm-dwarfdump". If we don't find "dwarfdump-classic", then the machine
+		 * we are on uses the correct version of dwarfdump.
+		 */
+		char *toolpath = NULL;
+		if (findTool(&toolpath, "xcrun -f dwarfdump-classic 2>/dev/null")
+		||  findTool(&toolpath, "xcrun -f dwarfdump 2>/dev/null")) {
+			stringstream command;
+			command << toolpath << " " << filepath << " 2>&1";
+			fp = popen(command.str().c_str(), "r");
+		}
+		if (NULL != toolpath) {
+			free(toolpath);
+		}
+
 		if (NULL == fp) {
 			ret = DW_DLV_ERROR;
 			setError(error, DW_DLE_IOF);
@@ -528,4 +545,30 @@ parseAttrType(char *string, size_t length, Dwarf_Half *type, Dwarf_Half *form)
 			break;
 		}
 	}
+}
+
+
+/* Runs a shell command to get the path for a tool DDR needs (dwarfdump)
+ * If successful, returns true and stores the path in 'buffer' variable.
+ * If not, returns false.
+ */
+static bool
+findTool(char **buffer, const char *command)
+{
+	FILE *fp = popen(command, "r");
+	if (NULL != fp) {
+		size_t cap = 0;
+		ssize_t len = getline(buffer, &cap, fp);
+		/* if xcrun fails to find the tool, then returned length would be 0 */
+		if ((len > 0) &&  ('/' == (*buffer)[0])) {
+			/* remove the newline consumed by getline */
+			if ('\n' == (*buffer)[len - 1]) {
+				(*buffer)[len - 1] = '\0';
+			}
+			pclose(fp);
+			return true;
+		}
+		pclose(fp);
+	}
+	return false;
 }

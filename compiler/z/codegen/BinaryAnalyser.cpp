@@ -49,8 +49,6 @@
 
 namespace TR { class Instruction; }
 
-#define   ENABLE_ZARCH_FOR_32    1
-
 void
 TR_S390BinaryAnalyser::remapInputs(TR::Node * firstChild, TR::Register * firstRegister,
                                     TR::Node * secondChild, TR::Register * secondRegister)
@@ -174,7 +172,7 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
 
       bool done = false;
 
-      if (cg()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
          if (getBinaryReg3Reg2() || secondRegister != NULL)
             {
@@ -313,7 +311,7 @@ TR_S390BinaryAnalyser::longSubtractAnalyser(TR::Node * root)
    /**  Attempt to use SGH to subtract halfword (64 <- 16).
     * The second child is a halfword from memory */
    bool is16BitMemory2Operand = false;
-   if (TR::Compiler->target.cpu.getS390SupportsZ14() &&
+   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z14) &&
        secondChild->getOpCodeValue() == TR::s2l &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
        secondChild->isSingleRefUnevaluated() &&

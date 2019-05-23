@@ -19,6 +19,54 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 #############################################################################
 
+include(CheckSymbolExists)
+
+# Determine semaphore implementation to use on platform
+macro(omr_find_semaphore_implementation)
+	set(OMR_SEMAPHORE_IMPLEMENTATION "-NOTFOUND" CACHE STRING "What semaphore implementation to use")
+	set_property(CACHE OMR_SEMAPHORE_IMPLEMENTATION PROPERTY STRINGS posix osx windows zos)
+	mark_as_advanced(OMR_SEMAPHORE_IMPLEMENTATION)
+	if(NOT OMR_SEMAPHORE_IMPLEMENTATION)
+		if(OMR_OS_OSX)
+			set(OMR_SEMAPHORE_IMPLEMENTATION osx)
+		elseif(OMR_OS_WINDOWS)
+			set(OMR_SEMAPHORE_IMPLEMENTATION windows)
+		elseif(OMR_OS_ZOS)
+			set(OMR_SEMAPHORE_IMPLEMENTATION zos)
+		else()
+			# for now we assume that if sem_init exists, the rest of the posix semaphore functions are there
+			# Note: cmake requires that test source be able to compile and link, which requires us to tell it
+			# to link against pthread
+			set(_OLD_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
+			set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} pthread)
+			check_symbol_exists(sem_init "semaphore.h" HAS_SEM_INIT)
+			set(CMAKE_REQUIRED_LIBRARIES "${_OLD_REQUIRED_LIBRARIES}")
+			if(HAS_SEM_INIT)
+				set(OMR_SEMAPHORE_IMPLEMENTATION posix)
+			endif()
+		endif()
+		# Force value of OMR_SEMAPHORE_IMPLEMENTATION
+		set_property(CACHE OMR_SEMAPHORE_IMPLEMENTATION PROPERTY VALUE "${OMR_SEMAPHORE_IMPLEMENTATION}")
+	endif()
+
+	unset(OMR_USE_OSX_SEMAPHORES)
+	unset(OMR_USE_POSIX_SEMAPHORES)
+	unset(OMR_USE_WINDOWS_SEMAPHORES)
+	unset(OMR_USE_ZOS_SEMAPHORES)
+
+	if(OMR_SEMAPHORE_IMPLEMENTATION STREQUAL osx)
+		set(OMR_USE_OSX_SEMAPHORES TRUE)
+	elseif(OMR_SEMAPHORE_IMPLEMENTATION STREQUAL posix)
+		set(OMR_USE_POSIX_SEMAPHORES TRUE)
+	elseif(OMR_SEMAPHORE_IMPLEMENTATION STREQUAL windows)
+		set(OMR_USE_WINDOWS_SEMAPHORES TRUE)
+	elseif(OMR_SEMAPHORE_IMPLEMENTATION STREQUAL zos)
+		set(OMR_USE_ZOS_SEMAPHORES TRUE)
+	else()
+		message(SEND_ERROR "'${OMR_SEMAPHORE_IMPLEMENTATION}' is not a valid value for OMR_SEMAPHORE_IMPLEMENTATION")
+	endif()
+endmacro()
+
 # Translate from CMake's view of the system to the OMR view of the system.
 # Exports a number of variables indicicating platform, os, endianness, etc.
 # - OMR_ARCH_{AARCH64,X86,ARM,S390} # TODO: Add POWER
@@ -67,6 +115,10 @@ macro(omr_detect_system_information)
 		set(OMR_HOST_ARCH "ppc")
 		set(OMR_ARCH_POWER ON)
 		set(OMR_TEMP_DATA_SIZE "64")
+	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc")
+		set(OMR_HOST_ARCH "ppc")
+		set(OMR_ARCH_POWER ON)
+		set(OMR_TEMP_DATA_SIZE "32")
 	else()
 		message(FATAL_ERROR "Unknown processor: ${CMAKE_SYSTEM_PROCESSOR}")
 	endif()
@@ -147,4 +199,5 @@ macro(omr_detect_system_information)
 	message(STATUS "OMR: The tool configuration is ${OMR_TOOLCONFIG}")
 	message(STATUS "OMR: The target data size is ${OMR_ENV_TARGET_DATASIZE}")
 
+	omr_find_semaphore_implementation()
 endmacro(omr_detect_system_information)

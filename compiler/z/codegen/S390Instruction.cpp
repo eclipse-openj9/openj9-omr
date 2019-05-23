@@ -32,6 +32,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -1202,10 +1203,9 @@ TR::S390PseudoInstruction::generateBinaryEncoding()
 int32_t
 TR::S390PseudoInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   int32_t estimate = (getOpCodeValue() == TR::InstOpCode::XPCALLDESC) ? 18 : 0;
+   setEstimatedBinaryLength(0);
 
-   setEstimatedBinaryLength(estimate);
-   return currentEstimate + estimate;
+   return currentEstimate;
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2426,7 +2426,6 @@ TR::S390RILInstruction::generateBinaryEncoding()
          }
 #endif
 
-      i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
       (*(uint16_t *) cursor) = bos(0xC005);
       toRealRegister(getRegisterOperand(1))->setRegister1Field((uint32_t *) cursor);
 
@@ -2445,16 +2444,8 @@ TR::S390RILInstruction::generateBinaryEncoding()
           *     If targetAddress is not provided, TargetSymbol should be a method symbol.
           */
          TR_ASSERT(getTargetPtr() || (getTargetSymbol() && getTargetSymbol()->isMethod()),"targetAddress or method symbol should be provided for BRASL\n");
-         bool isRecursiveCall = false;
-         TR::MethodSymbol * callSymbol = NULL;
-         if (getTargetSymbol())
-            {
-            callSymbol = getTargetSymbol()->isMethod() ? getTargetSymbol()->castToMethodSymbol() : NULL;
-            TR::ResolvedMethodSymbol * sym = (callSymbol) ? callSymbol->getResolvedMethodSymbol() : NULL;
-            TR_ResolvedMethod * fem = sym ? sym->getResolvedMethod() : NULL;
-            isRecursiveCall = (fem != NULL && fem->isSameMethod(comp->getCurrentMethod()) && !comp->isDLT());
-            }
-         if (isRecursiveCall)
+
+         if (comp->isRecursiveMethodTarget(getTargetSymbol()))
             {
             // call myself case
             uint8_t * jitTojitStart = cg()->getCodeStart();
@@ -2465,6 +2456,14 @@ TR::S390RILInstruction::generateBinaryEncoding()
             }
          else
             {
+            TR::MethodSymbol *callSymbol = NULL;
+            if (getTargetSymbol())
+               {
+               callSymbol = getTargetSymbol()->isMethod() ? getTargetSymbol()->castToMethodSymbol() : NULL;
+               }
+
+            i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
+
             if (getTargetPtr() == 0 && callSymbol)
                {
                i2 = (int32_t)(((uintptrj_t)(callSymbol->getMethodAddress()) - (uintptrj_t)cursor) / 2);
@@ -3239,11 +3238,7 @@ TR::S390MemInstruction::refsRegister(TR::Register * reg)
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
-      if (realReg->isHighWordRegister())
-         {
-         // Highword aliasing low word regs
-         regMem = realReg->getLowWordRegister();
-         }
+
       if (getMemoryReference()->refsRegister(regMem))
          {
          return true;
@@ -3292,11 +3287,7 @@ TR::S390RXInstruction::refsRegister(TR::Register * reg)
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
-      if (realReg->isHighWordRegister())
-         {
-         // Highword aliasing low word regs
-         regMem = (TR::Register *)(realReg->getLowWordRegister());
-         }
+
       if (getMemoryReference()->refsRegister(regMem))
          {
          return true;
@@ -3476,11 +3467,7 @@ TR::S390RXFInstruction::refsRegister(TR::Register * reg)
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
-      if (realReg->isHighWordRegister())
-         {
-         // Highword aliasing low word regs
-         regMem = (TR::Register *)(realReg->getLowWordRegister());
-         }
+
       if (getMemoryReference()->refsRegister(regMem))
          {
          return true;
@@ -4344,8 +4331,8 @@ TR::S390VRRiInstruction::generateBinaryEncoding()
    // Copy binary
    getOpCode().copyBinaryToBuffer(instructionStart);
 
-   // Masks
    setMaskField(reinterpret_cast<uint32_t *>(cursor), getM3(), 1);
+   setMaskField(reinterpret_cast<uint32_t *>(cursor), getM4(), 2);
 
    // Operands
    toRealRegister(r1Reg)->setRegister1Field(reinterpret_cast<uint32_t *>(cursor));
@@ -4845,11 +4832,7 @@ TR::S390SSFInstruction::refsRegister(TR::Register * reg)
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
-      if (realReg->isHighWordRegister())
-         {
-         // Highword aliasing low word regs
-         regMem = (TR::Register *)(realReg->getLowWordRegister());
-         }
+
       if (getMemoryReference()->refsRegister(regMem))
          {
          return true;
@@ -5271,9 +5254,7 @@ TR::S390NOPInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    // could have 2 byte, 4 byte or 6 byte NOP
    setEstimatedBinaryLength(6);
-   // Save the offset for Call Descriptor NOP (zOS-31 XPLINK), so that we can estimate the distance
-   // to Call Descriptor Snippet to decide whether we need to branch around.
-   _estimatedOffset = currentEstimate;
+
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -5285,13 +5266,7 @@ TR::S390NOPInstruction::generateBinaryEncoding()
    memset( (void*)cursor,0,getEstimatedBinaryLength());
    TR::Compilation *comp = cg()->comp();
 
-   if (getKindNOP() == FastLinkCallNOP)
-      { // assumes 4 byte length
-      uint32_t nopInst = 0x47000000 + (unsigned)getArgumentsLengthOnCall();
-      (*(uint32_t *) cursor) = boi(nopInst);
-      cursor += 4;
-      }
-   else if (getBinaryLength() == 2)
+   if (getBinaryLength() == 2)
       {
       uint16_t nopInst;
          nopInst = 0x1800;
@@ -5300,35 +5275,8 @@ TR::S390NOPInstruction::generateBinaryEncoding()
       }
    else if (getBinaryLength() == 4)
       {
-      uint32_t nopInst = 0x47000000 + (((unsigned)getCallType()) << 16);
+      uint32_t nopInst = 0x47000000;
       (*(uint32_t *) cursor) = boi(nopInst);
-      if (getTargetSnippet() != NULL)
-         {
-         // Check Relocation Distance, and see whether it's within 16 bits distance.
-         // The offset is a 16 bit field containg the offset in double worlds from the call site to the call descriptor.
-         // Our snippet is always emitted later than our NOP.
-         intptrj_t snippetOffset = getTargetSnippet()->getSnippetLabel()->getEstimatedCodeLocation();
-         intptrj_t currentOffset = _estimatedOffset;
-
-         intptrj_t distance = snippetOffset - currentOffset + 8;  // Add 8 to conservatively estimate the alginment of NOP.
-
-         //TODO: confirm that it's okay to have negative offset (for cases when JNI call is outofline)
-         TR_ASSERT(distance > 0, "XPLINK Call Descriptor Snippet is before NOP instruction (JNI Call).");
-
-         // If within range, we don't have to emit our psuedo branch around instruction.
-         if (distance < 0x3FFF8 && distance > 0)
-            {
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor+2, getTargetSnippet()->getSnippetLabel(),8));
-            }
-         else
-            {
-            // Snippet is beyond 16 bit relative relocation distance.
-            // In this case, we have to activate our pseudo branch around call descriptor
-            getCallDescInstr()->setCallDescValue(((TR::S390ConstantDataSnippet *)getTargetSnippet())->getDataAs8Bytes(), cg()->trMemory());
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor+2, getCallDescInstr()->getCallDescLabel(),8));
-
-            }
-         }
       cursor += 4;
       }
    else if(getBinaryLength() == 6)

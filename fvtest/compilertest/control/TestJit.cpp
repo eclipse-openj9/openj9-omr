@@ -35,10 +35,6 @@
 #include "runtime/Runtime.hpp"
 #include "runtime/TestJitConfig.hpp"
 
-#if defined(TR_TARGET_S390)
-#include "z/codegen/TRSystemLinkage.hpp"
-#endif
-
 extern TR_RuntimeHelperTable runtimeHelpers;
 extern void setupCodeCacheParameters(int32_t *, OMR::CodeCacheCodeGenCallbacks *callBacks, int32_t *numHelpers, int32_t *CCPreLoadedCodeSize);
 

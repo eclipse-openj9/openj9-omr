@@ -24,10 +24,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
@@ -434,46 +436,6 @@ TR::PPCSystemLinkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    }
 
 
-uintptr_t
-TR::PPCSystemLinkage::calculateActualParameterOffset(
-      uintptr_t o,
-      TR::ParameterSymbol& p)
-   {
-   TR::ResolvedMethodSymbol    * bodySymbol = comp()->getJittedMethodSymbol();
-#ifndef TR_TARGET_64BIT
-   uint32_t bound = sizeof(uint32_t);
-#else
-   size_t bound = sizeof(uint64_t);
-#endif
-   if (1 || (p.getDataType() == TR::Aggregate) || (p.getSize() >= bound))
-      {
-      return o;
-      }
-   else
-      {
-      return o + bound - p.getSize();
-      }
-   }
-
-
-uintptr_t TR::PPCSystemLinkage::calculateParameterRegisterOffset(uintptr_t o, TR::ParameterSymbol& p)
-   {
-   TR::ResolvedMethodSymbol    * bodySymbol = comp()->getJittedMethodSymbol();
-   if (1 || (p.getDataType() == TR::Aggregate) || (p.getSize() >= sizeof(uint64_t)))
-      {
-      return o;
-      }
-   else
-      {
-#ifdef TR_TARGET_64BIT
-      return o & (~(uint64_t) 7);
-#else
-      return o & (~(uint32_t) 3);
-#endif
-      }
-   }
-
-
 void
 TR::PPCSystemLinkage::mapParameters(
       TR::ResolvedMethodSymbol *method,
@@ -501,9 +463,9 @@ TR::PPCSystemLinkage::mapParameters(
       while (parmCursor != NULL)
          {
          if (saveParmsInLocalArea)
-            parmCursor->setParameterOffset(calculateActualParameterOffset(offset_from_top + stackIndex, *parmCursor));
+            parmCursor->setParameterOffset(offset_from_top + stackIndex);
          else
-            parmCursor->setParameterOffset(calculateActualParameterOffset(offset_from_top + offsetToFirstParm + stackIndex, *parmCursor));
+            parmCursor->setParameterOffset(offset_from_top + offsetToFirstParm + stackIndex);
          offset_from_top += (parmCursor->getSize() + slot_size - 1) & (~(slot_size - 1));
          parmCursor = parameterIterator.getNext();
          }
@@ -1028,7 +990,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else
                   {
-                  addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                  TR::addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
                   }
                }
             else // numIntegerArgs >= properties.getNumIntArgRegs()
@@ -1048,7 +1010,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                if (numIntegerArgs & 1)
                   {
                   if (numIntegerArgs < properties.getNumIntArgRegs())
-                     addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                     TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
                   numIntegerArgs++;
                   }
                }
@@ -1093,9 +1055,9 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                else
                   {
                   if (TR::Compiler->target.is64Bit())
-                     addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                     TR::addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
                   else
-                     addDependency(dependencies, argRegister->getRegisterPair()->getHighOrder(), properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                     TR::addDependency(dependencies, argRegister->getRegisterPair()->getHighOrder(), properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
                   }
                if (TR::Compiler->target.is32Bit())
                   {
@@ -1115,7 +1077,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                         dependencies->addPostCondition(resultReg, TR::RealRegister::gr4);
                         }
                      else
-                        addDependency(dependencies, argRegister->getRegisterPair()->getLowOrder(), properties.getIntegerArgumentRegister(numIntegerArgs+1), TR_GPR, cg());
+                        TR::addDependency(dependencies, argRegister->getRegisterPair()->getLowOrder(), properties.getIntegerArgumentRegister(numIntegerArgs+1), TR_GPR, cg());
                      }
                   else // numIntegerArgs == properties.getNumIntArgRegs()-1
                      {
@@ -1176,7 +1138,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                   dependencies->addPostCondition(resultReg, (r == 0) ? TR::RealRegister::fp1 : TR::RealRegister::fp2);
                   }
                else
-                  addDependency(dependencies, argReg, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
+                  TR::addDependency(dependencies, argReg, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
                }
             else if (!aix_style_linkage)
                // numFloatArgs >= properties.getNumFloatArgRegs()
@@ -1197,7 +1159,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                      dependencies->addPostCondition(bReg, TR::RealRegister::gr3);
                      }
                   else
-                     addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                     TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
                   }
                else // numIntegerArgs >= properties.getNumIntArgRegs()
                   {
@@ -1249,7 +1211,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                   dependencies->addPostCondition(resultReg, (r==0) ? TR::RealRegister::fp1 : TR::RealRegister::fp2);
                   }
                else
-                  addDependency(dependencies, argReg, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
+                  TR::addDependency(dependencies, argReg, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
                }
             else if (!aix_style_linkage)
                // numFloatArgs >= properties.getNumFloatArgRegs()
@@ -1273,12 +1235,12 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                      dependencies->addPostCondition(bReg, TR::RealRegister::gr3);
                      }
                   else
-                     addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                     TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
 
                   if (TR::Compiler->target.is32Bit())
                      {
                      if ((numIntegerArgs+1) < properties.getNumIntArgRegs())
-                        addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs+1), TR_GPR, cg());
+                        TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs+1), TR_GPR, cg());
                      else
                         {
                         mref = getOutgoingArgumentMemRef(argSize, argReg, TR::InstOpCode::stfd, pushToMemory[argIndex++], 8);
@@ -1318,7 +1280,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                   dependencies->addPostCondition(resultReg, TR::RealRegister::vsr34);
                   }
                else
-                  addDependency(dependencies, argReg, properties.getVectorArgumentRegister(numVectorArgs), TR_VRF, cg());
+                  TR::addDependency(dependencies, argReg, properties.getVectorArgumentRegister(numVectorArgs), TR_VRF, cg());
                }
             else
                {
@@ -1341,7 +1303,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
          }
       else
          {
-         addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+         TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
          }
       numIntegerArgs++;
       }
@@ -1356,15 +1318,15 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
    liveRegs = cg()->getLiveRegisters(TR_VRF);
    liveVMX = (!liveRegs || liveRegs->getNumberOfLiveRegisters() > 0);
 
-   addDependency(dependencies, NULL, TR::RealRegister::fp0, TR_FPR, cg());
-   addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg());
-   addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg());
-   addDependency(dependencies, NULL, TR::RealRegister::gr12, TR_GPR, cg());
-   addDependency(dependencies, NULL, TR::RealRegister::cr0, TR_CCR, cg());
-   addDependency(dependencies, NULL, TR::RealRegister::cr1, TR_CCR, cg());
-   addDependency(dependencies, NULL, TR::RealRegister::cr5, TR_CCR, cg());
-   addDependency(dependencies, NULL, TR::RealRegister::cr6, TR_CCR, cg());
-   addDependency(dependencies, NULL, TR::RealRegister::cr7, TR_CCR, cg());
+   TR::addDependency(dependencies, NULL, TR::RealRegister::fp0, TR_FPR, cg());
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg());
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg());
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr12, TR_GPR, cg());
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr0, TR_CCR, cg());
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr1, TR_CCR, cg());
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr5, TR_CCR, cg());
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr6, TR_CCR, cg());
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr7, TR_CCR, cg());
 
 #ifdef J9_PROJECT_SPECIFIC
    TR::TreeEvaluator::buildArgsProcessFEDependencies(callNode, cg(), dependencies);
@@ -1392,7 +1354,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
 
          if (!properties.getPreserved((TR::RealRegister::RegNum)i) || !isHelper)
             {
-            addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_VSX_SCALAR, cg());
+            TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_VSX_SCALAR, cg());
             }
 
          }
@@ -1402,7 +1364,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
       {
       if (!properties.getPreserved((TR::RealRegister::RegNum)i) || liveVSXVector)
          {
-         addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
+         TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
          }
       }
 

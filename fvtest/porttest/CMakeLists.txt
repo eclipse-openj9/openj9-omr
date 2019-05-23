@@ -68,7 +68,6 @@ add_executable(omrporttest
 	si_numcpusTest.cpp
 	testHelpers.cpp
 	testProcessHelpers.cpp
-	vmemTest.cpp
 
 	${cudaSources}
 )

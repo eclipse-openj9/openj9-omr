@@ -69,43 +69,6 @@ OMR::Z::InstOpCode::isAdmin()
            _mnemonic == DCB);
    }
 
-uint32_t
-OMR::Z::InstOpCode::isHighWordInstruction()
-   {
-   return (_mnemonic == AHHHR ||
-           _mnemonic == AHHLR ||
-           _mnemonic == AIH ||
-           _mnemonic == ALHHHR ||
-           _mnemonic == ALHHLR ||
-           _mnemonic == ALSIH ||
-           _mnemonic == ALSIHN ||
-           _mnemonic == BRCTH ||
-           _mnemonic == CHF ||
-           _mnemonic == CHHR ||
-           _mnemonic == CHLR ||
-           _mnemonic == CIH ||
-           _mnemonic == CLHF ||
-           _mnemonic == CLHHR ||
-           _mnemonic == CLHLR ||
-           _mnemonic == CLIH ||
-           _mnemonic == LBH ||
-           _mnemonic == LHH ||
-           _mnemonic == LFH ||
-           _mnemonic == LFHAT ||
-           _mnemonic == LLCH ||
-           _mnemonic == LLHH ||
-           _mnemonic == RISBHG ||
-           _mnemonic == RISBLG ||
-           _mnemonic == STCH ||
-           _mnemonic == STHH ||
-           _mnemonic == STFH ||
-           _mnemonic == SHHHR ||
-           _mnemonic == SHHLR ||
-           _mnemonic == SLHHHR ||
-           _mnemonic == SLHHLR);
-   }
-
-
 uint64_t
 OMR::Z::InstOpCode::setsOperand(uint32_t opNum)
    {

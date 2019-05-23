@@ -258,6 +258,71 @@ bool skipCompare (TR::Node *node)
    return false;
    }
 
+TR::Register *OMR::Power::TreeEvaluator::ifacmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::iflucmpltEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::ifiucmpltEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::ifacmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::iflucmpgeEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::ifiucmpgeEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::ifacmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::iflucmpgtEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::ifiucmpgtEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::ifacmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::iflucmpleEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::ifiucmpleEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::acmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::lucmpltEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::iucmpltEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::acmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::lucmpgeEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::iucmpgeEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::acmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::lucmpgtEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::iucmpgtEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::acmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::lucmpleEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::iucmpleEvaluator(node, cg);
+   }
+
+
 TR::Register *OMR::Power::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::Mnemonic branchOp, TR::LabelSymbol *dstLabel, TR::Node *node, TR::CodeGenerator *cg, bool isSigned, bool isHint, bool likeliness)
    {
    static bool  noli = (feGetEnv("TR_noLoopInversion")!=NULL);

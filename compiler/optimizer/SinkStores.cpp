@@ -277,7 +277,6 @@ TR_MovableStore::TR_MovableStore(TR_SinkStores *s, TR_UseOrKillInfo *useOrKillIn
                    _symIdx(symIdx),
                    _commonedLoadsUnderTree(commonedLoadsUnderTree),
                    _commonedLoadsAfter(commonedLoadsAfter),
-                   _commonedLoadsList(NULL),
                    _commonedLoadsCount(0),
                    _satisfiedCommonedLoadsCount(0),
                    _depth(depth),
@@ -291,42 +290,22 @@ TR_MovableStore::TR_MovableStore(TR_SinkStores *s, TR_UseOrKillInfo *useOrKillIn
 bool
 TR_MovableStore::containsKilledCommonedLoad(TR::Node *node)
    {
-   if (!_commonedLoadsList)
-      return false;
-//   TR_ASSERT(_commonedLoadsList,"_commonedLoadsList is NULL\n");
-   for (ListElement<TR_CommonedLoad> *le = _commonedLoadsList->getListHead(); le; le = le->getNextElement())
-      if (node == le->getData()->getNode() && le->getData()->isKilled())
-         return true;
    return false;
    }
 bool
 TR_MovableStore::containsSatisfiedAndNotKilledCommonedLoad(TR::Node *node)
    {
-   TR_ASSERT(_commonedLoadsList,"_commonedLoadsList is NULL\n");
-   for (ListElement<TR_CommonedLoad> *le = _commonedLoadsList->getListHead(); le; le = le->getNextElement())
-      //if (node == le->getData()->getNode() && le->getData()->isSatisfied())
-      if (node == le->getData()->getNode() && le->getData()->isSatisfied() && !le->getData()->isKilled())
-         return true;
    return false;
    }
 bool
 TR_MovableStore::containsCommonedLoad(TR::Node *node)
    {
-   if (!_commonedLoadsList)
-      return false;
-   for (ListElement<TR_CommonedLoad> *le = _commonedLoadsList->getListHead(); le; le = le->getNextElement())
-      if (node == le->getData()->getNode())
-         return true;
    return false;
    }
 
 TR_CommonedLoad*
 TR_MovableStore::getCommonedLoad(TR::Node *node)
    {
-   TR_ASSERT(_commonedLoadsList,"_commonedLoadsList is NULL\n");
-   for (ListElement<TR_CommonedLoad> *le = _commonedLoadsList->getListHead(); le; le = le->getNextElement())
-      if (node == le->getData()->getNode())
-         return le->getData();
    return NULL;
    }
 
@@ -335,18 +314,7 @@ TR_MovableStore::satisfyCommonedLoad(TR::Node *node)
    {
    if (areAllCommonedLoadsSatisfied())
       return false;
-   for (ListElement<TR_CommonedLoad> *le = _commonedLoadsList->getListHead(); le; le = le->getNextElement())
-      {
-      TR_CommonedLoad *commonedLoad = le->getData();
-      if ((node == commonedLoad->getNode()) && !commonedLoad->isSatisfied())
-         {
-         if (_s->trace())
-            traceMsg(comp(),"      satisfyCommonedLoad (store %p) symIdx %d setting commonedLoad %p with node %p satisfied (isKilled = %d, isSatisfied = %d)\n",this->_useOrKillInfo->_tt->getNode(),commonedLoad->getSymIdx(),commonedLoad,commonedLoad->getNode(),commonedLoad->isKilled(),commonedLoad->isSatisfied());
-         commonedLoad->setIsSatisfied();
-         _satisfiedCommonedLoadsCount++;
-         return true;
-         }
-      }
+
    return false;
    }
 
@@ -364,14 +332,6 @@ TR_MovableStore::containsUnsatisfedLoadFromSymbol(int32_t symIdx)
    if (areAllCommonedLoadsSatisfied())
       return false;
 
-   for (ListElement<TR_CommonedLoad> *le = _commonedLoadsList->getListHead(); le; le = le->getNextElement())
-      {
-      TR_CommonedLoad *commonedLoad = le->getData();
-      if (!commonedLoad->isSatisfied() && (commonedLoad->getSymIdx() == symIdx))
-         {
-         return true;
-         }
-      }
    return false;
    }
 

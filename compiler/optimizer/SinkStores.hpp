@@ -192,7 +192,6 @@ class TR_MovableStore
    bool          _isLoadStatic;             // is this a store of a static load?
 
    // enablePreciseSymbolTracking() uses the data and routines below
-   List<TR_CommonedLoad> *_commonedLoadsList;
    int32_t _commonedLoadsCount;
    int32_t _satisfiedCommonedLoadsCount;
    bool satisfyCommonedLoad(TR::Node *node);

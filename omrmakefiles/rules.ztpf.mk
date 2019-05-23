@@ -108,7 +108,7 @@ ifneq (,$(findstring executable,$(ARTIFACT_TYPE)))
     GLOBAL_LDFLAGS+=$(DEFAULT_LIBS)
 endif
 
-TPF_ROOT ?= /ztpf/java/bld/jvm/userfiles /ztpf/svtcur/gnu/all /ztpf/commit
+TPF_ROOT ?= /ztpf/java/bld/jvm/userfiles /zbld/svtcur/gnu/all /ztpf/commit
 
 ###
 ### Shared Libraries

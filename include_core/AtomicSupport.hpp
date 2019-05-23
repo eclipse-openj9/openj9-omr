@@ -396,7 +396,10 @@ public:
 #if defined(OMRZTPF)
         cs((cs_t *)&oldValue, (cs_t *)address, (cs_t)newValue);
         return oldValue;
-#elif defined(__GNUC__) /* defined(OMRZTPF) */ 
+#elif defined(__xlC__) /* defined(OMRZTPF) */
+		__compare_and_swap((volatile int*)address, (int*)&oldValue, (int)newValue);
+		return oldValue;
+#elif defined(__GNUC__)  /* defined(__xlC__) */
 		/* Assume GCC >= 4.2 */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
@@ -410,7 +413,7 @@ public:
 #elif defined(__xlC__) /* defined(J9ZOS390) */
 		__compare_and_swap((volatile int*)address, (int*)&oldValue, (int)newValue);
 		return oldValue;
-#else /* defined(__xlC__) */
+#else /* defined(J9ZOS390) */
 #error "lockCompareExchangeU32(): unsupported platform!"
 #endif /* defined(__xlC__) */
 #endif /* defined(ATOMIC_SUPPORT_STUB) */
@@ -453,7 +456,10 @@ public:
 #elif defined(OMRZTPF) /* defined(OMR_ARCH_POWER) && !defined(OMR_ENV_DATA64) */
 		csg((csg_t *)&oldValue, (csg_t *)address, (csg_t)newValue);
 		return oldValue;
-#elif defined(__GNUC__) /* defined(OMRZTPF) */
+#elif defined(__xlC__) /* defined(OMRZTPF) */
+		__compare_and_swaplp((volatile long*)address, (long*)&oldValue, (long)newValue);
+		return oldValue;
+#elif defined(__GNUC__) /* defined(__xlC__) */
 		/* Assume GCC >= 4.2 */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
@@ -470,10 +476,7 @@ public:
 		cds((cds_t*)&old, (cds_t*)address, *(cds_t*)&newValue);
 		return old;
 #endif /* defined(OMR_ENV_DATA64) */
-#elif defined(__xlC__) /* defined(J9ZOS390) */
-		__compare_and_swaplp((volatile long*)address, (long*)&oldValue, (long)newValue);
-		return oldValue;
-#else /* defined(__xlC__) */
+#else /* defined(J9ZOS390) */
 #error "lockCompareExchangeU64(): unsupported platform!"
 #endif /* defined(__xlC__) */
 #endif /* defined(ATOMIC_SUPPORT_STUB) */

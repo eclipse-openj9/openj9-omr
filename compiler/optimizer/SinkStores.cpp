@@ -277,8 +277,6 @@ TR_MovableStore::TR_MovableStore(TR_SinkStores *s, TR_UseOrKillInfo *useOrKillIn
                    _symIdx(symIdx),
                    _commonedLoadsUnderTree(commonedLoadsUnderTree),
                    _commonedLoadsAfter(commonedLoadsAfter),
-                   _commonedLoadsCount(0),
-                   _satisfiedCommonedLoadsCount(0),
                    _depth(depth),
                    _needTempForCommonedLoads(needTempForCommonedLoads),
                    _movable(true),
@@ -287,53 +285,6 @@ TR_MovableStore::TR_MovableStore(TR_SinkStores *s, TR_UseOrKillInfo *useOrKillIn
    _useOrKillInfo->_movableStore = this;
    }
 
-bool
-TR_MovableStore::containsKilledCommonedLoad(TR::Node *node)
-   {
-   return false;
-   }
-bool
-TR_MovableStore::containsSatisfiedAndNotKilledCommonedLoad(TR::Node *node)
-   {
-   return false;
-   }
-bool
-TR_MovableStore::containsCommonedLoad(TR::Node *node)
-   {
-   return false;
-   }
-
-TR_CommonedLoad*
-TR_MovableStore::getCommonedLoad(TR::Node *node)
-   {
-   return NULL;
-   }
-
-bool
-TR_MovableStore::satisfyCommonedLoad(TR::Node *node)
-   {
-   if (areAllCommonedLoadsSatisfied())
-      return false;
-
-   return false;
-   }
-
-bool
-TR_MovableStore::areAllCommonedLoadsSatisfied()
-   {
-   // should never have satisfied more commoned loads then exist under the store, must have made too many calls to satisfyCommonedLoad
-   TR_ASSERT(_satisfiedCommonedLoadsCount <= _commonedLoadsCount,"_satisfiedCommonedLoadsCount (%d) > _commonedLoadsCount (%d)\n",_satisfiedCommonedLoadsCount,_commonedLoadsCount);
-   return (_satisfiedCommonedLoadsCount == _commonedLoadsCount);
-   }
-
-bool
-TR_MovableStore::containsUnsatisfedLoadFromSymbol(int32_t symIdx)
-   {
-   if (areAllCommonedLoadsSatisfied())
-      return false;
-
-   return false;
-   }
 
 TR_SinkStores::TR_SinkStores(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
@@ -957,7 +908,7 @@ void TR_SinkStores::lookForSinkableStores()
                             store->_commonedLoadsUnderTree &&
                             store->_commonedLoadsUnderTree->get(killedSymIdx))
                            {
-                           traceMsg(comp(),"            store->containsUnsatisfedLoadFromSymbol(%d) = %d so %s temp\n",killedSymIdx,store->containsUnsatisfedLoadFromSymbol(killedSymIdx),store->containsUnsatisfedLoadFromSymbol(killedSymIdx) ? "needs":"doesn't need");
+                           traceMsg(comp(), "            killedSymIdx = %d and temp is not needed\n", killedSymIdx);
                            }
                         }
                      if (store->_movable &&
@@ -1426,30 +1377,6 @@ void TR_SinkStores::searchAndMarkFirstUses(TR::Node *node,
       TR::RegisterMappedSymbol *local = getSinkableSymbol(node);
       if (!local)
          return;
-      int32_t symIdx = local->getLiveLocalIndex();
-
-      if (symIdx != INVALID_LIVENESS_INDEX && firstRefsOfCommonedSymbolsForThisStore->isSet(symIdx))
-         {
-         TR_CommonedLoad *commonedLoad = movableStore->getCommonedLoad(node);
-         if (trace() && commonedLoad)
-            traceMsg(comp(),"      movableStore %p containsCommonedLoad (node %p, symIdx %d, isSatisfied = %d, isKilled = %d)\n",movableStore->_useOrKillInfo->_tt->getNode(),commonedLoad->getNode(),commonedLoad->getSymIdx(),commonedLoad->isSatisfied(),commonedLoad->isKilled());
-         else if (trace())
-            traceMsg(comp(),"      commonedLoad is NULL for node %p with symIdx %d\n",node, symIdx);
-         if ((node->getFutureUseCount() == 0) &&
-             movableStore->satisfyCommonedLoad(node))
-            {
-            if (0 && trace())
-               traceMsg(comp(),"      node %p, futureUseCount %d, refCount %d\n",node,node->getFutureUseCount(),node->getReferenceCount());
-            if (!findFirstUseOfLoad(node))
-               {
-               TR_FirstUseOfLoad *firstUse = new (trStackMemory()) TR_FirstUseOfLoad(node, tt, currentBlock->getNumber());
-               TR_HashId addID = 0;
-               _firstUseOfLoadMap->add(node, addID, firstUse);
-               if (trace())
-               traceMsg(comp(),"      searchAndMarkFirstUses creating and adding firstUse %p with node %p and anchor treetop %p to hash\n",firstUse,node,tt->getNode());
-               }
-            }
-         }
       }
 
    for (int32_t i = node->getNumChildren()-1; i >= 0; i--)
@@ -2588,24 +2515,8 @@ TR_SinkStores::insertAnchoredNodes(TR_MovableStore *store,
       TR_ASSERT(local,"invalid local symbol\n");
       int32_t symIdx = local->getLiveLocalIndex();
       TR_FirstUseOfLoad *firstUseOfLoad = NULL;
-      // Only need an anchor for killedCommoned loads when calling this function for sideExit store trees (when nodeCopy == NULL)
-      // In the case where the current store is the one being moved to the lowest fall through path we are not duplicating and therefore no uncommoning
-      // takes place and therefore no temp anchor is required as the original, naturally anchored, load will be used.
-      if (nodeCopy && needTempForCommonedLoads && needTempForCommonedLoads->isSet(symIdx) && store->containsKilledCommonedLoad(nodeOrig))
-         {
-         firstUseOfLoad = findFirstUseOfLoad(nodeOrig);
-         TR_ASSERT(firstUseOfLoad,"killedCommoned case: firstUseOfLoad should already exist\n");
-         if (trace())
-            traceMsg(comp(),"      insertAnchoredNodes needTemp for symIdx %d found firstUse %p with node %p and anchor treetop %p\n",symIdx,firstUseOfLoad,nodeOrig,firstUseOfLoad->getAnchorLocation());
-         }
-      else if (blockingCommonedSymbols && blockingCommonedSymbols->isSet(symIdx) && store->containsSatisfiedAndNotKilledCommonedLoad(nodeOrig))
-         {
-         firstUseOfLoad = findFirstUseOfLoad(nodeOrig);
-         TR_ASSERT(firstUseOfLoad,"commonedBlocked case: firstUseOfLoad should already exist\n");
-         if (trace())
-            traceMsg(comp(),"      insertAnchoredNodes commonedBlocked for symIdx %d found firstUse %p with node %p and anchor treetop %p\n",symIdx,firstUseOfLoad,nodeOrig,firstUseOfLoad->getAnchorLocation());
-         }
-      else if (blockingUsedSymbols && blockingUsedSymbols->isSet(symIdx) && !store->containsCommonedLoad(nodeOrig))
+
+      if (blockingUsedSymbols && blockingUsedSymbols->isSet(symIdx))
          {
          firstUseOfLoad = findFirstUseOfLoad(nodeOrig);
          // A first use may already exist for a blocking used symbol load if this node itself is commoned somewhere below

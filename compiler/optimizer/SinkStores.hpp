@@ -191,16 +191,6 @@ class TR_MovableStore
    TR_BitVector *_needTempForCommonedLoads; // move stores with commoned load
    bool          _isLoadStatic;             // is this a store of a static load?
 
-   // enablePreciseSymbolTracking() uses the data and routines below
-   int32_t _commonedLoadsCount;
-   int32_t _satisfiedCommonedLoadsCount;
-   bool satisfyCommonedLoad(TR::Node *node);
-   bool containsCommonedLoad(TR::Node *node);
-   bool containsSatisfiedAndNotKilledCommonedLoad(TR::Node *node);
-   bool containsKilledCommonedLoad(TR::Node *node);
-   TR_CommonedLoad *getCommonedLoad(TR::Node *node);
-   bool areAllCommonedLoadsSatisfied();
-   bool containsUnsatisfedLoadFromSymbol(int32_t symIdx);
    };
 
 class TR_SideExitStorePlacement

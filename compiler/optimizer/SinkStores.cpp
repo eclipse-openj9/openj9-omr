@@ -531,7 +531,6 @@ TR_GeneralSinkStores::TR_GeneralSinkStores(TR::OptimizationManager *manager)
    : TR_SinkStores(manager)
    {
    setUsesDataFlowAnalysis(true);
-   setSinkMethodMetaDataStores(false);
    setSinkStoresWithIndirectLoads(false);
    setExceptionFlagIsSticky(true);
    setSinkStoresWithStaticLoads(true);
@@ -769,25 +768,11 @@ int32_t TR_SinkStores::performStoreSinking()
                                                                    rootStructure,
                                                                    false, /* !splitLongs */
                                                                    true,  /* includeParms */
-                                                                   sinkMethodMetaDataStores());
+                                                                   false);
 
    if (_liveVarInfo->numLocals() == 0)
       {
       return 1;
-      }
-
-   if (trace() && sinkMethodMetaDataStores())
-      {
-      ListIterator<TR::RegisterMappedSymbol> methodMetaDataSymbols(&comp()->getMethodSymbol()->getMethodMetaDataList());
-      int32_t localCount = 0;
-      for (auto *m = methodMetaDataSymbols.getFirst(); m != NULL; m = methodMetaDataSymbols.getNext())
-         {
-         TR_ASSERT(m->isMethodMetaData(), "should be method meta data");
-         // If this assume fires than the order the method meta symbols were added in LiveVariableInformation has changed and
-         // the mapping of live index to symbol name given below is wrong
-         TR_ASSERT(m->getLiveLocalIndex() == localCount,"Index mismatch for MethodMetaDataSymbol therefore this tracing output is wrong\n");
-         traceMsg(comp(), "Local #%2d is MethodMetaData symbol at %p : %s\n",localCount++,m,m->getName());
-         }
       }
 
    _liveVarInfo->createGenAndKillSetCaches();
@@ -1103,61 +1088,6 @@ void TR_SinkStores::lookForSinkableStores()
                   }
                }
 
-            // TR_MethodMetaData symbols are thread local and may be killed/used by any arbitrary symRef
-            else if (sinkMethodMetaDataStores() &&
-                     (node->getOpCode().isCallDirect() || node->getOpCode().isStore()) &&
-                     node->getOpCode().hasSymbolReference())
-               {
-               TR::SymbolReference *symRef = node->getSymbolReference();
-
-               TR::SparseBitVector usedef(comp()->allocator());
-               symRef->getUseDefAliases(node->getOpCode().isCallDirect()).getAliases(usedef);
-
-               if (!usedef.IsZero())
-                  {
-                  if  (trace())
-                     {
-                     traceMsg(comp(),"       usedef:  ");
-                     (*comp()) << usedef << "\n";
-                     }
-                  if (1)
-                     {
-                     TR::SparseBitVector tmp(comp()->allocator());
-                     usedef &= tmp; // TODO: avoid tmp
-                     if (trace())
-                        {
-                        traceMsg(comp(),"       symRef [%d] on node " POINTER_PRINTF_FORMAT " implicitly kills symrefs:  ",symRef->getReferenceNumber(),node);
-                        (*comp()) << usedef << "\n";
-                        }
-                     TR::SparseBitVector::Cursor aliasesCursor(usedef);
-                     for (aliasesCursor.SetToFirstOne(); aliasesCursor.Valid(); aliasesCursor.SetToNextOne())
-                        {
-                        TR::SymbolReference *killedSymRef = comp()->getSymRefTab()->getSymRef(aliasesCursor);
-                        TR::RegisterMappedSymbol *killedSymbol = killedSymRef->getSymbol()->getMethodMetaDataSymbol();
-                        if (killedSymbol->getLiveLocalIndex() < numLocals && killedSymbol->getLiveLocalIndex() != INVALID_LIVENESS_INDEX)
-                           {
-                           if (trace())
-                              traceMsg(comp(),"       setting symIdx %d (from symRef %d) on killedSymbols\n",killedSymbol->getLiveLocalIndex(),killedSymRef->getReferenceNumber());
-                           killedSymbols->set(killedSymbol->getLiveLocalIndex());
-                           if (savedLiveCommonedLoads->get(killedSymbol->getLiveLocalIndex()))
-                           {
-                              if (trace())
-                                 traceMsg(comp(),"      updating killedLiveCommonedLoads with savedLiveCommonedLoads, setting index %d\n",
-                                                       killedSymbol->getLiveLocalIndex());
-                              killedLiveCommonedLoads->set(killedSymbol->getLiveLocalIndex());
-                           }
-                           if (node->getOpCode().isCallDirect())
-                              {
-                              if (trace())
-                                 traceMsg(comp(),"       setting symIdx %d (from symRef %d) on usedSymbols\n",killedSymbol->getLiveLocalIndex(),killedSymRef->getReferenceNumber());
-                              usedSymbols->set(killedSymbol->getLiveLocalIndex());
-                              }
-                           }
-                        }
-                     }
-                  // else if {} add intersections for other TR_MethodMetaData symbols here as needed
-                  }
-               }
             if (local &&
                (savedLiveCommonedLoads->get(symIdx)))
                {
@@ -2311,8 +2241,7 @@ TR::RegisterMappedSymbol *
 TR_SinkStores::getSinkableSymbol(TR::Node *node)
    {
    TR::Symbol *symbol = node->getSymbolReference()->getSymbol();
-   if (symbol->isAutoOrParm() ||
-      (sinkMethodMetaDataStores() && symbol->isMethodMetaData()))
+   if (symbol->isAutoOrParm())
       return symbol->castToRegisterMappedSymbol();
    else
       return NULL;

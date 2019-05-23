@@ -336,9 +336,6 @@ class TR_SinkStores : public TR::Optimization
    bool usesDataFlowAnalysis()          {return _storeSinkingFlags.testAny(UsesDataFlowAnalysis);}
    void setUsesDataFlowAnalysis(bool b) {_storeSinkingFlags.set(UsesDataFlowAnalysis, b);}
 
-   bool sinkMethodMetaDataStores()          {return _storeSinkingFlags.testAny(SinkMethodMetaDataStores);}
-   void setSinkMethodMetaDataStores(bool b) {_storeSinkingFlags.set(SinkMethodMetaDataStores, b);}
-
    bool sinkStoresWithIndirectLoads()          {return _storeSinkingFlags.testAny(SinkStoresWithIndirectLoads);}
    void setSinkStoresWithIndirectLoads(bool b) {_storeSinkingFlags.set(SinkStoresWithIndirectLoads, b);}
 
@@ -474,7 +471,7 @@ class TR_SinkStores : public TR::Optimization
    enum
       {
       UsesDataFlowAnalysis                     = 0x0001,
-      SinkMethodMetaDataStores                 = 0x0002,
+      // AVAILABLE                             = 0x0002,
       SinkStoresWithIndirectLoads              = 0x0004,
       ExceptionFlagIsSticky                    = 0x0008,
       SinkStoresWithStaticLoads                = 0x0010,

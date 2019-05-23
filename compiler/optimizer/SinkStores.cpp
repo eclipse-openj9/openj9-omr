@@ -287,37 +287,6 @@ TR_MovableStore::TR_MovableStore(TR_SinkStores *s, TR_UseOrKillInfo *useOrKillIn
    {
    _useOrKillInfo->_movableStore = this;
    }
-int32_t
-TR_MovableStore::initCommonedLoadsList(TR::Node *node, vcount_t visitCount)
-   {
-   int32_t increment = 0;
-   vcount_t oldVisitCount = node->getVisitCount();
-   if (oldVisitCount == visitCount)
-      return increment;
-   node->setVisitCount(visitCount);
-
-   if (node->getOpCode().isLoadVarDirect() && node->getOpCode().hasSymbolReference())
-      {
-      TR::RegisterMappedSymbol *local = _s->getSinkableSymbol(node);
-      //TR_ASSERT(local,"invalid local symbol\n");
-      if (!local)
-         return increment;
-      int32_t symIdx = local->getLiveLocalIndex();
-
-      if (node->getFutureUseCount() > 0 && symIdx != INVALID_LIVENESS_INDEX)
-         {
-         TR_ASSERT(_commonedLoadsUnderTree->isSet(symIdx),"symIdx %d should be set in _commonedLoadsUnderTree\n",symIdx);
-         _commonedLoadsList->add(new (trStackMemory()) TR_CommonedLoad(node, symIdx));
-         increment++;
-         }
-      }
-
-   for (int32_t i = node->getNumChildren()-1; i >= 0; i--)
-      {
-      increment+=initCommonedLoadsList(node->getChild(i),visitCount);
-      }
-   return increment;
-   }
 
 bool
 TR_MovableStore::containsKilledCommonedLoad(TR::Node *node)
@@ -387,26 +356,6 @@ TR_MovableStore::areAllCommonedLoadsSatisfied()
    // should never have satisfied more commoned loads then exist under the store, must have made too many calls to satisfyCommonedLoad
    TR_ASSERT(_satisfiedCommonedLoadsCount <= _commonedLoadsCount,"_satisfiedCommonedLoadsCount (%d) > _commonedLoadsCount (%d)\n",_satisfiedCommonedLoadsCount,_commonedLoadsCount);
    return (_satisfiedCommonedLoadsCount == _commonedLoadsCount);
-   }
-
-bool
-TR_MovableStore::killCommonedLoadFromSymbol(int32_t symIdx)
-   {
-   if (areAllCommonedLoadsSatisfied())
-      return false;
-   bool foundSymbol = false;
-   for (ListElement<TR_CommonedLoad> *le = _commonedLoadsList->getListHead(); le; le = le->getNextElement())
-      {
-      TR_CommonedLoad *commonedLoad = le->getData();
-      if (!commonedLoad->isSatisfied() && (commonedLoad->getSymIdx() == symIdx))
-         {
-         if (_s->trace())
-            traceMsg(comp(),"      killCommonedLoadFromSymbol (store %p) symIdx %d setting commonedLoad %p with node %p killed\n",this->_useOrKillInfo->_tt->getNode(),symIdx,commonedLoad,commonedLoad->getNode());
-         commonedLoad->setIsKilled();
-         foundSymbol = true;
-         }
-      }
-   return foundSymbol;
    }
 
 bool

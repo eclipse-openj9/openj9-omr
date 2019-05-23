@@ -195,7 +195,6 @@ class TR_MovableStore
    List<TR_CommonedLoad> *_commonedLoadsList;
    int32_t _commonedLoadsCount;
    int32_t _satisfiedCommonedLoadsCount;
-   int32_t initCommonedLoadsList(TR::Node *node, vcount_t visitCount);
    bool satisfyCommonedLoad(TR::Node *node);
    bool containsCommonedLoad(TR::Node *node);
    bool containsSatisfiedAndNotKilledCommonedLoad(TR::Node *node);
@@ -203,7 +202,6 @@ class TR_MovableStore
    TR_CommonedLoad *getCommonedLoad(TR::Node *node);
    bool areAllCommonedLoadsSatisfied();
    bool containsUnsatisfedLoadFromSymbol(int32_t symIdx);
-   bool killCommonedLoadFromSymbol(int32_t symIdx);
    };
 
 class TR_SideExitStorePlacement

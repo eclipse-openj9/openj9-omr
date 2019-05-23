@@ -347,8 +347,6 @@ class TR_SinkStores : public TR::Optimization
 
    TR::RegisterMappedSymbol *getSinkableSymbol(TR::Node *node);
 
-   bool enablePreciseSymbolTracking();
-
    private:
    virtual bool storeIsSinkingCandidate(TR::Block *block,
                                         TR::Node *node,

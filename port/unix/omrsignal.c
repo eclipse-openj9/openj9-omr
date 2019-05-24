@@ -278,10 +278,10 @@ omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 	if (OMR_ARE_ALL_BITS_SET(supportedFlags, flags)) {
 		Trc_PRT_signal_omrsig_can_protect_exiting_is_able_to_protect(supportedFlags);
 		return 1;
-	} else {
-		Trc_PRT_signal_omrsig_can_protect_exiting_is_not_able_to_protect(supportedFlags);
-		return 0;
 	}
+
+	Trc_PRT_signal_omrsig_can_protect_exiting_is_not_able_to_protect(supportedFlags);
+	return 0;
 }
 
 uint32_t

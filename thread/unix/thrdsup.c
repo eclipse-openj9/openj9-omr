@@ -31,7 +31,6 @@
 
 #if defined(LINUX) && !defined(OMRZTPF)
 #include <sys/prctl.h>
-#include <linux/prctl.h>
 #endif /* defined(LINUX) */
 
 #if defined(OMRZTPF)

@@ -1888,8 +1888,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_Array<void *> _monitorMapping;
 
-   TR::list<TR::Node*> _compressedRefs;
-
    uint32_t _largestOutgoingArgSize;
 
    uint32_t _estimatedCodeLength;

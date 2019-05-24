@@ -402,11 +402,6 @@ omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 		supportedFlags |= OMRPORT_SIG_FLAG_SIGALLSYNC;
 	}
 
-	/* split this up into OMRPORT_SIG_FLAG_SIGALLSYNC and OMRPORT_SIG_FLAG_SIGALLASYNC */
-	if (0 == (signalOptions & OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
-		supportedFlags |= OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGTERM;
-	}
-
 	if ((flags & supportedFlags) == flags) {
 		return 1;
 	} else {

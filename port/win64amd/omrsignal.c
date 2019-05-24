@@ -523,10 +523,6 @@ omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 		supportedFlags |= OMRPORT_SIG_FLAG_SIGALLSYNC;
 	}
 
-	if (0 == (signalOptions & OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
-		supportedFlags |= OMRPORT_SIG_FLAG_SIGALLASYNC;
-	}
-
 	if ((flags & supportedFlags) == flags) {
 		return 1;
 	} else {

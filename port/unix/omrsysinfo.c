@@ -68,9 +68,6 @@
 #include <sys/resource.h>
 #include <nl_types.h>
 #include <langinfo.h>
-#if !defined(USER_HZ) && !defined(OMRZTPF)
-#define USER_HZ HZ
-#endif /* !defined(USER_HZ) && !defined(OMRZTPF) */
 
 #if defined(J9ZOS390)
 #include "omrsimap.h"
@@ -2578,7 +2575,8 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 	 * ~70.  Allocate 128 bytes to give lots of margin.
 	 */
 	char buf[128];
-	const uintptr_t NS_PER_HZ = 1000000000 / USER_HZ;
+	const uintptr_t CLK_HZ = sysconf(_SC_CLK_TCK); /* i.e. USER_HZ */
+	const uintptr_t NS_PER_CLK = 1000000000 / CLK_HZ;
 	intptr_t fd = portLibrary->file_open(portLibrary, "/proc/stat", EsOpenRead, 0);
 	if (-1 == fd) {
 		int32_t portableError = portLibrary->error_last_error_number(portLibrary);
@@ -2603,7 +2601,7 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 		if (0 == sscanf(buf, "cpu  %" SCNd64 " %" SCNd64 " %" SCNd64, &userTime, &niceTime, &systemTime)) {
 			return OMRPORT_ERROR_SYSINFO_GET_STATS_FAILED;
 		}
-		cpuTime->cpuTime = (userTime + niceTime + systemTime) * NS_PER_HZ;
+		cpuTime->cpuTime = (userTime + niceTime + systemTime) * NS_PER_CLK;
 		cpuTime->numberOfCpus = portLibrary->sysinfo_get_number_CPUs_by_type(portLibrary, OMRPORT_CPU_ONLINE);
 		status = 0;
 	}

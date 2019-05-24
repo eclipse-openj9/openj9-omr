@@ -342,11 +342,7 @@ int32_t
 omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 {
 	/* in the stub implementation, no signals are supported */
-	if (flags & OMRPORT_SIG_FLAG_SIGALLSYNC) {
-		return 0;
-	} else {
-		return 1;
-	}
+	return 0;
 }
 
 /**

@@ -4486,23 +4486,6 @@ OMR::Z::CodeGenerator::supportsOnDemandLiteralPool()
       }
    }
 
-/**
- * Check if BNDS check should use a CLFI
- */
-bool
-OMR::Z::CodeGenerator::bndsChkNeedsLiteralFromPool(TR::Node *node)
-   {
-   int64_t value=getIntegralValue(node);
-
-   if (value <= GE_MAX_IMMEDIATE_VAL && value >= GE_MIN_IMMEDIATE_VAL)
-      {
-      return false;
-      }
-   else
-      {
-      return true;
-      }
-   }
 TR::Register *
 OMR::Z::CodeGenerator::evaluateLengthMinusOneForMemoryOps(TR::Node *node, bool clobberEvaluate, bool &lenMinusOne)
    {

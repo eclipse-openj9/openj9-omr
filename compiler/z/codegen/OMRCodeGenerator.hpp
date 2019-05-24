@@ -797,8 +797,6 @@ public:
    // LL: move to .cpp
    bool bitwiseOpNeedsLiteralFromPool(TR::Node *parent, TR::Node *child);
 
-   bool bndsChkNeedsLiteralFromPool(TR::Node *child);
-
    virtual bool isDispInRange(int64_t disp);
 
    bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType);

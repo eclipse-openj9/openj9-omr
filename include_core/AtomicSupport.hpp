@@ -394,8 +394,8 @@ public:
 		}
 #endif /* defined(ATOMIC_ALLOW_PRE_READ) */
 #if defined(OMRZTPF)
-        cs((cs_t *)&oldValue, (cs_t *)address, (cs_t)newValue);
-        return oldValue;
+		cs((cs_t *)&oldValue, (cs_t *)address, (cs_t)newValue);
+		return oldValue;
 #elif defined(__xlC__) /* defined(OMRZTPF) */
 		__compare_and_swap((volatile int*)address, (int*)&oldValue, (int)newValue);
 		return oldValue;
@@ -410,9 +410,6 @@ public:
 		/* 390 cs() function defined in <stdlib.h>, doesn't expand properly to __cs1() which correctly deals with aliasing */
 		__cs1((uint32_t *)&old, (uint32_t *)address, (uint32_t *)&newValue);
 		return old;
-#elif defined(__xlC__) /* defined(J9ZOS390) */
-		__compare_and_swap((volatile int*)address, (int*)&oldValue, (int)newValue);
-		return oldValue;
 #else /* defined(J9ZOS390) */
 #error "lockCompareExchangeU32(): unsupported platform!"
 #endif /* defined(__xlC__) */

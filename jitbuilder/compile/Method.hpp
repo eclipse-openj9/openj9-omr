@@ -149,6 +149,8 @@ class ResolvedMethod : public ResolvedMethodBase, public Method
    virtual TR::DataType         parmType(uint32_t slot);
    virtual uint16_t              numberOfTemps()                            { return 0; }
 
+   virtual char                * getParameterTypeSignature(int32_t parmIndex);
+
    virtual void                * startAddressForJittedMethod()              { return (getEntryPoint()); }
    virtual void                * startAddressForInterpreterOfJittedMethod() { return 0; }
 
@@ -167,7 +169,6 @@ class ResolvedMethod : public ResolvedMethodBase, public Method
 
    void                          computeSignatureCharsPrimitive();
    void                          computeSignatureChars();
-   virtual void                  makeParameterList(TR::ResolvedMethodSymbol *);
 
    TR::IlInjector *getInjector(TR::IlGeneratorMethodDetails * details,
                                TR::ResolvedMethodSymbol *methodSymbol,

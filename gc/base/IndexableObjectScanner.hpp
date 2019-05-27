@@ -31,9 +31,10 @@ class GC_IndexableObjectScanner : public GC_ObjectScanner
 private:
 
 protected:
-	fomrobject_t *_endPtr;	/**< pointer to end of last array element in scan segment */
-	fomrobject_t *_basePtr;	/**< pointer to base array element */
-	fomrobject_t *_limitPtr;/**< pointer to end of last array element */
+	fomrobject_t *_endPtr; /**< pointer to end of last array element in scan segment */
+	fomrobject_t *_basePtr; /**< pointer to base array element */
+	fomrobject_t *_limitPtr; /**< pointer to end of last array element */
+	const uintptr_t _elementSize; /**> an array element size in bytes */
 
 public:
 
@@ -41,6 +42,46 @@ public:
 private:
 
 protected:
+	/**
+	 * @param env The scanning thread environment
+	 * @param[in] arrayPtr pointer to the array to be processed
+	 * @param[in] basePtr pointer to the first contiguous array cell
+	 * @param[in] limitPtr pointer to end of last contiguous array cell
+	 * @param[in] scanPtr pointer to the array cell where scanning will start
+	 * @param[in] endPtr pointer to the array cell where scanning will stop
+	 * @param[in] scanMap first portion of bitmap for slots to scan
+	 * @param[in] elementSize array element size must be aligned to sizeof(fomrobject_t)
+	 * @param[in] flags scanning context flags
+	 */
+	GC_IndexableObjectScanner(
+		MM_EnvironmentBase *env
+		, omrobjectptr_t arrayPtr
+		, fomrobject_t *basePtr
+		, fomrobject_t *limitPtr
+		, fomrobject_t *scanPtr
+		, fomrobject_t *endPtr
+		, uintptr_t scanMap
+		, uintptr_t elementSize
+		, uintptr_t flags
+	)
+		: GC_ObjectScanner(
+			env
+			, arrayPtr
+			, scanPtr
+			, scanMap
+			, flags | GC_ObjectScanner::indexableObject
+		)
+		, _endPtr(endPtr)
+		, _basePtr(basePtr)
+		, _limitPtr(limitPtr)
+		, _elementSize(elementSize)
+	{
+		_typeId = __FUNCTION__;
+		if ((endPtr - scanPtr) <= _bitsPerScanMap) {
+			setNoMoreSlots();
+		}
+	}
+
 	/**
 	 * @param env The scanning thread environment
 	 * @param[in] arrayPtr pointer to the array to be processed
@@ -69,6 +110,7 @@ protected:
 		, _endPtr(endPtr)
 		, _basePtr(basePtr)
 		, _limitPtr(limitPtr)
+		, _elementSize(sizeof(fomrobject_t))
 	{
 		_typeId = __FUNCTION__;
 		if ((endPtr - scanPtr) <= _bitsPerScanMap) {
@@ -93,7 +135,7 @@ public:
 	/**
 	 * Get the maximal index for the array. Array indices are assumed to be zero-based.
 	 */
-	MMINLINE uintptr_t getIndexableRange() { return _limitPtr - _basePtr; }
+	MMINLINE uintptr_t getIndexableRange() { return ((uintptr_t)_limitPtr - (uintptr_t)_basePtr) / _elementSize; }
 
 	/**
 	 * Reset truncated end pointer to force scanning to limit pointer (scan to end of indexable object). This

@@ -468,7 +468,10 @@ class OMR_EXTENSIBLE CodeGenerator
    rcount_t recursivelyDecReferenceCount(TR::Node*node);
    void evaluateChildrenWithMultipleRefCount(TR::Node*node);
 
+   
    void incRefCountForOpaquePseudoRegister(TR::Node * node, TR::CodeGenerator * cg, TR::Compilation * comp) {}
+   //OVERLOAD THE ABOVE FUNCTION:
+   void incRefCountForOpaquePseudoRegister(TR::Node * node) {}
 
    void startUsingRegister(TR::Register *reg);
    void stopUsingRegister(TR::Register *reg);

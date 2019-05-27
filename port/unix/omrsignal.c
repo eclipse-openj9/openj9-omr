@@ -1323,18 +1323,12 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 
 	issueWriteBarrier();
 
-	/* Set the portLibrarySignalNo bit in signalsWithHandlers to record successful registration
-	 * of the handler. */
-	signalsWithHandlers |= portLibrarySignalNo;
+	setBitMaskSignalsWithHandlers(portLibrarySignalNo);
 
 	if ((handler == masterSynchSignalHandler) || (handler == masterASynchSignalHandler)) {
-		/* Signal handler is a master handler. So, set the portlibSignalFlag bit in signalsWithMasterHandlers. */
-		signalsWithMasterHandlers |= portLibrarySignalNo;
+		setBitMaskSignalsWithMasterHandlers(portLibrarySignalNo);
 	} else {
-		/* Handler is not a master handler. So, unset the portlibSignalFlag bit in signalsWithMasterHandlers.
-		 * This suggests that a master handler is no longer registered with the portlibSignalFlag's signal.
-		 */
-		signalsWithMasterHandlers &= ~portLibrarySignalNo;
+		unsetBitMaskSignalsWithMasterHandlers(portLibrarySignalNo);
 	}
 
 	return 0;
@@ -1730,12 +1724,12 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 		/* register the old actions we overwrote with our own */
 		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			if (oldActions[index].restore) {
-				uint32_t portlibSignalFlag = mapOSSignalToPortLib(index, 0);
+				uint32_t portlibSignalFlag = mapOSSignalToPortLib(index, NULL);
 				OMRSIG_SIGACTION(index, &oldActions[index].action, NULL);
 				/* record that we no longer have a handler installed with the OS for this signal */
 				Trc_PRT_signal_sig_full_shutdown_deregistered_handler_with_OS(portLibrary, index);
-				signalsWithHandlers &= ~portlibSignalFlag;
-				signalsWithMasterHandlers &= ~portlibSignalFlag;
+				unsetBitMaskSignalsWithHandlers(portlibSignalFlag);
+				unsetBitMaskSignalsWithMasterHandlers(portlibSignalFlag);
 				oldActions[index].restore = 0;
 			}
 		}

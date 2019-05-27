@@ -42,9 +42,9 @@
 #if !defined(J9ZOS390)
 #if defined(J9OS_I5) && defined(J9OS_I5_V5R4)
 #include "semaphore_i5.h"
-#else
+#else /* defined(J9OS_I5) && defined(J9OS_I5_V5R4) */
 #include <semaphore.h>
-#endif
+#endif /* defined(J9OS_I5) && defined(J9OS_I5_V5R4) */
 #endif /* !defined(J9ZOS390) */
 
 #if defined(J9ZOS390)
@@ -54,14 +54,14 @@
 #if defined(J9ZOS390)
 #if defined(OMR_ENV_DATA64)
 #include <__le_api.h>
-#else
+#else /* defined(OMR_ENV_DATA64) */
 #include <leawi.h>
 #include <ceeedcct.h>
-#endif
+#endif /* defined(OMR_ENV_DATA64) */
 
 #if defined(OMR_PORT_ZOS_CEEHDLRSUPPORT)
 #include "omrsignal_ceehdlr.h"
-#endif
+#endif /* defined(OMR_PORT_ZOS_CEEHDLRSUPPORT) */
 #endif /* defined(J9ZOS390) */
 
 #if defined(OMRPORT_OMRSIG_SUPPORT)
@@ -70,9 +70,9 @@
 
 #if defined(S390) && defined(LINUX)
 typedef void (*unix_sigaction)(int, siginfo_t *, void *, uintptr_t);
-#else
+#else /* defined(S390) && defined(LINUX) */
 typedef void (*unix_sigaction)(int, siginfo_t *, void *);
-#endif
+#endif /* defined(S390) && defined(LINUX) */
 
 #define ARRAY_SIZE_SIGNALS  (MAX_UNIX_SIGNAL_TYPES + 1)
 
@@ -175,7 +175,7 @@ typedef struct OMRCurrentSignal {
 	void *contextInfo;
 #if defined(S390) && defined(LINUX)
 	uintptr_t breakingEventAddr;
-#endif
+#endif /* defined(S390) && defined(LINUX) */
 	uint32_t portLibSignalType;
 } OMRCurrentSignal;
 
@@ -216,10 +216,10 @@ static struct {
 	{OMRPORT_SIG_FLAG_SIGSYS, SIGSYS}
 #if defined(AIXPPC)
 	, {OMRPORT_SIG_FLAG_SIGRECONFIG, SIGRECONFIG}
-#endif
+#endif /* defined(AIXPPC) */
 #if defined(J9ZOS390)
 	, {OMRPORT_SIG_FLAG_SIGABEND, SIGABND}
-#endif
+#endif /* defined(J9ZOS390) */
 };
 
 static omrthread_t asynchSignalReporterThread = NULL;
@@ -245,10 +245,10 @@ static int32_t initializeSignalTools(OMRPortLibrary *portLibrary);
 #if defined(S390) && defined(LINUX)
 static void masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo, uintptr_t breakingEventAddr);
 static void masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo, uintptr_t nullArg);
-#else
+#else /* defined(S390) && defined(LINUX) */
 static void masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo);
 static void masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo);
-#endif
+#endif /* defined(S390) && defined(LINUX) */
 
 static int32_t unblockSignals(void);
 
@@ -269,7 +269,6 @@ omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 		Trc_PRT_sig_can_protect_OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION_NOT_supported();
 	}
 #endif /* !defined(J9ZOS390) */
-
 
 	if (OMR_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS)) {
 		supportedFlags |= OMRPORT_SIG_FLAG_SIGALLSYNC;
@@ -900,10 +899,10 @@ asynchSignalReporter(void *userData)
 #if defined(S390) && defined(LINUX)
 static void
 masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo, uintptr_t breakingEventAddr)
-#else
+#else /* defined(S390) && defined(LINUX) */
 static void
 masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
-#endif
+#endif /* defined(S390) && defined(LINUX) */
 {
 #if defined(LINUXPPC)
 	/*
@@ -936,21 +935,21 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 #define MSR_TS_MASK 0x600000000ULL
 	if (OMR_ARE_ANY_BITS_SET(platformContext->uc_mcontext.regs->msr, MSR_TS_MASK))
 		/* the transactional context is in the high order bits */
-#else
+#else /* defined(LINUXPPC64) */
 #define MSR_TS_MASK 0x6U
 	/*
 	 * in 32-bit CPUs, the second context containing the transactional
 	 * state is in a separate ucontext datastructure pointed to by uc_link.
 	 */
 	if ((NULL != platformContext->uc_link) && OMR_ARE_ANY_BITS_SET(platformContext->uc_link->uc_mcontext.regs->msr, MSR_TS_MASK))
-#endif
+#endif /* defined(LINUXPPC64) */
 	{
 		/*
 		 * resume the transaction in the failed state, so it executes the failure path.
 		 */
 		return;
 	}
-#endif
+#endif /* defined(LINUXPPC) */
 
 	omrthread_t thisThread = omrthread_self();
 	uint32_t result = U_32_MAX;
@@ -968,7 +967,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		currentSignal.portLibSignalType = portLibType;
 #if defined(S390) && defined(LINUX)
 		currentSignal.breakingEventAddr = breakingEventAddr;
-#endif
+#endif /* defined(S390) && defined(LINUX) */
 
 		previousSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
 
@@ -997,7 +996,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 				fillInUnixSignalInfo(thisRecord->portLibrary, contextInfo, &signalInfo);
 #if defined(S390) && defined(LINUX)
 				signalInfo.platformSignalInfo.breakingEventAddr = breakingEventAddr;
-#endif
+#endif /* defined(S390) && defined(LINUX) */
 
 				/* remove the handler we are about to invoke, now, in case the handler crashes */
 				omrthread_tls_set(thisThread, tlsKey, thisRecord->previous);
@@ -1068,7 +1067,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		struct __cib *conditionInfoBlock = __le_cib_get();
 
 		if (NULL != conditionInfoBlock)
-#else
+#else /* defined(OMR_ENV_DATA64) */
 		/* 31-bit: request the condition information block and verify that we got it */
 		_CEECIB *conditionInfoBlock = NULL;
 		_FEEDBACK cibfc;
@@ -1076,7 +1075,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		CEE3CIB(NULL, &conditionInfoBlock, &cibfc);
 
 		if (0 ==  _FBCHECK(cibfc, CEE000))
-#endif
+#endif /* defined(OMR_ENV_DATA64) */
 		{
 			/* we successfully acquired the condition information block */
 
@@ -1104,7 +1103,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 			sigrelse(SIGABND); /* CMVC 191934: need to unblock sigabnd before issuing the abend call */
 #if defined(OMR_ENV_DATA64)
 			__cabend(PORT_ABEND_CODE, PORT_ABEND_REASON_CODE, PORT_ABEND_CLEANUP_CODE /* normal termination processing */);
-#else
+#else /* defined(OMR_ENV_DATA64) */
 			{
 				_INT4 code = PORT_ABEND_CODE;
 				_INT4 reason = PORT_ABEND_REASON_CODE;
@@ -1112,7 +1111,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 
 				CEE3AB2(&code, &reason, &cleanup);
 			}
-#endif
+#endif /* defined(OMR_ENV_DATA64) */
 		}
 
 		/* we now know that returning from the signal handler will result in LE initiating RRS and terminate the enclave */
@@ -1161,10 +1160,10 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 #if defined(S390) && defined(LINUX)
 static void
 masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo, uintptr_t nullArg)
-#else
+#else /* defined(S390) && defined(LINUX) */
 static void
 masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
-#endif
+#endif /* defined(S390) && defined(LINUX) */
 {
 	addAtomic(&signalCounts[signal], 1);
 #if !defined(J9ZOS390)
@@ -1250,7 +1249,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 			return OMRPORT_SIG_ERROR;
 		}
 	}
-#endif
+#endif /* defined(AIXPPC) */
 
 	/* The master exception handler:
 	 * The (void *) casting only applies to zLinux because a new parameter "uintptr_t breakingEventAddr"
@@ -1262,9 +1261,9 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	 */
 #if defined(S390) && defined(LINUX)
 	newAction.sa_sigaction = (void *)handler;
-#else
+#else /* defined(S390) && defined(LINUX) */
 	newAction.sa_sigaction = handler;
-#endif
+#endif /* defined(S390) && defined(LINUX) */
 
 	/* Now that we've set up the sigaction struct the way we want it, register the handler with the OS.
 	 * When registering the handler for the first time, we store the old OS handler in
@@ -1500,7 +1499,7 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 	if (0 != ceehdlr_startup(portLibrary)) {
 		return -1;
 	}
-#endif
+#endif /* defined(OMR_PORT_ZOS_CEEHDLRSUPPORT) */
 
 	if (omrthread_monitor_init_with_name(&registerHandlerMonitor, 0, "portLibrary_omrsig_registerHandler_monitor")) {
 		return -1;
@@ -1538,14 +1537,13 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 	if (pthread_cond_init(&wakeUpASyncReporterCond, NULL)) {
 		return -1;
 	}
-#if defined(J9ZOS390)
+
 	if (TRUE == checkIfResumableTrapsSupported(portLibrary)) {
 		PPG_resumableTrapsSupported = TRUE;
 	} else {
 		PPG_resumableTrapsSupported = FALSE;
 	}
-#endif /* defined(J9ZOS390) */
-#endif /* defined(OSX) */
+#endif /* !defined(J9ZOS390) */
 
 	/* If a process has blocked signals, then the signals stay blocked in the
 	 * sub-processes across fork(s) and exec(s). Blocked signals prevent signal
@@ -1569,7 +1567,7 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 	) {
 		return -1;
 	}
-#endif
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 	return 0;
 }
@@ -1672,7 +1670,7 @@ omrsig_set_options(struct OMRPortLibrary *portLibrary, uint32_t options)
 			return -1;
 		}
 	}
-#endif
+#endif /* defined(OMR_PORT_ZOS_CEEHDLRSUPPORT) */
 
 	signalOptionsGlobal |= options;
 
@@ -1748,7 +1746,7 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 
 #if defined(OMR_PORT_ZOS_CEEHDLRSUPPORT)
 		ceehdlr_shutdown(portLibrary);
-#endif
+#endif /* defined(OMR_PORT_ZOS_CEEHDLRSUPPORT) */
 
 	}
 	omrthread_monitor_exit(globalMonitor);

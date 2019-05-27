@@ -1643,40 +1643,38 @@ omrsig_set_options(struct OMRPortLibrary *portLibrary, uint32_t options)
 {
 	Trc_PRT_signal_omrsig_set_options(options);
 
-	if ((OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS | OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)  & options)  {
-		/* check that we haven't already set any master handlers */
-
+	if (OMR_ARE_ANY_BITS_SET(options, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS | OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS))  {
+		/* Check that no handlers are installed. */
 		uint32_t anyHandlersInstalled = 0;
 
 		omrthread_monitor_enter(registerHandlerMonitor);
-		if (0 != signalsWithHandlers) {
+		if ((0 != syncSignalsWithHandlers) || (0 != asyncSignalsWithHandlers)) {
 			anyHandlersInstalled = 1;
 		}
 		omrthread_monitor_exit(registerHandlerMonitor);
 
-		if (anyHandlersInstalled) {
+		if (0 != anyHandlersInstalled) {
 			Trc_PRT_signal_omrsig_set_options_too_late_handlers_installed(options);
 			return -1;
 		}
 	}
 
 #if defined(OMR_PORT_ZOS_CEEHDLRSUPPORT)
-	if (0 != (options & OMRPORT_SIG_OPTIONS_ZOS_USE_CEEHDLR)) {
-		/* We are being told to use LE condition handling.
-		 * Switch over to LE condition handling, unless we have already installed POSIX handlers for any sync signals
-		 **/
-
+	if (OMR_ARE_ANY_BITS_SET(options, OMRPORT_SIG_OPTIONS_ZOS_USE_CEEHDLR)) {
+		/* Received notification to use LE condition handling. Switch over to LE condition handling,
+		 * unless POSIX handlers are installed for any synchronous signals.
+		 */
 		int32_t syncHandlersInstalled = 0;
 
 		omrthread_monitor_enter(registerHandlerMonitor);
 
-		if (OMR_ARE_NO_BITS_SET(signalsWithHandlers, OMRPORT_SIG_FLAG_SIGALLSYNC)) {
-			/* we haven't installed any synchronous handlers, so it's OK to switch to LE condition handling */
+		if (OMR_ARE_NO_BITS_SET(syncSignalsWithHandlers, OMRPORT_SIG_FLAG_SIGALLSYNC & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK)) {
+			/* No synchronous handlers are installed; so, it is fine to switch to LE condition handling. */
 			portLibrary->sig_protect = omrsig_protect_ceehdlr;
 			portLibrary->sig_info = omrsig_info_ceehdlr;
 			portLibrary->sig_get_current_signal = omrsig_get_current_signal_ceehdlr;
 		} else {
-			/* set syncHandlersInstalled so that we return failure */
+			/* Set syncHandlersInstalled to report failure. */
 			syncHandlersInstalled = 1;
 		}
 

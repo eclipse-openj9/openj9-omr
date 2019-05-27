@@ -756,6 +756,7 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_SIG_FLAG_IS_SYNC                ((uint32_t)0x02)
 #define OMRPORT_SIG_FLAG_MAY_RETURN             ((uint32_t)0x04)
 #define OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION ((uint32_t)0x08)
+#define OMRPORT_SIG_FLAG_CONTROL_BITS_MASK      ((uint32_t)0x0F)
 
 /* All signal codes include exactly one of OMRPORT_SIG_FLAG_IS_SYNC or OMRPORT_SIG_FLAG_IS_ASYNC
  * plus a multiple of this.

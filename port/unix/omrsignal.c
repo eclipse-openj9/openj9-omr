@@ -269,6 +269,12 @@ static void masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *cont
 
 static int32_t unblockSignals(void);
 
+static void setBitMaskSignalsWithHandlers(uint32_t flags);
+static void unsetBitMaskSignalsWithHandlers(uint32_t flags);
+
+static void setBitMaskSignalsWithMasterHandlers(uint32_t flags);
+static void unsetBitMaskSignalsWithMasterHandlers(uint32_t flags);
+
 int32_t
 omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 {
@@ -1868,4 +1874,88 @@ unblockSignals(void) {
 
 exit:
 	return rc;
+}
+
+/**
+ * Set the port library signal flags in either syncSignalsWithHandlers or
+ * asyncSignalsWithHandlers depending on whether the input is a set of
+ * synchronous or asynchronous signals.
+ *
+ * @param[in] flags the port library signal flags
+ *
+ * @return void
+ */
+static void
+setBitMaskSignalsWithHandlers(uint32_t flags)
+{
+	if (OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_IS_SYNC)) {
+		syncSignalsWithHandlers |= flags;
+	} else {
+		asyncSignalsWithHandlers |= flags;
+	}
+}
+
+/**
+ * Unset the port library signal flags in either syncSignalsWithHandlers or
+ * asyncSignalsWithHandlers depending on whether the input is a set of
+ * synchronous or asynchronous signals.
+ *
+ * @param[in] flags the port library signal flags
+ *
+ * @return void
+ */
+static void
+unsetBitMaskSignalsWithHandlers(uint32_t flags)
+{
+	/* When unsetting the signal flags from the bit-mask, the control bits are not unset
+	 * because the control bits are shared between all the port library signal flags. Also,
+	 * this simplifies the checks to see if a signal flag is set in the bit-mask.
+	 */
+	if (OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_IS_SYNC)) {
+		syncSignalsWithHandlers &= ~(flags & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK);
+	} else {
+		asyncSignalsWithHandlers &= ~(flags & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK);
+	}
+}
+
+/**
+ * Set the port library signal flags in either syncSignalsWithMasterHandlers or
+ * asyncSignalsWithMasterHandlers depending on whether the input is a set of
+ * synchronous or asynchronous signals.
+ *
+ * @param[in] flags the port library signal flags
+ *
+ * @return void
+ */
+static void
+setBitMaskSignalsWithMasterHandlers(uint32_t flags)
+{
+	if (OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_IS_SYNC)) {
+		syncSignalsWithMasterHandlers |= flags;
+	} else {
+		asyncSignalsWithMasterHandlers |= flags;
+	}
+}
+
+/**
+ * Unset the port library signal flags in either syncSignalsWithMasterHandlers or
+ * asyncSignalsWithMasterHandlers depending on whether the input is a set of
+ * synchronous or asynchronous signals.
+ *
+ * @param[in] flags the port library signal flags
+ *
+ * @return void
+ */
+static void
+unsetBitMaskSignalsWithMasterHandlers(uint32_t flags)
+{
+	/* When unsetting the signal flags from the bit-mask, the control bits are not unset
+	 * because the control bits are shared between all the port library signal flags. Also,
+	 * this simplifies the checks to see if a signal flag is set in the bit-mask.
+	 */
+	if (OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_IS_SYNC)) {
+		syncSignalsWithMasterHandlers &= ~(flags & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK);
+	} else {
+		asyncSignalsWithMasterHandlers &= ~(flags & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK);
+	}
 }

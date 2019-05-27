@@ -1223,7 +1223,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	int unixSignalNo = mapPortLibSignalToOSSignal(portLibrarySignalNo);
 	struct sigaction newAction;
 
-	/* Don't register a handler for unrecognized OS signals.
+	/* Don't register a handler for the unrecognized OS signals.
 	 * Unrecognized OS signals are the ones which aren't included in signalMap.
 	 */
 	if (OMRPORT_SIG_ERROR == unixSignalNo) {
@@ -1232,33 +1232,33 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 
 	memset(&newAction, 0, sizeof(struct sigaction));
 
-	/* do not block any signals */
+	/* Do not block any signals. */
 	if (0 != sigemptyset(&newAction.sa_mask)) {
 		return OMRPORT_SIG_ERROR;
 	}
 
-	/* Automatically restart system calls that get interrupted by any signal
-	 * Neutrino V6.3 does not support this
+	/* Automatically restart system calls that get interrupted by any signal.
+	 * Neutrino V6.3 does not support this feature.
 	 */
 	newAction.sa_flags = SA_RESTART;
 
-	/* Setting to SA_SIGINFO will result in "void (*sa_sigaction) (int, siginfo_t *, void *)" to be used, and not "__sighandler_t sa_handler". Both are members of struct sigaction.
-	 * Using the former allows us to access more than just the signal number
+	/* Setting to SA_SIGINFO will result in "void (*sa_sigaction) (int, siginfo_t *, void *)" to be used, and
+	 * not "__sighandler_t sa_handler". Both are members of struct sigaction. Using the former allows us to
+	 * access more than just the signal number.
 	 */
 	newAction.sa_flags |= SA_SIGINFO;
 
-	/* SA_NODEFER prevents the current signal from being masked by default in the handler.
-	 * However, it can still be masked if one explicitly requests so in sa_mask field, as we do on z/OS
+	/* SA_NODEFER prevents the current signal from being masked by default in the handler. However, it can still
+	 * be masked if one explicitly requests so in the sa_mask field, as done on z/OS.
 	 */
 	newAction.sa_flags |= SA_NODEFER;
 
 #if defined(J9ZOS390)
-	/* z/OS doesn't have Posix semaphores.
-	 * A side effect of that is that we don't want to re-enter the masterASyncHandler
-	 * Therefore, mask all async signals for the masterASyncHandler. The signal(s) will be queued and delivered
-	 * to the masterASyncHandler once the handler returns. No signals will be lost.
+	/* z/OS doesn't have POSIX semaphores. As a precaution, re-entering the masterASyncHandler must be avoided.
+	 * Therefore, all the asynchronous signals are masked for the masterASyncHandler. The signal(s) are queued
+	 * and delivered to the masterASyncHandler once the handler returns. No signals are lost.
 	 */
-	if (OMR_ARE_ANY_BITS_SET(portLibrarySignalNo, OMRPORT_SIG_FLAG_SIGALLASYNC)) {
+	if (OMR_ARE_ALL_BITS_SET(OMRPORT_SIG_FLAG_SIGALLASYNC, portLibrarySignalNo)) {
 		if (0 != addAsyncSignalsToSet(&newAction.sa_mask)) {
 			return OMRPORT_SIG_ERROR;
 		}
@@ -1266,8 +1266,8 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 #endif /* defined(J9ZOS390) */
 
 #if defined(AIXPPC)
-	/* if we are installing a handler for an asynchronous signal block SIGTRAP */
-	if (OMR_ARE_ANY_BITS_SET(portLibrarySignalNo, OMRPORT_SIG_FLAG_SIGALLASYNC)) {
+	/* Do the following while installing a handler for an asynchronous signal block SIGTRAP. */
+	if (OMR_ARE_ALL_BITS_SET(OMRPORT_SIG_FLAG_SIGALLASYNC, portLibrarySignalNo)) {
 		if (sigaddset(&newAction.sa_mask, SIGTRAP)) {
 			return OMRPORT_SIG_ERROR;
 		}
@@ -1277,10 +1277,10 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	/* The master exception handler:
 	 * The (void *) casting only applies to zLinux because a new parameter "uintptr_t breakingEventAddr"
 	 * has been introduced in masterSynchSignalHandler() to obtain BEA on zLinux but not for other platforms.
-	 * As a result, the total number of parameters in masterSynchSignalHandler() on zLinux
-	 * is 4 while the number is 3 on other platforms, coz there is no need to change the signature of
-	 * masterSynchSignalHandler in there. Since the code is shared on all platforms,
-	 * the change here is used to split them up to avoid any compiling error.
+	 * As a result, the total number of parameters in masterSynchSignalHandler() on zLinux is 4 while the
+	 * number is 3 on other platforms, because there is no need to change the signature of masterSynchSignalHandler
+	 * in there. Since the code is shared on all platforms, the change here is used to split them up to avoid any
+	 * compiling error.
 	 */
 #if defined(S390) && defined(LINUX)
 	newAction.sa_sigaction = (void *)handler;
@@ -1288,11 +1288,11 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	newAction.sa_sigaction = handler;
 #endif /* defined(S390) && defined(LINUX) */
 
-	/* Now that we've set up the sigaction struct the way we want it, register the handler with the OS.
-	 * When registering the handler for the first time, we store the old OS handler in
-	 * oldActions[unixSignalNo].action. This allows us to restore to the original OS handler during shutdown.
-	 * For subsequent registrations, we don't update oldActions[unixSignalNo].action since this would overwrite
-	 * the original OS handler. Instead, we use a local sigaction variable to store the old OS handler.
+	/* After setting up the sigaction struct, register the handler with the OS. When registering the handler for
+	 * the first time, the old OS handler is stored in the oldActions[unixSignalNo].action. This way the original
+	 * OS handler can be restored during shutdown. For subsequent registrations, the oldActions[unixSignalNo].action
+	 * is not updated since the original OS handler would be overwritten. Instead, a local sigaction variable is used
+	 * to store the old OS handler.
 	 */
 	if (0 == oldActions[unixSignalNo].restore) {
 		/* Initialize oldAction. */
@@ -1390,7 +1390,6 @@ mapPortLibSignalToOSSignal(uint32_t portLibSignal)
 	uint32_t index = 0;
 
 	for (index = 0; index < sizeof(signalMap) / sizeof(signalMap[0]); index++) {
-
 		if (signalMap[index].portLibSignalNo == portLibSignal) {
 			return signalMap[index].unixSignalNo;
 		}
@@ -1414,11 +1413,10 @@ addAsyncSignalsToSet(sigset_t *ss)
 
 	Assert_PRT_true(NULL != ss);
 
-	/* iterate through all the known signals */
+	/* Iterate through all the known signals. */
 	for (i = 0; i < sizeof(signalMap) / sizeof(signalMap[0]); i++) {
-
-		if (OMR_ARE_ANY_BITS_SET(signalMap[i].portLibSignalNo, OMRPORT_SIG_FLAG_SIGALLASYNC)) {
-			/* add the current signal to the signal set */
+		if (OMR_ARE_ALL_BITS_SET(OMRPORT_SIG_FLAG_SIGALLASYNC, signalMap[i].portLibSignalNo)) {
+			/* Add the current signal to the signal set. */
 			if (sigaddset(ss, signalMap[i].unixSignalNo)) {
 				return -1;
 			}

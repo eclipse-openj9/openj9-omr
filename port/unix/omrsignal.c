@@ -86,17 +86,34 @@ static struct {
 }	oldActions[ARRAY_SIZE_SIGNALS];
 
 /* Records the (port library defined) signals for which a handler is registered.
- * Access to this variable must be protected by the registerHandlerMonitor.
+ * Access to these variables must be protected by the registerHandlerMonitor.
+ *
+ * syncSignalsWithHandlers represents if handlers are registered with synchronous
+ * signals, and asyncSignalsWithHandlers represents if handlers are registered with
+ * asynchronous signals.
  */
+static uint32_t syncSignalsWithHandlers;
+static uint32_t asyncSignalsWithHandlers;
+
+/* [OLD] Remove once its usage is removed from the existing functions. */
 static uint32_t signalsWithHandlers;
 
 /* Records the (port library defined) signals for which a master handler is
  * registered. A master handler can be either masterSynchSignalHandler or
  * masterASynchSignalHandler. A signal can only be associated to one master
  * handler. If a master handler is already registered for a signal, then avoid
- * re-registering a master handler for that signal. Access to this variable
+ * re-registering a master handler for that signal. Access to these variables
  * must be protected by the registerHandlerMonitor.
+ *
+ * syncSignalsWithMasterHandlers represents if the synchronous master handler is
+ * registered with synchronous signals, and asyncSignalsWithMasterHandlers
+ * represents if the asynchronous master handler is registered with asynchronous
+ * signals.
  */
+static uint32_t syncSignalsWithMasterHandlers;
+static uint32_t asyncSignalsWithMasterHandlers;
+
+/* [OLD] Remove once its usage is removed from the existing functions. */
 static uint32_t signalsWithMasterHandlers;
 
 #if defined(OMR_PORT_ASYNC_HANDLER)

@@ -1430,8 +1430,9 @@ addAsyncSignalsToSet(sigset_t *ss)
 
 /**
  * Registers the master handler for the signals in flags that don't have one.
- * If signalsWithMasterHandlers suggests a master handler is already registered
- * with a signal, then a master handler isn't registered again for that signal.
+ * If [sync|async]SignalsWithMasterHandlers suggests a master handler is already
+ * registered with a signal, then a master handler isn't registered again for that
+ * signal.
  *
  * Calls to this function must be synchronized using registerHandlerMonitor.
  *
@@ -1447,47 +1448,53 @@ addAsyncSignalsToSet(sigset_t *ss)
 static int32_t
 registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
 {
-	uint32_t flagsSignalsOnly = flags & allowedSubsetOfFlags;
+	/* Bitwise-OR with OMRPORT_SIG_FLAG_CONTROL_BITS_MASK is performed in order to
+	 * preserve the control bits when storing flags in flagsSignalsOnly.
+	 */
+	uint32_t signalFlags = (flags & allowedSubsetOfFlags) & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK;
 	unix_sigaction handler = NULL;
+	uint32_t signalType = OMRPORT_SIG_FLAG_IS_SYNC;
+	uint32_t signalsWithMasterHandlersLocal = syncSignalsWithMasterHandlers;
+	uint32_t allowedSignalType = 0;
+
+	if (OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_IS_ASYNC)) {
+		signalType = OMRPORT_SIG_FLAG_IS_ASYNC;
+		signalsWithMasterHandlersLocal = asyncSignalsWithMasterHandlers;
+	}
 
 	if (OMRPORT_SIG_FLAG_SIGALLSYNC == allowedSubsetOfFlags) {
 		handler = masterSynchSignalHandler;
+		allowedSignalType = OMRPORT_SIG_FLAG_IS_SYNC;
 	} else if (OMRPORT_SIG_FLAG_SIGALLASYNC == allowedSubsetOfFlags) {
 		handler = masterASynchSignalHandler;
+		allowedSignalType = OMRPORT_SIG_FLAG_IS_ASYNC;
 	} else {
 		return OMRPORT_SIG_ERROR;
 	}
 
-	if (0 != flagsSignalsOnly) {
-		/* registering some handlers */
-		uint32_t portSignalType = 0;
-
-		/* OMRPORT_SIG_SMALLEST_SIGNAL_FLAG represents the smallest signal
-		 * flag. portSignalType is initialized to the smallest signal flag
-		 * in order to avoid non-signal flags. Any non-signal flags greater
-		 * than the smallest signal flag are ignored via a bitwise-and
-		 * operation with allowedSubsetOfFlags. allowedSubsetOfFlags either
-		 * represents all synchronous signal flags (OMRPORT_SIG_FLAG_SIGALLSYNC)
-		 * or all asynchronous signal flags (OMRPORT_SIG_FLAG_SIGALLASYNC).
-		 */
-		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; ((portSignalType < allowedSubsetOfFlags) && (portSignalType != 0)); portSignalType = portSignalType << 1) {
-			/* iterate through all the  signals and register the master handler for those that don't have one yet */
-
-			if (OMR_ARE_ALL_BITS_SET(flagsSignalsOnly, portSignalType)) {
-				if (OMR_ARE_NO_BITS_SET(signalsWithMasterHandlers, portSignalType)) {
-					/* Register a master handler for this (portSignalType's) signal. */
-					if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler, oldOSHandler)) {
-						return OMRPORT_SIG_ERROR;
-					}
-				} else {
-					/* If the master handler is already registered, then the oldOSHandler must represent the
-					 * master handler.
-					 */
-					if (NULL != oldOSHandler) {
-						*oldOSHandler = (void *)handler;
-					}
+	/* Only register handlers if signal bits are set in signalFlags, and flags
+	 * and allowedSubsetOfFlags have the same signal type.
+	 */
+	if (signalType == allowedSignalType) {
+		while (0 != signalFlags) {
+			/* Get the rightmost 1 bit in signalFlags. */
+			uint32_t portSignalFlag = signalFlags & -signalFlags;
+			uint32_t portSignalFlagWithType = portSignalFlag | signalType;
+			if (!OMR_ARE_ALL_BITS_SET(signalsWithMasterHandlersLocal, portSignalFlagWithType)) {
+				/* Register a master handler for this (portSignalFlagWithType's) signal. */
+				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalFlagWithType, handler, oldOSHandler)) {
+					return OMRPORT_SIG_ERROR;
+				}
+			} else {
+				/* If the master handler is already registered, then the oldOSHandler must
+				 * represent the master handler.
+				 */
+				if (NULL != oldOSHandler) {
+					*oldOSHandler = (void *)handler;
 				}
 			}
+			/* Unset the rightmost 1 bit in signalFlags. */
+			signalFlags ^= portSignalFlag;
 		}
 	}
 

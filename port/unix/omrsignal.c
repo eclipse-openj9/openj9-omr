@@ -516,7 +516,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 
 	if (0 != portlibSignalFlag) {
 		/* For non-zero portlibSignalFlag, check if only one signal bit is set. Otherwise, fail. */
-		if (!OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag)) {
+		if (!OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK)) {
 			Trc_PRT_signal_omrsig_set_single_async_signal_handler_error_multiple_signal_flags_found(portlibSignalFlag);
 			return OMRPORT_SIG_ERROR;
 		}
@@ -627,7 +627,7 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 
 	Trc_PRT_signal_omrsig_register_os_handler_entered(portlibSignalFlag, newOSHandler);
 
-	if ((0 == portlibSignalFlag) || !OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag)) {
+	if ((0 == portlibSignalFlag) || !OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK)) {
 		/* If portlibSignalFlag is 0 or if portlibSignalFlag has multiple signal bits set, then fail. */
 		Trc_PRT_signal_omrsig_register_os_handler_invalid_portlibSignalFlag(portlibSignalFlag);
 		rc = OMRPORT_SIG_ERROR;
@@ -676,7 +676,7 @@ omrsig_is_signal_ignored(struct OMRPortLibrary *portLibrary, uint32_t portlibSig
 
 	if (0 != portlibSignalFlag) {
 		/* For non-zero portlibSignalFlag, check if only one signal bit is set. Otherwise, fail. */
-		if (!OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag)) {
+		if (!OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK)) {
 			rc = OMRPORT_SIG_ERROR;
 			goto exit;
 		}

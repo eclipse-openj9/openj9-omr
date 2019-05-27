@@ -275,12 +275,18 @@ static void unsetBitMaskSignalsWithHandlers(uint32_t flags);
 static void setBitMaskSignalsWithMasterHandlers(uint32_t flags);
 static void unsetBitMaskSignalsWithMasterHandlers(uint32_t flags);
 
+static BOOLEAN checkForAmbiguousSignalFlags(uint32_t flags, const char *functionName);
+
 int32_t
 omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 {
 	uint32_t supportedFlags = OMRPORT_SIG_FLAG_MAY_RETURN;
 
 	Trc_PRT_signal_omrsig_can_protect_entered(flags);
+
+	if (checkForAmbiguousSignalFlags(flags, "omrsig_can_protect")) {
+		return OMRPORT_SIG_ERROR;
+	}
 
 #if !defined(J9ZOS390)
 	supportedFlags |= OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION;
@@ -352,6 +358,10 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 	uint32_t flagsWithoutMasterHandlers = flagsSignalsOnly & ~signalsWithMasterHandlers;
 
 	Trc_PRT_signal_omrsig_protect_entered(fn, fn_arg, handler, handler_arg, flags);
+
+	if (checkForAmbiguousSignalFlags(flags, "omrsig_protect")) {
+		return OMRPORT_SIG_ERROR;
+	}
 
 	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS)) {
 		/* -Xrs was set, we can't protect against any signals, do not install the master handler */
@@ -425,8 +435,11 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 	Trc_PRT_signal_omrsig_set_async_signal_handler_entered(handler, handler_arg, flags);
 
-	omrthread_monitor_enter(registerHandlerMonitor);
+	if (checkForAmbiguousSignalFlags(flags, "omrsig_set_async_signal_handler")) {
+		return OMRPORT_SIG_ERROR;
+	}
 
+	omrthread_monitor_enter(registerHandlerMonitor);
 	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
 		/* -Xrs was set, we can't protect against any signals, do not install any handlers except SIGXFSZ */
 		if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_SIGXFSZ) && OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
@@ -507,7 +520,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 int32_t
 omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag, void **oldOSHandler)
 {
-	uint32_t rc = 0;
+	int32_t rc = 0;
 	OMRUnixAsyncHandlerRecord *cursor = NULL;
 	OMRUnixAsyncHandlerRecord **previousLink = NULL;
 	BOOLEAN foundHandler = FALSE;
@@ -518,6 +531,10 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 		/* For non-zero portlibSignalFlag, check if only one signal bit is set. Otherwise, fail. */
 		if (!OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK)) {
 			Trc_PRT_signal_omrsig_set_single_async_signal_handler_error_multiple_signal_flags_found(portlibSignalFlag);
+			return OMRPORT_SIG_ERROR;
+		}
+
+		if (checkForAmbiguousSignalFlags(portlibSignalFlag, "omrsig_set_single_async_signal_handler")) {
 			return OMRPORT_SIG_ERROR;
 		}
 	}
@@ -631,6 +648,8 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 		/* If portlibSignalFlag is 0 or if portlibSignalFlag has multiple signal bits set, then fail. */
 		Trc_PRT_signal_omrsig_register_os_handler_invalid_portlibSignalFlag(portlibSignalFlag);
 		rc = OMRPORT_SIG_ERROR;
+	} else if (checkForAmbiguousSignalFlags(portlibSignalFlag, "omrsig_register_os_handler")) {
+		return OMRPORT_SIG_ERROR;
 	} else {
 		omrthread_monitor_enter(registerHandlerMonitor);
 		rc = registerSignalHandlerWithOS(portLibrary, portlibSignalFlag, (unix_sigaction)newOSHandler, oldOSHandler);
@@ -679,6 +698,10 @@ omrsig_is_signal_ignored(struct OMRPortLibrary *portLibrary, uint32_t portlibSig
 		if (!OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK)) {
 			rc = OMRPORT_SIG_ERROR;
 			goto exit;
+		}
+
+		if (checkForAmbiguousSignalFlags(portlibSignalFlag, "omrsig_is_signal_ignored")) {
+			return OMRPORT_SIG_ERROR;
 		}
 	}
 
@@ -1955,4 +1978,37 @@ unsetBitMaskSignalsWithMasterHandlers(uint32_t flags)
 	} else {
 		asyncSignalsWithMasterHandlers &= ~(flags & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK);
 	}
+}
+
+/**
+ * Check if a set of port library flags is ambiguous. It can either have synchronous or
+ * asynchronous signals. It cannot have both types of signals. If both
+ * OMRPORT_SIG_FLAG_IS_ASYNC and OMRPORT_SIG_FLAG_IS_SYNC are set, then the set of signal
+ * flags is considered ambiguous. If none of the two signal identifier flags are set, then
+ * the set of signal flags is also considered ambiguous. flags=0 is valid in some cases,
+ * and it indicates cleanup/removal of a handler.
+ *
+ * @param[in] flags the set of port library signal flags
+ * @param[in] functionName the name of the function invoking checkForAmbiguousSignalFlags
+ *
+ * @return TRUE if the set of signal flags is ambiguous; otherwise, FALSE.
+ */
+static BOOLEAN
+checkForAmbiguousSignalFlags(uint32_t flags, const char *functionName)
+{
+	BOOLEAN rc = FALSE;
+
+	if ((0 != flags)
+		&& ((OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_IS_SYNC) && OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_IS_ASYNC))
+			|| (OMR_ARE_NO_BITS_SET(flags, OMRPORT_SIG_FLAG_IS_SYNC) && OMR_ARE_NO_BITS_SET(flags, OMRPORT_SIG_FLAG_IS_ASYNC)))
+	) {
+		rc = TRUE;
+		/* The tracepoint below is an exit and exception tracepoint. The calling function
+		 * should exit with an error code if an ambiguous signal is found, instead of
+		 * flowing through and executing another exit tracepoint.
+		 */
+		Trc_PRT_omrsig_ambiguous_signal_flag_failed_exiting(functionName, flags);
+	}
+
+	return rc;
 }

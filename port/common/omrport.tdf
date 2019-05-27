@@ -1091,3 +1091,5 @@ TraceException=Trc_PRT_signal_unblockSignals_pthread_sigmask_failed Group=signal
 TraceException=Trc_PRT_sysinfo_get_open_file_count_memAllocFailed Group=sysinfo Overhead=1 Level=1 NoEnv Template="omrsysinfo_get_open_file_count: Error: memory allocation for proc_fdinfo failed."
 
 TraceException=Trc_PRT_sysinfo_gethostname_error Group=sysinfo Overhead=1 Level=1 NoEnv Template="gethostname failed: errno=%d"
+
+TraceExit-Exception=Trc_PRT_omrsig_ambiguous_signal_flag_failed_exiting Group=signal Overhead=1 Level=1 NoEnv Template="%s failed: Ambiguous port library signal flag(s) received, flags=0x%X."

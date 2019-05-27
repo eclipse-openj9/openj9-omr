@@ -1044,7 +1044,7 @@ suspend_all_preemptive(struct PlatformWalkData *data)
 	 */
 	do {
 		int i = 0;
-		sigval_t val;
+		union sigval val;
 		val.sival_ptr = data;
 
 		/* fire off enough signals to pause all threads in the process barring us */
@@ -1742,7 +1742,7 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 			} else if (timedOut(data->state->deadline1) || data->error) {
 				break;
 			} else {
-				sigval_t val;
+				union sigval val;
 				val.sival_ptr = data;
 
 				/*

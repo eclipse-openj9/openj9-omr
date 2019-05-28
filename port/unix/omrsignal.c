@@ -355,7 +355,7 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 	struct OMRSignalHandlerRecord thisRecord = {0};
 	omrthread_t thisThread = NULL;
 	uint32_t flagsSignalsOnly = flags & OMRPORT_SIG_FLAG_SIGALLSYNC;
-	uint32_t flagsWithoutMasterHandlers = flagsSignalsOnly & ~signalsWithMasterHandlers;
+	uint32_t flagsWithoutMasterHandlers = (flagsSignalsOnly & ~syncSignalsWithMasterHandlers) & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK;
 
 	Trc_PRT_signal_omrsig_protect_entered(fn, fn_arg, handler, handler_arg, flags);
 

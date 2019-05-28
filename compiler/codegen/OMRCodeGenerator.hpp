@@ -681,9 +681,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsTenuredObjectAlignment() { return false; }
    bool isObjectOfSizeWorthAligning(uint32_t size) { return false; }
 
-   // J9
-   int32_t getInternalPtrMapBit() { return 31;}
-
    uint32_t getMaxObjectSizeGuaranteedNotToOverflow() { return _maxObjectSizeGuaranteedNotToOverflow; }
 
    // --------------------------------------------------------------------------

@@ -95,9 +95,6 @@ static struct {
 static uint32_t syncSignalsWithHandlers;
 static uint32_t asyncSignalsWithHandlers;
 
-/* [OLD] Remove once its usage is removed from the existing functions. */
-static uint32_t signalsWithHandlers;
-
 /* Records the (port library defined) signals for which a master handler is
  * registered. A master handler can be either masterSynchSignalHandler or
  * masterASynchSignalHandler. A signal can only be associated to one master
@@ -112,9 +109,6 @@ static uint32_t signalsWithHandlers;
  */
 static uint32_t syncSignalsWithMasterHandlers;
 static uint32_t asyncSignalsWithMasterHandlers;
-
-/* [OLD] Remove once its usage is removed from the existing functions. */
-static uint32_t signalsWithMasterHandlers;
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
 static uint32_t shutDownASynchReporter;

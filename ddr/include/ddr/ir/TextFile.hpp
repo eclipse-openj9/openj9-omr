@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,42 +19,29 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef SCANNER_HPP
-#define SCANNER_HPP
+#ifndef TEXTFILE_HPP
+#define TEXTFILE_HPP
 
-#include "ddr/error.hpp"
 #include "ddr/std/string.hpp"
 
-#include "omrport.h"
+struct OMRPortLibrary;
 
-#include <set>
-#include <vector>
-
-class ClassUDT;
-class EnumUDT;
-class NamespaceUDT;
-class Symbol_IR;
-class Type;
-class TypedefUDT;
-class UnionUDT;
-
-using std::set;
-using std::string;
-using std::vector;
-
-class Scanner
+class TextFile
 {
+private:
+	OMRPortLibrary * const _portLibrary;
+	intptr_t _file;
+
 public:
-	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir,
-			vector<string> *debugFiles, const char *blacklistPath) = 0;
+	explicit TextFile(OMRPortLibrary *portLibrary)
+		: _portLibrary(portLibrary)
+		, _file(-1)
+	{
+	}
 
-protected:
-	set<string> _blacklistedFiles;
-	set<string> _blacklistedTypes;
-
-	bool checkBlacklistedType(const string &name) const;
-	bool checkBlacklistedFile(const string &name) const;
-	DDR_RC loadBlacklist(OMRPortLibrary *portLibrary, const char *file);
+	bool openRead(const char *filename);
+	bool readLine(std::string &line);
+	void close();
 };
 
-#endif /* SCANNER_HPP */
+#endif /* TEXTFILE_HPP */

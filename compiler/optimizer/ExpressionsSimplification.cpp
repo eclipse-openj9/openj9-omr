@@ -182,23 +182,33 @@ void TR_ExpressionsSimplification::simplifyInvariantLoopExpressions(ListIterator
    //
    LoopInfo *loopInfo = findLoopInfo(_currentRegion);
 
-   if (trace())
+   bool canReduceSummations = false;
+   if (!loopInfo)
       {
-      if (!loopInfo)
-         {
+      if (trace())
          traceMsg(comp(), "Accurate loop info is not found, cannot carry out summation reduction\n");
+      }
+   else
+      {
+      if (trace())
+         traceMsg(comp(), "Accurate loop info has been found, will try to carry out summation reduction\n");
+
+      int32_t iters = loopInfo->getNumIterations();
+      if (loopInfo->getBoundaryNode())
+         {
+         if (trace())
+            traceMsg(comp(), "Variable iterations from node %p has not been handled\n",loopInfo->getBoundaryNode());
+         }
+      else if (iters <= 0)
+         {
+         if (trace())
+            traceMsg(comp(), "Failed to determine iteration count\n");
          }
       else
          {
-         traceMsg(comp(), "Accurate loop info has been found, will try to carry out summation reduction\n");
-         if (loopInfo->getBoundaryNode())
-            {
-            traceMsg(comp(), "Variable iterations from node %p has not been handled\n",loopInfo->getBoundaryNode());
-            }
-         else
-            {
-            traceMsg(comp(), "Natural Loop %p will run %d times\n", _currentRegion, loopInfo->getNumIterations());
-            }
+         canReduceSummations = true;
+         if (trace())
+            traceMsg(comp(), "Natural Loop %p will run %d times\n", _currentRegion, iters);
          }
       }
 
@@ -222,7 +232,7 @@ void TR_ExpressionsSimplification::simplifyInvariantLoopExpressions(ListIterator
          if (trace())
             traceMsg(comp(), "Analyzing tree top node %p\n", currentNode);
 
-         if (loopInfo)
+         if (canReduceSummations)
             {
             // requires loop info for the number of iterations
             setSummationReductionCandidates(currentNode, tt);
@@ -253,7 +263,7 @@ void TR_ExpressionsSimplification::simplifyInvariantLoopExpressions(ListIterator
       bool usedCandidate = false;
       bool isPreheaderBlockInvalid = false;
 
-      if (loopInfo)
+      if (canReduceSummations)
          {
          usedCandidate = tranformSummationReductionCandidate(treeTop, loopInfo, &isPreheaderBlockInvalid);
          }
@@ -871,22 +881,24 @@ TR_ExpressionsSimplification::checkForLoad(TR::Node *node, TR::Node *load)
 TR::Node *
 TR_ExpressionsSimplification::iaddisubSimplifier(TR::Node *invariantNode, LoopInfo* loopInfo)
    {
-   TR::Node *newNode = 0;
+   TR_ASSERT_FATAL(
+      loopInfo->getBoundaryNode() == NULL,
+      "iteration count must be constant for loop %d",
+      _currentRegion->getNumber());
 
-   if (loopInfo->getBoundaryNode())
-      {
-      return newNode;
-      }
-   else
-      {
-      if (loopInfo->getNumIterations() > 0)
-         {
-         newNode = TR::Node::create(TR::imul, 2,
-                                   invariantNode->duplicateTree(),
-                                   TR::Node::create(invariantNode, TR::iconst, 0, loopInfo->getNumIterations()));
-         }
-      return newNode;
-      }
+   int32_t iters = loopInfo->getNumIterations();
+   TR_ASSERT_FATAL(
+     iters > 0,
+     "iteration count (%d) must be known and positive for loop %d",
+     iters,
+     _currentRegion->getNumber());
+
+   return TR::Node::create(
+      invariantNode,
+      TR::imul,
+      2,
+      invariantNode->duplicateTree(),
+      TR::Node::create(invariantNode, TR::iconst, 0, iters));
    }
 
 

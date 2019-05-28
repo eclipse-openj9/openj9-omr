@@ -4420,19 +4420,6 @@ OMR::Z::CodeGenerator::dumpPostGPRegisterAssignment(TR::Instruction * instructio
    }
 #endif
 
-bool
-OMR::Z::CodeGenerator::constLoadNeedsLiteralFromPool(TR::Node *node)
-   {
-   if (node->isClassUnloadingConst() || node->getType().isIntegral() || node->getType().isAddress())
-      {
-      return false;
-      }
-   else
-      {
-      return true;  // Floats/Doubles require literal pool
-      }
-   }
-
 void
 OMR::Z::CodeGenerator::setGlobalStaticBaseRegisterOnFlag()
    {

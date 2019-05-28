@@ -799,7 +799,6 @@ public:
 
    bool bndsChkNeedsLiteralFromPool(TR::Node *child);
 
-   bool constLoadNeedsLiteralFromPool(TR::Node *node);
    virtual bool isDispInRange(int64_t disp);
 
    bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType);

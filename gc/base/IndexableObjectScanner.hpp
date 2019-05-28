@@ -83,42 +83,6 @@ protected:
 	}
 
 	/**
-	 * @param env The scanning thread environment
-	 * @param[in] arrayPtr pointer to the array to be processed
-	 * @param[in] basePtr pointer to the first contiguous array cell
-	 * @param[in] limitPtr pointer to end of last contiguous array cell
-	 * @param[in] scanPtr pointer to the array cell where scanning will start
-	 * @param[in] endPtr pointer to the array cell where scanning will stop
-	 * @param[in] flags scanning context flags
-	 */
-	GC_IndexableObjectScanner(
-		MM_EnvironmentBase *env
-		, omrobjectptr_t arrayPtr
-		, fomrobject_t *basePtr
-		, fomrobject_t *limitPtr
-		, fomrobject_t *scanPtr
-		, fomrobject_t *endPtr
-		, uintptr_t flags
-	)
-		: GC_ObjectScanner(
-			env
-			, arrayPtr
-			, scanPtr
-			, ((endPtr - scanPtr) < _bitsPerScanMap) ? (((uintptr_t)1 << (endPtr - scanPtr)) - 1) : UDATA_MAX
-			, flags | GC_ObjectScanner::indexableObject
-		)
-		, _endPtr(endPtr)
-		, _basePtr(basePtr)
-		, _limitPtr(limitPtr)
-		, _elementSize(sizeof(fomrobject_t))
-	{
-		_typeId = __FUNCTION__;
-		if ((endPtr - scanPtr) <= _bitsPerScanMap) {
-			setNoMoreSlots();
-		}
-	}
-
-	/**
 	 * Set up the scanner.
 	 * @param[in] env current environment (per thread)
 	 */

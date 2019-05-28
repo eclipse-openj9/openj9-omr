@@ -42,7 +42,11 @@ OBJECTS = \
 
 MODULE_STATIC_LIBS += omrstatic
 
-ifeq (win,$(OMR_HOST_OS))
+ifeq (aix,$(OMR_HOST_OS))
+  MODULE_SHARED_LIBS += iconv perfstat
+else ifeq (osx,$(OMR_HOST_OS))
+  MODULE_SHARED_LIBS += iconv
+else ifeq (win,$(OMR_HOST_OS))
   MODULE_SHARED_LIBS += ws2_32 shell32 Iphlpapi psapi pdh
 endif
 

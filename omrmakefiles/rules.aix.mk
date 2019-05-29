@@ -104,7 +104,7 @@ ifeq (ld,$(LINKTOOL))
   else
     GLOBAL_LDFLAGS+=-b32
   endif
-  GLOBAL_LDFLAGS+=-G -bnoentry -bernotok
+  GLOBAL_LDFLAGS+=-G -bnoentry -bernotok -bnolibpath
   GLOBAL_LDFLAGS+=-bmap:$(MODULE_NAME).map
   GLOBAL_LDFLAGS+=-bE:$($(MODULE_NAME)_LINKER_EXPORT_SCRIPT)
   GLOBAL_SHARED_LIBS+=c_r C_r m pthread 
@@ -115,7 +115,7 @@ else
     GLOBAL_LDFLAGS+=-X32
   endif
   GLOBAL_LDFLAGS+=-E $($(MODULE_NAME)_LINKER_EXPORT_SCRIPT)
-  GLOBAL_LDFLAGS+=-p 0 -brtl -G -bernotok -bnoentry
+  GLOBAL_LDFLAGS+=-p 0 -brtl -G -bernotok -bnoentry -Wl,-bnolibpath
   GLOBAL_SHARED_LIBS+=m
 endif
 

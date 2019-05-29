@@ -1594,6 +1594,72 @@ TR::Register *OMR::Power::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
+TR::Register *OMR::Power::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   // The wrtbar IL op represents a store with side effects.
+   // Currently we don't use the side effect node. So just evaluate it and decrement the reference count.
+   TR::Node *sideEffectNode = node->getSecondChild();
+   cg->evaluate(sideEffectNode);
+   cg->decReferenceCount(sideEffectNode);
+   // Delegate the evaluation of the remaining children and the store operation to the storeEvaluator.
+   return TR::TreeEvaluator::astoreEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::awrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   // The wrtbar IL op represents a store with side effects.
+   // Currently we don't use the side effect node. So just evaluate it and decrement the reference count.
+   TR::Node *sideEffectNode = node->getThirdChild();
+   cg->evaluate(sideEffectNode);
+   cg->decReferenceCount(sideEffectNode);
+   // Delegate the evaluation of the remaining children and the store operation to the storeEvaluator.
+   return TR::TreeEvaluator::astoreEvaluator(node, cg);  
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::dwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   // The wrtbar IL op represents a store with side effects.
+   // Currently we don't use the side effect node. So just evaluate it and decrement the reference count.
+   TR::Node *sideEffectNode = node->getSecondChild();
+   cg->evaluate(sideEffectNode);
+   cg->decReferenceCount(sideEffectNode);
+   // Delegate the evaluation of the remaining children and the store operation to the storeEvaluator.
+   return TR::TreeEvaluator::dstoreEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::dwrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   // The wrtbar IL op represents a store with side effects.
+   // Currently we don't use the side effect node. So just evaluate it and decrement the reference count.
+   TR::Node *sideEffectNode = node->getThirdChild();
+   cg->evaluate(sideEffectNode);
+   cg->decReferenceCount(sideEffectNode);
+   // Delegate the evaluation of the remaining children and the store operation to the storeEvaluator.
+   return TR::TreeEvaluator::dstoreEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::fwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   // The wrtbar IL op represents a store with side effects.
+   // Currently we don't use the side effect node. So just evaluate it and decrement the reference count.
+   TR::Node *sideEffectNode = node->getSecondChild();
+   cg->evaluate(sideEffectNode);
+   cg->decReferenceCount(sideEffectNode);
+   // Delegate the evaluation of the remaining children and the store operation to the storeEvaluator.
+   return TR::TreeEvaluator::fstoreEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::fwrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   // The wrtbar IL op represents a store with side effects.
+   // Currently we don't use the side effect node. So just evaluate it and decrement the reference count.
+   TR::Node *sideEffectNode = node->getThirdChild();
+   cg->evaluate(sideEffectNode);
+   cg->decReferenceCount(sideEffectNode);
+   // Delegate the evaluation of the remaining children and the store operation to the storeEvaluator.
+   return TR::TreeEvaluator::fstoreEvaluator(node, cg);
+   }
+
 TR::Register *OMR::Power::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op) {
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *srcReg = NULL;

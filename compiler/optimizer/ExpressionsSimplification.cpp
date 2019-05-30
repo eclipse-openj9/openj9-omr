@@ -710,7 +710,9 @@ TR_ExpressionsSimplification::findLoopInfo(TR_RegionStructure* region)
       return 0;
       }
 
-   TR_StructureSubGraphNode* exitNode = toStructureSubGraphNode(exitEdges.getFirst()->getFrom());
+   TR::CFGEdge *exitEdge = exitEdges.getFirst();
+   TR_StructureSubGraphNode* exitNode = toStructureSubGraphNode(exitEdge->getFrom());
+   int32_t exitTarget = exitEdge->getTo()->getNumber();
 
    if (!exitNode->getStructure()->asBlock())
       {
@@ -822,6 +824,12 @@ TR_ExpressionsSimplification::findLoopInfo(TR_RegionStructure* region)
          equals = true;
       case TR::ificmple:
       case TR::ificmpge:
+         {
+         TR::TreeTop *branchDestTT = lastTreeInExitBlock->getBranchDestination();
+         TR::Block *branchDest = branchDestTT->getNode()->getBlock();
+         if (branchDest->getNumber() != exitTarget)
+            equals = !equals;
+
          if (!(indVar->getEntry() && indVar->getEntry()->asIntConst()))
             {
             if (trace())
@@ -845,7 +853,7 @@ TR_ExpressionsSimplification::findLoopInfo(TR_RegionStructure* region)
             return 0;
             }
          return new (trStackMemory()) LoopInfo(bound, lowerBound, upperBound, increment, equals);
-
+         }
 
       default:
          if (trace())

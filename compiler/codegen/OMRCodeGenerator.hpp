@@ -1328,7 +1328,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // symbol reference requires entry in the literal pool
    bool arithmeticNeedsLiteralFromPool(TR::Node *node) { return false; }
    bool bitwiseOpNeedsLiteralFromPool(TR::Node *parent, TR::Node *child) { return false; }
-   bool bndsChkNeedsLiteralFromPool(TR::Node *node) { return false; }
    void setOnDemandLiteralPoolRun(bool answer) {}
    bool isLiteralPoolOnDemandOn () { return false; }
    bool supportsOnDemandLiteralPool() { return false; }

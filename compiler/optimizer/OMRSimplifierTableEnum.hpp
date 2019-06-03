@@ -617,6 +617,7 @@
    checkcastSimplifier,     // TR::checkcast
    checkcastAndNULLCHKSimplifier,     // TR::checkcastAndNULLCHK
    NewSimplifier,           // TR::New
+   dftSimplifier,           // TR::newvalue
    dftSimplifier,           // TR::newarray
    dftSimplifier,           // TR::anewarray
    variableNewSimplifier,   // TR::variableNew

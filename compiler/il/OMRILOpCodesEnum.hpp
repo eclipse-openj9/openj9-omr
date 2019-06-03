@@ -656,6 +656,7 @@
    checkcast,// checkcast
    checkcastAndNULLCHK,// checkcast and NULL check the underlying object reference
    New,      // new - child is class
+   newvalue, //allocate and initialize - children provide field values
    newarray, // new array of primitives
    anewarray,// new array of objects
    variableNew,// new - child is class, type not known at compile time

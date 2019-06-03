@@ -761,6 +761,7 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainCheckcast,       // TR::checkcast
    constrainCheckcastNullChk,// TR::checkcastAndNULLCHK
    constrainNew,             // TR::New
+   constrainChildren,        // TR::newvalue
    constrainNewArray,        // TR::newarray
    constrainANewArray,       // TR::anewarray
    constrainVariableNew,     // TR::variableNew

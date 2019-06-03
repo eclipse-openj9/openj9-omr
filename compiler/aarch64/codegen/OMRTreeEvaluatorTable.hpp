@@ -593,6 +593,7 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::checkcastEvaluator ,	// TR::checkcast		// checkcast
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::checkcastAndNULLCHKEvaluator ,	// TR::checkcastAndNULLCHK	// checkcast and NULL check the underlying object reference
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::NewEvaluator ,	// TR::New		// new - child is class
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TR::newvalue		(should be lowered before evaluation)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::newarrayEvaluator ,	// TR::newarray		// new array of primitives
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::anewarrayEvaluator ,	// TR::anewarray		// new array of objects
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::variableNewEvaluator ,	// TR::variableNew	// new - child is class; type not known at compile time

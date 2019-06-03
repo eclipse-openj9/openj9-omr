@@ -9177,6 +9177,22 @@
    /* .ifCompareOpCode      = */ TR::BadILOp,
    },
 
+  {
+   /* .opcode               = */ TR::newvalue,
+   /* .name                 = */ "newvalue",
+   /* .properties1          = */ ILProp1::HasSymbolRef,
+   /* .properties2          = */ ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New,
+   /* .properties3          = */ ILProp3::LikeDef,
+   /* .properties4          = */ 0,
+   /* .dataType             = */ TR::Address,
+   /* .typeProperties       = */ ILTypeProp::Reference,
+   /* .childProperties      = */ ILChildProp::Unspecified,
+   /* .swapChildrenOpCode   = */ TR::BadILOp,
+   /* .reverseBranchOpCode  = */ TR::BadILOp,
+   /* .booleanCompareOpCode = */ TR::BadILOp,
+   /* .ifCompareOpCode      = */ TR::BadILOp,
+   },
+
    {
    /* .opcode               = */ TR::newarray,
    /* .name                 = */ "newarray",

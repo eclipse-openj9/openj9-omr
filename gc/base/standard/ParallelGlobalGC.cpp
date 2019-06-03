@@ -478,6 +478,9 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 
 		masterThreadCompact(env, allocDescription, rebuildMarkBits);
 		_collectionStatistics._tenureFragmentation = NO_FRAGMENTATION;
+		if (_extensions->processLargeAllocateStats) {
+			processLargeAllocateStatsAfterCompact(env);
+		}
 	} else {
 		/* If a compaction was prevented, report the reason */
 		CompactPreventedReason compactPreventedReason = (CompactPreventedReason)(_extensions->globalGCStats.compactStats._compactPreventedReason);
@@ -1114,6 +1117,13 @@ MM_ParallelGlobalGC::processLargeAllocateStatsBeforeGC(MM_EnvironmentBase *env)
 		defaultMemorySubspace->getTopLevelMemorySubSpace(MEMORY_TYPE_NEW)->mergeLargeObjectAllocateStats(env);
 	}
 }
+
+void
+MM_ParallelGlobalGC::processLargeAllocateStatsAfterCompact(MM_EnvironmentBase *env)
+{
+	processLargeAllocateStatsAfterSweep(env);
+}
+
 
 void
 MM_ParallelGlobalGC::processLargeAllocateStatsAfterSweep(MM_EnvironmentBase *env)

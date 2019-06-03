@@ -1002,6 +1002,17 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		struct OMRCurrentSignal *previousSignal = NULL;
 		uint32_t portLibType = mapOSSignalToPortLib(signal, sigInfo);
 
+		/* thisRecord->flags will only have OMRPORT_SIG_FLAG_SIGFPE set since the SIGFPE
+		 * variants are not included in the OMRPORT_SIG_FLAG_SIGALLSYNC bit-mask. The
+		 * received signal can be a variant of SIGFPE: DIV_BY_ZERO, INT_DIV_BY_ZERO or
+		 * INT_OVERFLOW. This will handle all the SIGFPE variants if thisRecord->flags
+		 * has OMRPORT_SIG_FLAG_SIGFPE set.
+		 */
+		uint32_t portLibTypeFPEFilter = portLibType;
+		if (OMR_ARE_ALL_BITS_SET(portLibType, OMRPORT_SIG_FLAG_SIGFPE)) {
+			portLibTypeFPEFilter = OMRPORT_SIG_FLAG_SIGFPE;
+		}
+
 		/* record this signal in tls so that omrsig_handler can be called if any of the handlers decide we should be shutting down */
 		currentSignal.signal = signal;
 		currentSignal.sigInfo = sigInfo;
@@ -1019,7 +1030,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		thisRecord = omrthread_tls_get(thisThread, tlsKey);
 
 		while (NULL != thisRecord) {
-			if (OMR_ARE_ALL_BITS_SET(thisRecord->flags, portLibType)) {
+			if (OMR_ARE_ALL_BITS_SET(thisRecord->flags, portLibTypeFPEFilter)) {
 				struct OMRUnixSignalInfo signalInfo;
 				struct OMRPlatformSignalInfo platformSignalInfo;
 

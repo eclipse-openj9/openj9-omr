@@ -956,7 +956,6 @@ static TR::InstOpCode::Mnemonic cmp2branch(TR::ILOpCodes op, TR::CodeGenerator *
     switch (op)
        {
        case TR::icmpeq:
-       case TR::iucmpeq:
        case TR::acmpeq:
        case TR::lcmpeq:
        case TR::lucmpeq:
@@ -1051,7 +1050,6 @@ static TR::InstOpCode::Mnemonic cmp2cmp(TR::ILOpCodes op, TR::CodeGenerator *cg)
        case TR::bcmpgt:
        case TR::bcmple:
           return TR::InstOpCode::cmp4;
-       case TR::iucmpeq:
        case TR::iucmpne:
        case TR::iucmplt:
        case TR::iucmpge:
@@ -1107,7 +1105,6 @@ static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg
        case TR::bcmpgt:
        case TR::bcmple:
           return TR::InstOpCode::cmpi4;
-       case TR::iucmpeq:
        case TR::iucmpne:
        case TR::iucmplt:
        case TR::iucmpge:

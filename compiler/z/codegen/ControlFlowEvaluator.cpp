@@ -1321,7 +1321,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    if (node->getOpCodeValue() == TR::icmpeq ||
-         node->getOpCodeValue() == TR::iucmpeq ||
          node->getOpCodeValue() == TR::acmpeq)
       {
       // RXSBG only supported on z10+
@@ -2831,7 +2830,6 @@ TR::InstOpCode::S390BranchCondition OMR::Z::TreeEvaluator::getBranchConditionFro
    switch (opCode)
       {
       case TR::icmpeq:
-      case TR::iucmpeq:
       case TR::acmpeq:
       case TR::lcmpeq:
       case TR::lucmpeq:

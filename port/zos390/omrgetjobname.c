@@ -52,19 +52,19 @@ omrget_jobname(struct OMRPortLibrary *portLibrary, char *jobname, uintptr_t leng
 	if (tmp_jobname) {
 		memset(tmp_jobname, '\0', J9_MAX_JOBNAME);
 		_JOBNAME(tmp_jobname);  /* requires <31bit address */
-#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+#if !defined(OMR_EBCDIC)
 		ascname = e2a_func(tmp_jobname, strlen(tmp_jobname));
-#else /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#else /* !defined(OMR_EBCDIC) */
 		ascname = tmp_jobname;
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* !defined(OMR_EBCDIC) */
 
 		if (ascname) {
 			width = strcspn(ascname, " ");
 			strncpy(jobname, ascname, width);
 			jobname[width] = '\0';
-#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+#if !defined(OMR_EBCDIC)
 			free(ascname);
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* !defined(OMR_EBCDIC) */
 		}
 		free(tmp_jobname);
 

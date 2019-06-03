@@ -58,11 +58,11 @@ omrget_userid(char *userid, uintptr_t length)
 	if (tmp_userid) {
 		memset(tmp_userid, '\0', J9_MAX_USERID);
 		_USERID(tmp_userid);  /* requires <31bit address */
-#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+#if !defined(OMR_EBCDIC)
 		ascname = e2a_func(tmp_userid, strlen(tmp_userid));
-#else /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#else /* !defined(OMR_EBCDIC) */
 		ascname = tmp_userid;
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* !defined(OMR_EBCDIC) */
 
 		if (ascname) {
 			width = strcspn(ascname, " ");
@@ -76,9 +76,9 @@ omrget_userid(char *userid, uintptr_t length)
 				 */
 				result = width;
 			}
-#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+#if !defined(OMR_EBCDIC)
 			free(ascname);
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* !defined(OMR_EBCDIC) */
 		}
 		free(tmp_userid);
 	}

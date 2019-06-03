@@ -464,9 +464,6 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 	
 	sweep(env, allocDescription, rebuildMarkBits);
 
-	if (_extensions->processLargeAllocateStats) {
-		processLargeAllocateStatsAfterSweep(env);
-	}
 
 #if defined(OMR_GC_MODRON_COMPACTION)
 	/* If a compaction was required, then do one */
@@ -568,7 +565,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	CompactReason compactReason = COMPACT_NONE;
 	CompactPreventedReason compactPreventedReason = COMPACT_PREVENTED_NONE;
 	uintptr_t tlhPercent, totalBytesAllocated;
-	
+
 	/* Assume no compaction is required until we prove otherwise*/
 	/* If user has specified -XnoCompact then were done */
 	if(_extensions->noCompactOnGlobalGC) {
@@ -716,6 +713,45 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 			goto compactionReqd;
 		}
 	}	
+
+	{
+		MM_MemoryPool *memoryPool= _extensions->heap->getDefaultMemorySpace()->getTenureMemorySubSpace()->getMemoryPool();
+		uintptr_t darkMatterBytes = memoryPool->getDarkMatterBytes();
+		uintptr_t freeMemorySize = memoryPool->getActualFreeMemorySize();
+		float darkMatterRatio = ((float)darkMatterBytes)/((float)freeMemorySize);
+
+		float darkMatterThreshold = _extensions->getDarkMatterCompactThreshold();
+
+		if (darkMatterRatio > darkMatterThreshold) {
+			compactReason = COMPACT_MICRO_FRAG;
+			goto compactionReqd;
+		}
+	}
+
+#if defined(OMR_GC_IDLE_HEAP_MANAGER) 
+	 if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode.getCode()) && (_extensions->gcOnIdle)){
+
+		MM_MemoryPool *memoryPool= _extensions->heap->getDefaultMemorySpace()->getTenureMemorySubSpace()->getMemoryPool();
+		MM_LargeObjectAllocateStats *stats = memoryPool->getLargeObjectAllocateStats();
+
+		uintptr_t pageSize = env->getExtensions()->heap->getPageSize();
+		uintptr_t freeMemory = stats->getFreeMemory();
+		uintptr_t reusableFreeMemory = stats->getPageAlignedFreeMemory(pageSize);
+
+		uintptr_t darkMatter = memoryPool->getDarkMatterBytes();
+		uintptr_t memoryFragmentationDiff = freeMemory - reusableFreeMemory;
+		uintptr_t totalFragmentation = memoryFragmentationDiff + darkMatter;
+		float totalFragmentationRatio = ((float)totalFragmentation)/((float)freeMemory);
+
+		Trc_ParallelGlobalGC_shouldCompactThisCycle(env->getLanguageVMThread(), totalFragmentationRatio, _extensions->gcOnIdleCompactThreshold);
+
+		if (totalFragmentationRatio > _extensions->gcOnIdleCompactThreshold) {
+			compactReason = COMPACT_PAGE;
+			goto compactionReqd;
+		}
+	}
+#endif /* OMR_GC_IDLE_HEAP_MANAGER */	
+
 	
 nocompact:	
 	/* Compaction not required or prevented from running */
@@ -821,6 +857,10 @@ MM_ParallelGlobalGC::sweep(MM_EnvironmentBase *env, MM_AllocateDescription *allo
 	reportSweepStart(env);
 	sweepStats->_startTime = omrtime_hires_clock();
 	masterThreadSweepStart(env, allocDescription);
+
+	if (_extensions->processLargeAllocateStats) {
+		processLargeAllocateStatsAfterSweep(env);
+	}
 
 	MM_MemorySubSpace *activeSubSpace = env->_cycleState->_activeSubSpace;
 	bool isExplicitGC = env->_cycleState->_gcCode.isExplicitGC();

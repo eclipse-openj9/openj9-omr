@@ -262,6 +262,40 @@ MM_FreeEntrySizeClassStats::getFreeMemory(const uintptr_t sizeClassSizes[])
 	return totalFreeMemory;
 }
 
+uintptr_t 
+MM_FreeEntrySizeClassStats::getPageAlignedFreeMemory(const uintptr_t sizeClassSizes[], uintptr_t pageSize) {
+
+	uintptr_t resusableFreeMemory = 0;
+
+	for (uintptr_t sizeClassIndex = 0; sizeClassIndex < _maxSizeClasses; sizeClassIndex++) {
+		
+		/* Check if the current size class is larger than the page size */
+		if (pageSize < sizeClassSizes[sizeClassIndex]) {
+
+			/* regular sizes */
+			resusableFreeMemory += _count[sizeClassIndex] * (sizeClassSizes[sizeClassIndex] - pageSize);
+			
+			/* 
+			 * We need to find how many pages of specified size, would fit into free entries. 
+			 * Since we don't have exact info about the start and end of each free entry (we only have low bound size and count of each entry)
+			 * we use a simple heuristic that freeEntrySize - pageSize of bytes, in average will fit. For example if free entry is 6K and page 
+			 * is 4K, in average 2K will be reusable (50% chances it will be 1 full page, and 50% no page will fit).
+			 */
+
+			/* for each size class, find frequent allocation sizes */
+			if (NULL != _frequentAllocationHead) {
+				MM_FreeEntrySizeClassStats::FrequentAllocation *curr = _frequentAllocationHead[sizeClassIndex];
+				while (NULL != curr) {
+					resusableFreeMemory += curr->_count * (curr->_size - pageSize);
+					curr = curr->_nextInSizeClass;
+				}
+			}
+		}
+	}	
+
+	return resusableFreeMemory;
+}
+
 uintptr_t
 MM_FreeEntrySizeClassStats::copyTo(MM_FreeEntrySizeClassStats *stats, const uintptr_t sizeClassSizes[])
 {

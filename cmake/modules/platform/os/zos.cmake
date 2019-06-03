@@ -27,7 +27,6 @@ list(APPEND OMR_PLATFORM_DEFINITIONS
 	-D_ISOC99_SOURCE
 	-DLONGLONG
 	-DJ9ZOS390
-	-DOMR_EBCDIC
 	-DSUPPORTS_THREAD_LOCAL
 	-DZOS
 )
@@ -37,6 +36,15 @@ list(APPEND OMR_PLATFORM_INCLUDE_DIRECTORIES
 	/usr/lpp/cbclib/include
 	/usr/include
 )
+
+# Create helper targets for specifying ascii/ebcdic options
+add_library(omr_ascii INTERFACE)
+target_compile_definitions(omr_ascii INTERFACE -DIBM_ATOE)
+target_compile_options(omr_ascii INTERFACE "\"-Wc,convlit(ISO8859-1)\"")
+target_link_libraries(omr_ascii INTERFACE j9a2e)
+
+add_library(omr_ebcdic INTERFACE)
+target_compile_definitions(omr_ebcdic INTERFACE -DOMR_EBCDIC)
 
 macro(omr_os_global_setup)
 

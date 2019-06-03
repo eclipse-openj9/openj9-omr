@@ -63,7 +63,31 @@ if(OMR_HOST_ARCH STREQUAL "ppc")
 
 	# Configure the platform dependent library for multithreading
 	set(OMR_PLATFORM_THREAD_LIBRARY -lpthread)
-elseif(OMR_HOST_ARCH STREQUAL "s390")
+endif()
+
+if(OMR_OS_AIX)
+	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
+		-qlanglvl=extended
+		-qinfo=pro
+	)
+
+	set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lm -liconv -ldl -lperfstat")
+
+	if(OMR_ENV_DATA64)
+		set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -q64")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -q64")
+		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -q64")
+
+		set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
+		set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
+		set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -X64 <TARGET>")
+	endif()
+
+elseif(OMR_OS_LINUX)
+	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
+		-qxflag=selinux
+	)
+elseif(OMR_OS_ZOS)
 	# TODO: This should technically be -qhalt=w however c89 compiler used to compile the C sources does not like this
 	# flag. We'll need to investigate whether we actually need c89 for C sources or if we can use xlc and what to do
 	# with this flag. For now I'm leaving it as empty.
@@ -157,31 +181,6 @@ elseif(OMR_HOST_ARCH STREQUAL "s390")
 				-Wc,DLL,EXPORTALL
 		)
 	endfunction()
-endif()
-
-if(OMR_HOST_OS STREQUAL "aix")
-	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
-		-qlanglvl=extended
-		-qinfo=pro
-	)
-
-	set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lm -liconv -ldl -lperfstat")
-
-	if(OMR_ENV_DATA64)
-		set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -q64")
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -q64")
-		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -q64")
-
-		set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
-		set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
-		set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -X64 <TARGET>")
-	endif()
-
-elseif(OMR_HOST_OS STREQUAL "linux")
-	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
-		-qxflag=selinux
-	)
-elseif(OMR_HOST_OS STREQUAL "zos")
 endif()
 
 set(SPP_CMD ${CMAKE_C_COMPILER})

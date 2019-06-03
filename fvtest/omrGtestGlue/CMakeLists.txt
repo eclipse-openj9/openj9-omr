@@ -31,6 +31,14 @@ target_include_directories(omrGtest
 		${PROJECT_SOURCE_DIR}/third_party/gtest-1.8.0/include
 )
 
+if(OMR_OS_ZOS)
+	if(OMR_TOOLS_USE_NATIVE_ENCODING)
+		target_link_libraries(omrGtest PUBLIC omr_ebcdic)
+	else()
+		target_link_libraries(omrGtest PUBLIC omr_ascii)
+	endif()
+endif()
+
 add_library(omrGtestGlue INTERFACE)
 
 target_include_directories(omrGtestGlue

@@ -2838,7 +2838,6 @@ TR::InstOpCode::S390BranchCondition OMR::Z::TreeEvaluator::getBranchConditionFro
          }
          break;
       case TR::icmpne:
-      case TR::iucmpne:
       case TR::acmpne:
       case TR::lcmpne:
       case TR::lucmpne:

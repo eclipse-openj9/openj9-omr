@@ -113,10 +113,6 @@ INSTANTIATE_TEST_CASE_P(CompareTest, Int32Compare, ::testing::Combine(
         std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmple", icmple)
     )));
 
-int32_t iucmpne(uint32_t l, uint32_t r) {
-    return (l != r) ? 1 : 0;
-}
-
 int32_t iucmpgt(uint32_t l, uint32_t r) {
     return (l > r) ? 1 : 0;
 }
@@ -190,21 +186,11 @@ TEST_P(UInt32Compare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt32Compare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint32_t, uint32_t>()),
     ::testing::Values(
-<<<<<<< HEAD
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpeq", iucmpeq),
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpne", iucmpne),
         std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpgt", iucmpgt),
         std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpge", iucmpge),
         std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmplt", iucmplt),
         std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmple", iucmple)
     )));
-=======
-        std::make_tuple("iucmpne", iucmpne),
-        std::make_tuple("iucmpgt", iucmpgt),
-        std::make_tuple("iucmpge", iucmpge),
-        std::make_tuple("iucmplt", iucmplt),
-        std::make_tuple("iucmple", iucmple) )));
->>>>>>> 5251a4ff... Remove references of deprecated IL opcode TR:bucmpne and TR:iucmpeq
 
 int32_t lcmpeq(int64_t l, int64_t r) {
     return (l == r) ? 1 : 0;

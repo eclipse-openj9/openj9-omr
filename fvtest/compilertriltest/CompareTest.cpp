@@ -287,10 +287,6 @@ INSTANTIATE_TEST_CASE_P(CompareTest, Int64Compare, ::testing::Combine(
     )));
 
 
-int32_t lucmpne(uint64_t l, uint64_t r) {
-    return (l != r) ? 1 : 0;
-}
-
 int32_t lucmpgt(uint64_t l, uint64_t r) {
     return (l > r) ? 1 : 0;
 }

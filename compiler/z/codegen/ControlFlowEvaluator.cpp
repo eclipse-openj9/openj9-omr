@@ -2839,7 +2839,6 @@ TR::InstOpCode::S390BranchCondition OMR::Z::TreeEvaluator::getBranchConditionFro
       case TR::icmpne:
       case TR::acmpne:
       case TR::lcmpne:
-      case TR::lucmpne:
          {
          return TR::InstOpCode::COND_BNE;
          }

@@ -438,7 +438,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 	omrthread_monitor_enter(registerHandlerMonitor);
 	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
 		/* -Xrs was set, we can't protect against any signals, do not install any handlers except SIGXFSZ */
-		if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_SIGXFSZ) && OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
+		if (OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_SIGXFSZ) && OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
 			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
 		} else {
 			Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, flags);
@@ -539,7 +539,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 
 	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
 		/* -Xrs was set, we can't protect against any signals, do not install any handlers except SIGXFSZ*/
-		if (OMR_ARE_ANY_BITS_SET(portlibSignalFlag, OMRPORT_SIG_FLAG_SIGXFSZ) && OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
+		if (OMR_ARE_ALL_BITS_SET(portlibSignalFlag, OMRPORT_SIG_FLAG_SIGXFSZ) && OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
 			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
 		} else {
 			Trc_PRT_signal_omrsig_set_single_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, portlibSignalFlag);
@@ -810,7 +810,7 @@ runHandlers(uint32_t asyncSignalFlag, int unixSignal)
 	omrthread_monitor_exit(asyncMonitor);
 
 	while (NULL != cursor) {
-		if (OMR_ARE_ANY_BITS_SET(cursor->flags, asyncSignalFlag)) {
+		if (OMR_ARE_ALL_BITS_SET(cursor->flags, asyncSignalFlag)) {
 			Trc_PRT_signal_omrsig_asynchSignalReporter_calling_handler(cursor->portLib, asyncSignalFlag, cursor->handler_arg);
 			cursor->handler(cursor->portLib, asyncSignalFlag, NULL, cursor->handler_arg);
 		}
@@ -1019,7 +1019,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		thisRecord = omrthread_tls_get(thisThread, tlsKey);
 
 		while (NULL != thisRecord) {
-			if (OMR_ARE_ANY_BITS_SET(thisRecord->flags, portLibType)) {
+			if (OMR_ARE_ALL_BITS_SET(thisRecord->flags, portLibType)) {
 				struct OMRUnixSignalInfo signalInfo;
 				struct OMRPlatformSignalInfo platformSignalInfo;
 

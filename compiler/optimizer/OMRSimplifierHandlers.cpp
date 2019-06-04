@@ -16423,6 +16423,15 @@ TR::Node *nullchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
                 s->_blockRemoved |= cfg->removeEdge(*edge);
              }
           }
+       else if (node->getOpCodeValue() == TR::NULLCHK
+                && !node->getFirstChild()->getOpCode().isLikeDef()
+                && node->getFirstChild()->exceptionsRaised() == 0
+                && node->getFirstChild()->getReferenceCount() == 1
+                && node->getFirstChild()->getNumChildren() == 1
+                && performTransformation(s->comp(), "%sNULLCHK passthrough simplification on n%dn\n", s->optDetailString(), node->getGlobalIndex()))
+          {
+          TR::Node::recreate(node->getFirstChild(), TR::PassThrough);
+          }
        }
    return node;
    }

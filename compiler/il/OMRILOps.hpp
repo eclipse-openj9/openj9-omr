@@ -294,7 +294,6 @@ public:
              (getOpCodeValue() == TR::lcmpgt)  ||
              (getOpCodeValue() == TR::lcmple)  ||
              (getOpCodeValue() == TR::lucmp)   ||
-             (getOpCodeValue() == TR::lucmpeq) ||
              (getOpCodeValue() == TR::lucmpne) ||
              (getOpCodeValue() == TR::lucmplt) ||
              (getOpCodeValue() == TR::lucmpge) ||

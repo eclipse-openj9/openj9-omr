@@ -2832,7 +2832,6 @@ TR::InstOpCode::S390BranchCondition OMR::Z::TreeEvaluator::getBranchConditionFro
       case TR::icmpeq:
       case TR::acmpeq:
       case TR::lcmpeq:
-      case TR::lucmpeq:
          {
          return TR::InstOpCode::COND_BE;
          }

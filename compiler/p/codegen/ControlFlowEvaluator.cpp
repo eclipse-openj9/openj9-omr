@@ -958,7 +958,6 @@ static TR::InstOpCode::Mnemonic cmp2branch(TR::ILOpCodes op, TR::CodeGenerator *
        case TR::icmpeq:
        case TR::acmpeq:
        case TR::lcmpeq:
-       case TR::lucmpeq:
        case TR::fcmpeq:
        case TR::dcmpeq:
        case TR::fcmpequ:
@@ -1066,7 +1065,6 @@ static TR::InstOpCode::Mnemonic cmp2cmp(TR::ILOpCodes op, TR::CodeGenerator *cg)
        case TR::lcmpgt:
        case TR::lcmple:
           return TR::Compiler->target.is64Bit() ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4;
-       case TR::lucmpeq:
        case TR::lucmpne:
        case TR::lucmplt:
        case TR::lucmpge:
@@ -1120,7 +1118,6 @@ static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg
        case TR::lcmpgt:
        case TR::lcmple:
           return TR::Compiler->target.is64Bit() ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4;
-       case TR::lucmpeq:
        case TR::lucmpne:
        case TR::lucmplt:
        case TR::lucmpge:

@@ -286,9 +286,6 @@ INSTANTIATE_TEST_CASE_P(CompareTest, Int64Compare, ::testing::Combine(
         std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmp", lcmp)
     )));
 
-int32_t lucmpeq(uint64_t l, uint64_t r) {
-    return (l == r) ? 1 : 0;
-}
 
 int32_t lucmpne(uint64_t l, uint64_t r) {
     return (l != r) ? 1 : 0;
@@ -367,8 +364,6 @@ TEST_P(UInt64Compare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt64Compare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint64_t, uint64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpeq", lucmpeq),
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpne", lucmpne),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpgt", lucmpgt),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpge", lucmpge),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmplt", lucmplt),

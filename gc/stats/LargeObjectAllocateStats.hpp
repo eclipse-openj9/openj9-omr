@@ -85,6 +85,8 @@ public:
 	FrequentAllocation *getFrequentAllocationHead(uintptr_t sizeClassIndex) { return _frequentAllocationHead[sizeClassIndex]; }
 	/* return total free memory represented by this structure */
 	uintptr_t getFreeMemory(const uintptr_t sizeClassSizes[]);
+	/* return the 'average' number of pages which can be freed */
+	uintptr_t getPageAlignedFreeMemory(const uintptr_t sizeClassSizes[], uintptr_t pageSize);
 
 	/**< @param factorVeryLargeEntryPool : multiple factor for _maxVeryLargeEntrySizes, default = 1, double for splitFreeList case 
 	 *   @param simulation : if true, generate _fractionFrequentAllocation array for cumulating fraction of frequentAllocation during estimating fragmentation, default = false
@@ -324,6 +326,9 @@ public:
 	void resetRemainingFreeMemoryAfterEstimate() { _remainingFreeMemoryAfterEstimate= 0; }
 	uintptr_t getFreeMemoryBeforeEstimate() { return _freeMemoryBeforeEstimate; }
 	uintptr_t getMaxHeapSize() {return _maxHeapSize; }
+	uintptr_t getFreeMemory(){return _freeEntrySizeClassStats.getFreeMemory(_sizeClassSizes);}
+	uintptr_t getPageAlignedFreeMemory(uintptr_t pageSize) {return _freeEntrySizeClassStats.getPageAlignedFreeMemory(_sizeClassSizes, pageSize);}
+
 
 	MM_LargeObjectAllocateStats(MM_EnvironmentBase* env) :
 		_env(env),

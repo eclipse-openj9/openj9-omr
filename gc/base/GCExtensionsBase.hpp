@@ -351,6 +351,9 @@ public:
 	uintptr_t heapAlignment;
 	uintptr_t absoluteMinimumOldSubSpaceSize;
 	uintptr_t absoluteMinimumNewSubSpaceSize;
+	
+	float darkMatterCompactThreshold; /**< Value used to trigger compaction when dark matter ratio reaches this percentage of memory pools memory*/
+	
 	uintptr_t parSweepChunkSize;
 	uintptr_t heapExpansionMinimumSize;
 	uintptr_t heapExpansionMaximumSize;
@@ -769,6 +772,7 @@ public:
 	uintptr_t lastGCFreeBytes;  /**< records the free memory size from last Global GC cycle */
 	bool gcOnIdle; /**< Enables releasing free heap pages if true while systemGarbageCollect invoked with IDLE GC code, default is false */
 	bool compactOnIdle; /**< Forces compaction if global GC executed while VM Runtime State set to IDLE, default is false */
+	float gcOnIdleCompactThreshold; /**< Enables compaction when fragmented memory and dark matter exceed this limit. The larger this number, the more memory can be fragmented before compact is triggered **/
 #endif
 
 #if defined(OMR_VALGRIND_MEMCHECK)
@@ -1124,6 +1128,11 @@ public:
 		return objectModel.getObjectAlignmentInBytes();
 	}
 
+	MMINLINE float
+	getDarkMatterCompactThreshold() {
+		return darkMatterCompactThreshold;
+	}
+
 	/**
 	 * Set Tenure address range
 	 * @param base low address of Old subspace range
@@ -1375,6 +1384,7 @@ public:
 		, heapAlignment(HEAP_ALIGNMENT)
 		, absoluteMinimumOldSubSpaceSize(MINIMUM_OLD_SPACE_SIZE)
 		, absoluteMinimumNewSubSpaceSize(MINIMUM_NEW_SPACE_SIZE)
+		, darkMatterCompactThreshold((float)0.20)
 		, parSweepChunkSize(0)
 		, heapExpansionMinimumSize(1024 * 1024)
 		, heapExpansionMaximumSize(0)
@@ -1703,6 +1713,7 @@ public:
 		, lastGCFreeBytes(0)
 		, gcOnIdle(false)
 		, compactOnIdle(false)
+		, gcOnIdleCompactThreshold((float)0.25)
 #endif /* defined(OMR_GC_IDLE_HEAP_MANAGER) */
 #if defined(OMR_VALGRIND_MEMCHECK)
 		, valgrindMempoolAddr(0)

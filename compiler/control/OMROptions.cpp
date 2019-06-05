@@ -864,10 +864,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
                                  SET_OPTION_BIT(TR_IProfilerPerformTimestampCheck), "F"},
    {"iprofilerVerbose",          "O\tEnable Interpreter Profiling output messages",           SET_OPTION_BIT(TR_VerboseInterpreterProfiling), "F"},
 
-#if defined(AIXPPC)
-   {"j2prof",             "D\tenable profiling",
-        SET_OPTION_BIT(TR_CreatePCMaps), "F" },
-#endif
    {"jitAllAtMain",          "D\tjit all loaded methods when main is called", SET_OPTION_BIT(TR_jitAllAtMain), "F" },
 
    {"jitMethodEntryAlignmentBoundary=",      "C<nnn>\tAlignment boundary (in bytes) for JIT method entry",

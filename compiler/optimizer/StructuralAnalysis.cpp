@@ -30,7 +30,7 @@
 #include "control/Options_inlines.hpp"
 #include "env/TRMemory.hpp"
 #include "il/Block.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Cfg.hpp"
 #include "infra/List.hpp"

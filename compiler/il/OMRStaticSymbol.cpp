@@ -19,12 +19,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "il/symbol/OMRStaticSymbol.hpp"
-
 #include <stddef.h>
 #include "env/TRMemory.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 
 TR::StaticSymbol*
 OMR::StaticSymbol::self()

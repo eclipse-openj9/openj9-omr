@@ -57,6 +57,7 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
 #include "il/DataTypes.hpp"
 #include "il/IL.hpp"
 #include "il/Node.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Flags.hpp"
 #include "infra/Link.hpp"
@@ -68,7 +69,6 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
 #include "ras/DebugCounter.hpp"
 #include "ras/ILValidationStrategies.hpp"
 
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 
 
 class TR_AOTGuardSite;

@@ -31,13 +31,13 @@ namespace OMR { class ResolvedMethodSymbol; }
 namespace OMR { typedef OMR::ResolvedMethodSymbol ResolvedMethodSymbolConnector; }
 #endif
 
-#include "il/symbol/MethodSymbol.hpp"
 
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/FrontEnd.hpp"
 #include "compile/Method.hpp"
 #include "compile/ResolvedMethod.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"

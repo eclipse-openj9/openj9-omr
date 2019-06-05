@@ -31,12 +31,11 @@ namespace OMR { class ParameterSymbol; }
 namespace OMR { typedef OMR::ParameterSymbol ParameterSymbolConnector; }
 #endif
 
-#include "il/symbol/RegisterMappedSymbol.hpp"
-
 #include <stddef.h>
 #include <stdint.h>
 #include "env/KnownObjectTable.hpp"
 #include "il/DataTypes.hpp"
+#include "il/RegisterMappedSymbol.hpp"
 
 namespace TR { class ParameterSymbol; }
 

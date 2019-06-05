@@ -40,9 +40,9 @@ namespace OMR { typedef OMR::Power::MemoryReference MemoryReferenceConnector; }
 #include "codegen/Register.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 
 namespace TR { class PPCPairedRelocation; }
 namespace TR { class CodeGenerator; }

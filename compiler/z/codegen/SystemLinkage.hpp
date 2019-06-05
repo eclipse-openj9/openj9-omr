@@ -32,9 +32,9 @@
 #include "compile/Compilation.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 

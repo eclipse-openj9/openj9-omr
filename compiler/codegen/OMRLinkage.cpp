@@ -24,7 +24,7 @@
 #include "codegen/RegisterConstants.hpp"
 #include "il/ILOps.hpp"
 #include "il/Node.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
+#include "il/ParameterSymbol.hpp"
 
 
 bool

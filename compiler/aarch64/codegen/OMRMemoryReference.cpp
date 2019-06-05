@@ -30,7 +30,7 @@
 #include "codegen/UnresolvedDataSnippet.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/symbol/StaticSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 
 
 static void loadRelocatableConstant(TR::Node *node,

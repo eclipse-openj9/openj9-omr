@@ -19,40 +19,37 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_AUTOMATICSYMBOL_INCL
-#define TR_AUTOMATICSYMBOL_INCL
-
-#include "il/symbol/OMRAutomaticSymbol.hpp"
+#ifndef TR_STATICSYMBOL_INCL
+#define TR_STATICSYMBOL_INCL
 
 #include <stdint.h>
 #include "il/DataTypes.hpp"
+#include "il/OMRStaticSymbol.hpp"
 
-namespace TR { class Compilation; }
-
+/**
+ * A symbol with an address
+ */
 namespace TR
 {
 
-class OMR_EXTENSIBLE AutomaticSymbol : public OMR::AutomaticSymbolConnector
+class OMR_EXTENSIBLE StaticSymbol : public OMR::StaticSymbolConnector
    {
 
 protected:
 
-   AutomaticSymbol(int32_t o = 0) :
-      OMR::AutomaticSymbolConnector() { }
+   StaticSymbol(TR::DataType d) :
+      OMR::StaticSymbolConnector(d) { }
 
-   AutomaticSymbol(TR::DataType d) :
-      OMR::AutomaticSymbolConnector(d) { }
+   StaticSymbol(TR::DataType d, void * address) :
+      OMR::StaticSymbolConnector(d,address) { }
 
-   AutomaticSymbol(TR::DataType d, uint32_t s) :
-      OMR::AutomaticSymbolConnector(d, s) { }
-
-   AutomaticSymbol(TR::DataType d, uint32_t s, const char * name) :
-      OMR::AutomaticSymbolConnector(d, s, name) { }
+   StaticSymbol(TR::DataType d, uint32_t s) :
+      OMR::StaticSymbolConnector(d, s) { }
 
 private:
 
    // When adding another class to the heirarchy, add it as a friend here
-   friend class OMR::AutomaticSymbol;
+   friend class OMR::StaticSymbol;
 
    };
 

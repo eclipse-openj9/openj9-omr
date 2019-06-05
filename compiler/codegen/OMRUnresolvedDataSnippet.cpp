@@ -24,7 +24,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
 #include "codegen/UnresolvedDataSnippet_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"
+#include "il/LabelSymbol.hpp"
 
 namespace TR { class Node; }
 namespace TR { class SymbolReference; }

@@ -28,8 +28,8 @@
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "env/StackMemoryRegion.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
 
 
 TR::ARM64SystemLinkage::ARM64SystemLinkage(TR::CodeGenerator *cg)

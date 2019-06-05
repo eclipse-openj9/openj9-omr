@@ -19,33 +19,30 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_PARAMETERSYMBOL_INCL
-#define TR_PARAMETERSYMBOL_INCL
-
-#include "il/symbol/OMRParameterSymbol.hpp"
+#ifndef TR_METHODSYMBOL_INCL
+#define TR_METHODSYMBOL_INCL
 
 #include <stddef.h>
-#include <stdint.h>
-#include "il/DataTypes.hpp"
+#include "codegen/LinkageConventionsEnum.hpp"
+#include "il/OMRMethodSymbol.hpp"
+
+namespace TR { class Method; }
 
 namespace TR
 {
 
-class OMR_EXTENSIBLE ParameterSymbol : public OMR::ParameterSymbolConnector
+class OMR_EXTENSIBLE MethodSymbol : public OMR::MethodSymbolConnector
    {
 
 protected:
 
-   ParameterSymbol(TR::DataType d, int32_t slot) :
-      OMR::ParameterSymbolConnector(d, slot) { }
-
-   ParameterSymbol(TR::DataType d, int32_t slot, size_t size) :
-      OMR::ParameterSymbolConnector(d, slot, size) { }
+   MethodSymbol(TR_LinkageConventions lc = TR_Private, TR::Method *m = NULL) :
+      OMR::MethodSymbolConnector(lc, m) { }
 
 private:
 
    // When adding another class to the heirarchy, add it as a friend here
-   friend class OMR::ParameterSymbol;
+   friend class OMR::MethodSymbol;
 
    };
 

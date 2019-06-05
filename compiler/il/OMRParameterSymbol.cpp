@@ -19,16 +19,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "il/symbol/OMRParameterSymbol.hpp"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include "env/KnownObjectTable.hpp"
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
+#include "il/ParameterSymbol.hpp"
 #include "il/Symbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
 #include "infra/Flags.hpp"
 
 TR::ParameterSymbol *

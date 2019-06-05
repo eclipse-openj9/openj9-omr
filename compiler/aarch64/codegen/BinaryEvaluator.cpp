@@ -27,9 +27,9 @@
 #include "codegen/Linkage.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/TreeEvaluator.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
 #include "infra/Bit.hpp"
 
 /**
@@ -615,7 +615,7 @@ bool findLogicImmediateBitPattern(T value, int elementSize, int32_t &rotateCount
  * @param[out] n : N bit
  * @param[out] immEncoded : immr and imms encoded in 12bit field
  * @return true if value can be encoded as immediate operand
- */ 
+ */
 static inline bool
 logicImmediateHelper(uint64_t value, bool is64Bit, bool &n, uint32_t &immEncoded)
    {
@@ -629,7 +629,7 @@ logicImmediateHelper(uint64_t value, bool is64Bit, bool &n, uint32_t &immEncoded
       mask >>= elementSize;
       imms >>= 1;
       }
-   // all zeroes or all ones are not allowed 
+   // all zeroes or all ones are not allowed
    if ((value == 0) || (value == mask))
       {
       return false;

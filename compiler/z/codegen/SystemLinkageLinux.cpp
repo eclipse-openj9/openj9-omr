@@ -48,20 +48,20 @@
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/List.hpp"
@@ -255,7 +255,7 @@ void TR::S390zLinuxSystemLinkage::createEpilogue(TR::Instruction * cursor)
 void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
    {
    TR::Delimiter delimiter (comp(), comp()->getOption(TR_TraceCG), "Prologue");
-   
+
    int32_t argSize = getOutgoingParameterBlockSize();
    setOutgoingParmAreaEndOffset(getOutgoingParmAreaBeginOffset() + argSize);
 
@@ -276,14 +276,14 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
       {
       traceMsg(comp(), "Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, getOffsetToFirstParm(), argSize, localSize);
       }
-   
+
    // Now that we know the stack frame size, map the stack backwards
    mapStack(bodySymbol, stackFrameSize);
-   
+
    setFirstPrologueInstruction(cursor);
 
    TR::Node* node = comp()->getStartTree()->getNode();
-   
+
    cursor = spillGPRsInPrologue(node, cursor);
    cursor = spillFPRsInPrologue(node, cursor);
 
@@ -692,7 +692,7 @@ TR::S390zLinuxSystemLinkage::fillFPRsInEpilogue(TR::Node* node, TR::Instruction*
    TR::RealRegister* spReg = getNormalStackPointerRealRegister();
    int32_t offset = getFPRSaveAreaEndOffset();
    int16_t FPRSaveMask = getFPRSaveMask();
-   
+
    for (int32_t i = TR::Linkage::getFirstMaskedBit(FPRSaveMask); i <= TR::Linkage::getLastMaskedBit(FPRSaveMask); ++i)
      {
       if (FPRSaveMask & (1 << (i)))
@@ -795,7 +795,7 @@ TR::S390zLinuxSystemLinkage::spillFPRsInPrologue(TR::Node* node, TR::Instruction
    TR::RealRegister* spReg = getNormalStackPointerRealRegister();
    int32_t offset = getFPRSaveAreaEndOffset();
    int16_t FPRSaveMask = getFPRSaveMask();
-   
+
    for (int32_t i = TR::Linkage::getFirstMaskedBit(FPRSaveMask); i <= TR::Linkage::getLastMaskedBit(FPRSaveMask); ++i)
       {
       if (FPRSaveMask & (1 << (i)))

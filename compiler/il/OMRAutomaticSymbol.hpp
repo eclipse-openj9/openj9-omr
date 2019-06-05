@@ -31,14 +31,13 @@ namespace OMR { class AutomaticSymbol; }
 namespace OMR { typedef OMR::AutomaticSymbol AutomaticSymbolConnector; }
 #endif
 
-#include "il/symbol/RegisterMappedSymbol.hpp"
-
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/RegisterConstants.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/Node.hpp"
+#include "il/RegisterMappedSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Flags.hpp"
 

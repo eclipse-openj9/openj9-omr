@@ -47,17 +47,17 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/infra/OMRCfg.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/SimpleRegex.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/IlGenRequest.cpp \
-    $(JIT_OMR_DIRTY_DIR)/il/symbol/OMRSymbol.cpp \
+    $(JIT_OMR_DIRTY_DIR)/il/OMRSymbol.cpp \
     $(JIT_OMR_DIRTY_DIR)/il/OMRBlock.cpp \
     $(JIT_OMR_DIRTY_DIR)/compile/OMRSymbolReferenceTable.cpp \
     $(JIT_OMR_DIRTY_DIR)/compile/OMRAliasBuilder.cpp \
-    $(JIT_OMR_DIRTY_DIR)/il/symbol/OMRAutomaticSymbol.cpp \
-    $(JIT_OMR_DIRTY_DIR)/il/symbol/OMRLabelSymbol.cpp \
-    $(JIT_OMR_DIRTY_DIR)/il/symbol/OMRMethodSymbol.cpp \
-    $(JIT_OMR_DIRTY_DIR)/il/symbol/OMRParameterSymbol.cpp \
-    $(JIT_OMR_DIRTY_DIR)/il/symbol/OMRRegisterMappedSymbol.cpp \
-    $(JIT_OMR_DIRTY_DIR)/il/symbol/OMRResolvedMethodSymbol.cpp \
-    $(JIT_OMR_DIRTY_DIR)/il/symbol/OMRStaticSymbol.cpp \
+    $(JIT_OMR_DIRTY_DIR)/il/OMRAutomaticSymbol.cpp \
+    $(JIT_OMR_DIRTY_DIR)/il/OMRLabelSymbol.cpp \
+    $(JIT_OMR_DIRTY_DIR)/il/OMRMethodSymbol.cpp \
+    $(JIT_OMR_DIRTY_DIR)/il/OMRParameterSymbol.cpp \
+    $(JIT_OMR_DIRTY_DIR)/il/OMRRegisterMappedSymbol.cpp \
+    $(JIT_OMR_DIRTY_DIR)/il/OMRResolvedMethodSymbol.cpp \
+    $(JIT_OMR_DIRTY_DIR)/il/OMRStaticSymbol.cpp \
     $(JIT_OMR_DIRTY_DIR)/il/OMRNode.cpp \
     $(JIT_OMR_DIRTY_DIR)/il/NodePool.cpp \
     $(JIT_OMR_DIRTY_DIR)/il/NodeUtils.cpp \

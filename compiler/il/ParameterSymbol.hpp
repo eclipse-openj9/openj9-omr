@@ -19,35 +19,32 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_REGISTERMAPPEDSYMBOL_INCL
-#define TR_REGISTERMAPPEDSYMBOL_INCL
+#ifndef TR_PARAMETERSYMBOL_INCL
+#define TR_PARAMETERSYMBOL_INCL
 
-#include "il/symbol/OMRRegisterMappedSymbol.hpp"
-
+#include <stddef.h>
 #include <stdint.h>
 #include "il/DataTypes.hpp"
+#include "il/OMRParameterSymbol.hpp"
 
 namespace TR
 {
 
-class OMR_EXTENSIBLE RegisterMappedSymbol : public OMR::RegisterMappedSymbolConnector
+class OMR_EXTENSIBLE ParameterSymbol : public OMR::ParameterSymbolConnector
    {
 
 protected:
 
-   RegisterMappedSymbol(int32_t o = 0) :
-      OMR::RegisterMappedSymbolConnector() { }
+   ParameterSymbol(TR::DataType d, int32_t slot) :
+      OMR::ParameterSymbolConnector(d, slot) { }
 
-   RegisterMappedSymbol(TR::DataType d) :
-      OMR::RegisterMappedSymbolConnector(d) { }
-
-   RegisterMappedSymbol(TR::DataType d, uint32_t s) :
-      OMR::RegisterMappedSymbolConnector(d, s) { }
+   ParameterSymbol(TR::DataType d, int32_t slot, size_t size) :
+      OMR::ParameterSymbolConnector(d, slot, size) { }
 
 private:
 
    // When adding another class to the heirarchy, add it as a friend here
-   friend class OMR::RegisterMappedSymbol;
+   friend class OMR::ParameterSymbol;
 
    };
 

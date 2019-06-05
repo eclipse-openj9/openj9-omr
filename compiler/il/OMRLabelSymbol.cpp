@@ -19,8 +19,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "il/symbol/OMRLabelSymbol.hpp"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -31,10 +29,10 @@
 #include "env/TRMemory.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "ras/Debug.hpp"
 

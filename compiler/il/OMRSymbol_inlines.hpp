@@ -22,7 +22,7 @@
 #ifndef OMR_SYMBOL_INLINES_INCL
 #define OMR_SYMBOL_INLINES_INCL
 
-#include "il/symbol/OMRSymbol.hpp"
+#include "il/OMRSymbol.hpp"
 
 /**
  * Downcast to concrete instance

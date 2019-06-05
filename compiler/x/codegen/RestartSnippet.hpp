@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
 #include "env/jittypes.h"
-#include "il/symbol/LabelSymbol.hpp"
+#include "il/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "x/codegen/X86Ops.hpp"
 #include "x/codegen/X86Ops_inlines.hpp"

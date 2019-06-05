@@ -1154,7 +1154,7 @@ TR_IsolatedStoreElimination::findStructuresAndNodesUsedIn(TR_UseDefInfo *info, T
             {
             int32_t useIndex = (int32_t)useCursor + info->getFirstUseIndex();
             TR::Node *useNode = info->getNode(useIndex);
-            if (useNode && useNode->getReferenceCount() > 0 && !nodesInStructure->get(useNode->getGlobalIndex()))
+            if (useNode && useNode->getReferenceCount() > 0 && !nodesInStructure->get(useNode->getUseDefIndex()))
                {
                if (trace())
                   {
@@ -1228,7 +1228,8 @@ TR_IsolatedStoreElimination::findStructuresAndNodesUsedIn(TR_UseDefInfo *info, T
                       (loopTestNode->getOpCodeValue() == TR::ificmple) ||
                       (loopTestNode->getOpCodeValue() == TR::iflcmple))
                      {
-                     isIncreasing = true;
+                     if (loopTestNode->getBranchDestination()->getNode()->getBlock() == entryBlock)
+                        isIncreasing = true;
                      loopTestTree = nextBlock->getLastRealTreeTop();
                      }
                   else if ((loopTestNode->getOpCodeValue() == TR::ificmpgt) ||
@@ -1236,6 +1237,8 @@ TR_IsolatedStoreElimination::findStructuresAndNodesUsedIn(TR_UseDefInfo *info, T
                       (loopTestNode->getOpCodeValue() == TR::ificmpge) ||
                       (loopTestNode->getOpCodeValue() == TR::iflcmpge))
                      {
+                     if (loopTestNode->getBranchDestination()->getNode()->getBlock() != entryBlock)
+                        isIncreasing = true;
                      loopTestTree = nextBlock->getLastRealTreeTop();
                      }
                   }

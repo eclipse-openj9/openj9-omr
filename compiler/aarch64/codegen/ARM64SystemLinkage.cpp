@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,7 +22,10 @@
 #include "codegen/ARM64SystemLinkage.hpp"
 
 #include "codegen/ARM64Instruction.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/GenerateInstructions.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "il/Node_inlines.hpp"
@@ -388,7 +391,7 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
       }
    else
       {
-      TR_ASSERT(false, "Not implemented yet.");
+      TR_UNIMPLEMENTED();
       }
 
    // save link register (x30)
@@ -522,7 +525,7 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
       }
    else
       {
-      TR_ASSERT(false, "Not implemented yet.");
+      TR_UNIMPLEMENTED();
       }
 
    // return
@@ -647,7 +650,7 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else
                   {
-                  addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                  TR::addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
                   }
                }
             else
@@ -696,7 +699,7 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else
                   {
-                  addDependency(dependencies, argRegister, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
+                  TR::addDependency(dependencies, argRegister, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
                   }
                }
             else
@@ -728,7 +731,7 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
          }
       else
          {
-         addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+         TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
          }
       numIntegerArgs++;
       }
@@ -739,7 +742,7 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
       if (!properties.getPreserved((TR::RealRegister::RegNum)i))
          {
          // NULL dependency for non-preserved regs
-         addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
+         TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
          }
       }
 
@@ -840,7 +843,6 @@ TR::Register *TR::ARM64SystemLinkage::buildDirectDispatch(TR::Node *callNode)
 
 TR::Register *TR::ARM64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
+   TR_UNIMPLEMENTED();
    return NULL;
    }

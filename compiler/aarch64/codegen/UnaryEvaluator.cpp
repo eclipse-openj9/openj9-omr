@@ -81,7 +81,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::lnegEvaluator(TR::Node *node, TR::CodeG
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *tempReg = cg->gprClobberEvaluate(firstChild);
-   generateNegInstruction(cg, node, tempReg, tempReg);
+   generateNegInstruction(cg, node, tempReg, tempReg, true);
    firstChild->decReferenceCount();
    return node->setRegister(tempReg);
    }

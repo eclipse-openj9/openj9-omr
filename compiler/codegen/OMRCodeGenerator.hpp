@@ -116,7 +116,6 @@ enum TR_SpillKinds // For register pressure simulation
    {
    // Mandatory spill kinds are certain to cause a spill to memory
    //
-   TR_hprSpill,       // zGryphon 390 All integer highword regs
    TR_gprSpill,       // All integer regs
    TR_fprSpill,       // All floating-point regs
    TR_vrfSpill,       // All vector regs
@@ -241,9 +240,6 @@ namespace TR
       };
    }
 
-TR::Node* generatePoisonNode(TR::Compilation *comp, TR::Block *currentBlock, TR::SymbolReference *liveAutoSymRef);
-
-
 
 namespace OMR
 {
@@ -270,7 +266,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_BitVector *_localsThatAreStored;
    int32_t _numLocalsWhenStoreAnalysisWasDone;
-   TR_HashTabInt _uncommmonedNodes;               // uncommoned nodes keyed by the original nodes
    List<TR_Pair<TR::Node, int32_t> > _ialoadUnneeded;
 
    public:
@@ -423,7 +418,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void identifyUnneededByteConvNodes(TR::Node*, TR::TreeTop *, vcount_t, TR::DataType);
    void identifyUnneededByteConvNodes();
 
-   bool afterRA() { return _afterRA; }
    TR::CodeGenPhase& getCodeGeneratorPhase() {return _codeGenPhase;}
 
    void prepareNodeForInstructionSelection(TR::Node*node);
@@ -474,7 +468,7 @@ class OMR_EXTENSIBLE CodeGenerator
    rcount_t recursivelyDecReferenceCount(TR::Node*node);
    void evaluateChildrenWithMultipleRefCount(TR::Node*node);
 
-   void incRefCountForOpaquePseudoRegister(TR::Node * node, TR::CodeGenerator * cg, TR::Compilation * comp) {}
+   void incRefCountForOpaquePseudoRegister(TR::Node * node) {}
 
    void startUsingRegister(TR::Register *reg);
    void stopUsingRegister(TR::Register *reg);
@@ -918,14 +912,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_GlobalRegisterNumber getLastGlobalGPR()  {return _lastGlobalGPR;}
    TR_GlobalRegisterNumber setLastGlobalGPR(TR_GlobalRegisterNumber n) {return (_lastGlobalGPR = n);}
 
-   TR_GlobalRegisterNumber getFirstGlobalHPR() {return _firstGlobalHPR;}
-   TR_GlobalRegisterNumber setFirstGlobalHPR(TR_GlobalRegisterNumber n) {return (_firstGlobalHPR = n);}
-   TR_GlobalRegisterNumber getLastGlobalHPR() {return _lastGlobalHPR;}
-   TR_GlobalRegisterNumber setLastGlobalHPR(TR_GlobalRegisterNumber n) {return (_lastGlobalHPR = n);}
-
-   TR_GlobalRegisterNumber getGlobalHPRFromGPR (TR_GlobalRegisterNumber n) {return 0;}
-   TR_GlobalRegisterNumber getGlobalGPRFromHPR (TR_GlobalRegisterNumber n) {return 0;}
-
    TR_GlobalRegisterNumber getFirstGlobalFPR() {return _lastGlobalGPR + 1;}
    TR_GlobalRegisterNumber setFirstGlobalFPR(TR_GlobalRegisterNumber n) {return (_firstGlobalFPR = n);}
    TR_GlobalRegisterNumber getLastGlobalFPR() {return _lastGlobalFPR;}
@@ -952,11 +938,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    uint16_t getNumberOfGlobalRegisters();
 
-#ifdef TR_HOST_S390
-   uint16_t getNumberOfGlobalGPRs();
-#else
    uint16_t getNumberOfGlobalGPRs() {return _lastGlobalGPR + 1;}
-#endif
    uint16_t getNumberOfGlobalFPRs() {return _lastGlobalFPR - _lastGlobalGPR;}
    uint16_t getNumberOfGlobalVRFs() {return _lastGlobalVRF - _firstGlobalVRF;}
 
@@ -967,7 +949,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint8_t setGlobalFPRPartitionLimit(uint8_t l) {return (_globalFPRPartitionLimit = l);}
 
    bool isGlobalGPR(TR_GlobalRegisterNumber n) {return n <= _lastGlobalGPR;}
-   bool isGlobalHPR(TR_GlobalRegisterNumber n) {return (n >= _firstGlobalHPR && n <= _lastGlobalHPR);}
 
    bool isAliasedGRN(TR_GlobalRegisterNumber n);
    TR_GlobalRegisterNumber getOverlappedAliasForGRN(TR_GlobalRegisterNumber n);
@@ -1076,9 +1057,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::list<TR::Register*> *getSpilledRegisterList() {return _spilledRegisterList;}
    TR::list<TR::Register*> *setSpilledRegisterList(TR::list<TR::Register*> *r) {return _spilledRegisterList = r;}
-   TR::list<TR::Register*> *getFirstTimeLiveOOLRegisterList() {return _firstTimeLiveOOLRegisterList;}
-   TR::list<TR::Register*> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register*> *r) {return _firstTimeLiveOOLRegisterList = r;}
-
+   
    TR_BackingStore *allocateSpill(bool containsCollectedReference, int32_t *offset, bool reuse=true);
    TR_BackingStore *allocateSpill(int32_t size, bool containsCollectedReference, int32_t *offset, bool reuse=true);
    TR_BackingStore *allocateInternalPointerSpill(TR::AutomaticSymbol *pinningArrayPointer);
@@ -1158,7 +1137,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
    void apply32BitLabelTableRelocation(int32_t * cursor, TR::LabelSymbol *);
 
-   TR::list<TR_Pair<TR_ResolvedMethod,TR::Instruction> *> &getJNICallSites() { return _jniCallSites; }  // registerAssumptions()
 
    bool needClassAndMethodPointerRelocations() { return false; }
    bool needRelocationsForStatics() { return false; }
@@ -1347,13 +1325,10 @@ class OMR_EXTENSIBLE CodeGenerator
    // symbol reference requires entry in the literal pool
    bool arithmeticNeedsLiteralFromPool(TR::Node *node) { return false; }
    bool bitwiseOpNeedsLiteralFromPool(TR::Node *parent, TR::Node *child) { return false; }
-   bool bndsChkNeedsLiteralFromPool(TR::Node *node) { return false; }
-   bool constLoadNeedsLiteralFromPool(TR::Node *node) { return false; }
    void setOnDemandLiteralPoolRun(bool answer) {}
    bool isLiteralPoolOnDemandOn () { return false; }
    bool supportsOnDemandLiteralPool() { return false; }
    bool supportsDirectIntegralLoadStoresFromLiteralPool() { return false; }
-   bool supportsHighWordFacility() { return false; }
 
    bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg) { return false; }
 
@@ -1407,9 +1382,7 @@ class OMR_EXTENSIBLE CodeGenerator
       return true;
       }
 
-   // --------------------------------------------------------------------------
-
-   TR::Node *createOrFindClonedNode(TR::Node *node, int32_t numChildren);
+   // --------------------------------------------------------------------------	
 
    bool constantAddressesCanChangeSize(TR::Node *node);
    bool profiledPointersRequireRelocation();
@@ -1535,9 +1508,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    bool getAccessStaticsIndirectly() {return _flags1.testAny(AccessStaticsIndirectly);}
    void setAccessStaticsIndirectly(bool b) {_flags1.set(AccessStaticsIndirectly, b);}
-
-   bool getSupportsBigDecimalLongLookasideVersioning() { return _flags3.testAny(SupportsBigDecimalLongLookasideVersioning);}
-   void setSupportsBigDecimalLongLookasideVersioning() { _flags3.set(SupportsBigDecimalLongLookasideVersioning);}
 
    bool getSupportsBDLLHardwareOverflowCheck() { return _flags3.testAny(SupportsBDLLHardwareOverflowCheck);}
    void setSupportsBDLLHardwareOverflowCheck() { _flags3.set(SupportsBDLLHardwareOverflowCheck);}
@@ -1782,7 +1752,7 @@ class OMR_EXTENSIBLE CodeGenerator
       // AVAILABLE                                        = 0x00000400,
       HasCCCarry                                          = 0x00000800,
       // AVAILABLE                                        = 0x00001000,
-      SupportsBigDecimalLongLookasideVersioning           = 0x00002000,
+      // AVAILABLE                                        = 0x00002000,
       RemoveRegisterHogsInLowerTreesWalk                  = 0x00004000,
       SupportsBDLLHardwareOverflowCheck                   = 0x00008000,
       InlinedGetCurrentThreadMethod                       = 0x00010000,
@@ -1904,18 +1874,12 @@ class OMR_EXTENSIBLE CodeGenerator
    int32_t _accumulatorNodeUsage;
 
    TR::list<TR::Register*> *_spilledRegisterList;
-   TR::list<TR::Register*> *_firstTimeLiveOOLRegisterList;
    TR::list<OMR::RegisterUsage*> *_referencedRegistersList;
    int32_t _currentPathDepth;
-   TR::list<TR::Node*> _nodesUnderComputeCCList;
-   TR::list<TR::Node*> _nodesToUncommonList;
-   TR::list<TR::Node*> _nodesSpineCheckedList;
+   
 
-   TR::list<TR_Pair<TR_ResolvedMethod, TR::Instruction> *> _jniCallSites; // list of instrutions representing direct jni call sites
 
    TR_Array<void *> _monitorMapping;
-
-   TR::list<TR::Node*> _compressedRefs;
 
    uint32_t _largestOutgoingArgSize;
 
@@ -1941,8 +1905,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_RegisterMask _liveRealRegisters[NumRegisterKinds];
    TR_GlobalRegisterNumber _lastGlobalGPR;
-   TR_GlobalRegisterNumber _firstGlobalHPR;
-   TR_GlobalRegisterNumber _lastGlobalHPR;
    TR_GlobalRegisterNumber _firstGlobalFPR;
    TR_GlobalRegisterNumber _lastGlobalFPR;
    TR_GlobalRegisterNumber _firstOverlappedGlobalFPR;
@@ -1957,8 +1919,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint8_t _globalGPRPartitionLimit;
    uint8_t _globalFPRPartitionLimit;
    flags16_t _enabledFlags;
-
-   bool _afterRA;
 
    // MOVE TO J9 Z CodeGenerator
    // isTemporaryBased storageReferences just have a symRef but some other routines expect a node so use the below to fill in this symRef on this node

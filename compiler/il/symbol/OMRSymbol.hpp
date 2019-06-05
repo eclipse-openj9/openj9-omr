@@ -96,7 +96,8 @@ public:
 protected:
 
    /**
-    * Generic constructor, sets size to 0
+    * @brief Generic constructor for the creation of a new symbol.  The
+    *        size is set to 0.
     */
    Symbol() :
       _size(0),
@@ -107,14 +108,17 @@ protected:
    { }
 
    /**
-    * Create symbol of specified data type, inferring size
-    * from type.
+    * @brief Create symbol of specified data type, inferring the size
+    *        from the type.
+    * @param[in] d : TR::DataType of the new symbol
     */
    Symbol(TR::DataType d);
 
    /**
-    * Create symbol of specified data type, inferring size
-    * from type.
+    * @brief Create symbol of specified data type and specified size.
+    *
+    * @param[in] d : TR::DataType of the new symbol
+    * @param[in] size : size of new symbol
     */
    Symbol(TR::DataType d, uint32_t size);
 
@@ -354,11 +358,10 @@ public:
 
    inline bool isRecognizedShadow();
 
+   inline bool isRecognizedKnownObjectShadow();
+
    inline void setArrayletShadowSymbol();
    inline bool isArrayletShadowSymbol();
-
-   inline void setPythonLocalVariableShadowSymbol();
-   inline bool isPythonLocalVariableShadowSymbol();
 
    inline void setGlobalFragmentShadowSymbol();
    inline bool isGlobalFragmentShadowSymbol();
@@ -368,12 +371,6 @@ public:
 
    void setOrdered() { _flags.set(Ordered); }
    bool isOrdered()  { return _flags.testAny(Ordered); }
-
-   inline void setPythonConstantShadowSymbol();
-   inline bool isPythonConstantShadowSymbol();
-
-   inline void setPythonNameShadowSymbol();
-   inline bool isPythonNameShadowSymbol();
 
    // flag methods specific to labels
    //
@@ -504,13 +501,12 @@ public:
       ConstString               = 0x80000000,
       AddressIsCPIndexOfStatic  = 0x40000000,
       RecognizedStatic          = 0x20000000,
-      // Available              = 0x10000000,
+      ConstantPoolAddress       = 0x10000000,
       SetUpDLPFlags             = 0xF0000000, ///< Used by TR::StaticSymbol::SetupDLPFlags(), == ConstString | AddressIsCPIndexOfStatic | RecognizedStatic
       CompiledMethod            = 0x08000000,
       StartPC                   = 0x04000000,
       CountForRecompile         = 0x02000000,
       RecompilationCounter      = 0x01000000,
-      ConstantPoolAddress       = 0x00800000,
       GCRPatchPoint             = 0x00400000,
 
       //Only Used by Symbols for which isResolvedMethod is true;
@@ -521,12 +517,12 @@ public:
       ArrayShadow               = 0x80000000,
       RecognizedShadow          = 0x40000000, // recognized field
       ArrayletShadow            = 0x20000000,
-      PythonLocalVariable       = 0x10000000, // Python local variable shadow  TODO: If we ever move this somewhere else, can we move UnsafeShadow from flags2 to here?
+      RecognizedKnownObjectShadow = 0x10000000,
       GlobalFragmentShadow      = 0x08000000,
       MemoryTypeShadow          = 0x04000000,
       Ordered                   = 0x02000000,
-      PythonConstant            = 0x01000000, // Python constant shadow
-      PythonName                = 0x00800000, // Python name shadow
+      // Available              = 0x01000000,
+      // Available              = 0x00800000,
 
       // only use by Symbols for which isLabel is true
       //

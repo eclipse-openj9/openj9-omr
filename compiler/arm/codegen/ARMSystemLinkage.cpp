@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,6 +27,8 @@
 #include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/symbol/StaticSymbol.hpp"
 #include "codegen/ARMInstruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/ARMSystemLinkage.hpp"
 #include "codegen/GCStackAtlas.hpp"
@@ -598,6 +600,6 @@ TR::Register *TR::ARMSystemLinkage::buildDirectDispatch(TR::Node *callNode)
 
 TR::Register *TR::ARMSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    {
-   TR_ASSERT(0, "unimplemented");
+   TR_UNIMPLEMENTED();
    return NULL;
    }

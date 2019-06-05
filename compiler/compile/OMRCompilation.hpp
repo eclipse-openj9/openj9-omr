@@ -514,6 +514,28 @@ public:
    ToStringMap  &getToStringMap()  { return _toStringMap; }
    ToCommentMap &getToCommentMap() { return _toCommentMap; }
 
+   /**
+    * @brief Answers whether a call to the provided resolved method would represent a
+    *        recursive method call from the method currently being compiled.
+    *
+    * @param[in] targetResolvedMethod : the method symbol to check
+    *
+    * @return true if calling the targetResolvedMethod is a recursive call from the
+    *         method being compiled; false otherwise.
+    */
+   bool isRecursiveMethodTarget(TR_ResolvedMethod *targetResolvedMethod);
+
+   /**
+    * @brief Answers whether a call to the provided target symbol would represent a
+    *        recursive method call from the method currently being compiled.
+    *
+    * @param[in] targetSymbol : the method symbol to check
+    *
+    * @return true if calling the targetSymbol is a recursive call from the method
+    *         being compiled; false otherwise.
+    */
+   bool isRecursiveMethodTarget(TR::Symbol *targetSymbol);
+
    // ==========================================================================
    // Should be in Code Generator
    //
@@ -528,7 +550,6 @@ public:
    TR::list<TR::Snippet*> *getSnippetsToBePatchedOnClassUnload() { return &_snippetsToBePatchedOnClassUnload; }
    TR::list<TR::Snippet*> *getMethodSnippetsToBePatchedOnClassUnload() { return &_methodSnippetsToBePatchedOnClassUnload; }
    TR::list<TR::Snippet*> *getSnippetsToBePatchedOnClassRedefinition() { return &_snippetsToBePatchedOnClassRedefinition; }
-   TR::list<TR_Pair<TR::Snippet,TR_ResolvedMethod> *> *getSnippetsToBePatchedOnRegisterNative() { return &_snippetsToBePatchedOnRegisterNative; }
 
    TR_RegisterCandidates *getGlobalRegisterCandidates() { return _globalRegisterCandidates; }
    void setGlobalRegisterCandidates(TR_RegisterCandidates *t) { _globalRegisterCandidates = t; }
@@ -1132,7 +1153,6 @@ private:
    TR::list<TR::Snippet*>                   _snippetsToBePatchedOnClassUnload;
    TR::list<TR::Snippet*>                   _methodSnippetsToBePatchedOnClassUnload;
    TR::list<TR::Snippet*>                   _snippetsToBePatchedOnClassRedefinition;
-   TR::list<TR_Pair<TR::Snippet,TR_ResolvedMethod> *> _snippetsToBePatchedOnRegisterNative;
 
    TR::list<TR::ResolvedMethodSymbol*>      _genILSyms;
 

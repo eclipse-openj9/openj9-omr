@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 #include "JitTest.hpp"
 #include "default_compiler.hpp"
+#include "omrformatconsts.h"
 
 uint8_t byteValues[] = {
    0x00,
@@ -146,10 +147,10 @@ TEST_P(lBitPermuteTest, ConstAddressLengthTest)
       "  (lreturn                         "
       "  (lbitpermute                     "
       "   (lload parm=0)                  "
-      "   (aconst %llu)                   "
-      "   (iconst %llu)                   "
+      "   (aconst %" OMR_PRIuPTR ")       "
+      "   (iconst %" OMR_PRIu32 ")        "
       "  ))))                             ",
-      param.arrayAddress,
+      reinterpret_cast<uintptr_t>(param.arrayAddress),
       param.arrayLength
       );
 
@@ -178,10 +179,10 @@ TEST_P(lBitPermuteTest, ConstAddressTest)
       "  (lreturn                                "
       "  (lbitpermute                            "
       "   (lload parm=0)                         "
-      "   (aconst %llu)                          "
+      "   (aconst %" OMR_PRIuPTR ")              "
       "   (iload parm=1)                         "
       "  ))))                                    ",
-      param.arrayAddress
+      reinterpret_cast<uintptr_t>(param.arrayAddress)
       );
 
    auto trees = parseString(inputTrees);
@@ -245,10 +246,10 @@ TEST_P(iBitPermuteTest, ConstAddressLengthTest)
       "  (ireturn                         "
       "  (ibitpermute                     "
       "   (iload parm=0)                  "
-      "   (aconst %llu)                   "
-      "   (iconst %llu)                   "
+      "   (aconst %" OMR_PRIuPTR ")       "
+      "   (iconst %" OMR_PRIu32 ")        "
       "  ))))                             ",
-      maskedIndices,
+      reinterpret_cast<uintptr_t>(maskedIndices),
       param.arrayLength
       );
 
@@ -281,10 +282,10 @@ TEST_P(iBitPermuteTest, ConstAddressTest)
       "  (ireturn                                "
       "  (ibitpermute                            "
       "   (iload parm=0)                         "
-      "   (aconst %llu)                          "
+      "   (aconst %" OMR_PRIuPTR ")              "
       "   (iload parm=1)                         "
       "  ))))                                    ",
-      maskedIndices
+      reinterpret_cast<uintptr_t>(maskedIndices)
       );
 
    auto trees = parseString(inputTrees);
@@ -356,10 +357,10 @@ TEST_P(sBitPermuteTest, ConstAddressLengthTest)
       "  (su2i                            "
       "  (sbitpermute                     "
       "   (sload parm=0)                  "
-      "   (aconst %llu)                   "
-      "   (iconst %llu)                   "
+      "   (aconst %" OMR_PRIuPTR ")       "
+      "   (iconst %" OMR_PRIu32 ")        "
       "  )))))                            ",
-      maskedIndices,
+      reinterpret_cast<uintptr_t>(maskedIndices),
       param.arrayLength
       );
 
@@ -396,10 +397,10 @@ TEST_P(sBitPermuteTest, ConstAddressTest)
       "  (su2i                                   "
       "  (sbitpermute                            "
       "   (sload parm=0)                         "
-      "   (aconst %llu)                          "
+      "   (aconst %" OMR_PRIuPTR ")              "
       "   (iload parm=1)                         "
       "  )))))                                   ",
-      maskedIndices
+      reinterpret_cast<uintptr_t>(maskedIndices)
       );
 
    auto trees = parseString(inputTrees);
@@ -475,10 +476,10 @@ TEST_P(bBitPermuteTest, ConstAddressLengthTest)
       "  (bu2i                          "
       "  (bbitpermute                   "
       "   (bload parm=0)                "
-      "   (aconst %llu)                 "
-      "   (iconst %llu)                 "
+      "   (aconst %" OMR_PRIuPTR ")     "
+      "   (iconst %" OMR_PRIu32 ")      "
       "  )))))                          ",
-      maskedIndices,
+      reinterpret_cast<uintptr_t>(maskedIndices),
       param.arrayLength
       );
 
@@ -515,10 +516,10 @@ TEST_P(bBitPermuteTest, ConstAddressTest)
       "  (bu2i                                 "
       "  (bbitpermute                          "
       "   (bload parm=0)                       "
-      "   (aconst %llu)                        "
+      "   (aconst %" OMR_PRIuPTR ")            "
       "   (iload parm=1)                       "
       "  )))))                                 ",
-      maskedIndices
+      (uintptr_t)maskedIndices
       );
 
    auto trees = parseString(inputTrees);

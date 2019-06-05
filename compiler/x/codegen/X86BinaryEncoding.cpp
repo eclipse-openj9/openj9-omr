@@ -27,6 +27,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -891,7 +892,7 @@ TR::X86ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
                   {
                   cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                                            (uint8_t *)getSourceImmediate(),
+                                                                                            (uint8_t *)(uintptr_t)getSourceImmediate(),
                                                                                             (uint8_t *)symbolKind,
                                                                                             TR_SymbolFromManager,
                                                                                             cg()),
@@ -1065,19 +1066,20 @@ TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
       if (getOpCode().isCallImmOp() || getOpCode().isBranchOp())
          {
-         TR::MethodSymbol *methodSym = sym->getMethodSymbol();
-         TR::ResolvedMethodSymbol *resolvedMethodSym = sym->getResolvedMethodSymbol();
-         TR_ResolvedMethod *resolvedMethod = resolvedMethodSym ? resolvedMethodSym->getResolvedMethod() : 0;
-         TR::LabelSymbol *labelSym = sym->getLabelSymbol();
-
-         if ( !(resolvedMethod && resolvedMethod->isSameMethod(comp->getCurrentMethod()) && !comp->isDLT()) )
+         if (!comp->isRecursiveMethodTarget(sym))
             {
+            TR::LabelSymbol *labelSym = sym->getLabelSymbol();
+
             if (labelSym)
                {
                cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, labelSym));
                }
             else
                {
+               TR::MethodSymbol *methodSym = sym->getMethodSymbol();
+               TR::ResolvedMethodSymbol *resolvedMethodSym = sym->getResolvedMethodSymbol();
+               TR_ResolvedMethod *resolvedMethod = resolvedMethodSym ? resolvedMethodSym->getResolvedMethod() : 0;
+
                if (methodSym && methodSym->isHelper())
                   {
                   cg()->addProjectSpecializedRelocation(cursor, (uint8_t *)getSymbolReference(), NULL, TR_HelperAddress,
@@ -1136,7 +1138,7 @@ TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
                   {
                   cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                                            (uint8_t *)getSourceImmediate(),
+                                                                                            (uint8_t *)(uintptr_t)getSourceImmediate(),
                                                                                             (uint8_t *)TR::SymbolType::typeClass,
                                                                                             TR_SymbolFromManager,
                                                                                             cg()),
@@ -1214,16 +1216,12 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
 
       if (getOpCode().isCallImmOp() || getOpCode().isBranchOp())
          {
-         TR::MethodSymbol *methodSym = sym->getMethodSymbol();
-         TR::ResolvedMethodSymbol *resolvedMethodSym = sym->getResolvedMethodSymbol();
-         TR_ResolvedMethod *resolvedMethod = resolvedMethodSym ? resolvedMethodSym->getResolvedMethod() : 0;
-         TR::LabelSymbol *labelSym = sym->getLabelSymbol();
-
          intptrj_t targetAddress = (int32_t)getSourceImmediate();
 
          if (TR::Compiler->target.is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
             {
             TR::SymbolReference *calleeSymRef = NULL;
+            TR::LabelSymbol *labelSym = sym->getLabelSymbol();
 
             if (labelSym==NULL)
                calleeSymRef = getSymbolReference();
@@ -1244,7 +1242,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
          intptrj_t currentInstructionAddress = (intptrj_t)(cursor-1);
          intptrj_t nextInstructionAddress = (intptrj_t)(cursor+4);
 
-         if (resolvedMethod && resolvedMethod->isSameMethod(comp->getCurrentMethod()) && !comp->isDLT())
+         if (comp->isRecursiveMethodTarget(sym))
             {
             // Compute method's jit entry point
             //
@@ -1261,6 +1259,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
             }
          else
             {
+            TR::LabelSymbol *labelSym = sym->getLabelSymbol();
             if (!labelSym)
                {
                // TODO:
@@ -1284,6 +1283,8 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                //
                // This logic/handshake will be cleaned up in a future release.
                //
+               TR::MethodSymbol *methodSym = sym->getMethodSymbol();
+
                if (TR::Compiler->target.is64Bit())
                   {
                   // Obtain the actual target of this call instruction.
@@ -1293,7 +1294,11 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                   //
                   TR::Node *symNode = getNode();
                   if (methodSym && methodSym->isJNI() && symNode && symNode->isPreparedForDirectJNI())
+                     {
+                     TR::ResolvedMethodSymbol *resolvedMethodSym = sym->getResolvedMethodSymbol();
+                     TR_ResolvedMethod *resolvedMethod = resolvedMethodSym ? resolvedMethodSym->getResolvedMethod() : 0;
                      targetAddress = (uintptrj_t)resolvedMethod->startAddressForJNIMethod(comp);
+                     }
                   else
                      targetAddress = (intptrj_t)getSymbolReference()->getMethodAddress();
                   }
@@ -1567,7 +1572,7 @@ TR::X86RegImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
             if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
                {
                cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                                         (uint8_t *)getSourceImmediate(),
+                                                                                         (uint8_t *)(uintptr_t)getSourceImmediate(),
                                                                                          (uint8_t *)symbolKind,
                                                                                          TR_SymbolFromManager,
                                                                                          cg()),
@@ -1692,7 +1697,7 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
             if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
                {
                cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                                         (uint8_t *)getSourceImmediate(),
+                                                                                         (uint8_t *)(uintptr_t)getSourceImmediate(),
                                                                                          (uint8_t *)TR::SymbolType::typeClass,
                                                                                          TR_SymbolFromManager,
                                                                                          cg()),
@@ -1735,7 +1740,7 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
          if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
             {
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                                      (uint8_t *)getSourceImmediate(),
+                                                                                      (uint8_t *)(uintptr_t)getSourceImmediate(),
                                                                                       (uint8_t *)symbolKind,
                                                                                       TR_SymbolFromManager,
                                                                                       cg()),
@@ -1987,7 +1992,7 @@ TR::X86MemImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
          if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
             {
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                                      (uint8_t *)getSourceImmediate(),
+                                                                                      (uint8_t *)(uintptr_t)getSourceImmediate(),
                                                                                       (uint8_t *)TR::SymbolType::typeClass,
                                                                                       TR_SymbolFromManager,
                                                                                       cg()),
@@ -2149,7 +2154,7 @@ TR::X86MemImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
          if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
             {
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                                      (uint8_t *)getSourceImmediate(),
+                                                                                      (uint8_t *)(uintptr_t)getSourceImmediate(),
                                                                                       (uint8_t *)TR::SymbolType::typeClass,
                                                                                       TR_SymbolFromManager,
                                                                                       cg()),

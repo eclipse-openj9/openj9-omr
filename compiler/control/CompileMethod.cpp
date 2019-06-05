@@ -56,6 +56,7 @@
 #include "ras/Debug.hpp"
 #include "env/SystemSegmentProvider.hpp"
 #include "env/DebugSegmentProvider.hpp"
+#include "omrformatconsts.h"
 #include "runtime/CodeCacheManager.hpp"
 
 #if defined (_MSC_VER) && _MSC_VER < 1900
@@ -80,7 +81,7 @@ writePerfToolEntry(void *start, uint32_t size, const char *name)
       static const int maxPerfFilenameSize = 15 + sizeof(jvmPid)* 3; // "/tmp/perf-%ld.map"
       char perfFilename[maxPerfFilenameSize] = { 0 };
 
-      int numCharsWritten = snprintf(perfFilename, maxPerfFilenameSize, "/tmp/perf-%ld.map", jvmPid);
+      int numCharsWritten = snprintf(perfFilename, maxPerfFilenameSize, "/tmp/perf-%" OMR_PRId64 ".map", static_cast<int64_t>(jvmPid));
       if (numCharsWritten > 0 && numCharsWritten < maxPerfFilenameSize)
          {
          perfFile = fopen(perfFilename, "a");
@@ -184,7 +185,7 @@ int32_t init_options(TR::JitConfig *jitConfig, char *cmdLineOptions)
 
    if (cmdLineOptions)
       {
-      // The callers (python) guarantee that we have at least -Xjit in cmdline options
+      // The callers must guarantee that we have at least -Xjit in cmdline options
       //
       cmdLineOptions += 5; // skip the leading -Xjit
       if (*cmdLineOptions == ':') cmdLineOptions++; // also skip :

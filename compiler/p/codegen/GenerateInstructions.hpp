@@ -344,7 +344,9 @@ TR::Instruction *generateControlFlowInstruction(
                    TR::InstOpCode::Mnemonic                       op,
                    TR::Node                            *n,
                    TR::RegisterDependencyConditions *deps=NULL,
-                   TR::Instruction                     *preced = 0);
+                   TR::Instruction                     *preced = 0,
+                   bool                                useRegPairForResult = false,
+                   bool                                useRegPairForCond = false);
 
 TR::Instruction *generateAdminInstruction(
                    TR::CodeGenerator      *cg,
@@ -377,3 +379,16 @@ TR::Instruction *generateTrg1Instruction(
                    TR::Node        *n,
                    TR::Register    *trg,
                    TR::Instruction *preced = 0);
+
+void generateZeroExtendInstruction(
+                   TR::Node *node, 
+                   TR::Register *trgReg, 
+                   TR::Register *srcReg, 
+                   int32_t bitsInTarget, 
+                   TR::CodeGenerator *cg);
+
+void generateSignExtendInstruction(
+                   TR::Node *node,
+                   TR::Register *trgReg,
+                   TR::Register *srcReg,
+                   TR::CodeGenerator *cg);

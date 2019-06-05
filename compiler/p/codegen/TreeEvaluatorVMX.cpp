@@ -26,6 +26,7 @@
 #include <string.h>
 #include "codegen/BackingStore.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
@@ -238,16 +239,16 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       TR::LabelSymbol *donelabel = generateLabelSymbol(cg);
 
       TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
-      addDependency(deps, addrReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, addrReg, TR::RealRegister::NoReg, TR_GPR, cg);
       deps->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
       deps->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
-      addDependency(deps, fillReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(deps, lenReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, fillReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, lenReg, TR::RealRegister::NoReg, TR_GPR, cg);
       deps->getPostConditions()->getRegisterDependency(2)->setExcludeGPR0();
       deps->getPreConditions()->getRegisterDependency(2)->setExcludeGPR0();
-      addDependency(deps, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(deps, condReg, TR::RealRegister::cr0, TR_CCR, cg);
-      addDependency(deps, fp1Reg, TR::RealRegister::NoReg, TR_FPR, cg);
+      TR::addDependency(deps, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, condReg, TR::RealRegister::cr0, TR_CCR, cg);
+      TR::addDependency(deps, fp1Reg, TR::RealRegister::NoReg, TR_FPR, cg);
 
       generateTrg1Src1ImmInstruction(cg, lenNode->getOpCode().isInt() ? TR::InstOpCode::cmpli4 : TR::InstOpCode::cmpli8, node, condReg, lenReg, 0);
       generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, donelabel, condReg);
@@ -366,15 +367,15 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       TR::LabelSymbol *donelabel = generateLabelSymbol(cg);
 
       TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
-      addDependency(deps, addrReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, addrReg, TR::RealRegister::NoReg, TR_GPR, cg);
       deps->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
       deps->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
-      addDependency(deps, fillReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(deps, lenReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, fillReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, lenReg, TR::RealRegister::NoReg, TR_GPR, cg);
       deps->getPostConditions()->getRegisterDependency(2)->setExcludeGPR0();
       deps->getPreConditions()->getRegisterDependency(2)->setExcludeGPR0();
-      addDependency(deps, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(deps, condReg, TR::RealRegister::cr0, TR_CCR, cg);
+      TR::addDependency(deps, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(deps, condReg, TR::RealRegister::cr0, TR_CCR, cg);
 
       generateTrg1Src1ImmInstruction(cg, lenNode->getOpCode().isInt() ? TR::InstOpCode::cmpli4 : TR::InstOpCode::cmpli8, node, condReg, lenReg, 0);
       generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, donelabel, condReg);

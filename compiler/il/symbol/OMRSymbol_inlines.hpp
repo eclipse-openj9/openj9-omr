@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 IBM Corp. and others
+ * Copyright (c) 2017, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -446,6 +446,12 @@ OMR::Symbol::isRecognizedShadow()
    return self()->isShadow() && _flags.testAny(RecognizedShadow);
    }
 
+bool
+OMR::Symbol::isRecognizedKnownObjectShadow()
+   {
+   return self()->isRecognizedShadow() && _flags.testAny(RecognizedKnownObjectShadow);
+   }
+
 void
 OMR::Symbol::setArrayletShadowSymbol()
    {
@@ -457,19 +463,6 @@ bool
 OMR::Symbol::isArrayletShadowSymbol()
    {
    return self()->isShadow() && _flags.testAny(ArrayletShadow);
-   }
-
-void
-OMR::Symbol::setPythonLocalVariableShadowSymbol()
-   {
-   TR_ASSERT(self()->isShadow(), "assertion failure");
-   _flags.set(PythonLocalVariable);
-   }
-
-bool
-OMR::Symbol::isPythonLocalVariableShadowSymbol()
-   {
-   return self()->isShadow() && _flags.testAny(PythonLocalVariable);
    }
 
 void
@@ -496,32 +489,6 @@ bool
 OMR::Symbol::isMemoryTypeShadowSymbol()
    {
    return self()->isShadow() && _flags.testAny(MemoryTypeShadow);
-   }
-
-void
-OMR::Symbol::setPythonConstantShadowSymbol()
-   {
-   TR_ASSERT(self()->isShadow(), "assertion failure");
-   _flags.set(PythonConstant);
-   }
-
-bool
-OMR::Symbol::isPythonConstantShadowSymbol()
-   {
-   return self()->isShadow() && _flags.testAny(PythonConstant);
-   }
-
-void
-OMR::Symbol::setPythonNameShadowSymbol()
-   {
-   TR_ASSERT(self()->isShadow(), "assertion failure");
-   _flags.set(PythonName);
-   }
-
-bool
-OMR::Symbol::isPythonNameShadowSymbol()
-   {
-   return self()->isShadow() && _flags.testAny(PythonName);
    }
 
 void

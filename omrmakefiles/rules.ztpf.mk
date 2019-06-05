@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2019 IBM Corp. and others
 # 
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,7 +42,7 @@ endif
 ### Global Flags
 ###
 
-GLOBAL_CPPFLAGS += -DLINUX -D_REENTRANT -DJ9ZTPF -DOMRZTPF -DOMRPORT_JSIG_SUPPORT
+GLOBAL_CPPFLAGS += -DLINUX -D_REENTRANT -DJ9ZTPF -DOMRZTPF -DOMRPORT_JSIG_SUPPORT -DIBMLOCKS
 GLOBAL_CPPFLAGS += -D_GNU_SOURCE -DIBM_ATOE -D_TPF_SOURCE -D_TPF_THREADS -DZTPF_POSIX_SOCKET
 
 ifeq (s390,$(OMR_HOST_ARCH))
@@ -108,7 +108,7 @@ ifneq (,$(findstring executable,$(ARTIFACT_TYPE)))
     GLOBAL_LDFLAGS+=$(DEFAULT_LIBS)
 endif
 
-TPF_ROOT ?= /ztpf/java/bld/jvm/userfiles /ztpf/svtcur/redhat/all /ztpf/commit
+TPF_ROOT ?= /ztpf/java/bld/jvm/userfiles /zbld/svtcur/gnu/all /ztpf/commit
 
 ###
 ### Shared Libraries
@@ -136,6 +136,7 @@ ifeq (gcc,$(OMR_TOOLCHAIN))
     GLOBAL_LDFLAGS+=-Wl,--as-needed
     GLOBAL_LDFLAGS+=-Wl,--eh-frame-hdr
     GLOBAL_LDFLAGS+=$(foreach d,$(TPF_ROOT),-L$d/base/lib)
+    GLOBAL_LDFLAGS+=$(foreach d,$(TPF_ROOT),-L$d/base/stdlib)
     GLOBAL_LDFLAGS+=$(foreach d,$(TPF_ROOT),-L$d/opensource/stdlib)
     GLOBAL_LDFLAGS+=-lgcc
     GLOBAL_LDFLAGS+=-lCTOE

@@ -39,6 +39,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
@@ -143,31 +144,6 @@ static_assert(TR::NumIlOps ==
 
 #define OPT_DETAILS "O^O CODE GENERATION: "
 
-TR::Node* generatePoisonNode(TR::Compilation *comp, TR::Block *currentBlock, TR::SymbolReference *liveAutoSymRef)
-   {
-
-   bool poisoned = true;
-   TR::Node *storeNode = NULL;
-
-   if (liveAutoSymRef->getSymbol()->getType().isAddress())
-       storeNode = TR::Node::createStore(liveAutoSymRef, TR::Node::aconst(currentBlock->getEntry()->getNode(), 0x0));
-   else if (liveAutoSymRef->getSymbol()->getType().isInt64())
-       storeNode = TR::Node::createStore(liveAutoSymRef, TR::Node::lconst(currentBlock->getEntry()->getNode(), 0xc1aed1e5));
-   else if (liveAutoSymRef->getSymbol()->getType().isInt32())
-       storeNode = TR::Node::createStore(liveAutoSymRef, TR::Node::iconst(currentBlock->getEntry()->getNode(), 0xc1aed1e5));
-   else
-         poisoned = false;
-
-   if (comp->getOption(TR_TraceCG) && comp->getOption(TR_PoisonDeadSlots))
-      {
-      if (poisoned)
-         traceMsg(comp, "POISON DEAD SLOTS --- Live local %d  from parent block %d going dead .... poisoning slot with node 0x%x .\n", liveAutoSymRef->getReferenceNumber() , currentBlock->getNumber(), storeNode);
-      else
-         traceMsg(comp, "POISON DEAD SLOTS --- Live local %d of unsupported type from parent block %d going dead .... poisoning skipped.\n", liveAutoSymRef->getReferenceNumber() , currentBlock->getNumber());
-      }
-
-   return storeNode;
-   }
 
 TR::Instruction *
 OMR::CodeGenerator::generateNop(TR::Node * node, TR::Instruction *instruction, TR_NOPKind nopKind)
@@ -183,7 +159,6 @@ OMR::CodeGenerator::CodeGenerator() :
       _implicitExceptionPoint(0),
       _localsThatAreStored(NULL),
       _numLocalsWhenStoreAnalysisWasDone(-1),
-      _uncommmonedNodes(self()->comp()->trMemory(), stackAlloc),
       _ialoadUnneeded(self()->comp()->trMemory()),
      _symRefTab(self()->comp()->getSymRefTab()),
      _vmThreadRegister(NULL),
@@ -229,7 +204,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _simulatedNodeStates(NULL),
      _availableSpillTemps(getTypedAllocator<TR::SymbolReference*>(TR::comp()->allocator())),
      _counterBlocks(getTypedAllocator<TR::Block*>(TR::comp()->allocator())),
-     _compressedRefs(getTypedAllocator<TR::Node*>(TR::comp()->allocator())),
      _liveReferenceList(getTypedAllocator<TR_LiveReference*>(TR::comp()->allocator())),
      _snippetList(getTypedAllocator<TR::Snippet*>(TR::comp()->allocator())),
      _registerArray(self()->comp()->trMemory()),
@@ -238,22 +212,17 @@ OMR::CodeGenerator::CodeGenerator() :
      _spill16FreeList(getTypedAllocator<TR_BackingStore*>(TR::comp()->allocator())),
      _internalPointerSpillFreeList(getTypedAllocator<TR_BackingStore*>(TR::comp()->allocator())),
      _spilledRegisterList(NULL),
-     _firstTimeLiveOOLRegisterList(NULL),
      _referencedRegistersList(NULL),
      _variableSizeSymRefPendingFreeList(getTypedAllocator<TR::SymbolReference*>(TR::comp()->allocator())),
      _variableSizeSymRefFreeList(getTypedAllocator<TR::SymbolReference*>(TR::comp()->allocator())),
      _variableSizeSymRefAllocList(getTypedAllocator<TR::SymbolReference*>(TR::comp()->allocator())),
      _accumulatorNodeUsage(0),
-     _nodesUnderComputeCCList(getTypedAllocator<TR::Node*>(TR::comp()->allocator())),
-     _nodesToUncommonList(getTypedAllocator<TR::Node*>(TR::comp()->allocator())),
-     _nodesSpineCheckedList(getTypedAllocator<TR::Node*>(TR::comp()->allocator())),
      _collectedSpillList(getTypedAllocator<TR_BackingStore*>(TR::comp()->allocator())),
      _allSpillList(getTypedAllocator<TR_BackingStore*>(TR::comp()->allocator())),
      _relocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
      _externalRelocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
      _staticRelocationList(_compilation->allocator()),
      _breakPointList(getTypedAllocator<uint8_t*>(TR::comp()->allocator())),
-     _jniCallSites(getTypedAllocator<TR_Pair<TR_ResolvedMethod,TR::Instruction> *>(TR::comp()->allocator())),
      _preJitMethodEntrySize(0),
      _jitMethodEntryPaddingSize(0),
      _lastInstructionBeforeCurrentEvaluationTreeTop(NULL),
@@ -265,7 +234,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _internalControlFlowSafeNestingDepth(0),
      _stackOfArtificiallyInflatedNodes(self()->comp() ? self()->comp()->trMemory() : 0, 16),
      _stackOfMemoryReferencesCreatedDuringEvaluation(self()->comp() ? self()->comp()->trMemory() : 0, 16),
-     _afterRA(false),
      randomizer(self()->comp()),
      _outOfLineColdPathNestedDepth(0),
      _codeGenPhase(self()),
@@ -1058,7 +1026,7 @@ void OMR::CodeGenerator::initializeLinkage()
 
 TR::Linkage *OMR::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    {
-   TR_ASSERT(0, "Unimplemented createLinkage");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
@@ -1098,7 +1066,7 @@ OMR::CodeGenerator::isGlobalVRF(TR_GlobalRegisterNumber n)
 bool
 OMR::CodeGenerator::isGlobalFPR(TR_GlobalRegisterNumber n)
    {
-   return !self()->isGlobalGPR(n) && !self()->isGlobalHPR(n);
+   return !self()->isGlobalGPR(n);
    }
 
 TR_BitVector *
@@ -1123,7 +1091,6 @@ bool OMR::CodeGenerator::supportsInternalPointers()
    return self()->internalPointerSupportImplemented();
    }
 
-
 uint16_t
 OMR::CodeGenerator::getNumberOfGlobalRegisters()
    {
@@ -1133,24 +1100,11 @@ OMR::CodeGenerator::getNumberOfGlobalRegisters()
       return _lastGlobalFPR + 1;
    }
 
-
-#ifdef TR_HOST_S390
-uint16_t OMR::CodeGenerator::getNumberOfGlobalGPRs()
-   {
-   if (self()->supportsHighWordFacility())
-      {
-      return _firstGlobalHPR;
-      }
-   return _lastGlobalGPR + 1;
-   }
-#endif
-
 int32_t OMR::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Block *block)
    {
    TR::Node *node = block->getLastRealTreeTop()->getNode();
    return self()->getMaximumNumberOfGPRsAllowedAcrossEdge(node);
    }
-
 
 TR::Register *OMR::CodeGenerator::allocateCollectedReferenceRegister()
    {
@@ -1189,7 +1143,7 @@ void OMR::CodeGenerator::apply32BitLabelTableRelocation(int32_t * cursor, TR::La
 
 void OMR::CodeGenerator::addSnippet(TR::Snippet *s)
    {
-   _snippetList.push_front(s);
+   _snippetList.push_back(s);
    }
 
 void OMR::CodeGenerator::setCurrentBlock(TR::Block *b)
@@ -1331,27 +1285,6 @@ bool OMR::CodeGenerator::areAssignableGPRsScarce()
    if (c1)
       threshold = atoi(c1);
       return (self()->getMaximumNumbersOfAssignableGPRs() <= threshold);
-   }
-
-// J9
-//
-TR::Node *
-OMR::CodeGenerator::createOrFindClonedNode(TR::Node *node, int32_t numChildren)
-   {
-   TR_HashId index;
-   if (!_uncommmonedNodes.locate(node->getGlobalIndex(), index))
-      {
-      // has not been uncommoned already, clone and store for later
-      TR::Node *clone = TR::Node::copy(node, numChildren);
-      _uncommmonedNodes.add(node->getGlobalIndex(), index, clone);
-      node = clone;
-      }
-   else
-      {
-      // found previously cloned node
-      node = (TR::Node *) _uncommmonedNodes.getData(index);
-      }
-   return node;
    }
 
 
@@ -2100,22 +2033,17 @@ OMR::CodeGenerator::compute64BitMagicValues(
 
    // Cache some common denominators and their magic values.  The key values in this
    // array MUST be in numerically increasing order for the binary search to work.
-   //
-   // The table is composed of 32-bit values because the compiler seems to have a problem
-   // statically initializing it with int64_t constant values.
 
    #define NUM_64BIT_MAGIC_VALUES 6
-   #define TOINT64(x) (*( (int64_t *) &x))
-   static uint32_t div64BitMagicValues[NUM_64BIT_MAGIC_VALUES][6] =
+   static int64_t div64BitMagicValues[NUM_64BIT_MAGIC_VALUES][3] =
+   //     Denominator                     Magic Value   Shift
 
-   //     Denominator        Magic Value          Shift
-
-      { {    3, 0,    0x55555556, 0x55555555,    0, 0 },
-        {    5, 0,    0x66666667, 0x66666666,    1, 0 },
-        {    7, 0,    0x24924925, 0x49249249,    1, 0 },
-        {    9, 0,    0x71c71c72, 0x1c71c71c,    0, 0 },
-        {   10, 0,    0x66666667, 0x66666666,    2, 0 },
-        {   12, 0,    0xaaaaaaab, 0x2aaaaaaa,    1, 0 } };
+      { {           3, CONSTANT64(0x5555555555555556),      0 },
+        {           5, CONSTANT64(0x6666666666666667),      1 },
+        {           7, CONSTANT64(0x4924924924924925),      1 },
+        {           9, CONSTANT64(0x1c71c71c71c71c72),      0 },
+        {          10, CONSTANT64(0x6666666666666667),      2 },
+        {          12, CONSTANT64(0x2aaaaaaaaaaaaaab),      1 } };
 
    // Quick check if 'd' is cached.
    first = 0;
@@ -2123,13 +2051,13 @@ OMR::CodeGenerator::compute64BitMagicValues(
    while (first <= last)
       {
       mid = (first + last) / 2;
-      if (TOINT64(div64BitMagicValues[mid][0]) == d)
+      if (div64BitMagicValues[mid][0] == d)
          {
-         *m = TOINT64(div64BitMagicValues[mid][2]);
-         *s = TOINT64(div64BitMagicValues[mid][4]);
+         *m = div64BitMagicValues[mid][1];
+         *s = div64BitMagicValues[mid][2];
          return;
          }
-      else if (d > TOINT64(div64BitMagicValues[mid][0]))
+      else if (d > div64BitMagicValues[mid][0])
          {
          first = mid+1;
          }

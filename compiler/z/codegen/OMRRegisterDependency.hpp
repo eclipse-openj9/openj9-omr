@@ -118,8 +118,6 @@ class TR_S390RegisterDependencyGroup
       _dependencies[index].assignFlags(flag);
       _dependencies[index].setRealRegister(rr);
       if (vr) vr->setDependencySet(true);
-      if (vr != NULL)
-         vr->setIsNotHighWordUpgradable(true);
       }
 
    TR::Register *searchForRegister(TR::Register* vr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
@@ -158,18 +156,6 @@ class TR_S390RegisterDependencyGroup
       {
       _dependencies[index].setRealRegister(regNum);
       }
-
-   void checkRegisterPairSufficiencyAndHPRAssignment(TR::CodeGenerator *cg,
-                                     TR::Instruction  *currentInstruction,
-                                     const uint32_t availableGPRMap,
-                                     uint32_t numOfDependencies);
-
-   void checkRegisterDependencyDuplicates(TR::CodeGenerator* cg,
-                                          const uint32_t numOfDependencies);
-
-   uint32_t checkDependencyGroup(TR::CodeGenerator *cg,
-                                 TR::Instruction  *currentInstruction,
-                                 uint32_t numOfDependencies);
 
    void assignRegisters(TR::Instruction  *currentInstruction,
                         TR_RegisterKinds kindToBeAssigned,

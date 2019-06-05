@@ -27,6 +27,8 @@
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/GenerateInstructions.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterIterator.hpp"
 #include "codegen/TreeEvaluator.hpp"
@@ -125,7 +127,7 @@ OMR::ARM64::CodeGenerator::beginInstructionSelection()
    TR::Node *startNode = comp->getStartTree()->getNode();
    if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private)
       {
-      TR_ASSERT(false, "Not implemented yet.");
+      TR_UNIMPLEMENTED();
 
       _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::ARM64ImmInstruction(TR::InstOpCode::dd, startNode, 0, self());
       }
@@ -274,7 +276,7 @@ TR::Linkage *OMR::ARM64::CodeGenerator::createLinkage(TR_LinkageConventions lc)
 
 void OMR::ARM64::CodeGenerator::emitDataSnippets()
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
    /*
     * Commented out until TR::ConstantDataSnippet is implemented
    self()->setBinaryBufferCursor(_constantData->emitSnippetBody());
@@ -288,7 +290,7 @@ bool OMR::ARM64::CodeGenerator::hasDataSnippets()
 
 int32_t OMR::ARM64::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
    return 0;
    /*
     * Commented out until TR::ConstantDataSnippet is implemented
@@ -303,7 +305,7 @@ void OMR::ARM64::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    if (outFile == NULL)
       return;
 
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
    /*
     * Commented out until TR::ConstantDataSnippet is implemented
    _constantData->print(outFile);
@@ -314,7 +316,7 @@ void OMR::ARM64::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
 
 TR::Instruction *OMR::ARM64::CodeGenerator::generateSwitchToInterpreterPrePrologue(TR::Instruction *cursor, TR::Node *node)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
 
    return NULL;
    }
@@ -338,7 +340,7 @@ TR::Register *OMR::ARM64::CodeGenerator::gprClobberEvaluate(TR::Node *node)
 
 void OMR::ARM64::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *map)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
    }
 
 
@@ -360,15 +362,13 @@ bool OMR::ARM64::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandi
 
 int32_t OMR::ARM64::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node *node)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
 int32_t OMR::ARM64::CodeGenerator::getMaximumNumberOfFPRsAllowedAcrossEdge(TR::Node *node)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
@@ -389,8 +389,7 @@ bool OMR::ARM64::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumbe
 
 TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
+   TR_UNIMPLEMENTED();
    return 0;
    }
 

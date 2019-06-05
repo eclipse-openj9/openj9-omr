@@ -62,6 +62,13 @@ endif()
 ## Do NOT force it since it is explicitly disabled on Windows for now.
 if(OMR_JITBUILDER)
 	set(OMR_JITBUILDER_TEST ON CACHE BOOL "")
+
+	## Enable additional JitBuilder tests if running on a supported platform
+        #  (which currently means 64-bit x86 platforms except for Windows)
+	if((OMR_HOST_ARCH STREQUAL "x86" AND NOT OMR_OS_WINDOWS) AND OMR_TEMP_DATA_SIZE STREQUAL "64")
+    		set(OMR_JITBUILDER_TEST_EXTENDED ON)
+	endif()
+
 else()
     # if JitBuilder isn't enabled, the tests can't be built
     set(OMR_JITBUILDER_TEST OFF CACHE BOOL "" FORCE)
@@ -122,19 +129,18 @@ set(OMR_GC_LEAF_BITS OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_MODRON_COMPACTION OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_MODRON_CONCURRENT_MARK OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_MODRON_SCAVENGER OFF CACHE BOOL "TODO: Document")
+set(OMR_GC_DOUBLE_MAP_ARRAYLETS OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_CONCURRENT_SCAVENGER OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_CONCURRENT_SWEEP OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_HYBRID_ARRAYLETS OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_IDLE_HEAP_MANAGER OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_OBJECT_ALLOCATION_NOTIFY OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_REALTIME OFF CACHE BOOL "TODO: Document")
-set(OMR_GC_SCAVENGER_DELEGATE OFF CACHE BOOL "DEVELOPMENT: turn on the scavenger delegate")
 set(OMR_GC_SEGREGATED_HEAP OFF CACHE BOOL "TODO: Document")
-set(OMR_GC_STACCATO OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_VLHGC OFF CACHE BOOL "TODO: Document")
+set(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD OFF CACHE BOOL "Enable VLHGC concurrent copy forward")
 
 set(OMR_INTERP_HAS_SEMAPHORES ON CACHE BOOL "TODO: Document")
-set(OMR_INTERP_COMPRESSED_OBJECT_HEADER OFF CACHE BOOL "TODO: Document")
 set(OMR_INTERP_SMALL_MONITOR_SLOT OFF CACHE BOOL "TODO: Document")
 
 set(OMR_THR_ADAPTIVE_SPIN ON CACHE BOOL "TODO: Document")
@@ -146,6 +152,12 @@ set(OMR_THR_THREE_TIER_LOCKING OFF CACHE BOOL "TODO: Document")
 set(OMR_THR_CUSTOM_SPIN_OPTIONS OFF CACHE BOOL "TODO: Document")
 set(OMR_THR_SPIN_WAKE_CONTROL OFF CACHE BOOL "TODO: Document")
 set(OMR_THR_YIELD_ALG OFF CACHE BOOL "TODO: Document")
+if(OMR_THR_YIELD_ALG)
+	omr_assert(FATAL_ERROR
+		TEST OMR_OS_LINUX OR OMR_OS_OSX OR OMR_OS_AIX
+		MESSAGE "OMR_THR_YIELD_ALG enabled, but not supported on current platform"
+	)
+endif()
 #TODO set to disabled. Stuff fails to compile when its on
 set(OMR_THR_TRACING OFF CACHE BOOL "TODO: Document")
 

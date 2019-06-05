@@ -148,7 +148,6 @@ namespace TR { class X86FPConvertToLongSnippet; }
 namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class X86HelperCallSnippet; }
 namespace TR { class UnresolvedDataSnippet; }
-namespace TR { class X86UnresolvedVirtualCallSnippet; } // TODO: delete
 namespace TR { class AMD64Imm64Instruction;    }
 namespace TR { class AMD64Imm64SymInstruction; }
 namespace TR { class AMD64RegImm64Instruction; }
@@ -161,14 +160,7 @@ namespace TR { class X86VFPReleaseInstruction;     }
 namespace TR { class X86VFPCallCleanupInstruction; }
 
 #ifdef J9_PROJECT_SPECIFIC
-#ifndef BUILD_DEPRECATED_TR_DEBUG_PRINT
-#define BUILD_DEPRECATED_TR_DEBUG_PRINT
-#endif
 namespace TR { class X86CallSnippet; }
-namespace TR { class IA32WriteBarrierSnippet; }
-namespace TR { class AMD64WriteBarrierSnippet; }
-namespace TR { class X86JNIPauseSnippet; }
-namespace TR { class X86PassJNINullSnippet; }
 namespace TR { class X86CheckFailureSnippet; }
 namespace TR { class X86CheckFailureSnippetWithResolve; }
 namespace TR { class X86BoundCheckWithSpineCheckSnippet; }
@@ -833,10 +825,6 @@ public:
 #ifdef J9_PROJECT_SPECIFIC
    void print(TR::FILE *, TR::X86CallSnippet *);
    void print(TR::FILE *, TR::X86PicDataSnippet *);
-   void print(TR::FILE *, TR::X86UnresolvedVirtualCallSnippet *); // TODO: delete
-   void print(TR::FILE *, TR::IA32WriteBarrierSnippet *);
-   void print(TR::FILE *, TR::X86JNIPauseSnippet *);
-   void print(TR::FILE *, TR::X86PassJNINullSnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippetWithResolve *);
    void print(TR::FILE *, TR::X86BoundCheckWithSpineCheckSnippet *);

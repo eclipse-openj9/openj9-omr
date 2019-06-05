@@ -22,6 +22,7 @@
 
 #include "OpCodeTest.hpp"
 #include "default_compiler.hpp"
+#include "omrformatconsts.h"
 
 int32_t ineg(int32_t l) {
     return -l;
@@ -166,8 +167,8 @@ TEST_P(Int64LogicalBinary, UsingConst) {
         "  (block"
         "    (lreturn"
         "      (%s"
-        "        (lconst %li)"
-        "        (lconst %li) ) ) ) )", 
+        "        (lconst %" OMR_PRId64 ")"
+        "        (lconst %" OMR_PRId64 ") ) ) ) )",
         param.opcode.c_str(), param.lhs, param.rhs);
     auto trees = parseString(inputTrees);
 
@@ -228,7 +229,7 @@ TEST_P(Int64LogicalUnary, UsingConst) {
         "  (block"
         "    (lreturn"
         "      (%s"
-        "        (lconst %ld) )"
+        "        (lconst %" OMR_PRId64 ") )"
         ")))",
         param.opcode.c_str(),
         param.value);

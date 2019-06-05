@@ -246,6 +246,32 @@ TEST(PortSysinfoTest, sysinfo_test1)
 	reportTestExit(OMRPORTLIB, testName);
 }
 
+TEST(PortSysinfoTest, hostname_test)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+#define J9SYSINFO_HOSTNAME_LENGTH 1024
+	const char *testName = "omrsysinfo_hostname_test";
+	char hostname[J9SYSINFO_HOSTNAME_LENGTH];
+	intptr_t rc = 0;
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	rc = omrsysinfo_get_hostname(hostname, J9SYSINFO_HOSTNAME_LENGTH);
+	if (rc == -1) {
+		portTestEnv->log(LEVEL_ERROR, "omrsysinfo_get_hostname returned -1.\n");
+		reportTestExit(OMRPORTLIB, testName);
+		return;
+	} else {
+		char msg[256] = "";
+		omrstr_printf(msg, sizeof(msg), "Host name returned = \"%s\"\n", hostname);
+		portTestEnv->log(msg);
+	}
+	/* Don't check for buffers that are too small, since the call to gethostname() will
+	 * silently truncate the name and return 0 on some platforms, e.g. MacOS.
+	 */
+	reportTestExit(OMRPORTLIB, testName);
+}
+
 TEST(PortSysinfoTest, sysinfo_test2)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
@@ -806,9 +832,10 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 	{
 		OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 		const char *testName = "omrsysinfo_test_sysinfo_set_limit_FILE_DESCRIPTORS";
-		intptr_t rc = -1;
+		uint32_t rc = OMRPORT_LIMIT_UNKNOWN;
 		uint64_t originalSoftLimit = 0;
 		uint64_t finalSoftLimit = 0;
+		uint64_t softSetToHardLimit = 0;
 		uint64_t originalHardLimit = 0;
 		uint64_t currentLimit = 0;
 		const uint64_t descriptorLimit = 256;
@@ -822,6 +849,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 			reportTestExit(OMRPORTLIB, testName);
 			return;
 		}
+		portTestEnv->log(LEVEL_ERROR, "originalSoftLimit=%llu\n", originalSoftLimit);
 		finalSoftLimit = originalSoftLimit;
 
 		rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, descriptorLimit);
@@ -854,18 +882,54 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 			reportTestExit(OMRPORTLIB, testName);
 			return;
 		}
+		portTestEnv->log(LEVEL_ERROR, "originalHardLimit=%llu\n", originalHardLimit);
+
+		/* set soft limit to hard limit */
+		rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, originalHardLimit);
+		if (0 != rc) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit soft = hard FAILED rc=%d\n", rc);
+			reportTestExit(OMRPORTLIB, testName);
+			return;
+		}
+
+		/* get new soft limit */
+		rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, &softSetToHardLimit);
+		if (OMRPORT_LIMIT_UNKNOWN == rc) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_get_limit FAILED: OMRPORT_LIMIT_UNKNOWN\n");
+			reportTestExit(OMRPORTLIB, testName);
+			return;
+		}
+		portTestEnv->log(LEVEL_ERROR, "soft set to hard limit=%llu\n", softSetToHardLimit);
+
+		/* set soft limit to old value */
+		rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, originalSoftLimit);
+		if (0 != rc) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit reset soft FAILED rc=%d\n", rc);
+			reportTestExit(OMRPORTLIB, testName);
+			return;
+		}
+
+		rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS | OMRPORT_LIMIT_HARD, &currentLimit);
+		if (currentLimit != originalHardLimit) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_get_limit FAILED: hard limit changed\n");
+			reportTestExit(OMRPORTLIB, testName);
+			return;
+		}
 
 		/* lowering the hard limit is irreversible unless privileged */
 		if (0 != geteuid()) { /* normal user */
 			/* setting the hard limit from unlimited to a finite value has unpredictable results:
 			 * the actual value may be much smaller than requested.
-			 * In that case, just try setting it to the same value.
+			 * In that case, just try setting it to its current value (softSetToHardLimit) or a value slightly lower.
+			 * Ensure that we don't try to set the hard limit to a value less than the current soft limit
+			 * (i.e. originalSoftLimit).
 			 */
-			uint64_t newHardLimit =  (OMRPORT_LIMIT_UNLIMITED == rc) ? originalHardLimit: originalHardLimit - 1;
+			uint64_t newHardLimit =  ((OMRPORT_LIMIT_UNLIMITED == rc) || (originalSoftLimit == softSetToHardLimit))
+					? softSetToHardLimit: softSetToHardLimit - 1;
 
 			rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS | OMRPORT_LIMIT_HARD, newHardLimit);
 			if (0 != rc) {
-				outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set hard limit FAILED rc=%d\n", rc);
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set hard limit=%lld FAILED rc=%d\n", rc, newHardLimit);
 				reportTestExit(OMRPORTLIB, testName);
 				return;
 			}

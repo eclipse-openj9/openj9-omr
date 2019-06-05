@@ -268,7 +268,9 @@ typedef enum {
 	COMPACT_ALWAYS = 7,
 	COMPACT_ABORTED_SCAVENGE = 8,
 	COMPACT_CONTRACT = 11,
-	COMPACT_AGGRESSIVE= 12
+	COMPACT_AGGRESSIVE= 12,
+	COMPACT_PAGE = 13,
+	COMPACT_MICRO_FRAG = 14
 } CompactReason;
 
 typedef enum {
@@ -436,6 +438,13 @@ typedef enum {
 	LOA_RESIZE,
 	SYSTEM_GC
 } SweepCompletionReason;
+
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+typedef enum {
+	HEAP_REGION_STATE_NONE = 0x0,
+	HEAP_REGION_STATE_COPY_FORWARD = 0x1
+} HeapRegionState;
+#endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */
 
 /**
  * @ingroup GC_Include

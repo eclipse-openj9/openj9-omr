@@ -252,6 +252,12 @@ void OMR::ValuePropagation::initialize()
 
    _edgesToBeRemoved = new (trStackMemory()) TR_Array<TR::CFGEdge *>(trMemory(), 8, false, stackAlloc);
    _blocksToBeRemoved = new (trStackMemory()) TR_Array<TR::CFGNode*>(trMemory(), 8, false, stackAlloc);
+   _curDefinedOnAllPaths = NULL;
+   if (_isGlobalPropagation)
+      _definedOnAllPaths = new (trStackMemory()) DefinedOnAllPathsMap(std::less<TR::CFGEdge *>(), trMemory()->currentStackRegion());
+   else
+      _definedOnAllPaths = NULL;
+   _defMergedNodes = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc, growable);
    _vcHandler.setRoot(_curConstraints, NULL);
 
    _relationshipCache.setFirst(NULL);
@@ -1069,7 +1075,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    bool needArrayCheck = true;
    bool needArrayStoreCheck = true;
    bool needWriteBarrier = true;
-   bool needReadBarrier = TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads();
+   bool needReadBarrier = TR::Compiler->om.readBarrierType() != gc_modron_readbar_none;
 
    bool primitiveTransform = cg()->getSupportsPrimitiveArrayCopy();
    bool referenceTransform = cg()->getSupportsReferenceArrayCopy();
@@ -1097,12 +1103,29 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    if (srcVN == dstVN)
       {
       needArrayStoreCheck = false;
-      if (!comp()->getOptions()->gcIsUsingConcurrentMark())
-         needWriteBarrier = false;
+      switch (TR::Compiler->om.writeBarrierType())
+         {
+         case gc_modron_wrtbar_cardmark:
+         case gc_modron_wrtbar_cardmark_and_oldcheck:
+         case gc_modron_wrtbar_cardmark_incremental:
+            break;
+         default:
+            needWriteBarrier = false;
+            break;
+         }
       }
 
-   if (!comp()->getOptions()->needWriteBarriers())
-      needWriteBarrier = false;
+   switch (TR::Compiler->om.writeBarrierType())
+      {
+      case gc_modron_wrtbar_oldcheck:
+      case gc_modron_wrtbar_cardmark:
+      case gc_modron_wrtbar_cardmark_and_oldcheck:
+      case gc_modron_wrtbar_cardmark_incremental:
+         break;
+      default:
+         needWriteBarrier = false;
+         break;
+      }
 
    TR::VPArrayInfo *srcArrayInfo;
    TR::VPArrayInfo *dstArrayInfo;
@@ -1268,7 +1291,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                // Array types are different types so the arraycopy will fail
                transformTheCall = false;
                }
-            else if (comp()->getOptions()->alwaysCallWriteBarrier())
+            else if (TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_always)
                {
                transformTheCall = false;
                }

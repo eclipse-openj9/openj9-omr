@@ -25,6 +25,8 @@
 #include <string.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -541,29 +543,6 @@ TR::AMD64SystemLinkage::buildVolatileAndReturnDependencies(
          }
       }
 
-#if defined (PYTHON) && 0
-   // Evict the preserved registers across the call
-   //
-   for (i=0; i<getProperties().getNumberOfPreservedGPRegisters(); i++)
-      {
-      TR::RealRegister::RegNum regIndex = getProperties()._preservedRegisters[i];
-
-      TR::Register *dummy = cg()->allocateRegister(TR_GPR);
-      deps->addPostCondition(dummy, regIndex, cg());
-
-      // Note that we don't setPlaceholderReg here.  If this volatile reg is also volatile
-      // in the caller's linkage, then that flag doesn't matter much anyway.  If it's preserved
-      // in the caller's linkage, then we don't want to set that flag because we want this
-      // use of the register to count as a "real" use, thereby motivating the prologue to
-      // preserve the register.
-
-      // A scratch register is necessary to call the native without a trampoline.
-      //
-      if (callNode->getOpCode().isIndirect() || (regIndex != scratchIndex))
-         cg()->stopUsingRegister(dummy);
-      }
-#endif
-
    if (callNode->getOpCode().isIndirect())
       {
       TR::Node *vftChild = callNode->getFirstChild();
@@ -752,12 +731,6 @@ TR::AMD64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    uint32_t pre = getProperties().getNumIntegerArgumentRegisters() + getProperties().getNumFloatArgumentRegisters() + 1;
    uint32_t post = getProperties().getNumVolatileRegisters() + 1 + (callNode->getDataType() == TR::NoType ? 0 : 1);
 
-#if defined (PYTHON) && 0
-   // Treat all preserved GP regs as volatile until register map support available.
-   //
-   post += getProperties().getNumberOfPreservedGPRegisters();
-#endif
-
    TR::RegisterDependencyConditions *callDeps = generateRegisterDependencyConditions(pre, 1, cg());
 
    TR::RealRegister::RegNum scratchRegIndex = getProperties().getIntegerScratchRegister(1);
@@ -803,12 +776,6 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
    uint32_t pre = getProperties().getNumIntegerArgumentRegisters() + getProperties().getNumFloatArgumentRegisters();
    uint32_t post = getProperties().getNumVolatileRegisters() + (callNode->getDataType() == TR::NoType ? 0 : 1);
 
-#if defined (PYTHON) && 0
-   // Treat all preserved GP regs as volatile until register map support available.
-   //
-   post += getProperties().getNumberOfPreservedGPRegisters();
-#endif
-
    TR::RegisterDependencyConditions *preDeps = generateRegisterDependencyConditions(pre, 0, cg());
    TR::RegisterDependencyConditions *postDeps = generateRegisterDependencyConditions(0, post, cg());
 
@@ -833,52 +800,6 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
          break;
          }
       }
-
-#if defined(PYTHON) && 0
-   // For Python, store the instruction that contains the GC map at this site into
-   // the frame object.
-   //
-   TR::SymbolReference *frameObjectSymRef =
-      comp()->getSymRefTab()->findOrCreateAutoSymbol(comp()->getMethodSymbol(), 0, TR::Address, true, false, true);
-
-   TR::Register *frameObjectRegister = cg()->allocateRegister();
-   generateRegMemInstruction(
-         L8RegMem,
-         callNode,
-         frameObjectRegister,
-         generateX86MemoryReference(frameObjectSymRef, cg()),
-         cg());
-
-   TR::RealRegister *espReal = cg()->machine()->getRealRegister(TR::RealRegister::esp);
-   TR::Register *gcMapPCRegister = cg()->allocateRegister();
-
-   generateRegMemInstruction(
-         LEA8RegMem,
-         callNode,
-         gcMapPCRegister,
-         generateX86MemoryReference(espReal, -8, cg()),
-         cg());
-
-   // Use "volatile" registers across the call.  Once proper register map support
-   // is implemented, r14 and r15 will no longer be volatile and a different pair
-   // should be chosen.
-   //
-   TR::RegisterDependencyConditions *gcMapDeps = generateRegisterDependencyConditions(0, 2, cg());
-   gcMapDeps->addPostCondition(frameObjectRegister, TR::RealRegister::r14, cg());
-   gcMapDeps->addPostCondition(gcMapPCRegister, TR::RealRegister::r15, cg());
-   gcMapDeps->stopAddingPostConditions();
-
-   generateMemRegInstruction(
-         S8MemReg,
-         callNode,
-         generateX86MemoryReference(frameObjectRegister, fe()->getPythonGCMapPCOffsetInFrame(), cg()),
-         gcMapPCRegister,
-         gcMapDeps,
-         cg());
-
-   cg()->stopUsingRegister(frameObjectRegister);
-   cg()->stopUsingRegister(gcMapPCRegister);
-#endif
 
    TR::Instruction *instr;
    if (methodSymbol->getMethodAddress())

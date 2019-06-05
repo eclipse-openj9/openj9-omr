@@ -108,6 +108,18 @@ endif()
 configure_file(./omrcfg.CMakeTemplate.h omrcfg.h)
 configure_file(./omrversionstrings.CMakeTemplate.h omrversionstrings.h)
 
+
+###
+### Set up DDR configuration
+###
+include(OmrDDRSupport)
+
+if(NOT DEFINED OMR_DDR_SET)
+	set(OMR_DDR_SET "omr")
+	make_ddr_set(${OMR_DDR_SET})
+endif()
+
+
 ###
 ### Native Tooling
 ###

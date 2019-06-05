@@ -41,9 +41,7 @@
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 #include "MasterGCThread.hpp"
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
-#if defined(OMR_GC_SCAVENGER_DELEGATE)
 #include "ScavengerDelegate.hpp"
-#endif
 
 struct J9HookInterface;
 class GC_ObjectScanner;
@@ -71,11 +69,7 @@ class MM_Scavenger : public MM_Collector
 	 * Data members
 	 */
 private:
-#if defined(OMR_GC_SCAVENGER_DELEGATE)
 	MM_ScavengerDelegate _delegate;
-#else
-	MM_CollectorLanguageInterface *_cli;
-#endif
 
 	const uintptr_t _objectAlignmentInBytes;	/**< Run-time objects alignment in bytes */
 	bool _isRememberedSetInOverflowAtTheBeginning; /**< Cached RS Overflow flag at the beginning of the scavenge */
@@ -599,15 +593,13 @@ public:
 	static MM_Scavenger *newInstance(MM_EnvironmentStandard *env, MM_HeapRegionManager *regionManager);
 	virtual void kill(MM_EnvironmentBase *env);
 
-#if defined (OMR_GC_SCAVENGER_DELEGATE)
 	MM_ScavengerDelegate* getDelegate() { return &_delegate; }
-#endif /* OMR_GC_SCAVENGER_DELEGATE */
 
 	/* Read Barrier Verifier specific methods */
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 	virtual void scavenger_poisonSlots(MM_EnvironmentBase *env);
 	virtual void scavenger_healSlots(MM_EnvironmentBase *env);
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 	virtual bool collectorStartup(MM_GCExtensionsBase* extensions);
 	virtual void collectorShutdown(MM_GCExtensionsBase* extensions);
@@ -632,10 +624,10 @@ public:
 	/* methods used by either mutator or GC threads */
 	/**
 	 * All open copy caches (even if not full) are pushed onto scan queue. Unused memory is abondoned.
-	 * @param env Invoking thread. Could be master thread on behalf on mutator threads (threadEnvironment) for which copy caches are to be released, or could be mutator or GC thread itself.
-	 * @param threadEnvironment Thread for which copy caches are to be released. Could be either GC or mutator thread.
+	 * @param env Invoking thread, for which copy caches are to be released. Could be either GC or mutator thread.
+	 * @param final If true (typically at the end of a cycle), abandon TLH remainders, too. Otherwise keep them for possible future copy cache refresh.
 	 */
-	void threadFinalReleaseCaches(MM_EnvironmentBase *env);
+	void threadReleaseCaches(MM_EnvironmentBase *env, bool final);
 	
 	/**
 	 * trigger STW phase (either start or end) of a Concurrent Scavenger Cycle 
@@ -790,11 +782,7 @@ public:
 
 	MM_Scavenger(MM_EnvironmentBase *env, MM_HeapRegionManager *regionManager) :
 		MM_Collector()
-#if defined(OMR_GC_SCAVENGER_DELEGATE)
 		, _delegate(env)
-#else
-		, _cli(env->getExtensions()->collectorLanguageInterface)
-#endif
 		, _objectAlignmentInBytes(env->getObjectAlignmentInBytes())
 		, _isRememberedSetInOverflowAtTheBeginning(false)
 		, _extensions(env->getExtensions())

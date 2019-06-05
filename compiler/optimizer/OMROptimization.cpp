@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/FrontEnd.hpp"
-#include "codegen/Linkage.hpp"
 #include "compile/Compilation.hpp"
 #include "cs2/allocator.h"
 #include "env/IO.hpp"

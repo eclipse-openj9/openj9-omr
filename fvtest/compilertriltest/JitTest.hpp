@@ -358,6 +358,38 @@ inline std::vector<int64_t> const_values<int64_t>()
  * @brief Convenience function returning possible test inputs of the specified type
  */
 template <>
+inline std::vector<uint64_t> const_values<uint64_t>()
+   {
+   uint64_t inputArray[] = { zero_value<uint64_t>(),
+                      one_value<uint64_t>(),
+                      negative_one_value<uint64_t>(),
+                      positive_value<uint64_t>(),
+                      negative_value<uint64_t>(),
+                      std::numeric_limits<uint64_t>::min(),
+                      std::numeric_limits<uint64_t>::max(),
+                      static_cast<uint64_t>(std::numeric_limits<uint64_t>::min() + 1),
+                      static_cast<uint64_t>(std::numeric_limits<uint64_t>::max() - 1),
+                      0x000000000000005FL,
+                      0x0000000000000088L,
+                      0x0000000080000000L,
+                      0x7FFFFFFF7FFFFFFFL,
+                      0x00000000FFFF0FF0L,
+                      0x800000007FFFFFFFL,
+                      0xFFFFFFF00FFFFFFFL,
+                      0x08000FFFFFFFFFFFL,
+                      static_cast<uint64_t>(std::numeric_limits<int64_t>::min()),
+                      static_cast<uint64_t>(std::numeric_limits<int64_t>::max()),
+                      static_cast<uint64_t>(std::numeric_limits<int64_t>::min() + 1),
+                      static_cast<uint64_t>(std::numeric_limits<int64_t>::max() - 1),
+                    };
+
+   return std::vector<uint64_t>(inputArray, inputArray + sizeof(inputArray) / sizeof(uint64_t));
+   }
+
+/**
+ * @brief Convenience function returning possible test inputs of the specified type
+ */
+template <>
 inline std::vector<int32_t> const_values<int32_t>()
    {
    int32_t inputArray[] = { zero_value<int32_t>(),
@@ -378,6 +410,94 @@ inline std::vector<int32_t> const_values<int32_t>()
                     };
 
    return std::vector<int32_t>(inputArray, inputArray + sizeof(inputArray) / sizeof(int32_t));
+   }
+
+/**
+ * @brief Convenience function returning possible test inputs of the specified type
+ */
+template <>
+inline std::vector<uint32_t> const_values<uint32_t>()
+   {
+   uint32_t inputArray[] = { zero_value<uint32_t>(),
+                      one_value<uint32_t>(),
+                      negative_one_value<uint32_t>(),
+                      positive_value<uint32_t>(),
+                      negative_value<uint32_t>(),
+                      std::numeric_limits<uint32_t>::min(),
+                      std::numeric_limits<uint32_t>::max(),
+                      static_cast<uint32_t>(std::numeric_limits<uint32_t>::min() + 1),
+                      static_cast<uint32_t>(std::numeric_limits<uint32_t>::max() - 1),
+                      0x0000005F,
+                      0x00000088,
+                      0x80FF0FF0,
+                      0x80000000,
+                      0xFF000FFF,
+                      0xFFFFFF0F,
+                      static_cast<uint32_t>(std::numeric_limits<int32_t>::min()),
+                      static_cast<uint32_t>(std::numeric_limits<int32_t>::max()),
+                      static_cast<uint32_t>(std::numeric_limits<int32_t>::min() + 1),
+                      static_cast<uint32_t>(std::numeric_limits<int32_t>::max() - 1),
+                    };
+
+   return std::vector<uint32_t>(inputArray, inputArray + sizeof(inputArray) / sizeof(uint32_t));
+   }
+
+/**
+ * @brief Convenience function returning possible test inputs of the specified type
+ */
+template <>
+inline std::vector<float> const_values<float>()
+   {
+   float inputArray[] = {
+      zero_value<float>(),
+      one_value<float>(),
+      negative_one_value<float>(),
+      positive_value<float>(),
+      negative_value<float>(),
+      std::numeric_limits<float>::min(),
+      std::numeric_limits<float>::max(),
+      static_cast<float>(std::numeric_limits<float>::min() + 1),
+      static_cast<float>(std::numeric_limits<float>::max() - 1),
+      0x0000005F,
+      0x00000088,
+      static_cast<float>(0x80FF0FF0),
+      static_cast<float>(0x80000000),
+      static_cast<float>(0xFF000FFF),
+      static_cast<float>(0xFFFFFF0F),
+      0.01f,
+      0.1f
+   };
+
+   return std::vector<float>(inputArray, inputArray + sizeof(inputArray) / sizeof(float));
+   }
+
+/**
+ * @brief Convenience function returning possible test inputs of the specified type
+ */
+template <>
+inline std::vector<double> const_values<double>()
+   {
+   double inputArray[] = {
+      zero_value<double>(),
+      one_value<double>(),
+      negative_one_value<double>(),
+      positive_value<double>(),
+      negative_value<double>(),
+      std::numeric_limits<double>::min(),
+      std::numeric_limits<double>::max(),
+      static_cast<double>(std::numeric_limits<double>::min() + 1),
+      static_cast<double>(std::numeric_limits<double>::max() - 1),
+      0x0000005F,
+      0x00000088,
+      static_cast<double>(0x80FF0FF0),
+      static_cast<double>(0x80000000),
+      static_cast<double>(0xFF000FFF),
+      static_cast<double>(0xFFFFFF0F),
+      0.01,
+      0.1
+   };
+
+   return std::vector<double>(inputArray, inputArray + sizeof(inputArray) / sizeof(double));
    }
 
 /**

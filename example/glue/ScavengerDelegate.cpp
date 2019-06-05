@@ -21,7 +21,7 @@
 
 #include "omrcfg.h"
 
-#if defined(OMR_GC_SCAVENGER_DELEGATE)
+#if defined(OMR_GC_MODRON_SCAVENGER)
 
 #include "ScavengerDelegate.hpp"
 
@@ -175,16 +175,18 @@ MM_ScavengerDelegate::reverseForwardedObject(MM_EnvironmentBase *env, MM_Forward
 			(ObjectSize)objectModel->getConsumedSizeInBytesWithHeader(forwardedObject),
 			(uint8_t)objectModel->getObjectFlags(forwardedObject));
 
-#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
-		/* Restore destroyed overlapped slot in the original object. This slot might need to be reversed
-		 * as well or it may be already reversed - such fixup will be completed at in a later pass.
-		 */
-		forwardedHeader->restoreDestroyedOverlap();
-#endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
+#if defined (OMR_GC_COMPRESSED_POINTERS)
+		if (env->compressObjectReferences()) {
+			/* Restore destroyed overlapped slot in the original object. This slot might need to be reversed
+			 * as well or it may be already reversed - such fixup will be completed at in a later pass.
+			 */
+			forwardedHeader->restoreDestroyedOverlap();
+		}
+#endif /* defined (OMR_GC_COMPRESSED_POINTERS) */
 	}
 }
 
-#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
+#if defined (OMR_GC_COMPRESSED_POINTERS)
 void
 MM_ScavengerDelegate::fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedHeader, MM_MemorySubSpaceSemiSpace *subSpaceNew)
 {
@@ -217,6 +219,6 @@ MM_ScavengerDelegate::fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHe
 		}
 	}
 }
-#endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
+#endif /* defined (OMR_GC_COMPRESSED_POINTERS) */
 
-#endif /* defined(OMR_GC_SCAVENGER_DELEGATE) */
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */

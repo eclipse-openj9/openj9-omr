@@ -27,6 +27,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
@@ -491,22 +492,23 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       }
 
    TR::X86MemTableInstruction *jmpTableInstruction = NULL;
+   TR::RegisterDependencyConditions *deps = NULL;
+
+   // Add GlRegDep dependencies to indirect jump
+   //
+   if (secondChild->getNumChildren() > 0)
+      {
+      deps = generateRegisterDependencyConditions(secondChild->getFirstChild(), cg, 0, NULL);
+      deps->stopAddingConditions();
+      }
 
    if (cg->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
       {
-      TR::RegisterDependencyConditions *deps = NULL;
-
-      if (secondChild->getNumChildren() > 0)
-         {
-         deps = generateRegisterDependencyConditions(secondChild->getFirstChild(), cg, 0, NULL);
-         deps->stopAddingConditions();
-         }
-
       jmpTableInstruction = generateMemTableInstruction(JMPMem, node, jumpMR, numBranchTableEntries, deps, cg);
       }
    else
       {
-      generateMemInstruction(JMPMem, node, jumpMR, cg);
+      generateMemInstruction(JMPMem, node, jumpMR, deps, cg);
       }
 
    for (i = 2; i < node->getNumChildren(); ++i)
@@ -1298,11 +1300,15 @@ TR::Register *OMR::X86::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::Cod
    TR::Register *falseReg = cg->evaluate(falseVal);
    bool trueValIs64Bit = TR::TreeEvaluator::getNodeIs64Bit(trueVal, cg);
    TR::Register *trueReg  = TR::TreeEvaluator::intOrLongClobberEvaluate(trueVal, trueValIs64Bit, cg);
+   if (!node->isNotCollected())
+      trueReg->setContainsCollectedReference();
 
    // don't need to test if we're already using a compare eq or compare ne
    auto conditionOp = condition->getOpCode();
+   bool longCompareOn32bit = (TR::Compiler->target.is32Bit() && conditionOp.isBooleanCompare() &&
+         condition->getFirstChild()->getOpCode().isLong());
    //if ((conditionOp == TR::icmpeq) || (conditionOp == TR::icmpne) || (conditionOp == TR::lcmpeq) || (conditionOp == TR::lcmpne))
-   if (conditionOp.isCompareForEquality())
+   if (!longCompareOn32bit && conditionOp.isCompareForEquality() && condition->getFirstChild()->getOpCode().isIntegerOrAddress())
       {
       TR::TreeEvaluator::compareIntegersForEquality(condition, cg);
       //if ((conditionOp == TR::icmpeq) || (conditionOp == TR::lcmpeq))
@@ -1310,6 +1316,13 @@ TR::Register *OMR::X86::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::Cod
          generateRegRegInstruction(CMOVNERegReg(trueValIs64Bit), node, trueReg, falseReg, cg);
       else
          generateRegRegInstruction(CMOVERegReg(trueValIs64Bit), node, trueReg, falseReg, cg);
+      }
+   else if (!longCompareOn32bit && conditionOp.isCompareForOrder() && condition->getFirstChild()->getOpCode().isIntegerOrAddress())
+      {
+      TR::TreeEvaluator::compareIntegersForOrder(condition, cg);
+      generateRegRegInstruction((conditionOp.isCompareTrueIfEqual()) ?
+                   ((conditionOp.isCompareTrueIfGreater()) ? CMOVLRegReg(trueValIs64Bit) : CMOVGRegReg(trueValIs64Bit)) :
+                   ((conditionOp.isCompareTrueIfGreater()) ? CMOVLERegReg(trueValIs64Bit) : CMOVGERegReg(trueValIs64Bit)), node, trueReg, falseReg, cg);
       }
    else
       {
@@ -2318,7 +2331,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
       {
       site = virtualGuard->addNOPSite();
       }
-   else 
+   else
       {
       site = comp->addSideEffectNOPSite();
       }

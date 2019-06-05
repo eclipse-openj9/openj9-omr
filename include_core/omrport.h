@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -222,6 +222,7 @@
 #define OMRPORT_VMEM_MEMORY_MODE_EXECUTE 0x00000004
 #define OMRPORT_VMEM_MEMORY_MODE_COMMIT 0x00000008
 #define OMRPORT_VMEM_MEMORY_MODE_VIRTUAL 0x00000010
+#define OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN 0x000000200
 #define OMRPORT_VMEM_ALLOCATE_TOP_DOWN 0x00000020
 #define OMRPORT_VMEM_ALLOCATE_PERSIST 0x00000040
 #define OMRPORT_VMEM_NO_AFFINITY 0x00000080
@@ -722,6 +723,8 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_CTLDATA_NOSUBALLOC32BITMEM  "NOSUBALLOC32BITMEM"
 #define OMRPORT_CTLDATA_VMEM_ADVISE_OS_ONFREE  "VMEM_ADVISE_OS_ONFREE"
 #define OMRPORT_CTLDATA_VECTOR_REGS_SUPPORT_ON  "VECTOR_REGS_SUPPORT_ON"
+#define OMRPORT_CTLDATA_NLS_DISABLE "NLS_DISABLE"
+#define OMRPORT_CTLDATA_VMEM_ADVISE_HUGEPAGE  "VMEM_ADVISE_HUGEPAGE"
 
 #define OMRPORT_FILE_READ_LOCK  1
 #define OMRPORT_FILE_WRITE_LOCK  2
@@ -745,17 +748,17 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_MMAP_SYNC_ASYNC  0x100
 #define OMRPORT_MMAP_SYNC_INVALIDATE  0x200
 
-#define OMRPORT_SIG_FLAG_MAY_RETURN  1
-#define OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION  2
-#define OMRPORT_SIG_SMALLEST_SIGNAL_FLAG  4
-#define OMRPORT_SIG_FLAG_SIGSEGV  4
-#define OMRPORT_SIG_FLAG_SIGBUS  8
-#define OMRPORT_SIG_FLAG_SIGILL  16
-#define OMRPORT_SIG_FLAG_SIGFPE  32
-#define OMRPORT_SIG_FLAG_SIGTRAP  64
+#define OMRPORT_SIG_FLAG_MAY_RETURN  0x1
+#define OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION  0x2
+#define OMRPORT_SIG_SMALLEST_SIGNAL_FLAG  0x4
+#define OMRPORT_SIG_FLAG_SIGSEGV  0x4
+#define OMRPORT_SIG_FLAG_SIGBUS  0x8
+#define OMRPORT_SIG_FLAG_SIGILL  0x10
+#define OMRPORT_SIG_FLAG_SIGFPE  0x20
+#define OMRPORT_SIG_FLAG_SIGTRAP  0x40
 #define OMRPORT_SIG_FLAG_SIGABEND  0x80
-#define OMRPORT_SIG_FLAG_SIGRESERVED8  0x100
-#define OMRPORT_SIG_FLAG_SIGRESERVED9  0x200
+#define OMRPORT_SIG_FLAG_SIGPIPE  0x100
+#define OMRPORT_SIG_FLAG_SIGALRM  0x200
 #if defined(J9ZOS390)
 #define OMRPORT_SIG_FLAG_SIGALLSYNC  (OMRPORT_SIG_FLAG_SIGSEGV | OMRPORT_SIG_FLAG_SIGBUS | OMRPORT_SIG_FLAG_SIGILL | OMRPORT_SIG_FLAG_SIGFPE | OMRPORT_SIG_FLAG_SIGTRAP | OMRPORT_SIG_FLAG_SIGABEND)
 #else
@@ -767,19 +770,30 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_SIG_FLAG_SIGRECONFIG  0x2000
 #define OMRPORT_SIG_FLAG_SIGINT  0x4000
 #define OMRPORT_SIG_FLAG_SIGXFSZ  0x8000
-#define OMRPORT_SIG_FLAG_SIGRESERVED16  0x10000
-#define OMRPORT_SIG_FLAG_SIGRESERVED17  0x20000
+#define OMRPORT_SIG_FLAG_SIGCHLD  0x10000
+#define OMRPORT_SIG_FLAG_SIGTSTP  0x20000
 #define OMRPORT_SIG_FLAG_SIGFPE_DIV_BY_ZERO  (OMRPORT_SIG_FLAG_SIGFPE | 0x40000)
 #define OMRPORT_SIG_FLAG_SIGFPE_INT_DIV_BY_ZERO  (OMRPORT_SIG_FLAG_SIGFPE | 0x80000)
 #define OMRPORT_SIG_FLAG_SIGFPE_INT_OVERFLOW  (OMRPORT_SIG_FLAG_SIGFPE | 0x100000)
-#define OMRPORT_SIG_FLAG_DOES_NOT_MAP_TO_POSIX  0x200000
+#define OMRPORT_SIG_FLAG_SIGIO  0x200000
 #define OMRPORT_SIG_FLAG_SIGHUP  0x400000
 #define OMRPORT_SIG_FLAG_SIGCONT  0x800000
 #define OMRPORT_SIG_FLAG_SIGWINCH  0x1000000
+#define OMRPORT_SIG_FLAG_SIGUSR1  0x2000000
+#define OMRPORT_SIG_FLAG_SIGUSR2  0x4000000
+#define OMRPORT_SIG_FLAG_SIGURG  0x8000000
+#define OMRPORT_SIG_FLAG_SIGXCPU  0x10000000
+#define OMRPORT_SIG_FLAG_SIGVTALRM  0x20000000
+#define OMRPORT_SIG_FLAG_SIGPROF  0x40000000
+#define OMRPORT_SIG_FLAG_SIGSYS  0x80000000
 #define OMRPORT_SIG_FLAG_SIGALLASYNC ( \
 			OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGABRT | OMRPORT_SIG_FLAG_SIGTERM | \
 			OMRPORT_SIG_FLAG_SIGRECONFIG | OMRPORT_SIG_FLAG_SIGXFSZ | OMRPORT_SIG_FLAG_SIGINT | \
-			OMRPORT_SIG_FLAG_SIGHUP | OMRPORT_SIG_FLAG_SIGCONT | OMRPORT_SIG_FLAG_SIGWINCH)
+			OMRPORT_SIG_FLAG_SIGHUP | OMRPORT_SIG_FLAG_SIGCONT | OMRPORT_SIG_FLAG_SIGWINCH | \
+			OMRPORT_SIG_FLAG_SIGPIPE | OMRPORT_SIG_FLAG_SIGALRM | OMRPORT_SIG_FLAG_SIGCHLD | \
+			OMRPORT_SIG_FLAG_SIGTSTP | OMRPORT_SIG_FLAG_SIGUSR1 | OMRPORT_SIG_FLAG_SIGUSR2 | \
+			OMRPORT_SIG_FLAG_SIGURG | OMRPORT_SIG_FLAG_SIGXCPU | OMRPORT_SIG_FLAG_SIGVTALRM | \
+			OMRPORT_SIG_FLAG_SIGPROF | OMRPORT_SIG_FLAG_SIGIO | OMRPORT_SIG_FLAG_SIGSYS)
 
 #define OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH  0
 #define OMRPORT_SIG_EXCEPTION_CONTINUE_EXECUTION  1
@@ -961,6 +975,7 @@ typedef struct J9PortVmemIdentifier {
 	uintptr_t pageFlags;
 	uintptr_t mode;
 	uintptr_t allocator;
+	int fd;
 	OMRMemCategory *category;
 } J9PortVmemIdentifier;
 
@@ -1161,6 +1176,8 @@ typedef struct OMRPortLibrary {
 	intptr_t (*sysinfo_get_username)(struct OMRPortLibrary *portLibrary, char *buffer, uintptr_t length) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_groupname "omrsysinfo_get_groupname"*/
 	intptr_t (*sysinfo_get_groupname)(struct OMRPortLibrary *portLibrary, char *buffer, uintptr_t length) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_get_hostname "omrsysinfo_get_hostname"*/
+	intptr_t (*sysinfo_get_hostname)(struct OMRPortLibrary *portLibrary, char *buffer, size_t length) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_load_average "omrsysinfo_get_load_average"*/
 	intptr_t (*sysinfo_get_load_average)(struct OMRPortLibrary *portLibrary, struct J9PortSysInfoLoadData *loadAverageData) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_CPU_utilization "omrsysinfo_get_CPU_utilization"*/
@@ -1341,6 +1358,8 @@ typedef struct OMRPortLibrary {
 	void *(*vmem_reserve_memory)(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier, uintptr_t mode, uintptr_t pageSize,  uint32_t category) ;
 	/** see @ref omrvmem.c::omrvmem_reserve_memory_ex "omrvmem_reserve_memory_ex"*/
 	void *(*vmem_reserve_memory_ex)(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, struct J9PortVmemParams *params) ;
+	/** see @ref omrvmem.c::omrvmem_get_contiguous_region_memory "omrvmem_get_contiguous_region_memory"*/
+	void *(*vmem_get_contiguous_region_memory)(struct OMRPortLibrary *portLibrary, void* addresses[], uintptr_t addressesCount, uintptr_t addressSize, uintptr_t byteAmount, struct J9PortVmemIdentifier *oldIdentifier, struct J9PortVmemIdentifier *newIdentifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category);
 	/** see @ref omrvmem.c::omrvmem_get_page_size "omrvmem_get_page_size"*/
 	uintptr_t (*vmem_get_page_size)(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier) ;
 	/** see @ref omrvmem.c::omrvmem_get_page_flags "omrvmem_get_page_flags"*/
@@ -1822,6 +1841,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_get_executable_name(param1,param2) privateOmrPortLibrary->sysinfo_get_executable_name(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_get_username(param1,param2) privateOmrPortLibrary->sysinfo_get_username(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_get_groupname(param1,param2) privateOmrPortLibrary->sysinfo_get_groupname(privateOmrPortLibrary, (param1), (param2))
+#define omrsysinfo_get_hostname(param1,param2) privateOmrPortLibrary->sysinfo_get_hostname(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_get_load_average(param1) privateOmrPortLibrary->sysinfo_get_load_average(privateOmrPortLibrary, (param1))
 #define omrsysinfo_get_CPU_utilization(param1) privateOmrPortLibrary->sysinfo_get_CPU_utilization(privateOmrPortLibrary, (param1))
 #define omrsysinfo_limit_iterator_init(param1) privateOmrPortLibrary->sysinfo_limit_iterator_init(privateOmrPortLibrary, (param1))
@@ -1913,6 +1933,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrvmem_vmem_params_init(param1) privateOmrPortLibrary->vmem_vmem_params_init(privateOmrPortLibrary, (param1))
 #define omrvmem_reserve_memory(param1,param2,param3,param4,param5,param6) privateOmrPortLibrary->vmem_reserve_memory(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5), (param6))
 #define omrvmem_reserve_memory_ex(param1,param2) privateOmrPortLibrary->vmem_reserve_memory_ex(privateOmrPortLibrary, (param1), (param2))
+#define omrvmem_get_contiguous_region_memory(param1, param2, param3, param4, param5, param6, param7, param8, param9) privateOmrPortLibrary->vmem_get_contiguous_region_memory(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5), (param6), (param7), (param8), (param9))
 #define omrvmem_get_page_size(param1) privateOmrPortLibrary->vmem_get_page_size(privateOmrPortLibrary, (param1))
 #define omrvmem_get_page_flags(param1) privateOmrPortLibrary->vmem_get_page_flags(privateOmrPortLibrary, (param1))
 #define omrvmem_supported_page_sizes() privateOmrPortLibrary->vmem_supported_page_sizes(privateOmrPortLibrary)

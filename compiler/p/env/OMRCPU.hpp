@@ -65,6 +65,13 @@ public:
    bool getPPCSupportsTM()  { return false; }
    bool getPPCSupportsLM()  { return false; }
 
+   /** @brief Determines whether the Transactional Memory (TM) facility is available on the current processor.
+    *         Alias of getPPCSupportsTM() as a platform agnostic query.
+    *
+    *  @return true if TM is available, false otherwise.
+    */
+   bool supportsTransactionalMemoryInstructions();
+
    /**
     * @brief Provides the maximum forward branch displacement in bytes reachable
     *        with an I-Form branch instruction.

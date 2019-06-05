@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -385,6 +385,15 @@ j9nls_lookup_message(struct OMRPortLibrary *portLibrary, uintptr_t flags, uint32
 	omrthread_monitor_enter(nls->monitor);
 
 	if (!nls->catalog) {
+		/* Don't load the catalog if VM is running in an
+		 * english locale and there is a default message
+		 */
+		if (NULL != default_string) {
+			if (0 == strcmp(nls->language, "en")) {
+				message = default_string;
+				goto done;
+			}
+		}
 		open_catalog(portLibrary);
 	}
 
@@ -395,7 +404,7 @@ j9nls_lookup_message(struct OMRPortLibrary *portLibrary, uintptr_t flags, uint32
 			message = J9NLS_ERROR_MESSAGE(J9NLS_PORT_NLS_FAILURE, "NLS Failure\n");
 		}
 	}
-
+done:
 	omrthread_monitor_exit(nls->monitor);
 	return message;
 }
@@ -677,6 +686,11 @@ parse_catalog(struct OMRPortLibrary *portLibrary, uintptr_t flags, uint32_t modu
 		return J9NLS_ERROR_MESSAGE(J9NLS_PORT_NLS_FAILURE, "NLS Failure\n");
 	}
 	nls = &portLibrary->portGlobals->nls_data;
+
+	if (0 != nls->isDisabled) {
+		/* NLS is disabled - just return the default_string */
+		return default_string;
+	}
 
 	convertModuleName(module_name, (uint8_t *)convertedModuleEnum);
 

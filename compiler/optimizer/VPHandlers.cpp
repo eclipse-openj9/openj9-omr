@@ -1529,6 +1529,7 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
                   TR::VPKnownObject::createForJavaLangClass(vp, knownObjectIndex),
                   TR::VPNonNullObject::create(vp), NULL, NULL,
                   TR::VPObjectLocation::create(vp, TR::VPObjectLocation::JavaLangClassObject));
+               vp->addGlobalConstraint(node, constraint);
                }
             }
          else
@@ -1539,8 +1540,10 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
                   TR::VPKnownObject::create(vp, knownObjectIndex),
                   TR::VPNonNullObject::create(vp), NULL, NULL,
                   TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject));
+               vp->addBlockConstraint(node, constraint);
                }
             }
+
          if (constraint)
             {
             if (vp->trace())
@@ -1549,7 +1552,6 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
                constraint->print(vp);
                traceMsg(vp->comp(), "\n");
                }
-            vp->addGlobalConstraint(node, constraint);
             return true;
             }
          }
@@ -2151,6 +2153,61 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
          node->setIsNonNull(true);
          }
       else if (base
+               && base->getKnownObject()
+               && !symRef->isUnresolved() && symRef->getSymbol()->isRecognizedKnownObjectShadow()
+               && !vp->comp()->compileRelocatableCode())
+         // Base is known object, and field is recognized known object shadow,
+         // hence can be treated as known object.
+         {
+         TR::VMAccessCriticalSection constrainIaloadCriticalSection(vp->comp(),
+               TR::VMAccessCriticalSection::tryToAcquireVMAccess);
+         if (constrainIaloadCriticalSection.hasVMAccess())
+            {
+            TR::KnownObjectTable *knot = vp->comp()->getOrCreateKnownObjectTable();
+            uintptrj_t baseObject = knot->getPointer(base->getKnownObject()->getIndex());
+            if (baseObject)
+               {
+               // Check if baseObject is actually the recognized field Class
+               TR_OpaqueClassBlock *baseObjectClazz = TR::Compiler->cls.objectClass(vp->comp(), baseObject);
+               int32_t recognizedClassNameLength;
+               const char *recognizedClassName = symRef->getSymbol()->owningClassNameCharsForRecognizedField(recognizedClassNameLength);
+               if (recognizedClassName)
+                  {
+                  TR_OpaqueClassBlock *recognizedClazz = vp->fe()->getClassFromSignature(recognizedClassName,
+                        recognizedClassNameLength, symRef->getOwningMethod(vp->comp()));
+                  if (recognizedClazz && (TR_yes == vp->fe()->isInstanceOf(baseObjectClazz, recognizedClazz, false)))
+                     {
+                     uintptrj_t fieldObject = vp->comp()->fej9()->getReferenceFieldAtAddress(baseObject + node->getSymbolReference()->getOffset());
+                     if (0 != fieldObject)
+                        {
+                        TR_OpaqueClassBlock *fieldObjectClazz = TR::Compiler->cls.objectClass(vp->comp(), fieldObject);
+                        if(!TR::Compiler->cls.isClassArray(vp->comp(), fieldObjectClazz))
+                           {
+                           traceMsg(vp->comp(), "Recognized known object field node %p \n", node);
+                           TR::KnownObjectTable::Index fieldObjectKnotIndex = knot->getIndex(fieldObject);
+                           // Global constraints should work here, as field loads get fresh value numbers
+                           constraint = TR::VPClass::create(vp,
+                                 TR::VPKnownObject::create(vp, fieldObjectKnotIndex),
+                                 TR::VPNonNullObject::create(vp), NULL, NULL,
+                                 TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject));
+                           vp->addGlobalConstraint(node, constraint);
+                           }
+                        else
+                           {
+                           int32_t arrLength = TR::Compiler->om.getArrayLengthInElements(vp->comp(), fieldObject);
+                           traceMsg(vp->comp(), "Recognized known array field node %p length %d\n", node, arrLength);
+                           // Global constraints should work here, as field loads get fresh value numbers
+                           vp->addGlobalConstraint(node, TR::VPFixedClass::create(vp, fieldObjectClazz));
+                           vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
+                           vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, TR::Compiler->om.getArrayElementWidthInBytes(vp->comp(), fieldObject)));
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      else if (base
                && base->isJavaLangClassObject() == TR_yes
                && base->isNonNullObject()
                && base->getKnownObject())
@@ -2339,7 +2396,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
                         vp->removeChildren(node);
                         TR::Node::recreate(node, TR::aload);
                         node->setNumChildren(0);
-                        node->setSymbolReference(vp->comp()->getSymRefTab()->createKnownStaticRefereneceSymbolRef(bypassLocation, targetKOI));
+                        node->setSymbolReference(vp->comp()->getSymRefTab()->createKnownStaticReferenceSymbolRef(bypassLocation, targetKOI));
                         return node;
                         }
                      }
@@ -2769,6 +2826,8 @@ TR::Node *constrainStore(OMR::ValuePropagation *vp, TR::Node *node)
 
    if (node->getOpCode().isIndirect())
       constrainBaseObjectOfIndirectAccess(vp, node);
+   else if (vp->_curDefinedOnAllPaths && node->getSymbol()->isAutoOrParm())
+      vp->_curDefinedOnAllPaths->set(node->getSymbolReference()->getReferenceNumber());
 
    return node;
    }
@@ -2877,7 +2936,7 @@ void canRemoveWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
    TR::VPConstraint *constraint = vp->getConstraint(node, isGlobal);
    if (constraint)
       {
-      if (constraint->isNullObject() && !vp->comp()->getOptions()->alwaysCallWriteBarrier() && !vp->comp()->getOptions()->realTimeGC())
+      if (constraint->isNullObject() && TR::Compiler->om.writeBarrierType() != gc_modron_wrtbar_always && !vp->comp()->getOptions()->realTimeGC())
          {
          if (node->getOpCode().isIndirect())
             {
@@ -2939,10 +2998,10 @@ TR::Node *constrainWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
 
    static bool doOpt = feGetEnv("TR_DisableWrtBarOpt") ? false : true;
 
-   if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
+   if (TR::Compiler->om.readBarrierType() != gc_modron_readbar_none)
       {
       // The optimization below targets the following type of code:
-      // 
+      //
       //     X x = new X();
       //     x.a = new A();
       //
@@ -2956,11 +3015,11 @@ TR::Node *constrainWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
       doOpt = false;
       }
 
-   TR_WriteBarrierKind gcMode = vp->comp()->getOptions()->getGcMode();
+   auto gcMode = TR::Compiler->om.writeBarrierType();
 
    if (doOpt &&
-       ((gcMode == TR_WrtbarCardMarkAndOldCheck) ||
-        (gcMode == TR_WrtbarOldCheck)) &&
+       ((gcMode == gc_modron_wrtbar_cardmark_and_oldcheck) ||
+        (gcMode == gc_modron_wrtbar_oldcheck)) &&
        (node->getOpCodeValue() == TR::awrtbari) &&
        !node->skipWrtBar())
       {
@@ -3401,7 +3460,6 @@ TR::Node *constrainMonexitfence(OMR::ValuePropagation *vp, TR::Node *node)
 
 TR::Node *constrainTstart(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   //TR_ASSERT(0, "Not implemented!");
    constrainChildren(vp,node);
    vp->setUnreachablePath(); // no fallthrough
    return node;
@@ -3409,14 +3467,12 @@ TR::Node *constrainTstart(OMR::ValuePropagation *vp, TR::Node *node)
 
 TR::Node *constrainTfinish(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   //TR_ASSERT(0, "Not implemented!");
    constrainChildren(vp,node);
    return node;
    }
 
 TR::Node *constrainTabort(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   //TR_ASSERT(0, "Not implemented!");
    constrainChildren(vp,node);
    return node;
    }
@@ -5618,125 +5674,6 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
    return node;
    }
 
-#ifdef J9_PROJECT_SPECIFIC
-void getHelperSymRefs(OMR::ValuePropagation *vp, TR::Node *curCallNode, TR::SymbolReference *&getHelpersSymRef, TR::SymbolReference *&helperSymRef, char *helperSig, int32_t helperSigLen, TR::MethodSymbol::Kinds helperCallKind)
-   {
-   //Function to retrieve the JITHelpers.getHelpers and JITHelpers.<helperSig> method symbol references.
-   //
-   TR_OpaqueClassBlock *jitHelpersClass = vp->comp()->getJITHelpersClassPointer();
-
-   //If we can't find the helper class, or it isn't initalized, return.
-   //
-   if (!jitHelpersClass || !TR::Compiler->cls.isClassInitialized(vp->comp(), jitHelpersClass))
-      return;
-
-   TR_ScratchList<TR_ResolvedMethod> helperMethods(vp->trMemory());
-   vp->comp()->fej9()->getResolvedMethods(vp->trMemory(), jitHelpersClass, &helperMethods);
-   ListIterator<TR_ResolvedMethod> it(&helperMethods);
-
-   //Find the symRefs
-   //
-   for (TR_ResolvedMethod *m = it.getCurrent(); m; m = it.getNext())
-      {
-      char *sig = m->nameChars();
-      //printf("Here is the sig %s and the passed in %s \n", sig,helperSig);
-      if (!strncmp(sig, helperSig, helperSigLen))
-         {
-         if (TR::MethodSymbol::Virtual == helperCallKind)
-            {
-            //REVISIT FOR IMPL HASH CODE***
-            //
-            helperSymRef = vp->comp()->getSymRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX, -1, m, TR::MethodSymbol::Virtual);
-            helperSymRef->setOffset(TR::Compiler->cls.vTableSlot(vp->comp(), m->getPersistentIdentifier(), jitHelpersClass));
-            }
-         else
-            {
-            helperSymRef = vp->comp()->getSymRefTab()->findOrCreateMethodSymbol(curCallNode->getSymbolReference()->getOwningMethodIndex(), -1, m, helperCallKind);
-            }
-         //printf("found gethelpers, 0x%x \n", helperSymRef);
-         }
-      else if (!strncmp(sig, "jitHelpers", 10))
-         {
-         //printf("found helpers");
-         getHelpersSymRef = vp->comp()->getSymRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX, -1, m, TR::MethodSymbol::Static);
-         }
-      }
-   }
-#endif
-
-#ifdef J9_PROJECT_SPECIFIC
-void transformToOptimizedCloneCall(OMR::ValuePropagation *vp, TR::Node *node, bool isDirectCall)
-   {
-   TR::SymbolReference *getHelpersSymRef = NULL;
-   TR::SymbolReference *optimizedCloneSymRef = NULL;
-
-   getHelperSymRefs(vp, node, getHelpersSymRef, optimizedCloneSymRef, "optimizedClone", 14, TR::MethodSymbol::Special);
-
-   //printf("helper sym 0x%x, optsym 0x%x \n", getHelpersSymRef, optimizedCloneSymRef);
-
-   if (optimizedCloneSymRef && getHelpersSymRef && performTransformation(vp->comp(), "%sChanging call to new optimizedClone at node [%p]\n", OPT_DETAILS, node))
-        {
-        //FIXME: add me to the list of calls to be inlined
-        //
-        TR_Method *method = optimizedCloneSymRef->getSymbol()->castToMethodSymbol()->getMethod();
-        TR::Node *helpersCallNode = TR::Node::createWithSymRef(node, method->directCallOpCode(), 0, getHelpersSymRef);
-        TR::TreeTop *helpersCallTT = TR::TreeTop::create(vp->comp(), TR::Node::create(TR::treetop, 1, helpersCallNode));
-        vp->_curTree->insertBefore(helpersCallTT);
-
-        method = optimizedCloneSymRef->getSymbol()->castToMethodSymbol()->getMethod();
-        TR::Node::recreate(node, method->directCallOpCode());
-        TR::Node *firstChild = node->getFirstChild();
-        firstChild->decReferenceCount();
-        node->setNumChildren(2);
-        node->setAndIncChild(0, helpersCallNode);
-        node->setAndIncChild(1, firstChild);
-        node->setSymbolReference(optimizedCloneSymRef);
-        vp->invalidateUseDefInfo();
-        vp->invalidateValueNumberInfo();
-        }
-//printf("TRANSFORMED \n");
-   }
-#endif
-
-
-#ifdef J9_PROJECT_SPECIFIC
-TR::Node *setCloneClassInNode(OMR::ValuePropagation *vp, TR::Node *node, TR::VPConstraint *constraint, bool isGlobal)
-   {
-
-   // If the child is a resolved class type, hide the class pointer in the
-   // second child
-   //
-
-   if(!node->isProcessedByCallCloneConstrain())
-      {
-      node->setSecond(NULL);
-      node->setProcessedByCallCloneConstrain();
-      }
-
-   if (constraint && constraint->getClass())
-      {
-      TR_OpaqueClassBlock *clazz = constraint->getClass();
-      if (constraint->isClassObject() == TR_yes)
-         clazz = vp->fe()->getClassClassPointer(clazz);
-
-      if (clazz && (TR::Compiler->cls.classDepthOf(clazz) == 0) &&
-          !constraint->isFixedClass())
-         clazz = NULL;
-
-      if (node->getCloneClassInNode() &&
-          clazz &&
-          (node->getCloneClassInNode() != clazz))
-         {
-         TR_YesNoMaybe answer = vp->fe()->isInstanceOf(clazz, node->getCloneClassInNode(), true, true);
-         if (answer != TR_yes)
-            clazz = node->getCloneClassInNode();
-         }
-      if (performTransformation(vp->comp(), "%sSetting type on Object.Clone acall node [%p] to [%p]\n", OPT_DETAILS, node, clazz))
-         node->setSecond((TR::Node*)clazz);
-      }
-   return node;
-   }
-#endif
 
 TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node)
    {
@@ -5746,207 +5683,7 @@ TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node)
    if (!node->getOpCode().isCall())
       return node;
 
-   // This node can be constrained by the return type of the method.
-   //
-   TR::VPConstraint *constraint = NULL;
-   TR::SymbolReference * symRef = node->getSymbolReference();
-   TR::ResolvedMethodSymbol *method = symRef->getSymbol()->getResolvedMethodSymbol();
-
-#ifdef J9_PROJECT_SPECIFIC
-   // For the special case of a direct call to Object.clone() the return type
-   // will be the same as the type of the "this" argument, which may be more
-   // precise than the declared return type of "Object".
-   //
-   if (method)
-      {
-      if (!node->getOpCode().isIndirect())
-         {
-         static char *enableDynamicObjectClone = feGetEnv("TR_enableDynamicObjectClone");
-         // Dynamic cloning kicks in when we attempt to make direct call to Object.clone  
-         // or J9VMInternals.primitiveClone where the cloned object is an array.
-         if (method->getRecognizedMethod() == TR::java_lang_Object_clone
-             || method->getRecognizedMethod() == TR::java_lang_J9VMInternals_primitiveClone)
-            {
-            bool isGlobal;
-            if (method->getRecognizedMethod() == TR::java_lang_Object_clone)
-              constraint = vp->getConstraint(node->getFirstChild(), isGlobal);
-            else
-              constraint = vp->getConstraint(node->getLastChild(), isGlobal);
-
-            TR::VPResolvedClass *newTypeConstraint = NULL;
-            if (constraint)
-               {
-               // Do nothing if the class of the object doesn't implement Cloneable
-               if (constraint->getClass() && !vp->comp()->fej9()->isCloneable(constraint->getClass()))
-                  {
-                  if (vp->trace())
-                     traceMsg(vp->comp(), "Object Clone: Class of node %p is not cloneable, quit\n", node);
-
-                  TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "inlineClone/unsuitable/(%s)/%s/block_%d", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness()), vp->_curTree->getEnclosingBlock()->getNumber()));
-
-                  return node;
-                  }
-               if ( constraint->isFixedClass() )
-                  {
-                  newTypeConstraint = TR::VPFixedClass::create(vp, constraint->getClass());
-
-                  if (!vp->comp()->compileRelocatableCode())
-                     {
-                     if (constraint->getClassType()
-                         && constraint->getClassType()->isArray() == TR_no
-                         && !vp->_objectCloneCalls.find(vp->_curTree))
-                        {
-                        vp->_objectCloneCalls.add(vp->_curTree);
-                        vp->_objectCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ObjCloneInfo(constraint->getClass(), true));
-                        }
-                     else if (constraint->getClassType()
-                              && constraint->getClassType()->isArray() == TR_yes
-                              && !vp->_arrayCloneCalls.find(vp->_curTree))
-                        {
-                        vp->_arrayCloneCalls.add(vp->_curTree);
-                        vp->_arrayCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ArrayCloneInfo(constraint->getClass(), true));
-                        }
-                     }
-                  }
-               // Dynamic object clone is enabled only with FLAGS_IN_CLASS_SLOT and LOCK_NURSERY enabled
-               // as currenty codegen anewarray evaluator only supports this case for object header initialization.
-               // Even though all existing supported build config has these 2 falgs set, this ifdef serves as a safety precaution.
-#if defined(J9VM_INTERP_FLAGS_IN_CLASS_SLOT) && defined(J9VM_THR_LOCK_NURSERY)
-               else if ( constraint->getClassType()
-                         && constraint->getClassType()->asResolvedClass() )
-                  {
-                  newTypeConstraint = TR::VPResolvedClass::create(vp, constraint->getClass());
-                  if (vp->trace())
-                     traceMsg(vp->comp(), "Object Clone: Resolved Class of node %p \n", node);
-                  if (enableDynamicObjectClone
-                      && constraint->getClassType()->isArray() == TR_no
-                      && !vp->_objectCloneCalls.find(vp->_curTree))
-                     {
-                     if (vp->trace())
-                        traceMsg(vp->comp(), "Object Clone: Resolved Class of node %p object clone\n", node);
-                     vp->_objectCloneCalls.add(vp->_curTree);
-                     vp->_objectCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ObjCloneInfo(constraint->getClass(), false));
-                     }
-                  // Currently enabled for X86 as the required codegen support is implemented on X86 only.
-                  // Remove the condition as other platforms receive support.
-                  else if (vp->comp()->cg()->getSupportsDynamicANewArray()
-                      && constraint->getClassType()->isArray() == TR_yes
-                      && !vp->_arrayCloneCalls.find(vp->_curTree)
-                      && !vp->comp()->generateArraylets())
-                     {
-                     if (vp->trace())
-                        traceMsg(vp->comp(), "Object Clone: Resolved Class of node %p array clone\n", node);
-                     vp->_arrayCloneCalls.add(vp->_curTree);
-                     vp->_arrayCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ArrayCloneInfo(constraint->getClass(), false));;
-                     }
-                  }
-#endif	       
-               }
-
-            if (!constraint || (!constraint->isFixedClass()
-                && (enableDynamicObjectClone && !(constraint->getClassType() && constraint->getClassType()->asResolvedClass() && constraint->getClassType()->isArray() == TR_no))))
-               TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "inlineClone/miss/(%s)/%s/block_%d", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness()), vp->_curTree->getEnclosingBlock()->getNumber()));
-            else
-               TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "inlineClone/hit/(%s)/%s/block_%d", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness()), vp->_curTree->getEnclosingBlock()->getNumber()));
-
-            TR::VPClassPresence *cloneResultNonNull = TR::VPNonNullObject::create(vp);
-            TR::VPObjectLocation *cloneResultOnHeap = TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject);
-            TR::VPArrayInfo *cloneResultArrayInfo = NULL;
-            if (constraint)
-               cloneResultArrayInfo = constraint->getArrayInfo();
-            TR::VPConstraint *newConstraint = TR::VPClass::create(vp, newTypeConstraint, cloneResultNonNull, NULL, cloneResultArrayInfo, cloneResultOnHeap);
-
-            // This constraint can be global because the result of the clone call
-            // needs to have its own value number.
-            vp->addGlobalConstraint(node, newConstraint);
-
-            if (method->getRecognizedMethod() == TR::java_lang_Object_clone
-                && (constraint && !constraint->isFixedClass()))
-               node = setCloneClassInNode(vp, node, newConstraint, isGlobal);
-
-            // OptimizedClone
-            if(vp->comp()->getOption(TR_EnableJITHelpersoptimizedClone) && newTypeConstraint)
-               transformToOptimizedCloneCall(vp, node, true);
-            return node;
-            }
-         else if (method->getRecognizedMethod() == TR::java_math_BigDecimal_valueOf)
-            {
-            TR_ResolvedMethod *owningMethod = symRef->getOwningMethod(vp->comp());
-            TR_OpaqueClassBlock *classObject = vp->fe()->getClassFromSignature("java/math/BigDecimal", 20, owningMethod);
-            if (classObject)
-               {
-               constraint = TR::VPFixedClass::create(vp, classObject);
-               vp->addGlobalConstraint(node, constraint);
-               vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
-               }
-            }
-         }
-      else
-         {
-         if ((method->getRecognizedMethod() == TR::java_math_BigDecimal_add) ||
-             (method->getRecognizedMethod() == TR::java_math_BigDecimal_subtract) ||
-             (method->getRecognizedMethod() == TR::java_math_BigDecimal_multiply))
-            {
-            bool isGlobal;
-            constraint = vp->getConstraint(node->getSecondChild(), isGlobal);
-            TR_ResolvedMethod *owningMethod = symRef->getOwningMethod(vp->comp());
-            TR_OpaqueClassBlock * bigDecimalClass = vp->fe()->getClassFromSignature("java/math/BigDecimal", 20, owningMethod);
-            //traceMsg(vp->comp(), "child %p big dec class %p\n", constraint, bigDecimalClass);
-            if (constraint && bigDecimalClass &&
-                constraint->isFixedClass() &&
-                (bigDecimalClass == constraint->getClass()))
-               {
-               TR::VPConstraint *newConstraint = TR::VPFixedClass::create(vp, bigDecimalClass);
-               vp->addBlockOrGlobalConstraint(node, newConstraint,isGlobal);
-               vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
-               return node;
-               }
-            }
-         }
-      }
-#endif
-
-   // The rest of the code seems to be Java specific
-   if (!vp->comp()->getCurrentMethod()->isJ9())
-      return node;
-
-   int32_t len = 0;
-   const char * sig = symRef->getTypeSignature(len);
-
-   if (sig == NULL)  // helper
-       return node;
-
-   TR_ASSERT(sig[0] == 'L' || sig[0] == '[', "Ref call return type is not a class");
-
-   TR::MethodSymbol *symbol = node->getSymbol()->castToMethodSymbol();
-   TR_ResolvedMethod *owningMethod = symRef->getOwningMethod(vp->comp());
-   TR_OpaqueClassBlock *classBlock = vp->fe()->getClassFromSignature(sig, len, owningMethod);
-   if (  classBlock
-      && TR::Compiler->cls.isInterfaceClass(vp->comp(), classBlock)
-      && !vp->comp()->getOption(TR_TrustAllInterfaceTypeInfo))
-      {
-      // Can't trust interface type info coming from method return value
-      classBlock = NULL;
-      }
-   if (classBlock)
-      {
-      TR_OpaqueClassBlock *jlClass = vp->fe()->getClassClassPointer(classBlock);
-      if (jlClass)
-         {
-         if (classBlock != jlClass)
-            constraint = TR::VPClassType::create(vp, sig, len, owningMethod, false, classBlock);
-         else
-            constraint = TR::VPObjectLocation::create(vp, TR::VPObjectLocation::JavaLangClassObject);
-         vp->addGlobalConstraint(node, constraint);
-         }
-      }
-   else if (symRef->isUnresolved() && symbol && !symbol->isInterface())
-      {
-      TR::VPConstraint *constraint = TR::VPUnresolvedClass::create(vp, sig, len, owningMethod);
-      vp->addGlobalConstraint(node, constraint);
-      }
-
-   return node;
+   return vp->innerConstrainAcall(node);
    }
 
 // handles unsigned too
@@ -6626,7 +6363,7 @@ TR::Node *constrainIdiv(OMR::ValuePropagation *vp, TR::Node *node)
          {
          int32_t lhsConst = lhs->asIntConst()->getInt();
          int32_t rhsConst = rhs->asIntConst()->getInt();
-         if (lhsConst == TR::getMinSigned<TR::Int32>() && rhsConst == -1)
+         if (lhsConst == TR::getMinSigned<TR::Int32>() && rhsConst == -1 && !isUnsigned)
             constraint = TR::VPIntConst::create(vp, TR::getMinSigned<TR::Int32>());
          else if (rhsConst != 0)
             {
@@ -6709,10 +6446,15 @@ TR::Node *constrainLdiv(OMR::ValuePropagation *vp, TR::Node *node)
       TR::VPConstraint *constraint = NULL;
       int64_t lhsConst = lhs->asLongConst()->getLong();
       int64_t rhsConst = rhs->asLongConst()->getLong();
-      if (lhsConst == TR::getMinSigned<TR::Int64>() && rhsConst == -1)
+      if (lhsConst == TR::getMinSigned<TR::Int64>() && rhsConst == -1 && !isUnsigned)
          constraint = TR::VPLongConst::create(vp, TR::getMinSigned<TR::Int64>());
       else if (rhsConst != 0L)
-         constraint = TR::VPLongConst::create(vp, TR::Compiler->arith.longDivideLong(lhsConst, rhsConst));
+         {
+         if (isUnsigned)
+            constraint = TR::VPLongConst::create(vp, ((uint64_t)lhsConst/(uint64_t)rhsConst));
+         else
+            constraint = TR::VPLongConst::create(vp, TR::Compiler->arith.longDivideLong(lhsConst, rhsConst));
+         }
       if (constraint)
          {
          vp->replaceByConstant(node, constraint, lhsGlobal);
@@ -6927,7 +6669,7 @@ TR::Node *constrainIrem(OMR::ValuePropagation *vp, TR::Node *node)
       {
       int32_t lhsConst = lhs->asIntConst()->getInt();
       int32_t rhsConst = rhs->asIntConst()->getInt();
-      if (lhsConst == TR::getMinSigned<TR::Int32>() && rhsConst == -1)
+      if (lhsConst == TR::getMinSigned<TR::Int32>() && rhsConst == -1 && !isUnsigned)
          constraint = TR::VPIntConst::create(vp, 0);
       else if (rhsConst != 0)
          {
@@ -8444,13 +8186,6 @@ void replaceWithSmallerType(OMR::ValuePropagation *vp, TR::Node *node)
    if (node->getReferenceCount() > 1)
       return;
 
-   if (vp->comp()->getJittedMethodSymbol() && // avoid NULL pointer on non-Wcode builds
-       vp->comp()->getJittedMethodSymbol()->isNoTemps())
-      {
-      dumpOptDetails(vp->comp(), "replaceWithSmallerType not safe to perform when NOTEMPS enabled\n");
-      return;
-      }
-
    TR::DataType newType = node->getDataType();
    TR::Node *load = node->getFirstChild();
 
@@ -9035,7 +8770,8 @@ static TR::VPConstraint*
 passingTypeTestObjectConstraint(
    OMR::ValuePropagation *vp,
    TR::VPConstraint *classConstraint,
-   bool testingForFixedType)
+   bool testingForFixedType,
+   bool constrainVft)
    {
    TR_ASSERT_FATAL(
       classConstraint->isClassObject() == TR_yes,
@@ -9055,22 +8791,31 @@ passingTypeTestObjectConstraint(
       type = TR::VPResolvedClass::create(vp, type->getClass());
       }
 
-   // Use the signature to check whether type is java/lang/Class exactly. We
-   // can't rely on isJavaLangClassObject() because it returns TR_maybe in this
-   // case. (If it were to return TR_yes, it would mean the referent is a
-   // java/lang/Class representing java/lang/Class, i.e. Class.class, which
-   // would be incorrect in this case.)
    TR::VPObjectLocation *loc = NULL;
-   int sigLen;
-   const char *sig = type->getClassSignature(sigLen);
-   if (sig != NULL && sigLen == 17 && !strncmp(sig, "Ljava/lang/Class;", sigLen))
+   if (constrainVft)
       {
-      // Just say that it's a java/lang/Class, with no information about the
-      // class that it represents.
-      type = NULL;
-      loc = TR::VPObjectLocation::create(
-         vp,
-         TR::VPObjectLocation::JavaLangClassObject);
+      // The resulting constraint applies to the object's VFT pointer, not to
+      // the object itself.
+      loc = TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject);
+      }
+   else
+      {
+      // Use the signature to check whether type is java/lang/Class exactly. We
+      // can't rely on isJavaLangClassObject() because it returns TR_maybe in this
+      // case. (If it were to return TR_yes, it would mean the referent is a
+      // java/lang/Class representing java/lang/Class, i.e. Class.class, which
+      // would be incorrect in this case.)
+      int sigLen;
+      const char *sig = type->getClassSignature(sigLen);
+      if (sig != NULL && sigLen == 17 && !strncmp(sig, "Ljava/lang/Class;", sigLen))
+         {
+         // Just say that it's a java/lang/Class, with no information about the
+         // class that it represents.
+         type = NULL;
+         loc = TR::VPObjectLocation::create(
+            vp,
+            TR::VPObjectLocation::JavaLangClassObject);
+         }
       }
 
    // Objects passing any kind of instanceof are non-null:
@@ -9538,6 +9283,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
    //
    TR::VPConstraint *instanceofConstraint = NULL;
    TR::Node         *instanceofObjectRef = NULL;
+   bool             instanceofObjectRefIsVft = false;
    bool             instanceofOnBranch = false;
    bool instanceofDetectedAndFixedType = false;
    bool isInstanceOf = false;
@@ -9580,6 +9326,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                   {
 #ifdef J9_PROJECT_SPECIFIC
                   instanceofObjectRef = node->getFirstChild();
+                  instanceofObjectRefIsVft = true;
                   TR::Node *classChild = node->getSecondChild();
                   bool foldedGuard = false;
                   static const char* enableJavaLangClassFolding = feGetEnv ("TR_EnableFoldJavaLangClass");
@@ -9607,7 +9354,10 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
 
                   if (!foldedGuard && (instanceofObjectRef->getOpCodeValue() == TR::aloadi) &&
                       (instanceofObjectRef->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
+                     {
                      instanceofObjectRef = instanceofObjectRef->getFirstChild();
+                     instanceofObjectRefIsVft = false;
+                     }
 
                   TR::VPConstraint *classConstraint = vp->getConstraint(classChild, isGlobal);
                   //foldedGuard indicates that we already set cannotBranch or cannotFallThrough
@@ -9795,7 +9545,8 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
       TR::VPConstraint *newConstraint = passingTypeTestObjectConstraint(
          vp,
          instanceofConstraint,
-         instanceofDetectedAndFixedType);
+         instanceofDetectedAndFixedType,
+         instanceofObjectRefIsVft);
 
       if (!isVirtualGuardNopable
           && !vp->addEdgeConstraint(instanceofObjectRef, newConstraint, edgeConstraints))
@@ -9913,7 +9664,8 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
       TR::VPConstraint *newConstraint = passingTypeTestObjectConstraint(
          vp,
          instanceofConstraint,
-         instanceofDetectedAndFixedType);
+         instanceofDetectedAndFixedType,
+         instanceofObjectRefIsVft);
 
       if (!isVirtualGuardNopable
           && !vp->addBlockConstraint(instanceofObjectRef, newConstraint, NULL, false))

@@ -169,6 +169,7 @@ struct TR_X86ProcessorInfo
    bool supportsSelfSnoop()                {return _featureFlags.testAny(TR_SelfSnoop);}
    bool supportsTM()                       {return _featureFlags8.testAny(TR_RTM);}
    bool supportsHyperThreading()           {return _featureFlags.testAny(TR_HyperThreading);}
+   bool supportsHLE()                      {return _featureFlags8.testAny(TR_HLE);}
    bool hasThermalMonitor()                {return _featureFlags.testAny(TR_ThermalMonitor);}
 
    bool supportsMFence()                   {return _featureFlags.testAny(TR_SSE2);}
@@ -221,7 +222,7 @@ private:
 
    friend class OMR::X86::CodeGenerator;
 
-   void initialize(TR::Compilation *);
+   void initialize();
    };
 
 enum TR_PaddingProperties

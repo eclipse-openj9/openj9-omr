@@ -46,7 +46,7 @@ void
 TR_S390CompareAnalyser::integerCompareAnalyser(TR::Node * root, TR::InstOpCode::Mnemonic regRegOpCode, TR::InstOpCode::Mnemonic regMemOpCode,
    TR::InstOpCode::Mnemonic memRegOpCode)
    {
-   TR_ASSERT( 0, "TR_S390CompareAnalyser::integerCompareAnalyser: Not implemented yet");
+   TR_UNIMPLEMENTED();
    return;
    }
 

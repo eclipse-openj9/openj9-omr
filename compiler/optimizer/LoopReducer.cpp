@@ -968,7 +968,18 @@ TR_LoopReducer::generateArraycopy(TR_InductionVariable * indVar, TR::Block * loo
       return false;
       }
 
-   bool needWriteBarrier = comp()->getOptions()->needWriteBarriers();;
+   bool needWriteBarrier = false;
+   switch (TR::Compiler->om.writeBarrierType())
+      {
+      case gc_modron_wrtbar_oldcheck:
+      case gc_modron_wrtbar_cardmark:
+      case gc_modron_wrtbar_cardmark_and_oldcheck:
+      case gc_modron_wrtbar_cardmark_incremental:
+         needWriteBarrier = true;
+         break;
+      default:
+         break;
+      }
    //FUTURE: can eliminate wrtbar when src and dest are equal. Currently we don't reduce arraycopy like this.
    if (arraycopyLoop.hasWriteBarrier() && needWriteBarrier && !comp()->cg()->getSupportsReferenceArrayCopy())
       {
@@ -1988,13 +1999,6 @@ TR_LoopReducer::generateArraycmp(TR_RegionStructure * whileLoop, TR_InductionVar
       return false;
       }
 
-   if (comp()->getJittedMethodSymbol() && // avoid NULL pointer on non-Wcode builds
-       comp()->getJittedMethodSymbol()->isNoTemps())
-      {
-      dumpOptDetails(comp(), "arraycmp not safe to perform when NOTEMPS enabled\n");
-      return false;
-      }
-
    int32_t compNum = branchBlock ? branchBlock->getNumberOfRealTreeTops() : 0;
    int32_t incrNum = incrementBlock ? incrementBlock->getNumberOfRealTreeTops() : 0;
    if (compNum != 1 || incrNum != 2)
@@ -2603,13 +2607,6 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //   <termination value>
    //
    //BBEnd <load/store-char>
-
-   if (comp()->getJittedMethodSymbol() && // avoid NULL pointer on non-Wcode builds
-       comp()->getJittedMethodSymbol()->isNoTemps())
-      {
-      dumpOptDetails(comp(), "arraytranslate not safe to perform when NOTEMPS enabled\n");
-      return false;
-      }
 
    if (!cg()->getSupportsArrayTranslateTRxx())
       {
@@ -3743,13 +3740,6 @@ TR_LoopReducer::generateArraytranslateAndTest(TR_RegionStructure * whileLoop, TR
 bool
 TR_LoopReducer::generateByteToCharArraycopy(TR_InductionVariable * byteIndVar, TR_InductionVariable * charIndVar, TR::Block * loopHeader)
    {
-   if (comp()->getJittedMethodSymbol() && // avoid NULL pointer on non-Wcode builds
-       comp()->getJittedMethodSymbol()->isNoTemps())
-      {
-      dumpOptDetails(comp(), "arraytranslate not safe to perform when NOTEMPS enabled\n");
-      return false;
-      }
-
    if (!comp()->cg()->getSupportsReferenceArrayCopy() && !comp()->cg()->getSupportsPrimitiveArrayCopy())
       {
       dumpOptDetails(comp(), "arraycopy not enabled for this platform\n");
@@ -3990,13 +3980,6 @@ TR_LoopReducer::generateByteToCharArraycopy(TR_InductionVariable * byteIndVar, T
 bool
 TR_LoopReducer::generateCharToByteArraycopy(TR_InductionVariable * byteIndVar, TR_InductionVariable * charIndVar, TR::Block * loopHeader)
    {
-   if (comp()->getJittedMethodSymbol() && // avoid NULL pointer on non-Wcode builds
-         comp()->getJittedMethodSymbol()->isNoTemps())
-      {
-      dumpOptDetails(comp(), "arraytranslate not safe to perform when NOTEMPS enabled\n");
-      return false;
-      }
-
    if (!comp()->cg()->getSupportsReferenceArrayCopy() && !comp()->cg()->getSupportsPrimitiveArrayCopy())
       {
       dumpOptDetails(comp(), "arraycopy not enabled for this platform\n");

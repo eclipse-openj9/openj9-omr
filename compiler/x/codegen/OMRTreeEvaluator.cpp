@@ -28,6 +28,7 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
@@ -757,84 +758,28 @@ TR::Register *OMR::X86::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGe
    return reg;
    }
 
-TR::Register *OMR::X86::TreeEvaluator::irdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *
+OMR::X86::TreeEvaluator::fwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::iloadEvaluator(node,cg);
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::ardbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::aloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::frdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::floadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::drdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::dloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::brdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::bloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::srdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::sloadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::lrdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::lloadEvaluator(node, cg);
-   }
-
-
-TR::Register *OMR::X86::TreeEvaluator::iwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
-   return TR::TreeEvaluator::istoreEvaluator(node,cg);
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::fwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
+   // The wrtbar IL op represents a store with side effects.
+   // Currently we don't use the side effect node. So just evaluate it and decrement the reference count.
+   TR::Node *sideEffectNode = node->getSecondChild();
+   cg->evaluate(sideEffectNode);
+   cg->decReferenceCount(sideEffectNode);
+   // Delegate the evaluation of the remaining children and the store operation to the storeEvaluator.
    return TR::TreeEvaluator::floatingPointStoreEvaluator(node, cg);
    }
 
-TR::Register *OMR::X86::TreeEvaluator::bwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *
+OMR::X86::TreeEvaluator::fwrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
-   return TR::TreeEvaluator::bstoreEvaluator(node, cg);
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::swrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
-   return TR::TreeEvaluator::sstoreEvaluator(node, cg);
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::lwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
-   return TR::TreeEvaluator::lstoreEvaluator(node, cg);
+   // The wrtbar IL op represents a store with side effects.
+   // Currently we don't use the side effect node. So just evaluate it and decrement the reference count.
+   TR::Node *sideEffectNode = node->getThirdChild();
+   cg->evaluate(sideEffectNode);
+   cg->decReferenceCount(sideEffectNode);
+   // Delegate the evaluation of the remaining children and the store operation to the storeEvaluator.
+   return TR::TreeEvaluator::floatingPointStoreEvaluator(node, cg);
    }
 
 // cloadEvaluator handled by sloadEvaluator
@@ -1482,24 +1427,6 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
    return resultReg;
    }
 
-void genCodeToPerformLeftToRightAndBlockConcurrentOpIfNeeded(
-   TR::Node *node,
-   TR::MemoryReference *memRef,
-   TR::Register *vReg,
-   TR::Register *tempReg,
-   TR::Register *tempReg1,
-   TR::Register *tempReg2,
-   TR::LabelSymbol * nonLockedOpLabel,
-   TR::LabelSymbol *&opDoneLabel,
-   TR::RegisterDependencyConditions *&deps,
-   uint8_t size,
-   TR::CodeGenerator* cg,
-   bool isLoad,
-   bool genOutOfline,
-   bool keepValueRegAlive,
-   TR::LabelSymbol *startControlFlowLabel)
-   {
-   }
 
 bool OMR::X86::TreeEvaluator::stopUsingCopyRegAddr(TR::Node* node, TR::Register*& reg, TR::CodeGenerator* cg)
    {
@@ -2283,10 +2210,10 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
    // There are two variants of TR::arraycopy: one has 5 children, the other has 3 children. Details can be found from
    // compiler/il/ILOpCodeProperties.hpp
    //
-   // In most, if not all, cases, the 5-child variant requires language specific semantics, which OMR is not aware of. The fact 
+   // In most, if not all, cases, the 5-child variant requires language specific semantics, which OMR is not aware of. The fact
    // that a 5-child arraycopy is generated indicates at least one of the first two children must be needed when performing the
-   // copy; otherwise a 3-child arraycopy should be generated instead. Interpreting the meanings of the first two children 
-   // definitely requires language specific semantics. For example, the first two children may be for dealing with an arraycopy 
+   // copy; otherwise a 3-child arraycopy should be generated instead. Interpreting the meanings of the first two children
+   // definitely requires language specific semantics. For example, the first two children may be for dealing with an arraycopy
    // where the Garbage Collector may need to be notified about the copy or something to that affect.
    //
    // Therefore, this OMR evaluator only handles the 3-child variant, is an operation equivalent to C++'s std::memmove().
@@ -3051,6 +2978,96 @@ static TR::Register* inlineAtomicMemoryUpdate(TR::Node* node, TR_X86OpCodes op, 
    return value;
    }
 
+/** \brief
+ *    Generate instructions to do atomic compare and 64-bit memory update on X86-32.
+ *
+ *  \param node
+ *     The tree node
+ *
+ *  \param returnValue
+ *     Indicate whether the result is the old memory value or the status of memory update
+ *
+ *  \param cg
+ *     The code generator
+ */
+static TR::Register* inline64BitAtomicCompareAndMemoryUpdateOn32Bit(TR::Node* node, bool returnValue, TR::CodeGenerator* cg)
+   {
+   TR_ASSERT(TR::Compiler->target.is32Bit(), "32-bit only");
+   TR::Register* address  = cg->evaluate(node->getChild(0));
+   TR::Register* oldvalue = cg->longClobberEvaluate(node->getChild(1));
+   TR::Register* newvalue = cg->evaluate(node->getChild(2));
+
+   TR::RegisterDependencyConditions* deps = generateRegisterDependencyConditions((uint8_t)4, (uint8_t)4, cg);
+   deps->addPreCondition(oldvalue->getLowOrder(),  TR::RealRegister::eax, cg);
+   deps->addPreCondition(oldvalue->getHighOrder(), TR::RealRegister::edx, cg);
+   deps->addPreCondition(newvalue->getLowOrder(),  TR::RealRegister::ebx, cg);
+   deps->addPreCondition(newvalue->getHighOrder(), TR::RealRegister::ecx, cg);
+   deps->addPostCondition(oldvalue->getLowOrder(),  TR::RealRegister::eax, cg);
+   deps->addPostCondition(oldvalue->getHighOrder(), TR::RealRegister::edx, cg);
+   deps->addPostCondition(newvalue->getLowOrder(),  TR::RealRegister::ebx, cg);
+   deps->addPostCondition(newvalue->getHighOrder(), TR::RealRegister::ecx, cg);
+
+   generateMemInstruction(LCMPXCHG8BMem, node, generateX86MemoryReference(address, 0, cg), deps, cg);
+   if (!returnValue)
+      {
+      cg->stopUsingRegister(oldvalue->getHighOrder());
+      oldvalue = oldvalue->getLowOrder();
+      generateRegInstruction(SETE1Reg, node, oldvalue, cg);
+      generateRegRegInstruction(MOVZXReg4Reg1, node, oldvalue, oldvalue, cg);
+      }
+
+   node->setRegister(oldvalue);
+   cg->decReferenceCount(node->getChild(0));
+   cg->decReferenceCount(node->getChild(1));
+   cg->decReferenceCount(node->getChild(2));
+   return oldvalue;
+   }
+
+/** \brief
+ *    Generate instructions to do atomic compare and memory update.
+ *
+ *  \param node
+ *     The tree node
+ *
+ *  \param op
+ *     The instruction op code to perform the memory update
+ *
+ *  \param returnValue
+ *     Indicate whether the result is the old memory value or the status of memory update
+ *
+ *  \param cg
+ *     The code generator
+ */
+static TR::Register* inlineAtomicCompareAndMemoryUpdate(TR::Node* node, bool returnValue, TR::CodeGenerator* cg)
+   {
+   bool isNode64Bit = node->getChild(1)->getDataType().isInt64();
+   if (TR::Compiler->target.is32Bit() && isNode64Bit)
+      {
+      return inline64BitAtomicCompareAndMemoryUpdateOn32Bit(node, returnValue, cg);
+      }
+
+   TR::Register* address  = cg->evaluate(node->getChild(0));
+   TR::Register* oldvalue = cg->gprClobberEvaluate(node->getChild(1), MOVRegReg());
+   TR::Register* newvalue = cg->evaluate(node->getChild(2));
+
+   TR::RegisterDependencyConditions* deps = generateRegisterDependencyConditions((uint8_t)1, (uint8_t)1, cg);
+   deps->addPreCondition(oldvalue, TR::RealRegister::eax, cg);
+   deps->addPostCondition(oldvalue, TR::RealRegister::eax, cg);
+
+   generateMemRegInstruction(LCMPXCHGMemReg(isNode64Bit), node, generateX86MemoryReference(address, 0, cg), newvalue, deps, cg);
+   if (!returnValue)
+      {
+      generateRegInstruction(SETE1Reg, node, oldvalue, cg);
+      generateRegRegInstruction(MOVZXReg4Reg1, node, oldvalue, oldvalue, cg);
+      }
+
+   node->setRegister(oldvalue);
+   cg->decReferenceCount(node->getChild(0));
+   cg->decReferenceCount(node->getChild(1));
+   cg->decReferenceCount(node->getChild(2));
+   return oldvalue;
+   }
+
 // TR::icall, TR::acall, TR::lcall, TR::fcall, TR::dcall, TR::call handled by directCallEvaluator
 TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -3098,6 +3115,14 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
       if (op != BADIA32Op)
          {
          return inlineAtomicMemoryUpdate(node, op, cg);
+         }
+      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicCompareAndSwapReturnStatusSymbol))
+         {
+         return inlineAtomicCompareAndMemoryUpdate(node, false, cg);
+         }
+      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicCompareAndSwapReturnValueSymbol))
+         {
+         return inlineAtomicCompareAndMemoryUpdate(node, true, cg);
          }
       }
 
@@ -3441,7 +3466,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
       if (node->getNumChildren() > 0)
          inst = generateLabelInstruction(LABEL, node, label, node->getFirstChild(), &popRegisters, cg);
       else
-         inst = generateLabelInstruction(LABEL, node, node->getLabel(), true, cg);
+         inst = generateLabelInstruction(LABEL, node, node->getLabel(), cg);
 
       if (inst->getDependencyConditions())
          inst->getDependencyConditions()->setMayNeedToPopFPRegisters(true);
@@ -3523,14 +3548,12 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
          machine->createRegisterAssociationDirective(cg->getAppendInstruction());
          }
 
-      bool needVMThreadDep = true;
-
       // This label is also used by RegisterDependency to detect the end of a block.
       TR::Instruction *labelInst = NULL;
       if (node->getNumChildren() > 0)
          labelInst = generateLabelInstruction(LABEL, node, generateLabelSymbol(cg), node->getFirstChild(), NULL, cg);
       else
-         labelInst = generateLabelInstruction(LABEL, node, generateLabelSymbol(cg), needVMThreadDep, cg);
+         labelInst = generateLabelInstruction(LABEL, node, generateLabelSymbol(cg), cg);
 
        node->getBlock()->setLastInstruction(labelInst);
 
@@ -3821,15 +3844,6 @@ TR::Register *OMR::X86::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::Cod
       }
 
    return NULL;
-   }
-
-
-void
-TR_X86ComputeCC::bitwise32(TR::Node *node, TR::Register *ccReg, TR::Register *target,
-                             TR::CodeGenerator *cg)
-   {
-   generateRegInstruction(SETNE1Reg, node, ccReg, cg);
-   target->setCCRegister(ccReg);
    }
 
 bool

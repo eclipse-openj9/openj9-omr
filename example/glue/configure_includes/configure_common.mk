@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2016 IBM Corp. and others
+# Copyright (c) 2015, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,6 +29,8 @@ CONFIGURE_ARGS += \
   --enable-OMR_GC_SEGREGATED_HEAP \
   --enable-OMR_GC_MODRON_SCAVENGER \
   --enable-OMR_GC_MODRON_CONCURRENT_MARK \
+  --enable-OMR_GC_VLHGC \
+  --enable-OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD \
   --enable-OMR_THR_CUSTOM_SPIN_OPTIONS \
   --enable-OMR_NOTIFY_POLICY_CONTROL
 

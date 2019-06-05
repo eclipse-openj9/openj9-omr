@@ -78,7 +78,7 @@
 #include "MemcheckWrapper.hpp"
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 void
 poisonReferenceSlot(MM_EnvironmentBase *env, GC_SlotObject *slotObject)
 {
@@ -136,7 +136,7 @@ healReferenceSlots(OMR_VMThread *omrVMThread, MM_HeapRegionDescriptor *region, o
 			healReferenceSlot(env, slotObject);
 		}
 }
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 /* Define hook routines to be called on AF start and End */
 static void globalGCHookAFCycleStart(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
@@ -464,9 +464,6 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 	
 	sweep(env, allocDescription, rebuildMarkBits);
 
-	if (_extensions->processLargeAllocateStats) {
-		processLargeAllocateStatsAfterSweep(env);
-	}
 
 #if defined(OMR_GC_MODRON_COMPACTION)
 	/* If a compaction was required, then do one */
@@ -478,6 +475,9 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 
 		masterThreadCompact(env, allocDescription, rebuildMarkBits);
 		_collectionStatistics._tenureFragmentation = NO_FRAGMENTATION;
+		if (_extensions->processLargeAllocateStats) {
+			processLargeAllocateStatsAfterCompact(env);
+		}
 	} else {
 		/* If a compaction was prevented, report the reason */
 		CompactPreventedReason compactPreventedReason = (CompactPreventedReason)(_extensions->globalGCStats.compactStats._compactPreventedReason);
@@ -568,7 +568,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	CompactReason compactReason = COMPACT_NONE;
 	CompactPreventedReason compactPreventedReason = COMPACT_PREVENTED_NONE;
 	uintptr_t tlhPercent, totalBytesAllocated;
-	
+
 	/* Assume no compaction is required until we prove otherwise*/
 	/* If user has specified -XnoCompact then were done */
 	if(_extensions->noCompactOnGlobalGC) {
@@ -716,6 +716,45 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 			goto compactionReqd;
 		}
 	}	
+
+	{
+		MM_MemoryPool *memoryPool= _extensions->heap->getDefaultMemorySpace()->getTenureMemorySubSpace()->getMemoryPool();
+		uintptr_t darkMatterBytes = memoryPool->getDarkMatterBytes();
+		uintptr_t freeMemorySize = memoryPool->getActualFreeMemorySize();
+		float darkMatterRatio = ((float)darkMatterBytes)/((float)freeMemorySize);
+
+		float darkMatterThreshold = _extensions->getDarkMatterCompactThreshold();
+
+		if (darkMatterRatio > darkMatterThreshold) {
+			compactReason = COMPACT_MICRO_FRAG;
+			goto compactionReqd;
+		}
+	}
+
+#if defined(OMR_GC_IDLE_HEAP_MANAGER) 
+	 if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode.getCode()) && (_extensions->gcOnIdle)){
+
+		MM_MemoryPool *memoryPool= _extensions->heap->getDefaultMemorySpace()->getTenureMemorySubSpace()->getMemoryPool();
+		MM_LargeObjectAllocateStats *stats = memoryPool->getLargeObjectAllocateStats();
+
+		uintptr_t pageSize = env->getExtensions()->heap->getPageSize();
+		uintptr_t freeMemory = stats->getFreeMemory();
+		uintptr_t reusableFreeMemory = stats->getPageAlignedFreeMemory(pageSize);
+
+		uintptr_t darkMatter = memoryPool->getDarkMatterBytes();
+		uintptr_t memoryFragmentationDiff = freeMemory - reusableFreeMemory;
+		uintptr_t totalFragmentation = memoryFragmentationDiff + darkMatter;
+		float totalFragmentationRatio = ((float)totalFragmentation)/((float)freeMemory);
+
+		Trc_ParallelGlobalGC_shouldCompactThisCycle(env->getLanguageVMThread(), totalFragmentationRatio, _extensions->gcOnIdleCompactThreshold);
+
+		if (totalFragmentationRatio > _extensions->gcOnIdleCompactThreshold) {
+			compactReason = COMPACT_PAGE;
+			goto compactionReqd;
+		}
+	}
+#endif /* OMR_GC_IDLE_HEAP_MANAGER */	
+
 	
 nocompact:	
 	/* Compaction not required or prevented from running */
@@ -821,6 +860,10 @@ MM_ParallelGlobalGC::sweep(MM_EnvironmentBase *env, MM_AllocateDescription *allo
 	reportSweepStart(env);
 	sweepStats->_startTime = omrtime_hires_clock();
 	masterThreadSweepStart(env, allocDescription);
+
+	if (_extensions->processLargeAllocateStats) {
+		processLargeAllocateStatsAfterSweep(env);
+	}
 
 	MM_MemorySubSpace *activeSubSpace = env->_cycleState->_activeSubSpace;
 	bool isExplicitGC = env->_cycleState->_gcCode.isExplicitGC();
@@ -980,14 +1023,16 @@ MM_ParallelGlobalGC::masterThreadRestartAllocationCaches(MM_EnvironmentBase *env
 void
 MM_ParallelGlobalGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode)
 {
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
-	if (1 == _extensions->fvtest_enableReadBarrierVerification) {
-		/* heal the roots slots that were not read/healed*/
-		_delegate.healSlots(env);
-		/* heal the heap object slots that were not read/healed*/
-		healHeap(env);
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
+	if (!env->compressObjectReferences()) {
+		if (1 == _extensions->fvtest_enableReadBarrierVerification) {
+			/* heal the roots slots that were not read/healed*/
+			_delegate.healSlots(env);
+			/* heal the heap object slots that were not read/healed*/
+			healHeap(env);
+		}
 	}
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 	_cycleState = MM_CycleState();
 	env->_cycleState = &_cycleState;
@@ -1067,14 +1112,16 @@ MM_ParallelGlobalGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSp
 #endif
 
 
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
-	if (1 == _extensions->fvtest_enableReadBarrierVerification) {
-		/* poison root slots */
-		_delegate.poisonSlots(env);
-		/* poison heap object slots */
-		poisonHeap(env);
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
+	if (!env->compressObjectReferences()) {
+		if (1 == _extensions->fvtest_enableReadBarrierVerification) {
+			/* poison root slots */
+			_delegate.poisonSlots(env);
+			/* poison heap object slots */
+			poisonHeap(env);
+		}
 	}
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 }
 
@@ -1110,6 +1157,13 @@ MM_ParallelGlobalGC::processLargeAllocateStatsBeforeGC(MM_EnvironmentBase *env)
 		defaultMemorySubspace->getTopLevelMemorySubSpace(MEMORY_TYPE_NEW)->mergeLargeObjectAllocateStats(env);
 	}
 }
+
+void
+MM_ParallelGlobalGC::processLargeAllocateStatsAfterCompact(MM_EnvironmentBase *env)
+{
+	processLargeAllocateStatsAfterSweep(env);
+}
+
 
 void
 MM_ParallelGlobalGC::processLargeAllocateStatsAfterSweep(MM_EnvironmentBase *env)
@@ -1672,14 +1726,6 @@ MM_ParallelGlobalGC::reportGCEnd(MM_EnvironmentBase *env)
 	uintptr_t approximateActiveFreeMemorySize = 0;
 	uintptr_t activeMemorySize = 0;
 
-	TRIGGER_J9HOOK_MM_PRIVATE_REPORT_MEMORY_USAGE(
-		_extensions->privateHookInterface,
-		env->getOmrVMThread(),
-		omrtime_hires_clock(),
-		J9HOOK_MM_PRIVATE_REPORT_MEMORY_USAGE,
-		_extensions->getForge()->getCurrentStatistics()
-	);
-
 	TRIGGER_J9HOOK_MM_OMR_GLOBAL_GC_END(
 		_extensions->omrHookInterface,
 		env->getOmrVMThread(),
@@ -1808,7 +1854,7 @@ MM_ParallelGlobalGC::reportCompactEnd(MM_EnvironmentBase *env)
 }
 #endif /* OMR_GC_MODRON_COMPACTION */
 
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 void
 MM_ParallelGlobalGC::poisonHeap(MM_EnvironmentBase *env)
 {
@@ -1825,4 +1871,4 @@ MM_ParallelGlobalGC::healHeap(MM_EnvironmentBase *env)
 	 * in a sequential manner
 	 */
 }
-#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */

@@ -691,8 +691,8 @@ OMR_ARCH_AARCH64
 OMR_ARCH_ARM
 OMR_ARCH_POWER
 OMR_PORT_ASYNC_HANDLER
+OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
 OMR_GC_VLHGC
-OMR_GC_STACCATO
 OMR_GC_SEGREGATED_HEAP
 OMR_GC_REALTIME
 OMR_GC_OBJECT_ALLOCATION_NOTIFY
@@ -700,11 +700,11 @@ OMR_GC_LEAF_BITS
 OMR_GC_HYBRID_ARRAYLETS
 OMR_GC_CONCURRENT_SWEEP
 OMR_GC_CONCURRENT_SCAVENGER
+OMR_GC_DOUBLE_MAP_ARRAYLETS
 OMR_GC_MODRON_SCAVENGER
 OMR_GC_MODRON_CONCURRENT_MARK
 OMR_GC_MODRON_COMPACTION
 OMR_GC_DYNAMIC_CLASS_UNLOADING
-OMR_GC_SCAVENGER_DELEGATE
 OMR_THR_TRACING
 OMR_THR_LOCK_NURSERY
 OMR_THR_JLM_HOLD_TIMES
@@ -852,11 +852,11 @@ enable_OMR_THR_JLM
 enable_OMR_THR_JLM_HOLD_TIMES
 enable_OMR_THR_LOCK_NURSERY
 enable_OMR_THR_TRACING
-enable_OMR_GC_SCAVENGER_DELEGATE
 enable_OMR_GC_DYNAMIC_CLASS_UNLOADING
 enable_OMR_GC_MODRON_COMPACTION
 enable_OMR_GC_MODRON_CONCURRENT_MARK
 enable_OMR_GC_MODRON_SCAVENGER
+enable_OMR_GC_DOUBLE_MAP_ARRAYLETS
 enable_OMR_GC_CONCURRENT_SCAVENGER
 enable_OMR_GC_CONCURRENT_SWEEP
 enable_OMR_GC_HYBRID_ARRAYLETS
@@ -864,8 +864,8 @@ enable_OMR_GC_LEAF_BITS
 enable_OMR_GC_OBJECT_ALLOCATION_NOTIFY
 enable_OMR_GC_REALTIME
 enable_OMR_GC_SEGREGATED_HEAP
-enable_OMR_GC_STACCATO
 enable_OMR_GC_VLHGC
+enable_OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
 enable_OMR_PORT_ASYNC_HANDLER
 enable_OMR_ARCH_POWER
 enable_OMR_ARCH_ARM
@@ -1614,8 +1614,6 @@ Optional Features:
 
   --enable-OMR_THR_TRACING
 
-  --enable-OMR_GC_SCAVENGER_DELEGATE
-
   --enable-OMR_GC_DYNAMIC_CLASS_UNLOADING
 
   --enable-OMR_GC_MODRON_COMPACTION
@@ -1623,6 +1621,8 @@ Optional Features:
   --enable-OMR_GC_MODRON_CONCURRENT_MARK
 
   --enable-OMR_GC_MODRON_SCAVENGER
+
+  --enable-OMR_GC_DOUBLE_MAP_ARRAYLETS
 
   --enable-OMR_GC_CONCURRENT_SCAVENGER
 
@@ -1638,9 +1638,9 @@ Optional Features:
 
   --enable-OMR_GC_SEGREGATED_HEAP
 
-  --enable-OMR_GC_STACCATO
-
   --enable-OMR_GC_VLHGC
+  --enable-OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
+
   --enable-OMR_PORT_ASYNC_HANDLER
 
   --enable-OMR_ARCH_POWER
@@ -5880,25 +5880,6 @@ fi
 ############### Flags that are conditionally enabled.
 # Each flag must have a corresponding entry in omrcfg.h.in
 
-# Check whether --enable-OMR_GC_SCAVENGER_DELEGATE was given.
-if test "${enable_OMR_GC_SCAVENGER_DELEGATE+set}" = set; then :
-  enableval=$enable_OMR_GC_SCAVENGER_DELEGATE; if test "x${enableval}" = xyes; then :
-  OMR_GC_SCAVENGER_DELEGATE=1
-
-   $as_echo "#define OMR_GC_SCAVENGER_DELEGATE 1" >>confdefs.h
-
-else
-  OMR_GC_SCAVENGER_DELEGATE=0
-
-
-fi
-else
-  OMR_GC_SCAVENGER_DELEGATE=0
-
-
-fi
-
-
 # Check whether --enable-OMR_GC_DYNAMIC_CLASS_UNLOADING was given.
 if test "${enable_OMR_GC_DYNAMIC_CLASS_UNLOADING+set}" = set; then :
   enableval=$enable_OMR_GC_DYNAMIC_CLASS_UNLOADING; if test "x${enableval}" = xyes; then :
@@ -5970,6 +5951,25 @@ else
 fi
 else
   OMR_GC_MODRON_SCAVENGER=0
+
+
+fi
+
+
+# Check whether --enable-OMR_GC_DOUBLE_MAP_ARRAYLETS was given.
+if test "${enable_OMR_GC_DOUBLE_MAP_ARRAYLETS+set}" = set; then :
+  enableval=$enable_OMR_GC_DOUBLE_MAP_ARRAYLETS; if test "x${enableval}" = xyes; then :
+  OMR_GC_DOUBLE_MAP_ARRAYLETS=1
+
+   $as_echo "#define OMR_GC_DOUBLE_MAP_ARRAYLETS 1" >>confdefs.h
+
+else
+  OMR_GC_DOUBLE_MAP_ARRAYLETS=0
+
+
+fi
+else
+  OMR_GC_DOUBLE_MAP_ARRAYLETS=0
 
 
 fi
@@ -6108,25 +6108,6 @@ else
 fi
 
 
-# Check whether --enable-OMR_GC_STACCATO was given.
-if test "${enable_OMR_GC_STACCATO+set}" = set; then :
-  enableval=$enable_OMR_GC_STACCATO; if test "x${enableval}" = xyes; then :
-  OMR_GC_STACCATO=1
-
-   $as_echo "#define OMR_GC_STACCATO 1" >>confdefs.h
-
-else
-  OMR_GC_STACCATO=0
-
-
-fi
-else
-  OMR_GC_STACCATO=0
-
-
-fi
-
-
 # Check whether --enable-OMR_GC_VLHGC was given.
 if test "${enable_OMR_GC_VLHGC+set}" = set; then :
   enableval=$enable_OMR_GC_VLHGC; if test "x${enableval}" = xyes; then :
@@ -6141,6 +6122,25 @@ else
 fi
 else
   OMR_GC_VLHGC=0
+
+
+fi
+
+
+# Check whether --enable-OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD was given.
+if test "${enable_OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD+set}" = set; then :
+  enableval=$enable_OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD; if test "x${enableval}" = xyes; then :
+  OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD=1
+
+   $as_echo "#define OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD 1" >>confdefs.h
+
+else
+  OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD=0
+
+
+fi
+else
+  OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD=0
 
 
 fi

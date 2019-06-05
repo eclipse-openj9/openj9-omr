@@ -37,6 +37,7 @@
 #include "infra/Assert.hpp"
 #include "infra/CriticalSection.hpp"
 #include "infra/Monitor.hpp"
+#include "omrformatconsts.h"
 #include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/CodeCacheMemorySegment.hpp"
@@ -458,26 +459,44 @@ OMR::CodeCache::allocateTempTrampoline()
    }
 
 
-OMR::CodeCacheTrampolineCode *
-OMR::CodeCache::reserveSpaceForTrampoline()
+OMR::CodeCacheErrorCode::ErrorCode
+OMR::CodeCache::reserveSpaceForTrampoline_bridge(int32_t numTrampolines)
    {
-   TR::CodeCacheConfig &config = _manager->codeCacheConfig();
+   return self()->reserveSpaceForTrampoline(numTrampolines);
+   }
 
-   // See if we are hitting against the method body allocation pointer
-   // indicating that there is no more free space left in this code cache
-   //
-   if (_trampolineReservationMark < _trampolineBase + config.trampolineCodeSize())
+
+OMR::CodeCacheErrorCode::ErrorCode
+OMR::CodeCache::reserveSpaceForTrampoline(int32_t numTrampolines)
+   {
+   CacheCriticalSection ReserveSpaceForTrampoline(self());
+
+   CodeCacheErrorCode::ErrorCode status = CodeCacheErrorCode::ERRORCODE_SUCCESS;
+
+   TR::CodeCacheConfig &config = _manager->codeCacheConfig();
+   size_t size = numTrampolines * config.trampolineCodeSize();
+
+   if (size)
       {
-      // No free trampoline space
+      // See if we are hitting against the method body allocation pointer
+      // indicating that there is no more free space left in this code cache
       //
-      return NULL;
+      if (_trampolineReservationMark >= _trampolineBase + size)
+         {
+         _trampolineReservationMark -= size;
+         }
+      else
+         {
+         status = CodeCacheErrorCode::ERRORCODE_INSUFFICIENTSPACE;
+         _almostFull = TR_yes;
+         if (config.verboseCodeCache())
+            {
+            TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache %p marked as full in reserveSpaceForTrampoline", self());
+            }
+         }
       }
 
-   // Advance the reservation mark
-   //
-   _trampolineReservationMark -= config.trampolineCodeSize();
-
-   return (CodeCacheTrampolineCode *) _trampolineReservationMark;
+   return status;
    }
 
 
@@ -519,27 +538,19 @@ OMR::CodeCache::reserveResolvedTrampoline(TR_OpaqueMethodBlock *method,
       CodeCacheHashEntry *entry = _resolvedMethodHT->findResolvedMethod(method);
       if (!entry)
          {
-         // reserve a new trampoline since we got no active reservation for given method */
-         CodeCacheTrampolineCode *trampoline = self()->reserveSpaceForTrampoline();
-         if (trampoline)
+         // Reserve a new trampoline since there is not an active reservation for given method
+         //
+         retValue = self()->reserveSpaceForTrampoline();
+         if (retValue == OMR::CodeCacheErrorCode::ERRORCODE_SUCCESS)
             {
             // add hashtable entry
             if (!self()->addResolvedMethod(method))
                retValue = CodeCacheErrorCode::ERRORCODE_FATALERROR; // couldn't allocate memory from VM
             }
-         else // no space in this code cache; must allocate a new one
-            {
-            _almostFull = TR_yes;
-            retValue = CodeCacheErrorCode::ERRORCODE_INSUFFICIENTSPACE;
-            if (config.verboseCodeCache())
-               {
-               TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache %p marked as full in reserveResolvedTrampoline", this);
-               }
-            }
          }
       }
 
-      return retValue;
+   return retValue;
    }
 
 
@@ -604,52 +615,40 @@ OMR::CodeCache::replaceTrampoline(TR_OpaqueMethodBlock *method,
    //suspicious that this assertion is commented out...
    //TR_ASSERT(entry);
 
-   if (needSync)
+   if (oldTrampoline == NULL)
       {
-      // Trampoline CANNOT be safely modified in place
-      // We have to allocate a new temporary trampoline
-      // and rely on the sync later on to update the old one using the
-      // temporary data
-      if (oldTrampoline != NULL)
+      // A trampoline has not been created.  Simply allocate a new one.
+      //
+      trampoline = self()->allocateTrampoline();
+      entry->_info._resolved._currentTrampoline = trampoline;
+      }
+   else
+      {
+      if (needSync)
          {
+         // Trampoline CANNOT be safely modified in place
+         // We have to allocate a new temporary trampoline
+         // and rely on the sync later on to update the old one using the
+         // temporary data
+         //
          // A permanent trampoline already exists, create a temporary one,
-         // might fail due to lack of free slots
+         // This might fail due to lack of free slots
+         //
          trampoline = self()->allocateTempTrampoline();
 
          // Save the temporary trampoline entry for future temp->parm synchronization
          self()->saveTempTrampoline(entry);
 
          if (!trampoline)
-            // Unable to fullful the replacement request, no temp space left
+            {
+            // Unable to fulfill the replacement request, no temp space left
             return NULL;
-
+            }
          }
-      else
-         {
-         // No oldTrampoline present, ie its a new trampoline creation request
-         trampoline = self()->allocateTrampoline();
-
-         entry->_info._resolved._currentTrampoline = trampoline;
-         }
-
-      // update the hash entry for this method
-      entry->_info._resolved._currentStartPC = newTargetPC;
-
       }
-   else
-      {
-      // Trampoline CAN be safely to modified in place
-      if (oldTrampoline == NULL)
-         {
-         // no old trampoline present, simply allocate a new one
-         trampoline = self()->allocateTrampoline();
 
-         entry->_info._resolved._currentTrampoline = trampoline;
-         }
-
-      // update the hash entry for this method
-      entry->_info._resolved._currentStartPC = newTargetPC;
-      }
+   // update the hash entry for this method
+   entry->_info._resolved._currentStartPC = newTargetPC;
 
    return trampoline;
    }
@@ -1275,8 +1274,8 @@ void
 OMR::CodeCache::dumpCodeCache()
    {
    printf("Code Cache @%p\n", this);
-   printf("  |-- warmCodeAlloc          = 0x%08x\n", _warmCodeAlloc );
-   printf("  |-- coldCodeAlloc          = 0x%08x\n", _coldCodeAlloc );
+   printf("  |-- warmCodeAlloc          = 0x%08" OMR_PRIxPTR "\n", (uintptr_t)_warmCodeAlloc );
+   printf("  |-- coldCodeAlloc          = 0x%08" OMR_PRIxPTR "\n", (uintptr_t)_coldCodeAlloc );
    printf("  |-- tempTrampsMax          = %d\n",     _tempTrampolinesMax );
    printf("  |-- flags                  = %d\n",     _flags );
    printf("  |-- next                   = 0x%p\n",   _next );
@@ -1287,18 +1286,18 @@ void
 OMR::CodeCache::printOccupancyStats()
    {
    fprintf(stderr, "Code Cache @%p flags=0x%x almostFull=%d\n", this, _flags, _almostFull);
-   fprintf(stderr, "   cold-warm hole size        = %8u bytes\n", self()->getFreeContiguousSpace());
+   fprintf(stderr, "   cold-warm hole size        = %8" OMR_PRIuSIZE " bytes\n", self()->getFreeContiguousSpace());
    fprintf(stderr, "   warmCodeAlloc=%p coldCodeAlloc=%p\n", (void*)_warmCodeAlloc, (void*)_coldCodeAlloc);
    if (_freeBlockList)
       {
-      fprintf(stderr, "   sizeOfLargestFreeColdBlock = %8d bytes\n", _sizeOfLargestFreeColdBlock);
-      fprintf(stderr, "   sizeOfLargestFreeWarmBlock = %8d bytes\n", _sizeOfLargestFreeWarmBlock);
+      fprintf(stderr, "   sizeOfLargestFreeColdBlock = %8" OMR_PRIuSIZE " bytes\n", _sizeOfLargestFreeColdBlock);
+      fprintf(stderr, "   sizeOfLargestFreeWarmBlock = %8" OMR_PRIuSIZE " bytes\n", _sizeOfLargestFreeWarmBlock);
       fprintf(stderr, "   reclaimed sizes:");
       // scope for critical section
          {
          CacheCriticalSection resolveAndCreateTrampoline(self());
          for (CodeCacheFreeCacheBlock *currLink = _freeBlockList; currLink; currLink = currLink->_next)
-            fprintf(stderr, " %u", currLink->_size);
+            fprintf(stderr, " %" OMR_PRIuSIZE, currLink->_size);
          }
       fprintf(stderr, "\n");
       }
@@ -1411,12 +1410,12 @@ OMR::CodeCache::checkForErrors()
             } // end for
          if (_sizeOfLargestFreeWarmBlock != maxFreeWarmSize)
             {
-            fprintf(stderr, "checkForErrors cache %p: Error: _sizeOfLargestFreeWarmBlock(%d) != maxFreeWarmSize(%d)\n", this, _sizeOfLargestFreeWarmBlock, maxFreeWarmSize);
+            fprintf(stderr, "checkForErrors cache %p: Error: _sizeOfLargestFreeWarmBlock(%" OMR_PRIuSIZE ") != maxFreeWarmSize(%" OMR_PRIuSIZE ")\n", this, _sizeOfLargestFreeWarmBlock, maxFreeWarmSize);
             doCrash = true;
             }
          if (_sizeOfLargestFreeColdBlock != maxFreeColdSize)
             {
-            fprintf(stderr, "checkForErrors cache %p: Error: _sizeOfLargestFreeColdBlock(%d) != maxFreeColdSize(%d)\n", this, _sizeOfLargestFreeColdBlock, maxFreeColdSize);
+            fprintf(stderr, "checkForErrors cache %p: Error: _sizeOfLargestFreeColdBlock(%" OMR_PRIuSIZE ") != maxFreeColdSize(%" OMR_PRIuSIZE ")\n", this, _sizeOfLargestFreeColdBlock, maxFreeColdSize);
             doCrash = true;
             }
 
@@ -1656,36 +1655,6 @@ OMR::CodeCache::getCCPreLoadedCodeAddress(TR_CCPreLoadedCode h, TR::CodeGenerato
          }
       }
    return (h >= 0 && h < TR_numCCPreLoadedCode) ? _CCPreLoadedCode[h] : (void *) (uintptr_t) 0xDEADBEEF;
-   }
-
-
-OMR::CodeCacheErrorCode::ErrorCode
-OMR::CodeCache::reserveNTrampolines(int64_t n)
-   {
-   CacheCriticalSection updatingCodeCache(self());
-   CodeCacheErrorCode::ErrorCode status = CodeCacheErrorCode::ERRORCODE_SUCCESS;
-   TR::CodeCacheConfig &config = _manager->codeCacheConfig();
-   size_t size = n * config.trampolineCodeSize();
-
-   if (size)
-      {
-      if (_trampolineReservationMark >= _trampolineBase + size)
-         {
-         _trampolineReservationMark -= size;
-         }
-      else
-         {
-         status = CodeCacheErrorCode::ERRORCODE_INSUFFICIENTSPACE;
-         _almostFull = TR_yes;
-         self()->unreserve();
-         if (config.verboseCodeCache())
-            {
-            TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache %p marked as full in reserveNTrampoline", this);
-            }
-         }
-      }
-
-   return status;
    }
 
 

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,6 +31,15 @@ add_executable(omrgctest
 	main.cpp
 	StartupManagerTestExample.cpp
 )
+
+if (OMR_GC_VLHGC)
+if (OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+	target_sources(omrgctest
+		PRIVATE
+		TestHeapRegionStateTable.cpp
+	)
+endif()
+endif()
 
 #TODO this is a real gross, tangled mess
 target_link_libraries(omrgctest

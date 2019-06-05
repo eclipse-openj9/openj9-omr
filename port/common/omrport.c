@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corp. and others
+ * Copyright (c) 2015, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -76,6 +76,7 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsysinfo_get_executable_name, /* sysinfo_get_executable_name */
 	omrsysinfo_get_username, /* sysinfo_get_username */
 	omrsysinfo_get_groupname, /* sysinfo_get_groupname */
+	omrsysinfo_get_hostname, /* sysinfo_get_hostname */
 	omrsysinfo_get_load_average, /* sysinfo_get_load_average */
 	omrsysinfo_get_CPU_utilization, /* omrsysinfo_get_CPU_utilization */
 	omrsysinfo_limit_iterator_init, /* sysinfo_limit_iterator_next */
@@ -171,6 +172,7 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrvmem_vmem_params_init, /* vmem_vmem_params_init */
 	omrvmem_reserve_memory, /* vmem_reserve_memory */
 	omrvmem_reserve_memory_ex, /* vmem_reserve_memory_ex */
+	omrvmem_get_contiguous_region_memory, /* vmem_get_contiguous_region_memory */
 	omrvmem_get_page_size, /* vmem_get_page_size */
 	omrvmem_get_page_flags, /* omrvmem_get_page_flags */
 	omrvmem_supported_page_sizes, /* vmem_supported_page_sizes */

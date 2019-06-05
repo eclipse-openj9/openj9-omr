@@ -63,7 +63,10 @@ inline TR_X86OpCodes SizeParameterizedOpCode(bool is64Bit =
 #define CMOVNERegMem   SizeParameterizedOpCode<CMOVNE8RegMem   , CMOVNE4RegMem   >
 #define CMOVNERegReg   SizeParameterizedOpCode<CMOVNE8RegReg   , CMOVNE4RegReg   >
 #define CMOVGERegMem   SizeParameterizedOpCode<CMOVGE8RegMem   , CMOVGE4RegMem   >
+#define CMOVGRegReg    SizeParameterizedOpCode<CMOVG8RegReg    , CMOVG4RegReg    >
 #define CMOVGERegReg   SizeParameterizedOpCode<CMOVGE8RegReg   , CMOVGE4RegReg   >
+#define CMOVLRegReg    SizeParameterizedOpCode<CMOVL8RegReg    , CMOVL4RegReg    >
+#define CMOVLERegReg   SizeParameterizedOpCode<CMOVLE8RegReg   , CMOVLE4RegReg   >
 #define CMOVPRegMem    SizeParameterizedOpCode<CMOVP8RegMem    , CMOVP4RegMem    >
 #define CMOVSRegReg    SizeParameterizedOpCode<CMOVS8RegReg    , CMOVS4RegReg    >
 #define CMPRegImms     SizeParameterizedOpCode<CMP8RegImms     , CMP4RegImms     >

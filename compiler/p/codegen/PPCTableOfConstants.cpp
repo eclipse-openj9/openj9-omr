@@ -92,7 +92,7 @@ void *TR_PPCTableOfConstants::initTOC(TR_FrontEnd *fe, TR::PersistentInfo * pinf
    int32_t idx;
    for (idx=1; idx<TR_PPCnumRuntimeHelpers; idx++)
       tocBase[idx-1] = (uintptrj_t)runtimeHelperValue((TR_RuntimeHelper)idx);
-#if defined(PYTHON) || defined(JITTEST)
+#if defined(JITTEST)
    //Store at the index of TR_PPCnumRuntimeHelpers, the systemTOC. Note: Slot tocBase[TR_PPCnumRuntimeHelpers-1] is free.
    //See TR::TreeEvaluator::restoreTOCRegister.
    tocBase[TR_PPCnumRuntimeHelpers] = systemTOC;

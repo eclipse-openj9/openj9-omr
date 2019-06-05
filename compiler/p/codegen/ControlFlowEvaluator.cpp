@@ -23,10 +23,12 @@
 #include <stdint.h>
 #include "codegen/AheadOfTimeCompile.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -72,14 +74,6 @@
 #include "p/codegen/PPCTableOfConstants.hpp"
 #include "runtime/Runtime.hpp"
 
-
-extern TR::Register *addConstantToInteger(TR::Node * node, TR::Register *srcReg, int32_t value, TR::CodeGenerator *cg);
-extern TR::Register *addConstantToInteger(TR::Node * node, TR::Register *trgReg, TR::Register *srcReg, int32_t value, TR::CodeGenerator *cg);
-extern TR::Register *addConstantToLong(TR::Node * node, TR::Register *srcReg, int64_t value, TR::Register *trgReg, TR::CodeGenerator *cg);
-extern TR::Register *addConstantToLong(TR::Node *node, TR::Register *srcHigh, TR::Register *srcLow, int32_t valHigh, int32_t valLow, TR::CodeGenerator *cg);
-extern void generateZeroExtendInstruction(TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int32_t bitsInTarget, TR::CodeGenerator *cg);
-extern void generateSignExtendInstruction(TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, TR::CodeGenerator *cg);
-
 static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg);
 static void switchDispatch(TR::Node *node, bool fromTableEval, TR::CodeGenerator *cg);
 static bool isGlDepsUnBalanced(TR::Node *node, TR::CodeGenerator *cg);
@@ -87,7 +81,6 @@ static void lookupScheme1(TR::Node *node, bool unbalanced, bool fromTableEval, T
 static void lookupScheme2(TR::Node *node, bool unbalanced, bool fromTableEval, TR::CodeGenerator *cg);
 static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg);
 static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg);
-
 
 extern TR::Register *
 generateZeroExtendedTempRegister(TR::Node *node, TR::CodeGenerator *cg)
@@ -152,6 +145,7 @@ generateSignExtendedTempRegister(TR::Node *node, TR::CodeGenerator *cg)
 
    return srcReg;
    }
+
 
 static void computeCC_xcmpStrengthReducedCC(TR::Node *node,
                                              TR::Register *trgReg,
@@ -236,8 +230,6 @@ static void computeCC_xcmpStrengthReducedCC(TR::Node *node,
       }
    }
 
-
-
 TR::Register *computeCC_compareUnsigned(TR::Node *node,
                                         TR::Register *trgReg,
                                         TR::Register *src1Reg,
@@ -255,6 +247,71 @@ bool skipCompare (TR::Node *node)
    TR::Node     *secondChild = node->getSecondChild();
    return false;
    }
+
+TR::Register *OMR::Power::TreeEvaluator::ifacmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::iflucmpltEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::ifiucmpltEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::ifacmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::iflucmpgeEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::ifiucmpgeEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::ifacmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::iflucmpgtEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::ifiucmpgtEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::ifacmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::iflucmpleEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::ifiucmpleEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::acmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::lucmpltEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::iucmpltEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::acmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::lucmpgeEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::iucmpgeEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::acmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::lucmpgtEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::iucmpgtEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::acmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (TR::Compiler->target.is64Bit())
+      return TR::TreeEvaluator::lucmpleEvaluator(node, cg);
+   else
+      return TR::TreeEvaluator::iucmpleEvaluator(node, cg);
+   }
+
 
 TR::Register *OMR::Power::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::Mnemonic branchOp, TR::LabelSymbol *dstLabel, TR::Node *node, TR::CodeGenerator *cg, bool isSigned, bool isHint, bool likeliness)
    {
@@ -416,7 +473,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::Mne
    if (skipCompare(node))
       {
       TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-      addDependency(dep, condReg, TR::RealRegister::cr0, TR_CCR, cg);
+      TR::addDependency(dep, condReg, TR::RealRegister::cr0, TR_CCR, cg);
       TR::LabelSymbol *label = generateLabelSymbol(cg);
       generateDepLabelInstruction(cg, TR::InstOpCode::label, node, label, dep);
       }
@@ -1095,11 +1152,20 @@ static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg
 TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::DataType type = node->getType();
-   TR::Register *resultReg = type.getDataType() == TR::Float ?
+   bool two_reg = (TR::Compiler->target.is32Bit()) && type.getDataType() == TR::Int64;
+   TR::Register *resultReg = two_reg ?
+                            cg->allocateRegisterPair(cg->allocateRegister(),cg->allocateRegister()) :
+                            (type.getDataType() == TR::Float ?
                             cg->allocateSinglePrecisionRegister() :
                             (type.getDataType() == TR::Double ?
                             cg->allocateRegister(TR_FPR) :
-                            cg->allocateRegister(TR_GPR));
+                            cg->allocateRegister(TR_GPR)));
+
+   // Mark the result reg as collected reference if required.
+   if (!node->isNotCollected())
+      {
+      resultReg->setContainsCollectedReference();
+      }
 
    TR::InstOpCode::Mnemonic move_opcode = (type.isIntegral() || type.isAddress()) ? TR::InstOpCode::mr : TR::InstOpCode::fmr;
    TR::Node * firstChild = node->getFirstChild();
@@ -1155,34 +1221,80 @@ TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::C
                                            cmp1Reg, cmp2Reg);
                }
             }
-
-         generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, trueReg);
+         if (two_reg)
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), trueReg->getHighOrder());
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), trueReg->getLowOrder());
+            }
+         else
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, trueReg);
+            }
          generateConditionalBranchInstruction(cg, branch_opcode, node, doneLabel, ccr);
-         generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, falseReg);
+         if (two_reg)
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), falseReg->getHighOrder());
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), falseReg->getLowOrder());
+            }
+         else
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, falseReg);
+            }
          }
       else if (compare_type.isFloatingPoint())
          {
          cmp2Reg = cg->evaluate(firstChild->getSecondChild());
          if (!skip_compare)
             generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, ccr, cmp1Reg, cmp2Reg);
-         generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, trueReg);
+
+         if (two_reg)
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), trueReg->getHighOrder());
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), trueReg->getLowOrder());
+            }
+         else
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, trueReg);
+            }
+
          generateConditionalBranchInstruction(cg, branch_opcode, node, doneLabel, ccr);
          TR::InstOpCode::Mnemonic branch_opcode2 = cmp2bun(firstChild->getOpCodeValue());
          if (branch_opcode2 != TR::InstOpCode::bad)
             generateConditionalBranchInstruction(cg, branch_opcode2, node, doneLabel, ccr);
-         generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, falseReg);
+
+         if (two_reg)
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), falseReg->getHighOrder());
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), falseReg->getLowOrder());
+            }
+         else
+            {
+            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, falseReg);
+            }
          }
       else
          {
          TR_ASSERT(false, "Unsupported compare type for ternary\n");
          }
 
-      TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg->trMemory());
-      dep->addPostCondition(resultReg, TR::RealRegister::NoReg);
+      TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, two_reg ? 8 : 5, cg->trMemory());
+      if (two_reg)
+         {
+         dep->addPostCondition(resultReg->getHighOrder(), TR::RealRegister::NoReg);
+         dep->addPostCondition(resultReg->getLowOrder(), TR::RealRegister::NoReg);
+         dep->addPostCondition(falseReg->getHighOrder(), TR::RealRegister::NoReg);
+         dep->addPostCondition(falseReg->getLowOrder(), TR::RealRegister::NoReg);
+         dep->addPostCondition(trueReg->getHighOrder(), TR::RealRegister::NoReg);
+         dep->addPostCondition(trueReg->getLowOrder(), TR::RealRegister::NoReg);
+         }
+      else
+         {
+         dep->addPostCondition(resultReg, TR::RealRegister::NoReg);
+         dep->addPostCondition(falseReg, TR::RealRegister::NoReg);
+         dep->addPostCondition(trueReg, TR::RealRegister::NoReg);
+         }
       dep->addPostCondition(cmp1Reg, TR::RealRegister::NoReg);
       if (cmp2Reg) dep->addPostCondition(cmp2Reg, TR::RealRegister::NoReg);
-      dep->addPostCondition(falseReg, TR::RealRegister::NoReg);
-      dep->addPostCondition(trueReg, TR::RealRegister::NoReg);
 
       generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, dep);
 
@@ -1200,14 +1312,32 @@ TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::C
       TR::Register *  condReg = cg->evaluate(node->getChild(0));
 
       TR::Register *ccr       = cg->allocateRegister(TR_CCR);
+      bool useRegPairForCond = (condReg->getRegisterPair() != NULL);
       TR::PPCControlFlowInstruction *i = (TR::PPCControlFlowInstruction*)
-      generateControlFlowInstruction(cg, TR::InstOpCode::iternary, node);
+            generateControlFlowInstruction(cg, TR::InstOpCode::iternary, node, NULL, 0, two_reg, useRegPairForCond);
       i->addTargetRegister(ccr);
-      i->addTargetRegister(resultReg);
-      i->addSourceRegister(condReg->getRegisterPair() ? condReg->getLowOrder() : condReg);
-      i->addSourceRegister(trueReg);
-      i->addSourceRegister(falseReg);
-      if (condReg->getRegisterPair())
+      if (two_reg)
+         {
+         i->addTargetRegister(resultReg->getHighOrder());
+         i->addTargetRegister(resultReg->getLowOrder());
+         }
+      else
+         i->addTargetRegister(resultReg);
+      i->addSourceRegister(useRegPairForCond ? condReg->getLowOrder() : condReg);
+      if (two_reg)
+         {
+         i->addSourceRegister(trueReg->getHighOrder());
+         i->addSourceRegister(trueReg->getLowOrder());
+         i->addSourceRegister(falseReg->getHighOrder());
+         i->addSourceRegister(falseReg->getLowOrder());
+         }
+      else
+         {
+         i->addSourceRegister(trueReg);
+         i->addSourceRegister(falseReg);
+         }
+
+      if (useRegPairForCond)
          i->addSourceRegister(condReg->getHighOrder());
 
       i->setOpCode2Value(move_opcode);
@@ -1484,7 +1614,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
    if (skipCompare(node))
       {
       TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-      addDependency(dep, condReg, TR::RealRegister::cr0, TR_CCR, cg);
+      TR::addDependency(dep, condReg, TR::RealRegister::cr0, TR_CCR, cg);
       TR::LabelSymbol *label = generateLabelSymbol(cg);
       generateDepLabelInstruction(cg, TR::InstOpCode::label, node, label, dep);
       }
@@ -1855,7 +1985,7 @@ TR::Register *handleSkipCompare(TR::Node * node, TR::InstOpCode::Mnemonic opcode
    cg->decReferenceCount(secondChild);
 
    TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-   addDependency(dep, condReg, TR::RealRegister::cr0, TR_CCR, cg);
+   TR::addDependency(dep, condReg, TR::RealRegister::cr0, TR_CCR, cg);
    TR::LabelSymbol *label = generateLabelSymbol(cg);
    generateDepLabelInstruction(cg, TR::InstOpCode::label, node, label, dep);
 
@@ -2864,14 +2994,14 @@ void switchDispatch(TR::Node *node, bool fromTableEval, TR::CodeGenerator *cg)
    if (!unbalanced)
       {
       for (ii=2; ii<total; ii++)
-	 {
+         {
          if (node->getChild(ii)->getNumChildren()>0)
             {
             TR::Node *glDepNode = node->getChild(ii)->getFirstChild();
             if (glDepNode != NULL)
                cg->evaluate(glDepNode);
             }
-	 }
+         }
       }
 
    if (total <= 12)
@@ -2926,13 +3056,13 @@ static void lookupScheme1(TR::Node *node, bool unbalanced, bool fromTableEval, T
    if (two_reg)
       {
       toDefaultLabel = generateLabelSymbol(cg);
-      addDependency(conditions, selector->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, selector->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
       }
    else
-      addDependency(conditions, selector, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector, TR::RealRegister::NoReg, TR_GPR, cg);
 
-   addDependency(conditions, cndRegister, TR::RealRegister::NoReg, TR_CCR, cg);
+   TR::addDependency(conditions, cndRegister, TR::RealRegister::NoReg, TR_CCR, cg);
 
    acond = conditions;
    if (secondChild->getNumChildren()>0 && !unbalanced)
@@ -3015,18 +3145,18 @@ static void lookupScheme2(TR::Node *node, bool unbalanced, bool fromTableEval, T
 
    if(two_reg)
       {
-      addDependency(conditions, valRegister->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, valRegister->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, selector->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, selector->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, valRegister->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, valRegister->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
       }
    else
       {
-      addDependency(conditions, valRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, selector, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, valRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector, TR::RealRegister::NoReg, TR_GPR, cg);
       }
 
-   addDependency(conditions, cndRegister, TR::RealRegister::NoReg, TR_CCR, cg);
+   TR::addDependency(conditions, cndRegister, TR::RealRegister::NoReg, TR_CCR, cg);
    conditions->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
    conditions->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
    if(two_reg)
@@ -3163,21 +3293,21 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
       addrRegister = cg->allocateRegister();
       }
 
-   addDependency(conditions, addrRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, addrRegister, TR::RealRegister::NoReg, TR_GPR, cg);
    if (isInt64 && TR::Compiler->target.is64Bit())
       {
-      addDependency(conditions, dataRegister->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, dataRegister->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, selector->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, selector->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, dataRegister->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, dataRegister->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
       }
    else
       {
-      addDependency(conditions, dataRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, selector, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, dataRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector, TR::RealRegister::NoReg, TR_GPR, cg);
       }
 
-   addDependency(conditions, cndRegister, TR::RealRegister::NoReg, TR_CCR, cg);
+   TR::addDependency(conditions, cndRegister, TR::RealRegister::NoReg, TR_CCR, cg);
    conditions->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
    conditions->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
 
@@ -3463,24 +3593,24 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
       }
 
    cg->machine()->setLinkRegisterKilled(true);
-   addDependency(conditions, addrRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(conditions, pivotRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, addrRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, pivotRegister, TR::RealRegister::NoReg, TR_GPR, cg);
    if (two_reg)
       {
-      addDependency(conditions, dataRegister->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, dataRegister->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, selector->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, selector->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, dataRegister->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, dataRegister->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
       }
    else
       {
-      addDependency(conditions, dataRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-      addDependency(conditions, selector, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, dataRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::addDependency(conditions, selector, TR::RealRegister::NoReg, TR_GPR, cg);
       }
 
-   addDependency(conditions, lowRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(conditions, highRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(conditions, cndRegister, TR::RealRegister::NoReg, TR_CCR, cg);
+   TR::addDependency(conditions, lowRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, highRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, cndRegister, TR::RealRegister::NoReg, TR_CCR, cg);
    conditions->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
    conditions->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
    conditions->getPreConditions()->getRegisterDependency(1)->setExcludeGPR0();
@@ -3652,9 +3782,9 @@ TR::Register *OMR::Power::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
    TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
    TR::LabelSymbol *table    = generateLabelSymbol(cg);
 
-   addDependency(conditions, reg1, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(conditions,ccReg, TR::RealRegister::NoReg, TR_CCR, cg);
-   addDependency(conditions, sReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions, reg1, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(conditions,ccReg, TR::RealRegister::NoReg, TR_CCR, cg);
+   TR::addDependency(conditions, sReg, TR::RealRegister::NoReg, TR_GPR, cg);
    conditions->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
    conditions->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
 
@@ -3668,15 +3798,16 @@ TR::Register *OMR::Power::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
    if (!node->isSafeToSkipTableBoundCheck())
       {
       if (numCases > UPPER_IMMED)
-	{
-	tReg = cg->allocateRegister();
-        addDependency(conditions, tReg, TR::RealRegister::NoReg, TR_GPR, cg);
-	loadConstant(cg, node, numCases, tReg);
-	generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, ccReg, sReg, tReg);
-	}
+         {
+         tReg = cg->allocateRegister();
+         TR::addDependency(conditions, tReg, TR::RealRegister::NoReg, TR_GPR, cg);
+         loadConstant(cg, node, numCases, tReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, ccReg, sReg, tReg);
+         }
       else
-	generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, ccReg, sReg, numCases);
-        generateConditionalBranchInstruction(cg, TR::InstOpCode::bge, node, secondChild->getBranchDestination()->getNode()->getLabel(), ccReg);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, ccReg, sReg, numCases);
+
+      generateConditionalBranchInstruction(cg, TR::InstOpCode::bge, node, secondChild->getBranchDestination()->getNode()->getLabel(), ccReg);
       }
 
       {
@@ -3687,7 +3818,7 @@ TR::Register *OMR::Power::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
          if (tReg == NULL)
             {
             tReg = cg->allocateRegister();
-            addDependency(conditions, tReg, TR::RealRegister::NoReg, TR_GPR, cg);
+            TR::addDependency(conditions, tReg, TR::RealRegister::NoReg, TR_GPR, cg);
             }
 
          if (offset != PTOC_FULL_INDEX)
@@ -3777,7 +3908,7 @@ OMR::Power::TreeEvaluator::generateNullTestInstructions(
          }
 
       // trampoline kills gr11
-      addDependency(conditions, jumpReg, TR::RealRegister::gr11, TR_GPR, cg);
+      TR::addDependency(conditions, jumpReg, TR::RealRegister::gr11, TR_GPR, cg);
       if (TR::Compiler->target.is64Bit())
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli8, node, condReg, trgReg, NULLVALUE);
       else

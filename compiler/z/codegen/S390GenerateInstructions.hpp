@@ -1160,7 +1160,8 @@ TR::Instruction * generateVRRiInstruction(
                       TR::Node                * n          ,
                       TR::Register            * targetReg  ,    /* GPR */
                       TR::Register            * sourceReg2 ,    /* VRF */
-                      uint8_t                   mask3);         /* 4 bits*/
+                      uint8_t                   mask3      ,    /* 4 bits*/
+                      uint8_t                   mask4 = 0);
 
 /****** VRS ******/
 TR::Instruction * generateVRSaInstruction(
@@ -1299,7 +1300,7 @@ TR::Instruction *generateVirtualGuardNOPInstruction(
                    TR::Instruction                     *preced = 0);
 
 bool
-canThrowDecimalOverflowException(TR::InstOpCode::Mnemonic op);
+canThrowDecimalOverflowException(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op);
 
 void
 generateS390DAAExceptionRestoreSnippet(TR::CodeGenerator* cg,
@@ -1505,15 +1506,6 @@ TR::Instruction *generateRuntimeInstrumentationInstruction(
                    TR::Register      *target = NULL,
                    TR::Instruction   *preced = NULL);
 
-TR::Instruction *generateExtendedHighWordInstruction(
-                   TR::Node * node,
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic op,
-                   TR::Register * targetReg,
-                   TR::Register * srcReg,
-                   int8_t imm8,
-                   TR::Instruction *preced = 0);
-
 TR::Instruction *
 generateReplicateNodeInVectorReg(TR::Node * node, TR::CodeGenerator *cg, TR::Register * targetVRF, TR::Node * srcElementNode,
                                  int elementSize, TR::Register *zeroReg=NULL, TR::Instruction * preced=NULL);
@@ -1529,8 +1521,4 @@ void generateShiftAndKeepSelected31Bit(
       int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode);
 
 TR::Instruction *generateZeroVector(TR::Node *node, TR::CodeGenerator *cg, TR::Register *vecZeroReg);
-
-#ifdef DEBUG
-#define TRACE_EVAL
-#endif
 #endif

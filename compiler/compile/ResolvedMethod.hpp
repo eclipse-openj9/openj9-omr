@@ -235,7 +235,6 @@ public:
          { return convertToMethod()->getParameterIterator(comp, this); }
 
    bool isJ9() { return convertToMethod()->isJ9(); }
-   bool isPython() { return convertToMethod()->isPython(); }
 
    virtual TR::IlGeneratorMethodDetails *getIlGeneratorMethodDetails();
 

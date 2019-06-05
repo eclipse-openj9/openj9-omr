@@ -34,7 +34,6 @@
 #include <string.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/FrontEnd.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "codegen/StorageInfo.hpp"
 #include "codegen/TreeEvaluator.hpp"

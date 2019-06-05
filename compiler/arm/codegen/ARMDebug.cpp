@@ -29,6 +29,8 @@ int jitDebugARM;
 #endif
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GCRegisterMap.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/Snippet.hpp"
 #include "codegen/StackCheckFailureSnippet.hpp"
@@ -423,7 +425,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMImmSymInstruction * instr)
 
    bool longJump = imm &&
                    _cg->directCallRequiresTrampoline((intptrj_t)imm, (intptrj_t)bufferPos) &&
-                   (!callee || !callee->isSameMethod(_comp->getCurrentMethod()));
+                   !_comp->isRecursiveMethodTarget(sym);
 
    if (bufferPos != NULL && longJump)
       {

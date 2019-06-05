@@ -42,9 +42,15 @@ namespace OMR { typedef OMR::Linkage LinkageConnector; }
 #include "infra/Annotations.hpp"
 
 class TR_BitVector;
+class TR_FrontEnd;
+class TR_HeapMemory;
+class TR_Memory;
+class TR_StackMemory;
 namespace TR { class AutomaticSymbol; }
+namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class Linkage; }
+namespace TR { class Machine; }
 namespace TR { class Instruction; }
 namespace TR { class Node; }
 namespace TR { class ParameterSymbol; }
@@ -59,11 +65,46 @@ class OMR_EXTENSIBLE Linkage
    {
    public:
 
-   TR::Linkage* self();
+   inline TR::Linkage* self();
+
+   /**
+    * @return Cached CodeGenerator object
+    */
+   inline TR::CodeGenerator *cg();
+
+   /**
+    * @return Machine object from cached CodeGenerator
+    */
+   inline TR::Machine *machine();
+
+   /**
+    * @return Compilation object from cached CodeGenerator
+    */
+   inline TR::Compilation *comp();
+
+   /**
+    * @return FrontEnd object from cached CodeGenerator
+    */
+   inline TR_FrontEnd *fe();
+
+   /**
+    * @return TR_Memory object from cached CodeGenerator
+    */
+   inline TR_Memory *trMemory();
+
+   /**
+    * @return TR_HeapMemory object
+    */
+   inline TR_HeapMemory trHeapMemory();
+
+   /**
+    * @return TR_StackMemory object
+    */
+   inline TR_StackMemory trStackMemory();
 
    TR_ALLOC(TR_Memory::Linkage)
 
-   Linkage() { }
+   Linkage(TR::CodeGenerator *cg) : _cg(cg) { }
 
    virtual void createPrologue(TR::Instruction *cursor) = 0;
    virtual void createEpilogue(TR::Instruction *cursor) = 0;
@@ -75,28 +116,21 @@ class OMR_EXTENSIBLE Linkage
 
    virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol> &parm)
       {
-      TR_ASSERT(0, "setParameterLinkageRegisterIndex has to be implemented for this linkage\n");
+      TR_UNIMPLEMENTED();
       }
-
-   virtual int32_t numArgumentRegisters(TR_RegisterKinds kind) = 0;
-   virtual TR_RegisterKinds argumentRegisterKind(TR::Node *argumentNode);
 
    virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method)
       {
-      TR_ASSERT(0, "setParameterLinkageRegisterIndex(2) has to be implemented for this linkage\n");
+      TR_UNIMPLEMENTED();
       }
 
-   virtual  TR_BitVector * getKilledRegisters(TR::Node *node)
-      {
-      return NULL;
-      }
-   virtual  TR_BitVector * getSavedRegisters(TR::Node *node, int32_t entryId = 0)
-      {
-      return NULL;
-      }
-   
-   virtual bool isSpecialNonVolatileArgumentRegister(int8_t) { return false; }
+   virtual int32_t numArgumentRegisters(TR_RegisterKinds kind) = 0;
 
+   virtual TR_RegisterKinds argumentRegisterKind(TR::Node *argumentNode);
+
+protected:
+
+   TR::CodeGenerator *_cg;
    };
 }
 

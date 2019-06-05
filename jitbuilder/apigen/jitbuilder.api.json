@@ -591,6 +591,15 @@
                     {"name":"right","type":"IlValue"}
                     ]
                 },
+                { "name": "UnsignedDiv"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
                 { "name": "IndexAt"
                 , "overloadsuffix": ""
                 , "flags": []
@@ -636,6 +645,15 @@
                     ]
                 },
                 { "name": "Rem"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "UnsignedRem"
                 , "overloadsuffix": ""
                 , "flags": []
                 , "return": "IlValue"
@@ -1446,6 +1464,18 @@
                     {"name":"cases","type":"JBCase","attributes":["array","can_be_vararg"],"array-len":"numCases"}
                     ]
                 },
+                { "name": "TableSwitch"
+                , "overloadsuffix": "WithArgArray"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"selectionVar","type":"constString"},
+                    {"name":"defaultBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"generateBoundsCheck","type":"boolean"},
+                    {"name":"numCases","type":"int32"},
+                    {"name":"cases","type":"JBCase","attributes":["array","can_be_vararg"],"array-len":"numCases"}
+                    ]
+                },
                 { "name": "MakeCase"
                 , "overloadsuffix": ""
                 , "flags": []
@@ -1961,7 +1991,7 @@
                 , "flags": []
                 , "return": "none"
                 , "parms": [
-                    {"name":"vmState","type":"VirtualMachineOperandArray"},
+                    {"name":"vmState","type":"VirtualMachineState"},
                     {"name":"b","type":"IlBuilder"}
                     ]
                 }
@@ -2015,12 +2045,37 @@
                 { "name": ""
                 , "overloadsuffix": ""
                 , "flags": []
-                , "return": "VirtualMachineOperandArray"
+                , "return": "none"
                 , "parms": [
                     {"name":"mb","type":"MethodBuilder"},
-                    {"name":"numOfElements","type":"int32"},
+                    {"name":"sizeHint","type":"int32"},
                     {"name":"elementType","type":"IlType"},
-                    {"name":"arrayBase","type":"VirtualMachineRegister"}
+                    {"name":"stackTopRegister","type":"VirtualMachineRegister"}
+                    ]
+                },
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"mb","type":"MethodBuilder"},
+                    {"name":"sizeHint","type":"int32"},
+                    {"name":"elementType","type":"IlType"},
+                    {"name":"stackTopRegister","type":"VirtualMachineRegister"},
+                    {"name":"growsUp","type":"boolean"}
+                    ]
+                },
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"mb","type":"MethodBuilder"},
+                    {"name":"sizeHint","type":"int32"},
+                    {"name":"elementType","type":"IlType"},
+                    {"name":"stackTopRegister","type":"VirtualMachineRegister"},
+                    {"name":"growsUp","type":"boolean"},
+                    {"name":"stackInitialOffset","type":"int32"}
                     ]
                 }
                 ],
@@ -2048,7 +2103,7 @@
                 , "flags": []
                 , "return": "none"
                 , "parms": [
-                    {"name":"vmState","type":"VirtualMachineOperandStack"},
+                    {"name":"vmState","type":"VirtualMachineState"},
                     {"name":"b","type":"IlBuilder"}
                     ]
                 }
@@ -2165,7 +2220,7 @@
                 , "return": "none"
                 , "parms": [
                     {"name":"b","type":"IlBuilder"},
-                    {"name":"amount","type":"int64"}
+                    {"name":"amount","type":"unsignedInteger"}
                     ]
                 },
                 { "name": "Load"

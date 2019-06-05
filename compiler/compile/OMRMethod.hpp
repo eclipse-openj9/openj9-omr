@@ -116,7 +116,7 @@ class TR_Method
 
    TR_ALLOC(TR_Memory::Method);
 
-   enum Type {J9, Python, Test, JitBuilder};
+   enum Type {J9, Test, JitBuilder};
 
 
    virtual TR::DataType parmType(uint32_t parmNumber); // returns the type of the parmNumber'th parameter (0-based)
@@ -138,7 +138,6 @@ class TR_Method
    virtual char *signatureChars(); // returns the utf8 of the signature
 
    bool isJ9()     { return _typeOfMethod == J9;     }
-   bool isPython() { return _typeOfMethod == Python; }
    Type methodType() { return _typeOfMethod; }
 
    TR_Method(Type t = J9) : _typeOfMethod(t) { _recognizedMethod = _mandatoryRecognizedMethod = TR::unknownMethod; }

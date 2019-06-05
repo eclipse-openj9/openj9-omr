@@ -22,10 +22,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -503,19 +505,19 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
             generateTrg1MemInstruction (cg, TR::InstOpCode::addi2, node, addrReg, tempMR);
          }
       TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
-      addDependency(dependencies, tempReg, TR::RealRegister::fp0, TR_FPR, cg);
-      addDependency(dependencies, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+      TR::addDependency(dependencies, tempReg, TR::RealRegister::fp0, TR_FPR, cg);
+      TR::addDependency(dependencies, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
       if (node->getSymbolReference()->isUnresolved())
          {
          if (tempMR->getBaseRegister() != NULL)
             {
-            addDependency(dependencies, tempMR->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
+            TR::addDependency(dependencies, tempMR->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
             dependencies->getPreConditions()->getRegisterDependency(3)->setExcludeGPR0();
             dependencies->getPostConditions()->getRegisterDependency(3)->setExcludeGPR0();
             }
          if (tempMR->getIndexRegister() != NULL)
-            addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
+            TR::addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
          }
       generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
                                    (uintptrj_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
@@ -563,20 +565,6 @@ TR::Register *OMR::Power::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::Code
    {
    TR::Register *tempReg = node->setRegister(cg->allocateRegister(TR_FPR));
    return TR::TreeEvaluator::dloadHelper(node, cg, tempReg, TR::InstOpCode::lfd);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::frdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::floadEvaluator(node, cg);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::drdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getSymbolReference()->getSymbol()->isStatic())
-      cg->decReferenceCount(node->getFirstChild());
-   return TR::TreeEvaluator::dloadEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -992,19 +980,19 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
          else
              generateTrg1MemInstruction (cg, TR::InstOpCode::addi2, node, addrReg, tempMR);
          }
-      addDependency(dependencies, valueReg, TR::RealRegister::fp0, TR_FPR, cg);
-      addDependency(dependencies, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+      TR::addDependency(dependencies, valueReg, TR::RealRegister::fp0, TR_FPR, cg);
+      TR::addDependency(dependencies, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
       if (isUnresolved)
          {
          if (tempMR->getBaseRegister() != NULL)
             {
-            addDependency(dependencies, tempMR->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
+            TR::addDependency(dependencies, tempMR->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
             dependencies->getPreConditions()->getRegisterDependency(3)->setExcludeGPR0();
             dependencies->getPostConditions()->getRegisterDependency(3)->setExcludeGPR0();
             }
          if (tempMR->getIndexRegister() != NULL)
-            addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
+            TR::addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
          }
       generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
          (uintptrj_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
@@ -1212,20 +1200,20 @@ TR::Register *OMR::Power::TreeEvaluator::fremEvaluator(TR::Node *node, TR::CodeG
       source2Reg = copyReg;
       }
 
-   addDependency(dependencies, source1Reg, TR::RealRegister::fp0, TR_FPR, cg);
-   addDependency(dependencies, source2Reg, TR::RealRegister::fp1, TR_FPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr3, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr8, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::cr0, TR_CCR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::cr1, TR_CCR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::cr6, TR_CCR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::fp3, TR_FPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::fp4, TR_FPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::fp5, TR_FPR, cg);
+   TR::addDependency(dependencies, source1Reg, TR::RealRegister::fp0, TR_FPR, cg);
+   TR::addDependency(dependencies, source2Reg, TR::RealRegister::fp1, TR_FPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr3, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr8, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr0, TR_CCR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr1, TR_CCR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr6, TR_CCR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::fp3, TR_FPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::fp4, TR_FPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::fp5, TR_FPR, cg);
    TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPCdoubleRemainder, node, dependencies, cg);
 
    // all registers on dep are now not used any longer, except source1
@@ -1264,20 +1252,20 @@ TR::Register *OMR::Power::TreeEvaluator::dremEvaluator(TR::Node *node, TR::CodeG
       source2Reg = copyReg;
       }
 
-   addDependency(dependencies, source1Reg, TR::RealRegister::fp0, TR_FPR, cg);
-   addDependency(dependencies, source2Reg, TR::RealRegister::fp1, TR_FPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr3, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr8, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::cr0, TR_CCR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::cr1, TR_CCR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::cr6, TR_CCR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::fp3, TR_FPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::fp4, TR_FPR, cg);
-   addDependency(dependencies, NULL, TR::RealRegister::fp5, TR_FPR, cg);
+   TR::addDependency(dependencies, source1Reg, TR::RealRegister::fp0, TR_FPR, cg);
+   TR::addDependency(dependencies, source2Reg, TR::RealRegister::fp1, TR_FPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr3, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr8, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr0, TR_CCR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr1, TR_CCR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::cr6, TR_CCR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::fp3, TR_FPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::fp4, TR_FPR, cg);
+   TR::addDependency(dependencies, NULL, TR::RealRegister::fp5, TR_FPR, cg);
    TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPCdoubleRemainder, node, dependencies, cg);
 
    node->setRegister(source1Reg);
@@ -1426,12 +1414,12 @@ TR::Register *OMR::Power::TreeEvaluator::int2dbl(TR::Node * node, TR::Register *
          generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, tempReg, srcReg);
          srcReg = tempReg;
          }
-      addDependency(dependencies, srcReg, TR::RealRegister::gr3, TR_GPR, cg);
-      addDependency(dependencies, trgReg, TR::RealRegister::fp0, TR_FPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
+      TR::addDependency(dependencies, srcReg, TR::RealRegister::gr3, TR_GPR, cg);
+      TR::addDependency(dependencies, trgReg, TR::RealRegister::fp0, TR_FPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
       TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPCinteger2Double, node, dependencies, cg);
       if (node->getOpCodeValue() == TR::i2f || node->getOpCodeValue() == TR::iu2f)
          generateTrg1Src1Instruction(cg, TR::InstOpCode::frsp, node, trgReg, trgReg);
@@ -1572,14 +1560,14 @@ TR::Register *OMR::Power::TreeEvaluator::long2dbl(TR::Node *node, TR::CodeGenera
          srcLow = srcReg->getLowOrder();
          srcHigh = srcReg->getHighOrder();
          }
-      addDependency(dependencies, trgReg, TR::RealRegister::fp0, TR_FPR, cg);
-      addDependency(dependencies, srcHigh, TR::RealRegister::gr3, TR_GPR, cg);
-      addDependency(dependencies, srcLow, TR::RealRegister::gr4, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr5, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
+      TR::addDependency(dependencies, trgReg, TR::RealRegister::fp0, TR_FPR, cg);
+      TR::addDependency(dependencies, srcHigh, TR::RealRegister::gr3, TR_GPR, cg);
+      TR::addDependency(dependencies, srcLow, TR::RealRegister::gr4, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr5, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
 
       TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPClong2Double, node, dependencies, cg);
 
@@ -1630,11 +1618,11 @@ TR::Register *OMR::Power::TreeEvaluator::long2float(TR::Node *node, TR::CodeGene
          {
          src = srcReg;
          }
-      addDependency(dependencies, trgReg, TR::RealRegister::fp0, TR_FPR, cg);
-      addDependency(dependencies, src, TR::RealRegister::gr3, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+      TR::addDependency(dependencies, trgReg, TR::RealRegister::fp0, TR_FPR, cg);
+      TR::addDependency(dependencies, src, TR::RealRegister::gr3, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
 
       TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPClong2Float, node, dependencies, cg);
 
@@ -1660,16 +1648,16 @@ TR::Register *OMR::Power::TreeEvaluator::long2float(TR::Node *node, TR::CodeGene
          srcLow = srcReg->getLowOrder();
          srcHigh = srcReg->getHighOrder();
          }
-      addDependency(dependencies, trgReg, TR::RealRegister::fp0, TR_FPR, cg);
-      addDependency(dependencies, srcHigh, TR::RealRegister::gr3, TR_GPR, cg);
-      addDependency(dependencies, srcLow, TR::RealRegister::gr4, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr5, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr6, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr7, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
+      TR::addDependency(dependencies, trgReg, TR::RealRegister::fp0, TR_FPR, cg);
+      TR::addDependency(dependencies, srcHigh, TR::RealRegister::gr3, TR_GPR, cg);
+      TR::addDependency(dependencies, srcLow, TR::RealRegister::gr4, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr5, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr6, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr7, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
 
       TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPClong2Float, node, dependencies, cg);
 
@@ -1887,23 +1875,23 @@ TR::Register *OMR::Power::TreeEvaluator::d2lEvaluator(TR::Node *node, TR::CodeGe
          }
 
       dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(17, 17, cg->trMemory());
-      addDependency(dependencies, sourceReg, TR::RealRegister::fp0, TR_FPR, cg);
-      addDependency(dependencies, trgReg->getHighOrder(), TR::RealRegister::gr3, TR_GPR, cg);
-      addDependency(dependencies, trgReg->getLowOrder(), TR::RealRegister::gr4, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr5, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr6, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::cr0, TR_CCR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::cr1, TR_CCR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::cr6, TR_CCR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp3, TR_FPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp4, TR_FPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp5, TR_FPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp6, TR_FPR, cg);
-      addDependency(dependencies, NULL, TR::RealRegister::fp7, TR_FPR, cg);
+      TR::addDependency(dependencies, sourceReg, TR::RealRegister::fp0, TR_FPR, cg);
+      TR::addDependency(dependencies, trgReg->getHighOrder(), TR::RealRegister::gr3, TR_GPR, cg);
+      TR::addDependency(dependencies, trgReg->getLowOrder(), TR::RealRegister::gr4, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr0, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr5, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr6, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::cr0, TR_CCR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::cr1, TR_CCR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::cr6, TR_CCR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp3, TR_FPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp4, TR_FPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp5, TR_FPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp6, TR_FPR, cg);
+      TR::addDependency(dependencies, NULL, TR::RealRegister::fp7, TR_FPR, cg);
 
       TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPCdouble2Long, node, dependencies, cg);
 
@@ -2353,13 +2341,13 @@ TR::Register *OMR::Power::TreeEvaluator::fRegStoreEvaluator(TR::Node *node, TR::
 
 TR::Register *OMR::Power::TreeEvaluator::iexpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "not implemented");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lexpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "not implemented");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
@@ -2367,7 +2355,7 @@ TR::Register *OMR::Power::TreeEvaluator::lexpEvaluator(TR::Node *node, TR::CodeG
 // also handles fexp
 TR::Register *OMR::Power::TreeEvaluator::dexpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "not implemented");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 

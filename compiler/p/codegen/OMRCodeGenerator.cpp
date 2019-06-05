@@ -27,6 +27,7 @@
 #include "codegen/CodeGenPhase.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/GCStackAtlas.hpp"
@@ -34,6 +35,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
@@ -105,7 +107,6 @@
 #endif
 
 static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg);
-extern TR::Register *computeCC_bitwise(TR::CodeGenerator *cg, TR::Node *node, TR::Register *targetReg, bool needsZeroExtension = true);
 
 
 
@@ -283,7 +284,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    /*
     * TODO: TM is currently not compatible with read barriers. If read barriers are required, TM is disabled until the issue is fixed.
     */
-   if (TR::Compiler->target.cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM) && !TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
+   if (TR::Compiler->target.cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
       self()->setSupportsTM();
 
    // enable LM if hardware supports instructions and running the reduced-pause GC policy
@@ -2942,7 +2943,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       cursor = self()->generateDebugCounterBump(cursor, counter, deltaReg, cond);
       if (cond)
          {
-         addDependency(cond, deltaReg, TR::RealRegister::NoReg, TR_GPR, self());
+         TR::addDependency(cond, deltaReg, TR::RealRegister::NoReg, TR_GPR, self());
          }
       self()->stopUsingRegister(deltaReg);
       return cursor;
@@ -2965,10 +2966,10 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       {
       uint32_t preCondCursor = cond->getAddCursorForPre();
       uint32_t postCondCursor = cond->getAddCursorForPost();
-      addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
       cond->getPreConditions()->getRegisterDependency(preCondCursor)->setExcludeGPR0();
       cond->getPostConditions()->getRegisterDependency(postCondCursor)->setExcludeGPR0();
-      addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
       }
    self()->stopUsingRegister(addrReg);
    self()->stopUsingRegister(counterReg);
@@ -2995,10 +2996,10 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       {
       uint32_t preCondCursor = cond->getAddCursorForPre();
       uint32_t postCondCursor = cond->getAddCursorForPost();
-      addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
       cond->getPreConditions()->getRegisterDependency(preCondCursor)->setExcludeGPR0();
       cond->getPostConditions()->getRegisterDependency(postCondCursor)->setExcludeGPR0();
-      addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
       }
    self()->stopUsingRegister(addrReg);
    self()->stopUsingRegister(counterReg);
@@ -3654,4 +3655,229 @@ OMR::Power::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress,
       !TR::Compiler->target.cpu.isTargetWithinIFormBranchRange(targetAddress, sourceAddress) ||
       self()->comp()->getOption(TR_StressTrampolines);
    }
+
+// Multiply a register by a constant
+void mulConstant(TR::Node * node, TR::Register *trgReg, TR::Register *sourceReg, int32_t value, TR::CodeGenerator *cg)
+   {
+   if (value == 0)
+      {
+      loadConstant(cg, node, 0, trgReg);
+      }
+   else if (value == 1)
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg, sourceReg);
+      }
+   else if (value == -1)
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, trgReg, sourceReg);
+      }
+   else if (isNonNegativePowerOf2(value) || value==TR::getMinSigned<TR::Int32>())
+      {
+      generateShiftLeftImmediate(cg, node, trgReg, sourceReg, trailingZeroes(value));
+      }
+   else if (isNonPositivePowerOf2(value))
+      {
+      TR::Register *tempReg = cg->allocateRegister();
+      generateShiftLeftImmediate(cg, node, tempReg, sourceReg, trailingZeroes(value));
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, trgReg, tempReg);
+      cg->stopUsingRegister(tempReg);
+      }
+   else if (isNonNegativePowerOf2(value-1) || (value-1)==TR::getMinSigned<TR::Int32>())
+      {
+      TR::Register *tempReg = cg->allocateRegister();
+      generateShiftLeftImmediate(cg, node, tempReg, sourceReg, trailingZeroes(value-1));
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, trgReg, tempReg, sourceReg);
+      cg->stopUsingRegister(tempReg);
+      }
+   else if (isNonNegativePowerOf2(value+1))
+      {
+      TR::Register *tempReg = cg->allocateRegister();
+      generateShiftLeftImmediate(cg, node, tempReg, sourceReg, trailingZeroes(value+1));
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, trgReg, sourceReg, tempReg);
+      cg->stopUsingRegister(tempReg);
+      }
+   else if (value >= LOWER_IMMED && value <= UPPER_IMMED)
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::mulli, node, trgReg, sourceReg, value);
+      }
+   else   // constant won't fit
+      {
+      TR::Register *tempReg = cg->allocateRegister();
+      loadConstant(cg, node, value, tempReg);
+      // want the smaller of the sources in the RB position of a multiply
+      // one crude measure of absolute size is the number of leading zeros
+      if (leadingZeroes(abs(value)) >= 24)
+         // the constant is fairly small, so put it in RB
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::mullw, node, trgReg, sourceReg, tempReg);
+      else
+         // the constant is fairly big, so put it in RA
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::mullw, node, trgReg, tempReg, sourceReg);
+      cg->stopUsingRegister(tempReg);
+      }
+   }
+
+// Multiply a register by a constant
+void mulConstant(TR::Node * node, TR::Register *trgReg, TR::Register *sourceReg, int64_t value, TR::CodeGenerator *cg)
+   {
+   if (value == 0)
+      {
+      loadConstant(cg, node, 0, trgReg);
+      }
+   else if (value == 1)
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg, sourceReg);
+      }
+   else if (value == -1)
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, trgReg, sourceReg);
+      }
+   else if (isNonNegativePowerOf2(value) || value==TR::getMinSigned<TR::Int64>())
+      {
+      generateShiftLeftImmediateLong(cg, node, trgReg, sourceReg, trailingZeroes(value));
+      }
+   else if (isNonPositivePowerOf2(value))
+      {
+      TR::Register *tempReg = cg->allocateRegister();
+      generateShiftLeftImmediateLong(cg, node, tempReg, sourceReg, trailingZeroes(value));
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, trgReg, tempReg);
+      cg->stopUsingRegister(tempReg);
+      }
+   else if (isNonNegativePowerOf2(value-1) || (value-1)==TR::getMinSigned<TR::Int64>())
+      {
+      TR::Register *tempReg = cg->allocateRegister();
+      generateShiftLeftImmediateLong(cg, node, tempReg, sourceReg, trailingZeroes(value-1));
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, trgReg, tempReg, sourceReg);
+      cg->stopUsingRegister(tempReg);
+      }
+   else if (isNonNegativePowerOf2(value+1))
+      {
+      TR::Register *tempReg = cg->allocateRegister();
+      generateShiftLeftImmediateLong(cg, node, tempReg, sourceReg, trailingZeroes(value+1));
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, trgReg, sourceReg, tempReg);
+      cg->stopUsingRegister(tempReg);
+      }
+   else if (value >= LOWER_IMMED && value <= UPPER_IMMED)
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::mulli, node, trgReg, sourceReg, value);
+      }
+   else   // constant won't fit
+      {
+      TR::Register *tempReg = cg->allocateRegister();
+      uint64_t abs_value = value >= 0 ? value : -value;
+      loadConstant(cg, node, value, tempReg);
+      // want the smaller of the sources in the RB position of a multiply
+      // one crude measure of absolute size is the number of leading zeros
+      if (leadingZeroes(abs_value) >= 56)
+         // the constant is fairly small, so put it in RB
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::mulld, node, trgReg, sourceReg, tempReg);
+      else
+         // the constant is fairly big, so put it in RA
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::mulld, node, trgReg, tempReg, sourceReg);
+      cg->stopUsingRegister(tempReg);
+      }
+   }
+
+   
+TR::Register *addConstantToLong(TR::Node *node, TR::Register *srcReg,
+                                int64_t value, TR::Register *trgReg, TR::CodeGenerator *cg)
+   {
+   if (!trgReg)
+      trgReg = cg->allocateRegister();
+
+   if ((int16_t)value == value)
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, srcReg, value);
+      }
+   // NOTE: the following only works if the second add's immediate is not sign extended
+   else if (((int32_t)value == value) && ((value & 0x8000) == 0))
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, srcReg, value >> 16);
+      if (value & 0xffff)
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, trgReg, value);
+      }
+   else
+      {
+      TR::Register *tempReg = cg->allocateRegister();
+      loadConstant(cg, node, value, tempReg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, trgReg, srcReg, tempReg);
+      cg->stopUsingRegister(tempReg);
+      }
+
+   return trgReg;
+   }
+
+TR::Register *addConstantToLong(TR::Node * node, TR::Register *srcHighReg, TR::Register *srclowReg,
+                               int32_t highValue, int32_t lowValue,
+                               TR::CodeGenerator *cg)
+   {
+   TR::Register *lowReg  = cg->allocateRegister();
+   TR::Register *highReg = cg->allocateRegister();
+   TR::RegisterPair *trgReg = cg->allocateRegisterPair(lowReg, highReg);
+
+   if (lowValue >= 0 && lowValue <= UPPER_IMMED)
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, lowReg, srclowReg, lowValue);
+      }
+   else if (lowValue >= LOWER_IMMED && lowValue < 0)
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, lowReg, srclowReg, lowValue);
+      }
+   else   // constant won't fit
+      {
+      TR::Register *lowValueReg = cg->allocateRegister();
+      loadConstant(cg, node, lowValue, lowValueReg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::addc, node, lowReg, srclowReg, lowValueReg);
+      cg->stopUsingRegister(lowValueReg);
+      }
+   if (highValue == 0)
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::addze, node, highReg, srcHighReg);
+      }
+   else if (highValue == -1)
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::addme, node, highReg, srcHighReg);
+      }
+   else
+      {
+      TR::Register *highValueReg = cg->allocateRegister();
+      loadConstant(cg, node, highValue, highValueReg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::adde, node, highReg, srcHighReg, highValueReg);
+      cg->stopUsingRegister(highValueReg);
+      }
+   return trgReg;
+   }
+
+TR::Register *addConstantToInteger(TR::Node * node, TR::Register *trgReg, TR::Register *srcReg, int32_t value, TR::CodeGenerator *cg)
+   {
+   intParts localVal(value);
+
+   if (localVal.getValue() >= LOWER_IMMED && localVal.getValue() <= UPPER_IMMED)
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, srcReg, localVal.getValue());
+      }
+   else
+      {
+      int32_t upperLit = localVal.getHighBits();
+      int32_t lowerLit = localVal.getLowBits();
+      if (localVal.getLowSign())
+         {
+         upperLit++;
+         lowerLit += 0xffff0000;
+         }
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, srcReg, upperLit);
+      if (lowerLit != 0)
+         {
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, trgReg, lowerLit);
+         }
+      }
+   return trgReg;
+   }
+
+TR::Register *addConstantToInteger(TR::Node * node, TR::Register *srcReg, int32_t value, TR::CodeGenerator *cg)
+   {
+   TR::Register *trgReg = cg->allocateRegister();
+
+   return addConstantToInteger(node, trgReg, srcReg, value, cg);
+   }
+
 

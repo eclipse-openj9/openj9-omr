@@ -244,15 +244,15 @@ Instruction::useRegister(TR::Register *reg)
    {
 
    if (reg->getStartOfRange() == 0 ||
-       (reg->getStartOfRange()->getIndex() > self()->getIndex()) &&
-       !self()->cg()->getIsInOOLSection())
+       ((reg->getStartOfRange()->getIndex() > self()->getIndex()) &&
+        !self()->cg()->getIsInOOLSection()))
       {
       reg->setStartOfRange(self());
       }
 
    if (reg->getEndOfRange() == 0 ||
-       (reg->getEndOfRange()->getIndex() < self()->getIndex()) &&
-       !self()->cg()->getIsInOOLSection())
+       ((reg->getEndOfRange()->getIndex() < self()->getIndex()) &&
+        !self()->cg()->getIsInOOLSection()))
       {
       reg->setEndOfRange(self());
       }

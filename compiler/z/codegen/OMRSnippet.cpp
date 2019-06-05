@@ -284,16 +284,7 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
          print(pOutFile, (TR::S390RestoreGPR7Snippet *) snippet);
          break;
 
-      /* These types are frontend specific - we use virtual dispatch
-         this will be extended to all the other types in the future */
-      case TR::Snippet::IsHeapAlloc:
-      case TR::Snippet::IsJNICallData:
-      case TR::Snippet::IsMonitorEnter:
-      case TR::Snippet::IsMonitorExit:
-         snippet->print(pOutFile, this);
-         break;
-
       default:
-         TR_ASSERT( 0,"unexpected snippet kind");
+         snippet->print(pOutFile, this);
       }
    }

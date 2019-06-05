@@ -120,17 +120,6 @@ class ObjectModel
    * @brief: Returns the write type kind of VM's GC
    */
    MM_GCWriteBarrierType writeBarrierType() { return gc_modron_wrtbar_none;  }
-
-   /**
-   * @brief: Returns true if concurrent scavenging enabled in the VM's GC
-   */
-   bool shouldGenerateReadBarriersForFieldLoads() { return false; };
-
-   /**
-   * @brief: Returns true if option for software read barriers is enabled in the VM's GC
-   */
-   bool shouldReplaceGuardedLoadWithSoftwareReadBarrier() { return false; };
-
    };
 }
 

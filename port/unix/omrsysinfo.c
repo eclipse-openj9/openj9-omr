@@ -31,7 +31,9 @@
 #endif
 
 #if defined(LINUX) && !defined(OMRZTPF)
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #elif defined(OSX)
 #define _XOPEN_SOURCE
 #include <libproc.h>
@@ -66,9 +68,6 @@
 #include <sys/resource.h>
 #include <nl_types.h>
 #include <langinfo.h>
-#if !defined(USER_HZ) && !defined(OMRZTPF)
-#define USER_HZ HZ
-#endif /* !defined(USER_HZ) && !defined(OMRZTPF) */
 
 #if defined(J9ZOS390)
 #include "omrsimap.h"
@@ -1911,10 +1910,14 @@ retrieveAIXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *
 	memInfo->hostBuffered = memInfo->buffered;
 
 	Trc_PRT_retrieveAIXMemoryStats_Exit(0);
-	return 0;
 #else
-	return -1; /* not supported */
+	memInfo->totalPhysical = 0;
+	memInfo->availPhysical = 0;
+	memInfo->totalSwap = 0;
+	memInfo->availSwap = 0;
+	memInfo->cached = 0;
 #endif
+	return 0;
 }
 
 #endif /* end OS specific guards */
@@ -2231,6 +2234,17 @@ omrsysinfo_get_groupname(struct OMRPortLibrary *portLibrary, char *buffer, uintp
 	return 0;
 }
 
+intptr_t
+omrsysinfo_get_hostname(struct OMRPortLibrary *portLibrary, char *buffer, size_t length)
+{
+	if (0 != gethostname(buffer, length)) {
+		int32_t err = errno;
+		Trc_PRT_sysinfo_gethostname_error(findError(errno));
+		return portLibrary->error_set_last_error(portLibrary, err, findError(err));
+	}
+	return 0;
+}
+
 uint32_t
 omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, uint64_t *limit)
 {
@@ -2375,7 +2389,7 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 #if !defined(OMRZTPF)
 		resource = RLIMIT_CORE;
 #else /* !defined(OMRZTPF) */
-		rc = -1;
+		rc = OMRPORT_LIMIT_UNKNOWN;
 #endif /* !defined(OMRZTPF) */
 		break;
 	default:
@@ -2400,6 +2414,22 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 			if (hardLimitRequested) {
 				lim.rlim_max = limit;
 			} else {
+#if defined(OSX)
+				/* MacOS doesn't allow the soft file limit to be unlimited */
+				if ((OMRPORT_RESOURCE_FILE_DESCRIPTORS == resourceRequested)
+						&& (RLIM_INFINITY == limit)) {
+					int32_t maxFiles = 0;
+					size_t resultSize = sizeof(maxFiles);
+					int name[] = {CTL_KERN, KERN_MAXFILESPERPROC};
+					rc = sysctl(name, 2, &maxFiles, &resultSize, NULL, 0);
+					if (-1 == rc) {
+						portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
+						Trc_PRT_sysinfo_setrlimit_error(resource, limit, findError(errno));
+					} else {
+						limit = maxFiles;
+					}
+				}
+#endif
 				lim.rlim_cur = limit;
 			}
 
@@ -2409,7 +2439,7 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 				Trc_PRT_sysinfo_setrlimit_error(resource, limit, findError(errno));
 			}
 #else /* !defined(OMRZTPF) */
-			rc = -1;
+			rc = OMRPORT_LIMIT_UNKNOWN;
 #endif /* !defined(OMRZTPF) */
 			break;
 		}
@@ -2426,14 +2456,14 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 			}
 #else
 			/* unsupported so return error */
-			rc = -1;
+			rc = OMRPORT_LIMIT_UNKNOWN;
 #endif
 			break;
 		}
 
 		default:
 			Trc_PRT_sysinfo_setLimit_unrecognised_resourceID(resourceID);
-			rc = -1;
+			rc = OMRPORT_LIMIT_UNKNOWN;
 		}
 	}
 
@@ -2545,7 +2575,8 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 	 * ~70.  Allocate 128 bytes to give lots of margin.
 	 */
 	char buf[128];
-	const uintptr_t NS_PER_HZ = 1000000000 / USER_HZ;
+	const uintptr_t CLK_HZ = sysconf(_SC_CLK_TCK); /* i.e. USER_HZ */
+	const uintptr_t NS_PER_CLK = 1000000000 / CLK_HZ;
 	intptr_t fd = portLibrary->file_open(portLibrary, "/proc/stat", EsOpenRead, 0);
 	if (-1 == fd) {
 		int32_t portableError = portLibrary->error_last_error_number(portLibrary);
@@ -2570,7 +2601,7 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 		if (0 == sscanf(buf, "cpu  %" SCNd64 " %" SCNd64 " %" SCNd64, &userTime, &niceTime, &systemTime)) {
 			return OMRPORT_ERROR_SYSINFO_GET_STATS_FAILED;
 		}
-		cpuTime->cpuTime = (userTime + niceTime + systemTime) * NS_PER_HZ;
+		cpuTime->cpuTime = (userTime + niceTime + systemTime) * NS_PER_CLK;
 		cpuTime->numberOfCpus = portLibrary->sysinfo_get_number_CPUs_by_type(portLibrary, OMRPORT_CPU_ONLINE);
 		status = 0;
 	}
@@ -2601,7 +2632,11 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 		return OMRPORT_ERROR_FILE_OPFAILED;
 	}
 #elif defined(J9OS_I5)
-	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+	/*call in PASE wrapper to retrieve needed information.*/
+	cpuTime->numberOfCpus = Xj9GetEntitledProcessorCapacity() / 100;
+	/*Xj9GetSysCPUTime() is newly added to retrieve System CPU Time fromILE.*/
+	cpuTime->cpuTime = Xj9GetSysCPUTime();
+	status = 0;	
 #elif defined(AIXPPC) /* AIX */
 	perfstat_cpu_total_t stats;
 	const uintptr_t NS_PER_CPU_TICK = 10000000L;

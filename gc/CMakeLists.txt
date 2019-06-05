@@ -169,6 +169,7 @@ add_library(omrgc STATIC
 	stats/CardCleaningStats.cpp
 	stats/ClassUnloadStats.cpp
 
+	stats/FreeEntrySizeClassStats.cpp
 	stats/HeapResizeStats.cpp
 	stats/LargeObjectAllocateStats.cpp
 	stats/MarkStats.cpp

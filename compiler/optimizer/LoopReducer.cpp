@@ -1924,8 +1924,6 @@ TR_LoopReducer::convertIf(TR::ILOpCodes ifCmp)
          return TR::bcmpeq;
       case TR::ifscmpeq:
          return TR::scmpeq;
-      case TR::ifsucmpeq:
-         return TR::sucmpeq;
       case TR::ificmpeq:
          return TR::icmpeq;
       case TR::iflcmpeq:

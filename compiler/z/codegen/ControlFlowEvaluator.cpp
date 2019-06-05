@@ -1628,14 +1628,7 @@ OMR::Z::TreeEvaluator::scmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::sucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   if (node->getOpCodeValue() == TR::sucmpeq)
-      {
-      return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
-      }
-   else
-      {
       return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, TR::InstOpCode::COND_BNE);
-      }
    }
 
 /**

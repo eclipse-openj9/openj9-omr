@@ -2243,8 +2243,7 @@ TR::Register *OMR::X86::TreeEvaluator::sucmpeqEvaluator(TR::Node *node, TR::Code
    if (cg->enableRegisterInterferences())
       cg->getLiveRegisters(TR_GPR)->setByteRegisterAssociation(targetRegister);
 
-   generateRegInstruction(node->getOpCodeValue() == TR::sucmpeq ? SETE1Reg : SETNE1Reg,
-                          node, targetRegister, cg);
+   generateRegInstruction(SETNE1Reg, node, targetRegister, cg);
    generateRegRegInstruction(MOVZXReg4Reg1, node, targetRegister, targetRegister, cg);
    return targetRegister;
    }

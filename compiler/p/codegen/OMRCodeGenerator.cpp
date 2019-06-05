@@ -1023,11 +1023,12 @@ static void mrPeepholes(TR::CodeGenerator *cg, TR::Instruction *mrInstruction)
                for (auto stackMapIter = stackMaps.begin(); stackMapIter != stackMaps.end(); ++stackMapIter)
                   {
                   if (cg->getDebug())
-                     traceMsg(comp, "Adjusting register map %p; removing %s, adding %s due to removal of mr %p\n",
-                             *stackMapIter,
-                             cg->getDebug()->getName(mrTargetReg),
-                             cg->getDebug()->getName(mrSourceReg),
-                             mrInstruction);
+                     if (comp->getOption(TR_TraceCG))
+                        traceMsg(comp, "Adjusting register map %p; removing %s, adding %s due to removal of mr %p\n",
+                                *stackMapIter,
+                                cg->getDebug()->getName(mrTargetReg),
+                                cg->getDebug()->getName(mrSourceReg),
+                                mrInstruction);
                   (*stackMapIter)->resetRegistersBits(cg->registerBitMask(toRealRegister(mrTargetReg)->getRegisterNumber()));
                   (*stackMapIter)->setRegisterBits(cg->registerBitMask(toRealRegister(mrSourceReg)->getRegisterNumber()));
                   }

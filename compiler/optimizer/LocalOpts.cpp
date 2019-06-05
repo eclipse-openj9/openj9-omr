@@ -6486,8 +6486,8 @@ void TR_BlockSplitter::dumpBlockMapper(TR_LinkHeadAndTail<BlockMapper>* bMap)
          else
             traceMsg(comp(), " %d", itr->_from->getNumber());
          }
-      }
       traceMsg(comp(), "\n");
+      }
    }
 
 bool TR_BlockSplitter::containCycle(TR::Block *blk, TR_LinkHeadAndTail<BlockMapper>* bMap)

@@ -1311,14 +1311,16 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
    splitter2->setFrequency(sumPredFreq);
    if (loopBody->isCold())
       {
-      traceMsg(comp(), "Setting s2 block_%d cold because loop body is cold\n", splitter2->getNumber());
+      if (trace())
+         traceMsg(comp(), "Setting s2 block_%d cold because loop body is cold\n", splitter2->getNumber());
       splitter2->setIsCold(true);
       }
 
    splitter1->setFrequency(exitBlockFrequency);
    if (joinBlock->isCold())
       {
-      traceMsg(comp(), "Setting s1 block_%d cold because join block is cold\n", splitter1->getNumber());
+      if (trace())
+         traceMsg(comp(), "Setting s1 block_%d cold because join block is cold\n", splitter1->getNumber());
       splitter2->setIsCold(true);
       }
 

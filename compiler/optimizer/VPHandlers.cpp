@@ -9474,8 +9474,9 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                         intptrj_t  vftEntry         = TR::Compiler->cls.getVFTEntry(vp->comp(), clazz, vftOffset);
                         bool       childrenAreEqual = (vftEntry == methodPtrNode->getAddress());
                         bool       testForEquality  = (node->getOpCodeValue() == TR::ifacmpeq);
-                        traceMsg(vp->comp(), "TR_MethodTest: node=%p, vtableEntryNode=%p, clazz=%p, vftOffset=%d, vftEntry=%p, childrenAreEqual=%d, testForEquality=%d\n",
-                                 node, vtableEntryNode, clazz, vftOffset, vftEntry, childrenAreEqual, testForEquality);
+                        if (vp->trace())
+                           traceMsg(vp->comp(), "TR_MethodTest: node=%p, vtableEntryNode=%p, clazz=%p, vftOffset=%d, vftEntry=%p, childrenAreEqual=%d, testForEquality=%d\n",
+                                    node, vtableEntryNode, clazz, vftOffset, vftEntry, childrenAreEqual, testForEquality);
                         if (testForEquality == childrenAreEqual)
                            cannotFallThrough = true;
                         else

@@ -386,7 +386,6 @@ signatureCharFF_I_testMethodType  * OpCodesTest::_fCmpge = 0;
 signatureCharSS_I_testMethodType  * OpCodesTest::_sCmpge = 0;
 signatureCharBB_I_testMethodType  * OpCodesTest::_bCmpge = 0;
 
-unsignedCompareSignatureCharII_I_testMethodType  * OpCodesTest::_iuCmpeq = 0;
 unsignedCompareSignatureCharII_I_testMethodType  * OpCodesTest::_iuCmpne = 0;
 unsignedCompareSignatureCharII_I_testMethodType  * OpCodesTest::_iuCmplt = 0;
 unsignedCompareSignatureCharII_I_testMethodType  * OpCodesTest::_iuCmpge = 0;
@@ -452,7 +451,6 @@ signatureCharBB_I_testMethodType  * OpCodesTest::_ifBcmpgt = 0;
 signatureCharBB_I_testMethodType  * OpCodesTest::_ifBcmplt = 0;
 signatureCharBB_I_testMethodType  * OpCodesTest::_ifBcmpge = 0;
 signatureCharBB_I_testMethodType  * OpCodesTest::_ifBcmple = 0;
-unsignedCompareSignatureCharII_I_testMethodType * OpCodesTest::_ifIuCmpeq = 0;
 unsignedCompareSignatureCharII_I_testMethodType * OpCodesTest::_ifIuCmpne = 0;
 unsignedCompareSignatureCharII_I_testMethodType * OpCodesTest::_ifIuCmplt = 0;
 unsignedCompareSignatureCharII_I_testMethodType * OpCodesTest::_ifIuCmpge = 0;
@@ -666,7 +664,6 @@ OpCodesTest::compileCompareTestMethods()
    compileOpCodeMethod(_ifLcmpge, _numberOfBinaryArgs, TR::iflcmpge, "ifLcmpge", _argTypesBinaryLong, TR::Int32, rc);
    compileOpCodeMethod(_ifLcmple, _numberOfBinaryArgs, TR::iflcmple, "ifLcmple", _argTypesBinaryLong, TR::Int32, rc);
 
-   compileOpCodeMethod(_ifIuCmpeq, _numberOfBinaryArgs, TR::ifiucmpeq, "ifIuCmpeq", _argTypesBinaryInt, TR::Int32, rc);
    compileOpCodeMethod(_ifIuCmpne, _numberOfBinaryArgs, TR::ifiucmpne, "ifIuCmpne", _argTypesBinaryInt, TR::Int32, rc);
    compileOpCodeMethod(_ifIuCmplt, _numberOfBinaryArgs, TR::ifiucmplt, "ifIuCmplt", _argTypesBinaryInt, TR::Int32, rc);
    compileOpCodeMethod(_ifIuCmpge, _numberOfBinaryArgs, TR::ifiucmpge, "ifIuCmpge", _argTypesBinaryInt, TR::Int32, rc);
@@ -1490,14 +1487,6 @@ OpCodesTest::invokeCompareTests()
          LONG_NEG, LONG_POS,
          LONG_POS, LONG_NEG
          };
-   uint32_t ifIuCmpeqDataArr[][2] =
-         {
-         UINT_POS, UINT_MINIMUM,
-         UINT_MINIMUM, UINT_POS,
-         UINT_MAXIMUM, UINT_MINIMUM,
-         UINT_MINIMUM, UINT_MAXIMUM,
-         UINT_MAXIMUM, UINT_MAXIMUM
-         };
    uint32_t ifIuCmpneDataArr[][2] =
          {
          UINT_MAXIMUM, UINT_POS,
@@ -2128,28 +2117,6 @@ compileOpCodeMethod(      lCompareConst,
 compileOpCodeMethod(      lCompareConst, 
             _numberOfBinaryArgs, TR::iflcmple, resolvedMethodName, _argTypesBinaryLong, TR::Int32, rc, 2, 2, &(ifLcmpleDataArr[i][1]));
       OMR_CT_EXPECT_EQ(lCompareConst, compareLE(ifLcmpleDataArr[i][0], ifLcmpleDataArr[i][1]), lCompareConst(ifLcmpleDataArr[i][0], LONG_PLACEHOLDER_2));
-      }
-
-   //ifiuCompare
-   testCaseNum = sizeof(ifIuCmpeqDataArr) / sizeof(ifIuCmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_ifIuCmpeq, compareEQ(ifIuCmpeqDataArr[i][0], ifIuCmpeqDataArr[i][1]), _ifIuCmpeq(ifIuCmpeqDataArr[i][0], ifIuCmpeqDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifIuCmpeqConst1_TestCase%d", i + 1);
-compileOpCodeMethod(      iuCompareConst, 
-            _numberOfBinaryArgs, TR::ifiucmpeq, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 4, 1, &(ifIuCmpeqDataArr[i][0]), 2, &(ifIuCmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(iuCompareConst, compareEQ(ifIuCmpeqDataArr[i][0], ifIuCmpeqDataArr[i][1]), iuCompareConst(INT_PLACEHOLDER_1, INT_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "ifIuCmpeqConst2_TestCase%d", i + 1);
-compileOpCodeMethod(      iuCompareConst, 
-            _numberOfBinaryArgs, TR::ifiucmpeq, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 1, &(ifIuCmpeqDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(iuCompareConst, compareEQ(ifIuCmpeqDataArr[i][0], ifIuCmpeqDataArr[i][1]), iuCompareConst(INT_PLACEHOLDER_1, ifIuCmpeqDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifIuCmpeqConst3_TestCase%d", i + 1);
-compileOpCodeMethod(      iuCompareConst, 
-            _numberOfBinaryArgs, TR::ifiucmpeq, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 2, &(ifIuCmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(iuCompareConst, compareEQ(ifIuCmpeqDataArr[i][0], ifIuCmpeqDataArr[i][1]), iuCompareConst(ifIuCmpeqDataArr[i][0], INT_PLACEHOLDER_2));
       }
 
    testCaseNum = sizeof(ifIuCmpneDataArr) / sizeof(ifIuCmpneDataArr[0]);

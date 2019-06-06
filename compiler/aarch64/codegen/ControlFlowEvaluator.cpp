@@ -137,7 +137,6 @@ static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
    return result;
    }
 
-// also handles ifiucmpeq
 TR::Register *
 OMR::ARM64::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

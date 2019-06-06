@@ -1412,7 +1412,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
 
       conditions->addPostCondition(condReg, TR::RealRegister::cr0);
 
-      TR::InstOpCode::Mnemonic opCode = (node->getOpCodeValue() == TR::ificmpeq || node->getOpCodeValue() == TR::ifiucmpeq ||
+      TR::InstOpCode::Mnemonic opCode = (node->getOpCodeValue() == TR::ificmpeq ||
                               node->getOpCodeValue() == TR::ifscmpeq || node->getOpCodeValue() == TR::ifsucmpeq ||
                               node->getOpCodeValue() == TR::ifbcmpeq)
          ? TR::InstOpCode::beq : TR::InstOpCode::bne;
@@ -1961,7 +1961,7 @@ TR::Register *handleSkipCompare(TR::Node * node, TR::InstOpCode::Mnemonic opcode
 
 
 // also handles acmpeq in 32-bit mode
-// and also: bcmpeq, scmpeq, sucmpeq, iucmpeq
+// and also: bcmpeq, scmpeq, sucmpeq
 TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (skipCompare(node))

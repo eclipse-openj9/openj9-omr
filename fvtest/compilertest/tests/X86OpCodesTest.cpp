@@ -2214,15 +2214,6 @@ X86OpCodesTest::invokeCompareTests()
          BYTE_MINIMUM, BYTE_NEG,
          BYTE_NEG, BYTE_MINIMUM
          };
-
-   uint32_t iuCmpeqDataArr[][2] =
-         {
-         UINT_POS, UINT_MINIMUM,
-         UINT_MINIMUM, UINT_POS,
-         UINT_MAXIMUM, UINT_MINIMUM,
-         UINT_MINIMUM, UINT_MAXIMUM,
-         UINT_MAXIMUM, UINT_MAXIMUM
-         };
    uint32_t iuCmpneDataArr[][2] =
          {
          UINT_MAXIMUM, UINT_POS,

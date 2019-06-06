@@ -647,7 +647,7 @@ TR_ArrayLoop::checkLoopCmp(TR::Node * loopCmpNode, TR::Node * indVarStoreNode, T
    // if the comparison to leave the loop is equality, add (subtract) one to ind var
    // on exit
    if (compareOp == TR::ificmpeq || compareOp == TR::ificmpge || compareOp == TR::ificmple ||
-       compareOp == TR::ifiucmpeq || compareOp == TR::ifiucmpge || compareOp == TR::ifiucmple)
+       compareOp == TR::ifiucmpge || compareOp == TR::ifiucmple)
       {
       _addInc = true;
       }

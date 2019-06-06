@@ -825,7 +825,6 @@ static inline void generateMergedGuardCodeIfNeeded(TR::Node *node, TR::CodeGener
 
          TR_VirtualGuardSite *site = virtualGuard->addNOPSite();
          if (node->getOpCodeValue() == TR::ificmpeq ||
-               node->getOpCodeValue() == TR::ifiucmpeq ||
                node->getOpCodeValue() == TR::ifacmpeq ||
                node->getOpCodeValue() == TR::iflcmpeq )
 
@@ -941,8 +940,7 @@ OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
       }
 #endif
 
-   if (node->getOpCodeValue() == TR::ificmpeq ||
-         node->getOpCodeValue() == TR::ifiucmpeq ||
+   if (node->getOpCodeValue() == TR::ificmpeq||
          node->getOpCodeValue() == TR::ifacmpeq)
       {
       reg = generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);

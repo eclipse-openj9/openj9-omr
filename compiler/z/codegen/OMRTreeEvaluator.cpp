@@ -3909,7 +3909,7 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
       cg->decReferenceCount(secondChild);
       }
    else if (constNode &&
-         (node->getOpCodeValue()==TR::ificmpeq || node->getOpCodeValue()==TR::ifiucmpeq ||
+         (node->getOpCodeValue()==TR::ificmpeq ||
           node->getOpCodeValue()==TR::ificmpne || node->getOpCodeValue()==TR::ifiucmpne) &&
          constNode->getInt() == 0 &&
          nonConstNode->getOpCodeValue()==TR::iand &&
@@ -12884,7 +12884,7 @@ TR::InstOpCode::S390BranchCondition getButestBranchCondition(TR::ILOpCodes opCod
    TR_ASSERT(cmpValue >= 0 && cmpValue <= 3, "Unexpected butest cc test value %d\n", cmpValue);
    switch(opCode)
          {
-         case TR::ifiucmpeq: case TR::ificmpeq: rowNum = 0; break;
+         case TR::ificmpeq: rowNum = 0; break;
          case TR::ifiucmpne: case TR::ificmpne: rowNum = 1; break;
          case TR::ifiucmpgt: rowNum = 2; break;
          case TR::ifiucmpge: rowNum = 3; break;

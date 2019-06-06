@@ -619,7 +619,6 @@ public:
          {
          case TR::ificmpeq:
          case TR::iflcmpeq:
-         case TR::iflucmpeq:
          case TR::ifacmpeq:
          case TR::ifbcmpeq:
          case TR::ifscmpeq:

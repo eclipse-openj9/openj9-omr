@@ -3861,7 +3861,7 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
           newBranchOpCond = convertComparisonBranchConditionToTestUnderMaskBranchCondition(constNode, fBranchOpCond);
           }
    else if (constNode &&
-         (node->getOpCodeValue()==TR::iflcmpeq || node->getOpCodeValue()==TR::iflucmpeq ||
+         (node->getOpCodeValue()==TR::iflcmpeq ||
           node->getOpCodeValue()==TR::iflcmpne || node->getOpCodeValue()==TR::iflucmpne) &&
          constNode->getLongInt() == 0 &&
          nonConstNode->getOpCodeValue()==TR::land &&

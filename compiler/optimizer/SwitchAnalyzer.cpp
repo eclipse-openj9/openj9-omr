@@ -627,7 +627,7 @@ TR::Block *TR::SwitchAnalyzer::peelOffTheHottestValue(TR_LinkHead<SwitchInfo> *c
 
       TR::Block *newBlock = NULL;
 
-      cmpOp = _isInt64 ? (_signed ? TR::iflcmpeq : TR::iflucmpeq) : TR::ificmpeq;
+      cmpOp = _isInt64 ? (_signed ? TR::iflcmpeq : TR::iflucmpeq) : (_signed ? TR::ificmpeq : TR::ifiucmpeq);
       newBlock = addIfBlock(cmpOp, topNode->_min, topNode->_target);
 
       if (trace())
@@ -960,7 +960,7 @@ TR::Block *TR::SwitchAnalyzer::binSearch(SwitchInfo *startNode, SwitchInfo *endN
       else
          {
          addGotoBlock(_defaultDest);
-         cmpOp = _isInt64 ? (_signed ? TR::iflcmpeq : TR::iflucmpeq) : TR::ificmpeq;
+         cmpOp = _isInt64 ? (_signed ? TR::iflcmpeq : TR::iflucmpeq) : (_signed ? TR::ificmpeq : TR::ifiucmpeq);
          return addIfBlock  (cmpOp, endNode->_max, endNode->_target);
          }
       }
@@ -1175,7 +1175,7 @@ TR::Block *TR::SwitchAnalyzer::linearSearch(SwitchInfo *start)
       {
       if (cursor->_kind == Unique)
          {
-         cmpOp = _isInt64 ? (_signed ? TR::iflcmpeq : TR::iflucmpeq) : TR::ificmpeq;
+         cmpOp = _isInt64 ? (_signed ? TR::iflcmpeq : TR::iflucmpeq) : (_signed ? TR::ificmpeq : TR::ifiucmpeq);
          newBlock = addIfBlock(cmpOp, cursor->_min, cursor->_target);
          }
       else if (cursor->_kind == Range)

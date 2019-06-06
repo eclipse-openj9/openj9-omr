@@ -2023,7 +2023,7 @@ TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::Cod
    }
 
 // also handles acmpne in 32-bit mode
-// and also: bcmpne, scmpne, sucmpne, iucmpne
+// and also: bcmpne, scmpne, sucmpne
 TR::Register *OMR::Power::TreeEvaluator::icmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (skipCompare(node))

@@ -3910,7 +3910,7 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
       }
    else if (constNode &&
          (node->getOpCodeValue()==TR::ificmpeq ||
-          node->getOpCodeValue()==TR::ificmpne || node->getOpCodeValue()==TR::ifiucmpne) &&
+          node->getOpCodeValue()==TR::ificmpne) &&
          constNode->getInt() == 0 &&
          nonConstNode->getOpCodeValue()==TR::iand &&
          nonConstNode->getReferenceCount() == 1 && nonConstNode->getRegister()==NULL &&
@@ -3931,7 +3931,7 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
       else
           generateRIInstruction(cg, TR::InstOpCode::TMLH, node, tempReg, (nonConstNode->getSecondChild()->getInt()&0xFFFF0000)>>16);
 
-      if (node->getOpCodeValue()==TR::ificmpne || node->getOpCodeValue()==TR::ifiucmpne)
+      if (node->getOpCodeValue()==TR::ificmpne)
          {
          newBranchOpCond = TR::InstOpCode::COND_MASK7;
          }
@@ -12885,7 +12885,7 @@ TR::InstOpCode::S390BranchCondition getButestBranchCondition(TR::ILOpCodes opCod
    switch(opCode)
          {
          case TR::ificmpeq: rowNum = 0; break;
-         case TR::ifiucmpne: case TR::ificmpne: rowNum = 1; break;
+         case TR::ificmpne: rowNum = 1; break;
          case TR::ifiucmpgt: rowNum = 2; break;
          case TR::ifiucmpge: rowNum = 3; break;
          case TR::ifiucmplt: rowNum = 4; break;

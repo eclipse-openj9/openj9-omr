@@ -942,13 +942,6 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
          else
             TR::Node::recreate(branch, TR::ificmpgt);
          }
-      else  if (branch->getOpCodeValue() == TR::ifiucmpne)
-         {
-         if (isIncreasingLoop())
-            TR::Node::recreate(branch, TR::ifiucmplt);
-         else
-            TR::Node::recreate(branch, TR::ifiucmpgt);
-         }
       else if (branch->getOpCodeValue() == TR::iflcmpne)
          {
          if (isIncreasingLoop())

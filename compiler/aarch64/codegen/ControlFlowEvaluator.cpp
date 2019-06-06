@@ -144,7 +144,6 @@ OMR::ARM64::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::CodeGenerator *
    return NULL;
    }
 
-// also handles ifiucmpne
 TR::Register *
 OMR::ARM64::TreeEvaluator::ificmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

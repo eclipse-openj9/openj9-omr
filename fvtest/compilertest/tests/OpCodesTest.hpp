@@ -718,7 +718,6 @@ class OpCodesTest : public TestDriver
    static signatureCharSS_I_testMethodType *_sCmpge;
    static signatureCharBB_I_testMethodType *_bCmpge;
 
-   static unsignedCompareSignatureCharII_I_testMethodType *_iuCmpne;
    static unsignedCompareSignatureCharII_I_testMethodType *_iuCmplt;
    static unsignedCompareSignatureCharII_I_testMethodType *_iuCmpge;
    static unsignedCompareSignatureCharII_I_testMethodType *_iuCmpgt;
@@ -783,7 +782,6 @@ class OpCodesTest : public TestDriver
    static signatureCharBB_I_testMethodType *_ifBcmplt;
    static signatureCharBB_I_testMethodType *_ifBcmpge;
    static signatureCharBB_I_testMethodType *_ifBcmple;
-   static unsignedCompareSignatureCharII_I_testMethodType *_ifIuCmpne;
    static unsignedCompareSignatureCharII_I_testMethodType *_ifIuCmplt;
    static unsignedCompareSignatureCharII_I_testMethodType *_ifIuCmpge;
    static unsignedCompareSignatureCharII_I_testMethodType *_ifIuCmpgt;

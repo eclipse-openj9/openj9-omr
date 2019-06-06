@@ -188,7 +188,6 @@ OpIlInjector::setDataType()
          case TR::bcmpge:
          case TR::bcmpgt:
          case TR::bcmple:
-         case TR::bucmpne:
          case TR::bucmplt:
          case TR::bucmpge:
          case TR::bucmpgt:
@@ -199,7 +198,6 @@ OpIlInjector::setDataType()
          case TR::ifbcmpge:
          case TR::ifbcmpgt:
          case TR::ifbcmple:
-         case TR::ifbucmpne:
          case TR::ifbucmplt:
          case TR::ifbucmpge:
          case TR::ifbucmpgt:

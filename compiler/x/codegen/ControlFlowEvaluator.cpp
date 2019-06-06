@@ -1670,7 +1670,7 @@ TR::Register *OMR::X86::TreeEvaluator::unsignedIntegerIfCmpleEvaluator(TR::Node 
    }
 
 
-// also handles ifbcmpne, ifbucmpne
+// also handles ifbcmpne
 TR::Register *OMR::X86::TreeEvaluator::ifbcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
 
@@ -1764,7 +1764,6 @@ TR::Register *OMR::X86::TreeEvaluator::ifbcmpeqEvaluator(TR::Node *node, TR::Cod
    }
 
 // ifbcmpneEvaluator handled by ifbcmpeqEvaluator
-// ifbucmpneEvaluator handled by ifbcmpeqEvaluator
 
 TR::Register *OMR::X86::TreeEvaluator::ifbcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

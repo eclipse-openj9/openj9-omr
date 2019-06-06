@@ -14113,7 +14113,6 @@ TR::Node *ifCmpWithoutEqualitySimplifier(TR::Node * node, TR::Block * block, TR:
       switch (opCode)
          {
          case TR::ifbcmpne:
-         case TR::ifbucmpne:
          case TR::ifscmpne:
          case TR::ifsucmpne:
             takeBranch = firstChild->get64bitIntegralValue() != secondChild->get64bitIntegralValue();

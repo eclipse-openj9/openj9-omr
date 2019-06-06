@@ -971,7 +971,6 @@ static TR::InstOpCode::Mnemonic cmp2branch(TR::ILOpCodes op, TR::CodeGenerator *
        case TR::dcmpne:
        case TR::fcmpneu:
        case TR::dcmpneu:
-       case TR::bucmpne:
        case TR::bcmpne:
           return TR::InstOpCode::bne;
        case TR::icmplt:
@@ -1051,7 +1050,6 @@ static TR::InstOpCode::Mnemonic cmp2cmp(TR::ILOpCodes op, TR::CodeGenerator *cg)
        case TR::iucmpge:
        case TR::iucmpgt:
        case TR::iucmple:
-       case TR::bucmpne:
        case TR::bucmplt:
        case TR::bucmpge:
        case TR::bucmpgt:
@@ -1103,7 +1101,6 @@ static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg
        case TR::iucmpge:
        case TR::iucmpgt:
        case TR::iucmple:
-       case TR::bucmpne:
        case TR::bucmplt:
        case TR::bucmpge:
        case TR::bucmpgt:
@@ -1515,14 +1512,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
              bool newReg = false;
              uint64_t value = secondChild->get64bitIntegralValue();
 
-             if (node->getOpCodeValue() == TR::ifbucmpne)
-                {
-                tReg = cg->allocateRegister();
-                newReg = true;
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xff);
-                value &= 0xff;
-                }
-             else if (node->getOpCodeValue() == TR::ifsucmpne || node->getOpCodeValue() == TR::ifsucmpeq)
+             if (node->getOpCodeValue() == TR::ifsucmpne || node->getOpCodeValue() == TR::ifsucmpeq)
                 {
                 tReg = cg->allocateRegister();
                 newReg = true;
@@ -1544,15 +1534,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
              TR::Register *tReg = NULL;
              bool newReg = false;
              TR::Register *secondReg = NULL;
-             if (node->getOpCodeValue() == TR::ifbucmpne)
-                {
-                tReg = cg->allocateRegister();
-                newReg = true;
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xff);
-                secondReg = cg->gprClobberEvaluate(secondChild);
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, secondReg, secondReg, 0, 0xff);
-                }
-             else if (node->getOpCodeValue() == TR::ifsucmpne || node->getOpCodeValue() == TR::ifsucmpeq)
+             if (node->getOpCodeValue() == TR::ifsucmpne || node->getOpCodeValue() == TR::ifsucmpeq)
                 {
                 tReg = cg->allocateRegister();
                 newReg = true;
@@ -2041,7 +2023,7 @@ TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::Cod
    }
 
 // also handles acmpne in 32-bit mode
-// and also: bcmpne, bucmpne, scmpne, sucmpne, iucmpne
+// and also: bcmpne, scmpne, sucmpne, iucmpne
 TR::Register *OMR::Power::TreeEvaluator::icmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (skipCompare(node))

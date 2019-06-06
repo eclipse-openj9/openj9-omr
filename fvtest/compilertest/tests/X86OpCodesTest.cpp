@@ -216,8 +216,6 @@ X86OpCodesTest::compileCompareTestMethods()
 
    compileOpCodeMethod(_iuCmpge, _numberOfBinaryArgs, TR::iucmpge, "iuCmpge", _argTypesBinaryInt, TR::Int32, rc);
 
-   compileOpCodeMethod(_buCmpne, _numberOfBinaryArgs, TR::bucmpne, "buCmpne", _argTypesBinaryByte, TR::Int32, rc);
-
    compileOpCodeMethod(_suCmpne, _numberOfBinaryArgs, TR::sucmpne, "suCmpne", _argTypesBinaryShort, TR::Int32, rc);
    compileOpCodeMethod(_suCmplt, _numberOfBinaryArgs, TR::sucmplt, "suCmplt", _argTypesBinaryShort, TR::Int32, rc);
    compileOpCodeMethod(_suCmpge, _numberOfBinaryArgs, TR::sucmpge, "suCmpge", _argTypesBinaryShort, TR::Int32, rc);
@@ -264,7 +262,6 @@ X86OpCodesTest::compileCompareTestMethods()
    compileOpCodeMethod(_ifBcmpge, _numberOfBinaryArgs, TR::ifbcmpge, "ifBcmpge", _argTypesBinaryByte, TR::Int32, rc);
    compileOpCodeMethod(_ifBcmple, _numberOfBinaryArgs, TR::ifbcmple, "ifBcmple", _argTypesBinaryByte, TR::Int32, rc);
 
-   compileOpCodeMethod(_ifBuCmpne, _numberOfBinaryArgs, TR::ifbucmpne, "ifBuCmpne", _argTypesBinaryByte, TR::Int32, rc);
    compileOpCodeMethod(_ifBuCmplt, _numberOfBinaryArgs, TR::ifbucmplt, "ifBuCmplt", _argTypesBinaryByte, TR::Int32, rc);
    compileOpCodeMethod(_ifBuCmpge, _numberOfBinaryArgs, TR::ifbucmpge, "ifBuCmpge", _argTypesBinaryByte, TR::Int32, rc);
    compileOpCodeMethod(_ifBuCmpgt, _numberOfBinaryArgs, TR::ifbucmpgt, "ifBuCmpgt", _argTypesBinaryByte, TR::Int32, rc);
@@ -2240,23 +2237,6 @@ X86OpCodesTest::invokeCompareTests()
          UINT_POS, UINT_MINIMUM,
          UINT_MINIMUM, UINT_POS
          };
-
-   uint8_t buCmpneDataArr[][2] =
-         {
-         UBYTE_MAXIMUM, UBYTE_POS,
-         UBYTE_POS, UBYTE_MAXIMUM,
-         UBYTE_MINIMUM, UBYTE_POS,
-         UBYTE_POS, UBYTE_MINIMUM,
-         UBYTE_MAXIMUM, UBYTE_MAXIMUM
-         };
-   uint8_t ifBuCmpneDataArr[][2] =
-         {
-         UBYTE_MAXIMUM, UBYTE_POS,
-         UBYTE_POS, UBYTE_MAXIMUM,
-         UBYTE_MINIMUM, UBYTE_POS,
-         UBYTE_POS, UBYTE_MINIMUM,
-         UBYTE_MAXIMUM, UBYTE_MAXIMUM
-         };
    uint8_t ifBuCmpgtDataArr[][2] =
          {
          UBYTE_POS, UBYTE_POS,
@@ -3627,28 +3607,6 @@ X86OpCodesTest::invokeCompareTests()
       OMR_CT_EXPECT_EQ(iuCompareConst, compareGE(iuCmpgeDataArr[i][0], iuCmpgeDataArr[i][1]), iuCompareConst(iuCmpgeDataArr[i][0], INT_PLACEHOLDER_2));
       }
 
-   //buCompare not-equal
-   testCaseNum = sizeof(buCmpneDataArr) / sizeof(buCmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_buCmpne, compareNE(buCmpneDataArr[i][0], buCmpneDataArr[i][1]), _buCmpne(buCmpneDataArr[i][0], buCmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "buCmpneConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(buCompareConst,
-            _numberOfBinaryArgs, TR::bucmpne, resolvedMethodName, _argTypesBinaryByte, TR::Int32, rc, 4, 1, &(buCmpneDataArr[i][0]), 2, &(buCmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(buCompareConst, compareNE(buCmpneDataArr[i][0], buCmpneDataArr[i][1]), buCompareConst(BYTE_PLACEHOLDER_1, BYTE_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "buCmpneConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(buCompareConst,
-            _numberOfBinaryArgs, TR::bucmpne, resolvedMethodName, _argTypesBinaryByte, TR::Int32, rc, 2, 1, &(buCmpneDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(buCompareConst, compareNE(buCmpneDataArr[i][0], buCmpneDataArr[i][1]), buCompareConst(BYTE_PLACEHOLDER_1, buCmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "buCmpneConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(buCompareConst,
-            _numberOfBinaryArgs, TR::bucmpne, resolvedMethodName, _argTypesBinaryByte, TR::Int32, rc, 2, 2, &(buCmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(buCompareConst, compareNE(buCmpneDataArr[i][0], buCmpneDataArr[i][1]), buCompareConst(buCmpneDataArr[i][0], BYTE_PLACEHOLDER_2));
-      }
-
 
    testCaseNum = sizeof(suCmpneDataArr) / sizeof(suCmpneDataArr[0]);
    for(uint32_t i = 0; i < testCaseNum; ++i)
@@ -3753,27 +3711,6 @@ X86OpCodesTest::invokeCompareTests()
       compileOpCodeMethod(suCompareConst,
             _numberOfBinaryArgs, TR::sucmple, resolvedMethodName, _argTypesBinaryShort, TR::Int32, rc, 2, 2, &(suCmpleDataArr[i][1]));
       OMR_CT_EXPECT_EQ(suCompareConst, compareLE(suCmpleDataArr[i][0], suCmpleDataArr[i][1]), suCompareConst(suCmpleDataArr[i][0], SHORT_PLACEHOLDER_2)) << suCmpleDataArr[i][0] << " : " << suCmpleDataArr[i][1];
-      }
-
-   testCaseNum = sizeof(ifBuCmpneDataArr) / sizeof(ifBuCmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_ifBuCmpne, compareNE(ifBuCmpneDataArr[i][0], ifBuCmpneDataArr[i][1]), _ifBuCmpne(ifBuCmpneDataArr[i][0], ifBuCmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifBuCmpneConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(buCompareConst,
-            _numberOfBinaryArgs, TR::ifbucmpne, resolvedMethodName, _argTypesBinaryByte, TR::Int32, rc, 4, 1, &(ifBuCmpneDataArr[i][0]), 2, &(ifBuCmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(buCompareConst, compareNE(ifBuCmpneDataArr[i][0], ifBuCmpneDataArr[i][1]), buCompareConst(BYTE_PLACEHOLDER_1, BYTE_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "ifBuCmpneConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(buCompareConst,
-            _numberOfBinaryArgs, TR::ifbucmpne, resolvedMethodName, _argTypesBinaryByte, TR::Int32, rc, 2, 1, &(ifBuCmpneDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(buCompareConst, compareNE(ifBuCmpneDataArr[i][0], ifBuCmpneDataArr[i][1]), buCompareConst(BYTE_PLACEHOLDER_1, ifBuCmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifBuCmpneConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(buCompareConst,
-            _numberOfBinaryArgs, TR::ifbucmpne, resolvedMethodName, _argTypesBinaryByte, TR::Int32, rc, 2, 2, &(ifBuCmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(buCompareConst, compareNE(ifBuCmpneDataArr[i][0], ifBuCmpneDataArr[i][1]), buCompareConst(ifBuCmpneDataArr[i][0], BYTE_PLACEHOLDER_2));
       }
 
    testCaseNum = sizeof(ifBuCmpgtDataArr) / sizeof(ifBuCmpgtDataArr[0]);

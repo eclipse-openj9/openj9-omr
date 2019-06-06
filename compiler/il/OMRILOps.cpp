@@ -107,7 +107,6 @@ OMR::ILOpCode::compareOpCode(TR::DataType dt,
             {
             switch(ct)
                {
-               case TR_cmpNE: return TR::bucmpne;
                case TR_cmpLT: return TR::bucmplt;
                case TR_cmpLE: return TR::bucmple;
                case TR_cmpGT: return TR::bucmpgt;

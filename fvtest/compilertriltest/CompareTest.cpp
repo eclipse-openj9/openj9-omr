@@ -638,10 +638,6 @@ INSTANTIATE_TEST_CASE_P(CompareTest, Int64IfCompare, ::testing::Combine(
         std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmpgt", iflcmpgt)
     )));
 
-int32_t iflucmpne(uint64_t l, uint64_t r) {
-    return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
-}
-
 int32_t iflucmplt(uint64_t l, uint64_t r) {
     return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
@@ -719,7 +715,6 @@ TEST_P(UInt64IfCompare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt64IfCompare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint64_t, uint64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmpne", iflucmpne),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmplt", iflucmplt),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmple", iflucmple),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmpge", iflucmpge),

@@ -3862,7 +3862,7 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
           }
    else if (constNode &&
          (node->getOpCodeValue()==TR::iflcmpeq ||
-          node->getOpCodeValue()==TR::iflcmpne || node->getOpCodeValue()==TR::iflucmpne) &&
+          node->getOpCodeValue()==TR::iflcmpne) &&
          constNode->getLongInt() == 0 &&
          nonConstNode->getOpCodeValue()==TR::land &&
          nonConstNode->getReferenceCount() == 1 && nonConstNode->getRegister()==NULL &&
@@ -3890,7 +3890,7 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
       else
          generateRIInstruction(cg, TR::InstOpCode::TMHH, node, tempReg, (nonConstNode->getSecondChild()->getLongInt()&0xFFFF000000000000)>>48);
 
-      if (node->getOpCodeValue()==TR::iflcmpne || node->getOpCodeValue()==TR::iflucmpne)
+      if (node->getOpCodeValue()==TR::iflcmpne)
          {
          newBranchOpCond = TR::InstOpCode::COND_MASK7;
          }

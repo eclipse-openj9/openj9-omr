@@ -637,7 +637,6 @@ public:
          {
          case TR::ificmpne:
          case TR::iflcmpne:
-         case TR::iflucmpne:
          case TR::ifacmpne:
          case TR::ifbcmpne:
          case TR::ifscmpne:

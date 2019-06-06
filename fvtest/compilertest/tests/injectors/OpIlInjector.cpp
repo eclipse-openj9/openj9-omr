@@ -94,7 +94,6 @@ OpIlInjector::setDataType()
          case TR::iflcmpge:
          case TR::iflcmpgt:
          case TR::iflcmple:
-         case TR::iflucmpne:
          case TR::iflucmplt:
          case TR::iflucmpge:
          case TR::iflucmpgt:

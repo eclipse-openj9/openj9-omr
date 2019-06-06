@@ -310,21 +310,46 @@ OMR::Z::TreeEvaluator::dsqrtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    TR::Node * firstChild = node->getFirstChild();
    TR::Register * targetRegister = NULL;
-   TR::Register * opRegister = cg->evaluate(firstChild);
 
-   if (cg->canClobberNodesRegister(firstChild))
+
+   // Calculate it for ourselves
+   if (firstChild->getOpCode().isLoadConst())
       {
-      targetRegister = opRegister;
+      union { double valD; int64_t valI; } result;
+      targetRegister = cg->allocateRegister(TR_FPR);
+      result.valD = sqrt(firstChild->getDouble());
+      TR::S390ConstantDataSnippet * cds = cg->findOrCreate8ByteConstant(node, result.valI);
+      generateRXInstruction(cg, TR::InstOpCode::LD, node, targetRegister, generateS390MemoryReference(cds, cg, 0, node));
       }
    else
       {
-      targetRegister = cg->allocateRegister(TR_FPR);
+      TR::Register * opRegister = NULL;
+
+      //See whether to use SQDB or SQDBR depending on how many times it is referenced
+      if (firstChild->isSingleRefUnevaluated() && firstChild->getOpCodeValue() == TR::dloadi)
+         {
+         targetRegister = cg->allocateRegister(TR_FPR);
+         generateRXEInstruction(cg, TR::InstOpCode::SQDB, node, targetRegister, generateS390MemoryReference(firstChild, cg), 0);
+         }
+      else
+         {
+         opRegister = cg->evaluate(firstChild);
+
+         if (cg->canClobberNodesRegister(firstChild))
+            {
+            targetRegister = opRegister;
+            }
+         else
+            {
+            targetRegister = cg->allocateRegister(TR_FPR);
+            }
+         generateRRInstruction(cg, TR::InstOpCode::SQDBR, node, targetRegister, opRegister);
+         }
       }
-   generateRRInstruction(cg, TR::InstOpCode::SQDBR, node, targetRegister, opRegister);
 
    node->setRegister(targetRegister);
    cg->decReferenceCount(firstChild);
-   return node->getRegister();
+   return targetRegister;
    }
 
 TR::Register *

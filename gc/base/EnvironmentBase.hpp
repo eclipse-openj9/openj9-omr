@@ -148,6 +148,8 @@ public:
 
 	uintptr_t _oolTraceAllocationBytes; /**< Tracks the bytes allocated since the last ool object trace */
 
+	uintptr_t approxScanCacheCount; /**< Local copy of approximate entries in global Cache Scan List. Updated upon allocation of new cache. */
+
 	MM_Validator *_activeValidator; /**< Used to identify and report crashes inside Validators */
 
 	MM_MarkStats _markStats;
@@ -640,6 +642,7 @@ public:
 		,_slaveThreadCpuTimeNanos(0)
 		,_freeEntrySizeClassStats()
 		,_oolTraceAllocationBytes(0)
+		,approxScanCacheCount(0)
 		,_activeValidator(NULL)
 		,_lastSyncPointReached(NULL)
 #if defined(OMR_GC_SEGREGATED_HEAP)
@@ -691,6 +694,7 @@ public:
 		,_slaveThreadCpuTimeNanos(0)
 		,_freeEntrySizeClassStats()
 		,_oolTraceAllocationBytes(0)
+		,approxScanCacheCount(0)
 		,_activeValidator(NULL)
 		,_lastSyncPointReached(NULL)
 #if defined(OMR_GC_SEGREGATED_HEAP)

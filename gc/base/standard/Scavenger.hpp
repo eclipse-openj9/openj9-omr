@@ -263,7 +263,44 @@ public:
 	 * @return Whether or not objectPtr should be remembered.
 	 */
 	MMINLINE bool scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *scanCache, omrobjectptr_t objectPtr, uintptr_t flags, omrobjectptr_t *rememberedSetSlot);
-	MMINLINE MM_CopyScanCacheStandard *incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, MM_CopyScanCacheStandard* scanCache);
+	MMINLINE MM_CopyScanCacheStandard *incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, MM_CopyScanCacheStandard* scanCache);	
+	
+	/**
+	 * For fast traversal of deep structure nodes - scan objects with self referencing fields with priority
+	 * Split into two functions deepScan and deepScanOutline. Frequently called checks (see lazy start check) must be inlined
+	 * @param env The environment.
+	 * @param objectPtr The pointer to the object.
+	 * @param selfReferencingField1 Offset to the first priority field of the object
+	 * @param selfReferencingField2 Offset to the second priority field, if it can't follow through in one direction, 
+	 * it will attempt to use the second self referencing field 
+	 */
+	MMINLINE void
+	deepScan(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t selfReferencingField1, uintptr_t selfReferencingField2)
+	{
+		/**
+		* Inhibit the special treatment routine with relatively high probability to skip over most  
+		* false positives (shorter lists), while only marginally delay detection of very deep structures.
+		*/	
+		if (shouldStartDeepScan(env, objectPtr)) {
+			deepScanOutline(env, objectPtr, selfReferencingField1, selfReferencingField2);
+		}
+	}
+	
+	/**
+	 * Deep scan lazy start check - condition used for gatekeeping
+	 * @param env The environment.
+	 * @param objectPtr The pointer to the object.
+	 * @return True If deep scan should start
+	 */
+	MMINLINE bool
+	shouldStartDeepScan(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
+	{
+		/* Check last few LSB of the object address for probability 1/16 */
+		return (0 == ((uintptr_t)objectPtr & 0x78)); 
+	}
+	
+	
+	void deepScanOutline(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t selfReferencingField1, uintptr_t selfReferencingField2);
 
 	MMINLINE bool scavengeRememberedObject(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 	void scavengeRememberedSetList(MM_EnvironmentStandard *env);

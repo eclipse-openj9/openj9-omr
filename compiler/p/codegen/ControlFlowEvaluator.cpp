@@ -1511,18 +1511,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
              TR::Register *tReg = NULL;
              bool newReg = false;
              uint64_t value = secondChild->get64bitIntegralValue();
-
-             if (node->getOpCodeValue() == TR::ifsucmpne)
-                {
-                tReg = cg->allocateRegister();
-                newReg = true;
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xffff);
-                value &= 0xffff;
-                }
-             else
-                {
-                tReg = src1Reg;
-                }
+             tReg = src1Reg;
 
              generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, tReg, value);
 
@@ -1534,19 +1523,8 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
              TR::Register *tReg = NULL;
              bool newReg = false;
              TR::Register *secondReg = NULL;
-             if (node->getOpCodeValue() == TR::ifsucmpne)
-                {
-                tReg = cg->allocateRegister();
-                newReg = true;
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xffff);
-                secondReg = cg->gprClobberEvaluate(secondChild);
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, secondReg, secondReg, 0, 0xffff);
-                }
-             else
-                {
-                tReg = src1Reg;
-                secondReg = cg->evaluate(secondChild);
-                }
+             tReg = src1Reg;
+             secondReg = cg->evaluate(secondChild);
 
              generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg, tReg, secondReg);
 
@@ -2023,7 +2001,7 @@ TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::Cod
    }
 
 // also handles acmpne in 32-bit mode
-// and also: bcmpne, scmpne, sucmpne
+// and also: bcmpne, scmpne
 TR::Register *OMR::Power::TreeEvaluator::icmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (skipCompare(node))

@@ -3802,7 +3802,6 @@ static TR::ILOpCodes doubleToCharOp(TR::ILOpCodes dOp)
          break;
       case TR::ifdcmpne:
       case TR::ifdcmpneu:
-         op = TR::ifsucmpne;
          break;
       case TR::ifdcmplt:
       case TR::ifdcmpltu:
@@ -3978,7 +3977,7 @@ static TR::ILOpCodes floatToCharOp(TR::ILOpCodes fOp)
          break;
       case TR::iffcmpne:
       case TR::iffcmpneu:
-         op = TR::ifsucmpne;
+
          break;
       case TR::iffcmplt:
       case TR::iffcmpltu:
@@ -14111,7 +14110,6 @@ TR::Node *ifCmpWithoutEqualitySimplifier(TR::Node * node, TR::Block * block, TR:
          {
          case TR::ifbcmpne:
          case TR::ifscmpne:
-         case TR::ifsucmpne:
             takeBranch = firstChild->get64bitIntegralValue() != secondChild->get64bitIntegralValue();
             foldBranch = true;
             break;

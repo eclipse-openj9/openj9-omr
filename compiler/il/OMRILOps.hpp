@@ -639,7 +639,6 @@ public:
          case TR::ifacmpne:
          case TR::ifbcmpne:
          case TR::ifscmpne:
-         case TR::ifsucmpne:
          case TR::iffcmpne:
          case TR::ifdcmpne:
             return true;

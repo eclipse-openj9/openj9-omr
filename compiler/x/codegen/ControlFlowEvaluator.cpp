@@ -1914,7 +1914,7 @@ TR::Register *OMR::X86::TreeEvaluator::ifscmpleEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-// also handles ifsucmpne
+
 TR::Register *OMR::X86::TreeEvaluator::ifsucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForEquality(node, cg);
@@ -1922,8 +1922,6 @@ TR::Register *OMR::X86::TreeEvaluator::ifsucmpeqEvaluator(TR::Node *node, TR::Co
                                       node, cg, true);
    return NULL;
    }
-
-// ifsucmpneEvaluator handled by ifsucmpeqEvaluator
 
 TR::Register *OMR::X86::TreeEvaluator::ifsucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -2200,7 +2198,6 @@ TR::Register *OMR::X86::TreeEvaluator::scmpleEvaluator(TR::Node *node, TR::CodeG
    return TR::TreeEvaluator::cmp2BytesEvaluator(node, SETLE1Reg, cg);
    }
 
-// also handles sucmpne
 
 TR::Register *OMR::X86::TreeEvaluator::sucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -2246,8 +2243,6 @@ TR::Register *OMR::X86::TreeEvaluator::sucmpeqEvaluator(TR::Node *node, TR::Code
    generateRegRegInstruction(MOVZXReg4Reg1, node, targetRegister, targetRegister, cg);
    return targetRegister;
    }
-
-// sucmpneEvaluator handled by sucmpeqEvaluator
 
 TR::Register *OMR::X86::TreeEvaluator::sucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

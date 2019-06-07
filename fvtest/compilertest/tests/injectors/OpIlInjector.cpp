@@ -217,7 +217,6 @@ OpIlInjector::setDataType()
          case TR::scmpge:
          case TR::scmpgt:
          case TR::scmple:
-         case TR::sucmpne:
          case TR::sucmplt:
          case TR::sucmpge:
          case TR::sucmpgt:
@@ -228,7 +227,6 @@ OpIlInjector::setDataType()
          case TR::ifscmpge:
          case TR::ifscmpgt:
          case TR::ifscmple:
-         case TR::ifsucmpne:
          case TR::ifsucmplt:
          case TR::ifsucmpge:
          case TR::ifsucmpgt:

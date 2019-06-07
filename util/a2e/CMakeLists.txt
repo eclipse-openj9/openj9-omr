@@ -57,4 +57,5 @@ add_custom_command(TARGET j9a2e
 
 set_property(TARGET j9a2e PROPERTY FOLDER util)
 
-target_enable_ddr(j9a2e "${OMR_DDR_SET}")
+target_enable_ddr(j9a2e)
+ddr_set_add_targets(omrddr j9a2e)

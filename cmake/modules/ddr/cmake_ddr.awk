@@ -130,7 +130,7 @@ END {
 }
 
 NR == 1 {
-	print "DDRFILE_BEGIN " FILENAME
+	begin_file(FILENAME);
 }
 
 /@ddr_options: *valuesonly/ { add_values = 1; add_flags = 0}

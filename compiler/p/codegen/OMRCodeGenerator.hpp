@@ -413,8 +413,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    static uint32_t registerBitMask(int32_t reg);
 
-   int32_t getInternalPtrMapBit() { return 18;}
-
    int32_t getMaximumNumbersOfAssignableGPRs();
    int32_t getMaximumNumbersOfAssignableFPRs();
    int32_t getMaximumNumbersOfAssignableVRs();

@@ -354,9 +354,9 @@ omrfile_open(struct OMRPortLibrary *portLibrary, const char *path, int32_t flags
 	} else {
 		fd = open(path, realFlags, mode);
 	}
-#else /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	fd = open(path, realFlags, mode);
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	if (-1 == fd) {
 		Trc_PRT_file_open_Exception2(path, errno, findError(errno));

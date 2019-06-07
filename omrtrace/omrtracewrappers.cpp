@@ -66,6 +66,6 @@ twE2A(char *str)
 			free(abuf);
 		}
 	}
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	return OMR_ERROR_NONE;
 }

@@ -407,9 +407,9 @@ omrfile_read_text(struct OMRPortLibrary *portLibrary, intptr_t fd, char *buf, in
 #if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	const char eol = a2e_tab['\n'];
 	char *tempStr = NULL;
-#else /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	const static char eol = '\n';
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	char temp[64];
 	char *cursor = buf;
 	BOOLEAN foundEOL = FALSE;
@@ -459,7 +459,7 @@ omrfile_read_text(struct OMRPortLibrary *portLibrary, intptr_t fd, char *buf, in
 
 	memcpy(buf, tempStr, strlen(buf));
 	free(tempStr);
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	return buf;
 }
 
@@ -477,7 +477,7 @@ omrfile_get_text_encoding(struct OMRPortLibrary *portLibrary, char *charsetName,
 	codepage = etoa_nl_langinfo(CODESET);
 #else
 	codepage = nl_langinfo(CODESET);
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	/* nl_langinfo returns "" on failure */
 	if (codepage[0] == '\0') {

@@ -142,15 +142,13 @@ ifeq ($(HOST_ARCH),p)
 endif
 
 ifeq ($(HOST_ARCH),z)
-    ifeq ($(HOST_BITS),32)
-        CX_DEFINES+=S390 FULL_ANSI
-        CX_FLAGS+=-m31 -fPIC -fno-strict-aliasing -mtune=z10 -march=z9-109 -mzarch
-        CX_FLAGS_DEBUG+=-gdwarf-2
-    endif
-    
     ifeq ($(HOST_BITS),64)
         CX_DEFINES+=S390 FULL_ANSI S39064
         CX_FLAGS+=-fPIC -fno-strict-aliasing -mtune=z10 -march=z9-109 -mzarch
+    else
+        CX_DEFINES+=S390 FULL_ANSI
+        CX_FLAGS+=-m31 -fPIC -fno-strict-aliasing -mtune=z10 -march=z9-109 -mzarch
+        CX_FLAGS_DEBUG+=-gdwarf-2
     endif
 endif
 

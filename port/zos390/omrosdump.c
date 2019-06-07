@@ -264,7 +264,7 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename, char *dsnName)
 	dsnName = a2e_func(filename, strlen(filename) + 1);
 	err = tdump(portLibrary, filename, dsnName, &returnCode, &reasonCode);
 	free(dsnName);
-#else
+#else /* !defined(OMR_EBCDIC) */
 	err = tdump(portLibrary, filename, filename, &returnCode, &reasonCode);
 #endif /* !defined(OMR_EBCDIC) */
 
@@ -281,7 +281,7 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename, char *dsnName)
 				dsnName = a2e_func(filename, strlen(filename) + 1);
 				retVal = tdump_wrapper(portLibrary, filename, dsnName);
 				free(dsnName);
-#else
+#else /* !defined(OMR_EBCDIC) */
 				retVal = tdump_wrapper(portLibrary, filename, filename);
 #endif /* !defined(OMR_EBCDIC) */
 			}

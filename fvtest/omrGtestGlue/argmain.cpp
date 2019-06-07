@@ -36,7 +36,7 @@
 
 #if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 #include "atoe.h"
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 /* Define a macro for the name of the main function that takes char args */
 #if defined(OMR_OS_WINDOWS)
@@ -59,7 +59,7 @@ CHARMAIN(int argc, char **argv, char **envp)
 			argv[i] = e2a_string(argv[i]);
 		}
 	}
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	return omr_main_entry(argc, argv, envp);
 }

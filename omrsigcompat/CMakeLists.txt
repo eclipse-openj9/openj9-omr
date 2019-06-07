@@ -89,7 +89,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 
 	add_custom_command(TARGET omrsig
 		POST_BUILD
-		COMMAND mv libomrsig.x ${CMAKE_BINARY_DIR}/libomrsig.x
+		COMMAND cp -f libomrsig.x ${CMAKE_BINARY_DIR}/libomrsig.x
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	)
 endif()

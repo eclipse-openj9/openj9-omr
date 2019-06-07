@@ -2295,7 +2295,7 @@ inline bool IsXDigit(wchar_t ch) {
  */
 #define toupper(c)     (islower(c) ? (c & 0xDF) : c)
 #define tolower(c)     (isupper(c) ? (c | 0xDF) : c)
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 inline char ToLower(char ch) {
   return static_cast<char>(tolower(static_cast<unsigned char>(ch)));
@@ -2309,7 +2309,7 @@ inline char ToUpper(char ch) {
  */
 #undef toupper
 #undef tolower
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 inline std::string StripTrailingSpaces(std::string str) {
   std::string::iterator it = str.end();

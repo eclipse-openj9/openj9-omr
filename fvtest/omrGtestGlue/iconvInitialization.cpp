@@ -35,4 +35,4 @@ iconv_initialization(void)
 	return 0;
 }
 
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */

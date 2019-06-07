@@ -853,9 +853,9 @@ find_executable_name(struct OMRPortLibrary *portLibrary, char **result)
 		if (buf.ps_pid == mypid) {
 #if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 			e2aName = e2a_func(buf.ps_pathptr, strlen(buf.ps_pathptr) + 1);
-#else /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 			e2aName = buf.ps_pathptr;
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 			break;
 		}
 	}
@@ -873,7 +873,7 @@ find_executable_name(struct OMRPortLibrary *portLibrary, char **result)
 	}
 #if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	free(e2aName);
-#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 #else
 	char *execName = NULL;
 

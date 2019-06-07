@@ -622,7 +622,6 @@ public:
          case TR::ifacmpeq:
          case TR::ifbcmpeq:
          case TR::ifscmpeq:
-         case TR::ifsucmpeq:
          case TR::iffcmpeq:
          case TR::ifdcmpeq:
             return true;

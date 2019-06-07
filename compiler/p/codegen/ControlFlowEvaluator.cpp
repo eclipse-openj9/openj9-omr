@@ -1413,7 +1413,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
       conditions->addPostCondition(condReg, TR::RealRegister::cr0);
 
       TR::InstOpCode::Mnemonic opCode = (node->getOpCodeValue() == TR::ificmpeq ||
-                              node->getOpCodeValue() == TR::ifscmpeq || node->getOpCodeValue() == TR::ifsucmpeq ||
+                              node->getOpCodeValue() == TR::ifscmpeq ||
                               node->getOpCodeValue() == TR::ifbcmpeq)
          ? TR::InstOpCode::beq : TR::InstOpCode::bne;
       TR::LabelSymbol *label = node->getBranchDestination()->getNode()->getLabel();
@@ -1512,7 +1512,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
              bool newReg = false;
              uint64_t value = secondChild->get64bitIntegralValue();
 
-             if (node->getOpCodeValue() == TR::ifsucmpne || node->getOpCodeValue() == TR::ifsucmpeq)
+             if (node->getOpCodeValue() == TR::ifsucmpne)
                 {
                 tReg = cg->allocateRegister();
                 newReg = true;
@@ -1534,7 +1534,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
              TR::Register *tReg = NULL;
              bool newReg = false;
              TR::Register *secondReg = NULL;
-             if (node->getOpCodeValue() == TR::ifsucmpne || node->getOpCodeValue() == TR::ifsucmpeq)
+             if (node->getOpCodeValue() == TR::ifsucmpne)
                 {
                 tReg = cg->allocateRegister();
                 newReg = true;
@@ -1961,7 +1961,7 @@ TR::Register *handleSkipCompare(TR::Node * node, TR::InstOpCode::Mnemonic opcode
 
 
 // also handles acmpeq in 32-bit mode
-// and also: bcmpeq, scmpeq, sucmpeq
+// and also: bcmpeq, scmpeq
 TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (skipCompare(node))

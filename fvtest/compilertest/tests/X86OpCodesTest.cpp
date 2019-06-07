@@ -267,7 +267,6 @@ X86OpCodesTest::compileCompareTestMethods()
    compileOpCodeMethod(_ifBuCmpgt, _numberOfBinaryArgs, TR::ifbucmpgt, "ifBuCmpgt", _argTypesBinaryByte, TR::Int32, rc);
    compileOpCodeMethod(_ifBuCmple, _numberOfBinaryArgs, TR::ifbucmple, "ifBuCmple", _argTypesBinaryByte, TR::Int32, rc);
 
-   compileOpCodeMethod(_ifSuCmpeq, _numberOfBinaryArgs, TR::ifsucmpeq, "ifSuCmpeq", _argTypesBinaryShort, TR::Int32, rc);
    compileOpCodeMethod(_ifSuCmpne, _numberOfBinaryArgs, TR::ifsucmpne, "ifSuCmpne", _argTypesBinaryShort, TR::Int32, rc);
    compileOpCodeMethod(_ifSuCmpgt, _numberOfBinaryArgs, TR::ifsucmpgt, "ifSuCmpgt", _argTypesBinaryShort, TR::Int32, rc);
    compileOpCodeMethod(_ifSuCmple, _numberOfBinaryArgs, TR::ifsucmple, "ifSuCmple", _argTypesBinaryShort, TR::Int32, rc);
@@ -2240,12 +2239,6 @@ X86OpCodesTest::invokeCompareTests()
          UBYTE_MINIMUM, UBYTE_POS,
          UBYTE_POS, UBYTE_MINIMUM
          };
-   uint16_t suCmpeqDataArr[][2] =
-         {
-         USHORT_MINIMUM, USHORT_MAXIMUM,
-         USHORT_MAXIMUM, USHORT_MINIMUM,
-         USHORT_POS, USHORT_POS
-         };
    uint16_t suCmpneDataArr[][2] =
          {
          USHORT_POS, USHORT_MINIMUM,
@@ -2271,11 +2264,6 @@ X86OpCodesTest::invokeCompareTests()
          {
          USHORT_MAXIMUM, USHORT_MINIMUM,
          USHORT_MINIMUM, USHORT_MAXIMUM
-         };
-   uint16_t ifSuCmpeqDataArr[][2] =
-         {
-         USHORT_POS, USHORT_POS,
-         USHORT_MAXIMUM, USHORT_POS
          };
    uint16_t ifSuCmpneDataArr[][2] =
          {
@@ -3778,28 +3766,6 @@ X86OpCodesTest::invokeCompareTests()
       compileOpCodeMethod(buCompareConst,
             _numberOfBinaryArgs, TR::ifbucmple, resolvedMethodName, _argTypesBinaryByte, TR::Int32, rc, 2, 2, &(ifBuCmpleDataArr[i][1]));
       OMR_CT_EXPECT_EQ(buCompareConst, compareLE(ifBuCmpleDataArr[i][0], ifBuCmpleDataArr[i][1]), buCompareConst(ifBuCmpleDataArr[i][0], BYTE_PLACEHOLDER_2));
-      }
-
-   //ifSuCompare
-   testCaseNum = sizeof(ifSuCmpeqDataArr) / sizeof(ifSuCmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_ifSuCmpeq, compareEQ(ifSuCmpeqDataArr[i][0], ifSuCmpeqDataArr[i][1]), _ifSuCmpeq(ifSuCmpeqDataArr[i][0], ifSuCmpeqDataArr[i][1])) << ifSuCmpeqDataArr[i][0] << " : " << ifSuCmpeqDataArr[i][1];
-
-      sprintf(resolvedMethodName, "ifSuCmpeqConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(suCompareConst,
-            _numberOfBinaryArgs, TR::ifsucmpeq, resolvedMethodName, _argTypesBinaryShort, TR::Int32, rc, 4, 1, &(ifSuCmpeqDataArr[i][0]), 2, &(ifSuCmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(suCompareConst, compareEQ(ifSuCmpeqDataArr[i][0], ifSuCmpeqDataArr[i][1]), suCompareConst(SHORT_PLACEHOLDER_1, SHORT_PLACEHOLDER_2)) << ifSuCmpeqDataArr[i][0] << " : " << ifSuCmpeqDataArr[i][1];
-
-      sprintf(resolvedMethodName, "ifSuCmpeqConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(suCompareConst,
-            _numberOfBinaryArgs, TR::ifsucmpeq, resolvedMethodName, _argTypesBinaryShort, TR::Int32, rc, 2, 1, &(ifSuCmpeqDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(suCompareConst, compareEQ(ifSuCmpeqDataArr[i][0], ifSuCmpeqDataArr[i][1]), suCompareConst(SHORT_PLACEHOLDER_1, ifSuCmpeqDataArr[i][1])) << ifSuCmpeqDataArr[i][0] << " : " << ifSuCmpeqDataArr[i][1];
-
-      sprintf(resolvedMethodName, "ifSuCmpeqConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(suCompareConst,
-            _numberOfBinaryArgs, TR::ifsucmpeq, resolvedMethodName, _argTypesBinaryShort, TR::Int32, rc, 2, 2, &(ifSuCmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(suCompareConst, compareEQ(ifSuCmpeqDataArr[i][0], ifSuCmpeqDataArr[i][1]), suCompareConst(ifSuCmpeqDataArr[i][0], SHORT_PLACEHOLDER_2)) << ifSuCmpeqDataArr[i][0] << " : " << ifSuCmpeqDataArr[i][1];
       }
 
    testCaseNum = sizeof(ifSuCmpneDataArr) / sizeof(ifSuCmpneDataArr[0]);

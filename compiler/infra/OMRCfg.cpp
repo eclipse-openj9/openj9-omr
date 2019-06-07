@@ -261,7 +261,7 @@ OMR::CFG::addSuccessorEdges(TR::Block * block)
       case TR::ifdcmpeq: case TR::ifdcmpne: case TR::ifdcmplt: case TR::ifdcmpge: case TR::ifdcmpgt: case TR::ifdcmple:
       case TR::ifbcmpeq: case TR::ifbcmpne: case TR::ifbcmplt: case TR::ifbcmpge: case TR::ifbcmpgt: case TR::ifbcmple:
       case TR::ifscmpeq: case TR::ifscmpne: case TR::ifscmplt: case TR::ifscmpge: case TR::ifscmpgt: case TR::ifscmple:
-      case TR::ifsucmpeq: case TR::ifsucmpne: case TR::ifsucmplt: case TR::ifsucmpge: case TR::ifsucmpgt: case TR::ifsucmple:
+      case TR::ifsucmpne: case TR::ifsucmplt: case TR::ifsucmpge: case TR::ifsucmpgt: case TR::ifsucmple:
       case TR::ifacmpeq: case TR::ifacmpne:
       case TR::iffcmpequ: case TR::iffcmpneu: case TR::iffcmpltu: case TR::iffcmpgeu: case TR::iffcmpgtu: case TR::iffcmpleu:
       case TR::ifdcmpequ: case TR::ifdcmpneu: case TR::ifdcmpltu: case TR::ifdcmpgeu: case TR::ifdcmpgtu: case TR::ifdcmpleu:

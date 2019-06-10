@@ -48,7 +48,7 @@ set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
 set(OMR_GC ON CACHE BOOL "Enable the GC")
 set(OMR_GC_TEST ${OMR_GC} CACHE BOOL "Enable the GC tests.")
 
-set(OMR_USE_NATIVE_ENCODING OFF CACHE BOOL
+set(OMR_USE_NATIVE_ENCODING ON CACHE BOOL
 	"Indicates that runtime components should use the systems native encoding (currently only defined for z/OS)"
 )
 ## OMR_COMPILER is required for OMR_JITBUILDER and OMR_TEST_COMPILER
@@ -85,7 +85,7 @@ set(OMR_TOOLS_IMPORTFILE "IMPORTFILE-NOTFOUND" CACHE FILEPATH
 	"Point it to the ImportTools.cmake file of a native build"
 )
 
-set(OMR_TOOLS_USE_NATIVE_ENCODING OFF CACHE BOOL
+set(OMR_TOOLS_USE_NATIVE_ENCODING ON CACHE BOOL
 	"Indicates if omr tooling should use system native character encoding (currently only defined for z/OS)"
 )
 

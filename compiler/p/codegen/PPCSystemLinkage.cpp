@@ -585,6 +585,13 @@ TR::PPCSystemLinkage::mapSingleAutomatic(
 void
 TR::PPCSystemLinkage::createPrologue(TR::Instruction *cursor)
    {
+   TR::Node *firstNode = comp()->getStartTree()->getNode();
+
+   if (comp()->getOption(TR_EntryBreakPoints))
+      {
+      cursor = generateInstruction(cg(), TR::InstOpCode::bad, firstNode, cursor);
+      }
+
    createPrologue(cursor, comp()->getJittedMethodSymbol()->getParameterList());
    }
 

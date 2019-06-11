@@ -1914,10 +1914,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint8_t _globalFPRPartitionLimit;
    flags16_t _enabledFlags;
 
-   // MOVE TO J9 Z CodeGenerator
-   // isTemporaryBased storageReferences just have a symRef but some other routines expect a node so use the below to fill in this symRef on this node
-   TR::Node *_dummyTempStorageRefNode;
-
    public:
    static TR_TreeEvaluatorFunctionPointer _nodeToInstrEvaluators[];
 

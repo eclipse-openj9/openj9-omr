@@ -199,7 +199,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _codeCache(0),
      _committedToCodeCache(false),
      _codeCacheSwitched(false),
-     _dummyTempStorageRefNode(NULL),
      _blockRegisterPressureCache(NULL),
      _simulatedNodeStates(NULL),
      _availableSpillTemps(getTypedAllocator<TR::SymbolReference*>(TR::comp()->allocator())),

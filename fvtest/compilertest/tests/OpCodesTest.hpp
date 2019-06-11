@@ -45,6 +45,12 @@
 #include "tests/injectors/TernaryOpIlInjector.hpp"
 #include "tests/injectors/UnaryOpIlInjector.hpp"
 
+#if defined(J9ZOS390)
+namespace std
+{
+   using ::isnan;
+}
+#endif
 
 namespace TR { class ResolvedMethod; }
 

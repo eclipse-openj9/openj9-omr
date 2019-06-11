@@ -246,6 +246,7 @@ public:
       GlobalRegisterAllocator,
       GlobalRegisterCandidates,
       HedgeTree,
+      IDTNode,
       Inliner,
       InnerPreexistence,
       IsolatedStoreElimination,

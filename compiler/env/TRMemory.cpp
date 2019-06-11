@@ -100,6 +100,7 @@ const char * objectName[] =
    "GlobalRegisterAllocator",
    "GlobalRegisterCandidates",
    "HedgeTree",
+   "IDTNode",
    "Inliner",
    "InnerPreexistence",
    "IsolatedStoreElimination",

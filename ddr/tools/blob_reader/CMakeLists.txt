@@ -33,6 +33,7 @@ target_link_libraries(omr_blob_reader
 	omr_ddr_scanner
 	omrutil
 	${OMR_PORT_LIB}
+	${OMR_THREAD_LIB}
 )
 
 if(OMRPORT_OMRSIG_SUPPORT)

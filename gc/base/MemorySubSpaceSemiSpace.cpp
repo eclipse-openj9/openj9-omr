@@ -423,7 +423,7 @@ MM_MemorySubSpaceSemiSpace::initialize(MM_EnvironmentBase *env)
 	 * are still better than 0 values, to help with faster learning of real values.
 	 */
 	_avgBytesAllocatedDuringConcurrent = getMinimumSize() / 10;
-	_deviationBytesAllocatedDuringConcurrent = _avgBytesAllocatedDuringConcurrent / 10;
+	_deviationBytesAllocatedDuringConcurrent = (float)_avgBytesAllocatedDuringConcurrent / 10;
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	
 	/* register the children */
@@ -488,11 +488,11 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		_bytesAllocatedDuringConcurrent = _extensions->allocationStats.bytesAllocated();
 		_avgBytesAllocatedDuringConcurrent = (uintptr_t)MM_Math::weightedAverage((float)_avgBytesAllocatedDuringConcurrent,
-											 (float)(_bytesAllocatedDuringConcurrent), 0.7);
+											 (float)(_bytesAllocatedDuringConcurrent), 0.7f);
 		_deviationBytesAllocatedDuringConcurrent = ((float)_bytesAllocatedDuringConcurrent - (float)_avgBytesAllocatedDuringConcurrent);
 		_avgDeviationBytesAllocatedDuringConcurrent =
-				sqrt(MM_Math::weightedAverage(_avgDeviationBytesAllocatedDuringConcurrent * _avgDeviationBytesAllocatedDuringConcurrent,
-												_deviationBytesAllocatedDuringConcurrent * _deviationBytesAllocatedDuringConcurrent, 0.7));
+				sqrtf(MM_Math::weightedAverage(_avgDeviationBytesAllocatedDuringConcurrent * _avgDeviationBytesAllocatedDuringConcurrent,
+												(float)_deviationBytesAllocatedDuringConcurrent * _deviationBytesAllocatedDuringConcurrent, 0.7f));
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		break;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)

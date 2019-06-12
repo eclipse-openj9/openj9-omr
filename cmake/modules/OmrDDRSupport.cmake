@@ -98,6 +98,7 @@ function(target_enable_ddr tgt)
 		EARLY_SOURCE_EVAL
 		GLOB_HEADERS
 		GLOB_HEADERS_RECURSIVE
+		NO_DEBUG_INFO
 	)
 	set(oneValueArgs "")
 	set(multiValueArgs "")
@@ -138,7 +139,7 @@ function(target_enable_ddr tgt)
 		"PREINCLUDES"
 		"$<JOIN:$<TARGET_PROPERTY:${tgt},DDR_PREINCLUDES>,\n>"
 	)
-	if(target_type MATCHES "EXECUTABLE|SHARED_LIBRARY")
+	if((target_type MATCHES "EXECUTABLE|SHARED_LIBRARY") AND (NOT opt_NO_DEBUG_INFO))
 		set(MAGIC_TEMPLATE "OUTPUT_FILE\n$<TARGET_FILE:${tgt}>\n${MAGIC_TEMPLATE}")
 	endif()
 

@@ -131,8 +131,17 @@ configure_file(./omrversionstrings.CMakeTemplate.h omrversionstrings.h)
 ### Set up DDR configuration
 ###
 include(OmrDDRSupport)
-
-make_ddr_set(omrddr)
+if(OMR_DDR AND NOT OMR_OS_WINDOWS)
+	make_ddr_set(omrddr)
+	ddr_add_headers(omrddr
+		${omr_BINARY_DIR}/omrcfg.h
+		include_core/j9nongenerated.h
+	)
+	set_property(TARGET omrddr PROPERTY INCLUDE_DIRECTORIES
+		${CMAKE_CURRENT_SOURCE_DIR}/include_core
+		${CMAKE_CURRENT_BINARY_DIR}
+	)
+endif()
 
 ###
 ### Native Tooling

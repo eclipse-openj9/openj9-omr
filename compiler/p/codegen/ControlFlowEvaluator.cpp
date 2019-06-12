@@ -956,10 +956,8 @@ static TR::InstOpCode::Mnemonic cmp2branch(TR::ILOpCodes op, TR::CodeGenerator *
     switch (op)
        {
        case TR::icmpeq:
-       case TR::iucmpeq:
        case TR::acmpeq:
        case TR::lcmpeq:
-       case TR::lucmpeq:
        case TR::fcmpeq:
        case TR::dcmpeq:
        case TR::fcmpequ:
@@ -967,15 +965,12 @@ static TR::InstOpCode::Mnemonic cmp2branch(TR::ILOpCodes op, TR::CodeGenerator *
        case TR::bcmpeq:
           return TR::InstOpCode::beq;
        case TR::icmpne:
-       case TR::iucmpne:
        case TR::acmpne:
        case TR::lcmpne:
-       case TR::lucmpne:
        case TR::fcmpne:
        case TR::dcmpne:
        case TR::fcmpneu:
        case TR::dcmpneu:
-       case TR::bucmpne:
        case TR::bcmpne:
           return TR::InstOpCode::bne;
        case TR::icmplt:
@@ -1051,13 +1046,10 @@ static TR::InstOpCode::Mnemonic cmp2cmp(TR::ILOpCodes op, TR::CodeGenerator *cg)
        case TR::bcmpgt:
        case TR::bcmple:
           return TR::InstOpCode::cmp4;
-       case TR::iucmpeq:
-       case TR::iucmpne:
        case TR::iucmplt:
        case TR::iucmpge:
        case TR::iucmpgt:
        case TR::iucmple:
-       case TR::bucmpne:
        case TR::bucmplt:
        case TR::bucmpge:
        case TR::bucmpgt:
@@ -1070,8 +1062,6 @@ static TR::InstOpCode::Mnemonic cmp2cmp(TR::ILOpCodes op, TR::CodeGenerator *cg)
        case TR::lcmpgt:
        case TR::lcmple:
           return TR::Compiler->target.is64Bit() ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4;
-       case TR::lucmpeq:
-       case TR::lucmpne:
        case TR::lucmplt:
        case TR::lucmpge:
        case TR::lucmpgt:
@@ -1107,13 +1097,10 @@ static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg
        case TR::bcmpgt:
        case TR::bcmple:
           return TR::InstOpCode::cmpi4;
-       case TR::iucmpeq:
-       case TR::iucmpne:
        case TR::iucmplt:
        case TR::iucmpge:
        case TR::iucmpgt:
        case TR::iucmple:
-       case TR::bucmpne:
        case TR::bucmplt:
        case TR::bucmpge:
        case TR::bucmpgt:
@@ -1126,8 +1113,6 @@ static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg
        case TR::lcmpgt:
        case TR::lcmple:
           return TR::Compiler->target.is64Bit() ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4;
-       case TR::lucmpeq:
-       case TR::lucmpne:
        case TR::lucmplt:
        case TR::lucmpge:
        case TR::lucmpgt:
@@ -1427,8 +1412,8 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
 
       conditions->addPostCondition(condReg, TR::RealRegister::cr0);
 
-      TR::InstOpCode::Mnemonic opCode = (node->getOpCodeValue() == TR::ificmpeq || node->getOpCodeValue() == TR::ifiucmpeq ||
-                              node->getOpCodeValue() == TR::ifscmpeq || node->getOpCodeValue() == TR::ifsucmpeq ||
+      TR::InstOpCode::Mnemonic opCode = (node->getOpCodeValue() == TR::ificmpeq ||
+                              node->getOpCodeValue() == TR::ifscmpeq ||
                               node->getOpCodeValue() == TR::ifbcmpeq)
          ? TR::InstOpCode::beq : TR::InstOpCode::bne;
       TR::LabelSymbol *label = node->getBranchDestination()->getNode()->getLabel();
@@ -1526,25 +1511,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
              TR::Register *tReg = NULL;
              bool newReg = false;
              uint64_t value = secondChild->get64bitIntegralValue();
-
-             if (node->getOpCodeValue() == TR::ifbucmpne)
-                {
-                tReg = cg->allocateRegister();
-                newReg = true;
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xff);
-                value &= 0xff;
-                }
-             else if (node->getOpCodeValue() == TR::ifsucmpne || node->getOpCodeValue() == TR::ifsucmpeq)
-                {
-                tReg = cg->allocateRegister();
-                newReg = true;
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xffff);
-                value &= 0xffff;
-                }
-             else
-                {
-                tReg = src1Reg;
-                }
+             tReg = src1Reg;
 
              generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, tReg, value);
 
@@ -1556,27 +1523,8 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
              TR::Register *tReg = NULL;
              bool newReg = false;
              TR::Register *secondReg = NULL;
-             if (node->getOpCodeValue() == TR::ifbucmpne)
-                {
-                tReg = cg->allocateRegister();
-                newReg = true;
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xff);
-                secondReg = cg->gprClobberEvaluate(secondChild);
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, secondReg, secondReg, 0, 0xff);
-                }
-             else if (node->getOpCodeValue() == TR::ifsucmpne || node->getOpCodeValue() == TR::ifsucmpeq)
-                {
-                tReg = cg->allocateRegister();
-                newReg = true;
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xffff);
-                secondReg = cg->gprClobberEvaluate(secondChild);
-                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, secondReg, secondReg, 0, 0xffff);
-                }
-             else
-                {
-                tReg = src1Reg;
-                secondReg = cg->evaluate(secondChild);
-                }
+             tReg = src1Reg;
+             secondReg = cg->evaluate(secondChild);
 
              generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg, tReg, secondReg);
 
@@ -1991,7 +1939,7 @@ TR::Register *handleSkipCompare(TR::Node * node, TR::InstOpCode::Mnemonic opcode
 
 
 // also handles acmpeq in 32-bit mode
-// and also: bcmpeq, scmpeq, sucmpeq, iucmpeq
+// and also: bcmpeq, scmpeq
 TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (skipCompare(node))
@@ -2053,7 +2001,7 @@ TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::Cod
    }
 
 // also handles acmpne in 32-bit mode
-// and also: bcmpne, bucmpne, scmpne, sucmpne, iucmpne
+// and also: bcmpne, scmpne
 TR::Register *OMR::Power::TreeEvaluator::icmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (skipCompare(node))

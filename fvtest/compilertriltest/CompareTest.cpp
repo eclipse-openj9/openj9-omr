@@ -113,14 +113,6 @@ INSTANTIATE_TEST_CASE_P(CompareTest, Int32Compare, ::testing::Combine(
         std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmple", icmple)
     )));
 
-int32_t iucmpeq(uint32_t l, uint32_t r) {
-    return (l == r) ? 1 : 0;
-}
-
-int32_t iucmpne(uint32_t l, uint32_t r) {
-    return (l != r) ? 1 : 0;
-}
-
 int32_t iucmpgt(uint32_t l, uint32_t r) {
     return (l > r) ? 1 : 0;
 }
@@ -194,8 +186,6 @@ TEST_P(UInt32Compare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt32Compare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint32_t, uint32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpeq", iucmpeq),
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpne", iucmpne),
         std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpgt", iucmpgt),
         std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpge", iucmpge),
         std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmplt", iucmplt),
@@ -296,13 +286,6 @@ INSTANTIATE_TEST_CASE_P(CompareTest, Int64Compare, ::testing::Combine(
         std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmp", lcmp)
     )));
 
-int32_t lucmpeq(uint64_t l, uint64_t r) {
-    return (l == r) ? 1 : 0;
-}
-
-int32_t lucmpne(uint64_t l, uint64_t r) {
-    return (l != r) ? 1 : 0;
-}
 
 int32_t lucmpgt(uint64_t l, uint64_t r) {
     return (l > r) ? 1 : 0;
@@ -377,8 +360,6 @@ TEST_P(UInt64Compare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt64Compare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint64_t, uint64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpeq", lucmpeq),
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpne", lucmpne),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpgt", lucmpgt),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpge", lucmpge),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmplt", lucmplt),
@@ -481,14 +462,6 @@ INSTANTIATE_TEST_CASE_P(CompareTest, Int32IfCompare, ::testing::Combine(
         std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmpgt", ificmpgt)
     )));
 
-int32_t ifiucmpeq(uint32_t l, uint32_t r) {
-    return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
-}
-
-int32_t ifiucmpne(uint32_t l, uint32_t r) {
-    return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
-}
-
 int32_t ifiucmplt(uint32_t l, uint32_t r) {
     return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
@@ -566,8 +539,6 @@ TEST_P(UInt32IfCompare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt32IfCompare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint32_t, uint32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmpeq", ifiucmpeq),
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmpne", ifiucmpne),
         std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmplt", ifiucmplt),
         std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmple", ifiucmple),
         std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmpge", ifiucmpge),
@@ -667,14 +638,6 @@ INSTANTIATE_TEST_CASE_P(CompareTest, Int64IfCompare, ::testing::Combine(
         std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmpgt", iflcmpgt)
     )));
 
-int32_t iflucmpeq(uint64_t l, uint64_t r) {
-    return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
-}
-
-int32_t iflucmpne(uint64_t l, uint64_t r) {
-    return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
-}
-
 int32_t iflucmplt(uint64_t l, uint64_t r) {
     return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
@@ -752,8 +715,6 @@ TEST_P(UInt64IfCompare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt64IfCompare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint64_t, uint64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmpeq", iflucmpeq),
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmpne", iflucmpne),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmplt", iflucmplt),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmple", iflucmple),
         std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmpge", iflucmpge),

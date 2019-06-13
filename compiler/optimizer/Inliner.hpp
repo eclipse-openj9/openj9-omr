@@ -415,8 +415,6 @@ class TR_InlinerBase: public TR_HasRandomGenerator
       TR::Node *_storeToCachedPrivateStatic;
 
       TR_InlinerTracer*         _tracer;
-      List<TR::Block>                           _GlobalLabels;
-      List<TR::Block > * getSuccessorsWithGlobalLabels(){ return &_GlobalLabels; }
       OMR_InlinerPolicy *_policy;
       OMR_InlinerUtil*_util;
    };

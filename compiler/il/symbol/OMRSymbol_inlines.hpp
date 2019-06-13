@@ -512,7 +512,7 @@ OMR::Symbol::setStartInternalControlFlow()
 bool
 OMR::Symbol::isStartInternalControlFlow()
    {
-   return self()->isLabel() && _flags.testAny(StartInternalControlFlow) && !self()->isGlobalLabel();
+   return self()->isLabel() && _flags.testAny(StartInternalControlFlow);
    }
 
 void
@@ -524,7 +524,7 @@ OMR::Symbol::setEndInternalControlFlow()
 bool
 OMR::Symbol::isEndInternalControlFlow()
    {
-   return self()->isLabel() && !self()->isGlobalLabel() && _flags.testAny(EndInternalControlFlow);
+   return self()->isLabel() && _flags.testAny(EndInternalControlFlow);
    }
 
 void
@@ -561,18 +561,6 @@ bool
 OMR::Symbol::isNonLinear()
    {
    return (self()->isLabel() && _flags.testValue(OOLMask, (StartOfColdInstructionStream|NonLinear)));
-   }
-
-void
-OMR::Symbol::setGlobalLabel()
-   {
-   TR_ASSERT(self()->isLabel(), "assertion failure"); _flags.setValue(LabelKindMask, IsGlobalLabel);
-   }
-
-bool
-OMR::Symbol::isGlobalLabel()
-   {
-   return self()->isLabel() && _flags.testValue(LabelKindMask, IsGlobalLabel);
    }
 
 void

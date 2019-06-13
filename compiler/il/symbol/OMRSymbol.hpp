@@ -388,9 +388,6 @@ public:
    inline bool isNonLinear();
    inline void setNonLinear();
 
-   inline void setGlobalLabel();
-   inline bool isGlobalLabel();
-
    inline void setRelativeLabel();
    inline bool isRelativeLabel();
 
@@ -533,7 +530,6 @@ public:
       NonLinear                    = 0x01000000, // TAROK and temporary.  This bit is used in conjunction with StartOfColdInstructionStream
                                                  //    to distinguish "classic" OOL instructions and the new form for Tarok.
 
-      IsGlobalLabel                = 0x30000000,
       LabelKindMask                = 0x30000000,
       OOLMask                      = 0x81000000, // Tarok and temporary
 

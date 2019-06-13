@@ -26,9 +26,74 @@
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
+#include "codegen/Relocation.hpp"
+#include "codegen/UnresolvedDataSnippet.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/symbol/StaticSymbol.hpp"
 
+
+static void loadRelocatableConstant(TR::Node *node,
+                                    TR::SymbolReference *ref,
+                                    TR::Register *reg,
+                                    TR::MemoryReference *mr,
+                                    TR::CodeGenerator *cg)
+   {
+   TR::Compilation *comp = cg->comp();
+
+   TR::Symbol *symbol = ref->getSymbol();
+   bool isStatic = symbol->isStatic();
+   bool isStaticField = isStatic && (ref->getCPIndex() > 0) && !symbol->isClassObject();
+   bool isClass = isStatic && symbol->isClassObject();
+   bool isPicSite = isClass;
+
+   if (isPicSite && !cg->comp()->compileRelocatableCode()
+       && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)symbol->getStaticSymbol()->getStaticAddress(), node))
+      {
+      TR_UNIMPLEMENTED();
+      return;
+      }
+
+   uintptr_t addr = symbol->isStatic() ? (uintptr_t)symbol->getStaticSymbol()->getStaticAddress() : (uintptr_t)symbol->getMethodSymbol()->getMethodAddress();
+
+   if (symbol->isStartPC())
+      {
+      TR_UNIMPLEMENTED();
+      return;
+      }
+
+   if (ref->isUnresolved() || comp->compileRelocatableCode())
+      {
+      TR::Node *GCRnode = node;
+      if (!GCRnode)
+         GCRnode = cg->getCurrentEvaluationTreeTop()->getNode();
+
+      if (symbol->isCountForRecompile())
+         {
+         loadAddressConstant(cg, GCRnode, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
+         }
+      else if (symbol->isRecompilationCounter())
+         {
+         loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_BodyInfoAddressLoad);
+         }
+      else if (symbol->isCompiledMethod())
+         {
+         loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_RamMethodSequence);
+         }
+      else if (isStaticField && !ref->isUnresolved())
+         {
+         loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_DataAddress);
+         }
+      else
+         {
+         cg->addSnippet(mr->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, node->getOpCode().isStore(), false)));
+         }
+      }
+   else
+      {
+      loadConstant64(cg, node, addr, reg);
+      }
+   }
 
 OMR::ARM64::MemoryReference::MemoryReference(
       TR::CodeGenerator *cg) :
@@ -100,6 +165,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
    TR::Compilation *comp = cg->comp();
    TR::SymbolReference *ref = rootLoadOrStore->getSymbolReference();
    TR::Symbol *symbol = ref->getSymbol();
+   bool isStore = rootLoadOrStore->getOpCode().isStore();
 
    self()->setSymbol(symbol, cg);
 
@@ -107,7 +173,8 @@ OMR::ARM64::MemoryReference::MemoryReference(
       {
       if (ref->isUnresolved())
          {
-         TR_UNIMPLEMENTED();
+         self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(), isStore, false));
+         cg->addSnippet(self()->getUnresolvedSnippet());
          }
       self()->populateMemoryReference(rootLoadOrStore->getFirstChild(), cg);
       }
@@ -115,7 +182,17 @@ OMR::ARM64::MemoryReference::MemoryReference(
       {
       if (symbol->isStatic())
          {
-         TR_UNIMPLEMENTED();
+         if (ref->isUnresolved())
+            {
+            self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(), isStore, false));
+            cg->addSnippet(self()->getUnresolvedSnippet());
+            }
+         else
+            {
+            _baseRegister = cg->allocateRegister();
+            self()->setBaseModifiable();
+            loadRelocatableConstant(rootLoadOrStore, ref, _baseRegister, self(), cg);
+            }
          }
       else
          {
@@ -130,10 +207,6 @@ OMR::ARM64::MemoryReference::MemoryReference(
          }
       }
    self()->addToOffset(rootLoadOrStore, ref->getOffset(), cg);
-   if (self()->getUnresolvedSnippet() != NULL)
-      {
-      TR_UNIMPLEMENTED();
-      }
    }
 
 
@@ -337,7 +410,18 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
 
          if (symbol->isStatic())
             {
-            TR_UNIMPLEMENTED();
+            if (ref->isUnresolved())
+               {
+               self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, subTree, ref, subTree->getOpCode().isStore(), false));
+               cg->addSnippet(self()->getUnresolvedSnippet());
+               }
+            else
+               {
+               _baseRegister = cg->allocateRegister();
+               _baseNode = NULL;
+               self()->setBaseModifiable();
+               loadRelocatableConstant(subTree, ref, _baseRegister, self(), cg);
+               }
             }
          if (symbol->isRegisterMappedSymbol())
             {

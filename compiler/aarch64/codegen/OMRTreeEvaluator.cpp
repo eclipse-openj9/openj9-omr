@@ -170,6 +170,18 @@ TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t v
    return cursor;
    }
 
+TR::Instruction *
+loadAddressConstant(TR::CodeGenerator *cg, TR::Node *node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor, bool isPicSite, int16_t typeAddress)
+   {
+   if (cg->comp()->compileRelocatableCode())
+      {
+      TR_UNIMPLEMENTED();
+      return cursor;
+      }
+
+   return loadConstant64(cg, node, value, trgReg, cursor);
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::unImpOpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{

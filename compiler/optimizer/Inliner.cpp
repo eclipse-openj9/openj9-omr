@@ -4074,7 +4074,9 @@ void TR_InlinerBase::applyPolicyToTargets(TR_CallStack *callStack, TR_CallSite *
 
       int32_t bytecodeSize = getPolicy()->getInitialBytecodeSize(calltarget->_calleeMethod, calltarget->_calleeSymbol, comp());
 
-      getUtil()->estimateAndRefineBytecodeSize(callsite, calltarget, callStack, bytecodeSize);
+      if (!forceInline(calltarget))
+         getUtil()->estimateAndRefineBytecodeSize(callsite, calltarget, callStack, bytecodeSize);
+
       if (calltarget->_calleeSymbol && strstr(calltarget->_calleeSymbol->signature(trMemory()), "FloatingDecimal"))
          {
          bytecodeSize >>= 1;

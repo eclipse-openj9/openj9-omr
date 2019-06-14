@@ -255,8 +255,7 @@ TR_InlinerBase::TR_InlinerBase(TR::Optimizer * optimizer, TR::Optimization *opti
      _disableTailRecursion(false),
      _currentNumberOfNodes(optimizer->comp()->getAccurateNodeCount()),
      _disableInnerPrex(false),
-     _aggressivelyInlineInLoops(false),
-     _GlobalLabels(_trMemory)
+     _aggressivelyInlineInLoops(false)
    {
    _policy = optimization->manager()->getOptPolicy() ? static_cast<OMR_InlinerPolicy*>(optimization->manager()->getOptPolicy()) : optimizer->getInlinerPolicy();
    _util = optimizer->getInlinerUtil();
@@ -268,8 +267,6 @@ TR_InlinerBase::TR_InlinerBase(TR::Optimizer * optimizer, TR::Optimization *opti
    setInlineVirtuals(true);
    if (optimizer->getInlineSynchronized())
       setInlineSynchronized(true);
-
-   _GlobalLabels.init();
 
    _tracer = _util->getInlinerTracer(optimization);
 

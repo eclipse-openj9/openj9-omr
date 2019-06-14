@@ -732,6 +732,10 @@ bool OMR::CFGSimplifier::simplifyNullToException(bool needToDuplicateTree)
 //
 bool OMR::CFGSimplifier::simplifyBooleanStore(bool needToDuplicateTree) 
    {
+   static char *enableSimplifyBooleanStore = feGetEnv("TR_enableSimplifyBooleanStore");
+   if (enableSimplifyBooleanStore == NULL)
+      return false;
+
    if (trace())
       traceMsg(comp(), "Start simplifyBooleanStore\n");
 

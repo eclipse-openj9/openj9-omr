@@ -107,8 +107,6 @@ MemToMemVarLenMacroOp::generateLoop()
    if (getKind() == MemToMemMacroOp::IsMemInit)
       generateInstruction(0, 1);
 
-   if (!needsLoop()) return NULL;
-
    TR::LabelSymbol * topOfLoop = generateLabelSymbol(_cg);
    TR::LabelSymbol * bottomOfLoop = generateLabelSymbol(_cg);
 
@@ -194,11 +192,6 @@ MemToMemVarLenMacroOp::generateLoop()
       _cg->stopUsingRegister(_raReg);
 
    return cursor;
-   }
-bool
-MemToMemVarLenMacroOp::needsLoop()
-   {
-   return true;
    }
 
 TR::Instruction *
@@ -978,7 +971,7 @@ MemToMemVarLenMacroOp::generateRemainder()
 
       TR::Instruction* cursor = NULL;
 
-      if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) || comp->getOption(TR_DisableInlineEXTarget) || !needsLoop())
+      if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) || comp->getOption(TR_DisableInlineEXTarget))
          {
          cursor = generateInstruction(0, 1);
          }
@@ -998,7 +991,7 @@ MemToMemVarLenMacroOp::generateRemainder()
         }
 
 
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && !comp->getOption(TR_DisableInlineEXTarget) && needsLoop())
+      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && !comp->getOption(TR_DisableInlineEXTarget))
          {
          TR_ASSERT(_EXTargetLabel != NULL, "Assert: EXTarget label must not be NULL");
 
@@ -1034,9 +1027,6 @@ MemToMemVarLenMacroOp::generateRemainder()
       generateRXInstruction(_cg, TR::InstOpCode::BAS, _rootNode, _raReg, targetMR);
       _cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, remainderDoneLabel);
       }
-
-   if(!needsLoop() && _doneLabel==NULL)
-     _startControlFlow = _cursor; // If loop was not generated there is no need for control flow
 
    return _cursor;
    }

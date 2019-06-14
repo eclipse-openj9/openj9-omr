@@ -297,8 +297,6 @@ class MemToMemConstLenMacroOp : public MemToMemMacroOp
 
 class MemToMemVarLenMacroOp : public MemToMemMacroOp
    {
-   public:
-      bool needsLoop();
    protected:
       MemToMemVarLenMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::Register* regLen, TR::Node * lenNode, bool lengthMinusOne=false, TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::MVC, TR::Register * itersReg = 0, TR::Register * raReg = 0)
          : MemToMemMacroOp(rootNode, dstNode, srcNode, cg, lenNode, itersReg), _regLen(regLen), _raReg(raReg), _doneLabel(0), _opcode(opcode), _lengthMinusOne(lengthMinusOne)

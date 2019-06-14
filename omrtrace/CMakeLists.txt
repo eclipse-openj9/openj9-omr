@@ -48,6 +48,9 @@ target_link_libraries(omrtrace
 )
 
 target_enable_ddr(omrtrace)
+ddr_add_headers(omrtrace
+	${omr_SOURCE_DIR}/include_core/ute_module.h
+)
 ddr_set_add_targets(omrddr omrtrace)
 
 #TODO: check if following makefile fragment still required:

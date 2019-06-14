@@ -398,10 +398,5 @@ endif
 %.i: %.cpp
 	$(DDR_CPP_COMMAND)
 
-# just create an empty output file
-%.i: %.s
-	touch $@
-
-# just create an empty output file
-%.i: %.asm
-	touch $@
+# just create empty output files for other types of source files
+$(foreach E, asm mc s, $(eval %.i : %.$E ; touch $$@))

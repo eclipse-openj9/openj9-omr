@@ -27,6 +27,7 @@
  */
 #include "omrportpriv.h"
 #include "atoe.h"
+#include <string.h>
 #include <sys/__messag.h>
 
 uintptr_t writeToZOSLog(const char *message);
@@ -88,8 +89,8 @@ syslogClose(struct OMRPortLibrary *portLibrary)
 uintptr_t
 writeToZOSLog(const char *message)
 {
-	char *ebcdicbuf;
-	int rc;
+	char *ebcdicbuf = NULL;
+	int rc = 0;
 	struct __cons_msg2 cons;
 	int modcmd = 0;
 	unsigned int routeCodes[2] = {2, 0}; /* routing code 2 = Operator Information */
@@ -98,7 +99,7 @@ writeToZOSLog(const char *message)
 #if !defined(OMR_EBCDIC)
 	/* Convert from the internal ascii format to ebcdic */
 	ebcdicbuf = a2e_func((char *) message, strlen(message));
-	if (ebcdicbuf == NULL) {
+	if (NULL == ebcdicbuf) {
 		return FALSE;
 	}
 #else
@@ -142,12 +143,8 @@ writeToZOSLog(const char *message)
 uintptr_t
 omrsyslog_query(struct OMRPortLibrary *portLibrary)
 {
-	uintptr_t options;
-
 	/* query the logging options here */
-	options = PPG_syslog_flags;
-
-	return options;
+	return PPG_syslog_flags;
 }
 
 /**
@@ -164,4 +161,3 @@ omrsyslog_set(struct OMRPortLibrary *portLibrary, uintptr_t options)
 	/* set the logging options here */
 	PPG_syslog_flags = options;
 }
-

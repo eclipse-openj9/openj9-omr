@@ -26,6 +26,7 @@
  * @brief shared library
  */
 #include <stdlib.h>
+#include <string.h>
 #include "atoe.h"
 #include "omrgetuserid.h"
 
@@ -41,7 +42,6 @@
  *       the user id string will be return as an empty string.
  *
  * @return 0 on success, size of required buffer on failure.
- *
  */
 uintptr_t
 omrget_userid(char *userid, uintptr_t length)
@@ -49,13 +49,12 @@ omrget_userid(char *userid, uintptr_t length)
 	/* _USERID() requires that memory be <31bit address, allocating here for use in
 	 * _USERID() call.  */
 	char *tmp_userid = (char *)__malloc31(J9_MAX_USERID);
-	char *ascname;
-	uintptr_t width;
 	uintptr_t result = 0;
 
 	userid[0] = '\0';
 
-	if (tmp_userid) {
+	if (NULL != tmp_userid) {
+		char *ascname = NULL;
 		memset(tmp_userid, '\0', J9_MAX_USERID);
 		_USERID(tmp_userid);  /* requires <31bit address */
 #if !defined(OMR_EBCDIC)
@@ -64,8 +63,8 @@ omrget_userid(char *userid, uintptr_t length)
 		ascname = tmp_userid;
 #endif /* !defined(OMR_EBCDIC) */
 
-		if (ascname) {
-			width = strcspn(ascname, " ");
+		if (NULL != ascname) {
+			uintptr_t width = strcspn(ascname, " ");
 			if (width < length) {
 				strncpy(userid, ascname, width);
 				userid[width] = '\0';
@@ -85,5 +84,3 @@ omrget_userid(char *userid, uintptr_t length)
 
 	return result;
 }
-
-

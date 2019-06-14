@@ -96,13 +96,14 @@ class CFG
 
    TR_ALLOC(TR_Memory::CFG)
 
-   CFG(TR::Compilation *c, TR::ResolvedMethodSymbol *m) :
+   CFG(TR::Compilation *c, TR::ResolvedMethodSymbol *m, TR::Region *region = NULL) :
       _compilation(c),
       _method(m),
       _rootStructure(NULL),
       _pStart(NULL),
       _pEnd(NULL),
       _structureRegion(c->trMemory()->heapMemoryRegion()),
+      _internalRegion(region ? *region : c->trMemory()->heapMemoryRegion()),
       _nextNodeNumber(0),
       _numEdges(0),
       _mightHaveUnreachableBlocks(false),
@@ -161,8 +162,8 @@ class CFG
    void removeStructureSubGraphNodes(TR_StructureSubGraphNode *node);
 
    void addEdge(TR::CFGEdge *e);
-   TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind = heapAlloc);
-   void addExceptionEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind = heapAlloc);
+   TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t);
+   void addExceptionEdge(TR::CFGNode *f, TR::CFGNode *t);
    void addSuccessorEdges(TR::Block * block);
 
    void copyExceptionSuccessors(TR::CFGNode *from, TR::CFGNode *to, bool (*predicate)(TR::CFGEdge *) = OMR::alwaysTrue);
@@ -312,6 +313,7 @@ protected:
    TR::CFGNode *_pStart;
    TR::CFGNode *_pEnd;
    TR::Region _structureRegion;
+   TR::Region _internalRegion;
    TR_Structure *_rootStructure;
 
    TR_LinkHead1<TR::CFGNode> _nodes;

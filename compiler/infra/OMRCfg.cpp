@@ -146,7 +146,7 @@ OMR::CFG::addEdge(TR::CFGEdge *e)
 
 
 TR::CFGEdge *
-OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind allocKind)
+OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t)
    {
 
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
@@ -156,7 +156,7 @@ OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind allocKind)
 
    TR_ASSERT(!f->hasExceptionSuccessor(t), "adding a non exception edge when there's already an exception edge");
 
-   TR::CFGEdge * e = TR::CFGEdge::createEdge(f, t, trMemory(), allocKind);
+   TR::CFGEdge * e = TR::CFGEdge::createEdge(f, t, _internalRegion);
    addEdge(e);
    return e;
    }
@@ -165,8 +165,7 @@ OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind allocKind)
 void
 OMR::CFG::addExceptionEdge(
       TR::CFGNode *f,
-      TR::CFGNode *t,
-      TR_AllocationKind allocKind)
+      TR::CFGNode *t)
    {
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
       {
@@ -212,7 +211,7 @@ OMR::CFG::addExceptionEdge(
          return;
          }
       }
-   TR::CFGEdge* e = TR::CFGEdge::createExceptionEdge(f,t, trMemory(), allocKind);
+   TR::CFGEdge* e = TR::CFGEdge::createExceptionEdge(f,t, _internalRegion);
    _numEdges++;
 
    // Tell the control tree to modify the structures containing this edge

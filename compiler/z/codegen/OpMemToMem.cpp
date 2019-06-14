@@ -198,15 +198,6 @@ MemToMemVarLenMacroOp::generateLoop()
 bool
 MemToMemVarLenMacroOp::needsLoop()
    {
-   int64_t maxLength = 0;
-   if (_cg->inlineNDmemcpyWithPad(_rootNode, &maxLength))
-      {
-      if (maxLength == 0 || maxLength > 256)
-         return true;
-      else
-         return false;
-      }
-
    return true;
    }
 
@@ -357,7 +348,7 @@ MemToMemConstLenMacroOp::generateLoop()
    uint64_t dstOffset = 0;
 
 
-   if (inRange && (aliasingPattern || !_cg->storageMayOverlap(_srcNode, len, _dstNode, len)) && !_cg->inlineNDmemcpyWithPad(_rootNode))
+   if (inRange && (aliasingPattern || !_cg->storageMayOverlap(_srcNode, len, _dstNode, len)))
       {
       TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::MVCL;
 

@@ -34,8 +34,8 @@ class CFG : public OMR::CFGConnector
    {
    public:
 
-   CFG(TR::Compilation *comp, TR::ResolvedMethodSymbol *method, TR::Region *region) :
-      OMR::CFGConnector(comp, method) {}
+   CFG(TR::Compilation *comp, TR::ResolvedMethodSymbol *method, TR::Region *region = NULL) :
+      OMR::CFGConnector(comp, method, region) {}
    };
 }
 

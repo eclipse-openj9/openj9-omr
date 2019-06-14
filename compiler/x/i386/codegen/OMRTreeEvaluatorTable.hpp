@@ -411,8 +411,8 @@
    TR::TreeEvaluator::GlRegDepsEvaluator,                              // TR::GlRegDeps
    TR::TreeEvaluator::iternaryEvaluator,                               // TR::iternary
    TR::TreeEvaluator::lternaryEvaluator,                               // TR::lternary
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::bternary
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::sternary
+   TR::TreeEvaluator::iternaryEvaluator,                               // TR::bternary
+   TR::TreeEvaluator::iternaryEvaluator,                               // TR::sternary
    TR::TreeEvaluator::iternaryEvaluator,                               // TR::aternary
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::fternary
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::dternary

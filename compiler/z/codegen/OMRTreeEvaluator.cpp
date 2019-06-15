@@ -9995,6 +9995,13 @@ OMR::Z::TreeEvaluator::BBEndEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             }                                                         \
          }
 
+#define AlwaysClobberRegisterForLoops(evaluateChildren,baseAddr,baseReg) \
+         { if (evaluateChildren)                                      \
+            {                                                         \
+            baseReg = cg->gprClobberEvaluate(baseAddr);               \
+            }                                                         \
+         }
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 TR::Register *
@@ -11121,7 +11128,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
          if (isZero)
             {
             MemClearVarLenMacroOp op(node, baseAddr, cg, elemsRegister, elemsExpr, lenMinusOne);
-            ClobberRegisterForLoops(evaluateChildren, op, baseAddr, baseReg);
+            AlwaysClobberRegisterForLoops(evaluateChildren, baseAddr, baseReg);
             op.setUseEXForRemainder(true);
             op.generate(baseReg);
             }
@@ -11130,14 +11137,14 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
             if (useMVI)
                {
                MemInitVarLenMacroOp op(node, baseAddr, cg, elemsRegister, constExpr->getByte(), elemsExpr, lenMinusOne);
-               ClobberRegisterForLoops(evaluateChildren, op, baseAddr, baseReg);
+               AlwaysClobberRegisterForLoops(evaluateChildren, baseAddr, baseReg);
                op.setUseEXForRemainder(true);
                op.generate(baseReg);
                }
             else
                {
                MemInitVarLenMacroOp op(node, baseAddr, cg, elemsRegister, constExprRegister, elemsExpr, lenMinusOne);
-               ClobberRegisterForLoops(evaluateChildren, op, baseAddr, baseReg);
+               AlwaysClobberRegisterForLoops(evaluateChildren, baseAddr, baseReg);
                op.setUseEXForRemainder(true);
                op.generate(baseReg);
                }

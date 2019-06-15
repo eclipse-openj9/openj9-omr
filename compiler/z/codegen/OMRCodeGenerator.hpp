@@ -299,7 +299,6 @@ public:
 
    bool supportsLengthMinusOneForMemoryOpts() {return true;}
 
-   bool inlineNDmemcpyWithPad(TR::Node * node, int64_t * maxLengthPtr = NULL);
    bool codegenSupportsLoadlessBNDCheck() {return TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12);}
    TR::Register *evaluateLengthMinusOneForMemoryOps(TR::Node *,  bool , bool &lenMinusOne);
 

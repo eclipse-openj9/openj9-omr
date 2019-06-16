@@ -37,9 +37,6 @@
 #include "ras/Debug.hpp"
 #include "stdarg.h"
 
-#ifdef J9_PROJECT_SPECIFIC
-#include "env/VMJ9.h"
-#endif
 
 void OMR_NORETURN TR::trap()
    {

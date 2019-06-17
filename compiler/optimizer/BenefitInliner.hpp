@@ -7,6 +7,7 @@
 #include "optimizer/J9Inliner.hpp"
 #include "optimizer/Optimization.hpp"
 #include "optimizer/OptimizationManager.hpp"
+#include "IDT.hpp"
 
 
 
@@ -55,13 +56,17 @@ class BenefitInliner: public BenefitInlinerBase
          {
          return false;
          }
+      void initIDT(TR::ResolvedMethodSymbol *root);
       void obtainIDT(TR::ResolvedMethodSymbol *resolvedMethodSymbol, int32_t budget);
       void obtainIDT(TR_CallSite*, int32_t budget, TR_ByteCodeInfo &info, int cpIndex);
       void obtainIDT(TR::ResolvedMethodSymbol *callerSymbol, TR::Block *block, int32_t budget);
+      void traceIDT();
    private:
       TR::Region _callSitesRegion;
       TR::Region _callStacksRegion;
       TR_CallStack *_inliningCallStack;
+      IDT *_idt;
+      IDTNode *_currentIDTNode = NULL;
       
       const uint32_t _budget;
       inline const uint32_t budget() const;

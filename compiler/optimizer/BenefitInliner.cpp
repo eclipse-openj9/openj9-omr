@@ -11,16 +11,18 @@
 #include "optimizer/J9CallGraph.hpp"
 #include "optimizer/J9EstimateCodeSize.hpp"
 
+
 int32_t OMR::BenefitInlinerWrapper::perform()
    {
    TR::ResolvedMethodSymbol * sym = comp()->getMethodSymbol();
    int32_t budget = this->getBudget(sym);
    if (budget < 0) return -1;
 
-
    OMR::BenefitInliner inliner(optimizer(), this, budget);
+   inliner.initIDT(sym);
    inliner.obtainIDT(sym, budget);
    inliner.performInlining(sym);
+   inliner.traceIDT();
    return 1;
    }
 
@@ -56,6 +58,17 @@ OMR::BenefitInlinerWrapper::getBudget(TR::ResolvedMethodSymbol *resolvedMethodSy
       return 25;
    }
 
+void OMR::BenefitInliner::initIDT(TR::ResolvedMethodSymbol *root)
+   {
+   _idt = new (comp()->trMemory()->currentStackRegion()) IDT(this, &comp()->trMemory()->currentStackRegion(), root);
+   _currentIDTNode = _idt->getRoot();
+   }
+
+void OMR::BenefitInliner::traceIDT()
+   {
+   _idt->printTrace();
+   }
+
 void
 OMR::BenefitInliner::obtainIDT(TR_CallSite *callsite, int32_t budget, TR_ByteCodeInfo &info, int cpIndex)
    {
@@ -74,9 +87,16 @@ OMR::BenefitInliner::obtainIDT(TR_CallSite *callsite, int32_t budget, TR_ByteCod
          callTarget->_calleeSymbol = resolvedMethodSymbol;
          callTarget->_myCallSite = callsite;
          if (!comp()->incInlineDepth(resolvedMethodSymbol, callsite->_bcInfo, callsite->_cpIndex, NULL, !callTarget->_myCallSite->isIndirectCall(), 0)) continue;
-         this->obtainIDT(resolvedMethodSymbol, budget);
-         comp()->decInlineDepth(true);
-         budget = oldBudget;
+
+         IDTNode *prev = _currentIDTNode; 
+         _currentIDTNode = _idt->addChildIfNotExists(prev, callsite->_byteCodeIndex, resolvedMethodSymbol);
+         if (_currentIDTNode != NULL) 
+            {
+            this->obtainIDT(resolvedMethodSymbol, budget);
+            }
+            comp()->decInlineDepth(true);
+            budget = oldBudget;
+         _currentIDTNode = prev;
          }
       this->_callerIndex--;
    }

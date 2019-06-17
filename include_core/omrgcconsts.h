@@ -66,7 +66,8 @@ typedef enum MM_GCPolicy {
 #define OMR_GC_READ_BARRIER_TYPE_NONE 0x1
 #define OMR_GC_READ_BARRIER_TYPE_ALWAYS 0x2
 #define OMR_GC_READ_BARRIER_TYPE_RANGE_CHECK 0x3
-#define OMR_GC_READ_BARRIER_TYPE_COUNT 0x4
+#define OMR_GC_READ_BARRIER_TYPE_REGION_CHECK 0x4
+#define OMR_GC_READ_BARRIER_TYPE_COUNT 0x5
 
 typedef enum MM_GCWriteBarrierType {
 	gc_modron_wrtbar_illegal = OMR_GC_WRITE_BARRIER_TYPE_ILLEGAL,
@@ -84,8 +85,9 @@ typedef enum MM_GCWriteBarrierType {
 typedef enum MM_GCReadBarrierType {
 	gc_modron_readbar_illegal = OMR_GC_READ_BARRIER_TYPE_ILLEGAL,
 	gc_modron_readbar_none = OMR_GC_READ_BARRIER_TYPE_NONE,
-	gc_modron_readbar_range_check = OMR_GC_READ_BARRIER_TYPE_RANGE_CHECK,
 	gc_modron_readbar_always = OMR_GC_READ_BARRIER_TYPE_ALWAYS,
+	gc_modron_readbar_range_check = OMR_GC_READ_BARRIER_TYPE_RANGE_CHECK,
+	gc_modron_readbar_region_check = OMR_GC_READ_BARRIER_TYPE_REGION_CHECK,
 	gc_modron_readbar_count = OMR_GC_READ_BARRIER_TYPE_COUNT
 } MM_GCReadBarrierType;
 

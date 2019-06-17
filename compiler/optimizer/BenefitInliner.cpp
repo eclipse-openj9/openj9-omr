@@ -106,9 +106,6 @@ OMR::BenefitInliner::obtainIDT(TR::ResolvedMethodSymbol *resolvedMethodSymbol, i
    {
       if (budget < 0) return;
 
-      TR_VerboseLog::vlogAcquire();
-      TR_VerboseLog::writeLine(TR_Vlog_SIP, "%d %s", this->_callerIndex, resolvedMethodSymbol->signature(this->comp()->trMemory()));
-      TR_VerboseLog::vlogRelease();
 
       TR_ResolvedMethod *resolvedMethod = resolvedMethodSymbol->getResolvedMethod();
       TR_CallStack *prevCallStack = this->_inliningCallStack;

@@ -23,7 +23,7 @@ void
 IDT::printTrace()
 {
   if (comp()->trace(OMR::selectInliner)) {
-    traceMsg(comp(), "#BenefitInliner: %d candidate methods to inline into HASH %s @ HASH \n",
+    TR_VerboseLog::writeLineLocked(TR_Vlog_SIP, "#IDT: %d candidate methods to inline into %s",
       size() - 1,
       getName(getRoot())
     );
@@ -39,7 +39,7 @@ IDTNode::printNodeThenChildren(IDT* idt, int callerIndex)
   {
   if (this != idt->getRoot()) {
     const char *nodeName = idt->getName(this);
-    traceMsg(idt->comp(), "#BenefitInliner: %d: HASH %d inlined HASH@%d -> HASH bcsz=%d %s\n", 
+    TR_VerboseLog::writeLineLocked(TR_Vlog_SIP, "#IDT: %d: %d inlinable @%d -> bcsz=%d %s", 
       _idx,
       callerIndex,
       _callsite_bci,

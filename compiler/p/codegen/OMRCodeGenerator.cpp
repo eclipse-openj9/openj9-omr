@@ -2415,8 +2415,10 @@ int32_t OMR::Power::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::N
          if (total <= 9)
             {
             for (ii=3; ii<total &&
-                       (node->getChild(ii)->getCaseConstant()-node->getChild(ii-1)->getCaseConstant())<=UPPER_IMMED; ii++)
-            ;
+                       (node->getChild(ii)->getCaseConstant()-node->getChild(ii-1)->getCaseConstant())<=UPPER_IMMED &&
+                       (node->getChild(ii)->getCaseConstant()-node->getChild(ii-1)->getCaseConstant())>0; /* in case of an overflow */
+                 ii++);
+
             if (ii == total)
                return _numGPR - 2;
             }

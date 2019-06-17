@@ -200,9 +200,14 @@ TPF_INCLUDES += $(foreach d,$(TPF_ROOT),-isystem $d/noship/include)
 TPF_INCLUDES += $(foreach d,$(TPF_ROOT),-isystem $d)
 
 TPF_FLAGS += -fexec-charset=ISO-8859-1 -fmessage-length=0 -funsigned-char -fverbose-asm -fno-builtin-abort -fno-builtin-exit -fno-builtin-sprintf -ffloat-store -gdwarf-2 -Wno-format-extra-args -Wno-int-to-pointer-cast -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-write-strings
-TPF_FLAGS += -Wno-unused
+###
+### Add for gcc7 builds.
+###
+TPF_FLAGS += -Wno-unused -fno-tree-dse -fno-optimize-strlen -fabi-version=2
+TPF_FLAGS += -fno-delete-null-pointer-checks -fno-lifetime-dse -fno-optimize-strlen
+TPF_C_FLAGS := -std=gnu90
 
-GLOBAL_CFLAGS += $(TPF_FLAGS) $(TPF_INCLUDES) -Wa,-alshd=$*.lst
+GLOBAL_CFLAGS += $(TPF_FLAGS) $(TPF_INCLUDES) $(TPF_C_FLAGS) -Wa,-alshd=$*.lst
 GLOBAL_CXXFLAGS += $(TPF_FLAGS) $(TPF_INCLUDES) -Wa,-alshd=$*.lst
 
 ###

@@ -1822,6 +1822,7 @@ MM_ConcurrentGC::potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescript
 		MM_MemorySubSpace *oldSubspace = memorySpace->getTenureMemorySubSpace();
 		MM_MemorySubSpace *newSubspace = memorySpace->getDefaultMemorySubSpace();
 		MM_ScavengerStats *scavengerStats = &_extensions->scavengerStats;
+		uintptr_t headRoom = 0; 
 
 		/* Have we done at least 1 scavenge ? If not no statistics available so return high values */
 		if (!scavengerStats->isAvailable(env)) {
@@ -1832,14 +1833,17 @@ MM_ConcurrentGC::potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescript
 		if (LOA == _meteringType) {
 			nurseryPromotion = scavengerStats->_avgTenureLOABytes == 0 ? 1 : scavengerStats->_avgTenureLOABytes;
 			currentOldFree = oldSubspace->getApproximateActiveFreeLOAMemorySize();
+			headRoom = (uintptr_t)(_extensions->concurrentKickoffTenuringHeadroom * _extensions->lastGlobalGCFreeBytesLOA);
 		} else {
 			assume0(SOA == _meteringType);
 			nurseryPromotion = scavengerStats->_avgTenureSOABytes == 0 ? 1 : scavengerStats->_avgTenureSOABytes;
 			currentOldFree = oldSubspace->getApproximateActiveFreeMemorySize() - oldSubspace->getApproximateActiveFreeLOAMemorySize();
+			headRoom = (uintptr_t)(_extensions->concurrentKickoffTenuringHeadroom * (_extensions->getLastGlobalGCFreeBytes() - _extensions->lastGlobalGCFreeBytesLOA));
 		}
 #else
 		nurseryPromotion = scavengerStats->_avgTenureBytes == 0 ? 1: scavengerStats->_avgTenureBytes;
 		currentOldFree = oldSubspace->getApproximateActiveFreeMemorySize();
+		headRoom = (uintptr_t)(_extensions->concurrentKickoffTenuringHeadroom * _extensions->getLastGlobalGCFreeBytes()); 
 #endif
 		/* reduce oldspace free memory by fragmented estimation */
 		MM_LargeObjectAllocateStats *stats = oldSubspace->getMemoryPool()->getLargeObjectAllocateStats();
@@ -1851,6 +1855,7 @@ MM_ConcurrentGC::potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescript
 				currentOldFree = 0;
 			}
 		}
+		
 		nurseryInitialFree = scavengerStats->_avgInitialFree;
 		currentNurseryFree =  newSubspace->getApproximateFreeMemorySize();
 
@@ -1858,20 +1863,24 @@ MM_ConcurrentGC::potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescript
 		 * fill the old space. If we know next scavenge will percolate then we have no scavenges
 		 * remaining before concurren KO is required
 		 */
-		uintptr_t scavengesRemaining;
+		uintptr_t scavengesRemaining = 0;
 		if (scavengerStats->_nextScavengeWillPercolate) {
-			scavengesRemaining = 0;
 			_stats.setKickoffReason(NEXT_SCAVENGE_WILL_PERCOLATE);
 			_languageKickoffReason = NO_LANGUAGE_KICKOFF_REASON;
 		} else {
 			scavengesRemaining =  (uintptr_t)(currentOldFree/nurseryPromotion);
 		}
 
-		/* KO concurrent one scavenge early to reduce chances of tenure space being exhausted
-		 * before we complete concurrent marking by a scavenge tenuring significantly more than
-		 * the average number of bytes.
+		/*
+		 * The headroom remaining will be the maximum value between 1 , and the current 
+		 * headroom calculation. We want a worst case headroom, so that we avoid percolate.
+		 * By having a higher estimate of headroom, we will have less scavenges remaining, 
+		 *  and will start concurrent mark earlier
 		 */
-		scavengesRemaining = scavengesRemaining > 0  ?  scavengesRemaining - 1 : 0;
+
+		float scavengesRemainingHeadroom = ((float)headRoom)/nurseryPromotion;
+		scavengesRemainingHeadroom = OMR_MAX(scavengesRemainingHeadroom, 1);
+		scavengesRemaining = MM_Math::saturatingSubtract(scavengesRemaining, (uintptr_t)scavengesRemainingHeadroom); 
 
 		/* Now calculate how many bytes we can therefore allocate in the nursery before
 		 * we will fill the tenure area. On 32 bit platforms this can be greater than 4G

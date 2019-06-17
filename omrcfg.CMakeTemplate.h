@@ -137,9 +137,9 @@
 #cmakedefine OMR_ENV_DATA64
 #cmakedefine OMR_ENV_GCC
 #cmakedefine OMR_ENV_LITTLE_ENDIAN
-#cmakedefine OMR_GC_ARRAYLETS
+#define OMR_GC_ARRAYLETS
 #cmakedefine OMR_GC_COMPRESSED_POINTERS
-#cmakedefine OMR_GC_HYBRID_ARRAYLETS
+#define OMR_GC_HYBRID_ARRAYLETS
 #cmakedefine OMR_GC_OBJECT_MAP
 #cmakedefine OMR_GC_REALTIME
 #cmakedefine OMR_GC_TLH_PREFETCH_FTA

@@ -96,14 +96,14 @@ class CFG
 
    TR_ALLOC(TR_Memory::CFG)
 
-   CFG(TR::Compilation *c, TR::ResolvedMethodSymbol *m, TR::Region *region = NULL) :
+   CFG(TR::Compilation *c, TR::ResolvedMethodSymbol *m) :
       _compilation(c),
       _method(m),
       _rootStructure(NULL),
       _pStart(NULL),
       _pEnd(NULL),
       _structureRegion(c->trMemory()->heapMemoryRegion()),
-      _internalRegion(region ? *region : c->trMemory()->heapMemoryRegion()),
+      _internalRegion(c->trMemory()->heapMemoryRegion()),
       _nextNodeNumber(0),
       _numEdges(0),
       _mightHaveUnreachableBlocks(false),
@@ -125,6 +125,37 @@ class CFG
       _edgeProbabilities(NULL)
       {
       }
+
+   CFG(TR::Compilation *c, TR::ResolvedMethodSymbol *m, TR::Region &r) :
+      _compilation(c),
+      _method(m),
+      _rootStructure(NULL),
+      _pStart(NULL),
+      _pEnd(NULL),
+      _structureRegion(c->trMemory()->heapMemoryRegion()),
+      _internalRegion(r),
+      _nextNodeNumber(0),
+      _numEdges(0),
+      _mightHaveUnreachableBlocks(false),
+      _doesHaveUnreachableBlocks(false),
+      _removingUnreachableBlocks(false),
+      _ignoreUnreachableBlocks(false),
+      _removeEdgeNestingDepth(0),
+      _forwardTraversalOrder(NULL),
+      _backwardTraversalOrder(NULL),
+      _forwardTraversalLength(0),
+      _backwardTraversalLength(0),
+      _maxFrequency(-1),
+      _maxEdgeFrequency(-1),
+      _oldMaxFrequency(-1),
+      _oldMaxEdgeFrequency(-1),
+      _frequencySet(NULL),
+      _calledFrequency(0),
+      _initialBlockFrequency(-1),
+      _edgeProbabilities(NULL)
+      {
+      }
+
 
    TR::CFG * self();
 
@@ -162,8 +193,8 @@ class CFG
    void removeStructureSubGraphNodes(TR_StructureSubGraphNode *node);
 
    void addEdge(TR::CFGEdge *e);
-   TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t);
-   void addExceptionEdge(TR::CFGNode *f, TR::CFGNode *t);
+   TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind = heapAlloc);
+   void addExceptionEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind = heapAlloc);
    void addSuccessorEdges(TR::Block * block);
 
    void copyExceptionSuccessors(TR::CFGNode *from, TR::CFGNode *to, bool (*predicate)(TR::CFGEdge *) = OMR::alwaysTrue);

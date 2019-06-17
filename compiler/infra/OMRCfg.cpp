@@ -146,7 +146,7 @@ OMR::CFG::addEdge(TR::CFGEdge *e)
 
 
 TR::CFGEdge *
-OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t)
+OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind allocKind)
    {
 
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
@@ -165,7 +165,8 @@ OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t)
 void
 OMR::CFG::addExceptionEdge(
       TR::CFGNode *f,
-      TR::CFGNode *t)
+      TR::CFGNode *t,
+      TR_AllocationKind allocKind)
    {
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
       {

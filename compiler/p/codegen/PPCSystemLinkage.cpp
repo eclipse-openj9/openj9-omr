@@ -432,7 +432,7 @@ TR::PPCSystemLinkage::getRightToLeft()
 bool
 TR::PPCSystemLinkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    {
-   return(parm->getAllocatedIndex()>=0  && parm->isParmHasToBeOnStack());
+   return(parm->getAssignedGlobalRegisterIndex()>=0  && parm->isParmHasToBeOnStack());
    }
 
 

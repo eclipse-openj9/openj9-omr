@@ -566,7 +566,7 @@ OMR::ARM64::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeGenerator *c
             TR::ParameterSymbol *sym = child->getChild(i)->getSymbol()->getParmSymbol();
             if (sym != NULL)
                {
-               sym->setAllocatedIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
+               sym->setAssignedGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
                }
             }
          }

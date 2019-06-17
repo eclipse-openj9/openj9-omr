@@ -5711,11 +5711,11 @@ TR::Register *OMR::Power::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Co
             if (sym != NULL)
                {
                if (TR::Compiler->target.is64Bit() || !sym->getType().isInt64())
-                  sym->setAllocatedIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
+                  sym->setAssignedGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
                else
                   {
-                  sym->setAllocatedHigh(cg->getGlobalRegister(child->getChild(i)->getHighGlobalRegisterNumber()));
-                  sym->setAllocatedLow(cg->getGlobalRegister(child->getChild(i)->getLowGlobalRegisterNumber()));
+                  sym->setAssignedHighGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getHighGlobalRegisterNumber()));
+                  sym->setAssignedLowGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getLowGlobalRegisterNumber()));
                   }
                }
             }

@@ -743,6 +743,9 @@ public:
 	double tarokConcurrentMarkingCostWeight; /**< How much we weigh concurrentMarking into our GMP scan time cost calculations */
 	bool tarokAutomaticDefragmentEmptinessThreshold; /**< Whether we should use the automatically derived value for tarokDefragmentEmptinessThreshold or not */
 	bool tarokEnableCopyForwardHybrid; /**< Enable CopyForward Hybrid mode */
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+	bool _isConcurrentCopyForward;
+#endif
 #endif /* defined (OMR_GC_VLHGC) */
 
 /* OMR_GC_VLHGC (in for all -- see 82589) */
@@ -963,6 +966,16 @@ public:
 #if defined(OMR_GC_COMBINATION_SPEC)
 		_isVLHGC = value;
 #endif
+	}
+
+	MMINLINE bool
+	isConcurrentCopyForwardEnabled()
+	{
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+		return _isConcurrentCopyForward;
+#else
+		return false;
+#endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */
 	}
 
 	MMINLINE bool
@@ -1701,6 +1714,9 @@ public:
 		, tarokConcurrentMarkingCostWeight(0.05)
 		, tarokAutomaticDefragmentEmptinessThreshold(false)
 		, tarokEnableCopyForwardHybrid(true)
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+		, _isConcurrentCopyForward(false)
+#endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */
 #endif /* defined (OMR_GC_VLHGC) */
 		, tarokEnableExpensiveAssertions(false)
 		, sweepPoolManagerAddressOrderedList(NULL)

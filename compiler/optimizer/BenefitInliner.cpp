@@ -112,15 +112,24 @@ OMR::BenefitInliner::obtainIDT(TR::ResolvedMethodSymbol *resolvedMethodSymbol, i
       TR::CFG *cfg = NULL;
       TR::CFG *prevCFG = resolvedMethodSymbol->getFlowGraph();
       int32_t maxBytecodeIndex = resolvedMethodSymbol->getResolvedMethod()->maxBytecodeIndex();
-      if (!prevCallStack) {
+      if (!prevCallStack)
+         {
          TR_CallTarget *calltarget = new (this->_callStacksRegion) TR_CallTarget(NULL, resolvedMethodSymbol, resolvedMethod, NULL, resolvedMethod->containingClass(), NULL);
          CFGgenerator *cfgGen = new (comp()->allocator()) CFGgenerator();
          cfgGen = (CFGgenerator*)TR_EstimateCodeSize::get(this, this->tracer(), 0);
          cfg = cfgGen->generateCFG(calltarget, NULL);
          resolvedMethodSymbol->setFlowGraph(prevCFG);
-      } else {
+         } 
+      else 
+         {
          cfg = resolvedMethodSymbol->getFlowGraph();
-      }
+         if (this->_inliningCallStack->isAnywhereOnTheStack(resolvedMethod, 1)) 
+         {
+            return;
+         }
+         }
+
+
       this->_inliningCallStack = new (this->_callStacksRegion) TR_CallStack(this->comp(), resolvedMethodSymbol, resolvedMethod, prevCallStack, budget);
 
       for (TR::ReversePostorderSnapshotBlockIterator blockIt (cfg->getStartForReverseSnapshot()->asBlock(), comp()); blockIt.currentBlock(); ++blockIt)

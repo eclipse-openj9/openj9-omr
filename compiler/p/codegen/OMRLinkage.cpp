@@ -161,7 +161,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
    for (paramCursor=paramIterator.getFirst(); paramCursor!=NULL; paramCursor=paramIterator.getNext())
       {
       int32_t lri = paramCursor->getLinkageRegisterIndex();
-      int32_t ai  = paramCursor->getAllocatedIndex();
+      int32_t ai  = paramCursor->getAssignedGlobalRegisterIndex();
       int32_t offset = paramCursor->getParameterOffset();
       TR::DataType type = paramCursor->getType();
       int32_t dtype = type.getDataType();
@@ -262,7 +262,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
 
             if (TR::Compiler->target.is32Bit() && type.isInt64())
                {
-               int32_t aiLow = paramCursor->getAllocatedLow();
+               int32_t aiLow = paramCursor->getAssignedLowGlobalRegisterIndex();
 
                if (!twoRegs)    // Low part needs to come from memory
                   {
@@ -377,7 +377,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                      busyIndex++;
                      }
 
-                  ai = paramCursor->getAllocatedLow();
+                  ai = paramCursor->getAssignedLowGlobalRegisterIndex();
                   if (freeScratchable.isSet(ai))
                      {
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, REAL_REGISTER(REGNUM(ai)),

@@ -9897,12 +9897,12 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 #endif
                    true)
                   {
-                  sym->setAllocatedIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
+                  sym->setAssignedGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
                   }
                else
                   {
-                  sym->setAllocatedHigh(cg->getGlobalRegister(child->getChild(i)->getHighGlobalRegisterNumber()));
-                  sym->setAllocatedLow(cg->getGlobalRegister(child->getChild(i)->getLowGlobalRegisterNumber()));
+                  sym->setAssignedHighGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getHighGlobalRegisterNumber()));
+                  sym->setAssignedLowGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getLowGlobalRegisterNumber()));
                   }
                }
             }

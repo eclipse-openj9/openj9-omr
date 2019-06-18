@@ -3117,6 +3117,9 @@ TR_HandleInjectedBasicBlock::createTemps(bool replaceAllReferences)
                value = valueToTempConv;
                }
 
+            if (value->getOpCode().hasSymbolReference() && value->getSymbolReference()->hasKnownObjectIndex())
+               symRef = comp()->getSymRefTab()->findOrCreateTemporaryWithKnowObjectIndex(_methodSymbol, value->getSymbolReference()->getKnownObjectIndex());
+
             OMR_InlinerUtil::storeValueInATemp(comp(), value, symRef, tt, _methodSymbol, _injectedBasicBlockTemps, _availableTemps, 0);
             }
 

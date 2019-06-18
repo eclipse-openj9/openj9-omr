@@ -352,7 +352,7 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
       TR_ResolvedMethod *          _callerResolvedMethod;
       TR::TreeTop *                 _callNodeTreeTop;
       TR::TreeTop *                 _cursorTreeTop;
-      TR::Node *                    _parent;
+      TR::Node *                    _parent;    /* tree top node of the call site callNode */
       TR::Node *                    _callNode;
 
       // Initial Information We Need to Calculate a CallTarget

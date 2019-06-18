@@ -44,10 +44,7 @@ class CFGSimplifier : public TR::Optimization
    {
    public:
    CFGSimplifier(TR::OptimizationManager *manager);
-   static TR::Optimization *create(TR::OptimizationManager *manager)
-      {
-      return new (manager->allocator()) CFGSimplifier(manager);
-      }
+   static TR::Optimization *create(TR::OptimizationManager *manager);
 
    virtual int32_t perform();
    virtual const char * optDetailString() const throw();

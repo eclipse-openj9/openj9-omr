@@ -45,7 +45,6 @@ namespace OMR { typedef OMR::Z::RegisterDependencyConditions RegisterDependencyC
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "compile/Compilation.hpp"
-#include "cs2/hashtab.h"
 #include "env/TRMemory.hpp"
 #include "infra/Assert.hpp"
 
@@ -507,7 +506,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
    bool addPostConditionIfNotAlreadyInserted(TR::Register *vr,
                                              TR::RealRegister::RegNum rr,
-				                                 uint8_t flag = ReferencesDependentRegister);                                     
+				                                 uint8_t flag = ReferencesDependentRegister);
    bool addPostConditionIfNotAlreadyInserted(TR::Register *vr,
                                              TR::RealRegister::RegDep rr,
 				                                 uint8_t flag = ReferencesDependentRegister);

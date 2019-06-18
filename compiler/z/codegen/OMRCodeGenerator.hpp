@@ -52,7 +52,6 @@ namespace OMR { typedef OMR::Z::CodeGenerator CodeGeneratorConnector; }
 #include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/arrayof.h"
 #include "cs2/hashtab.h"
 #include "env/CompilerEnv.hpp"
 #include "env/CPU.hpp"

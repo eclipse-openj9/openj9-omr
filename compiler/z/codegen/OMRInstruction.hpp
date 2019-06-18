@@ -42,7 +42,6 @@ namespace OMR { typedef OMR::Z::Instruction InstructionConnector; }
 #include "codegen/RegisterConstants.hpp"
 #include "compile/Compilation.hpp"
 #include "cs2/arrayof.h"
-#include "cs2/hashtab.h"
 #include "cs2/sparsrbit.h"
 #include "env/TRMemory.hpp"
 #include "infra/Assert.hpp"
@@ -436,7 +435,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    uint32_t useTargetRegister(TR::Register* reg);
    uint32_t useSourceMemoryReference(TR::MemoryReference* memRef);
    uint32_t useTargetMemoryReference(TR::MemoryReference* memRef, TR::MemoryReference* sourceMemRef);
-   
+
    bool checkRegForGPR0Disable(TR::InstOpCode::Mnemonic op, TR::Register* reg);
    };
 

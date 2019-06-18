@@ -46,7 +46,6 @@
 #include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/hashtab.h"
 #include "env/CompilerEnv.hpp"
 #include "env/ObjectModel.hpp"
 #include "env/TRMemory.hpp"
@@ -703,7 +702,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                      TR_ASSERT( 0, "\nRegister kind not supported in OOL spill\n");
                      break;
                   }
-               
+
                bool isVector = (rk == TR_VRF);
 
                TR::Instruction *inst = isVector ? generateVRXInstruction(cg, opCode, currentNode, assignedReg, tempMR, 0, currentInstruction) :
@@ -743,7 +742,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             }
          }
       }
-   
+
    uint32_t numGPRs = 0;
    uint32_t numFPRs = 0;
    uint32_t numVRFs = 0;
@@ -845,7 +844,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             {
             TR::RealRegister::RegNum assignedRegNum = toRealRegister(virtReg->getAssignedRealRegister())->getRegisterNumber();
 
-            // Always block if the required register and assigned register match or if the assigned register is 
+            // Always block if the required register and assigned register match or if the assigned register is
             // required by another dependency but only if there are any spare registers left so as to avoid blocking
             // all existing registers
             if (_dependencies[i].getRealRegister() == assignedRegNum ||

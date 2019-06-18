@@ -36,8 +36,7 @@
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
-#include "cs2/allocator.h"
-#include "cs2/sparsrbit.h"
+#include "cs2/hashtab.h"
 #include "env/ClassEnv.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/Environment.hpp"
@@ -3512,7 +3511,7 @@ OMR::Node::nodeMightKillCondCode()
    if ((opcode.isLoadReg() || opcode.isStoreReg() || opcode.isLoadDirect() || opcode.isStoreDirect())
         && (self()->getSize() == 4 || self()->getSize() == 8) )
       return false;
-   
+
    // this conversion will be a no-op -> CC is not killed unless the child kills it
    if (self()->isUnneededConversion() || (opcode.isConversion() && (self()->getSize() == self()->getFirstChild()->getSize())))
       return false;

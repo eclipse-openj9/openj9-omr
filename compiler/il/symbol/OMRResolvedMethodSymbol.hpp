@@ -130,6 +130,14 @@ public:
 
    void addVariableSizeSymbol(TR::AutomaticSymbol *s);
 
+   /*
+    * \brief Get known object index of a parameter if there is any known object information available
+    *
+    * \parm ordinal
+    *     the ordinal of a parameter including the receiver if the method is a virtual method
+    */
+   TR::KnownObjectTable::Index getKnownObjectIndexForParm(int32_t ordinal);
+
    mcount_t            getResolvedMethodIndex() { return _methodIndex; }
    TR_ResolvedMethod * getResolvedMethod()      { return _resolvedMethod; }
 

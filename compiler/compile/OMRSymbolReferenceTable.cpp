@@ -1784,14 +1784,6 @@ OMR::SymbolReferenceTable::findOrCreateTemporaryWithKnowObjectIndex(TR::Resolved
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createCoDependentTemporary(TR::ResolvedMethodSymbol *owningMethodSymbol, TR::DataType type, bool isInternalPointer, size_t size, TR::Symbol *coDependent, int32_t offset)
-   {
-   TR::SymbolReference *tempSymRef = findOrCreateAutoSymbol(owningMethodSymbol, offset, type, true, isInternalPointer, false, false, size);
-   return tempSymRef;
-   }
-
-
-TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreatePendingPushTemporary(
    TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType type, size_t size)
    {

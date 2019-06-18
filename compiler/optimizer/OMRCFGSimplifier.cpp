@@ -54,6 +54,11 @@
 
 #define OPT_DETAILS "O^O CFG SIMPLIFICATION: "
 
+TR::Optimization* OMR::CFGSimplifier::create(TR::OptimizationManager *manager)
+    {
+    return new (manager->allocator()) TR::CFGSimplifier(manager);
+    }
+
 OMR::CFGSimplifier::CFGSimplifier(TR::OptimizationManager *manager)
    : TR::Optimization(manager)
    {}

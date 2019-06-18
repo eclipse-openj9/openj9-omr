@@ -895,9 +895,9 @@ MM_Scavenger::calculateOptimumCopyScanCacheSize(MM_EnvironmentStandard *env)
 		cacheSize = OMR_MIN(cacheSizeBasedOnWaitingCount, cacheSize);
 	}
 
-	uintptr_t scanCacheCount = _scavengeCacheScanList.getApproximateEntryCount();
-	if (scanCacheCount < threadCount) {
-		uintptr_t cacheSizeBasedOnScanCacheCount = calculateCopyScanCacheSizeForQueueLength(maxCacheSize, threadCount, scanCacheCount);
+	env->approxScanCacheCount = _scavengeCacheScanList.getApproximateEntryCount();
+	if (env->approxScanCacheCount < threadCount) {
+		uintptr_t cacheSizeBasedOnScanCacheCount = calculateCopyScanCacheSizeForQueueLength(maxCacheSize, threadCount, env->approxScanCacheCount);
 		cacheSize = OMR_MIN(cacheSizeBasedOnScanCacheCount, cacheSize);
 	}
 
@@ -1707,6 +1707,31 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 	return shouldRemember;
 }
 
+void
+MM_Scavenger::deepScanOutline(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t selfReferencingField1, uintptr_t selfReferencingField2)
+{
+	void *tempObj = objectPtr;
+	uintptr_t priorityField = selfReferencingField1;
+	/* Throttle - Deep scan should be terminated when the free list is utilized more than 50% */
+	uintptr_t freeListUtilizationLimit = _scavengeCacheFreeList.getAllocatedCacheCount() / 2;
+
+	while (true) {
+		GC_SlotObject tempSlot(env->getOmrVM(), (fomrobject_t*)(((uintptr_t) tempObj) + priorityField));
+		if (NULL == tempSlot.readReferenceFromSlot()) {
+			if ((priorityField == selfReferencingField2) || (selfReferencingField2 == 0)) {
+				break;
+			}
+			priorityField = selfReferencingField2;
+		} else {
+			copyAndForward(env, &tempSlot);
+			/* Did we encounter an already visited object or hit throttling threshold? */
+			if ((NULL == env->_effectiveCopyScanCache) || (env->approxScanCacheCount > freeListUtilizationLimit)) {
+				break;
+			}
+			tempObj = tempSlot.readReferenceFromSlot();
+		}
+	}
+}
 /**
  * Scans the slots of a non-indexable object, remembering objects as required. Scanning is interrupted
  * as soon as there is a copy cache that is preferred to the current scan cache. This is returned

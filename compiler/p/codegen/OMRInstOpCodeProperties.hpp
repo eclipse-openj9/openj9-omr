@@ -52,7 +52,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::add].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::add].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::add].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::add].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::add].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -73,7 +73,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addc].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addc].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addc].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addc].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addc].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -95,7 +95,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addco].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addco].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addco].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addco].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addco].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -117,7 +117,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::adde].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::adde].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::adde].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::adde].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::adde].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -140,7 +140,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addeo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addeo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addeo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addeo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addeo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -171,7 +171,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -192,7 +192,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -224,7 +224,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addme].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addme].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addme].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addme].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addme].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -247,7 +247,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addmeo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addmeo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addmeo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addmeo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addmeo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -268,7 +268,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -300,7 +300,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addze].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addze].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addze].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addze].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addze].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -323,7 +323,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addzeo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addzeo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addzeo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addzeo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addzeo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -344,7 +344,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::and].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::and].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::and].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::and].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::and].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -365,7 +365,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::andc].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::andc].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::andc].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::andc].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::andc].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -385,7 +385,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -873,7 +873,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzd].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzd].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzd].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzd].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzd].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -894,7 +894,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzw].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzw].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzw].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzw].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1004,7 +1004,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dadd].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dadd].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dadd].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dadd].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dadd].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1092,7 +1092,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dcffix].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dcffix].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dcffix].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dcffix].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dcffix].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1115,7 +1115,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dcffixq].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dcffixq].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dcffixq].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dcffixq].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dcffixq].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1150,7 +1150,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dctfix].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dctfix].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dctfix].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dctfix].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dctfix].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1172,7 +1172,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddedpd].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddedpd].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddedpd].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddedpd].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddedpd].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1195,7 +1195,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddiv].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddiv].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddiv].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddiv].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddiv].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1217,7 +1217,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1238,7 +1238,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divd].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divd].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divd].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divd].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divd].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1259,7 +1259,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::diex].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::diex].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::diex].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::diex].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::diex].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1281,7 +1281,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divdo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divdo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divdo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divdo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divdo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1302,7 +1302,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divdu].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divdu].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divdu].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divdu].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divdu].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1324,7 +1324,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divduo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divduo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divduo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divduo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divduo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1344,7 +1344,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divw].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divw].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divw].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divw].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1365,7 +1365,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1385,7 +1385,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwu].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwu].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwu].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwu].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwu].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1406,7 +1406,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwuo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwuo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwuo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwuo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::divwuo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1428,7 +1428,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dmul].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dmul].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dmul].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dmul].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dmul].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1451,7 +1451,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dqua].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dqua].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dqua].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dqua].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dqua].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1473,7 +1473,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::drrnd].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::drrnd].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::drrnd].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::drrnd].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::drrnd].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1496,7 +1496,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::drdpq].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::drdpq].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::drdpq].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::drdpq].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::drdpq].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1518,7 +1518,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dsub].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dsub].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dsub].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dsub].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dsub].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1562,7 +1562,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dxex].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dxex].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dxex].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dxex].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::dxex].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1592,7 +1592,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::eqv].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::eqv].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::eqv].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::eqv].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::eqv].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1613,7 +1613,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsb].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsb].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsb].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsb].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsb].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1634,7 +1634,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsh].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsh].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsh].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsh].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsh].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1655,7 +1655,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsw].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsw].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsw].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsw].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extsw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -1676,7 +1676,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extswsli].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extswsli].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extswsli].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extswsli].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::extswsli].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -2972,7 +2972,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfl].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfl].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfl].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfl].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfl].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -2994,7 +2994,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsf].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsf].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsf].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsf].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsf].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3016,7 +3016,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfw].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfw].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfw].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfw].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3038,7 +3038,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfi].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfi].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfi].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfi].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfi].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3147,7 +3147,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhd].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhd].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhd].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhd].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhd].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3168,7 +3168,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhdu].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhdu].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhdu].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhdu].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhdu].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3188,7 +3188,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhw].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhw].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhw].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhw].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3208,7 +3208,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhwu].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhwu].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhwu].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhwu].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulhwu].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3229,7 +3229,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulld].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulld].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulld].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulld].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulld].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3250,7 +3250,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulldo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulldo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulldo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulldo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mulldo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3280,7 +3280,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mullw].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mullw].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mullw].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mullw].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mullw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3300,7 +3300,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mullwo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mullwo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mullwo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mullwo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mullwo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3321,7 +3321,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nand].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nand].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nand].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nand].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nand].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3341,7 +3341,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::neg].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::neg].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::neg].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::neg].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::neg].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3361,7 +3361,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nego].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nego].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nego].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nego].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nego].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3382,7 +3382,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nor].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nor].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nor].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nor].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::nor].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3403,7 +3403,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::or].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::or].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::or].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::or].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::or].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3424,7 +3424,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::orc].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::orc].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::orc].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::orc].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::orc].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3502,7 +3502,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldcl].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldcl].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldcl].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldcl].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldcl].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3526,7 +3526,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldcr].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldcr].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldcr].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldcr].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldcr].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3549,7 +3549,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldic].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldic].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldic].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldic].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldic].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3572,7 +3572,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldicl].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldicl].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldicl].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldicl].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldicl].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3596,7 +3596,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldicr].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldicr].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldicr].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldicr].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldicr].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3620,7 +3620,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldimi].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldimi].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldimi].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldimi].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rldimi].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3643,7 +3643,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwimi].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwimi].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwimi].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwimi].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwimi].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3665,7 +3665,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwinm].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwinm].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwinm].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwinm].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwinm].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3687,7 +3687,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwnm].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwnm].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwnm].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwnm].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::rlwnm].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3720,7 +3720,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sld].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sld].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sld].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sld].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sld].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3742,7 +3742,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::slw].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::slw].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::slw].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::slw].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::slw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3766,7 +3766,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srad].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srad].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srad].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srad].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srad].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3790,7 +3790,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sradi].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sradi].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sradi].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sradi].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sradi].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3813,7 +3813,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sraw].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sraw].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sraw].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sraw].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::sraw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3836,7 +3836,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srawi].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srawi].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srawi].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srawi].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srawi].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3859,7 +3859,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srd].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srd].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srd].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srd].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srd].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3881,7 +3881,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srw].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srw].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srw].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srw].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::srw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4297,7 +4297,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subf].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subf].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subf].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subf].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subf].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4318,7 +4318,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfc].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfc].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfc].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfc].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfc].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4340,7 +4340,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfco].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfco].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfco].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfco].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfco].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4362,7 +4362,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfe].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfe].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfe].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfe].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfe].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4385,7 +4385,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfeo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfeo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfeo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfeo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfeo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4418,7 +4418,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfme].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfme].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfme].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfme].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfme].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4441,7 +4441,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfmeo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfmeo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfmeo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfmeo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfmeo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4463,7 +4463,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfze].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfze].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfze].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfze].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfze].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4486,7 +4486,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfzeo].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfzeo].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfzeo].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfzeo].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfzeo].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5458,7 +5458,7 @@
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xor].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xor].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xor].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xor].properties - PPCOpProp_HasRecordForm + PPCOpProp_IsRecordForm
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xor].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {

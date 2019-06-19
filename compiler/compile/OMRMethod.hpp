@@ -82,16 +82,6 @@ public:
 #define JITTED_METHOD_INDEX (mcount_t::valueOf((uint32_t)0)) // Index of the top-level method being compiled
 #define MAX_CALLER_INDEX (mcount_t::valueOf((uint32_t)INT_MAX)) // Could be UINT_MAX, in theory, but let's avoid corner cases until that day comes when we need 3 billion caller indexes
 
-enum NonUserMethod
-   {
-   unknownNonUserMethod,
-   nonUser_java_util_HashMap_rehash,
-   nonUser_java_util_HashMap_analyzeMap,
-   nonUser_java_util_HashMap_calculateCapacity,
-   nonUser_java_util_HashMap_findNullKeyEntry,
-
-   numNonUserMethods
-   };
 
 class TR_MethodParameterIterator
    {

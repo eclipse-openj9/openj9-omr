@@ -34,7 +34,6 @@ namespace OMR { typedef OMR::Instruction InstructionConnector; }
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/InstOpCode.hpp"
-#include "cs2/hashtab.h"
 #include "codegen/RegisterConstants.hpp"
 #include "env/TRMemory.hpp"
 #include "infra/Assert.hpp"

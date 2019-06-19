@@ -36,7 +36,6 @@ namespace OMR { typedef OMR::SymbolReference SymbolReferenceConnector; }
 #include "compile/Compilation.hpp"
 #include "compile/Method.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#include "cs2/sparsrbit.h"
 #include "env/KnownObjectTable.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"

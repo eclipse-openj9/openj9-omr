@@ -31,8 +31,6 @@
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/hashtab.h"
-#include "cs2/sparsrbit.h"
 #include "env/KnownObjectTable.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"

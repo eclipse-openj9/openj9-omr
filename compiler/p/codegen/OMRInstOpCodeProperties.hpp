@@ -42,7 +42,8 @@
    /* .opcode      = */ 0x7C000214,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -63,6 +64,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -85,6 +87,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SetsOverflowFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -107,6 +110,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -130,6 +134,7 @@
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SetsOverflowFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -161,6 +166,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -182,6 +188,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -214,6 +221,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -237,6 +245,7 @@
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SetsOverflowFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -258,6 +267,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsOverflowFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -290,6 +300,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -313,6 +324,7 @@
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SetsOverflowFlag |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -333,7 +345,8 @@
    /* .opcode      = */ 0x7C000038,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -354,7 +367,8 @@
    /* .opcode      = */ 0x7C000078,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -375,7 +389,8 @@
    /* .opcode      = */ 0x7C000154,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -861,7 +876,8 @@
    /* .opcode      = */ 0x7C000074,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -883,7 +899,8 @@
    /* .opcode      = */ 0x7C000034,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -993,6 +1010,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -1080,6 +1098,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SyncSideEffectFree
@@ -1103,6 +1122,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SyncSideEffectFree
@@ -1138,6 +1158,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SyncSideEffectFree
@@ -1161,6 +1182,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -1183,6 +1205,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SetsFPSCR |
                         PPCOpProp_SyncSideEffectFree
@@ -1206,6 +1229,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -1227,7 +1251,8 @@
    /* .opcode      = */ 0x7C0003D2,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_DWord |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -1249,6 +1274,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -1269,7 +1295,8 @@
    /* .opcode      = */ 0x7C0007D2,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_SetsOverflowFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -1291,7 +1318,8 @@
    /* .opcode      = */ 0x7C000392,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_DWord |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -1312,7 +1340,8 @@
    /* .opcode      = */ 0x7C000792,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_SetsOverflowFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -1334,7 +1363,8 @@
    /* .opcode      = */ 0x7C0003D6,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -1354,7 +1384,8 @@
    /* .opcode      = */ 0x7C0007D6,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_SetsOverflowFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -1375,7 +1406,8 @@
    /* .opcode      = */ 0x7C000396,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -1395,7 +1427,8 @@
    /* .opcode      = */ 0x7C000796,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_SetsOverflowFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -1417,6 +1450,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -1439,6 +1473,7 @@
    /* .format      = */ Z23_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SetsFPSCR |
                         PPCOpProp_SyncSideEffectFree
@@ -1462,6 +1497,7 @@
    /* .format      = */ Z23_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -1484,6 +1520,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SyncSideEffectFree
@@ -1507,6 +1544,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -1551,6 +1589,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -1582,7 +1621,8 @@
    /* .opcode      = */ 0x7C000238,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_AltFormatx
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx
    },
 
    {
@@ -1602,7 +1642,8 @@
    /* .opcode      = */ 0x7C000774,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -1623,7 +1664,8 @@
    /* .opcode      = */ 0x7C000734,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -1644,7 +1686,8 @@
    /* .opcode      = */ 0x7C0007B4,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -1665,7 +1708,8 @@
    /* .opcode      = */ 0x7C0006F4,
    /* .format      = */ XS_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -2961,6 +3005,7 @@
    /* .format      = */ XFL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsFPSCR |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -2983,6 +3028,7 @@
    /* .format      = */ XFL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsFPSCR |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -3005,6 +3051,7 @@
    /* .format      = */ XFL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsFPSCR |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -3027,6 +3074,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsFPSCR |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -3136,7 +3184,8 @@
    /* .opcode      = */ 0x7C000092,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_DWord |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -3157,7 +3206,8 @@
    /* .opcode      = */ 0x7C000012,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_DWord |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -3178,7 +3228,8 @@
    /* .opcode      = */ 0x7C000096,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -3198,7 +3249,8 @@
    /* .opcode      = */ 0x7C000016,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -3218,7 +3270,8 @@
    /* .opcode      = */ 0x7C0001D2,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_DWord |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -3239,7 +3292,8 @@
    /* .opcode      = */ 0x7C0005D2,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_DWord |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -3270,7 +3324,8 @@
    /* .opcode      = */ 0x7C0001D6,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -3290,7 +3345,8 @@
    /* .opcode      = */ 0x7C0005D6,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -3310,7 +3366,8 @@
    /* .opcode      = */ 0x7C0003B8,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -3331,7 +3388,8 @@
    /* .opcode      = */ 0x7C0000D0,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -3351,7 +3409,8 @@
    /* .opcode      = */ 0x7C0004D0,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -3371,7 +3430,8 @@
    /* .opcode      = */ 0x7C0000F8,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -3392,7 +3452,8 @@
    /* .opcode      = */ 0x7C000378,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -3413,7 +3474,8 @@
    /* .opcode      = */ 0x7C000338,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -3490,6 +3552,7 @@
    /* .format      = */ MDS_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
@@ -3513,6 +3576,7 @@
    /* .format      = */ MDS_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_UseMaskEnd |
@@ -3537,6 +3601,7 @@
    /* .format      = */ MD_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
@@ -3560,6 +3625,7 @@
    /* .format      = */ MD_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
@@ -3583,6 +3649,7 @@
    /* .format      = */ MD_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_UseMaskEnd |
@@ -3607,6 +3674,7 @@
    /* .format      = */ MD_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree |
@@ -3631,6 +3699,7 @@
    /* .format      = */ M_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_UsesTarget
@@ -3654,6 +3723,7 @@
    /* .format      = */ M_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -3676,6 +3746,7 @@
    /* .format      = */ M_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -3708,6 +3779,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
@@ -3731,6 +3803,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -3753,6 +3826,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_DWord |
@@ -3777,6 +3851,7 @@
    /* .format      = */ XS_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_DWord |
@@ -3801,6 +3876,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree
@@ -3824,6 +3900,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree
@@ -3847,6 +3924,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree
@@ -3870,6 +3948,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
+                        PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -4287,7 +4366,8 @@
    /* .opcode      = */ 0x7C000050,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SyncSideEffectFree
    },
 
    {
@@ -4307,7 +4387,8 @@
    /* .opcode      = */ 0x7C000010,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SetsCarryFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree
    },
 
@@ -4328,7 +4409,8 @@
    /* .opcode      = */ 0x7C000410,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SetsOverflowFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -4350,7 +4432,8 @@
    /* .opcode      = */ 0x7C000110,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_ReadsCarryFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -4372,7 +4455,8 @@
    /* .opcode      = */ 0x7C000510,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SetsOverflowFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree
@@ -4406,7 +4490,8 @@
    /* .opcode      = */ 0x7C0001D0,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_ReadsCarryFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -4428,7 +4513,8 @@
    /* .opcode      = */ 0x7C0005D0,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SetsOverflowFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree
@@ -4451,7 +4537,8 @@
    /* .opcode      = */ 0x7C000190,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_ReadsCarryFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree
    },
@@ -4473,7 +4560,8 @@
    /* .opcode      = */ 0x7C000590,
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SetsOverflowFlag |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree
@@ -5447,7 +5535,8 @@
    /* .opcode      = */ 0x7C000278,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_AltFormatx |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree
    },
 

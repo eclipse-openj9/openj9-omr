@@ -213,7 +213,7 @@ struct TR_CallTarget : public TR_Link<TR_CallTarget>
                   TR::TreeTop *callNodeTreeTop,  \
                   TR::Node *parent,  \
                   TR::Node *callNode,  \
-                  TR_Method * interfaceMethod,  \
+                  TR::Method * interfaceMethod,  \
                   TR_OpaqueClassBlock *receiverClass,  \
                   int32_t vftSlot,  \
                   int32_t cpIndex,  \
@@ -251,7 +251,7 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
                   TR::TreeTop *callNodeTreeTop,
                   TR::Node *parent,
                   TR::Node *callNode,
-                  TR_Method * interfaceMethod,
+                  TR::Method * interfaceMethod,
                   TR_OpaqueClassBlock *receiverClass,
                   int32_t vftSlot,
                   int32_t cpIndex,
@@ -356,7 +356,7 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
       TR::Node *                    _callNode;
 
       // Initial Information We Need to Calculate a CallTarget
-      TR_Method *                  _interfaceMethod;       // If we have an interface, we'll only have a TR_Method until we determine others
+      TR::Method *                 _interfaceMethod;       // If we have an interface, we'll only have a TR::Method until we determine others
       TR_OpaqueClassBlock *        _receiverClass;         // for interface calls, we might know this?
       int32_t                      _vftSlot;               //
       int32_t                      _cpIndex;               //

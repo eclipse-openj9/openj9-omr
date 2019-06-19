@@ -960,7 +960,7 @@ TR_Debug::signature(TR::ResolvedMethodSymbol *s)
 TR_OpaqueClassBlock *
 TR_Debug::containingClass(TR::SymbolReference *symRef)
    {
-   TR_Method *method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
+   TR::Method *method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
 
    if (method)
       {
@@ -1856,7 +1856,7 @@ TR_Debug::getParmName(TR::SymbolReference * symRef)
 const char *
 TR_Debug::getMethodName(TR::SymbolReference * symRef)
    {
-   TR_Method * method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
+   TR::Method *method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
 
    if (method==NULL)
       {

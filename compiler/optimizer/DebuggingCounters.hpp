@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include "compile/Method.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 
@@ -47,7 +48,7 @@ struct CountedCallSite
   int32_t frequency;
   int32_t numLocals;
   TR_OpaqueMethodBlock *opaque_method;
-  TR_Method *method;
+  TR::Method *method;
   TR_ByteCodeInfo bcInfo;
   CountedCallSite * _next;
   };

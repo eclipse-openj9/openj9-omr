@@ -1168,7 +1168,7 @@ TR_Debug::scanFilterName(char *string, TR_FilterBST *filter)
 
 
 bool
-TR_Debug::methodSigCanBeCompiled(const char *methodSig, TR_FilterBST * & filter, TR_Method::Type methodType)
+TR_Debug::methodSigCanBeCompiled(const char *methodSig, TR_FilterBST * & filter, TR::Method::Type methodType)
    {
    return methodSigCanBeCompiledOrRelocated(methodSig, filter, false, methodType);
    }
@@ -1176,17 +1176,17 @@ TR_Debug::methodSigCanBeCompiled(const char *methodSig, TR_FilterBST * & filter,
 bool
 TR_Debug::methodSigCanBeRelocated(const char *methodSig, TR_FilterBST * & filter)
    {
-   return methodSigCanBeCompiledOrRelocated(methodSig, filter, true, TR_Method::J9);
+   return methodSigCanBeCompiledOrRelocated(methodSig, filter, true, TR::Method::J9);
    }
 
 bool
-TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * filters, TR_FilterBST * & filter, TR_Method::Type methodType)
+TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * filters, TR_FilterBST * & filter, TR::Method::Type methodType)
    {
    const char *methodClass, *methodName, *methodSignature;
    uint32_t methodClassLen, methodNameLen, methodSignatureLen;
 
    methodClass = methodSig;
-   if (methodType != TR_Method::J9)
+   if (methodType != TR::Method::J9)
       {
       if (methodSig[0] == '/' || methodSig[0] == '.') // omr method pattern
          {
@@ -1302,7 +1302,7 @@ TR_Debug::methodCanBeFound(TR_Memory *trMemory, TR_ResolvedMethod *method, TR::C
    }
 
 bool
-TR_Debug::methodSigCanBeCompiledOrRelocated(const char *methodSig, TR_FilterBST * & filter, bool loadLimit, TR_Method::Type methodType)
+TR_Debug::methodSigCanBeCompiledOrRelocated(const char *methodSig, TR_FilterBST * & filter, bool loadLimit, TR::Method::Type methodType)
    {
    TR::CompilationFilters *compOrReloFilter = NULL;
 

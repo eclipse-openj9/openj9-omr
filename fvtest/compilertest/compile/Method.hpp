@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,12 +46,12 @@ namespace TR { class FrontEnd; }
 namespace TestCompiler
 {
 
-class Method : public TR_Method
+class Method : public TR::Method
    {
    public:
    TR_ALLOC(TR_Memory::Method);
 
-   Method() : TR_Method(TR_Method::Test) {}
+   Method() : TR::Method(TR::Method::Test) {}
 
    // FIXME: need to provide real code for this group
    virtual uint16_t              classNameLength() { return strlen(classNameChars()); }
@@ -127,7 +127,7 @@ class ResolvedMethod : public ResolvedMethodBase, public Method
       computeSignatureChars();
       }
 
-   virtual TR_Method           * convertToMethod()                          { return this; }
+   virtual TR::Method          * convertToMethod()                          { return this; }
 
    virtual const char          * signature(TR_Memory *, TR_AllocationKind);
    char                        * localName (uint32_t slot, uint32_t bcIndex, int32_t &nameLength, TR_Memory *trMemory);

@@ -1693,7 +1693,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
          }
       TR::GlobalSparseBitVector *mustKill = NULL;
       TR::Symbol *callSym = NULL;
-      TR_Method *callMethod = NULL;
+      TR::Method *callMethod = NULL;
 
       TR::SparseBitVector::Cursor aliasesCursor(aliases);
       for (aliasesCursor.SetToFirstOne(); aliasesCursor.Valid(); aliasesCursor.SetToNextOne())
@@ -1825,7 +1825,7 @@ void TR_UseDefInfo::processReachingDefinition(void* vblockInfo, AuxiliaryData &a
 
 void TR_UseDefInfo::buildUseDefs(void *vblockInfo, AuxiliaryData &aux)
    {
-   TR_Method *method = comp()->getMethodSymbol()->getMethod();
+   TR::Method *method = comp()->getMethodSymbol()->getMethod();
    TR::Block *block;
    TR::TreeTop *treeTop;
    TR_ReachingDefinitions::ContainerType *analysisInfo = NULL;
@@ -1876,7 +1876,7 @@ void TR_UseDefInfo::buildUseDefs(void *vblockInfo, AuxiliaryData &aux)
          }
 
       int32_t i, ii;
-      TR_Method *method = comp()->getMethodSymbol()->getMethod();
+      TR::Method *method = comp()->getMethodSymbol()->getMethod();
       TR_BitVectorIterator bvi(*analysisInfo);
       while (bvi.hasMoreElements())
          {
@@ -2272,7 +2272,7 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVect
       buildUseDefs(node->getChild(i), analysisInfo, nodesToBeDereferenced, node, aux);
       }
 
-   TR_Method *method = comp()->getMethodSymbol()->getMethod();
+   TR::Method *method = comp()->getMethodSymbol()->getMethod();
    uint32_t nodeIndex = node->getUseDefIndex();
    if (node->getOpCode().hasSymbolReference() &&
        isTrivialUseDefNode(node, aux) )
@@ -2432,7 +2432,7 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVect
             }
 #endif
 
-         TR_Method *method = comp()->getMethodSymbol()->getMethod();
+         TR::Method *method = comp()->getMethodSymbol()->getMethod();
 
          TR_BitVectorIterator cursor(*defs);
          while (cursor.hasMoreElements())

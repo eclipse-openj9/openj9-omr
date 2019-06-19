@@ -51,7 +51,7 @@ class TR_ResolvedMethod
    {
 public:
    TR::RecognizedMethod getRecognizedMethod() { return convertToMethod()->getRecognizedMethod(); }
-   virtual TR_Method *convertToMethod();
+   virtual TR::Method *convertToMethod();
 
    virtual uint32_t numberOfParameters();
    virtual uint32_t numberOfExplicitParameters(); // excludes receiver if any

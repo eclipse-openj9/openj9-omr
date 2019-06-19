@@ -22,8 +22,6 @@
 #ifndef METHOD_INCL
 #define METHOD_INCL
 
-#include "compile/InlineBlock.hpp"
-
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -31,24 +29,11 @@
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/Node.hpp"
-#include "infra/Assert.hpp"
 
-class TR_BitVector;
-class TR_CompactLocals;
-class TR_GlobalRegisterAllocator;
-class TR_InlinerBase;
 class TR_OpaqueClassBlock;
 class TR_ResolvedMethod;
-namespace TR { class S390SystemLinkage; }
-class TR_Value;
-namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
-namespace TR { class Node; }
-namespace TR { class Snippet; }
-namespace TR { class Symbol; }
-namespace TR { class SymbolReference; }
-template <class T> class TR_ScratchList;
+
 
 // Method indexes
 //
@@ -82,16 +67,6 @@ public:
 #define JITTED_METHOD_INDEX (mcount_t::valueOf((uint32_t)0)) // Index of the top-level method being compiled
 #define MAX_CALLER_INDEX (mcount_t::valueOf((uint32_t)INT_MAX)) // Could be UINT_MAX, in theory, but let's avoid corner cases until that day comes when we need 3 billion caller indexes
 
-enum NonUserMethod
-   {
-   unknownNonUserMethod,
-   nonUser_java_util_HashMap_rehash,
-   nonUser_java_util_HashMap_analyzeMap,
-   nonUser_java_util_HashMap_calculateCapacity,
-   nonUser_java_util_HashMap_findNullKeyEntry,
-
-   numNonUserMethods
-   };
 
 class TR_MethodParameterIterator
    {
@@ -109,6 +84,7 @@ protected:
    TR_MethodParameterIterator(TR::Compilation& comp) : _comp(comp) { }
    TR::Compilation &                 _comp;
    };
+
 
 class TR_Method
    {

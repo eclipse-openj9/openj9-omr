@@ -70,10 +70,6 @@
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
-#ifdef J9_PROJECT_SPECIFIC
-#include "runtime/J9Profiler.hpp"
-#include "runtime/J9ValueProfiler.hpp"
-#endif
 #include "x/codegen/HelperCallSnippet.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/RegisterRematerialization.hpp"

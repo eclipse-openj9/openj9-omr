@@ -61,10 +61,6 @@
 #include "runtime/Runtime.hpp"
 #include "env/VerboseLog.hpp"
 
-#ifdef J9_PROJECT_SPECIFIC
-#include "env/SharedCache.hpp"
-#endif
-
 class TR_Debug;
 class TR_FrontEnd;
 class TR_Memory;

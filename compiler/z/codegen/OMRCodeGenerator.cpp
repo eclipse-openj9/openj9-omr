@@ -73,9 +73,7 @@
 #ifdef J9_PROJECT_SPECIFIC
 #include "control/RecompilationInfo.hpp"
 #endif
-#include "cs2/arrayof.h"
 #include "cs2/hashtab.h"
-#include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
 #include "env/Processors.hpp"

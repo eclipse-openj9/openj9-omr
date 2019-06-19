@@ -30,7 +30,6 @@
 #include "codegen/SystemLinkage.hpp"
 #include "codegen/snippet/PPA1Snippet.hpp"
 #include "codegen/snippet/PPA2Snippet.hpp"
-#include "cs2/arrayof.h"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"

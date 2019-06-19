@@ -2025,7 +2025,15 @@ void TR_CompactNullChecks::compactNullChecks(TR::Block *block, TR_BitVector *wri
       if (prevNode->getOpCodeValue() == TR::BBStart)
          {
          block = prevNode->getBlock();
-              exitTree = block->getExit();
+         exitTree = block->getExit();
+         TR::Block *blockItr = block->getNextBlock();
+         while (blockItr && blockItr->isExtensionOfPreviousBlock())
+            {
+            if (blockItr->getPrevBlock()->getSuccessors().size() != 1)
+               break;
+            exitTree = blockItr->getExit();
+            blockItr = blockItr->getNextBlock();
+            }
          }
       if (block->isOSRInduceBlock() || block->isOSRCatchBlock() || block->isOSRCodeBlock())
          return;
@@ -2095,7 +2103,7 @@ void TR_CompactNullChecks::compactNullChecks(TR::Block *block, TR_BitVector *wri
          writtenSymbols->empty();
          bool replacedNullCheck = false;
          bool compactionDone = false;
-         while (cursorTreeTop != exitTree)
+         while (cursorTreeTop != exitTree && cursorTreeTop->getNode()->getOpCodeValue() != TR::BBEnd)
             {
             TR::Node *cursorNode = cursorTreeTop->getNode();
             replacedNullCheck = replaceNullCheckIfPossible(cursorNode, objectRef, prevNode,
@@ -2138,6 +2146,9 @@ bool TR_CompactNullChecks::replacePassThroughIfPossible(TR::Node *currentNode, T
       return false;
 
    currentNode->setVisitCount(visitCount);
+
+   if (currentNode->isNopableInlineGuard())
+      return false;
 
    int32_t i = 0;
    for (i = 0; i < currentNode->getNumChildren(); ++i)

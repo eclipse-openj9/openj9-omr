@@ -22,8 +22,6 @@
 #ifndef METHOD_INCL
 #define METHOD_INCL
 
-#include "compile/InlineBlock.hpp"
-
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -31,24 +29,11 @@
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/Node.hpp"
-#include "infra/Assert.hpp"
 
-class TR_BitVector;
-class TR_CompactLocals;
-class TR_GlobalRegisterAllocator;
-class TR_InlinerBase;
 class TR_OpaqueClassBlock;
 class TR_ResolvedMethod;
-namespace TR { class S390SystemLinkage; }
-class TR_Value;
-namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
-namespace TR { class Node; }
-namespace TR { class Snippet; }
-namespace TR { class Symbol; }
-namespace TR { class SymbolReference; }
-template <class T> class TR_ScratchList;
+
 
 // Method indexes
 //
@@ -99,6 +84,7 @@ protected:
    TR_MethodParameterIterator(TR::Compilation& comp) : _comp(comp) { }
    TR::Compilation &                 _comp;
    };
+
 
 class TR_Method
    {

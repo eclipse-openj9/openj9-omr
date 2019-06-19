@@ -74,9 +74,6 @@ public:
    void     setLinkageRegisterIndex(int8_t li) { _registerIndex = li; }
    bool     isParmPassedInRegister()           { return (_registerIndex >= 0) ? true : false; }
 
-   int8_t   getAllocatedIndex()                { return _allocatedHigh; }
-   void     setAllocatedIndex(int8_t ai)       { _allocatedHigh = ai; }
-
    /**
     * @return The global register index assigned to this parameter, or -1 if
     *         a global register has not been assigned.
@@ -89,9 +86,6 @@ public:
     */
    void     setAssignedGlobalRegisterIndex(int8_t gr) { _allocatedHigh = gr; }
 
-   int8_t   getAllocatedHigh()                 { return _allocatedHigh; }
-   void     setAllocatedHigh(int8_t ai)        { _allocatedHigh = ai; }
-
    /**
     * @return The high global register index assigned to this parameter, or -1 if
     *         a global register index has not been assigned.
@@ -103,9 +97,6 @@ public:
     * @param[in] gr : the global register index
     */
    void     setAssignedHighGlobalRegisterIndex(int8_t gr) { _allocatedHigh = gr; }
-
-   int8_t   getAllocatedLow()                  { return _allocatedLow; }
-   void     setAllocatedLow(int8_t ai)         { _allocatedLow = ai; }
 
    /**
     * @return The low global register index assigned to this parameter, or -1 if

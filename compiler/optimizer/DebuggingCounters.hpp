@@ -24,12 +24,11 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include "compile/Method.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 
-class TR_Method;
 namespace TR { class Compilation; }
+namespace TR { class Method; }
 namespace TR { class TreeTop; }
 
 // This is the type of the debugging counters.

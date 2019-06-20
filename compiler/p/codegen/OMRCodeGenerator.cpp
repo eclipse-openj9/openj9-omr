@@ -2576,7 +2576,6 @@ void OMR::Power::CodeGenerator::addRealRegisterInterference(TR::Register    *reg
 
 #if defined(AIXPPC)
 #include <unistd.h>
-class  TR_Method;
 static TR::Instruction    *nextIntervalInstructionPtr;
 static uint8_t           *nextIntervalBufferPtr;
 static bool               segmentInBlock;
@@ -3576,7 +3575,7 @@ void mulConstant(TR::Node * node, TR::Register *trgReg, TR::Register *sourceReg,
       }
    }
 
-   
+
 TR::Register *addConstantToLong(TR::Node *node, TR::Register *srcReg,
                                 int64_t value, TR::Register *trgReg, TR::CodeGenerator *cg)
    {

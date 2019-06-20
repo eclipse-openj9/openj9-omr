@@ -76,12 +76,12 @@ class TR_FrontEnd;
 class TR_HashTabInt;
 class TR_InlineBlocks;
 class TR_InnerAssumption;
-class TR_Method;
 class TR_PrexArgInfo;
 class TR_ResolvedMethod;
 class TR_TransformInlinedFunction;
 namespace TR { class Block; }
 namespace TR { class CFG; }
+namespace TR { class Method; }
 namespace TR { class Node; }
 namespace TR { class ParameterSymbol; }
 namespace TR { class ResolvedMethodSymbol; }

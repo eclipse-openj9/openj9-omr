@@ -23,7 +23,7 @@
 
 JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/compile/OSRData.cpp \
-    $(JIT_OMR_DIRTY_DIR)/compile/Method.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/OMRMethod.cpp \
     $(JIT_OMR_DIRTY_DIR)/compile/VirtualGuard.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/OMROptions.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/OptimizationPlan.cpp \

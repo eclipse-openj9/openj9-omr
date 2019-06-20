@@ -163,4 +163,7 @@ typedef struct TR_AOTMethodInfo
    int32_t cpIndex;
    } TR_AOTMethodInfo;
 
+
+namespace TR { typedef ::TR_Method Method; }
+
 #endif

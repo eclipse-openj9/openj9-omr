@@ -53,12 +53,12 @@ class OMR_EXTENSIBLE MethodSymbol : public TR::Symbol
 
 protected:
 
-   MethodSymbol(TR_LinkageConventions lc = TR_Private, TR_Method * m = 0);
+   MethodSymbol(TR_LinkageConventions lc = TR_Private, TR::Method *m = 0);
 
 public:
 
    template <typename AllocatorType>
-   static TR::MethodSymbol * create(AllocatorType t, TR_LinkageConventions lc = TR_Private, TR_Method * m = 0);
+   static TR::MethodSymbol * create(AllocatorType t, TR_LinkageConventions lc = TR_Private, TR::Method *m = 0);
 
    TR::MethodSymbol *self();
 
@@ -73,8 +73,8 @@ public:
    TR_LinkageConventions getLinkageConvention()               { return _linkageConvention; }
    void                  setLinkage(TR_LinkageConventions lc) { _linkageConvention = lc; }
 
-   TR_Method * getMethod()              { return _method; }
-   void        setMethod(TR_Method * m) { _method = m; }
+   TR::Method *getMethod()              { return _method; }
+   void        setMethod(TR::Method *m) { _method = m; }
 
    enum Kinds
       {
@@ -200,7 +200,7 @@ protected:
 
    void *                _methodAddress;
 
-   TR_Method *           _method;
+   TR::Method *          _method;
 
    flags32_t             _methodFlags;
 

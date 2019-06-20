@@ -297,61 +297,61 @@ bool TR_ResolvedMethod::isDAAIntrinsicMethod()
 #endif
    }
 
-uint32_t              TR_Method::numberOfExplicitParameters() { TR_UNIMPLEMENTED(); return 0; }
-TR::DataType          TR_Method::parmType(uint32_t)           { TR_UNIMPLEMENTED(); return TR::NoType; }
-TR::ILOpCodes         TR_Method::directCallOpCode()           { TR_UNIMPLEMENTED(); return TR::BadILOp; }
-TR::ILOpCodes         TR_Method::indirectCallOpCode()         { TR_UNIMPLEMENTED(); return TR::BadILOp; }
-TR::DataType          TR_Method::returnType()                 { TR_UNIMPLEMENTED(); return TR::NoType; }
-bool                  TR_Method::returnTypeIsUnsigned()       { TR_UNIMPLEMENTED(); return TR::NoType;}
-uint32_t              TR_Method::returnTypeWidth()            { TR_UNIMPLEMENTED(); return 0; }
-TR::ILOpCodes         TR_Method::returnOpCode()               { TR_UNIMPLEMENTED(); return TR::BadILOp; }
-uint16_t              TR_Method::classNameLength()            { TR_UNIMPLEMENTED(); return 0; }
-uint16_t              TR_Method::nameLength()                 { TR_UNIMPLEMENTED(); return 0; }
-uint16_t              TR_Method::signatureLength()            { TR_UNIMPLEMENTED(); return 0; }
-char *                TR_Method::classNameChars()             { TR_UNIMPLEMENTED(); return 0; }
-char *                TR_Method::nameChars()                  { TR_UNIMPLEMENTED(); return 0; }
-char *                TR_Method::signatureChars()             { TR_UNIMPLEMENTED(); return 0; }
-bool                  TR_Method::isConstructor()              { TR_UNIMPLEMENTED(); return false; }
-bool                  TR_Method::isFinalInObject()            { TR_UNIMPLEMENTED(); return false; }
-const char *          TR_Method::signature(TR_Memory *, TR_AllocationKind) { TR_UNIMPLEMENTED(); return 0; }
-void                  TR_Method::setArchetypeSpecimen(bool b) { TR_UNIMPLEMENTED(); }
+uint32_t              TR::Method::numberOfExplicitParameters() { TR_UNIMPLEMENTED(); return 0; }
+TR::DataType          TR::Method::parmType(uint32_t)           { TR_UNIMPLEMENTED(); return TR::NoType; }
+TR::ILOpCodes         TR::Method::directCallOpCode()           { TR_UNIMPLEMENTED(); return TR::BadILOp; }
+TR::ILOpCodes         TR::Method::indirectCallOpCode()         { TR_UNIMPLEMENTED(); return TR::BadILOp; }
+TR::DataType          TR::Method::returnType()                 { TR_UNIMPLEMENTED(); return TR::NoType; }
+bool                  TR::Method::returnTypeIsUnsigned()       { TR_UNIMPLEMENTED(); return TR::NoType;}
+uint32_t              TR::Method::returnTypeWidth()            { TR_UNIMPLEMENTED(); return 0; }
+TR::ILOpCodes         TR::Method::returnOpCode()               { TR_UNIMPLEMENTED(); return TR::BadILOp; }
+uint16_t              TR::Method::classNameLength()            { TR_UNIMPLEMENTED(); return 0; }
+uint16_t              TR::Method::nameLength()                 { TR_UNIMPLEMENTED(); return 0; }
+uint16_t              TR::Method::signatureLength()            { TR_UNIMPLEMENTED(); return 0; }
+char *                TR::Method::classNameChars()             { TR_UNIMPLEMENTED(); return 0; }
+char *                TR::Method::nameChars()                  { TR_UNIMPLEMENTED(); return 0; }
+char *                TR::Method::signatureChars()             { TR_UNIMPLEMENTED(); return 0; }
+bool                  TR::Method::isConstructor()              { TR_UNIMPLEMENTED(); return false; }
+bool                  TR::Method::isFinalInObject()            { TR_UNIMPLEMENTED(); return false; }
+const char *          TR::Method::signature(TR_Memory *, TR_AllocationKind) { TR_UNIMPLEMENTED(); return 0; }
+void                  TR::Method::setArchetypeSpecimen(bool b) { TR_UNIMPLEMENTED(); }
 
 TR_MethodParameterIterator *
-TR_Method::getParameterIterator(TR::Compilation&, TR_ResolvedMethod *)
+TR::Method::getParameterIterator(TR::Compilation&, TR_ResolvedMethod *)
    {
    TR_UNIMPLEMENTED();
    return 0;
    }
 
 bool
-TR_Method::isBigDecimalMethod(TR::Compilation * comp)
+TR::Method::isBigDecimalMethod(TR::Compilation * comp)
    {
    TR_UNIMPLEMENTED();
    return false;
    }
 
 bool
-TR_Method::isUnsafeCAS(TR::Compilation * comp)
+TR::Method::isUnsafeCAS(TR::Compilation * comp)
    {
    TR_UNIMPLEMENTED();
    return false;
    }
 
 bool
-TR_Method::isUnsafeWithObjectArg(TR::Compilation * comp)
+TR::Method::isUnsafeWithObjectArg(TR::Compilation * comp)
    {
    TR_UNIMPLEMENTED();
    return false;
    }
 
 bool
-TR_Method::isBigDecimalConvertersMethod(TR::Compilation * comp)
+TR::Method::isBigDecimalConvertersMethod(TR::Compilation * comp)
    {
    TR_UNIMPLEMENTED();
    return false;
    }
 
-TR_Method *  TR_ResolvedMethod::convertToMethod()                          { TR_UNIMPLEMENTED(); return 0; }
+TR::Method *TR_ResolvedMethod::convertToMethod()                          { TR_UNIMPLEMENTED(); return 0; }
 uint32_t     TR_ResolvedMethod::numberOfParameters()                       { TR_UNIMPLEMENTED(); return 0; }
 uint32_t     TR_ResolvedMethod::numberOfExplicitParameters()               { TR_UNIMPLEMENTED(); return 0; }
 TR::DataType TR_ResolvedMethod::parmType(uint32_t)                         { TR_UNIMPLEMENTED(); return TR::NoType; }

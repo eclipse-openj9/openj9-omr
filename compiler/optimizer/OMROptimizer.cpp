@@ -544,7 +544,7 @@ static const OptimizationStrategy ilgenStrategyOpts[] =
    { unsafeFastPath                                },
    { recognizedCallTransformer                     },
    { coldBlockMarker                               },
-   { CFGSimplification                             }, 
+   { CFGSimplification                             },
    { allocationSinking,             IfNews         },
    { invariantArgumentPreexistence, IfNotClassLoadPhaseAndNotProfiling }, // Should not run if a recompilation is possible
 #endif
@@ -1172,7 +1172,7 @@ void OMR::Optimizer::dumpPostOptTrees()
    // do nothing for IlGen optimizer
    if (isIlGenOpt()) return;
 
-   TR_Method *method = comp()->getMethodSymbol()->getMethod();
+   TR::Method *method = comp()->getMethodSymbol()->getMethod();
    if ((debug("dumpPostLocalOptTrees") || comp()->getOption(TR_TraceTrees)))
       comp()->dumpMethodTrees("Post Optimization Trees");
    }

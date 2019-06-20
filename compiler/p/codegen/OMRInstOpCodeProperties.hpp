@@ -174,7 +174,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::addic_r,
    /* .name        = */ "addic.",
    /* .description =    "Add immediate carrying Rc=1", */
-   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].opcode + 1,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].opcode + 0x04000000,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].minimumALS,
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
@@ -194,12 +194,12 @@
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::addi2_r,
-   /* .name        = */ "addi.",
+   /* .name        = */ "addic.",
    /* .description =    "Add imm (carry bit set only if record form) Rc=1", */
-   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].opcode + 1,
-   /* .format      = */ UNKNOWN_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].opcode + 0x04000000,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].minimumALS,
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -9289,3 +9289,12 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::label,
+   /* .name        = */ "label",
+   /* .description =    "Label", */
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
+   /* .properties  = */ PPCOpProp_None,
+   },

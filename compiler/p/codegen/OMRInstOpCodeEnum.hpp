@@ -824,5 +824,3 @@
    xvsqrtsp,         // Vector Square Root Single-Precision
    xvsubsp,          // Vector Subtract Single-Precision
    label,            // Destination of a jump
-   PPCLastOp = label,
-   PPCNumOpCodes = PPCLastOp + 1,

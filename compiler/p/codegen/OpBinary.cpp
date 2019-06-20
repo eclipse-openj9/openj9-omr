@@ -6,7 +6,7 @@
 
 #include "codegen/InstOpCode.hpp"
 
-const TR_PPCOpCodeBinaryEntry OMR::Power::InstOpCode::binaryEncodings[PPCNumOpCodes] =
+const TR_PPCOpCodeBinaryEntry OMR::Power::InstOpCode::binaryEncodings[NumOpCodes] =
    {
    0x00000000,  // bad
    0x7c000214,  // add

@@ -66,7 +66,7 @@ $warning
 #include "codegen/InstOpCode.hpp"
 #include "p/codegen/PPCOpsDefines.hpp"
 
-const uint32_t OMR::Power::InstOpCode::properties[PPCNumOpCodes] =
+const uint32_t OMR::Power::InstOpCode::properties[NumOpCodes] =
    {
 END
 
@@ -74,7 +74,7 @@ END
 $warning
 #include "codegen/InstOpCode.hpp"
 
-const TR_PPCOpCodeBinaryEntry OMR::Power::InstOpCode::binaryEncodings[PPCNumOpCodes] =
+const TR_PPCOpCodeBinaryEntry OMR::Power::InstOpCode::binaryEncodings[NumOpCodes] =
    {
 END
 
@@ -118,8 +118,6 @@ END
 
    print ENUMFILE <<END;
    label,            // Destination of a jump
-   PPCLastOp = label,
-   PPCNumOpCodes = PPCLastOp + 1,
 END
 
    close INFILE;

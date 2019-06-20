@@ -36,6 +36,7 @@ namespace OMR { typedef OMR::Power::InstOpCode InstOpCodeConnector; }
 #include "compiler/codegen/OMRInstOpCode.hpp"
 
 #include "codegen/PPCOpsDefines.hpp"
+#include "env/Processors.hpp"
 
 typedef uint32_t TR_PPCOpCodeBinaryEntry;
 extern const char * ppcOpCodeToNameMap[][2];
@@ -55,8 +56,48 @@ class InstOpCode: public OMR::InstOpCode
 
    public:
 
-   static const uint32_t                  properties[PPCNumOpCodes];
-   static const TR_PPCOpCodeBinaryEntry   binaryEncodings[PPCNumOpCodes];
+   /** \brief
+    *     Defines various metadata of an instruction including the name, opcodes, format, the minimum architecture
+    *     level set (ALS) which introduced the instruction, and the various properties which model the instruction
+    *     in a way that the code generator understands.
+    */
+   struct OpCodeMetaData
+      {
+      /** \brief
+       *     The instruction mnemonic.
+       */
+      OMR::InstOpCode::Mnemonic mnemonic;
+
+      /** \brief
+       *     The instruction mnemonic as defined by the Power ISA.
+       */
+      const char* name;
+
+      /** \brief
+       *     The instruction opcode with fields masked out by zeros.
+       */
+      uint32_t opcode;
+
+      /** \brief
+       *     The instruction format as defined by the Power ISA (Section 1.6).
+       */
+      uint8_t format;
+
+      /** \brief
+       *     The minimum architecture level set (ALS) which introduced this instruction.
+       */
+      TR_Processor minimumALS;
+
+      /** \brief
+       *     The properties describing the behavior of this instruction to the codegen.
+       */
+      uint32_t properties;
+      };
+
+   static const OpCodeMetaData metadata[NumOpCodes];
+
+   static const uint32_t                  properties[NumOpCodes];
+   static const TR_PPCOpCodeBinaryEntry   binaryEncodings[NumOpCodes];
 
    bool isRecordForm() {return (properties[_mnemonic] & PPCOpProp_IsRecordForm)!=0;}
 

@@ -29,7 +29,7 @@
 #include "codegen/InstOpCode.hpp"
 #include "p/codegen/PPCOpsDefines.hpp"
 
-const uint32_t OMR::Power::InstOpCode::properties[PPCNumOpCodes] =
+const uint32_t OMR::Power::InstOpCode::properties[NumOpCodes] =
    {
 // bad
 0,

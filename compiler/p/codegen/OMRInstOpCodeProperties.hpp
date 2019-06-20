@@ -32,7 +32,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -43,7 +43,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -65,7 +65,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -88,7 +88,7 @@
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -111,7 +111,7 @@
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -135,7 +135,7 @@
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -155,7 +155,7 @@
    /* .opcode      = */ 0x38000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -167,7 +167,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -189,7 +189,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -197,8 +197,8 @@
    /* .name        = */ "addi.",
    /* .description =    "Add imm (carry bit set only if record form) Rc=1", */
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].opcode + 1,
-   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].format,
-   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].minimumALS,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addi2].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
@@ -209,7 +209,7 @@
    /* .opcode      = */ 0x3C000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -222,7 +222,7 @@
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -246,7 +246,7 @@
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -268,7 +268,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -288,7 +288,7 @@
    /* .opcode      = */ 0x4C000004,
    /* .format      = */ DX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -301,7 +301,7 @@
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -325,7 +325,7 @@
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -339,7 +339,7 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::and,
+   /* .mnemonic    = */ OMR::InstOpCode::AND,
    /* .name        = */ "and",
    /* .description =    "AND", */
    /* .opcode      = */ 0x7C000038,
@@ -347,17 +347,17 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::and_r,
    /* .name        = */ "and.",
    /* .description =    "AND Rc=1", */
-   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::and].opcode + 1,
-   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::and].format,
-   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::and].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::and].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::AND].opcode + 1,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::AND].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::AND].minimumALS,
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::AND].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -369,7 +369,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -390,7 +390,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -398,8 +398,8 @@
    /* .name        = */ "addex.",
    /* .description =    "Add Extended using alternate carry bits Rc=1", */
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].opcode + 1,
-   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].format,
-   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].minimumALS,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
@@ -408,11 +408,11 @@
    /* .name        = */ "andi.",
    /* .description =    "AND immediate", */
    /* .opcode      = */ 0x70000000,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ D_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -420,11 +420,11 @@
    /* .name        = */ "andis.",
    /* .description =    "AND immediate shifted", */
    /* .opcode      = */ 0x74000000,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ D_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -434,7 +434,7 @@
    /* .opcode      = */ 0x48000000,
    /* .format      = */ I_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -444,7 +444,7 @@
    /* .opcode      = */ 0x48000002,
    /* .format      = */ I_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -455,7 +455,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp |
-                        PPCOpProp_UsesCtr
+                        PPCOpProp_UsesCtr,
    },
 
    {
@@ -466,7 +466,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp |
-                        PPCOpProp_UsesCtr
+                        PPCOpProp_UsesCtr,
    },
 
    {
@@ -478,7 +478,7 @@
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp |
                         PPCOpProp_UsesCtr |
-                        PPCOpProp_SetsCtr
+                        PPCOpProp_SetsCtr,
    },
 
    {
@@ -490,7 +490,7 @@
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp |
                         PPCOpProp_UsesCtr |
-                        PPCOpProp_SetsCtr
+                        PPCOpProp_SetsCtr,
    },
 
    {
@@ -500,7 +500,7 @@
    /* .opcode      = */ 0x41820000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -510,7 +510,7 @@
    /* .opcode      = */ 0x41820001,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -521,7 +521,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp |
-                        PPCOpProp_UsesCtr
+                        PPCOpProp_UsesCtr,
    },
 
    {
@@ -531,7 +531,7 @@
    /* .opcode      = */ 0x40800000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -541,7 +541,7 @@
    /* .opcode      = */ 0x40800001,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -551,7 +551,7 @@
    /* .opcode      = */ 0x41810000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -561,7 +561,7 @@
    /* .opcode      = */ 0x41810001,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -571,7 +571,7 @@
    /* .opcode      = */ 0x48000001,
    /* .format      = */ I_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -581,7 +581,7 @@
    /* .opcode      = */ 0x40810000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -591,7 +591,7 @@
    /* .opcode      = */ 0x40810001,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -601,7 +601,7 @@
    /* .opcode      = */ 0x41800000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -611,7 +611,7 @@
    /* .opcode      = */ 0x41800001,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -621,7 +621,7 @@
    /* .opcode      = */ 0x48000003,
    /* .format      = */ I_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -631,7 +631,7 @@
    /* .opcode      = */ 0x4E800020,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -641,7 +641,7 @@
    /* .opcode      = */ 0x4E800021,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -651,7 +651,7 @@
    /* .opcode      = */ 0x40820000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -661,7 +661,7 @@
    /* .opcode      = */ 0x40820001,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -671,7 +671,7 @@
    /* .opcode      = */ 0x40830000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -682,7 +682,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp |
-                        PPCOpProp_UsesCtr
+                        PPCOpProp_UsesCtr,
    },
 
    {
@@ -692,7 +692,7 @@
    /* .opcode      = */ 0x41830000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -702,7 +702,7 @@
    /* .opcode      = */ 0x4D820020,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -712,7 +712,7 @@
    /* .opcode      = */ 0x4C800020,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -722,7 +722,7 @@
    /* .opcode      = */ 0x4D810020,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -732,7 +732,7 @@
    /* .opcode      = */ 0x4C810020,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -742,7 +742,7 @@
    /* .opcode      = */ 0x4D800020,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -752,7 +752,7 @@
    /* .opcode      = */ 0x4C820020,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -763,7 +763,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -775,7 +775,7 @@
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DWord |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -786,7 +786,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -798,7 +798,7 @@
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DWord |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -809,7 +809,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -821,7 +821,7 @@
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DWord |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -832,7 +832,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -844,7 +844,7 @@
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DWord |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -855,7 +855,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -866,7 +866,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -879,7 +879,7 @@
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -901,7 +901,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -922,7 +922,7 @@
    /* .format      = */ XL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -933,7 +933,7 @@
    /* .format      = */ XL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -944,7 +944,7 @@
    /* .format      = */ XL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -955,7 +955,7 @@
    /* .format      = */ XL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -966,7 +966,7 @@
    /* .format      = */ XL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -977,7 +977,7 @@
    /* .format      = */ XL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -988,7 +988,7 @@
    /* .format      = */ XL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -999,7 +999,7 @@
    /* .format      = */ XL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1012,7 +1012,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1032,7 +1032,7 @@
    /* .opcode      = */ 0x7C0005E6,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1043,7 +1043,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -1054,7 +1054,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -1065,7 +1065,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -1076,7 +1076,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -1087,7 +1087,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -1101,7 +1101,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_ReadsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1125,7 +1125,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_ReadsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1147,7 +1147,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1161,7 +1161,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_ReadsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1184,7 +1184,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1208,7 +1208,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SetsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1231,7 +1231,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1239,8 +1239,8 @@
    /* .name        = */ "denbcdu.",
    /* .description =    "Encode Unsigned BCD to DFP (DFP64) Rc=1", */
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].opcode + 1,
-   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].format,
-   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].minimumALS,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
@@ -1253,7 +1253,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1275,7 +1275,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1298,7 +1298,7 @@
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1320,7 +1320,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1343,7 +1343,7 @@
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1364,7 +1364,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1386,7 +1386,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1407,7 +1407,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1429,7 +1429,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1452,7 +1452,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1476,7 +1476,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SetsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1499,7 +1499,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1523,7 +1523,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
                         PPCOpProp_ReadsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1546,7 +1546,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1567,7 +1567,7 @@
    /* .format      = */ Z22_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1578,7 +1578,7 @@
    /* .format      = */ Z22_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1591,7 +1591,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1611,7 +1611,7 @@
    /* .opcode      = */ 0x7C0006AC,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -1622,7 +1622,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_AltFormatx
+                        PPCOpProp_AltFormatx,
    },
 
    {
@@ -1644,7 +1644,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1666,7 +1666,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1688,7 +1688,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1710,7 +1710,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1733,7 +1733,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1744,7 +1744,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1755,7 +1755,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1766,7 +1766,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1777,7 +1777,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1788,7 +1788,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1799,7 +1799,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1812,7 +1812,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1825,7 +1825,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1837,7 +1837,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1850,7 +1850,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1863,7 +1863,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1876,7 +1876,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1889,7 +1889,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1900,7 +1900,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1911,7 +1911,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1922,7 +1922,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1933,7 +1933,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1947,7 +1947,7 @@
                         PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
                         PPCOpProp_IsRegCopy |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1958,7 +1958,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1969,7 +1969,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1981,7 +1981,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1993,7 +1993,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2006,7 +2006,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2019,7 +2019,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2030,7 +2030,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2041,7 +2041,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2052,7 +2052,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2063,7 +2063,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2075,7 +2075,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2087,7 +2087,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCgr,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2099,7 +2099,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCgr,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2111,7 +2111,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCgr,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2123,7 +2123,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2135,7 +2135,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2147,7 +2147,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2159,7 +2159,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios2,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2171,7 +2171,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2182,7 +2182,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2193,7 +2193,7 @@
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2203,7 +2203,7 @@
    /* .opcode      = */ 0x4C00012C,
    /* .format      = */ XL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsSync
+   /* .properties  = */ PPCOpProp_IsSync,
    },
 
    {
@@ -2213,7 +2213,7 @@
    /* .opcode      = */ 0x88000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad
+   /* .properties  = */ PPCOpProp_IsLoad,
    },
 
    {
@@ -2224,7 +2224,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -2236,7 +2236,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2247,7 +2247,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2258,7 +2258,7 @@
    /* .format      = */ DS_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_OffsetRequiresWordAlignment
+                        PPCOpProp_OffsetRequiresWordAlignment,
    },
 
    {
@@ -2269,7 +2269,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2280,7 +2280,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2291,7 +2291,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2303,7 +2303,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_OffsetRequiresWordAlignment
+                        PPCOpProp_OffsetRequiresWordAlignment,
    },
 
    {
@@ -2315,7 +2315,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2326,7 +2326,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2337,7 +2337,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -2348,7 +2348,7 @@
    /* .format      = */ DS_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -2360,7 +2360,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -2373,7 +2373,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2385,7 +2385,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2397,7 +2397,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2409,7 +2409,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2421,7 +2421,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2432,7 +2432,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -2444,7 +2444,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -2457,7 +2457,7 @@
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2469,7 +2469,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2479,7 +2479,7 @@
    /* .opcode      = */ 0xA8000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad
+   /* .properties  = */ PPCOpProp_IsLoad,
    },
 
    {
@@ -2490,7 +2490,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -2502,7 +2502,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2513,7 +2513,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2524,7 +2524,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2534,7 +2534,7 @@
    /* .opcode      = */ 0xA0000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad
+   /* .properties  = */ PPCOpProp_IsLoad,
    },
 
    {
@@ -2545,7 +2545,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -2557,7 +2557,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2568,7 +2568,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2578,7 +2578,7 @@
    /* .opcode      = */ 0x38000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2588,7 +2588,7 @@
    /* .opcode      = */ 0x3C000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2598,7 +2598,7 @@
    /* .opcode      = */ 0xB8000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad
+   /* .properties  = */ PPCOpProp_IsLoad,
    },
 
    {
@@ -2608,7 +2608,7 @@
    /* .opcode      = */ 0x7C0004AA,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad
+   /* .properties  = */ PPCOpProp_IsLoad,
    },
 
    {
@@ -2619,7 +2619,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2630,7 +2630,7 @@
    /* .format      = */ DS_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_OffsetRequiresWordAlignment
+                        PPCOpProp_OffsetRequiresWordAlignment,
    },
 
    {
@@ -2641,7 +2641,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2653,7 +2653,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2664,7 +2664,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2675,7 +2675,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2686,7 +2686,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2696,7 +2696,7 @@
    /* .opcode      = */ 0x7C2004AC,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_IsSync
+   /* .properties  = */ PPCOpProp_IsSync,
    },
 
    {
@@ -2706,7 +2706,7 @@
    /* .opcode      = */ 0x80000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad
+   /* .properties  = */ PPCOpProp_IsLoad,
    },
 
    {
@@ -2717,7 +2717,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -2729,7 +2729,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2740,7 +2740,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -2750,7 +2750,7 @@
    /* .opcode      = */ 0x10000033,
    /* .format      = */ VA_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2760,7 +2760,7 @@
    /* .opcode      = */ 0x4C000000,
    /* .format      = */ XL_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2771,7 +2771,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2781,7 +2781,7 @@
    /* .opcode      = */ 0x7C000400,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2791,7 +2791,7 @@
    /* .opcode      = */ 0x7C000026,
    /* .format      = */ XFX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2801,7 +2801,7 @@
    /* .opcode      = */ 0x7C100026,
    /* .format      = */ XFX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCgr,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2812,7 +2812,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_UsesCtr |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2825,7 +2825,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2835,7 +2835,7 @@
    /* .opcode      = */ 0xFC00048E,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2845,7 +2845,7 @@
    /* .opcode      = */ 0x7C0802A6,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2855,7 +2855,7 @@
    /* .opcode      = */ 0x7C0000A6,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2865,7 +2865,7 @@
    /* .opcode      = */ 0x7C0002A6,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2875,7 +2875,7 @@
    /* .opcode      = */ 0x7C0222A6,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2885,7 +2885,7 @@
    /* .opcode      = */ 0x7C0322A6,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2898,7 +2898,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2908,7 +2908,7 @@
    /* .opcode      = */ 0x7C000212,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2918,7 +2918,7 @@
    /* .opcode      = */ 0x7C000612,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2928,7 +2928,7 @@
    /* .opcode      = */ 0x7C000216,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2938,7 +2938,7 @@
    /* .opcode      = */ 0x7C000616,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2950,7 +2950,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_IsRegCopy |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2960,7 +2960,7 @@
    /* .opcode      = */ 0x7C000120,
    /* .format      = */ XFX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2972,7 +2972,7 @@
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_AltFormat |
                         PPCOpProp_SetsCtr |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2983,7 +2983,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -2994,7 +2994,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3007,7 +3007,7 @@
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3030,7 +3030,7 @@
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3053,7 +3053,7 @@
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3076,7 +3076,7 @@
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsFPSCR |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3097,7 +3097,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3107,7 +3107,7 @@
    /* .opcode      = */ 0x7C000124,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3117,7 +3117,7 @@
    /* .opcode      = */ 0x7C0003A6,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3129,7 +3129,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3141,7 +3141,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3152,7 +3152,7 @@
    /* .format      = */ XX1_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3163,7 +3163,7 @@
    /* .format      = */ XX1_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3174,7 +3174,7 @@
    /* .format      = */ XX1_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3186,7 +3186,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3208,7 +3208,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3229,7 +3229,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3250,7 +3250,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3272,7 +3272,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3294,7 +3294,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3314,7 +3314,7 @@
    /* .opcode      = */ 0x1C000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3325,7 +3325,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3346,7 +3346,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3368,7 +3368,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3389,7 +3389,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3410,7 +3410,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3432,7 +3432,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3446,7 +3446,7 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::or,
+   /* .mnemonic    = */ OMR::InstOpCode::OR,
    /* .name        = */ "or",
    /* .description =    "OR", */
    /* .opcode      = */ 0x7C000378,
@@ -3454,17 +3454,17 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::or_r,
    /* .name        = */ "or.",
    /* .description =    "OR Rc=1", */
-   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::or].opcode + 1,
-   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::or].format,
-   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::or].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::or].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::OR].opcode + 1,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::OR].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::OR].minimumALS,
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::OR].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -3476,7 +3476,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3497,7 +3497,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3508,7 +3508,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3520,7 +3520,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3531,7 +3531,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3541,7 +3541,7 @@
    /* .opcode      = */ 0x4C000064,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -3555,7 +3555,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3580,7 +3580,7 @@
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_UseMaskEnd |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3604,7 +3604,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3628,7 +3628,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3653,7 +3653,7 @@
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_UseMaskEnd |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3678,7 +3678,7 @@
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_UsesTarget
+                        PPCOpProp_UsesTarget,
    },
 
    {
@@ -3702,7 +3702,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_UsesTarget
+                        PPCOpProp_UsesTarget,
    },
 
    {
@@ -3725,7 +3725,7 @@
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3748,7 +3748,7 @@
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3768,7 +3768,7 @@
    /* .opcode      = */ 0x7C000100,
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3782,7 +3782,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3805,7 +3805,7 @@
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3830,7 +3830,7 @@
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3855,7 +3855,7 @@
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SetsCarryFlag |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3879,7 +3879,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3903,7 +3903,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3927,7 +3927,7 @@
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3950,7 +3950,7 @@
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -3970,7 +3970,7 @@
    /* .opcode      = */ 0x98000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore
+   /* .properties  = */ PPCOpProp_IsStore,
    },
 
    {
@@ -3981,7 +3981,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsStore
+                        PPCOpProp_IsStore,
    },
 
    {
@@ -3993,7 +3993,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4004,7 +4004,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4015,7 +4015,7 @@
    /* .format      = */ DS_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_OffsetRequiresWordAlignment
+                        PPCOpProp_OffsetRequiresWordAlignment,
    },
 
    {
@@ -4023,11 +4023,11 @@
    /* .name        = */ "stdcx.",
    /* .description =    "Store word conditional indexed", */
    /* .opcode      = */ 0x7C0001AD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ X_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4039,7 +4039,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
-                        PPCOpProp_OffsetRequiresWordAlignment
+                        PPCOpProp_OffsetRequiresWordAlignment,
    },
 
    {
@@ -4051,7 +4051,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4062,7 +4062,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4073,7 +4073,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore
+                        PPCOpProp_IsStore,
    },
 
    {
@@ -4084,7 +4084,7 @@
    /* .format      = */ DS_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore
+                        PPCOpProp_IsStore,
    },
 
    {
@@ -4096,7 +4096,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore
+                        PPCOpProp_IsStore,
    },
 
    {
@@ -4109,7 +4109,7 @@
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4121,7 +4121,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4133,7 +4133,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4144,7 +4144,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4155,7 +4155,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_IsStore
+                        PPCOpProp_IsStore,
    },
 
    {
@@ -4167,7 +4167,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_SingleFP |
-                        PPCOpProp_IsStore
+                        PPCOpProp_IsStore,
    },
 
    {
@@ -4180,7 +4180,7 @@
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_SingleFP |
                         PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4192,7 +4192,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4202,7 +4202,7 @@
    /* .opcode      = */ 0xB0000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore
+   /* .properties  = */ PPCOpProp_IsStore,
    },
 
    {
@@ -4213,7 +4213,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4224,7 +4224,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsStore
+                        PPCOpProp_IsStore,
    },
 
    {
@@ -4236,7 +4236,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4247,7 +4247,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4257,7 +4257,7 @@
    /* .opcode      = */ 0xBC000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore
+   /* .properties  = */ PPCOpProp_IsStore,
    },
 
    {
@@ -4267,7 +4267,7 @@
    /* .opcode      = */ 0x7C0005AA,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore
+   /* .properties  = */ PPCOpProp_IsStore,
    },
 
    {
@@ -4278,7 +4278,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4288,7 +4288,7 @@
    /* .opcode      = */ 0x90000000,
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore
+   /* .properties  = */ PPCOpProp_IsStore,
    },
 
    {
@@ -4299,7 +4299,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4310,7 +4310,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4318,11 +4318,11 @@
    /* .name        = */ "stwcx.",
    /* .description =    "Store word conditional indexed", */
    /* .opcode      = */ 0x7C00012D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ X_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4333,7 +4333,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsStore
+                        PPCOpProp_IsStore,
    },
 
    {
@@ -4345,7 +4345,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4356,7 +4356,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -4367,7 +4367,7 @@
    /* .format      = */ XO_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -4389,7 +4389,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -4412,7 +4412,7 @@
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -4435,7 +4435,7 @@
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -4459,7 +4459,7 @@
                         PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -4480,7 +4480,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -4493,7 +4493,7 @@
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -4517,7 +4517,7 @@
                         PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -4540,7 +4540,7 @@
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -4564,7 +4564,7 @@
                         PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -4584,7 +4584,7 @@
    /* .opcode      = */ 0x7C0004AC,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsSync
+   /* .properties  = */ PPCOpProp_IsSync,
    },
 
    {
@@ -4592,10 +4592,10 @@
    /* .name        = */ "tabort.",
    /* .description =    "Transactional Memory abort", */
    /* .opcode      = */ 0x7C00071D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ X_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4603,11 +4603,11 @@
    /* .name        = */ "tabortdeq.",
    /* .description =    "Transactional Memory abort dword if equal", */
    /* .opcode      = */ 0x7C80065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4615,11 +4615,11 @@
    /* .name        = */ "tabortdeqi.",
    /* .description =    "Transactional Memory abort dword if equal to immediate value", */
    /* .opcode      = */ 0x7C8006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4627,11 +4627,11 @@
    /* .name        = */ "tabortdge.",
    /* .description =    "Transactional Memory abort dword if greater than or equal to", */
    /* .opcode      = */ 0x7D80065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4639,11 +4639,11 @@
    /* .name        = */ "tabortdgei.",
    /* .description =    "Transactional Memory abort dword if greater than or equal to immediate", */
    /* .opcode      = */ 0x7D8006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4651,11 +4651,11 @@
    /* .name        = */ "tabortdgt.",
    /* .description =    "Transactional Memory abort dword if greater than", */
    /* .opcode      = */ 0x7D00065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4663,11 +4663,11 @@
    /* .name        = */ "tabortdgti.",
    /* .description =    "Transactional Memory abort dword if greater than immediate", */
    /* .opcode      = */ 0x7D0006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4675,11 +4675,11 @@
    /* .name        = */ "tabortdle.",
    /* .description =    "Transactional Memory abort dword if less than or equal to", */
    /* .opcode      = */ 0x7E80065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4687,11 +4687,11 @@
    /* .name        = */ "tabortdlei.",
    /* .description =    "Transactional Memory abort dword if less than or equal to immediate", */
    /* .opcode      = */ 0x7E8006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4699,11 +4699,11 @@
    /* .name        = */ "tabortdlge.",
    /* .description =    "Transactional Memory abort dword if logically greater than or equal to", */
    /* .opcode      = */ 0x7CA0065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4711,11 +4711,11 @@
    /* .name        = */ "tabortdlgei.",
    /* .description =    "Transactional Memory abort dword if logically greater than or equal to immediate", */
    /* .opcode      = */ 0x7CA006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4723,11 +4723,11 @@
    /* .name        = */ "tabortdlgt.",
    /* .description =    "Transactional Memory abort dword if logically greater than", */
    /* .opcode      = */ 0x7C20065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4735,11 +4735,11 @@
    /* .name        = */ "tabortdlgti.",
    /* .description =    "Transactional Memory abort dword if logically greater than immediate", */
    /* .opcode      = */ 0x7C2006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4747,11 +4747,11 @@
    /* .name        = */ "tabortdlle.",
    /* .description =    "Transactional Memory abort dword if logically less than or equal to", */
    /* .opcode      = */ 0x7CC0065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4759,11 +4759,11 @@
    /* .name        = */ "tabortdllei.",
    /* .description =    "Transactional Memory abort dword if logically less than or equal to immediate", */
    /* .opcode      = */ 0x7CC006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4771,11 +4771,11 @@
    /* .name        = */ "tabortdllt.",
    /* .description =    "Transactional Memory abort dword if logically less than", */
    /* .opcode      = */ 0x7C40065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4783,11 +4783,11 @@
    /* .name        = */ "tabortdllti.",
    /* .description =    "Transactional Memory abort dword if logically less than immediate", */
    /* .opcode      = */ 0x7C4006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4795,11 +4795,11 @@
    /* .name        = */ "tabortdlt.",
    /* .description =    "Transactional Memory abort dword if less than", */
    /* .opcode      = */ 0x7E00065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4807,11 +4807,11 @@
    /* .name        = */ "tabortdlti.",
    /* .description =    "Transactional Memory abort dword if less than immediate", */
    /* .opcode      = */ 0x7E0006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4819,11 +4819,11 @@
    /* .name        = */ "tabortdneq.",
    /* .description =    "Transactional Memory abort dword if not equal to", */
    /* .opcode      = */ 0x7F00065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4831,11 +4831,11 @@
    /* .name        = */ "tabortdneqi.",
    /* .description =    "Transactional Memory abort dword if not equal to immediate", */
    /* .opcode      = */ 0x7F0006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -4843,10 +4843,10 @@
    /* .name        = */ "tabortweq.",
    /* .description =    "Transactional Memory abort if equal", */
    /* .opcode      = */ 0x7C80065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4854,10 +4854,10 @@
    /* .name        = */ "tabortweqi.",
    /* .description =    "Transactional Memory abort if equal to immediate value", */
    /* .opcode      = */ 0x7C8006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4865,10 +4865,10 @@
    /* .name        = */ "tabortwge.",
    /* .description =    "Transactional Memory abort if greater than or equal to", */
    /* .opcode      = */ 0x7D80065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4876,10 +4876,10 @@
    /* .name        = */ "tabortwgei.",
    /* .description =    "Transactional Memory abort if greater than or equal to immediate", */
    /* .opcode      = */ 0x7D8006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4887,10 +4887,10 @@
    /* .name        = */ "tabortwgt.",
    /* .description =    "Transactional Memory abort if greater than", */
    /* .opcode      = */ 0x7D00065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4898,10 +4898,10 @@
    /* .name        = */ "tabortwgti.",
    /* .description =    "Transactional Memory abort if greater than immediate", */
    /* .opcode      = */ 0x7D0006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4909,10 +4909,10 @@
    /* .name        = */ "tabortwle.",
    /* .description =    "Transactional Memory abort if less than or equal to", */
    /* .opcode      = */ 0x7E80065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4920,10 +4920,10 @@
    /* .name        = */ "tabortwlei.",
    /* .description =    "Transactional Memory abort if less than or equal to immediate", */
    /* .opcode      = */ 0x7E8006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4931,10 +4931,10 @@
    /* .name        = */ "tabortwlge.",
    /* .description =    "Transactional Memory abort if logically greater than or equal to", */
    /* .opcode      = */ 0x7CA0065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4942,10 +4942,10 @@
    /* .name        = */ "tabortwlgei.",
    /* .description =    "Transactional Memory abort if logically greater than or equal to immediate", */
    /* .opcode      = */ 0x7CA006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4953,10 +4953,10 @@
    /* .name        = */ "tabortwlgt.",
    /* .description =    "Transactional Memory abort if logically greater than", */
    /* .opcode      = */ 0x7C20065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4964,10 +4964,10 @@
    /* .name        = */ "tabortwlgti.",
    /* .description =    "Transactional Memory abort if logically greater than immediate", */
    /* .opcode      = */ 0x7C2006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4975,10 +4975,10 @@
    /* .name        = */ "tabortwlle.",
    /* .description =    "Transactional Memory abort if logically less than or equal to", */
    /* .opcode      = */ 0x7CC0065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4986,10 +4986,10 @@
    /* .name        = */ "tabortwllei.",
    /* .description =    "Transactional Memory abort if logically less than or equal to immediate", */
    /* .opcode      = */ 0x7CC006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -4997,10 +4997,10 @@
    /* .name        = */ "tabortwllt.",
    /* .description =    "Transactional Memory abort if logically less than", */
    /* .opcode      = */ 0x7C40065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5008,10 +5008,10 @@
    /* .name        = */ "tabortwllti.",
    /* .description =    "Transactional Memory abort if logically less than immediate", */
    /* .opcode      = */ 0x7C4006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5019,10 +5019,10 @@
    /* .name        = */ "tabortwlt.",
    /* .description =    "Transactional Memory abort if less than", */
    /* .opcode      = */ 0x7E00065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5030,10 +5030,10 @@
    /* .name        = */ "tabortwlti.",
    /* .description =    "Transactional Memory abort if less than immediate", */
    /* .opcode      = */ 0x7E0006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5041,10 +5041,10 @@
    /* .name        = */ "tabortwneq.",
    /* .description =    "Transactional Memory abort if not equal to", */
    /* .opcode      = */ 0x7F00065D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5052,10 +5052,10 @@
    /* .name        = */ "tabortwneqi.",
    /* .description =    "Transactional Memory abort if not equal to immediate", */
    /* .opcode      = */ 0x7F0006DD,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5063,9 +5063,9 @@
    /* .name        = */ "tbegin.",
    /* .description =    "Begin transaction", */
    /* .opcode      = */ 0x7C00051D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
-   /* .properties  = */ PPCOpProp_IsRecordForm
+   /* .format      = */ X_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp8,
+   /* .properties  = */ PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5073,9 +5073,9 @@
    /* .name        = */ "tbeginro.",
    /* .description =    "Begin roll-back only transaction", */
    /* .opcode      = */ 0x7C20051D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
-   /* .properties  = */ PPCOpProp_IsRecordForm
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
+   /* .properties  = */ PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5083,9 +5083,9 @@
    /* .name        = */ "tend.",
    /* .description =    "End transaction (supports nesting)", */
    /* .opcode      = */ 0x7C00055D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
-   /* .properties  = */ PPCOpProp_IsRecordForm
+   /* .format      = */ X_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp8,
+   /* .properties  = */ PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5093,9 +5093,9 @@
    /* .name        = */ "tendall.",
    /* .description =    "End transaction", */
    /* .opcode      = */ 0x7E00055D,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
-   /* .properties  = */ PPCOpProp_IsRecordForm
+   /* .format      = */ UNKNOWN_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
+   /* .properties  = */ PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5106,7 +5106,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5117,7 +5117,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5128,7 +5128,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5139,7 +5139,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5150,7 +5150,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5161,7 +5161,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5172,7 +5172,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5183,7 +5183,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5194,7 +5194,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5205,7 +5205,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5216,7 +5216,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5227,7 +5227,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5238,7 +5238,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5249,7 +5249,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5260,7 +5260,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5271,7 +5271,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5282,7 +5282,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5293,7 +5293,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5304,7 +5304,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5315,7 +5315,7 @@
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
-                        PPCOpProp_DWord
+                        PPCOpProp_DWord,
    },
 
    {
@@ -5325,7 +5325,7 @@
    /* .opcode      = */ 0x7FE00008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5335,7 +5335,7 @@
    /* .opcode      = */ 0x7C800008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5345,7 +5345,7 @@
    /* .opcode      = */ 0x0C800000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5355,7 +5355,7 @@
    /* .opcode      = */ 0x7D800008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5365,7 +5365,7 @@
    /* .opcode      = */ 0x0D800000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5375,7 +5375,7 @@
    /* .opcode      = */ 0x7D000008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5385,7 +5385,7 @@
    /* .opcode      = */ 0x0D000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5395,7 +5395,7 @@
    /* .opcode      = */ 0x7E800008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5405,7 +5405,7 @@
    /* .opcode      = */ 0x0E800000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5415,7 +5415,7 @@
    /* .opcode      = */ 0x7CA00008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5425,7 +5425,7 @@
    /* .opcode      = */ 0x0CA00000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5435,7 +5435,7 @@
    /* .opcode      = */ 0x7C200008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5445,7 +5445,7 @@
    /* .opcode      = */ 0x0C200000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5455,7 +5455,7 @@
    /* .opcode      = */ 0x7CC00008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5465,7 +5465,7 @@
    /* .opcode      = */ 0x0CC00000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5475,7 +5475,7 @@
    /* .opcode      = */ 0x7C400008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5485,7 +5485,7 @@
    /* .opcode      = */ 0x0C400000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5495,7 +5495,7 @@
    /* .opcode      = */ 0x7E000008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5505,7 +5505,7 @@
    /* .opcode      = */ 0x0E000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5515,7 +5515,7 @@
    /* .opcode      = */ 0x7F000008,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
@@ -5525,11 +5525,11 @@
    /* .opcode      = */ 0x0F000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_Trap
+   /* .properties  = */ PPCOpProp_Trap,
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::xor,
+   /* .mnemonic    = */ OMR::InstOpCode::XOR,
    /* .name        = */ "xor",
    /* .description =    "XOR", */
    /* .opcode      = */ 0x7C000278,
@@ -5537,17 +5537,17 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::xor_r,
    /* .name        = */ "xor.",
    /* .description =    "XOR Rc=1", */
-   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xor].opcode + 1,
-   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xor].format,
-   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xor].minimumALS,
-   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xor].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::XOR].opcode + 1,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::XOR].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::XOR].minimumALS,
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::XOR].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -5558,7 +5558,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -5569,7 +5569,7 @@
    /* .format      = */ D_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -5579,7 +5579,7 @@
    /* .opcode      = */ 0x60000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -5589,7 +5589,7 @@
    /* .opcode      = */ 0x60000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -5599,7 +5599,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -5609,7 +5609,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -5619,7 +5619,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5629,7 +5629,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5639,7 +5639,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5649,7 +5649,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5659,7 +5659,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -5669,7 +5669,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5679,7 +5679,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5689,7 +5689,7 @@
    /* .opcode      = */ 0x7C000038,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -5699,7 +5699,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -5709,7 +5709,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5719,7 +5719,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5729,7 +5729,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5739,7 +5739,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5749,7 +5749,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5759,7 +5759,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5769,7 +5769,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5779,7 +5779,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5789,7 +5789,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5799,7 +5799,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5809,7 +5809,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5819,7 +5819,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5829,7 +5829,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5839,7 +5839,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5849,7 +5849,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp
+   /* .properties  = */ PPCOpProp_BranchOp,
    },
 
    {
@@ -5859,7 +5859,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5869,7 +5869,7 @@
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None
+   /* .properties  = */ PPCOpProp_None,
    },
 
    {
@@ -5880,7 +5880,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_IsVMX
+                        PPCOpProp_IsVMX,
    },
 
    {
@@ -5891,7 +5891,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_IsVMX
+                        PPCOpProp_IsVMX,
    },
 
    {
@@ -5902,7 +5902,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_IsVMX
+                        PPCOpProp_IsVMX,
    },
 
    {
@@ -5913,7 +5913,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_IsVMX
+                        PPCOpProp_IsVMX,
    },
 
    {
@@ -5924,7 +5924,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_IsVMX
+                        PPCOpProp_IsVMX,
    },
 
    {
@@ -5935,7 +5935,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_IsVMX
+                        PPCOpProp_IsVMX,
    },
 
    {
@@ -5946,7 +5946,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_IsVMX
+                        PPCOpProp_IsVMX,
    },
 
    {
@@ -5957,7 +5957,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_IsVMX
+                        PPCOpProp_IsVMX,
    },
 
    {
@@ -5968,7 +5968,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_IsVMX
+                        PPCOpProp_IsVMX,
    },
 
    {
@@ -5979,7 +5979,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_IsVMX
+                        PPCOpProp_IsVMX,
    },
 
    {
@@ -5990,7 +5990,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6001,7 +6001,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6012,7 +6012,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6023,7 +6023,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6034,7 +6034,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6045,7 +6045,7 @@
    /* .format      = */ VA_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6056,7 +6056,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6067,7 +6067,7 @@
    /* .format      = */ VA_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6078,7 +6078,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6089,7 +6089,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6100,7 +6100,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6111,7 +6111,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6122,7 +6122,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6134,7 +6134,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -6146,7 +6146,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -6158,7 +6158,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -6169,7 +6169,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6180,7 +6180,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6191,7 +6191,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6203,7 +6203,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6215,7 +6215,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6227,7 +6227,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6239,7 +6239,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6251,7 +6251,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6263,7 +6263,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6275,7 +6275,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6287,7 +6287,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6299,7 +6299,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6311,7 +6311,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6323,7 +6323,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6335,7 +6335,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6347,7 +6347,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6359,7 +6359,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6371,7 +6371,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6383,7 +6383,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6395,7 +6395,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6406,7 +6406,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6417,7 +6417,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6428,7 +6428,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6439,7 +6439,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6450,7 +6450,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6461,7 +6461,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6472,7 +6472,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6483,7 +6483,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6494,7 +6494,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6505,7 +6505,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6516,7 +6516,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6527,7 +6527,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6538,7 +6538,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6549,7 +6549,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6560,7 +6560,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6571,7 +6571,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6582,7 +6582,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6593,7 +6593,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6604,7 +6604,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6615,7 +6615,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6626,7 +6626,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6637,7 +6637,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6648,7 +6648,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6659,7 +6659,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6670,7 +6670,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6681,7 +6681,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6692,7 +6692,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6703,7 +6703,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6714,7 +6714,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6725,7 +6725,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6736,7 +6736,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6747,7 +6747,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6758,7 +6758,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6769,7 +6769,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6780,7 +6780,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6791,7 +6791,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6802,7 +6802,7 @@
    /* .format      = */ VA_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6814,7 +6814,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6827,7 +6827,7 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_IsRecordForm |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6839,7 +6839,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6852,7 +6852,7 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_IsRecordForm |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6864,7 +6864,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6877,7 +6877,7 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_IsRecordForm |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6889,7 +6889,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6902,7 +6902,7 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_IsRecordForm |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6914,7 +6914,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6927,7 +6927,7 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_IsRecordForm |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6939,7 +6939,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6952,7 +6952,7 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_IsRecordForm |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6964,7 +6964,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6977,7 +6977,7 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_IsRecordForm |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -6989,7 +6989,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7002,7 +7002,7 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_IsRecordForm |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7014,7 +7014,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7027,7 +7027,7 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_IsRecordForm |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7039,7 +7039,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7051,7 +7051,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7063,7 +7063,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7075,7 +7075,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7086,7 +7086,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7097,7 +7097,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7108,7 +7108,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7119,7 +7119,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7130,7 +7130,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7141,7 +7141,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7152,7 +7152,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7163,7 +7163,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7176,7 +7176,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7190,7 +7190,7 @@
                         PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7203,7 +7203,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsStore |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7217,7 +7217,7 @@
                         PPCOpProp_IsStore |
                         PPCOpProp_IsVSX |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7229,7 +7229,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7242,7 +7242,7 @@
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7254,7 +7254,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7266,7 +7266,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7279,7 +7279,7 @@
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7291,7 +7291,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7304,7 +7304,7 @@
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVSX |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7316,7 +7316,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7329,7 +7329,7 @@
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVSX |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7342,7 +7342,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7354,7 +7354,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7367,7 +7367,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7380,7 +7380,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7393,7 +7393,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_IsRegCopy |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7406,7 +7406,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7419,7 +7419,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7431,7 +7431,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7443,7 +7443,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7455,7 +7455,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7467,7 +7467,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7479,7 +7479,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7491,7 +7491,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7504,7 +7504,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7517,7 +7517,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7529,7 +7529,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7541,7 +7541,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7553,7 +7553,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7565,7 +7565,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7578,7 +7578,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7591,7 +7591,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7604,7 +7604,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7616,7 +7616,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7628,7 +7628,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7640,7 +7640,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7652,7 +7652,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7664,7 +7664,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7676,7 +7676,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7689,7 +7689,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7701,7 +7701,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7714,7 +7714,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7727,7 +7727,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_AltFormat |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7739,7 +7739,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7751,7 +7751,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7763,7 +7763,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7776,7 +7776,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp
+                        PPCOpProp_CompareOp,
    },
 
    {
@@ -7784,13 +7784,13 @@
    /* .name        = */ "xvcmpeqdp.",
    /* .description =    "VSX Vector Compare Equal To Double-Precision", */
    /* .opcode      = */ 0xF0000718,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ XX3_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -7803,7 +7803,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp
+                        PPCOpProp_CompareOp,
    },
 
    {
@@ -7811,13 +7811,13 @@
    /* .name        = */ "xvcmpgedp.",
    /* .description =    "VSX Vector Compare Greater Than Or Equal To Double-Precision", */
    /* .opcode      = */ 0xF0000798,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ XX3_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -7830,7 +7830,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp
+                        PPCOpProp_CompareOp,
    },
 
    {
@@ -7838,13 +7838,13 @@
    /* .name        = */ "xvcmpgtdp.",
    /* .description =    "VSX Vector Compare Greater Than Double-Precision", */
    /* .opcode      = */ 0xF0000758,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ XX3_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -7856,7 +7856,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7868,7 +7868,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7881,7 +7881,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7894,7 +7894,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_UsesTarget
+                        PPCOpProp_UsesTarget,
    },
 
    {
@@ -7907,7 +7907,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_UsesTarget
+                        PPCOpProp_UsesTarget,
    },
 
    {
@@ -7919,7 +7919,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -7932,7 +7932,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_UsesTarget
+                        PPCOpProp_UsesTarget,
    },
 
    {
@@ -7945,7 +7945,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_UsesTarget
+                        PPCOpProp_UsesTarget,
    },
 
    {
@@ -7958,7 +7958,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_UsesTarget
+                        PPCOpProp_UsesTarget,
    },
 
    {
@@ -7971,7 +7971,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_UsesTarget
+                        PPCOpProp_UsesTarget,
    },
 
    {
@@ -7984,7 +7984,7 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -7995,7 +7995,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8006,7 +8006,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8017,7 +8017,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -8028,7 +8028,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -8039,7 +8039,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad
+                        PPCOpProp_IsLoad,
    },
 
    {
@@ -8050,7 +8050,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore
+                        PPCOpProp_IsStore,
    },
 
    {
@@ -8061,7 +8061,7 @@
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore
+                        PPCOpProp_IsStore,
    },
 
    {
@@ -8072,7 +8072,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8085,7 +8085,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8098,7 +8098,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8111,7 +8111,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8124,7 +8124,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8137,7 +8137,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8150,7 +8150,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8163,7 +8163,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8176,7 +8176,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8187,7 +8187,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8198,7 +8198,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8209,7 +8209,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8221,7 +8221,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8233,7 +8233,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8244,7 +8244,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8255,7 +8255,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8266,7 +8266,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8277,7 +8277,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8288,7 +8288,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8299,7 +8299,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8310,7 +8310,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8323,7 +8323,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8336,7 +8336,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8349,7 +8349,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8362,7 +8362,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8374,7 +8374,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8386,7 +8386,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8398,7 +8398,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8410,7 +8410,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8421,7 +8421,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8432,7 +8432,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8443,7 +8443,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8454,7 +8454,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8465,7 +8465,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8476,7 +8476,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8487,7 +8487,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8498,7 +8498,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8509,7 +8509,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8520,7 +8520,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8531,7 +8531,7 @@
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8544,7 +8544,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8556,7 +8556,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8567,7 +8567,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8579,7 +8579,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp
+                        PPCOpProp_CompareOp,
    },
 
    {
@@ -8587,12 +8587,12 @@
    /* .name        = */ "xvcmpeqsp.",
    /* .description =    "Vector Compare Equal To Single-Precision & record CR6", */
    /* .opcode      = */ 0xF0000618,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ XX3_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -8604,7 +8604,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp
+                        PPCOpProp_CompareOp,
    },
 
    {
@@ -8612,12 +8612,12 @@
    /* .name        = */ "xvcmpgesp.",
    /* .description =    "Vector Compare Greater Than or Equal To Single-Precision & record CR6", */
    /* .opcode      = */ 0xF0000698,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ XX3_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -8629,7 +8629,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp
+                        PPCOpProp_CompareOp,
    },
 
    {
@@ -8637,12 +8637,12 @@
    /* .name        = */ "xvcmpgtsp.",
    /* .description =    "Vector Compare Greater Than Single-Precision & record CR6", */
    /* .opcode      = */ 0xF0000658,
-   /* .format      = */ ,
-   /* .minimumALS  = */ ,
+   /* .format      = */ XX3_FORMAT,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm
+                        PPCOpProp_IsRecordForm,
    },
 
    {
@@ -8654,7 +8654,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8665,7 +8665,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8678,7 +8678,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8691,7 +8691,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8704,7 +8704,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8717,7 +8717,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8730,7 +8730,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8743,7 +8743,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8756,7 +8756,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8768,7 +8768,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8781,7 +8781,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8793,7 +8793,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8806,7 +8806,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8819,7 +8819,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8832,7 +8832,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8844,7 +8844,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8857,7 +8857,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8870,7 +8870,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8883,7 +8883,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8895,7 +8895,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -8906,7 +8906,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8917,7 +8917,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8928,7 +8928,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8939,7 +8939,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8950,7 +8950,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8961,7 +8961,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8972,7 +8972,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8983,7 +8983,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -8996,7 +8996,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9008,7 +9008,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9020,7 +9020,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9032,7 +9032,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -9043,7 +9043,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -9055,7 +9055,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -9066,7 +9066,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -9077,7 +9077,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -9088,7 +9088,7 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -9101,7 +9101,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9114,7 +9114,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9127,7 +9127,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9140,7 +9140,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9153,7 +9153,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9166,7 +9166,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9178,7 +9178,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9190,7 +9190,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9202,7 +9202,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9214,7 +9214,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9226,7 +9226,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9238,7 +9238,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9251,7 +9251,7 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9263,7 +9263,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9275,7 +9275,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_AltFormat
+                        PPCOpProp_AltFormat,
    },
 
    {
@@ -9286,6 +9286,6 @@
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree
+                        PPCOpProp_SyncSideEffectFree,
    },
 

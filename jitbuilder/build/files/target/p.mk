@@ -31,6 +31,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/p/codegen/PPCAOTRelocation.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/PPCBinaryEncoding.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRCodeGenerator.cpp \
+    $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRInstOpCode.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRInstruction.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/PPCDebug.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/PPCHelperCallSnippet.cpp \

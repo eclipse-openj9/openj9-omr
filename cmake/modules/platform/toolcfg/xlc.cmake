@@ -168,7 +168,12 @@ elseif(OMR_OS_ZOS)
 
 	# Configure the platform dependent library for multithreading
 	set(OMR_PLATFORM_THREAD_LIBRARY "")
+endif()
 
+set(SPP_CMD ${CMAKE_C_COMPILER})
+set(SPP_FLAGS -E -P)
+
+if(OMR_OS_ZOS)
 	function(_omr_toolchain_process_exports TARGET_NAME)
 		# We only need to do something if we are dealing with a shared library
 		get_target_property(target_type ${TARGET_NAME} TYPE)
@@ -181,7 +186,19 @@ elseif(OMR_OS_ZOS)
 				-Wc,DLL,EXPORTALL
 		)
 	endfunction()
-endif()
+else()
+	function(_omr_toolchain_process_exports TARGET_NAME)
+		# we only need to do something if we are dealing with a shared library
+		get_target_property(target_type ${TARGET_NAME} TYPE)
+		if(NOT target_type STREQUAL "SHARED_LIBRARY")
+			return()
+		endif()
 
-set(SPP_CMD ${CMAKE_C_COMPILER})
-set(SPP_FLAGS -E -P)
+		set(exp_file "$<TARGET_PROPERTY:${TARGET_NAME},BINARY_DIR>/${TARGET_NAME}.exp")
+		omr_process_template(
+			"${omr_SOURCE_DIR}/cmake/modules/platform/toolcfg/xlc_exports.exp.in"
+			"${exp_file}"
+		)
+		set_property(TARGET ${TARGET_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-bE:${TARGET_NAME}.exp")
+	endfunction()
+endif()

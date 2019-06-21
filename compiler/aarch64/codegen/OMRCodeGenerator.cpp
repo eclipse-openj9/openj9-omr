@@ -128,8 +128,6 @@ OMR::ARM64::CodeGenerator::beginInstructionSelection()
    TR::Node *startNode = comp->getStartTree()->getNode();
    if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private)
       {
-      TR_UNIMPLEMENTED();
-
       _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::ARM64ImmInstruction(TR::InstOpCode::dd, startNode, 0, self());
       }
    else

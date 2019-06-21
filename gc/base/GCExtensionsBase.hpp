@@ -212,6 +212,7 @@ protected:
 	OMR_VM* _omrVM;
 	OMR::GC::Forge _forge;
 	MM_GlobalCollector* _globalCollector; /**< The global collector for the system */
+	uintptr_t lastGlobalGCFreeBytes;  /**< records the free memory size from after Global GC cycle */
 #if defined(OMR_GC_OBJECT_MAP)
 	MM_ObjectMap *_objectMap;
 #endif /* defined(OMR_GC_OBJECT_MAP) */
@@ -265,6 +266,7 @@ public:
 	MM_SublistPool rememberedSet;
 	uintptr_t oldHeapSizeOnLastGlobalGC;
 	uintptr_t freeOldHeapSizeOnLastGlobalGC;
+	float concurrentKickoffTenuringHeadroom; /**< percentage of free memory remaining in tenure heap. Used in conjunction with free memory to determine concurrent mark kickoff */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 #if defined(OMR_GC_REALTIME)
 	MM_RememberedSetSATB* sATBBarrierRememberedSet; /**< The snapshot at the beginning barrier remembered set used for the write barrier */
@@ -344,6 +346,7 @@ public:
 	bool debugLOAFreelist;
 	bool debugLOAAllocate;
 	int loaFreeHistorySize; /**< max size of _loaFreeRatioHistory array */
+	uintptr_t lastGlobalGCFreeBytesLOA; /**< records the LOA free memory size from after Global GC cycle */
 	ConcurrentMetering concurrentMetering;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
@@ -774,7 +777,6 @@ public:
 
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	uintptr_t idleMinimumFree;   /**< percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
-	uintptr_t lastGCFreeBytes;  /**< records the free memory size from last Global GC cycle */
 	bool gcOnIdle; /**< Enables releasing free heap pages if true while systemGarbageCollect invoked with IDLE GC code, default is false */
 	bool compactOnIdle; /**< Forces compaction if global GC executed while VM Runtime State set to IDLE, default is false */
 	float gcOnIdleCompactThreshold; /**< Enables compaction when fragmented memory and dark matter exceed this limit. The larger this number, the more memory can be fragmented before compact is triggered **/
@@ -860,6 +862,9 @@ public:
 
 	MMINLINE MM_GlobalCollector* getGlobalCollector() { return _globalCollector; }
 	MMINLINE void setGlobalCollector(MM_GlobalCollector* collector) { _globalCollector = collector; }
+
+	MMINLINE uintptr_t getLastGlobalGCFreeBytes(){ return lastGlobalGCFreeBytes; }
+	MMINLINE void setLastGlobalGCFreeBytes(uintptr_t globalGCFreeBytes){ lastGlobalGCFreeBytes = globalGCFreeBytes;}
 
 #if defined(OMR_GC_OBJECT_MAP)
 	MMINLINE MM_ObjectMap *getObjectMap() { return _objectMap; }
@@ -1302,6 +1307,7 @@ public:
 		, _omrVM(NULL)
 		,_forge()
 		, _globalCollector(NULL)
+		, lastGlobalGCFreeBytes(0)
 #if defined(OMR_GC_OBJECT_MAP)
 		, _objectMap(NULL)
 #endif /* defined(OMR_GC_OBJECT_MAP) */
@@ -1341,6 +1347,7 @@ public:
 		, rememberedSet()
 		, oldHeapSizeOnLastGlobalGC(UDATA_MAX)
 		, freeOldHeapSizeOnLastGlobalGC(UDATA_MAX)
+		, concurrentKickoffTenuringHeadroom((float)0.02)
 #endif /* OMR_GC_MODRON_SCAVENGER */		
 #if defined(OMR_GC_REALTIME)
 		, sATBBarrierRememberedSet(NULL)
@@ -1397,6 +1404,7 @@ public:
 		, debugLOAFreelist(false)
 		, debugLOAAllocate(false)
 		, loaFreeHistorySize(15)
+		, lastGlobalGCFreeBytesLOA(0)
 		, concurrentMetering(METER_BY_SOA)
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 		, disableExplicitGC(false)
@@ -1734,7 +1742,6 @@ public:
 		, darkMatterSampleRate(32)
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 		, idleMinimumFree(0)
-		, lastGCFreeBytes(0)
 		, gcOnIdle(false)
 		, compactOnIdle(false)
 		, gcOnIdleCompactThreshold((float)0.25)

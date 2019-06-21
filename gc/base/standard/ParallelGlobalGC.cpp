@@ -1107,9 +1107,10 @@ MM_ParallelGlobalGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSp
 	/* Clear overflow flag regardless */
 	_extensions->globalGCStats.workPacketStats.setSTWWorkStackOverflowOccured(false);
 	_extensions->allocationStats.clear();
-#if defined(OMR_GC_IDLE_HEAP_MANAGER)
-	_extensions->lastGCFreeBytes = _extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
-#endif
+	_extensions->setLastGlobalGCFreeBytes(_extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD));
+#if defined(OMR_GC_LARGE_OBJECT_AREA)
+	_extensions->lastGlobalGCFreeBytesLOA = _extensions->heap->getApproximateActiveFreeLOAMemorySize(MEMORY_TYPE_OLD); 
+#endif /* defined (OMR_GC_LARGE_OBJECT_AREA) */
 
 
 #if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)

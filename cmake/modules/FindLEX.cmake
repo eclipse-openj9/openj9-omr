@@ -19,6 +19,8 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 #############################################################################
 
+include(FindPackageHandleStandardArgs)
+
 find_program(LEX_EXECUTABLE NAMES lex DOC "Path to the lex executable")
 mark_as_advanced(LEX_EXECUTABLE)
 
@@ -78,3 +80,8 @@ if(LEX_EXECUTABLE)
 			PROPERTIES OBJECT_DEPENDS ${YACC_${YACCTarget}_OUTPUT_HEADER})
 	endmacro()
 endif()
+
+find_package_handle_standard_args(LEX
+	REQUIRES_VARS
+		LEX_EXECUTABLE
+)

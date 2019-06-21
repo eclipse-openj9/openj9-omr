@@ -656,7 +656,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableDynamicSamplingWindow",        "M\t", RESET_OPTION_BIT(TR_DisableDynamicSamplingWindow), "F", NOT_IN_SUBSET},
    {"enableEarlyCompilationDuringIdleCpu","M\t", SET_OPTION_BIT(TR_EnableEarlyCompilationDuringIdleCpu), "F", NOT_IN_SUBSET},
    {"enableEBBCCInfo",                    "C\tenable tracking CCInfo in Extended Basic Block scope",  SET_OPTION_BIT(TR_EnableEBBCCInfo), "F"},
-   {"enableElementPrivatization",         "O\tenable privatization of stack declared elements accessed by const indices\n", SET_OPTION_BIT(TR_EnableElementPrivatization), "F"},
    {"enableExecutableELFGeneration",      "I\tenable the generation of executable ELF files", SET_OPTION_BIT(TR_EmitExecutableELFFile), "F", NOT_IN_SUBSET},
    {"enableExpensiveOptsAtWarm",          "O\tenable store sinking and OSR at warm and below", SET_OPTION_BIT(TR_EnableExpensiveOptsAtWarm), "F" },
    {"enableFastHotRecompilation",         "R\ttry to recompile at hot sooner", SET_OPTION_BIT(TR_EnableFastHotRecompilation), "F"},

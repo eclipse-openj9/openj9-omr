@@ -719,7 +719,10 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 
 	{
 		MM_MemoryPool *memoryPool= _extensions->heap->getDefaultMemorySpace()->getTenureMemorySubSpace()->getMemoryPool();
-		uintptr_t darkMatterBytes = memoryPool->getDarkMatterBytes();
+		uintptr_t darkMatterBytes = 0;
+		if (!_extensions->concurrentSweep) {
+			darkMatterBytes = memoryPool->getDarkMatterBytes();
+		}
 		uintptr_t freeMemorySize = memoryPool->getActualFreeMemorySize();
 		float darkMatterRatio = ((float)darkMatterBytes)/((float)freeMemorySize);
 
@@ -741,7 +744,10 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 		uintptr_t freeMemory = stats->getFreeMemory();
 		uintptr_t reusableFreeMemory = stats->getPageAlignedFreeMemory(pageSize);
 
-		uintptr_t darkMatter = memoryPool->getDarkMatterBytes();
+		uintptr_t darkMatter = 0;
+		if (!_extensions->concurrentSweep){
+			darkMatter = memoryPool->getDarkMatterBytes();
+		}
 		uintptr_t memoryFragmentationDiff = freeMemory - reusableFreeMemory;
 		uintptr_t totalFragmentation = memoryFragmentationDiff + darkMatter;
 		float totalFragmentationRatio = ((float)totalFragmentation)/((float)freeMemory);

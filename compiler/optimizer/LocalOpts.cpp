@@ -4290,35 +4290,6 @@ TR_Rematerialization::TR_Rematerialization(TR::OptimizationManager *manager)
    : TR::Optimization(manager), _prefetchNodes(trMemory())
    {}
 
-void TR_Rematerialization::rematerializeSSAddress(TR::Node *parent, int32_t addrChildIndex)
-   {
-   TR::Node *addressNode = parent->getChild(addrChildIndex);
-
-   if (addressNode->getReferenceCount() > 1 &&
-        ((addressNode->getOpCodeValue() == TR::loadaddr  &&
-         addressNode->getSymbolReference()->getSymbol()->isAutoOrParm())
-        ||
-        (addressNode->getOpCode().isArrayRef() &&
-         addressNode->getSecondChild()->getOpCode().isLoadConst() &&
-         cg()->getSupportsConstantOffsetInAddressing(addressNode->getSecondChild()->get64bitIntegralValue()))))
-
-      {
-      if (performTransformation(comp(), "%sRematerializing SS address %s (%p)\n", optDetailString(),addressNode->getOpCode().getName(),addressNode))
-         {
-         TR::Node *newChild =TR::Node::copy(addressNode);
-         newChild->setFutureUseCount(0);
-         newChild->setReferenceCount(0);
-         for (int32_t j = 0; j < newChild->getNumChildren(); j++)
-            {
-            newChild->getChild(j)->incReferenceCount();
-            }
-         newChild->setFlags(addressNode->getFlags());
-         parent->setAndIncChild(addrChildIndex, newChild);
-         addressNode->recursivelyDecReferenceCount();
-         }
-      }
-   }
-
 
 void TR_Rematerialization::rematerializeAddresses(TR::Node *indirectNode, TR::TreeTop *treeTop, vcount_t visitCount)
    {
@@ -4330,10 +4301,7 @@ void TR_Rematerialization::rematerializeAddresses(TR::Node *indirectNode, TR::Tr
    indirectNode->setVisitCount(visitCount);
    bool isCommonedAiadd = false;
 
-   bool treatAsSS = false;
-
-   if (!treatAsSS &&
-      indirectNode->getOpCode().isIndirect())
+   if (indirectNode->getOpCode().isIndirect())
       {
       TR::Node *node = indirectNode->getFirstChild();
 
@@ -4476,11 +4444,6 @@ void TR_Rematerialization::rematerializeAddresses(TR::Node *indirectNode, TR::Tr
                }
             }
          }
-      }
-
-   if (treatAsSS && indirectNode->getOpCode().isIndirect())
-      {
-      rematerializeSSAddress(indirectNode, 0);
       }
 
    for (int32_t i = 0; i < indirectNode->getNumChildren(); ++i)

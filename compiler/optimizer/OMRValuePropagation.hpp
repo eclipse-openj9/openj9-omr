@@ -490,23 +490,6 @@ class ValuePropagation : public TR::Optimization
    };
 
 
-   struct VPStringCached
-      {
-
-      TR_ALLOC(TR_Memory::ValuePropagation)
-
-      VPStringCached(TR::TreeTop *append1, TR::TreeTop *append2, TR::Node *appendString1, TR::Node *appendString2, TR::TreeTop *newTree, TR::TreeTop *toStringTree)
-         : _treetop1(append1), _treetop2(append2), _appendedString1(appendString1), _appendedString2(appendString2), _newTree(newTree), _toStringTree(toStringTree)
-         {}
-      TR::TreeTop                    *_treetop1;
-      TR::TreeTop                    *_treetop2;
-      TR::Node						 *_appendedString1;
-      TR::Node						 *_appendedString2;
-      TR::TreeTop					 *_newTree;
-      TR::TreeTop					 *_toStringTree;
-
-      };
-
    struct TR_TreeTopWrtBarFlag
       {
       TR_ALLOC(TR_Memory::ValuePropagation)
@@ -585,9 +568,6 @@ class ValuePropagation : public TR::Optimization
 
 
    void removeArrayCopyNode(TR::TreeTop *);
-   TR::SymbolReference * getStringCacheRef();
-   void transformStringConcats(VPStringCached *vcall);
-   void transformStringCtors(VPTreeTopPair *vcall2);
    void transformUnknownTypeArrayCopy(TR_TreeTopWrtBarFlag *);
    void transformReferenceArrayCopy(TR_TreeTopWrtBarFlag *);
    void transformReferenceArrayCopyWithoutCreatingStoreTrees(TR_TreeTopWrtBarFlag *arrayTree, TR::SymbolReference *srcObjRef, TR::SymbolReference *dstObjRef, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *lenRef);
@@ -924,8 +904,6 @@ class ValuePropagation : public TR::Optimization
    List<TR_ArrayCopySpineCheck> _arrayCopySpineCheck;
    List<TR::TreeTop> _multiLeafCallsToInline;
    List<TR_TreeTopNodePair> _scalarizedArrayCopies;
-   List<VPStringCached> _cachedStringBufferVcalls;
-   List<VPTreeTopPair> _cachedStringPeepHolesVcalls;
    List<TR::TreeTop> _converterCalls;
    List<TR::TreeTop> _objectCloneCalls;
    List<TR::TreeTop> _arrayCloneCalls;

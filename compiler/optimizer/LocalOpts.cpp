@@ -7338,6 +7338,11 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
 #ifdef J9_PROJECT_SPECIFIC
       if (methodSymbol->getRecognizedMethod() == TR::java_lang_invoke_MethodHandle_invokeExact && receiverInfo.hasKnownObjectIndex())
          specializeInvokeExactSymbol(node, receiverInfo.getKnownObjectIndex(), comp(), this);
+
+      // The method is a specialized thunk archetype, no further improvement is needed.
+      // Keeping running subsequent code may result in a crash because `offset` on the symref is not valid.
+      if (node->getSymbol()->castToMethodSymbol()->getMethod()->isArchetypeSpecimen())
+         return;
 #endif
       }
    else if (devirtualize)

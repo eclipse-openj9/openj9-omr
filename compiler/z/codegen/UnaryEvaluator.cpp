@@ -311,44 +311,20 @@ OMR::Z::TreeEvaluator::dsqrtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node * firstChild = node->getFirstChild();
    TR::Register * targetRegister = NULL;
 
-
-   // Calculate it for ourselves
-   if (firstChild->getOpCode().isLoadConst())
+   //See whether to use SQDB or SQDBR depending on how many times it is referenced
+   if (firstChild->isSingleRefUnevaluated() && firstChild->getOpCodeValue() == TR::dloadi)
       {
-      union { double valD; int64_t valI; } result;
       targetRegister = cg->allocateRegister(TR_FPR);
-      result.valD = sqrt(firstChild->getDouble());
-      TR::S390ConstantDataSnippet * cds = cg->findOrCreate8ByteConstant(node, result.valI);
-      generateRXInstruction(cg, TR::InstOpCode::LD, node, targetRegister, generateS390MemoryReference(cds, cg, 0, node));
+      generateRXEInstruction(cg, TR::InstOpCode::SQDB, node, targetRegister, generateS390MemoryReference(firstChild, cg), 0);
       }
    else
       {
-      TR::Register * opRegister = NULL;
-
-      //See whether to use SQDB or SQDBR depending on how many times it is referenced
-      if (firstChild->isSingleRefUnevaluated() && firstChild->getOpCodeValue() == TR::dloadi)
-         {
-         targetRegister = cg->allocateRegister(TR_FPR);
-         generateRXEInstruction(cg, TR::InstOpCode::SQDB, node, targetRegister, generateS390MemoryReference(firstChild, cg), 0);
-         }
-      else
-         {
-         opRegister = cg->evaluate(firstChild);
-
-         if (cg->canClobberNodesRegister(firstChild))
-            {
-            targetRegister = opRegister;
-            }
-         else
-            {
-            targetRegister = cg->allocateRegister(TR_FPR);
-            }
-         generateRRInstruction(cg, TR::InstOpCode::SQDBR, node, targetRegister, opRegister);
-         }
+      TR::Register * opRegister = cg->evaluate(firstChild);
+      targetRegister = cg->allocateRegister(TR_FPR);
+      generateRRInstruction(cg, TR::InstOpCode::SQDBR, node, targetRegister, opRegister);
+      cg->decReferenceCount(firstChild);
       }
-
    node->setRegister(targetRegister);
-   cg->decReferenceCount(firstChild);
    return targetRegister;
    }
 

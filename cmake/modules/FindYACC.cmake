@@ -19,6 +19,8 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 #############################################################################
 
+include(FindPackageHandleStandardArgs)
+
 find_program(YACC_EXECUTABLE NAMES yacc DOC "Path to the YACC executable")
 mark_as_advanced(YACC_EXECUTABLE)
 
@@ -91,3 +93,8 @@ if(YACC_EXECUTABLE)
 		endif()
 	endmacro()
 endif()
+
+find_package_handle_standard_args(YACC
+	REQUIRES_VARS
+		YACC_EXECUTABLE
+)

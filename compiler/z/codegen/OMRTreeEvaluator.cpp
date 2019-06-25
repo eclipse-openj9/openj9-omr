@@ -3056,9 +3056,9 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
    //            what about su2i? s2i? mixing of these? bytes? ints? longs?
    //
    else if (firstChild->getOpCodeValue()==TR::su2i && firstChild->getRegister()==NULL && firstChild->getReferenceCount()==1 &&
-            firstChild->getFirstChild()->getOpCodeValue()==TR::cloadi && firstChild->getFirstChild()->getRegister() &&
+            firstChild->getFirstChild()->getOpCodeValue()==TR::sloadi && firstChild->getFirstChild()->getRegister() &&
             secondChild->getOpCodeValue()==TR::su2i && secondChild->getRegister()==NULL && secondChild->getReferenceCount()==1 &&
-            secondChild->getFirstChild()->getOpCodeValue()==TR::cloadi && secondChild->getFirstChild()->getRegister())
+            secondChild->getFirstChild()->getOpCodeValue()==TR::sloadi && secondChild->getFirstChild()->getRegister())
       {
       if (branchTarget != NULL)
          {
@@ -5942,7 +5942,7 @@ OMR::Z::TreeEvaluator::lloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
 /**
  * sload Evaluator: load short integer
- *   - also handles cload, isload and icload
+ *   - also handles isload
  */
 TR::Register *
 OMR::Z::TreeEvaluator::sloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)

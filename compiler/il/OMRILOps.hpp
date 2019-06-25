@@ -1261,7 +1261,6 @@ public:
       switch (op)
          {
          case TR::bload:
-         case TR::cload:
          case TR::sload:
          case TR::iload:
          case TR::lload:
@@ -1269,7 +1268,6 @@ public:
          case TR::dload:
             return TR::vload;
          case TR::bloadi:
-         case TR::cloadi:
          case TR::sloadi:
          case TR::iloadi:
          case TR::lloadi:

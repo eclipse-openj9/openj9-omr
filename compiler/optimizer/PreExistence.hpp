@@ -50,12 +50,12 @@ class TR_PrexArgument
    TR_PrexArgument(
          ClassKind classKind,
          TR_OpaqueClassBlock *clazz = 0,
-         TR_OpaqueClassBlock *profiledClazz = 0,
-         bool p = false) :
+         TR_OpaqueClassBlock *profiledClazz = 0):
       _classKind(classKind),
       _class(clazz),
       _profiledClazz(profiledClazz),
-      _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
+      _knownObjectIndex(TR::KnownObjectTable::UNKNOWN),
+      _isTypeInfoForInlinedBody(false)
       { }
 
    static const char *priorKnowledgeStrings[];
@@ -82,6 +82,9 @@ class TR_PrexArgument
    TR::KnownObjectTable::Index getKnownObjectIndex() { return _knownObjectIndex; }
    bool hasKnownObjectIndex(){ return getKnownObjectIndex() != TR::KnownObjectTable::UNKNOWN; }
 
+   bool isTypeInfoForInlinedBody () { return _isTypeInfoForInlinedBody; }
+   void setTypeInfoForInlinedBody() { _isTypeInfoForInlinedBody = true; }
+
    private:
 
    ClassKind _classKind;
@@ -95,6 +98,7 @@ class TR_PrexArgument
    // optionally provided - when ObjectIsKnown
    //
    TR::KnownObjectTable::Index _knownObjectIndex;
+   bool _isTypeInfoForInlinedBody; // The prex arg info only apply to the inlined body but not on the taken side
    };
 
 class TR_PrexArgInfo

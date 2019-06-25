@@ -50,6 +50,7 @@ TR_PrexArgument::TR_PrexArgument(
    _classKind(ClassIsUnknown),
    _class(0),
    _profiledClazz(0),
+   _isTypeInfoForInlinedBody(false),
    _knownObjectIndex(knownObjectIndex)
    {
 #ifdef J9_PROJECT_SPECIFIC

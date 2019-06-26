@@ -56,6 +56,7 @@
 #include "env/PersistentInfo.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
+#include "env/TypeLayout.hpp"
 #include "env/defines.h"
 #include "env/jittypes.h"
 #include "il/Block.hpp"
@@ -292,6 +293,7 @@ OMR::Compilation::Compilation(
    _gpuKernelLineNumberList(m),
    _gpuPtxCount(0),
    _bitVectorPool(self()),
+   _typeLayoutMap((LayoutComparator()), LayoutAllocator(self()->region())),
    _tlsManager(*self())
    {
 
@@ -2747,4 +2749,20 @@ bool OMR::Compilation::isRecursiveMethodTarget(TR::Symbol *targetSymbol)
       }
 
    return isRecursive;
+   }
+
+const TR::TypeLayout* OMR::Compilation::typeLayout(TR_OpaqueClassBlock * clazz)
+   {
+   TR::Region& region = self()->region();
+   auto it = _typeLayoutMap.find(clazz); 
+   if (it != _typeLayoutMap.end())
+      {
+      return it->second;
+      }
+   else
+      {
+      const TR::TypeLayout* layout = TR::Compiler->cls.enumerateFields(region, clazz, self());
+      _typeLayoutMap.insert(std::make_pair(clazz, layout)); 
+      return layout; 
+      }
    }

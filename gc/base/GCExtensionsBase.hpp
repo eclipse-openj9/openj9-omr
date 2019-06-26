@@ -1425,7 +1425,7 @@ public:
 		, heapContractionStabilizationCount(3)
 		, heapSizeStartupHintConservativeFactor((float)0.7)
 		, heapSizeStartupHintWeightNewValue((float)0.8)	
-		, useGCStartupHints(false)	
+		, useGCStartupHints(true)	
 		, workpacketCount(0) /* only set if -Xgcworkpackets specified */
 		, packetListSplit(0)
 		, cacheListSplit(0)

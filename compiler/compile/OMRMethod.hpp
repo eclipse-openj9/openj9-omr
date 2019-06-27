@@ -19,8 +19,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef METHOD_INCL
-#define METHOD_INCL
+#ifndef OMR_METHOD_INCL
+#define OMR_METHOD_INCL
+
+/*
+ * The following #define and typedef must appear before any #includes in this file
+ */
+#ifndef OMR_METHOD_CONNECTOR
+#define OMR_METHOD_CONNECTOR
+namespace OMR { class Method; }
+namespace OMR { typedef OMR::Method MethodConnector; }
+#endif
+
 
 #include <limits.h>
 #include <stddef.h>
@@ -29,6 +39,7 @@
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
+#include "infra/Annotations.hpp"
 
 class TR_OpaqueClassBlock;
 class TR_ResolvedMethod;
@@ -86,7 +97,17 @@ protected:
    };
 
 
-class TR_Method
+typedef struct TR_AOTMethodInfo
+   {
+   TR_ResolvedMethod *resolvedMethod;
+   int32_t cpIndex;
+   } TR_AOTMethodInfo;
+
+
+namespace OMR
+{
+
+class Method
    {
    public:
 
@@ -116,7 +137,7 @@ class TR_Method
    bool isJ9()     { return _typeOfMethod == J9;     }
    Type methodType() { return _typeOfMethod; }
 
-   TR_Method(Type t = J9) : _typeOfMethod(t) { _recognizedMethod = _mandatoryRecognizedMethod = TR::unknownMethod; }
+   Method(Type t = J9) : _typeOfMethod(t) { _recognizedMethod = _mandatoryRecognizedMethod = TR::unknownMethod; }
 
    // --------------------------------------------------------------------------
    // J9
@@ -145,9 +166,6 @@ class TR_Method
    void setRecognizedMethod(TR::RecognizedMethod rm) { _recognizedMethod = rm; }
    void setMandatoryRecognizedMethod(TR::RecognizedMethod rm) { _mandatoryRecognizedMethod = rm; }
 
-   protected:
-
-
    private:
 
    TR::RecognizedMethod _recognizedMethod;
@@ -156,14 +174,6 @@ class TR_Method
 
    };
 
-
-typedef struct TR_AOTMethodInfo
-   {
-   TR_ResolvedMethod *resolvedMethod;
-   int32_t cpIndex;
-   } TR_AOTMethodInfo;
-
-
-namespace TR { typedef ::TR_Method Method; }
+}
 
 #endif

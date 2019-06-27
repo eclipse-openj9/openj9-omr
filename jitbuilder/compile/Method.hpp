@@ -30,7 +30,10 @@
 
 #include <string.h>
 
-#include "compile/OMRMethod.hpp"
+// Choose the OMR base version directly.  This is only temporary
+// while the Method class is being made extensible.
+//
+#include "compiler/compile/Method.hpp"
 #include "compile/ResolvedMethod.hpp"
 
 namespace TR { class IlGeneratorMethodDetails; }

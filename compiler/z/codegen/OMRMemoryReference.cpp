@@ -3296,7 +3296,6 @@ TR::MemoryReference *
 generateS390MemoryReference(int32_t iValue, TR::DataType type, TR::CodeGenerator * cg, TR::Register * treg, TR::Node *node)
    {
    TR::S390ConstantDataSnippet * targetsnippet = cg->findOrCreate4ByteConstant(node, iValue);
-
    return generateS390MemoryReference(targetsnippet, cg, treg, node);
    }
 
@@ -3358,7 +3357,7 @@ generateS390MemoryReference(TR::Node * node, TR::CodeGenerator * cg, bool canUse
    // A symbol reference is needed to adjust memory reference displacement (TR::MemoryReference::calcDisplacement).
    // If the node has no sym ref, this memory reference's gets a NULL symbol reference, which can lead to crashes in displacement
    // calculations.
-   TR_ASSERT(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
+   TR_ASSERT_FATAL(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
    return new (cg->trHeapMemory()) TR::MemoryReference(node, cg, canUseRX);
    }
 
@@ -3474,12 +3473,14 @@ reuseS390MemoryReference(TR::MemoryReference *baseMR, int32_t offset, TR::Node *
 TR::MemoryReference *
 generateS390MemoryReference(TR::Node * node, TR::SymbolReference * sr, TR::CodeGenerator * cg)
    {
+   TR_ASSERT_FATAL(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
    return new (cg->trHeapMemory()) TR::MemoryReference(node, sr, cg);
    }
 
 TR::MemoryReference *
 generateS390MemoryReference(TR::Snippet * tas, TR::CodeGenerator * cg, TR::Register * base, TR::Node * node)
    {
+   TR_ASSERT_FATAL(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
    return new (cg->trHeapMemory()) TR::MemoryReference(tas, cg, base, node);
    }
 

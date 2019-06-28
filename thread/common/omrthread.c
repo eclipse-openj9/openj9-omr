@@ -3508,9 +3508,7 @@ monitor_free(omrthread_library_t lib, omrthread_monitor_t monitor)
 
 	/* CMVC 112926 Delete the name if we copied it */
 	if (OMR_ARE_ANY_BITS_SET(monitor->flags, J9THREAD_MONITOR_NAME_COPY)) {
-		if (NULL != monitor->name) {
-			omrthread_free_memory(lib, monitor->name);
-		}
+		omrthread_free_memory(lib, monitor->name);
 		monitor->name = NULL;
 		monitor->flags &= ~J9THREAD_MONITOR_NAME_COPY;
 	}
@@ -3546,9 +3544,7 @@ monitor_free_nolock(omrthread_library_t lib, omrthread_t thread, omrthread_monit
 
 	/* CMVC 112926 Delete the name if we copied it */
 	if (OMR_ARE_ANY_BITS_SET(monitor->flags, J9THREAD_MONITOR_NAME_COPY)) {
-		if (monitor->name) {
-			omrthread_free_memory(lib, monitor->name);
-		}
+		omrthread_free_memory(lib, monitor->name);
 		monitor->name = NULL;
 		monitor->flags &= ~J9THREAD_MONITOR_NAME_COPY;
 	}

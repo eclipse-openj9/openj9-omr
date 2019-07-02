@@ -27,7 +27,7 @@
 #include "env/CompilerEnv.hpp"
 #include "env/FrontEnd.hpp"
 #include "env/IO.hpp"
-#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "env/RawAllocator.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "ilgen/MethodBuilder.hpp"

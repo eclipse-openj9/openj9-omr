@@ -22,6 +22,7 @@
 JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/compile/OSRData.cpp \
     $(JIT_OMR_DIRTY_DIR)/compile/OMRMethod.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/ResolvedMethod.cpp \
     $(JIT_OMR_DIRTY_DIR)/compile/VirtualGuard.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/OMROptions.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/OptimizationPlan.cpp \
@@ -274,7 +275,7 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCacheManager.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCacheMemorySegment.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCacheConfig.cpp \
-    $(JIT_PRODUCT_DIR)/compile/Method.cpp \
+    $(JIT_PRODUCT_DIR)/compile/ResolvedMethod.cpp \
     $(JIT_PRODUCT_DIR)/control/TestJit.cpp \
     $(JIT_PRODUCT_DIR)/env/FrontEnd.cpp \
     $(JIT_PRODUCT_DIR)/ilgen/IlInjector.cpp \

@@ -1461,7 +1461,7 @@ TR::Register *OMR::Power::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGe
    TR::Register *trgReg;
 
    if (((cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) &&
-       (node->getOpCodeValue() == TR::iu2f && (child->getOpCodeValue() == TR::iuload || child->getOpCodeValue() == TR::iuloadi))) ||
+       (node->getOpCodeValue() == TR::iu2f && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi))) ||
        (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6) &&
        (node->getOpCodeValue() == TR::i2f && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi)))) &&
        child->getReferenceCount() == 1 && child->getRegister() == NULL &&
@@ -1509,7 +1509,7 @@ TR::Register *OMR::Power::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGe
    TR::Register *trgReg;
 
    if (((cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) &&
-       (node->getOpCodeValue() == TR::iu2d && (child->getOpCodeValue() == TR::iuload || child->getOpCodeValue() == TR::iuloadi))) ||
+       (node->getOpCodeValue() == TR::iu2d && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi))) ||
        (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6) &&
        node->getOpCodeValue() == TR::i2d && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi))) &&
        child->getReferenceCount()==1 &&

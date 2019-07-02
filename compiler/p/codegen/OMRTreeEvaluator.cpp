@@ -366,7 +366,7 @@ TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, intptr
 
 
 
-// also handles iiload, iuload, iiuload
+// also handles iiload, iiuload
 TR::Register *OMR::Power::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
 #ifdef J9_PROJECT_SPECIFIC

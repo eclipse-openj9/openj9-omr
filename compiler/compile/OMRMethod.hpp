@@ -44,7 +44,7 @@ namespace OMR { typedef OMR::Method MethodConnector; }
 class TR_OpaqueClassBlock;
 class TR_ResolvedMethod;
 namespace TR { class Compilation; }
-
+namespace TR { class Method; }
 
 // Method indexes
 //
@@ -112,6 +112,8 @@ class Method
    public:
 
    TR_ALLOC(TR_Memory::Method);
+
+   TR::Method *self();
 
    enum Type {J9, Test, JitBuilder};
 

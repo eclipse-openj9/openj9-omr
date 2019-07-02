@@ -30,6 +30,13 @@
 #include "infra/Assert.hpp"
 
 
+TR::Method *
+OMR::Method::self()
+   {
+   return static_cast<TR::Method *>(this);
+   }
+
+
 uint32_t
 OMR::Method::numberOfExplicitParameters()
    {

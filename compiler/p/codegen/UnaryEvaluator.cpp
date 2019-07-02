@@ -249,8 +249,7 @@ TR::Register *OMR::Power::TreeEvaluator::b2iEvaluator(TR::Node *node, TR::CodeGe
         child->getOpCodeValue() != TR::d2b &&
         child->getOpCodeValue() != TR::i2b &&
         child->getOpCodeValue() != TR::l2b &&
-        child->getOpCodeValue() != TR::iRegLoad &&
-        child->getOpCodeValue() != TR::iuRegLoad ))
+        child->getOpCodeValue() != TR::iRegLoad ))
       {
       trgReg = cg->gprClobberEvaluate(child);
       }

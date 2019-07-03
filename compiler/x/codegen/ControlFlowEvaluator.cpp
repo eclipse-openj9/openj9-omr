@@ -2267,29 +2267,14 @@ TR::Register *OMR::X86::TreeEvaluator::sucmpleEvaluator(TR::Node *node, TR::Code
 static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   if (!(node->isNopableInlineGuard() || node->isOSRGuard()) || !cg->getSupportsVirtualGuardNOPing())
+
+   if (!cg->willGenerateNOPForVirtualGuard(node))
+      {
       return false;
+      }
 
    TR::Compilation *comp = cg->comp();
    TR_VirtualGuard *virtualGuard = comp->findVirtualGuardInfo(node);
-
-   if (!((comp->performVirtualGuardNOPing() || node->isHCRGuard() || node->isOSRGuard() || cg->needClassAndMethodPointerRelocations()) &&
-         comp->isVirtualGuardNOPingRequired(virtualGuard)) &&
-         virtualGuard->canBeRemoved())
-      return false;
-
-   if (   node->getOpCodeValue() != TR::ificmpne
-       && node->getOpCodeValue() != TR::ifacmpne
-       && node->getOpCodeValue() != TR::iflcmpne)
-      {
-      //TR_ASSERT(0, "virtualGuardHelper: not expecting reversed comparison");
-
-      // Raise an assume if the optimizer requested that this virtual guard must be NOPed
-      //
-      TR_ASSERT(virtualGuard->canBeRemoved(), "virtualGuardHelper: a non-removable virtual guard cannot be NOPed");
-
-      return false;
-      }
 
    TR_VirtualGuardSite *site = NULL;
    if (cg->needClassAndMethodPointerRelocations())

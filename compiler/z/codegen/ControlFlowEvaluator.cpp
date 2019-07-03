@@ -124,26 +124,12 @@ static bool
 virtualGuardHelper(TR::Node * node, TR::CodeGenerator * cg)
    {
 #ifdef J9_PROJECT_SPECIFIC
+   if (!cg->willGenerateNOPForVirtualGuard(node))
+      {
+      return false;
+      }
    TR::Compilation *comp = cg->comp();
-   if ((!node->isNopableInlineGuard() && !node->isHCRGuard() && !node->isOSRGuard()) ||
-      !cg->getSupportsVirtualGuardNOPing())
-      {
-      return false;
-      }
-
    TR_VirtualGuard * virtualGuard = comp->findVirtualGuardInfo(node);
-   if (!node->isHCRGuard() && !node->isOSRGuard() && !(comp->performVirtualGuardNOPing() &&
-         comp->isVirtualGuardNOPingRequired(virtualGuard)) &&
-         virtualGuard->canBeRemoved())
-      {
-      return false;
-      }
-
-   if (node->getOpCodeValue() != TR::ificmpne && node->getOpCodeValue() != TR::iflcmpne && node->getOpCodeValue() != TR::ifacmpne)
-      {
-      //TR_ASSERT( 0, "virtualGuardHelper: not expecting reversed comparison");
-      return false;
-      }
 
    TR_VirtualGuardSite * site = NULL;
    if (comp->compileRelocatableCode())

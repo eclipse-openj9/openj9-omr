@@ -698,7 +698,6 @@ public:
       {
       switch(type)
          {
-         case TR::Int8:     return TR::buadd;
          case TR::Int16:    return TR::cadd;
          case TR::Int32:    return TR::iuadd;
          case TR::Int64:    return TR::luadd;
@@ -733,7 +732,6 @@ public:
       {
       switch(type)
          {
-         case TR::Int8:    return TR::busub;
          case TR::Int16:   return TR::csub;
          case TR::Int32:   return TR::iusub;
          case TR::Int64:   return TR::lusub;
@@ -1448,7 +1446,6 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<   float>() { ret
 template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<  double>() { return TR::dconst; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<   void*>() { return TR::aconst; }
 
-template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< uint8_t>() { return TR::buadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<  int8_t>() { return TR::badd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<uint16_t>() { return TR::cadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< int16_t>() { return TR::sadd; }
@@ -1459,7 +1456,6 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< int64_t>() { retur
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<   float>() { return TR::fadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<  double>() { return TR::dadd; }
 
-template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode< uint8_t>() { return TR::busub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<  int8_t>() { return TR::bsub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<uint16_t>() { return TR::csub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode< int16_t>() { return TR::ssub; }

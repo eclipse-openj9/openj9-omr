@@ -1308,7 +1308,7 @@ OMR::Z::MemoryReference::populateAddTree(TR::Node * subTree, TR::CodeGenerator *
       {
       self()->populateMemoryReference(addressChild, cg);
       if ((subTree->getOpCodeValue() != TR::iadd) && (subTree->getOpCodeValue() != TR::aiadd) &&
-          (subTree->getOpCodeValue() != TR::iuadd) && (subTree->getOpCodeValue() != TR::aiuadd) &&
+          (subTree->getOpCodeValue() != TR::iuadd) &&
           (subTree->getOpCodeValue() != TR::isub))
          {
          if (subTree->getOpCode().isSub())
@@ -3367,8 +3367,8 @@ static TR::SymbolReference * findBestSymRefForArrayCopy(TR::CodeGenerator *cg, T
    TR::SymbolReference *sym = arrayCopyNode->getSymbolReference();
    TR::Compilation *comp = cg->comp();
 
-   if (srcNode->getOpCodeValue()==TR::aiadd || srcNode->getOpCodeValue()==TR::aiuadd ||
-       srcNode->getOpCodeValue()==TR::aladd || srcNode->getOpCodeValue()==TR::aluadd ||
+   if (srcNode->getOpCodeValue()==TR::aiadd ||
+       srcNode->getOpCodeValue()==TR::aladd ||
        srcNode->getOpCodeValue()==TR::asub)
       {
       TR::Node *firstChild = srcNode->getFirstChild();

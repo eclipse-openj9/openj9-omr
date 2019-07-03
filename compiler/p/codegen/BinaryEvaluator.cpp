@@ -198,7 +198,7 @@ static bool genNullTestForCompressedPointers(TR::Node *node,
    return false;
    }
 
-// Also handles TR::aiadd, TR::iuadd, aiuadd
+// Also handles TR::aiadd, TR::iuadd
 TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *src1Reg = NULL;
@@ -239,7 +239,7 @@ TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeG
          }
      }
 
-   if ((node->getOpCodeValue() == TR::aiadd || node->getOpCodeValue() == TR::aiuadd) &&
+   if (node->getOpCodeValue() == TR::aiadd &&
        node->isInternalPointer())
       {
       if (node->getPinningArrayPointer())
@@ -441,7 +441,7 @@ static TR::Register *laddEvaluatorWithAnalyser(TR::Node *node, TR::CodeGenerator
    return trgReg;
    }
 
-// Also handles TR::aladd for 64 bit target, luadd, aluadd
+// Also handles TR::aladd for 64 bit target, luadd
 TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
@@ -591,7 +591,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
          generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneSkipAdd, deps);
          }
 
-      if ((node->getOpCodeValue() == TR::aladd || node->getOpCodeValue() == TR::aluadd) &&
+      if (node->getOpCodeValue() == TR::aladd &&
           node->isInternalPointer())
          {
          if (node->getPinningArrayPointer())

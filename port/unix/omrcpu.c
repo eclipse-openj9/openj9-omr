@@ -44,7 +44,7 @@
 #include <sys/sysctl.h>
 #endif
 
-#if (__IBMC__ || __IBMCPP__)
+#if ((__IBMC__ || __IBMCPP__) && (!defined(RS6000) || (__xlC__ < 0x1000)))
 void dcbf(unsigned char *);
 void dcbst(unsigned char *);
 void icbi(unsigned char *);
@@ -92,9 +92,9 @@ omrcpu_startup(struct OMRPortLibrary *portLibrary)
 	char buf[1024];
 	memset(buf, 255, 1024);
 
-#if (__IBMC__ || __IBMCPP__)
+#if ((__IBMC__ || __IBMCPP__) && (!defined(RS6000) || (__xlC__ < 0x1000)))
 	dcbz((void *) &buf[512]);
-#elif defined(LINUX) || defined(OSX)
+#elif defined(LINUX) || defined(OSX) || (defined(RS6000) && (__xlC__ >= 0x1000))
 	__asm__(
 		"dcbz 0, %0"
 		: /* no outputs */
@@ -153,9 +153,9 @@ omrcpu_flush_icache(struct OMRPortLibrary *portLibrary, void *memoryPointer, uin
 	for (addr = (unsigned char *)memoryPointer ; addr < limit; addr += cacheLineSize) {
 
 
-#if (__IBMC__ || __IBMCPP__)
+#if ((__IBMC__ || __IBMCPP__) && (!defined(RS6000) || (__xlC__ < 0x1000)))
 		dcbst(addr);
-#elif defined(LINUX) || defined(OSX)
+#elif defined(LINUX) || defined(OSX) || (defined(RS6000) && (__xlC__ >= 0x1000))
 		__asm__(
 			"dcbst 0,%0"
 			: /* no outputs */
@@ -163,18 +163,18 @@ omrcpu_flush_icache(struct OMRPortLibrary *portLibrary, void *memoryPointer, uin
 #endif
 	}
 
-#if (__IBMC__ || __IBMCPP__)
+#if ((__IBMC__ || __IBMCPP__) && (!defined(RS6000) || (__xlC__ < 0x1000)))
 	sync();
-#elif defined(LINUX) || defined(OSX)
+#elif defined(LINUX) || defined(OSX) || (defined(RS6000) && (__xlC__ >= 0x1000))
 	__asm__("sync");
 #endif
 
 	/* for each cache line  do an icache block invalidate */
 	for (addr = (unsigned char *)memoryPointer; addr < limit; addr += cacheLineSize) {
 
-#if (__IBMC__ || __IBMCPP__)
+#if ((__IBMC__ || __IBMCPP__) && (!defined(RS6000) || (__xlC__ < 0x1000)))
 		icbi(addr);
-#elif defined(LINUX) || defined(OSX)
+#elif defined(LINUX) || defined(OSX) || (defined(RS6000) && (__xlC__ >= 0x1000))
 		__asm__(
 			"icbi 0,%0"
 			: /* no outputs */
@@ -182,10 +182,10 @@ omrcpu_flush_icache(struct OMRPortLibrary *portLibrary, void *memoryPointer, uin
 #endif
 	}
 
-#if (__IBMC__ || __IBMCPP__)
+#if ((__IBMC__ || __IBMCPP__) && (!defined(RS6000) || (__xlC__ < 0x1000)))
 	sync();
 	isync();
-#elif defined(LINUX) || defined(OSX)
+#elif defined(LINUX) || defined(OSX) || (defined(RS6000) && (__xlC__ >= 0x1000))
 	__asm__("sync");
 	__asm__("isync");
 #endif

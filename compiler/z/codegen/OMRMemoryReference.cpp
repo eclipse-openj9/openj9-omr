@@ -3473,14 +3473,12 @@ reuseS390MemoryReference(TR::MemoryReference *baseMR, int32_t offset, TR::Node *
 TR::MemoryReference *
 generateS390MemoryReference(TR::Node * node, TR::SymbolReference * sr, TR::CodeGenerator * cg)
    {
-   TR_ASSERT_FATAL(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
    return new (cg->trHeapMemory()) TR::MemoryReference(node, sr, cg);
    }
 
 TR::MemoryReference *
 generateS390MemoryReference(TR::Snippet * tas, TR::CodeGenerator * cg, TR::Register * base, TR::Node * node)
    {
-   TR_ASSERT_FATAL(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
    return new (cg->trHeapMemory()) TR::MemoryReference(tas, cg, base, node);
    }
 

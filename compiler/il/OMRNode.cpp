@@ -2066,7 +2066,7 @@ OMR::Node::isThisPointer()
  *        pairFirstChild
  *        pairSecondChild
  *
- * and the opcodes for highOp/adjunctOp are lumulh/lmul, luaddh/luadd, or lusubh/lusub.
+ * and the opcodes for highOp/adjunctOp are lumulh/lmul or lusubh/lusub.
  */
 bool
 OMR::Node::isDualHigh()
@@ -2075,7 +2075,6 @@ OMR::Node::isDualHigh()
       {
       TR::ILOpCodes pairOpValue = self()->getChild(2)->getOpCodeValue();
       if (((self()->getOpCodeValue() == TR::lumulh) && (pairOpValue == TR::lmul))
-          || ((self()->getOpCodeValue() == TR::luaddh) && (pairOpValue == TR::luadd))
           || ((self()->getOpCodeValue() == TR::lusubh) && (pairOpValue == TR::lusub)))
          return true;
       }
@@ -2095,7 +2094,7 @@ OMR::Node::isDualHigh()
  *          pairFirstChild
  *          pairSecondChild
  *
- * and the opcodes for highOp/adjunctOp are luaddc/luadd, or lusubb/lusub.
+ * and the opcodes for highOp/adjunctOp is lusubb/lusub.
  */
 bool
 OMR::Node::isTernaryHigh()
@@ -2107,8 +2106,7 @@ OMR::Node::isTernaryHigh()
       TR::ILOpCodes ccOpValue = self()->getChild(2)->getOpCodeValue();
       TR::ILOpCodes pairOpValue = self()->getChild(2)->getFirstChild()->getOpCodeValue();
       if ((ccOpValue == TR::computeCC) &&
-          (((self()->getOpCodeValue() == TR::luaddc) && (pairOpValue == TR::luadd))
-           || ((self()->getOpCodeValue() == TR::lusubb) && (pairOpValue == TR::lusub))))
+          (self()->getOpCodeValue() == TR::lusubb) && (pairOpValue == TR::lusub))
          return true;
       }
    return false;
@@ -8155,13 +8153,13 @@ OMR::Node::printCanSkipZeroInitialization()
 bool
 OMR::Node::isAdjunct()
    {
-   return (self()->getOpCodeValue() == TR::lmul || self()->getOpCodeValue() == TR::luadd || self()->getOpCodeValue() == TR::lusub) && _flags.testAny(adjunct);
+   return (self()->getOpCodeValue() == TR::lmul || self()->getOpCodeValue() == TR::lusub) && _flags.testAny(adjunct);
    }
 
 void
 OMR::Node::setIsAdjunct(bool v)
    {
-   TR_ASSERT(self()->getOpCodeValue() == TR::lmul || self()->getOpCodeValue() == TR::luadd || self()->getOpCodeValue() == TR::lusub, "Opcode must be lmul, lusub, or luadd");
+   TR_ASSERT(self()->getOpCodeValue() == TR::lmul || self()->getOpCodeValue() == TR::lusub, "Opcode must be lmul or lusub");
    _flags.set(adjunct, v);
    }
 

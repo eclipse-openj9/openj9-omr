@@ -356,7 +356,6 @@ public:
              getOpCodeValue() == TR::ladd      ||
              getOpCodeValue() == TR::iuaddc    ||
              getOpCodeValue() == TR::aiadd     ||
-             getOpCodeValue() == TR::luadd     ||
              getOpCodeValue() == TR::luaddc    ||
              getOpCodeValue() == TR::aladd     ||
              getOpCodeValue() == TR::isub      ||
@@ -696,8 +695,7 @@ public:
       {
       switch(type)
          {
-         case TR::Int64:    return TR::luadd;
-	 case TR::Address:  return (is64Bit) ? TR::aladd : TR::aiadd;
+	      case TR::Address:  return (is64Bit) ? TR::aladd : TR::aiadd;
          default: TR_ASSERT(0, "no add opcode for this datatype");
          }
       return TR::BadILOp;
@@ -1438,7 +1436,6 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<   void*>() { ret
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<  int8_t>() { return TR::badd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< int16_t>() { return TR::sadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< int32_t>() { return TR::iadd; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<uint64_t>() { return TR::luadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< int64_t>() { return TR::ladd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<   float>() { return TR::fadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<  double>() { return TR::dadd; }

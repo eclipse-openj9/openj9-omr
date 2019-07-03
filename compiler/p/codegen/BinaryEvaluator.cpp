@@ -441,7 +441,7 @@ static TR::Register *laddEvaluatorWithAnalyser(TR::Node *node, TR::CodeGenerator
    return trgReg;
    }
 
-// Also handles TR::aladd for 64 bit target, luadd
+// Also handles TR::aladd for 64 bit target
 TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
@@ -559,7 +559,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
 
             if (setsOrReadsCC)
                {
-               TR_ASSERT(node->getOpCodeValue() == TR::ladd || node->getOpCodeValue() == TR::luadd || node->getOpCodeValue() == TR::luaddc,
+               TR_ASSERT(node->getOpCodeValue() == TR::ladd || node->getOpCodeValue() == TR::luaddc,
                   "CC computation not supported for this node %p\n", node);
                TR::Register *carryReg = NULL;
                if ((node->getOpCodeValue() == TR::luaddc) && TR_PPCComputeCC::setCarryBorrow(node->getChild(2), false, &carryReg, cg))

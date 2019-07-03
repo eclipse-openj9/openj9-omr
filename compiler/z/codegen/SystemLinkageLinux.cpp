@@ -376,8 +376,6 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
       {
       case TR::icall:
       case TR::icalli:
-      case TR::iucall:
-      case TR::iucalli:
       case TR::acall:
       case TR::acalli:
          returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());

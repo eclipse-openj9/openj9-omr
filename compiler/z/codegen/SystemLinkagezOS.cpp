@@ -335,9 +335,7 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
             }                                           //until it's known that dispatch functions can return non-64bit addresses.
          break;
       case TR::icall:
-      case TR::iucall:
       case TR::icalli:
-      case TR::iucalli:
          retReg = deps->searchPostConditionRegister(getIntegerReturnRegister());
          returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
          break;

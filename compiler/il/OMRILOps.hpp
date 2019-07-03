@@ -698,7 +698,6 @@ public:
       {
       switch(type)
          {
-         case TR::Int16:    return TR::cadd;
          case TR::Int32:    return TR::iuadd;
          case TR::Int64:    return TR::luadd;
 	 case TR::Address:  return (is64Bit) ? TR::aladd : TR::aiadd;
@@ -732,7 +731,6 @@ public:
       {
       switch(type)
          {
-         case TR::Int16:   return TR::csub;
          case TR::Int32:   return TR::iusub;
          case TR::Int64:   return TR::lusub;
          default: TR_ASSERT(0, "no unsigned sub opcode for this datatype");
@@ -1293,7 +1291,6 @@ public:
          case TR::dstorei:
             return TR::vstorei;
          case TR::badd:
-         case TR::cadd:
          case TR::sadd:
          case TR::iadd:
          case TR::ladd:
@@ -1301,7 +1298,6 @@ public:
          case TR::dadd:
             return TR::vadd;
          case TR::bsub:
-         case TR::csub:
          case TR::ssub:
          case TR::isub:
          case TR::lsub:
@@ -1447,7 +1443,6 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<  double>() { ret
 template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<   void*>() { return TR::aconst; }
 
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<  int8_t>() { return TR::badd; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<uint16_t>() { return TR::cadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< int16_t>() { return TR::sadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<uint32_t>() { return TR::iuadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< int32_t>() { return TR::iadd; }
@@ -1457,7 +1452,6 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<   float>() { retur
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<  double>() { return TR::dadd; }
 
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<  int8_t>() { return TR::bsub; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<uint16_t>() { return TR::csub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode< int16_t>() { return TR::ssub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<uint32_t>() { return TR::iusub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode< int32_t>() { return TR::isub; }

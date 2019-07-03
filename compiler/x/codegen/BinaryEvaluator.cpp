@@ -1748,7 +1748,7 @@ TR::Register *OMR::X86::TreeEvaluator::csubEvaluator(TR::Node *node, TR::CodeGen
 
    if (NEED_CC(node))
       {
-      TR_ASSERT(node->getOpCodeValue() == TR::csub,
+      TR_ASSERT(false,
                 "CC computation not supported for this node %p with opcode %s\n", node, cg->comp()->getDebug()->getName(node->getOpCode()));
 
       // we need eflags from integerAddAnalyser for the CC sequence

@@ -70,7 +70,7 @@ static TR::Register *addConstantToInteger(TR::Node *node, TR::Register *srcReg, 
    return trgReg;
    }
 
-// Also handles TR::aiadd, TR::iuadd
+// Also handles TR::aiadd
 TR::Register *OMR::ARM::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *src1Reg = NULL;

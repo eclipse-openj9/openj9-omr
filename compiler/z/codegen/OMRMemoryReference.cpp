@@ -1308,7 +1308,6 @@ OMR::Z::MemoryReference::populateAddTree(TR::Node * subTree, TR::CodeGenerator *
       {
       self()->populateMemoryReference(addressChild, cg);
       if ((subTree->getOpCodeValue() != TR::iadd) && (subTree->getOpCodeValue() != TR::aiadd) &&
-          (subTree->getOpCodeValue() != TR::iuadd) &&
           (subTree->getOpCodeValue() != TR::isub))
          {
          if (subTree->getOpCode().isSub())

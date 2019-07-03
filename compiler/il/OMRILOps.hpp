@@ -354,7 +354,6 @@ public:
              getOpCodeValue() == TR::iflucmpgt ||
              getOpCodeValue() == TR::iadd      ||
              getOpCodeValue() == TR::ladd      ||
-             getOpCodeValue() == TR::iuadd     ||
              getOpCodeValue() == TR::iuaddc    ||
              getOpCodeValue() == TR::aiadd     ||
              getOpCodeValue() == TR::luadd     ||
@@ -362,7 +361,6 @@ public:
              getOpCodeValue() == TR::aladd     ||
              getOpCodeValue() == TR::isub      ||
              getOpCodeValue() == TR::lsub      ||
-             getOpCodeValue() == TR::iusub     ||
              getOpCodeValue() == TR::iusubb    ||
              getOpCodeValue() == TR::asub      ||
              getOpCodeValue() == TR::lusub     ||
@@ -698,7 +696,6 @@ public:
       {
       switch(type)
          {
-         case TR::Int32:    return TR::iuadd;
          case TR::Int64:    return TR::luadd;
 	 case TR::Address:  return (is64Bit) ? TR::aladd : TR::aiadd;
          default: TR_ASSERT(0, "no add opcode for this datatype");
@@ -731,7 +728,6 @@ public:
       {
       switch(type)
          {
-         case TR::Int32:   return TR::iusub;
          case TR::Int64:   return TR::lusub;
          default: TR_ASSERT(0, "no unsigned sub opcode for this datatype");
          }
@@ -913,15 +909,12 @@ public:
       switch (longOp)
          {
          case TR::ladd:   return TR::iadd;
-         case TR::luadd:  return TR::iuadd;
          case TR::lsub:   return TR::isub;
-         case TR::lusub:  return TR::iusub;
          case TR::lmul:   return TR::imul;
          case TR::ldiv:   return TR::idiv;
          case TR::lrem:   return TR::irem;
          case TR::labs:   return TR::iabs;
          case TR::lneg:   return TR::ineg;
-         case TR::luneg:  return TR::iuneg;
          case TR::lshr:   return TR::ishr;
          case TR::lushr:  return TR::iushr;
          case TR::lshl:   return TR::ishl;
@@ -1444,7 +1437,6 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<   void*>() { ret
 
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<  int8_t>() { return TR::badd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< int16_t>() { return TR::sadd; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<uint32_t>() { return TR::iuadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< int32_t>() { return TR::iadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<uint64_t>() { return TR::luadd; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode< int64_t>() { return TR::ladd; }
@@ -1453,7 +1445,6 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<  double>() { retur
 
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<  int8_t>() { return TR::bsub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode< int16_t>() { return TR::ssub; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<uint32_t>() { return TR::iusub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode< int32_t>() { return TR::isub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<uint64_t>() { return TR::lusub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode< int64_t>() { return TR::lsub; }
@@ -1471,7 +1462,6 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getMulOpCode<  double>() { retur
 
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode<  int8_t>() { return TR::bneg; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode< int16_t>() { return TR::sneg; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode<uint32_t>() { return TR::iuneg; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode< int32_t>() { return TR::ineg; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode<uint64_t>() { return TR::luneg; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode< int64_t>() { return TR::lneg; }

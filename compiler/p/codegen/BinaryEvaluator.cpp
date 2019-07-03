@@ -198,7 +198,7 @@ static bool genNullTestForCompressedPointers(TR::Node *node,
    return false;
    }
 
-// Also handles TR::aiadd, TR::iuadd
+// Also handles TR::aiadd
 TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *src1Reg = NULL;
@@ -633,7 +633,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
 
 
 // aiaddEvaluator handled by iaddEvaluator
-// also handles TR::iusub and TR::asub
+// also handles TR::asub
 TR::Register *OMR::Power::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *secondChild    = node->getSecondChild();

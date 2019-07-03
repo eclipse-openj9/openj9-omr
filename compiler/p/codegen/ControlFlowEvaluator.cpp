@@ -857,7 +857,7 @@ TR::Register *OMR::Power::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeG
    return NULL;
    }
 
-// also handles areturn, iureturn
+// also handles areturn
 TR::Register *OMR::Power::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();

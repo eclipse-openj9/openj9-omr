@@ -1462,7 +1462,6 @@ TR::Register *TR::PPCSystemLinkage::buildDirectDispatch(TR::Node *callNode)
                              pp.getIntegerReturnRegister());
          break;
       case TR::lcall:
-      case TR::lucall:
          {
          if (TR::Compiler->target.is64Bit())
             returnRegister = dependencies->searchPostConditionRegister(
@@ -1594,7 +1593,6 @@ TR::Register *TR::PPCSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
                              pp.getIntegerReturnRegister());
          break;
       case TR::lcalli:
-      case TR::lucalli:
          {
          if (TR::Compiler->target.is64Bit())
             returnRegister = dependencies->searchPostConditionRegister(

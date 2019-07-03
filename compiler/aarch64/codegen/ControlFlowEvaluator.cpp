@@ -46,7 +46,6 @@ genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rnum, TR_Registe
    return NULL;
    }
 
-// also handles iureturn
 TR::Register *
 OMR::ARM64::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

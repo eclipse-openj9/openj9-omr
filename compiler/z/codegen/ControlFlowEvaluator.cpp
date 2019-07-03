@@ -648,7 +648,7 @@ OMR::Z::TreeEvaluator::igotoEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
 /**
  * Handles all types of return opcodes
- * (return, areturn, ireturn, lreturn, freturn, dreturn, iureturn, lureturn, oreturn)
+ * (return, areturn, ireturn, lreturn, freturn, dreturn, lureturn, oreturn)
  */
 TR::Register *
 OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
@@ -700,12 +700,6 @@ OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          comp->setReturnInfo(TR_IntReturn);
          if (linkage->isNeedsWidening())
             new (cg->trHeapMemory()) TR::S390RRInstruction(TR::InstOpCode::LGFR, node, returnValRegister, returnValRegister, cg);
-         break;
-      case TR::iureturn:
-         comp->setReturnInfo(TR_IntReturn);
-         dependencies->addPostCondition(returnValRegister, linkage->getIntegerReturnRegister());
-         if (linkage->isNeedsWidening())
-            new (cg->trHeapMemory()) TR::S390RRInstruction(TR::InstOpCode::LLGFR, node, returnValRegister, returnValRegister, cg);
          break;
       case TR::lreturn:
       case TR::lureturn:

@@ -382,8 +382,6 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
          break;
       case TR::lcall:
       case TR::lcalli:
-      case TR::lucall:
-      case TR::lucalli:
          {
          if (TR::Compiler->target.is64Bit())
             {

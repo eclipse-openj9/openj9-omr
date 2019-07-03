@@ -654,7 +654,7 @@ detectAndRecordPageSize(struct OMRPortLibrary *portLibrary, struct J9PortVmemIde
 	}
 
 	/* Update identifier and commit memory if required, else return reserved memory */
-	update_vmemIdentifier(identifier, memoryPointer, (void *)addressKey, byteAmount, mode, (uintptr_t)page_info.pagesize, OMRPORT_VMEM_PAGE_FLAG_NOT_USED, OMRPORT_VMEM_RESERVE_USED_SHM, category);
+	update_vmemIdentifier(identifier, memoryPointer, (void *)(intptr_t)addressKey, byteAmount, mode, (uintptr_t)page_info.pagesize, OMRPORT_VMEM_PAGE_FLAG_NOT_USED, OMRPORT_VMEM_RESERVE_USED_SHM, category);
 
 	if (0 != vmgetinfoResult) {
 		Trc_PRT_vmem_omrvmem_reserve_memory_ex_aix_vmgetinfo_failed(page_info.addr);

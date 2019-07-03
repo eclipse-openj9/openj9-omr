@@ -591,8 +591,7 @@ static void evaluateIfNotConst(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *OMR::X86::TreeEvaluator::integerDualAddOrSubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT((node->getOpCodeValue() == TR::luaddh) || (node->getOpCodeValue() == TR::lusubh) 
-      || (node->getOpCodeValue() == TR::lusub)
-      , "Unexpected dual operator. Expected luaddh, lusub, or lusubh as part of cyclic dual.");
+      , "Unexpected dual operator. Expected luaddh or lusubh as part of cyclic dual.");
 
    TR::Node *pair = node->getChild(2);
    bool requiresCarryOnEntry = cg->requiresCarry();
@@ -1346,7 +1345,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerSubEvaluator(TR::Node *node, TR::C
 
    if (NEED_CC(node) || (node->getOpCodeValue() == TR::lusubb) || (node->getOpCodeValue() == TR::iusubb))
       {
-      TR_ASSERT((nodeIs64Bit  && (opCode == TR::lsub || opCode == TR::lusub) || opCode == TR::lusubb) ||
+      TR_ASSERT((nodeIs64Bit  && opCode == TR::lsub || opCode == TR::lusubb) ||
                 (!nodeIs64Bit && opCode == TR::isub || opCode == TR::iusubb),
                 "CC computation not supported for this node %p with opcode %s\n", node, cg->comp()->getDebug()->getName(opCode));
 

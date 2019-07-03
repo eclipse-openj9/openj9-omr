@@ -362,7 +362,6 @@ public:
              getOpCodeValue() == TR::lsub      ||
              getOpCodeValue() == TR::iusubb    ||
              getOpCodeValue() == TR::asub      ||
-             getOpCodeValue() == TR::lusub     ||
              getOpCodeValue() == TR::lusubb;
       }
 
@@ -724,11 +723,9 @@ public:
 
    static TR::ILOpCodes unsignedSubtractOpCode(TR::DataType type)
       {
-      switch(type)
-         {
-         case TR::Int64:   return TR::lusub;
-         default: TR_ASSERT(0, "no unsigned sub opcode for this datatype");
-         }
+      //All unsigned sub opcode for this datatype should be deprecated
+      //TODO (#2657): Remove this function
+      TR_ASSERT(0, "no unsigned sub opcode for this datatype");
       return TR::BadILOp;
       }
 
@@ -1443,7 +1440,6 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getAddOpCode<  double>() { retur
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<  int8_t>() { return TR::bsub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode< int16_t>() { return TR::ssub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode< int32_t>() { return TR::isub; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<uint64_t>() { return TR::lusub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode< int64_t>() { return TR::lsub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<   float>() { return TR::fsub; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<  double>() { return TR::dsub; }
@@ -1460,7 +1456,6 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getMulOpCode<  double>() { retur
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode<  int8_t>() { return TR::bneg; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode< int16_t>() { return TR::sneg; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode< int32_t>() { return TR::ineg; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode<uint64_t>() { return TR::luneg; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode< int64_t>() { return TR::lneg; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode<   float>() { return TR::fneg; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getNegOpCode<  double>() { return TR::dneg; }

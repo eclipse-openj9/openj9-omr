@@ -814,7 +814,7 @@ TR::Register *lsub64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
 
             if (setsOrReadsCC)
                {
-               TR_ASSERT(node->getOpCodeValue() == TR::lsub || node->getOpCodeValue() == TR::lusub || node->getOpCodeValue() == TR::lusubb,
+               TR_ASSERT(node->getOpCodeValue() == TR::lsub || node->getOpCodeValue() == TR::lusubb,
                   "CC computation not supported for this node %p\n", node);
                TR::Register *borrowReg = NULL;
                if ((node->getOpCodeValue() == TR::lusubb) && TR_PPCComputeCC::setCarryBorrow(node->getChild(2), true, &borrowReg, cg))
@@ -840,8 +840,7 @@ TR::Register *lsub64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->decReferenceCount(secondChild);
    return trgReg;
    }
-
-// also handles lusub
+ 
 TR::Register *OMR::Power::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())

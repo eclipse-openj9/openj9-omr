@@ -2275,7 +2275,8 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
                reference->setIsNonNull(true);
                n = reference->getFirstChild();
                TR::ILOpCodes loadOp = comp->il.opCodeForIndirectLoad(TR::Int32);
-               while (n->getOpCodeValue() != loadOp)
+               TR::ILOpCodes rdbarOp = comp->il.opCodeForIndirectReadBarrier(TR::Int32);
+               while (n->getOpCodeValue() != loadOp && n->getOpCodeValue() != rdbarOp)
                   {
                   n->setIsNonZero(true);
                   n = n->getFirstChild();

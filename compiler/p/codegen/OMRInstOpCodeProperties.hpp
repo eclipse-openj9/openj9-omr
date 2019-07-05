@@ -35,6 +35,39 @@
    /* .properties  = */ PPCOpProp_None,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::brd, */
+   /* .name        =    "brd", */
+   /* .description =    "Byte-Reverse Doubleword", */
+   /* .opcode      =    0x7C0001B6, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    PPCOpProp_AltFormatx | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::brh, */
+   /* .name        =    "brh", */
+   /* .description =    "Byte-Reverse Halfword", */
+   /* .opcode      =    0x7C000176, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    PPCOpProp_AltFormatx | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::brw, */
+   /* .name        =    "brw", */
+   /* .description =    "Byte-Reverse Word", */
+   /* .opcode      =    0x7C000136, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    PPCOpProp_AltFormatx | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::add,
    /* .name        = */ "add",
@@ -381,6 +414,17 @@
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::andc].minimumALS,
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::andc].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::andcxor, */
+   /* .name        =    "andcxor", */
+   /* .description =    "AND with Complement & XOR", */
+   /* .opcode      =    0x10000037, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    PPCOpProp_AltFormatx | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::addex,
@@ -913,6 +957,50 @@
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzw].minimumALS,
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cntlzw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::cnttzw, */
+   /* .name        =    "cnttzw", */
+   /* .description =    "Count Trailing Zeros Word", */
+   /* .opcode      =    0x7C000434, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_HasRecordForm | */
+   /*                   PPCOpProp_AltFormatx | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::cnttzw_r, */
+   /* .name        =    "cnttzw.", */
+   /* .description =    "Count Trailing Zeros Word Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cnttzw].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cnttzw].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cnttzw].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cnttzw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::cnttzd, */
+   /* .name        =    "cnttzd", */
+   /* .description =    "Count Trailing Zeros Dword", */
+   /* .opcode      =    0x7C000474, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_HasRecordForm | */
+   /*                   PPCOpProp_AltFormatx | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::cnttzd_r, */
+   /* .name        =    "cnttzd.", */
+   /* .description =    "Count Trailing Zeros Dword Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cnttzd].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cnttzd].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cnttzd].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::cnttzd].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::crand,
@@ -1580,6 +1668,28 @@
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::dtstsfi, */
+   /* .name        =    "dtstsfi", */
+   /* .description =    "DFP Test Significance Immediate", */
+   /* .opcode      =    0xEC000546, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::dtstsfiq, */
+   /* .name        =    "dtstsfiq", */
+   /* .description =    "DFP Test Significance Immediate Quad", */
+   /* .opcode      =    0xFC000546, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::dxex,
@@ -2743,6 +2853,26 @@
                         PPCOpProp_AltFormat,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::maddhd, */
+   /* .name        =    "maddhd", */
+   /* .description =    "Multiply-Add High Dword", */
+   /* .opcode      =    0x10000030, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::maddhdu, */
+   /* .name        =    "maddhdu", */
+   /* .description =    "Multiply-Add High Dword Unsigned", */
+   /* .opcode      =    0x10000031, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::maddld,
    /* .name        = */ "maddld",
@@ -2783,6 +2913,17 @@
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::mcrxrx, */
+   /* .name        =    "mcrxrx", */
+   /* .description =    "Move XER to CR Extended", */
+   /* .opcode      =    0x7C000480, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::mfcr,
@@ -2901,6 +3042,17 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::mfvsrld, */
+   /* .name        =    "mfvsrld", */
+   /* .description =    "Move from VSR lower Dword", */
+   /* .opcode      =    0x7C000266, */
+   /* .format      =    XX1_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_AltFormatx | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::modud,
    /* .name        = */ "modud",
@@ -2952,6 +3104,16 @@
                         PPCOpProp_IsRegCopy |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::msgsync, */
+   /* .name        =    "msgsync", */
+   /* .description =    "Message synchronize", */
+   /* .opcode      =    0x7C0006EC, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsSync, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::mtcrf,
@@ -3176,6 +3338,26 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::mtvsrdd, */
+   /* .name        =    "mtvsrdd", */
+   /* .description =    "Move to VSR double Dword", */
+   /* .opcode      =    0x7C000366, */
+   /* .format      =    XX1_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::mtvsrws, */
+   /* .name        =    "mtvsrws", */
+   /* .description =    "Move to VSR word & wplat", */
+   /* .opcode      =    0x7C000326, */
+   /* .format      =    XX1_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::mulhd,
@@ -3771,6 +3953,16 @@
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::slbsync, */
+   /* .name        =    "slbsync", */
+   /* .description =    "SLB Synchronize", */
+   /* .opcode      =    0x7C0002A4, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsSync, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::sld,
    /* .name        = */ "sld",
@@ -4259,6 +4451,16 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stop, */
+   /* .name        =    "stop", */
+   /* .description =    "The thread is placed into power-saving mode and execution is stopped", */
+   /* .opcode      =    0x4C0002E4, */
+   /* .format      =    XL_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_None, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::stswi,
@@ -5550,6 +5752,17 @@
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::XOR].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xor3, */
+   /* .name        =    "xor3", */
+   /* .description =    "XOR 3-way", */
+   /* .opcode      =    0x10000036, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    PPCOpProp_AltFormatx | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::xori,
    /* .name        = */ "xori",
@@ -5621,6 +5834,17 @@
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_None,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::rxor, */
+   /* .name        =    "rxor", */
+   /* .description =    "Rotate & XOR", */
+   /* .opcode      =    0x7C0002F8, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    PPCOpProp_AltFormatx | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::wrtbar,
@@ -5872,6 +6096,169 @@
    /* .properties  = */ PPCOpProp_None,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdcpsgn_r, */
+   /* .name        =    "bcdcpsgn.", */
+   /* .description =    "Decimal copySign & record", */
+   /* .opcode      =    0x10000341, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdcfn_r, */
+   /* .name        =    "bcdcfn.", */
+   /* .description =    "Decimal convert from national & record", */
+   /* .opcode      =    0x10070581, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdcfsq_r, */
+   /* .name        =    "bcdcfsq.", */
+   /* .description =    "Decimal convert from signed qword & record", */
+   /* .opcode      =    0x10020581, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdcfz_r, */
+   /* .name        =    "bcdcfz.", */
+   /* .description =    "Decimal convert from zoned & record", */
+   /* .opcode      =    0x10060581, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdctn_r, */
+   /* .name        =    "bcdctn.", */
+   /* .description =    "Decimal convert to national & record", */
+   /* .opcode      =    0x10050581, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdctsq_r, */
+   /* .name        =    "bcdctsq.", */
+   /* .description =    "Decimal convert to signed qword & record", */
+   /* .opcode      =    0x10000581, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdctz_r, */
+   /* .name        =    "bcdctz.", */
+   /* .description =    "Decimal convert to zoned & record", */
+   /* .opcode      =    0x10040581, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcds_r, */
+   /* .name        =    "bcds.", */
+   /* .description =    "Decimal shift & record", */
+   /* .opcode      =    0x100004C1, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdsetsgn_r, */
+   /* .name        =    "bcdsetsgn.", */
+   /* .description =    "Decimal set Sign & record", */
+   /* .opcode      =    0x101F0581, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdsr_r, */
+   /* .name        =    "bcdsr.", */
+   /* .description =    "Decimal shift & round & record", */
+   /* .opcode      =    0x100005C1, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdtrunc_r, */
+   /* .name        =    "bcdtrunc.", */
+   /* .description =    "Decimal truncate & record", */
+   /* .opcode      =    0x10000501, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdus_r, */
+   /* .name        =    "bcdus.", */
+   /* .description =    "Decimal unsigned shift & record", */
+   /* .opcode      =    0x10000481, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::bcdutrunc_r, */
+   /* .name        =    "bcdutrunc.", */
+   /* .description =    "Decimal unsigned truncate & record", */
+   /* .opcode      =    0x10000541, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRecordForm | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::lvsl,
    /* .name        = */ "lvsl",
@@ -5938,6 +6325,29 @@
                         PPCOpProp_IsVMX,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::mtvscr, */
+   /* .name        =    "mtvscr", */
+   /* .description =    "Move To VSCR", */
+   /* .opcode      =    0x10000644, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormatx, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::mfvscr, */
+   /* .name        =    "mfvscr", */
+   /* .description =    "Move From VSCR", */
+   /* .opcode      =    0x10000604, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::stvx,
    /* .name        = */ "stvx",
@@ -5982,6 +6392,39 @@
                         PPCOpProp_IsVMX,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vabsdub, */
+   /* .name        =    "vabsdub", */
+   /* .description =    "vector absolute difference unsigned byte", */
+   /* .opcode      =    0x10000403, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vabsduh, */
+   /* .name        =    "vabsduh", */
+   /* .description =    "vector absolute difference unsigned hword", */
+   /* .opcode      =    0x10000443, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vabsduw, */
+   /* .name        =    "vabsduw", */
+   /* .description =    "vector absolute difference unsigned word", */
+   /* .opcode      =    0x10000483, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::vand,
    /* .name        = */ "vand",
@@ -6004,6 +6447,495 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vclzlsbb, */
+   /* .name        =    "vclzlsbb", */
+   /* .description =    "vector count leading zero least-significant bits byte", */
+   /* .opcode      =    0x10000602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vctzlsbb, */
+   /* .name        =    "vctzlsbb", */
+   /* .description =    "vector count trailing zero least-significant bits byte", */
+   /* .opcode      =    0x10010602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vctzb, */
+   /* .name        =    "vctzb", */
+   /* .description =    "vector count trailing zeros Byte", */
+   /* .opcode      =    0x101C0602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vctzh, */
+   /* .name        =    "vctzh", */
+   /* .description =    "vector count trailing zeros Hword", */
+   /* .opcode      =    0x101D0602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vctzw, */
+   /* .name        =    "vctzw", */
+   /* .description =    "vector count trailing zeros Word", */
+   /* .opcode      =    0x101E0602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vctzd, */
+   /* .name        =    "vctzd", */
+   /* .description =    "vector count trailing zeros Dword", */
+   /* .opcode      =    0x101F0602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextractub, */
+   /* .name        =    "vextractub", */
+   /* .description =    "vector extract unsigned Byte", */
+   /* .opcode      =    0x1000020D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextractuh, */
+   /* .name        =    "vextractuh", */
+   /* .description =    "vector extract unsigned Hword", */
+   /* .opcode      =    0x1000024D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextractuw, */
+   /* .name        =    "vextractuw", */
+   /* .description =    "vector extract unsigned Word", */
+   /* .opcode      =    0x1000028D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextractd, */
+   /* .name        =    "vextractd", */
+   /* .description =    "vector extract Dword", */
+   /* .opcode      =    0x100002CD, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextsb2w, */
+   /* .name        =    "vextsb2w", */
+   /* .description =    "vector extend sign byte to Word", */
+   /* .opcode      =    0x10100602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextsh2w, */
+   /* .name        =    "vextsh2w", */
+   /* .description =    "vector extend sign hword to Word", */
+   /* .opcode      =    0x10110602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextsb2d, */
+   /* .name        =    "vextsb2d", */
+   /* .description =    "vector extend sign byte to Dword", */
+   /* .opcode      =    0x10180602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextsh2d, */
+   /* .name        =    "vextsh2d", */
+   /* .description =    "vector extend sign hword to Dword", */
+   /* .opcode      =    0x10190602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextsw2d, */
+   /* .name        =    "vextsw2d", */
+   /* .description =    "vector extend sign word to Dword", */
+   /* .opcode      =    0x101A0602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextublx, */
+   /* .name        =    "vextublx", */
+   /* .description =    "vector extract unsigned byte left-indexed", */
+   /* .opcode      =    0x1000060D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextuhlx, */
+   /* .name        =    "vextuhlx", */
+   /* .description =    "vector extract unsigned hword left-indexed", */
+   /* .opcode      =    0x1000064D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextuwlx, */
+   /* .name        =    "vextuwlx", */
+   /* .description =    "vector extract unsigned word left-indexed", */
+   /* .opcode      =    0x1000068D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextubrx, */
+   /* .name        =    "vextubrx", */
+   /* .description =    "vector extract unsigned byte right-indexed", */
+   /* .opcode      =    0x1000070D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextuhrx, */
+   /* .name        =    "vextuhrx", */
+   /* .description =    "vector extract unsigned hword right-indexed", */
+   /* .opcode      =    0x1000074D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vextuwrx, */
+   /* .name        =    "vextuwrx", */
+   /* .description =    "vector extract unsigned word right-indexed", */
+   /* .opcode      =    0x1000078D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vgbbd, */
+   /* .name        =    "vgbbd", */
+   /* .description =    "Vector Gather Bits by Byte by Dword", */
+   /* .opcode      =    0x1000050C, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vinsertb, */
+   /* .name        =    "vinsertb", */
+   /* .description =    "vector insert Byte", */
+   /* .opcode      =    0x1000030D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vinserth, */
+   /* .name        =    "vinserth", */
+   /* .description =    "vector insert Hword", */
+   /* .opcode      =    0x1000034D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vinsertw, */
+   /* .name        =    "vinsertw", */
+   /* .description =    "vector insert Word", */
+   /* .opcode      =    0x1000038D, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vinsertd, */
+   /* .name        =    "vinsertd", */
+   /* .description =    "vector insert Dword", */
+   /* .opcode      =    0x100003CD, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmaxud, */
+   /* .name        =    "vmaxud", */
+   /* .description =    "Vector Maximum Unsigned Dword", */
+   /* .opcode      =    0x100000C2, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vminsd, */
+   /* .name        =    "vminsd", */
+   /* .description =    "Vector Minimum Signed Dword", */
+   /* .opcode      =    0x100003C2, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmul10cuq, */
+   /* .name        =    "vmul10cuq", */
+   /* .description =    "vector multiply-by-10 & write carry unsigned qword", */
+   /* .opcode      =    0x10000001, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_SetsCarryFlag, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmul10ecuq, */
+   /* .name        =    "vmul10ecuq", */
+   /* .description =    "vector multiply-by-10 extended & write carry unsigned qword", */
+   /* .opcode      =    0x10000041, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_SetsCarryFlag, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmul10uq, */
+   /* .name        =    "vmul10uq", */
+   /* .description =    "vector multiply-by-10 unsigned qword", */
+   /* .opcode      =    0x10000201, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmul10euq, */
+   /* .name        =    "vmul10euq", */
+   /* .description =    "vector multiply-by-10 extended unsigned qword", */
+   /* .opcode      =    0x10000241, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmulesw, */
+   /* .name        =    "vmulesw", */
+   /* .description =    "Vector Multiply Even Signed Word", */
+   /* .opcode      =    0x10000388, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmuleuw, */
+   /* .name        =    "vmuleuw", */
+   /* .description =    "Vector Multiply Even Unsigned Word", */
+   /* .opcode      =    0x10000288, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmulosw, */
+   /* .name        =    "vmulosw", */
+   /* .description =    "Vector Multiply Odd Signed Word", */
+   /* .opcode      =    0x10000188, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmulouw, */
+   /* .name        =    "vmulouw", */
+   /* .description =    "Vector Multiply Odd Unsigned Word", */
+   /* .opcode      =    0x10000088, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vnegw, */
+   /* .name        =    "vnegw", */
+   /* .description =    "vector negate word", */
+   /* .opcode      =    0x10060602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vnegd, */
+   /* .name        =    "vnegd", */
+   /* .description =    "vector negate DWord", */
+   /* .opcode      =    0x10070602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vprtybw, */
+   /* .name        =    "vprtybw", */
+   /* .description =    "vector parity byte word", */
+   /* .opcode      =    0x10080602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vprtybd, */
+   /* .name        =    "vprtybd", */
+   /* .description =    "vector parity byte DWord", */
+   /* .opcode      =    0x10090602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vprtybq, */
+   /* .name        =    "vprtybq", */
+   /* .description =    "vector parity byte qword", */
+   /* .opcode      =    0x100A0602, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmr, */
+   /* .name        =    "vor", */
+   /* .description =    "vector move register", */
+   /* .opcode      =    0x10000484, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_IsRegCopy, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::vor,
    /* .name        = */ "vor",
@@ -6015,6 +6947,17 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vorc, */
+   /* .name        =    "vorc", */
+   /* .description =    "Vector Logical OR with Complement", */
+   /* .opcode      =    0x10000544, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::vxor,
    /* .name        = */ "vxor",
@@ -6025,6 +6968,39 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vnand, */
+   /* .name        =    "vnand", */
+   /* .description =    "Vector Logical NAND", */
+   /* .opcode      =    0x10000584, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vncipher, */
+   /* .name        =    "vncipher", */
+   /* .description =    "Vector AES Inverse Cipher", */
+   /* .opcode      =    0x10000548, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vncipherlast, */
+   /* .name        =    "vncipherlast", */
+   /* .description =    "Vector AES Inverse Cipher Last", */
+   /* .opcode      =    0x10000549, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::vnor,
@@ -6048,6 +7024,28 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpermr, */
+   /* .name        =    "vpermr", */
+   /* .description =    "vector permute right-indexed", */
+   /* .opcode      =    0x1000003B, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vbpermd, */
+   /* .name        =    "vbpermd", */
+   /* .description =    "vector bit permute DWord", */
+   /* .opcode      =    0x100005CC, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::vbpermq,
    /* .name        = */ "vbpermq",
@@ -6059,6 +7057,29 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vrld, */
+   /* .name        =    "vrld", */
+   /* .description =    "Vector Rotate Left Dword", */
+   /* .opcode      =    0x100000C4, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsRotateOrShift | */
+   /*                   PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vsbox, */
+   /* .name        =    "vsbox", */
+   /* .description =    "Vector AES SubBytes", */
+   /* .opcode      =    0x100005C8, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::vsel,
    /* .name        = */ "vsel",
@@ -6069,6 +7090,88 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vsld, */
+   /* .name        =    "vsld", */
+   /* .description =    "Vector Shift Left Dword", */
+   /* .opcode      =    0x100005C4, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsRotateOrShift | */
+   /*                   PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vsrad, */
+   /* .name        =    "vsrad", */
+   /* .description =    "Vector Shift Right Algebraic Dword", */
+   /* .opcode      =    0x100003C4, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsRotateOrShift | */
+   /*                   PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vsrd, */
+   /* .name        =    "vsrd", */
+   /* .description =    "Vector Shift Right Dword", */
+   /* .opcode      =    0x100006C4, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsRotateOrShift | */
+   /*                   PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vsubcuq, */
+   /* .name        =    "vsubcuq", */
+   /* .description =    "Vector Subtract & write Carry Unsigned Qword", */
+   /* .opcode      =    0x10000540, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_SetsCarryFlag, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vsubecuq, */
+   /* .name        =    "vsubecuq", */
+   /* .description =    "Vector Subtract Extended & write Carry Unsigned Qword", */
+   /* .opcode      =    0x1000003F, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_SetsCarryFlag, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vsubeuqm, */
+   /* .name        =    "vsubeuqm", */
+   /* .description =    "Vector Subtract Extended Unsigned Qword Modulo", */
+   /* .opcode      =    0x1000003E, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vsubuqm, */
+   /* .name        =    "vsubuqm", */
+   /* .description =    "Vector Subtract Unsigned Qword Modulo", */
+   /* .opcode      =    0x10000500, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::vsumsws,
@@ -6362,6 +7465,30 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vsrv, */
+   /* .name        =    "vsrv", */
+   /* .description =    "vector shift right variable", */
+   /* .opcode      =    0x10000704, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsRotateOrShift | */
+   /*                   PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vslv, */
+   /* .name        =    "vslv", */
+   /* .description =    "vector shift left variable", */
+   /* .opcode      =    0x10000744, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsRotateOrShift | */
+   /*                   PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::vrlb,
    /* .name        = */ "vrlb",
@@ -6397,6 +7524,101 @@
                         PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vrlwmi, */
+   /* .name        =    "vrlwmi", */
+   /* .description =    "vector rotate left word then mask insert", */
+   /* .opcode      =    0x10000085, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsRotateOrShift | */
+   /*                   PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vrldmi, */
+   /* .name        =    "vrldmi", */
+   /* .description =    "vector rotate left DWord then mask insert", */
+   /* .opcode      =    0x100000C5, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsRotateOrShift | */
+   /*                   PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vrlwnm, */
+   /* .name        =    "vrlwnm", */
+   /* .description =    "vector rotate left word then and with mask", */
+   /* .opcode      =    0x10000185, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsRotateOrShift | */
+   /*                   PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vrldnm, */
+   /* .name        =    "vrldnm", */
+   /* .description =    "vector rotate left DWord then and with mask", */
+   /* .opcode      =    0x100001C5, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsRotateOrShift | */
+   /*                   PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vaddcuw, */
+   /* .name        =    "vaddcuw", */
+   /* .description =    "Vector Add & Write Carry-Out Unsigned Word", */
+   /* .opcode      =    0x10000180, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_SetsCarryFlag, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vaddcuq, */
+   /* .name        =    "vaddcuq", */
+   /* .description =    "Vector Add & write Carry Unsigned Qword", */
+   /* .opcode      =    0x10000140, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_SetsCarryFlag, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vaddecuq, */
+   /* .name        =    "vaddecuq", */
+   /* .description =    "Vector Add Extended & write Carry Unsigned Qword", */
+   /* .opcode      =    0x1000003D, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_SetsCarryFlag, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vaddeuqm, */
+   /* .name        =    "vaddeuqm", */
+   /* .description =    "Vector Add Extended Unsigned Qword Modulo", */
+   /* .opcode      =    0x1000003C, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::vaddsbs,
@@ -6508,6 +7730,95 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vadduqm, */
+   /* .name        =    "vadduqm", */
+   /* .description =    "Vector Add Unsigned Qword Modulo", */
+   /* .opcode      =    0x10000100, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vavgsb, */
+   /* .name        =    "vavgsb", */
+   /* .description =    "Vector Average Signed Byte", */
+   /* .opcode      =    0x10000502, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vavgsh, */
+   /* .name        =    "vavgsh", */
+   /* .description =    "Vector Average Signed Hword", */
+   /* .opcode      =    0x10000542, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vavgsw, */
+   /* .name        =    "vavgsw", */
+   /* .description =    "Vector Average Signed Word", */
+   /* .opcode      =    0x10000582, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vavgub, */
+   /* .name        =    "vavgub", */
+   /* .description =    "Vector Average Unsigned Byte", */
+   /* .opcode      =    0x10000402, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vavguh, */
+   /* .name        =    "vavguh", */
+   /* .description =    "Vector Average Unsigned Hword", */
+   /* .opcode      =    0x10000442, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vavguw, */
+   /* .name        =    "vavguw", */
+   /* .description =    "Vector Average Unsigned Word", */
+   /* .opcode      =    0x10000482, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vsubcuw, */
+   /* .name        =    "vsubcuw", */
+   /* .description =    "Vector Subtract & Write Carry-Out Unsigned Word", */
+   /* .opcode      =    0x10000580, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_SetsCarryFlag, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::vsubsbs,
    /* .name        = */ "vsubsbs",
@@ -6617,6 +7928,149 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmhaddshs, */
+   /* .name        =    "vmhaddshs", */
+   /* .description =    "Vector Multiply-High-Add Signed Hword Saturate", */
+   /* .opcode      =    0x10000020, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmhraddshs, */
+   /* .name        =    "vmhraddshs", */
+   /* .description =    "Vector Multiply-High-Round-Add Signed Hword Saturate", */
+   /* .opcode      =    0x10000021, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmladduhm, */
+   /* .name        =    "vmladduhm", */
+   /* .description =    "Vector Multiply-Low-Add Unsigned Hword Modulo", */
+   /* .opcode      =    0x10000022, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmsummbm, */
+   /* .name        =    "vmsummbm", */
+   /* .description =    "Vector Multiply-Sum Mixed Byte Modulo", */
+   /* .opcode      =    0x10000025, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmsumshm, */
+   /* .name        =    "vmsumshm", */
+   /* .description =    "Vector Multiply-Sum Signed Hword Modulo", */
+   /* .opcode      =    0x10000028, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmsumshs, */
+   /* .name        =    "vmsumshs", */
+   /* .description =    "Vector Multiply-Sum Signed Hword Saturate", */
+   /* .opcode      =    0x10000029, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmsumubm, */
+   /* .name        =    "vmsumubm", */
+   /* .description =    "Vector Multiply-Sum Unsigned Byte Modulo", */
+   /* .opcode      =    0x10000024, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmsumuhs, */
+   /* .name        =    "vmsumuhs", */
+   /* .description =    "Vector Multiply-Sum Unsigned Hword Saturate", */
+   /* .opcode      =    0x10000027, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmulesb, */
+   /* .name        =    "vmulesb", */
+   /* .description =    "Vector Multiply Even Signed Byte", */
+   /* .opcode      =    0x10000308, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmuleub, */
+   /* .name        =    "vmuleub", */
+   /* .description =    "Vector Multiply Even Unsigned Byte", */
+   /* .opcode      =    0x10000208, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmuleuh, */
+   /* .name        =    "vmuleuh", */
+   /* .description =    "Vector Multiply Even Unsigned Hword", */
+   /* .opcode      =    0x10000248, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmulosb, */
+   /* .name        =    "vmulosb", */
+   /* .description =    "Vector Multiply Odd Signed Byte", */
+   /* .opcode      =    0x10000108, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmuloub, */
+   /* .name        =    "vmuloub", */
+   /* .description =    "Vector Multiply Odd Unsigned Byte", */
+   /* .opcode      =    0x10000008, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::vmulesh,
@@ -6794,6 +8248,17 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vmsumudm, */
+   /* .name        =    "vmsumudm", */
+   /* .description =    "Vector Multiply-Sum Unsigned Dword", */
+   /* .opcode      =    0x7C000154, */
+   /* .format      =    VA_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::vmsumuhm,
    /* .name        = */ "vmsumuhm",
@@ -6804,6 +8269,122 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcipher, */
+   /* .name        =    "vcipher", */
+   /* .description =    "Vector AES Cipher", */
+   /* .opcode      =    0x10000508, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcipherlast, */
+   /* .name        =    "vcipherlast", */
+   /* .description =    "Vector AES Cipher Last", */
+   /* .opcode      =    0x10000509, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vclzb, */
+   /* .name        =    "vclzb", */
+   /* .description =    "Vector Count Leading Zeros Byte", */
+   /* .opcode      =    0x10000702, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vclzd, */
+   /* .name        =    "vclzd", */
+   /* .description =    "Vector Count Leading Zeros Dword", */
+   /* .opcode      =    0x100007C2, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vclzh, */
+   /* .name        =    "vclzh", */
+   /* .description =    "Vector Count Leading Zeros Hword", */
+   /* .opcode      =    0x10000742, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vclzw, */
+   /* .name        =    "vclzw", */
+   /* .description =    "Vector Count Leading Zeros Word", */
+   /* .opcode      =    0x10000782, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpbfp, */
+   /* .name        =    "vcmpbfp", */
+   /* .description =    "Vector Compare Bounds Floating-Point", */
+   /* .opcode      =    0x100003C6, */
+   /* .format      =    VC_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_HasRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpbfp_r, */
+   /* .name        =    "vcmpbfp.", */
+   /* .description =    "Vector Compare Bounds Floating-Point Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpbfp].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpbfp].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpbfp].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpbfp].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpeqfp, */
+   /* .name        =    "vcmpeqfp", */
+   /* .description =    "Vector Compare Equal To Floating-Point", */
+   /* .opcode      =    0x100000C6, */
+   /* .format      =    VC_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_HasRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpeqfp_r, */
+   /* .name        =    "vcmpeqfp.", */
+   /* .description =    "Vector Compare Equal To Floating-Point Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpeqfp].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpeqfp].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpeqfp].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpeqfp].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::vcmpequb,
@@ -6816,6 +8397,29 @@
                         PPCOpProp_CompareOp |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpequd, */
+   /* .name        =    "vcmpequd", */
+   /* .description =    "Vector Compare Equal Unsigned Dword", */
+   /* .opcode      =    0x100000C7, */
+   /* .format      =    VC_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_HasRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpequd_r, */
+   /* .name        =    "vcmpequd.", */
+   /* .description =    "Vector Compare Equal Unsigned Dword Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpequd].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpequd].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpequd].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpequd].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::vcmpeubr,
@@ -6891,6 +8495,29 @@
                         PPCOpProp_CompareOp |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpgtsd, */
+   /* .name        =    "vcmpgtsd", */
+   /* .description =    "Vector Compare Greater Than Signed Dword", */
+   /* .opcode      =    0x100003C7, */
+   /* .format      =    VC_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_HasRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpgtsd_r, */
+   /* .name        =    "vcmpgtsd.", */
+   /* .description =    "Vector Compare Greater Than Signed Dword Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpgtsd].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpgtsd].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpgtsd].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpgtsd].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::vcmpgsbr,
@@ -7030,6 +8657,167 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpneb, */
+   /* .name        =    "vcmpneb", */
+   /* .description =    "vector compare not equal Byte", */
+   /* .opcode      =    0x10000007, */
+   /* .format      =    VC_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_HasRecordForm | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpneb_r, */
+   /* .name        =    "vcmpneb.", */
+   /* .description =    "vector compare not equal Byte Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpneb].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpneb].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpneb].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpneb].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpneh, */
+   /* .name        =    "vcmpneh", */
+   /* .description =    "vector compare not equal Hword", */
+   /* .opcode      =    0x10000047, */
+   /* .format      =    VC_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_HasRecordForm | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpneh_r, */
+   /* .name        =    "vcmpneh.", */
+   /* .description =    "vector compare not equal Hword Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpneh].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpneh].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpneh].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpneh].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpnew, */
+   /* .name        =    "vcmpnew", */
+   /* .description =    "vector compare not equal Word", */
+   /* .opcode      =    0x10000087, */
+   /* .format      =    VC_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_HasRecordForm | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpnew_r, */
+   /* .name        =    "vcmpnew.", */
+   /* .description =    "vector compare not equal Word Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnew].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnew].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnew].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnew].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpnezb, */
+   /* .name        =    "vcmpnezb", */
+   /* .description =    "vector compare not equal or zero Byte", */
+   /* .opcode      =    0x10000107, */
+   /* .format      =    VC_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_HasRecordForm | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpnezb_r, */
+   /* .name        =    "vcmpnezb.", */
+   /* .description =    "vector compare not equal or zero Byte Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezb].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezb].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezb].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezb].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpnezh, */
+   /* .name        =    "vcmpnezh", */
+   /* .description =    "vector compare not equal or zero Hword", */
+   /* .opcode      =    0x10000147, */
+   /* .format      =    VC_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_HasRecordForm | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpnezh_r, */
+   /* .name        =    "vcmpnezh.", */
+   /* .description =    "vector compare not equal or zero Hword Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezh].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezh].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezh].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezh].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpnezw, */
+   /* .name        =    "vcmpnezw", */
+   /* .description =    "vector compare not equal or zero Word", */
+   /* .opcode      =    0x10000187, */
+   /* .format      =    VC_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_HasRecordForm | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vcmpnezw_r, */
+   /* .name        =    "vcmpnezw.", */
+   /* .description =    "vector compare not equal or zero Word Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezw].opcode + 1, */
+   /* .format      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezw].format, */
+   /* .minimumALS  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezw].minimumALS, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::vcmpnezw].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vctsxs, */
+   /* .name        =    "vctsxs", */
+   /* .description =    "Vector Convert To Signed Word Saturate", */
+   /* .opcode      =    0x100003CA, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::veqv, */
+   /* .name        =    "veqv", */
+   /* .description =    "Vector Logical Equivalence", */
+   /* .opcode      =    0x10000684, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::vupkhsb,
    /* .name        = */ "vupkhsb",
@@ -7078,6 +8866,64 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vupklsw, */
+   /* .name        =    "vupklsw", */
+   /* .description =    "Vector Unpack Low Signed Word", */
+   /* .opcode      =    0x100006CE, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vupklpx, */
+   /* .name        =    "vupklpx", */
+   /* .description =    "Vector Unpack Low Pixel", */
+   /* .opcode      =    0x100003CE, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vupkhsw, */
+   /* .name        =    "vupkhsw", */
+   /* .description =    "Vector Unpack High Signed Word", */
+   /* .opcode      =    0x1000064E, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpksdss, */
+   /* .name        =    "vpksdss", */
+   /* .description =    "Vector Pack Signed Dword Signed Saturate", */
+   /* .opcode      =    0x100005CE, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpksdus, */
+   /* .name        =    "vpksdus", */
+   /* .description =    "Vector Pack Signed Dword Unsigned Saturate", */
+   /* .opcode      =    0x1000054E, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::vpkuhum,
    /* .name        = */ "vpkuhum",
@@ -7099,6 +8945,98 @@
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpkuwus, */
+   /* .name        =    "vpkuwus", */
+   /* .description =    "Vector Pack Unsigned Word Unsigned Saturate", */
+   /* .opcode      =    0x100000CE, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp6, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpmsumb, */
+   /* .name        =    "vpmsumb", */
+   /* .description =    "Vector Polynomial Multiply-Sum Byte", */
+   /* .opcode      =    0x10000408, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpmsumh, */
+   /* .name        =    "vpmsumh", */
+   /* .description =    "Vector Polynomial Multiply-Sum Hword", */
+   /* .opcode      =    0x10000448, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpmsumw, */
+   /* .name        =    "vpmsumw", */
+   /* .description =    "Vector Polynomial Multiply-Sum Word", */
+   /* .opcode      =    0x10000488, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpopcntb, */
+   /* .name        =    "vpopcntb", */
+   /* .description =    "Vector Population Count Byte", */
+   /* .opcode      =    0x10000703, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpopcntd, */
+   /* .name        =    "vpopcntd", */
+   /* .description =    "Vector Population Count Dword", */
+   /* .opcode      =    0x100007C3, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpopcnth, */
+   /* .name        =    "vpopcnth", */
+   /* .description =    "Vector Population Count Hword", */
+   /* .opcode      =    0x10000743, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::vpopcntw, */
+   /* .name        =    "vpopcntw", */
+   /* .description =    "Vector Population Count Word", */
+   /* .opcode      =    0x10000783, */
+   /* .format      =    VX_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp8, */
+   /* .properties  =    PPCOpProp_IsVMX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::vmrghb,
@@ -7166,6 +9104,18 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxsd, */
+   /* .name        =    "lxsd", */
+   /* .description =    "Load VSX scalar Dword", */
+   /* .opcode      =    0xE4000002, */
+   /* .format      =    DS_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_DWord | */
+   /*                   PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::lxsdx,
    /* .name        = */ "lxsdx",
@@ -7192,6 +9142,135 @@
                         PPCOpProp_UpdateForm |
                         PPCOpProp_AltFormat,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxssp, */
+   /* .name        =    "lxssp", */
+   /* .description =    "Load VSX scalar single", */
+   /* .opcode      =    0xE4000003, */
+   /* .format      =    DS_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxsibzx, */
+   /* .name        =    "lxsibzx", */
+   /* .description =    "Load VSX scalar as integer byte & zero indexed", */
+   /* .opcode      =    0x7C00061A, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxsihzx, */
+   /* .name        =    "lxsihzx", */
+   /* .description =    "Load VSX scalar as integer Hword & zero indexed", */
+   /* .opcode      =    0x7C00065A, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxv, */
+   /* .name        =    "lxv", */
+   /* .description =    "Load VSX vector", */
+   /* .opcode      =    0xF4000001, */
+   /* .format      =    DQ_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxvb16x, */
+   /* .name        =    "lxvb16x", */
+   /* .description =    "Load VSX vector byte*16 indexed", */
+   /* .opcode      =    0x7C0006D8, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxvh8x, */
+   /* .name        =    "lxvh8x", */
+   /* .description =    "Load VSX vector Hword*8 indexed", */
+   /* .opcode      =    0x7C000658, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxvl, */
+   /* .name        =    "lxvl", */
+   /* .description =    "Load VSX vector with length", */
+   /* .opcode      =    0x7C00021A, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxvll, */
+   /* .name        =    "lxvll", */
+   /* .description =    "Load VSX vector left-justified with length", */
+   /* .opcode      =    0x7C00025A, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxvwsx, */
+   /* .name        =    "lxvwsx", */
+   /* .description =    "Load VSX vector word & splat indexed", */
+   /* .opcode      =    0x7C0002D8, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::lxvx, */
+   /* .name        =    "lxvx", */
+   /* .description =    "Load VSX vector indexed", */
+   /* .opcode      =    0x7C000218, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stxsd, */
+   /* .name        =    "stxsd", */
+   /* .description =    "Store VSX Scalar Dword", */
+   /* .opcode      =    0xF4000002, */
+   /* .format      =    DS_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_IsVSX, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::stxsdx,
@@ -7332,6 +9411,17 @@
                         PPCOpProp_AltFormat,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stxssp, */
+   /* .name        =    "stxssp", */
+   /* .description =    "Store VSX Scalar SP", */
+   /* .opcode      =    0xF4000003, */
+   /* .format      =    DS_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_IsStore, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::xsabsdp,
    /* .name        = */ "xsabsdp",
@@ -7383,6 +9473,160 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stxsibx, */
+   /* .name        =    "stxsibx", */
+   /* .description =    "Store VSX scalar as integer byte indexed", */
+   /* .opcode      =    0x7C00071A, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stxsihx, */
+   /* .name        =    "stxsihx", */
+   /* .description =    "Store VSX scalar as integer Hword indexed", */
+   /* .opcode      =    0x7C00075A, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stxv, */
+   /* .name        =    "stxv", */
+   /* .description =    "Store VSX vector", */
+   /* .opcode      =    0xF4000005, */
+   /* .format      =    DQ_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_IsVSX, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stxvb16x, */
+   /* .name        =    "stxvb16x", */
+   /* .description =    "Store VSX vector byte*16 indexed", */
+   /* .opcode      =    0x7C0007D8, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stxvh8x, */
+   /* .name        =    "stxvh8x", */
+   /* .description =    "Store VSX vector Hword*8 indexed", */
+   /* .opcode      =    0x7C000758, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stxvl, */
+   /* .name        =    "stxvl", */
+   /* .description =    "Store VSX vector with length", */
+   /* .opcode      =    0x7C00031A, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stxvll, */
+   /* .name        =    "stxvll", */
+   /* .description =    "Store VSX vector left-justified with length", */
+   /* .opcode      =    0x7C00035A, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::stxvx, */
+   /* .name        =    "stxvx", */
+   /* .description =    "Store VSX vector indexed", */
+   /* .opcode      =    0x7C000318, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsabsqp, */
+   /* .name        =    "xsabsqp", */
+   /* .description =    "VSX scalar absolute QP", */
+   /* .opcode      =    0xFC000648, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsaddqp, */
+   /* .name        =    "xsaddqp", */
+   /* .description =    "VSX scalar add QP", */
+   /* .opcode      =    0xFC000008, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscmpexpqp, */
+   /* .name        =    "xscmpexpqp", */
+   /* .description =    "VSX scalar compare exponents QP", */
+   /* .opcode      =    0xFC000148, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscmpoqp, */
+   /* .name        =    "xscmpoqp", */
+   /* .description =    "VSX scalar compare ordered QP", */
+   /* .opcode      =    0xFC000108, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscmpuqp, */
+   /* .name        =    "xscmpuqp", */
+   /* .description =    "VSX Scalar Compare Unordered QP", */
+   /* .opcode      =    0xFC000508, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_CompareOp | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::xscpsgndp,
    /* .name        = */ "xscpsgndp",
@@ -7395,6 +9639,29 @@
                         PPCOpProp_IsRegCopy |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscpsgnqp, */
+   /* .name        =    "xscpsgnqp", */
+   /* .description =    "VSX Scalar Copy Sign QP", */
+   /* .opcode      =    0xFC0000C8, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscvqpdp, */
+   /* .name        =    "xscvqpdp", */
+   /* .description =    "VSX Scalar Convert QP to DP", */
+   /* .opcode      =    0xFC140688, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::xscvdpsxds,
@@ -7422,6 +9689,101 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscvdpqp, */
+   /* .name        =    "xscvdpqp", */
+   /* .description =    "VSX Scalar Convert DP to QP", */
+   /* .opcode      =    0xFC160688, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscvqpsdz, */
+   /* .name        =    "xscvqpsdz", */
+   /* .description =    "VSX Scalar Convert QP to Signed Dword truncate", */
+   /* .opcode      =    0xFC190688, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscvqpswz, */
+   /* .name        =    "xscvqpswz", */
+   /* .description =    "VSX Scalar Convert QP to Signed Word truncate", */
+   /* .opcode      =    0xFC090688, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscvqpudz, */
+   /* .name        =    "xscvqpudz", */
+   /* .description =    "VSX Scalar Convert QP to Unsigned Dword truncate", */
+   /* .opcode      =    0xFC110688, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscvqpuwz, */
+   /* .name        =    "xscvqpuwz", */
+   /* .description =    "VSX Scalar Convert QP to Unsigned Word truncate", */
+   /* .opcode      =    0xFC010688, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscvsdqp, */
+   /* .name        =    "xscvsdqp", */
+   /* .description =    "VSX Scalar Convert Signed Dword to QP", */
+   /* .opcode      =    0xFC0A0688, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscvudqp, */
+   /* .name        =    "xscvudqp", */
+   /* .description =    "VSX Scalar Convert Unsigned Dword to QP", */
+   /* .opcode      =    0xFC020688, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsdivqp, */
+   /* .name        =    "xsdivqp", */
+   /* .description =    "VSX Scalar Divide QP", */
+   /* .opcode      =    0xFC000448, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::xsdivdp,
    /* .name        = */ "xsdivdp",
@@ -7433,6 +9795,72 @@
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsiexpqp, */
+   /* .name        =    "xsiexpqp", */
+   /* .description =    "VSX Scalar Insert Exponent QP", */
+   /* .opcode      =    0xFC0006C8, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsmaddqp, */
+   /* .name        =    "xsmaddqp", */
+   /* .description =    "VSX Scalar Multiply-Add QP", */
+   /* .opcode      =    0xFC000308, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsmsubqp, */
+   /* .name        =    "xsmsubqp", */
+   /* .description =    "VSX Scalar Multiply-Subtract QP", */
+   /* .opcode      =    0xFC000348, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsmulqp, */
+   /* .name        =    "xsmulqp", */
+   /* .description =    "VSX Scalar Multiply QP", */
+   /* .opcode      =    0xFC000048, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsmaxcdp, */
+   /* .name        =    "xsmaxcdp", */
+   /* .description =    "VSX Scalar Maximum Type-C Double-Precision", */
+   /* .opcode      =    0xF0000400, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsmaxjdp, */
+   /* .name        =    "xsmaxjdp", */
+   /* .description =    "VSX Scalar Maximum Type-J Double-Precision", */
+   /* .opcode      =    0xF0000480, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::xsmaddadp,
@@ -7457,6 +9885,28 @@
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsmincdp, */
+   /* .name        =    "xsmincdp", */
+   /* .description =    "VSX Scalar Minimum Type-C Double-Precision", */
+   /* .opcode      =    0xF0000440, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsminjdp, */
+   /* .name        =    "xsminjdp", */
+   /* .description =    "VSX Scalar Minimum Type-J Double-Precision", */
+   /* .opcode      =    0xF00004C0, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::xsmsubadp,
@@ -7506,6 +9956,28 @@
                         PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsnmaddqp, */
+   /* .name        =    "xsnmaddqp", */
+   /* .description =    "VSX Scalar Negative Multiply-Add QP", */
+   /* .opcode      =    0xFC000388, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsnmsubqp, */
+   /* .name        =    "xsnmsubqp", */
+   /* .description =    "VSX Scalar Negative Multiply-Subtract QP", */
+   /* .opcode      =    0xFC0003C8, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::xsnegdp,
@@ -7568,6 +10040,30 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsnabsqp, */
+   /* .name        =    "xsnabsqp", */
+   /* .description =    "VSX Scalar Negative Absolute QP", */
+   /* .opcode      =    0xFC080648, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsnegqp, */
+   /* .name        =    "xsnegqp", */
+   /* .description =    "VSX Scalar Negate QP", */
+   /* .opcode      =    0xFC100648, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::xsrdpic,
    /* .name        = */ "xsrdpic",
@@ -7606,6 +10102,90 @@
                         PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xssqrtqp, */
+   /* .name        =    "xssqrtqp", */
+   /* .description =    "VSX Scalar Square Root QP", */
+   /* .opcode      =    0xFC1B0648, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xssubqp, */
+   /* .name        =    "xssubqp", */
+   /* .description =    "VSX Scalar Subtract QP", */
+   /* .opcode      =    0xFC000408, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xststdcqp, */
+   /* .name        =    "xststdcqp", */
+   /* .description =    "VSX Scalar Test Data Class QP", */
+   /* .opcode      =    0xFC000588, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsxsigqp, */
+   /* .name        =    "xsxsigqp", */
+   /* .description =    "VSX Scalar Extract Significand QP", */
+   /* .opcode      =    0xFC120648, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsxexpqp, */
+   /* .name        =    "xsxexpqp", */
+   /* .description =    "VSX Scalar Extract Exponent QP", */
+   /* .opcode      =    0xFC020648, */
+   /* .format      =    X_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xxextractuw, */
+   /* .name        =    "xxextractuw", */
+   /* .description =    "VSX Vector Extract Unsigned Word", */
+   /* .opcode      =    0xF0000294, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xxinsertw, */
+   /* .name        =    "xxinsertw", */
+   /* .description =    "VSX Vector Insert Word", */
+   /* .opcode      =    0xF00002D4, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::xxlor,
@@ -7667,6 +10247,28 @@
                         PPCOpProp_AltFormat,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xxspltib, */
+   /* .name        =    "xxspltib", */
+   /* .description =    "VSX Vector Splat Immediate Byte", */
+   /* .opcode      =    0xF00002D0, */
+   /* .format      =    XX1_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xxperm, */
+   /* .name        =    "xxperm", */
+   /* .description =    "VSX Vector Permute", */
+   /* .opcode      =    0xF00000D0, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::xxpermdi,
    /* .name        = */ "xxpermdi",
@@ -7678,6 +10280,17 @@
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xxpermr, */
+   /* .name        =    "xxpermr", */
+   /* .description =    "VSX Vector Permute Right-indexed", */
+   /* .opcode      =    0xF00001D0, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::xssqrtdp,
@@ -7704,6 +10317,66 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscmpeqdp, */
+   /* .name        =    "xscmpeqdp", */
+   /* .description =    "VSX Scalar Compare Equal Double-Precision", */
+   /* .opcode      =    0xF0000018, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscmpgtdp, */
+   /* .name        =    "xscmpgtdp", */
+   /* .description =    "VSX Scalar Compare Greater Than Double-Precision", */
+   /* .opcode      =    0xF0000058, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscmpgedp, */
+   /* .name        =    "xscmpgedp", */
+   /* .description =    "VSX Scalar Compare Greater Than or Equal Double-Precision", */
+   /* .opcode      =    0xF0000098, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscmpnedp, */
+   /* .name        =    "xscmpnedp", */
+   /* .description =    "VSX Scalar Compare Not Equal Double-Precision", */
+   /* .opcode      =    0xF00000D8, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscmpexpdp, */
+   /* .name        =    "xscmpexpdp", */
+   /* .description =    "VSX Scalar Compare Exponents DP", */
+   /* .opcode      =    0xF00001D8, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::xscvsxddp,
    /* .name        = */ "xscvsxddp",
@@ -7716,6 +10389,19 @@
                         PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscvdphp, */
+   /* .name        =    "xscvdphp", */
+   /* .description =    "VSX Scalar Convert DP to HP", */
+   /* .opcode      =    0xF011056C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_DoubleFP | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::xscvdpsp,
@@ -7730,6 +10416,81 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xscvhpdp, */
+   /* .name        =    "xscvhpdp", */
+   /* .description =    "VSX Scalar Convert HP to DP", */
+   /* .opcode      =    0xF010056C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsiexpdp, */
+   /* .name        =    "xsiexpdp", */
+   /* .description =    "VSX Scalar Insert Exponent DP", */
+   /* .opcode      =    0xF000072C, */
+   /* .format      =    XX1_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xststdcdp, */
+   /* .name        =    "xststdcdp", */
+   /* .description =    "VSX Scalar Test Data Class DP", */
+   /* .opcode      =    0xF00005A8, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_DoubleFP | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xststdcsp, */
+   /* .name        =    "xststdcsp", */
+   /* .description =    "VSX Scalar Test Data Class SP", */
+   /* .opcode      =    0xF00004A8, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_SingleFP | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsxexpdp, */
+   /* .name        =    "xsxexpdp", */
+   /* .description =    "VSX Scalar Extract Exponent DP", */
+   /* .opcode      =    0xF000056C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xsxsigdp, */
+   /* .name        =    "xsxsigdp", */
+   /* .description =    "VSX Scalar Extract Significand DP", */
+   /* .opcode      =    0xF001056C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::xvadddp,
    /* .name        = */ "xvadddp",
@@ -7741,6 +10502,52 @@
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvcmpnesp, */
+   /* .name        =    "xvcmpnesp", */
+   /* .description =    "VSX Vector Compare Not Equal Single-Precision", */
+   /* .opcode      =    0xF00002D8, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    PPCOpProp_HasRecordForm | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvcmpnesp_r, */
+   /* .name        =    "xvcmpnesp.", */
+   /* .description =    "VSX Vector Compare Not Equal Single-Precision Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpnesp].opcode + 1, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpnesp].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvcmpnedp, */
+   /* .name        =    "xvcmpnedp", */
+   /* .description =    "VSX Vector Compare Not Equal Double-Precision", */
+   /* .opcode      =    0xF00003D8, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    PPCOpProp_HasRecordForm | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_CompareOp, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvcmpnedp_r, */
+   /* .name        =    "xvcmpnedp.", */
+   /* .description =    "VSX Vector Compare Not Equal Double-Precision Rc=1", */
+   /* .opcode      =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpnedp].opcode + 1, */
+   /* .format      =    UNKNOWN_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
+   /* .properties  =    OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpnedp].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::xvmindp,
@@ -7847,6 +10654,30 @@
                         PPCOpProp_IsRecordForm,
    },
 
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvcvhpsp, */
+   /* .name        =    "xvcvhpsp", */
+   /* .description =    "VSX Vector Convert HP to SP", */
+   /* .opcode      =    0xF018076C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvcvsphp, */
+   /* .name        =    "xvcvsphp", */
+   /* .description =    "VSX Vector Convert SP to HP", */
+   /* .opcode      =    0xF019076C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_AltFormat | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
    {
    /* .mnemonic    = */ OMR::InstOpCode::xvdivdp,
    /* .name        = */ "xvdivdp",
@@ -7858,6 +10689,28 @@
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xviexpsp, */
+   /* .name        =    "xviexpsp", */
+   /* .description =    "VSX Vector Insert Exponent SP", */
+   /* .opcode      =    0xF00006C0, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xviexpdp, */
+   /* .name        =    "xviexpdp", */
+   /* .description =    "VSX Vector Insert Exponent DP", */
+   /* .opcode      =    0xF00007C0, */
+   /* .format      =    XX3_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::xvmuldp,
@@ -7986,6 +10839,128 @@
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_AltFormat,
    },
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvtstdcsp, */
+   /* .name        =    "xvtstdcsp", */
+   /* .description =    "VSX Vector Test Data Class SP", */
+   /* .opcode      =    0xF00006A8, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_SingleFP | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvtstdcdp, */
+   /* .name        =    "xvtstdcdp", */
+   /* .description =    "VSX Vector Test Data Class DP", */
+   /* .opcode      =    0xF00007A8, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_DoubleFP | */
+   /*                   PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvxexpdp, */
+   /* .name        =    "xvxexpdp", */
+   /* .description =    "VSX Vector Extract Exponent DP", */
+   /* .opcode      =    0xF000076C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvxexpsp, */
+   /* .name        =    "xvxexpsp", */
+   /* .description =    "VSX Vector Extract Exponent SP", */
+   /* .opcode      =    0xF008076C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvxsigdp, */
+   /* .name        =    "xvxsigdp", */
+   /* .description =    "VSX Vector Extract Significand DP", */
+   /* .opcode      =    0xF001076C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xvxsigsp, */
+   /* .name        =    "xvxsigsp", */
+   /* .description =    "VSX Vector Extract Significand SP", */
+   /* .opcode      =    0xF009076C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xxbrd, */
+   /* .name        =    "xxbrd", */
+   /* .description =    "VSX Vector Byte-Reverse Dword", */
+   /* .opcode      =    0xF017076C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xxbrh, */
+   /* .name        =    "xxbrh", */
+   /* .description =    "VSX Vector Byte-Reverse Hword", */
+   /* .opcode      =    0xF007076C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xxbrw, */
+   /* .name        =    "xxbrw", */
+   /* .description =    "VSX Vector Byte-Reverse Word", */
+   /* .opcode      =    0xF00F076C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
+
+   /* { */
+   /* .mnemonic    =    OMR::InstOpCode::xxbrq, */
+   /* .name        =    "xxbrq", */
+   /* .description =    "VSX Vector Byte-Reverse Qword", */
+   /* .opcode      =    0xF01F076C, */
+   /* .format      =    XX2_FORMAT, */
+   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
+   /* .properties  =    PPCOpProp_IsVSX | */
+   /*                   PPCOpProp_SyncSideEffectFree | */
+   /*                   PPCOpProp_AltFormat, */
+   /* }, */
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::fmrgew,

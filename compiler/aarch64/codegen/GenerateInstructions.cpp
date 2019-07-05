@@ -181,6 +181,22 @@ TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg, TR::InstOpCo
    return new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, cg);
    }
 
+TR::Instruction *generateCondTrg1Src2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::ARM64ConditionCode cc, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64CondTrg1Src2Instruction(op, node, treg, s1reg, s2reg, cc, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64CondTrg1Src2Instruction(op, node, treg, s1reg, s2reg, cc, cg);
+   }
+
+TR::Instruction *generateCondTrg1Src2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::ARM64ConditionCode cc, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64CondTrg1Src2Instruction(op, node, treg, s1reg, s2reg, cc, cond, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64CondTrg1Src2Instruction(op, node, treg, s1reg, s2reg, cc, cond, cg);
+   }
+
 TR::Instruction *generateTrg1Src2ShiftedInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg,
    TR::ARM64ShiftCode shiftType, uint32_t shiftAmount, TR::Instruction *preced)

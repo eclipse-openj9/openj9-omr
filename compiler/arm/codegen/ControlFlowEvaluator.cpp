@@ -1615,18 +1615,6 @@ TR::Register *OMR::ARM::TreeEvaluator::resolveAndNULLCHKEvaluator(TR::Node *node
    return evaluateNULLCHKWithPossibleResolve(node, true, cg);
    }
 
-TR::Register *OMR::ARM::TreeEvaluator::resolveCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   // No code is generated for the resolve check. The child will reference an
-   // unresolved symbol and all check handling is done via the corresponding
-   // snippet.
-   //
-   TR::Node *firstChild = node->getFirstChild();
-   cg->evaluate(firstChild);
-   firstChild->decReferenceCount();
-   return NULL;
-   }
-
 TR::Register *OMR::ARM::TreeEvaluator::DIVCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *secondChild = node->getFirstChild()->getSecondChild();

@@ -636,6 +636,7 @@ public:
 	static TR::Register *dcalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *acalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *calliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *fenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *luaddhEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *caddEvaluator(TR::Node *node, TR::CodeGenerator *cg);

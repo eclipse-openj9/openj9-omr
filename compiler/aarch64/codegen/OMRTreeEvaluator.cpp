@@ -458,6 +458,17 @@ OMR::ARM64::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator
    return linkage->buildDirectDispatch(node);
    }
 
+// handles calli, icalli, lcalli, fcalli, dcalli, acalli
+TR::Register *
+OMR::ARM64::TreeEvaluator::indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::SymbolReference *symRef = node->getSymbolReference();
+   TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
+   TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
+
+   return linkage->buildIndirectDispatch(node);
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

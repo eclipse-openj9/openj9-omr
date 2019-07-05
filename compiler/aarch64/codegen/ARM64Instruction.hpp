@@ -30,6 +30,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/MemoryReference.hpp"
+#include "codegen/RegisterDependency.hpp"
 #include "il/symbol/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 
@@ -1568,6 +1569,142 @@ class ARM64Trg1Src2Instruction : public ARM64Trg1Src1Instruction
     */
    virtual uint8_t *generateBinaryEncoding();
    };
+
+class ARM64CondTrg1Src2Instruction : public ARM64Trg1Src2Instruction
+   {
+   TR::ARM64ConditionCode _cc;
+
+   public:
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] s1reg : source register 1
+    * @param[in] s2reg : source register 2
+    * @param[in] cc : branch condition code
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64CondTrg1Src2Instruction( TR::InstOpCode::Mnemonic op,
+                             TR::Node *node,
+                             TR::Register *treg,
+                             TR::Register *s1reg,
+                             TR::Register *s2reg,
+                             TR::ARM64ConditionCode cc,
+                             TR::CodeGenerator *cg)
+      : ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, cg), _cc(cc)
+      {      
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] s1reg : source register 1
+    * @param[in] s2reg : source register 2
+    * @param[in] cc : branch condition code
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64CondTrg1Src2Instruction( TR::InstOpCode::Mnemonic op,
+                             TR::Node *node,
+                             TR::Register *treg,
+                             TR::Register *s1reg,
+                             TR::Register *s2reg,
+                             TR::ARM64ConditionCode cc,
+                             TR::Instruction *precedingInstruction,
+                             TR::CodeGenerator *cg)
+      : ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, precedingInstruction, cg), _cc(cc)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] s1reg : source register 1
+    * @param[in] s2reg : source register 2
+    * @param[in] cc : branch condition code
+    * @param[in] cond : Register Dependency Condition
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64CondTrg1Src2Instruction( TR::InstOpCode::Mnemonic op,
+                             TR::Node *node,
+                             TR::Register *treg,
+                             TR::Register *s1reg,
+                             TR::Register *s2reg,
+                             TR::ARM64ConditionCode cc,
+                             TR::RegisterDependencyConditions *cond,
+                             TR::CodeGenerator *cg)
+      : ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, cond, cg), _cc(cc)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] s1reg : source register 1
+    * @param[in] s2reg : source register 2
+    * @param[in] cc : branch condition code
+    * @param[in] cond : Register Dependency Condition
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64CondTrg1Src2Instruction( TR::InstOpCode::Mnemonic op,
+                             TR::Node *node,
+                             TR::Register *treg,
+                             TR::Register *s1reg,
+                             TR::Register *s2reg,
+                             TR::ARM64ConditionCode cc,
+                             TR::RegisterDependencyConditions *cond,
+                             TR::Instruction *precedingInstruction,
+                             TR::CodeGenerator *cg)
+      : ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, cond, precedingInstruction, cg), _cc(cc)
+      {
+      }
+      
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsCondTrg1Src2; }
+
+   /**
+    * @brief Gets condition code
+    * @return condition code
+    */
+   TR::ARM64ConditionCode getConditionCode() {return _cc;}
+
+   /**
+    * @brief Sets condition code
+    * @param[in] cc : condition code
+    * @return condition code
+    */
+   TR::ARM64ConditionCode setConditionCode(TR::ARM64ConditionCode cc) 
+      {
+      return (_cc = cc);
+      }
+
+   /**
+    * @brief Sets condition code in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertConditionCodeField(uint32_t *instruction)
+      {
+      *instruction |= ((_cc & 0xf) << 12);
+      }
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+};
 
 class ARM64Trg1Src2ShiftedInstruction : public ARM64Trg1Src2Instruction
    {

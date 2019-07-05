@@ -1200,7 +1200,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ddiv,
    /* .name        = */ "ddiv",
-   /* .description =    "Divide  (DFP64)", */
+   /* .description =    "Divide (DFP64)", */
    /* .opcode      = */ 0xEC000444,
    /* .format      = */ X_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
@@ -1214,7 +1214,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ddiv_r,
    /* .name        = */ "ddiv.",
-   /* .description =    "Divide  (DFP64) Rc=1", */
+   /* .description =    "Divide (DFP64) Rc=1", */
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddiv].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddiv].format,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::ddiv].minimumALS,
@@ -1975,7 +1975,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::fmul,
    /* .name        = */ "fmul",
-   /* .description =    "Floating multiply  double", */
+   /* .description =    "Floating multiply double", */
    /* .opcode      = */ 0xFC000032,
    /* .format      = */ A_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
@@ -5815,7 +5815,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::cfnan,
    /* .name        = */ "cfnan",
-   /* .description =    "canonise float  NaN to 0x7fc00..0 (in gprs)", */
+   /* .description =    "canonise float NaN to 0x7fc00..0 (in gprs)", */
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
@@ -9292,9 +9292,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::label,
    /* .name        = */ "label",
-   /* .description =    "Label", */
+   /* .description =    "Destination of a jump", */
    /* .opcode      = */ 0x00000000,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_None,
    },
+

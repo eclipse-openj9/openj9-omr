@@ -23,7 +23,7 @@
 
 const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEncodings[ARM64NumOpCodes] =
 {
-//		BINARY			Opcode    	Opcode		comments
+//		BINARY    		Opcode    	Opcode		comments
 /* UNALLOCATED */
 		0x00000000,	/* BAD       	bad	invalid operation */
 /* Branch,exception generation and system Instruction */
@@ -40,6 +40,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 	/* Exception generation */
 		0xD4200000,	/* BRK       	brkarm64	AArch64 Specific BRK */
 	/* System */
+		0xD503309F,	/* DSB       	dsb	 */
 	/* Unconditional branch (register) */
 		0xD61F0000,	/* BR        	br	 */
 		0xD63F0000,	/* BLR       	blr	 */

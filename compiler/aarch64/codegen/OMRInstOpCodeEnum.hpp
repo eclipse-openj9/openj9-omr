@@ -24,7 +24,7 @@
  * definitions are permitted.
  */
 
-//		Opcode                                                         BINARY    	OPCODE    	comments
+//		Opcode                                                          BINARY    	OPCODE    	comments
 /* UNALLOCATED */
 		bad,                                                    	/* 0x00000000	BAD       	invalid operation */
 /* Branch,exception generation and system Instruction */
@@ -41,6 +41,7 @@
 	/* Exception generation */
 		brkarm64,                                               	/* 0xD4200000	BRK       	AArch64 Specific BRK */
 	/* System */
+		dsb,                                                    	/* 0xD503309F	DSB       	 */
 	/* Unconditional branch (register) */
 		br,                                                     	/* 0xD61F0000	BR        	 */
 		blr,                                                    	/* 0xD63F0000	BLR       	 */

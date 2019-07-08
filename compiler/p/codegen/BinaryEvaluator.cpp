@@ -2357,7 +2357,7 @@ TR::Register *OMR::Power::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeG
    return trgReg;
    }
 
-// also handles bshl,iushl
+// also handles bshl
 TR::Register *OMR::Power::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *trgReg         = cg->allocateRegister();
@@ -2387,7 +2387,6 @@ TR::Register *OMR::Power::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeG
    return trgReg;
    }
 
-// also handles lushl
 TR::Register *OMR::Power::TreeEvaluator::lshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *trgReg;

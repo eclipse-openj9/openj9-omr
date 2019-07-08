@@ -1638,14 +1638,12 @@ static bool reduceLongOp(TR::Node * node, TR::Block * block, TR::Simplifier * s,
                }
             }
          break;
-      case TR::lushl:
-    isUnsigned = true;
       case TR::lshl:
          if (firstChild->getSecondChild()->getOpCode().isLoadConst())
             {
             if ((firstChild->getSecondChild()->get64bitIntegralValue() & LONG_SHIFT_MASK) < 32)
                {
-               newOp = isUnsigned ? TR::iushl : TR::ishl;
+               newOp = TR::ishl;
                convertSecondChild = false; // the second child is already an iconst
                }
             else
@@ -10019,7 +10017,7 @@ TR::Node *ishlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       // Normalize shift by a constant into multiply by a constant
       //
-      TR::Node::recreate(node, node->getOpCodeValue() == TR::iushl ? TR::iumul : TR::imul);
+      TR::Node::recreate(node, TR::imul);
       int32_t multiplier = 1 << (secondChild->getInt() & INT_SHIFT_MASK);
       if (secondChild->getReferenceCount() > 1)
          {
@@ -10282,8 +10280,7 @@ TR::Node *lushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
    // shift right and conversion to byte, char, or int
    //
    if (secondChild->getOpCode().isLoadConst() &&
-      (firstChild->getOpCodeValue() == TR::lushl ||
-       firstChild->getOpCodeValue() == TR::lshl) &&
+       firstChild->getOpCodeValue() == TR::lshl &&
        firstChild->getSecondChild()->getOpCode().isLoadConst())
       {
       int64_t left = firstChild->getSecondChild()->get64bitIntegralValue() & LONG_SHIFT_MASK;

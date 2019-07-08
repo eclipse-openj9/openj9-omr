@@ -1,9 +1,5 @@
 /*******************************************************************************
-<<<<<<< HEAD
  * Copyright (c) 2000, 2020 IBM Corp. and others
-=======
- * Copyright (c) 2000, 2019 IBM Corp. and others
->>>>>>> e74336a0f... Remove references of IL opcode TR::bustore and TR::bustorei
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -633,7 +629,6 @@ OMR::IL::opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode)
       case TR::astorei:  return TR::aloadi;
       case TR::awrtbari: return TR::aloadi;
       case TR::vstorei:  return TR::vloadi;
-      case TR::cstorei:  return TR::sloadi;
       case TR::iustore:  return TR::iload;
       case TR::iustorei: return TR::iloadi;
       case TR::lustorei: return TR::lloadi;

@@ -703,7 +703,7 @@ TR::Register *OMR::ARM::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeG
    return commonStoreEvaluator(node, ARMOp_strb, 1, cg);
    }
 
-// also handles isstore, icstore, cstore,isstore,icstore
+// also handles isstore, icstore,isstore,icstore
 TR::Register *OMR::ARM::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonStoreEvaluator(node, ARMOp_strh, 2, cg);

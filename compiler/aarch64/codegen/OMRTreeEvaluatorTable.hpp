@@ -391,7 +391,7 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifsucmpgeEvaluator ,	// TR::ifsucmpge		// char compare and branch if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifsucmpgtEvaluator ,	// TR::ifsucmpgt		// char compare and branch if greater than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifsucmpleEvaluator ,	// TR::ifsucmple		// char compare and branch if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::loadaddrEvaluator ,	// TR::loadaddr		// load address of non-heap storage item (Auto; Parm; Static or Method)
+    TR::TreeEvaluator::loadaddrEvaluator, // TR::loadaddr		// load address of non-heap storage item (Auto; Parm; Static or Method)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ZEROCHKEvaluator ,	// TR::ZEROCHK		// Zero-check an int.  Symref indicates call to perform when first child is zero.  Other children are arguments to the call.
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::callIfEvaluator ,	// TR::callIf		// Call symref if first child evaluates to true.  Other childrem are arguments to the call.
     TR::TreeEvaluator::iRegLoadEvaluator, // TR::iRegLoad		// Load integer global register

@@ -1331,7 +1331,7 @@ TR::Register *OMR::X86::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::Cod
       generateRegRegInstruction(CMOVERegReg(trueValIs64Bit), node, trueReg, falseReg, cg);
       }
 
-   if ((node->getOpCodeValue() == TR::buternary || node->getOpCodeValue() == TR::bternary) &&
+   if (node->getOpCodeValue() == TR::bternary &&
        cg->enableRegisterInterferences())
       cg->getLiveRegisters(TR_GPR)->setByteRegisterAssociation(trueReg);
 

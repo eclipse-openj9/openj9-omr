@@ -7743,7 +7743,7 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
          TR::VPIntRange *range = rhs->asIntRange();
          int32_t low = range->getLowInt();
          int32_t high = range->getHighInt();
-       if((node->getFirstChild()->getOpCodeValue() == TR::imul || node->getFirstChild()->getOpCodeValue() == TR::iumul) &&
+       if(node->getFirstChild()->getOpCodeValue() == TR::imul &&
        ((high & 0x80000000) ==0) &&
        ((low & 0x80000000) ==0))
           {
@@ -7766,7 +7766,7 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
       else if(rhs->asIntConst())
          {
          int32_t iandMask =rhs->asIntConst()->getInt();
-         if((node->getFirstChild()->getOpCodeValue() == TR::imul || node->getFirstChild()->getOpCodeValue() == TR::iumul) &&
+         if(node->getFirstChild()->getOpCodeValue() == TR::imul &&
            ((iandMask & 0x80000000) ==0))
             {
             while(!(mask  & 0x1))

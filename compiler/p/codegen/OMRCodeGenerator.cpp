@@ -2674,8 +2674,7 @@ bool OMR::Power::CodeGenerator::isRotateAndMask(TR::Node * node)
           contiguousBits(secondChild->getInt()) &&
           firstChild->getReferenceCount() == 1 &&
           firstChild->getRegister() == NULL &&
-          (((firstOp == TR::imul ||
-             firstOp == TR::iumul) &&
+          ((firstOp == TR::imul &&
              firstChild->getSecondChild()->getOpCodeValue() == TR::iconst &&
             firstChild->getSecondChild()->getInt() > 0 &&
             isNonNegativePowerOf2(firstChild->getSecondChild()->getInt())) ||

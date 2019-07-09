@@ -47,6 +47,7 @@
 #include "cs2/llistof.h"
 #include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
+#include "env/HeuristicRegion.hpp"
 #include "env/PersistentInfo.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
@@ -8054,6 +8055,7 @@ TR_ColdBlockMarker::hasNotYetRun(TR::Node *node)
          char *name = TR::Compiler->cls.classNameChars(comp(), node->getSymbolReference(), len);
          if (name)
             {
+            TR::HeuristicRegion heuristicRegion(comp());
             char *sig = classNameToSignature(name, len, comp());
             TR_OpaqueClassBlock *classObject = fe()->getClassFromSignature(sig, len, node->getSymbolReference()->getOwningMethod(comp()));
             if (classObject && !TR::Compiler->cls.isInterfaceClass(comp(), classObject))

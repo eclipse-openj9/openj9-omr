@@ -2456,23 +2456,6 @@ bool TR_LoopVersioner::isExprInvariant(TR::Node *node, bool ignoreHeapificationS
 
    _visitedNodes.set(node->getGlobalIndex()) ;
 
-   // For loads from memory writable by other threads, we're allowed to load
-   // once instead of many times, but it's incorrect to assume that repeating
-   // the load will result in the same value. It is possible (in the absence of
-   // synchronization and calls) to version based on expressions containing
-   // such nodes by privatizing their values, guaranteeing that the value is
-   // stable for the entire sequence of versioning tests and the entire
-   // execution of the hot loop.
-   //
-   // TODO: Update versioner to do the necessary privatization, allowing
-   // versioning in these cases.
-   //
-   // For now, treat any node that would need to be privatized as non-invariant
-   // to prevent incorrect versioning.
-   //
-   if (requiresPrivatization(node))
-      return false;
-
    TR::ILOpCode &opCode = node->getOpCode();
    TR::ILOpCodes opCodeValue = opCode.getOpCodeValue();
 

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -92,3 +92,30 @@ macro(omr_list_contains lst element output)
 	endif()
 	unset(_omr_list_contains_idx)
 endmacro(omr_list_contains)
+
+# omr_process_template(<input_file> <output_file> [@ONLY] [ESCAPE_QUOTES])
+# processes a template file by first expanding variable references, and then
+# evaluating generator expressions. @ONLY and ESCAPE_QUOTES are treated as
+# they are for configure_file().
+# NOTE: like file(GENERATE ) output is not written until the end cmake evaluation
+function(omr_process_template input output)
+
+	set(opts @ONLY ESCAPE_QUOTES)
+	cmake_parse_arguments(opt "${opts}" "" "" ${ARGN})
+
+	set(configure_args)
+	if(opt_@ONLY)
+		list(APPEND configure_args @ONLY)
+	endif()
+	if(opt_ESCAPE_QUOTES)
+		list(APPEND configure_args ESCAPE_QUOTES)
+	endif()
+
+	# make input path absolute, treating relative paths relative to current source dir
+	get_filename_component(input_abs "${input}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+	omr_assert(SEND_ERROR TEST EXISTS "${input_abs}" MESSAGE "omr_process_template called with non-existant input '${input}'")
+
+	file(READ "${input_abs}" template)
+	string(CONFIGURE "${template}" configured_template ${configure_args})
+	file(GENERATE OUTPUT "${output}" CONTENT "${configured_template}")
+endfunction()

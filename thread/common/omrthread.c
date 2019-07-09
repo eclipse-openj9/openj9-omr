@@ -4236,6 +4236,10 @@ omrthread_monitor_exit_using_threadId(omrthread_monitor_t monitor, omrthread_t t
 static intptr_t
 monitor_exit(omrthread_t self, omrthread_monitor_t monitor)
 {
+#if defined(OMR_THR_MCS_LOCKS)
+	omrthread_t nextThread = NULL;
+#endif /* defined(OMR_THR_MCS_LOCKS) */
+
 	ASSERT(monitor);
 	ASSERT(self);
 	ASSERT(0 == self->monitor);
@@ -4253,7 +4257,15 @@ monitor_exit(omrthread_t self, omrthread_monitor_t monitor)
 		monitor->owner = NULL;
 		UPDATE_JLM_MON_EXIT(self, monitor);
 
-#ifdef OMR_THR_THREE_TIER_LOCKING
+#if defined(OMR_THR_THREE_TIER_LOCKING)
+#if defined(OMR_THR_MCS_LOCKS)
+		MONITOR_LOCK(monitor, CALLER_MONITOR_EXIT1);
+		nextThread = omrthread_mcs_unlock(self, monitor);
+		if (NULL != nextThread) {
+			NOTIFY_WRAPPER(nextThread);
+		}
+		MONITOR_UNLOCK(monitor);
+#else /* defined(OMR_THR_MCS_LOCKS) */
 #if defined(OMR_THR_SPIN_WAKE_CONTROL)
 		omrthread_spinlock_swapState(monitor, J9THREAD_MONITOR_SPINLOCK_UNOWNED);
  		MONITOR_LOCK(monitor, CALLER_MONITOR_EXIT1);
@@ -4268,9 +4280,10 @@ monitor_exit(omrthread_t self, omrthread_monitor_t monitor)
 			MONITOR_UNLOCK(monitor);
 		}
 #endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
-#else
+#endif /* defined(OMR_THR_MCS_LOCKS) */
+#else /* defined(OMR_THR_THREE_TIER_LOCKING) */
 		MONITOR_UNLOCK(monitor);
-#endif
+#endif /* defined(OMR_THR_THREE_TIER_LOCKING) */
 	}
 
 	return 0;

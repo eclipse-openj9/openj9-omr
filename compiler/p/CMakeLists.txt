@@ -28,8 +28,6 @@ compiler_library(p
 	${CMAKE_CURRENT_LIST_DIR}/codegen/FPTreeEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/GenerateInstructions.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRMemoryReference.cpp
-	${CMAKE_CURRENT_LIST_DIR}/codegen/OpBinary.cpp
-	${CMAKE_CURRENT_LIST_DIR}/codegen/OpProperties.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/PPCAOTRelocation.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/PPCBinaryEncoding.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRCodeGenerator.cpp

@@ -25,8 +25,6 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/p/codegen/FPTreeEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/GenerateInstructions.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRMemoryReference.cpp \
-    $(JIT_OMR_DIRTY_DIR)/p/codegen/OpBinary.cpp \
-    $(JIT_OMR_DIRTY_DIR)/p/codegen/OpProperties.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/PPCAOTRelocation.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/PPCBinaryEncoding.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRCodeGenerator.cpp \

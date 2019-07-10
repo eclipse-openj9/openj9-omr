@@ -309,18 +309,15 @@ TR::Register *
 OMR::Z::TreeEvaluator::dsqrtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    TR::Node * firstChild = node->getFirstChild();
-   TR::Register * targetRegister = NULL;
+   TR::Register * targetRegister = cg->allocateRegister(TR_FPR);
 
-   //See whether to use SQDB or SQDBR depending on how many times it is referenced
    if (firstChild->isSingleRefUnevaluated() && firstChild->getOpCodeValue() == TR::dloadi)
       {
-      targetRegister = cg->allocateRegister(TR_FPR);
       generateRXEInstruction(cg, TR::InstOpCode::SQDB, node, targetRegister, generateS390MemoryReference(firstChild, cg), 0);
       }
    else
       {
       TR::Register * opRegister = cg->evaluate(firstChild);
-      targetRegister = cg->allocateRegister(TR_FPR);
       generateRRInstruction(cg, TR::InstOpCode::SQDBR, node, targetRegister, opRegister);
       cg->decReferenceCount(firstChild);
       }

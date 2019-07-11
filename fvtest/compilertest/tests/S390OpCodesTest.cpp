@@ -3673,7 +3673,6 @@ S390OpCodesTest::compileDisabledIntegerArithmeticTestMethods()
    //Jazz103 Work Item 103809
    //Testrossa Work Item 121966
    compileOpCodeMethod(_iuDiv, _numberOfBinaryArgs, TR::iudiv, "iuDiv", _argTypesBinaryInt, TR::Int32, rc);
-   compileOpCodeMethod(_iuMul, _numberOfBinaryArgs, TR::iumul, "iuMul", _argTypesBinaryInt, TR::Int32, rc);
    compileOpCodeMethod(_iuRem, _numberOfBinaryArgs, TR::iurem, "iuRem", _argTypesBinaryInt, TR::Int32, rc);
 
    }
@@ -3681,12 +3680,6 @@ S390OpCodesTest::compileDisabledIntegerArithmeticTestMethods()
 void
 S390OpCodesTest::invokeDisabledIntegerArithmeticTests()
    {
-   //unsigned integer constant test will be enabled in another work item.
-   //iumul : overflow just cut
-   OMR_CT_EXPECT_EQ(_iuMul, mul(UINT_MAXIMUM, UINT_MINIMUM), _iuMul(UINT_MAXIMUM, UINT_MINIMUM));
-   OMR_CT_EXPECT_EQ(_iuMul, mul(UINT_MINIMUM, UINT_POS), _iuMul(UINT_MINIMUM, UINT_POS));
-   OMR_CT_EXPECT_EQ(_iuMul, mul(UINT_POS, UINT_MAXIMUM), _iuMul(UINT_POS, UINT_MAXIMUM));
-
    //iudiv
    // TODO: Use ASSERT_DEATH() to catch Remainder by zero which will get "Floating point exception (core dumped)"
    // Test secnario : _iuDiv(UINT_MAXIMUM, 0)

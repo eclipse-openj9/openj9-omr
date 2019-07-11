@@ -209,7 +209,7 @@ TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeG
    TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
 
   if (TR::Compiler->target.cpu.id() >= TR_PPCp9 &&
-      (firstChild->getOpCodeValue() == TR::imul || firstChild->getOpCodeValue() == TR::iumul) &&
+      firstChild->getOpCodeValue() == TR::imul &&
       firstChild->getReferenceCount() == 1 &&
       firstChild->getRegister() == NULL)
      {
@@ -933,7 +933,6 @@ TR::Register *OMR::Power::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeG
    return trgReg;
    }
 
-// also handles iumul
 TR::Register *OMR::Power::TreeEvaluator::imulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *trgReg;
@@ -3719,8 +3718,7 @@ TR::Register *OMR::Power::TreeEvaluator::iandEvaluator(TR::Node *node, TR::CodeG
       {
       if (cg->isRotateAndMask(node))
          {
-         if (firstChild->getOpCodeValue() == TR::imul ||
-             firstChild->getOpCodeValue() == TR::iumul)
+         if (firstChild->getOpCodeValue() == TR::imul)
             {
             int32_t multiplier = firstChild->getSecondChild()->getInt();
             int32_t shiftAmount = 0;

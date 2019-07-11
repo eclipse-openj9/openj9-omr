@@ -10016,7 +10016,7 @@ TR::Node *ishlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       // Normalize shift by a constant into multiply by a constant
       //
-      TR::Node::recreate(node, node->getOpCodeValue() == TR::iushl ? TR::iumul : TR::imul);
+      TR::Node::recreate(node, TR::imul);
       int32_t multiplier = 1 << (secondChild->getInt() & INT_SHIFT_MASK);
       if (secondChild->getReferenceCount() > 1)
          {

@@ -1793,7 +1793,7 @@ OMR::CodeGenerator::convertMultiplyToShift(TR::Node * node)
    secondChild = TR::Node::create(secondChild, TR::iconst, 0);
    node->setAndIncChild(1, secondChild);
 
-   if (node->getOpCodeValue() == TR::imul || node->getOpCodeValue() == TR::iumul)
+   if (node->getOpCodeValue() == TR::imul)
       TR::Node::recreate(node, TR::ishl);
    else
       {

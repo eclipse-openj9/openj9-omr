@@ -376,16 +376,12 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
       {
       case TR::icall:
       case TR::icalli:
-      case TR::iucall:
-      case TR::iucalli:
       case TR::acall:
       case TR::acalli:
          returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
          break;
       case TR::lcall:
       case TR::lcalli:
-      case TR::lucall:
-      case TR::lucalli:
          {
          if (TR::Compiler->target.is64Bit())
             {

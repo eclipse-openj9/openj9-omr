@@ -816,12 +816,10 @@ TR::Register *TR::ARM64SystemLinkage::buildDirectDispatch(TR::Node *callNode)
    switch(callNode->getOpCodeValue())
       {
       case TR::icall:
-      case TR::iucall:
          retReg = dependencies->searchPostConditionRegister(
                      pp.getIntegerReturnRegister());
          break;
       case TR::lcall:
-      case TR::lucall:
       case TR::acall:
          retReg = dependencies->searchPostConditionRegister(
                      pp.getLongReturnRegister());

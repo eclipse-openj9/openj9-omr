@@ -1193,9 +1193,7 @@ public:
       switch (ind)
          {
          case TR::icalli:    return TR::icall;
-         case TR::iucalli:   return TR::iucall;
          case TR::lcalli:    return TR::lcall;
-         case TR::lucalli:   return TR::lucall;
          case TR::fcalli:    return TR::fcall;
          case TR::dcalli:    return TR::dcall;
          case TR::acalli:    return TR::acall;

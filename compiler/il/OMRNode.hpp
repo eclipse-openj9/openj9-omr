@@ -436,7 +436,7 @@ public:
    ///         pairFirstChild
    ///         pairSecondChild
    ///
-   /// and the opcodes for highOp/adjunctOp are lumulh/lmul.
+   /// and the opcodes for highOp/adjunctOp are lumulh/lmul, luaddh/luadd, or lusubh/lusub.
    ///
    bool                   isDualHigh();
 
@@ -452,7 +452,7 @@ public:
    ///           pairFirstChild
    ///           pairSecondChild
    ///
-   /// and the opcodes for highOp/adjunctOp are. (All the opcode pairs have been deprecated)
+   /// and the opcodes for highOp/adjunctOp are luaddc/luadd, or lusubb/lusub.
    ///
    bool                   isTernaryHigh();
 
@@ -2053,7 +2053,7 @@ protected:
       allocationCanBeRemoved                = 0x00004000,
       skipZeroInit                          = 0x00008000,
 
-      // Flag used by TR::lmul
+      // Flag used by TR::lmul (possibly TR::luadd, TR::lusub)
       // Whether this node is the adjunct node of a dual high node
       adjunct                               = 0x00010000,
 

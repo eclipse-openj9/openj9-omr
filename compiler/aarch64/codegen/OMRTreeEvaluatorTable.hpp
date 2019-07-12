@@ -343,24 +343,24 @@
     TR::TreeEvaluator::iffcmpgeEvaluator, // TR::iffcmpge		// float compare and branch if greater than or equal
     TR::TreeEvaluator::iffcmpgtEvaluator, // TR::iffcmpgt		// float compare and branch if greater than
     TR::TreeEvaluator::iffcmpleEvaluator, // TR::iffcmple		// float compare and branch if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpequEvaluator ,	// TR::iffcmpequ		// float compare and branch if equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpneuEvaluator ,	// TR::iffcmpneu		// float compare and branch if not equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpltuEvaluator ,	// TR::iffcmpltu		// float compare and branch if less than or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpgeuEvaluator ,	// TR::iffcmpgeu		// float compare and branch if greater than or equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpgtuEvaluator ,	// TR::iffcmpgtu		// float compare and branch if greater than or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpleuEvaluator ,	// TR::iffcmpleu		// float compare and branch if less than or equal or unordered
+    TR::TreeEvaluator::iffcmpequEvaluator, // TR::iffcmpequ		// float compare and branch if equal or unordered
+    TR::TreeEvaluator::iffcmpneuEvaluator, // TR::iffcmpneu		// float compare and branch if not equal or unordered
+    TR::TreeEvaluator::iffcmpltuEvaluator, // TR::iffcmpltu		// float compare and branch if less than or unordered
+    TR::TreeEvaluator::iffcmpgeuEvaluator, // TR::iffcmpgeu		// float compare and branch if greater than or equal or unordered
+    TR::TreeEvaluator::iffcmpgtuEvaluator, // TR::iffcmpgtu		// float compare and branch if greater than or unordered
+    TR::TreeEvaluator::iffcmpleuEvaluator, // TR::iffcmpleu		// float compare and branch if less than or equal or unordered
     TR::TreeEvaluator::ifdcmpeqEvaluator, // TR::ifdcmpeq		// double compare and branch if equal
     TR::TreeEvaluator::ifdcmpneEvaluator, // TR::ifdcmpne		// double compare and branch if not equal
     TR::TreeEvaluator::ifdcmpltEvaluator, // TR::ifdcmplt		// double compare and branch if less than
     TR::TreeEvaluator::ifdcmpgeEvaluator, // TR::ifdcmpge		// double compare and branch if greater than or equal
     TR::TreeEvaluator::ifdcmpgtEvaluator, // TR::ifdcmpgt		// double compare and branch if greater than
     TR::TreeEvaluator::ifdcmpleEvaluator, // TR::ifdcmple		// double compare and branch if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpequEvaluator ,	// TR::ifdcmpequ		// double compare and branch if equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpneuEvaluator ,	// TR::ifdcmpneu		// double compare and branch if not equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpltuEvaluator ,	// TR::ifdcmpltu		// double compare and branch if less than or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpgeuEvaluator ,	// TR::ifdcmpgeu		// double compare and branch if greater than or equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpgtuEvaluator ,	// TR::ifdcmpgtu		// double compare and branch if greater than or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpleuEvaluator ,	// TR::ifdcmpleu		// double compare and branch if less than or equal or unordered
+    TR::TreeEvaluator::ifdcmpequEvaluator, // TR::ifdcmpequ		// double compare and branch if equal or unordered
+    TR::TreeEvaluator::ifdcmpneuEvaluator, // TR::ifdcmpneu		// double compare and branch if not equal or unordered
+    TR::TreeEvaluator::ifdcmpltuEvaluator, // TR::ifdcmpltu		// double compare and branch if less than or unordered
+    TR::TreeEvaluator::ifdcmpgeuEvaluator, // TR::ifdcmpgeu		// double compare and branch if greater than or equal or unordered
+    TR::TreeEvaluator::ifdcmpgtuEvaluator, // TR::ifdcmpgtu		// double compare and branch if greater than or unordered
+    TR::TreeEvaluator::ifdcmpleuEvaluator, // TR::ifdcmpleu		// double compare and branch if less than or equal or unordered
     TR::TreeEvaluator::iflcmpeqEvaluator, // TR::ifacmpeq		// address compare and branch if equal
     TR::TreeEvaluator::iflcmpneEvaluator, // TR::ifacmpne		// address compare and branch if not equal
     TR::TreeEvaluator::iflucmpltEvaluator, // TR::ifacmplt		// address compare and branch if less than

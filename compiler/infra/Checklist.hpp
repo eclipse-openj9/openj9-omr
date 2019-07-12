@@ -56,8 +56,9 @@ class NodeChecklist: public Checklist
    bool contains(TR::Node* n) const;
    void add(TR::Node* n);
    void remove(TR::Node* n);
-   void add(NodeChecklist &other);
-   void remove(NodeChecklist &other);
+   bool contains(const NodeChecklist &other) const;
+   void add(const NodeChecklist &other);
+   void remove(const NodeChecklist &other);
    bool operator==(const NodeChecklist &other) const;
    bool operator!=(const NodeChecklist &other) const { return !operator==(other); }
    };
@@ -69,8 +70,9 @@ class BlockChecklist: public Checklist
    bool contains(TR::Block* b) const;
    void add(TR::Block* b);
    void remove(TR::Block* b);
-   void add(BlockChecklist &other);
-   void remove(BlockChecklist &other);
+   bool contains(const BlockChecklist &other) const;
+   void add(const BlockChecklist &other);
+   void remove(const BlockChecklist &other);
    bool operator==(const BlockChecklist &other) const;
    bool operator!=(const BlockChecklist &other) const { return !operator==(other); }
    };

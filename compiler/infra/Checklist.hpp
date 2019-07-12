@@ -53,7 +53,7 @@ class NodeChecklist: public Checklist
    {
    public:
    NodeChecklist(TR::Compilation* c);
-   bool contains(TR::Node* n);
+   bool contains(TR::Node* n) const;
    void add(TR::Node* n);
    void remove(TR::Node* n);
    void add(NodeChecklist &other);
@@ -66,7 +66,7 @@ class BlockChecklist: public Checklist
    {
    public:
    BlockChecklist(TR::Compilation* c);
-   bool contains(TR::Block* b);
+   bool contains(TR::Block* b) const;
    void add(TR::Block* b);
    void remove(TR::Block* b);
    void add(BlockChecklist &other);

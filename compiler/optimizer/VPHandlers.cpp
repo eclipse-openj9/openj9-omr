@@ -1151,31 +1151,95 @@ TR::Node *constrainBCDAggrLoad(OMR::ValuePropagation *vp, TR::Node *node)
 TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
    {
    TR::DataType dataType = node->getDataType();
-
    // Optimize characters being loaded out of the values array of a constant string
    //
-   if (dataType == TR::Int16 && node->getOpCode().isIndirect() &&
+   if (node->getOpCode().isIndirect() &&
        node->getSymbol()->isArrayShadowSymbol() &&
        node->getFirstChild()->getOpCode().isAdd())
       {
       TR::Node *array = node->getFirstChild()->getFirstChild();
       TR::Node *index = node->getFirstChild()->getSecondChild();
-      if (index->getOpCode().isLoadConst() && array->getOpCode().isIndirect())
+      if (index->getOpCode().isLoadConst())
          {
          bool isGlobal;
-         TR::Node* base = array->getFirstChild();
-         TR::VPConstraint *baseVPConstraint = vp->getConstraint(base, isGlobal);
-         if (baseVPConstraint && baseVPConstraint->isConstString())
+         if (dataType == TR::Int16 && array->getOpCode().isIndirect())
             {
-            TR::VPConstString *constString = baseVPConstraint->getClassType()->asConstString();
-
-            uint16_t ch = constString->charAt(((TR::Compiler->target.is64Bit() ? index->getLongIntLow() : index->getInt())
-                                               - TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2, vp->comp());
-            if (ch != 0)
+            TR::Node* base = array->getFirstChild();
+            TR::VPConstraint *baseVPConstraint = vp->getConstraint(base, isGlobal);
+            if (baseVPConstraint && baseVPConstraint->isConstString())
                {
-               vp->replaceByConstant(node, TR::VPIntConst::create(vp, ch), true);
-               return node;
+               TR::VPConstString *constString = baseVPConstraint->getClassType()->asConstString();
+
+               uintptrj_t offset = TR::Compiler->target.is64Bit() ? (uintptrj_t)index->getUnsignedLongInt() : (uintptrj_t)index->getUnsignedInt();
+               uintptrj_t chIdx = (offset - (uintptrj_t)TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2;
+               uint16_t ch = constString->charAt(chIdx, vp->comp());
+               if (ch != 0)
+                  {
+                  vp->replaceByConstant(node, TR::VPShortConst::create(vp, ch), isGlobal);
+                  return node;
+                  }
                }
+            }
+         TR::VPConstraint *arrayVPConstraint = vp->getConstraint(array, isGlobal);
+         if (arrayVPConstraint)
+            {
+#ifdef J9_PROJECT_SPECIFIC
+            TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
+            TR::VPKnownObject *kobj = arrayVPConstraint->getKnownObject();
+            if (knot && kobj)
+               {
+               TR::KnownObjectTable::Index idx = kobj->getIndex();
+               if (kobj->isArrayWithConstantElements(vp->comp()) && kobj->isPrimitiveArray(vp->comp()))
+                  {
+                  TR::VMAccessCriticalSection constrainAnyIntLoadCriticalSection(vp->comp(),
+                     TR::VMAccessCriticalSection::tryToAcquireVMAccess);
+                  if (constrainAnyIntLoadCriticalSection.hasVMAccess())
+                     {
+                     uintptrj_t arrayObj = knot->getPointer(idx);
+                     uintptrj_t offset = TR::Compiler->target.is64Bit()
+                                         ? (uintptrj_t)index->getUnsignedLongInt() : (uintptrj_t)index->getUnsignedInt();
+                     uintptrj_t lengthInElements = TR::Compiler->om.getArrayLengthInElements(vp->comp(), arrayObj);
+                     TR::DataType elementType = kobj->getPrimitiveArrayDataType();
+                     uintptrj_t lengthInBytes = lengthInElements * TR::DataType::getSize(elementType);
+                     uintptrj_t validStart = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
+                     uintptrj_t validEnd = validStart + lengthInBytes;
+                     uintptrj_t accessSize = TR::DataType::getSize(dataType);
+                     uintptrj_t accessEnd = offset + accessSize;
+                     if (validStart <= offset && offset < accessEnd && accessEnd <= validEnd)
+                        {
+                        uintptrj_t elementAddress = TR::Compiler->om.getAddressOfElement(vp->comp(), arrayObj, offset);
+                        switch (dataType)
+                           {
+                           case TR::Int8:
+                              {
+                              uint8_t value = *((uint8_t*)(elementAddress));
+                              vp->replaceByConstant(node, TR::VPIntConst::create(vp, value), isGlobal);
+                              return node;
+                              }
+                           case TR::Int16:
+                              {
+                              uint16_t value = *((uint16_t*)(elementAddress));
+                              vp->replaceByConstant(node, TR::VPShortConst::create(vp, value), isGlobal);
+                              return node;
+                              }
+                           case TR::Int32:
+                              {
+                              uint32_t value = *((uint32_t*)(elementAddress));
+                              vp->replaceByConstant(node, TR::VPIntConst::create(vp, value), isGlobal);
+                              return node;
+                              }
+                           case TR::Int64:
+                              {
+                              uint64_t value = *((uint64_t*)(elementAddress));
+                              vp->replaceByConstant(node, TR::VPLongConst::create(vp, value), isGlobal);
+                              return node;
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+#endif
             }
          }
       }
@@ -4767,6 +4831,25 @@ TR::Node *constrainArraylength(OMR::ValuePropagation *vp, TR::Node *node)
          upperBoundLimit = arrayInfo->highBound();
          elementSize     = arrayInfo->elementSize();
          }
+#ifdef J9_PROJECT_SPECIFIC
+      TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
+      TR::VPKnownObject *kobj = constraint->getKnownObject();
+      if (knot && kobj)
+         {
+         TR::VMAccessCriticalSection constrainArraylengthCriticalSection(vp->comp(),
+                     TR::VMAccessCriticalSection::tryToAcquireVMAccess);
+         if (constrainArraylengthCriticalSection.hasVMAccess())
+            {
+            uintptrj_t array = knot->getPointer(kobj->getIndex());
+            if (vp->comp()->fej9()->isClassArray(vp->comp()->fej9()->getObjectClass(array)))
+               {
+               uintptrj_t length = vp->comp()->fej9()->getArrayLengthInElements(array);
+               vp->replaceByConstant(node, TR::VPIntConst::create(vp, length), isGlobal);
+               return node;
+               }
+            }
+         }
+#endif
       }
 
    // If the element size is still not known, try to get it from the node or

@@ -195,7 +195,6 @@ void*
 MM_SegregatedAllocationInterface::allocateArray(MM_EnvironmentBase *env, MM_AllocateDescription *allocateDescription, MM_MemorySpace *memorySpace, bool shouldCollectOnFailure)
 {
 	void *result = NULL;
-#if defined(OMR_GC_ARRAYLETS)
 	MM_MemorySubSpace *subSpace = memorySpace->getDefaultMemorySubSpace();
 	
 	result = subSpace->allocateObject(env, allocateDescription, NULL, NULL, shouldCollectOnFailure);
@@ -205,13 +204,9 @@ MM_SegregatedAllocationInterface::allocateArray(MM_EnvironmentBase *env, MM_Allo
 		++_stats._allocationCount;
 	}
 
-#else /* OMR_GC_ARRAYLETS */
-	result = allocateObject(env, allocateDescription, memorySpace, shouldCollectOnFailure);
-#endif /* OMR_GC_ARRAYLETS */
 	return result;
 }
 
-#if defined(OMR_GC_ARRAYLETS)
 /**
  * Allocate the arraylet spine.
  */
@@ -249,7 +244,6 @@ MM_SegregatedAllocationInterface::allocateArrayletLeaf(MM_EnvironmentBase *env, 
 
 	return result;
 }
-#endif /* OMR_GC_ARRAYLETS */
 
 /**
  * Flush the allocation cache.

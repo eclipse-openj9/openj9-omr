@@ -220,7 +220,6 @@ MM_TLHAllocationInterface::allocateArray(MM_EnvironmentBase *env, MM_AllocateDes
 	return allocateObject(env, allocateDescription, memorySpace, shouldCollectOnFailure);
 }
 
-#if defined(OMR_GC_ARRAYLETS)
 void *
 MM_TLHAllocationInterface::allocateArrayletSpine(MM_EnvironmentBase *env, MM_AllocateDescription *allocateDescription, MM_MemorySpace *memorySpace, bool shouldCollectOnFailure)
 {
@@ -251,7 +250,6 @@ MM_TLHAllocationInterface::allocateArrayletLeaf(MM_EnvironmentBase *env, MM_Allo
 
 	return result;
 }
-#endif /* OMR_GC_ARRAYLETS */
 
 /**
  * Replenish the allocation interface TLH cache with new storage.

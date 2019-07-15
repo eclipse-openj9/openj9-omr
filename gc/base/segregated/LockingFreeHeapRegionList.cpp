@@ -110,10 +110,8 @@ MM_LockingFreeHeapRegionList::allocate(MM_EnvironmentBase *env, uintptr_t szClas
 				cur->setRangeHead(cur);
 				if (szClass == OMR_SIZECLASSES_LARGE) {
 					cur->setLarge(numRegions);
-#if defined(OMR_GC_ARRAYLETS)
 				} else if (szClass == OMR_SIZECLASSES_ARRAYLET) {
 					cur->setArraylet();
-#endif /* defined(OMR_GC_ARRAYLETS) */		
 				} else {
 					cur->setSmall(szClass);
 				}

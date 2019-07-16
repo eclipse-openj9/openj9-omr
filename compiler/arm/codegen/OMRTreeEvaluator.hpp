@@ -94,7 +94,6 @@ public:
    static TR::Register *returnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *monentEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *monexitEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *monexitfenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *asynccheckEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 #if J9_PROJECT_SPECIFIC
    static TR::Register *instanceofEvaluator(TR::Node *node, TR::CodeGenerator *cg);

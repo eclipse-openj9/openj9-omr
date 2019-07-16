@@ -755,11 +755,6 @@ TR::Register *OMR::ARM::TreeEvaluator::monexitEvaluator(TR::Node *node, TR::Code
    }
 #endif
 
-TR::Register *OMR::ARM::TreeEvaluator::monexitfenceEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return NULL;         //this op code does not evaluate to anything
-   }
-
 TR::Register *OMR::ARM::TreeEvaluator::integerHighestOneBit(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
 TR::Register *OMR::ARM::TreeEvaluator::integerLowestOneBit(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
 TR::Register *OMR::ARM::TreeEvaluator::integerNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }

@@ -540,10 +540,13 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
          }
 
       AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
-      cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
+      if (cg()->needClassAndMethodPointerRelocations())
+         {
+         cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
                callNode  ? (uint8_t *)(intptr_t)callNode->getInlinedSiteIndex() : (uint8_t *)-1,
                      (TR_ExternalRelocationTargetKind) reloType, cg()),
                      __FILE__, __LINE__, callNode);
+         }
 
       cursor += TR::Compiler->om.sizeofReferenceAddress();
 
@@ -601,10 +604,13 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
          TR_ASSERT(0,"JNI relocation not supported.");
          }
 
-      cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
+      if (cg()->needClassAndMethodPointerRelocations())
+         {
+         cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
                callNode  ? (uint8_t *)(intptr_t)callNode->getInlinedSiteIndex() : (uint8_t *)-1,
                      (TR_ExternalRelocationTargetKind) reloType, cg()),
                      __FILE__, __LINE__, callNode);
+         }
 
       cursor += TR::Compiler->om.sizeofReferenceAddress();
 #endif

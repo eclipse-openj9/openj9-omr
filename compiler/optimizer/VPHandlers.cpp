@@ -7838,7 +7838,7 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
           if(high <  1 << shift )
            constraint = TR::VPIntConst::create(vp, 0);
           }
-       else if((node->getFirstChild()->getOpCodeValue() == TR::ishl || node->getFirstChild()->getOpCodeValue() == TR::iushl) &&
+       else if(node->getFirstChild()->getOpCodeValue() == TR::ishl &&
             ((high & 0x80000000) ==0) &&
             ((low & 0x80000000) ==0))
           {
@@ -7860,7 +7860,7 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
             if(iandMask <  1 << shift )
               constraint = TR::VPIntConst::create(vp, 0);
             }
-         else if((node->getFirstChild()->getOpCodeValue() == TR::ishl || node->getFirstChild()->getOpCodeValue() == TR::iushl) &&
+         else if(node->getFirstChild()->getOpCodeValue() == TR::ishl &&
                 ((iandMask & 0x80000000) ==0))
             {
             if(iandMask < 1 << mask)

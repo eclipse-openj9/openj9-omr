@@ -33,6 +33,7 @@
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
 #include "infra/BitVector.hpp"
+#include "infra/Checklist.hpp"
 #include "infra/Link.hpp"
 #include "infra/List.hpp"
 #include "optimizer/OptimizationManager.hpp"
@@ -228,18 +229,20 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
    bool detectChecksToBeEliminated(TR_RegionStructure *, List<TR::Node> *, List<TR::TreeTop> *, List<int32_t> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<int32_t> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *,List<TR_NodeParentSymRefWeightTuple> *, bool &);
 
-   void buildNullCheckComparisonsTree(List<TR::Node> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, TR::Block *);
-   void buildBoundCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *,List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, TR::Block *, bool);
-   void buildSpineCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, TR::Block *);
-   void buildDivCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, TR::Block *);
-   void buildAwrtbariComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, TR::Block *);
-   void buildCheckCastComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, TR::Block *);
-   void buildConditionalTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, TR::Block *, SharedSparseBitVector &reverseBranchInLoops);
-   void buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, TR::Block *);
-   bool buildSpecializationTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR::Node> *, TR::Block *, TR::Block *, TR::SymbolReference **);
-   bool buildLoopInvariantTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *, List<TR_NodeParentSymRefWeightTuple> *, TR::Block *, TR::Block *);
+   void buildNullCheckComparisonsTree(List<TR::Node> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
+   void buildBoundCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *,List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, bool);
+   void buildSpineCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
+   void buildDivCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
+   void buildAwrtbariComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
+   void buildCheckCastComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
+   void buildConditionalTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, SharedSparseBitVector &reverseBranchInLoops);
+   void buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
+   bool buildSpecializationTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR::Node> *, TR::Block *, TR::SymbolReference **);
+   bool buildLoopInvariantTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *, List<TR_NodeParentSymRefWeightTuple> *, TR::Block *);
    void convertSpecializedLongsToInts(TR::Node *, vcount_t, TR::SymbolReference **);
    void collectAllExpressionsToBeChecked(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, TR::Node *, List<TR::Node> *, TR::Block *, vcount_t);
+   void collectAllExpressionsToBeChecked(TR::Node *, List<TR::Node> *);
+   void collectAllExpressionsToBeChecked(TR::Node *, List<TR::Node> *, TR::NodeChecklist *);
    bool requiresPrivatization(TR::Node *);
    bool suppressInvarianceAndPrivatization(TR::SymbolReference *);
 
@@ -249,7 +252,6 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
    bool replaceInductionVariable(TR::Node *, TR::Node *, int, int, TR::Node *, int);
 
-   void fixupVirtualGuardTargets(VirtualGuardInfo *vgInfo);
    TR::Block *createEmptyGoto(TR::Block *source, TR::Block *dest, TR::TreeTop *endTree);
    TR::Block *createClonedHeader(TR::Block *origHeader, TR::TreeTop **endTree);
    TR::Node *createSwitchNode(TR::Block *clonedHeader, TR::SymbolReference *tempSymRef, int32_t numCase);
@@ -289,6 +291,13 @@ class TR_LoopVersioner : public TR_LoopTransformer
    TR_PostDominators *_postDominators;
    bool _loopTransferDone;
    bool _skipWrtbarVersion;
+
+   /**
+    * \brief The entry of the preheader of the duplicate (usually cold) loop.
+    *
+    * This is set in versionNaturalLoop() for each loop versioned.
+    */
+   TR::TreeTop *_exitGotoTarget;
    };
 
 

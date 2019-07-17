@@ -6961,7 +6961,7 @@ OMR::Node::setSkipWrtBar(bool v)
 bool
 OMR::Node::chkSkipWrtBar()
    {
-   return self()->getOpCode().isWrtBar() && debug("useHeapObjectFlags") && _flags.testAny(SkipWrtBar);
+   return self()->getOpCode().isWrtBar() && _flags.testAny(SkipWrtBar);
    }
 
 const char *

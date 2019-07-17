@@ -47,3 +47,4 @@
       IsMemSrc1,
    IsSrc1,
       IsSrc2,
+   IsSynchronization,

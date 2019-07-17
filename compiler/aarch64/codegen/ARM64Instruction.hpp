@@ -2629,6 +2629,72 @@ class ARM64Src2Instruction : public ARM64Src1Instruction
    virtual uint8_t *generateBinaryEncoding();
    };
 
+class ARM64SynchronizationInstruction : public TR::Instruction
+   {
+   uint32_t _sourceImmediate;
+
+   public:
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] imm : immediate value
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64SynchronizationInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
+                                    uint32_t imm, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cg), _sourceImmediate(imm)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] imm : immediate value
+    * @param[in] preced : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64SynchronizationInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, 
+                                    uint32_t imm, TR::Instruction *precedingInstruction, 
+                                    TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, precedingInstruction, cg), _sourceImmediate(imm)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsSynchronization; }
+
+   /**
+    * @brief Gets source immediate
+    * @return source immediate
+    */
+   uint32_t getSourceImmediate() {return _sourceImmediate;}
+   
+   /**
+    * @brief Sets source immediate
+    * @param[in] si : immediate value
+    * @return source immediate
+    */
+   uint32_t setSourceImmediate(uint32_t si) {return (_sourceImmediate = si);}
+
+   void insertImmediateField(uint32_t *instruction)
+      {
+      TR_ASSERT(_sourceImmediate <= 0xF, "Immediate value exceeds 4 bits.");
+      *instruction |= ((_sourceImmediate & 0xF) << 8);
+      }
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
 } // TR
 
 #endif

@@ -714,7 +714,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::monent
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::monexit
 #endif
-   TR::TreeEvaluator::monexitfenceEvaluator, // TR::monexitfence
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::monexitfence
    TR::TreeEvaluator::badILOpEvaluator,     // TR::tstart
    TR::TreeEvaluator::badILOpEvaluator,     // TR::tfinish
    TR::TreeEvaluator::badILOpEvaluator,     // TR::tabort

@@ -2881,6 +2881,22 @@ bool TR_LoopVersioner::isExprInvariant(TR::Node *node, bool ignoreHeapificationS
 
    _visitedNodes.set(node->getGlobalIndex()) ;
 
+   // For loads from memory writable by other threads, we're allowed to load
+   // once instead of many times, but it's incorrect to assume that repeating
+   // the load will result in the same value. It is possible (in the absence of
+   // synchronization and calls) to version based on expressions containing
+   // such nodes by privatizing their values, guaranteeing that the value is
+   // stable for the entire sequence of versioning tests and the entire
+   // execution of the hot loop.
+   //
+   // TODO: Update versioner to do the necessary privatization, allowing
+   // versioning in these cases.
+   //
+   // For now, treat any node that would need to be privatized as non-invariant
+   // to prevent incorrect versioning.
+   //
+   if (requiresPrivatization(node))
+      return false;
 
    TR::ILOpCode &opCode = node->getOpCode();
    TR::ILOpCodes opCodeValue = opCode.getOpCodeValue();
@@ -2888,6 +2904,9 @@ bool TR_LoopVersioner::isExprInvariant(TR::Node *node, bool ignoreHeapificationS
    if (opCode.hasSymbolReference())
       {
       TR::SymbolReference *symReference = node->getSymbolReference();
+      if (suppressInvarianceAndPrivatization(symReference))
+         return false;
+
       if ((_seenDefinedSymbolReferences->get(symReference->getReferenceNumber()) &&
            (!ignoreHeapificationStore ||
             _writtenAndNotJustForHeapification->get(symReference->getReferenceNumber()))) ||
@@ -7946,9 +7965,144 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
       }
    }
 
+/**
+ * \brief Determine whether \p node has a stable value when re-evaluated, or
+ * whether privatization is needed to force the value to remain stable.
+ *
+ * Only the evaluation of \p node itself is considered here. Its children (and
+ * generally descendants) are assumed to have stable values, possibly because
+ * they themselves will be privatized.
+ *
+ * **For debugging purposes only**, the \c TR_nothingRequiresPrivatizationInVersioner
+ * environment variable can be set to cause this method to assume that
+ * privatization is unnecessary.
+ *
+ * \param node The node in question
+ * \return true if privatization is required
+ *
+ * \see suppressInvarianceAndPrivatization()
+ */
+bool TR_LoopVersioner::requiresPrivatization(TR::Node *node)
+   {
+   static const bool nothingRequiresPrivatization =
+      feGetEnv("TR_nothingRequiresPrivatizationInVersioner") != NULL;
 
+   if (nothingRequiresPrivatization)
+      return false;
 
+   if (!node->getOpCode().hasSymbolReference())
+      return false;
 
+   if (node->getOpCodeValue() == TR::loadaddr || node->getOpCode().isTreeTop())
+      return false;
+
+   TR::SymbolReference *symRef = node->getSymbolReference();
+   TR::Symbol *sym = symRef->getSymbol();
+   if (sym->isAutoOrParm())
+      return false;
+
+   TR::SymbolReferenceTable *srTab = comp()->getSymRefTab();
+   TR::ResolvedMethodSymbol *curMethod = comp()->getMethodSymbol();
+   if (symRef == srTab->findOrCreateInstanceOfSymbolRef(curMethod))
+      return false;
+
+   switch (symRef->getReferenceNumber() - srTab->getNumHelperSymbols())
+      {
+      case TR::SymbolReferenceTable::vftSymbol:
+      case TR::SymbolReferenceTable::javaLangClassFromClassSymbol:
+      case TR::SymbolReferenceTable::classFromJavaLangClassSymbol:
+         return false;
+
+      default:
+         break;
+      }
+
+   if (srTab->isVtableEntrySymbolRef(symRef))
+      return false;
+
+   if (suppressInvarianceAndPrivatization(symRef))
+      return false;
+
+   return true;
+   }
+
+/**
+ * \brief Determine whether to prevent accesses to \p symRef from being
+ * considered invariant and getting privatized, even if it doesn't appear to be
+ * modified in the loop.
+ *
+ * This is useful for values that are not explicitly written in IL but may be
+ * set by the runtime system, e.g. the current exception, and for values for
+ * which stores from other threads should be observed (without imposing any
+ * other memory ordering effect).
+ *
+ * \param symRef The symbol reference for the operation in question
+ *
+ * \return true if node should be considered non-invariant and shouldn't be
+ * privatized
+ *
+ * \see isExprInvariant()
+ * \see requiresPrivatization()
+ */
+bool TR_LoopVersioner::suppressInvarianceAndPrivatization(TR::SymbolReference *symRef)
+   {
+   // Be sensitive to other threads' updates to the method overridden bit.
+   if (symRef->isOverriddenBitAddress())
+      return true;
+
+   // Some nop guards contain code that tests the value of a fake static from
+   // which we can't actually load at runtime. We should avoid privatizing any
+   // such static for two reasons:
+   //
+   // 1. Semantically, loads should be sensitive to updates from other threads.
+   // 2. If a load is separated from a guard, it may be evaluated.
+   //
+   // For a static at address 0, it's safe to return true because if it's not a
+   // fake static for a nop guard, it will simply be considered non-invariant
+   // and so it won't be hoisted.
+   //
+   // This catches TR_DirectMethodGuard.
+   //
+   TR::Symbol *sym = symRef->getSymbol();
+   if (sym->isStatic() && sym->getStaticSymbol()->getStaticAddress() == 0)
+      return true;
+
+   TR::SymbolReferenceTable *srTab = comp()->getSymRefTab();
+   switch (symRef->getReferenceNumber() - srTab->getNumHelperSymbols())
+      {
+      // The current exception is updated by the VM on throw.
+      case TR::SymbolReferenceTable::excpSymbol:
+         return true;
+
+      // Class flags are mutable.
+      case TR::SymbolReferenceTable::isClassAndDepthFlagsSymbol:
+         return true;
+
+#ifdef J9_PROJECT_SPECIFIC
+      // These may be updated by the garbage collector at GC points.
+      case TR::SymbolReferenceTable::lowTenureAddressSymbol:
+      case TR::SymbolReferenceTable::highTenureAddressSymbol:
+         return true;
+
+      // The VM updates this with a tag when there is a breakpoint.
+      case TR::SymbolReferenceTable::j9methodConstantPoolSymbol:
+         return true;
+
+      // TODO: Recognize the statics loaded for method enter and exit hook
+      // tests. The only consequence of failing to recognize them here is that
+      // if hooks are disabled before entering the loop, but become enabled
+      // during loop execution, they will be skipped within the loop until the
+      // loop exits. This is a preexisting problem, as these statics were
+      // already considered to be invariant and the hook tests could already be
+      // versioned.
+#endif
+
+      default:
+         break;
+      }
+
+   return false;
+   }
 
 TR::Node *TR_LoopVersioner::findLoad(TR::Node *node, TR::SymbolReference *symRef, vcount_t origVisitCount)
    {

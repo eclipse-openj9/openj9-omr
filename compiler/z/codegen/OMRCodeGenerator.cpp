@@ -73,9 +73,7 @@
 #ifdef J9_PROJECT_SPECIFIC
 #include "control/RecompilationInfo.hpp"
 #endif
-#include "cs2/arrayof.h"
 #include "cs2/hashtab.h"
-#include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
 #include "env/Processors.hpp"
@@ -2258,7 +2256,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    // overload of the constructor which can accept a NULL preceding instruction. If cursor is NULL the generated
    // label instruction will be prepended to the start of the instruction stream.
    _methodBegin = new (self()->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::LABEL, self()->comp()->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
-   
+
    _methodEnd = generateS390LabelInstruction(self(), TR::InstOpCode::LABEL, self()->comp()->findLastTree()->getNode(), generateLabelSymbol(self()));
 
    TR_S390BinaryEncodingData data;
@@ -2272,7 +2270,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    if (self()->comp()->getJittedMethodSymbol()->isJNI() && !self()->comp()->getOption(TR_FullSpeedDebug))
       {
       data.preProcInstruction = TR::Compiler->target.is64Bit() ?
-         data.cursorInstruction->getNext()->getNext()->getNext() : 
+         data.cursorInstruction->getNext()->getNext()->getNext() :
          data.cursorInstruction->getNext()->getNext();
       }
    else
@@ -5280,15 +5278,6 @@ bool OMR::Z::CodeGenerator::IsInMemoryType(TR::DataType type)
    return false;
 #endif
    }
-
-/**
- * Determine if the Left-to-right copy semantics is allowed on NDmemcpyWithPad
- * Communicates with the evaluator to do MVC semantics under certain condition no matter how the overlap is
- */
-bool OMR::Z::CodeGenerator::inlineNDmemcpyWithPad(TR::Node * node, int64_t * maxLengthPtr)
-      {
-      return false;
-      }
 
 
 uint32_t getRegMaskFromRange(TR::Instruction * inst);

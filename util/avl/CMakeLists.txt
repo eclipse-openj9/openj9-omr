@@ -65,4 +65,9 @@ install(
 	LIBRARY DESTINATION ${OMR_INSTALL_LIB_DIR}/
 )
 
-target_enable_ddr(j9avl "${OMR_DDR_SET}")
+target_enable_ddr(j9avl)
+ddr_add_headers(j9avl
+	${omr_SOURCE_DIR}/include_core/omravl.h
+	${omr_SOURCE_DIR}/include_core/omravldefines.h
+)
+ddr_set_add_targets(omrddr j9avl)

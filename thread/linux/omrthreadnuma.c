@@ -35,6 +35,7 @@
 #include <inttypes.h>
 #include <sched.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <stdio.h>
 
 #include "omrcfg.h"
@@ -546,3 +547,22 @@ dumpNumaInfo() {
 
 }
 #endif
+
+uintptr_t
+omrthread_numa_get_current_node()
+{
+    unsigned node = 0;
+#if defined(OMR_PORT_NUMA_SUPPORT)
+	/* On some older kernels the syscall appears to be SYS_get_cpu rather than SYS_getcpu */
+#if !defined(SYS_getcpu)
+#define SYS_getcpu SYS_get_cpu
+#endif
+
+    if (0 == syscall(SYS_getcpu, NULL, &node, NULL)) {
+        ++node;
+    } else {
+        node = 0;
+    }
+#endif
+    return node;
+}

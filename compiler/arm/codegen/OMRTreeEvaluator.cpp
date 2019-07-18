@@ -1348,7 +1348,7 @@ TR::Register *OMR::ARM::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
             TR::ParameterSymbol *sym = child->getChild(i)->getSymbolReference()->getSymbol()->getParmSymbol();
             if (sym != NULL)
                {
-               sym->setAllocatedIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
+               sym->setAssignedGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
                }
             }
          }

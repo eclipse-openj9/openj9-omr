@@ -102,7 +102,7 @@ TR::Instruction *OMR::ARM::Linkage::saveArguments(TR::Instruction *cursor)
       TR::RealRegister     *argRegister;
 //      int32_t lri = paramCursor->getLinkageRegisterIndex();
 
-      int32_t ai  = paramCursor->getAllocatedIndex();
+      int32_t ai  = paramCursor->getAssignedGlobalRegisterIndex();
       int32_t                 offset = paramCursor->getParameterOffset();
 
       if (numIntArgs >= properties.getNumIntArgRegs())

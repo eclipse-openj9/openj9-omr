@@ -127,7 +127,7 @@ TR::X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
       {
       int8_t lri = paramCursor->getLinkageRegisterIndex();     // How the parameter enters the method
       TR::RealRegister::RegNum ai                              // Where method body expects to find it
-         = (TR::RealRegister::RegNum)paramCursor->getAllocatedIndex();
+         = (TR::RealRegister::RegNum)paramCursor->getAssignedGlobalRegisterIndex();
       int32_t offset = paramCursor->getParameterOffset();      // Location of the parameter's stack slot
       TR_MovDataTypes movDataType = paramMovType(paramCursor); // What sort of MOV instruction does it need?
 
@@ -562,7 +562,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
       paramCursor != NULL;
       paramCursor = paramIterator.getNext()
       ){
-      TR::RealRegister::RegNum ai = (TR::RealRegister::RegNum)paramCursor->getAllocatedIndex();
+      TR::RealRegister::RegNum ai = (TR::RealRegister::RegNum)paramCursor->getAssignedGlobalRegisterIndex();
       debugFrameSlotInfo = new (trHeapMemory()) TR_DebugFrameSegmentInfo(comp(),
          paramCursor->getOffset(), paramCursor->getSize(), "Parameter",
          debugFrameSlotInfo,
@@ -821,7 +821,7 @@ TR::X86SystemLinkage::copyGlRegDepsToParameterSymbols(
          {
          TR::Node *child = glRegDeps->getChild(childNum);
          TR::ParameterSymbol *sym = child->getSymbol()->getParmSymbol();
-         sym->setAllocatedIndex(cg->getGlobalRegister(child->getGlobalRegisterNumber()));
+         sym->setAssignedGlobalRegisterIndex(cg->getGlobalRegister(child->getGlobalRegisterNumber()));
          }
       }
    }

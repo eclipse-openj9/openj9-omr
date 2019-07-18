@@ -74,14 +74,41 @@ public:
    void     setLinkageRegisterIndex(int8_t li) { _registerIndex = li; }
    bool     isParmPassedInRegister()           { return (_registerIndex >= 0) ? true : false; }
 
-   int8_t   getAllocatedIndex()                { return _allocatedHigh; }
-   void     setAllocatedIndex(int8_t ai)       { _allocatedHigh = ai; }
+   /**
+    * @return The global register index assigned to this parameter, or -1 if
+    *         a global register has not been assigned.
+    */
+   int8_t   getAssignedGlobalRegisterIndex()   { return _allocatedHigh; }
 
-   int8_t   getAllocatedHigh()                 { return _allocatedHigh; }
-   void     setAllocatedHigh(int8_t ai)        { _allocatedHigh = ai; }
+   /**
+    * @brief Sets the global register index assigned to this parameter symbol.
+    * @param[in] gr : the global register index
+    */
+   void     setAssignedGlobalRegisterIndex(int8_t gr) { _allocatedHigh = gr; }
 
-   int8_t   getAllocatedLow()                  { return _allocatedLow; }
-   void     setAllocatedLow(int8_t ai)         { _allocatedLow = ai; }
+   /**
+    * @return The high global register index assigned to this parameter, or -1 if
+    *         a global register index has not been assigned.
+    */
+   int8_t   getAssignedHighGlobalRegisterIndex() { return _allocatedHigh; }
+
+   /**
+    * @brief Sets the high global register index assigned to this parameter symbol.
+    * @param[in] gr : the global register index
+    */
+   void     setAssignedHighGlobalRegisterIndex(int8_t gr) { _allocatedHigh = gr; }
+
+   /**
+    * @return The low global register index assigned to this parameter, or -1 if
+    *         a global register index has not been assigned.
+    */
+   int8_t   getAssignedLowGlobalRegisterIndex() { return _allocatedLow; }
+
+   /**
+    * @brief Sets the low global register index assigned to this parameter symbol.
+    * @param[in] gr : the global register index
+    */
+   void     setAssignedLowGlobalRegisterIndex(int8_t gr) { _allocatedLow = gr; }
 
    void*    getFixedType()                     { return _fixedType; }
    void     setFixedType(void* t)              { _fixedType = t; }

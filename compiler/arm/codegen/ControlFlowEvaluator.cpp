@@ -312,25 +312,14 @@ TR::Instruction *OMR::ARM::TreeEvaluator::compareIntsForEquality(TR_ARMCondition
 static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   TR::Compilation *comp = cg->comp();
-   if ((!node->isNopableInlineGuard() && !node->isHCRGuard() && !node->isBreakpointGuard()) ||
-       !cg->getSupportsVirtualGuardNOPing())
-      return false;
 
-   TR_VirtualGuard *virtualGuard = comp->findVirtualGuardInfo(node);
-   if (!((comp->performVirtualGuardNOPing() || node->isHCRGuard()) &&
-         comp->isVirtualGuardNOPingRequired(virtualGuard)) &&
-       virtualGuard->canBeRemoved())
-      return false;
-
-   if (   node->getOpCodeValue() != TR::ificmpne
-       && node->getOpCodeValue() != TR::iflcmpne
-       && node->getOpCodeValue() != TR::ifacmpne)
+   if (!cg->willGenerateNOPForVirtualGuard(node))
       {
-      //TR_ASSERT(0, "virtualGuradHelper: not expecting reversed comparison");
       return false;
       }
 
+   TR::Compilation *comp = cg->comp();
+   TR_VirtualGuard *virtualGuard = comp->findVirtualGuardInfo(node);
    TR_VirtualGuardSite *site = NULL;
 
    if (comp->compileRelocatableCode())
@@ -1624,18 +1613,6 @@ TR::Register *OMR::ARM::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::ARM::TreeEvaluator::resolveAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return evaluateNULLCHKWithPossibleResolve(node, true, cg);
-   }
-
-TR::Register *OMR::ARM::TreeEvaluator::resolveCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   // No code is generated for the resolve check. The child will reference an
-   // unresolved symbol and all check handling is done via the corresponding
-   // snippet.
-   //
-   TR::Node *firstChild = node->getFirstChild();
-   cg->evaluate(firstChild);
-   firstChild->decReferenceCount();
-   return NULL;
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::DIVCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)

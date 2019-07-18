@@ -544,6 +544,7 @@ static const OptimizationStrategy ilgenStrategyOpts[] =
    { unsafeFastPath                                },
    { recognizedCallTransformer                     },
    { coldBlockMarker                               },
+   { CFGSimplification                             },
    { allocationSinking,             IfNews         },
    { invariantArgumentPreexistence, IfNotClassLoadPhaseAndNotProfiling }, // Should not run if a recompilation is possible
 #endif
@@ -760,7 +761,7 @@ OMR::Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *metho
    _opts[OMR::catchBlockRemoval] =
       new (comp->allocator()) TR::OptimizationManager(self(), TR_CatchBlockRemover::create, OMR::catchBlockRemoval);
    _opts[OMR::CFGSimplification] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_CFGSimplifier::create, OMR::CFGSimplification);
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::CFGSimplifier::create, OMR::CFGSimplification);
    _opts[OMR::checkcastAndProfiledGuardCoalescer] =
       new (comp->allocator()) TR::OptimizationManager(self(), TR_CheckcastAndProfiledGuardCoalescer::create, OMR::checkcastAndProfiledGuardCoalescer);
    _opts[OMR::coldBlockMarker] =
@@ -1171,7 +1172,7 @@ void OMR::Optimizer::dumpPostOptTrees()
    // do nothing for IlGen optimizer
    if (isIlGenOpt()) return;
 
-   TR_Method *method = comp()->getMethodSymbol()->getMethod();
+   TR::Method *method = comp()->getMethodSymbol()->getMethod();
    if ((debug("dumpPostLocalOptTrees") || comp()->getOption(TR_TraceTrees)))
       comp()->dumpMethodTrees("Post Optimization Trees");
    }

@@ -366,6 +366,52 @@ TR::Instruction *generateTrg1Src2Instruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates src2-to-trg instruction (Conditional register)
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] cc : branch condition code
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateCondTrg1Src2Instruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *s1reg,
+                   TR::Register *s2reg,
+                   TR::ARM64ConditionCode cc,
+                   TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates src2-to-trg instruction (Conditional register)
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] cc : branch condition code
+ * @param[in] cond : Register Dependency Condition
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateCondTrg1Src2Instruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *s1reg,
+                   TR::Register *s2reg,
+                   TR::ARM64ConditionCode cc,
+                   TR::RegisterDependencyConditions *cond,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates src2-to-trg instruction (shifted register)
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode

@@ -26,7 +26,7 @@
 #include "il/symbol/MethodSymbol.hpp"
 #include "infra/Flags.hpp"
 
-OMR::MethodSymbol::MethodSymbol(TR_LinkageConventions lc, TR_Method * m) :
+OMR::MethodSymbol::MethodSymbol(TR_LinkageConventions lc, TR::Method *m) :
    TR::Symbol(),
    _methodAddress(NULL),
    _method(m),
@@ -61,12 +61,12 @@ OMR::MethodSymbol::isComputed()
  * Method Symbol Factory.
  */
 template <typename AllocatorType>
-TR::MethodSymbol * OMR::MethodSymbol::create(AllocatorType t, TR_LinkageConventions lc, TR_Method * m)
+TR::MethodSymbol * OMR::MethodSymbol::create(AllocatorType t, TR_LinkageConventions lc, TR::Method *m)
    {
    return new (t) TR::MethodSymbol(lc, m);
    }
 
 //Explicit instantiations
-template TR::MethodSymbol * OMR::MethodSymbol::create(TR_HeapMemory t,          TR_LinkageConventions lc, TR_Method * m);
-template TR::MethodSymbol * OMR::MethodSymbol::create(TR_StackMemory t,         TR_LinkageConventions lc, TR_Method * m);
-template TR::MethodSymbol * OMR::MethodSymbol::create(PERSISTENT_NEW_DECLARE t, TR_LinkageConventions lc, TR_Method * m);
+template TR::MethodSymbol * OMR::MethodSymbol::create(TR_HeapMemory t,          TR_LinkageConventions lc, TR::Method *m);
+template TR::MethodSymbol * OMR::MethodSymbol::create(TR_StackMemory t,         TR_LinkageConventions lc, TR::Method *m);
+template TR::MethodSymbol * OMR::MethodSymbol::create(PERSISTENT_NEW_DECLARE t, TR_LinkageConventions lc, TR::Method *m);

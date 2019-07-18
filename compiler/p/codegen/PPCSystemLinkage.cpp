@@ -432,7 +432,7 @@ TR::PPCSystemLinkage::getRightToLeft()
 bool
 TR::PPCSystemLinkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    {
-   return(parm->getAllocatedIndex()>=0  && parm->isParmHasToBeOnStack());
+   return(parm->getAssignedGlobalRegisterIndex()>=0  && parm->isParmHasToBeOnStack());
    }
 
 
@@ -585,6 +585,13 @@ TR::PPCSystemLinkage::mapSingleAutomatic(
 void
 TR::PPCSystemLinkage::createPrologue(TR::Instruction *cursor)
    {
+   TR::Node *firstNode = comp()->getStartTree()->getNode();
+
+   if (comp()->getOption(TR_EntryBreakPoints))
+      {
+      cursor = generateInstruction(cg(), TR::InstOpCode::bad, firstNode, cursor);
+      }
+
    createPrologue(cursor, comp()->getJittedMethodSymbol()->getParameterList());
    }
 
@@ -1450,13 +1457,11 @@ TR::Register *TR::PPCSystemLinkage::buildDirectDispatch(TR::Node *callNode)
    switch(callNode->getOpCodeValue())
       {
       case TR::icall:
-      case TR::iucall:
       case TR::acall:
          returnRegister = dependencies->searchPostConditionRegister(
                              pp.getIntegerReturnRegister());
          break;
       case TR::lcall:
-      case TR::lucall:
          {
          if (TR::Compiler->target.is64Bit())
             returnRegister = dependencies->searchPostConditionRegister(
@@ -1583,13 +1588,11 @@ TR::Register *TR::PPCSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    switch(callNode->getOpCodeValue())
       {
       case TR::icalli:
-      case TR::iucalli:
       case TR::acalli:
          returnRegister = dependencies->searchPostConditionRegister(
                              pp.getIntegerReturnRegister());
          break;
       case TR::lcalli:
-      case TR::lucalli:
          {
          if (TR::Compiler->target.is64Bit())
             returnRegister = dependencies->searchPostConditionRegister(

@@ -678,9 +678,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsTenuredObjectAlignment() { return false; }
    bool isObjectOfSizeWorthAligning(uint32_t size) { return false; }
 
-   // J9
-   int32_t getInternalPtrMapBit() { return 31;}
-
    uint32_t getMaxObjectSizeGuaranteedNotToOverflow() { return _maxObjectSizeGuaranteedNotToOverflow; }
 
    // --------------------------------------------------------------------------
@@ -1394,9 +1391,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    bool supportsLengthMinusOneForMemoryOpts() {return false;}
 
-   // Java, likely Z
-   bool supportsTrapsInTMRegion() { return true; }
-
    // Allows a platform code generator to assert that a particular node operation will use 64 bit values
    // that are not explicitly present in the node datatype.
    bool usesImplicit64BitGPRs(TR::Node *node) { return false; }
@@ -1919,10 +1913,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint8_t _globalGPRPartitionLimit;
    uint8_t _globalFPRPartitionLimit;
    flags16_t _enabledFlags;
-
-   // MOVE TO J9 Z CodeGenerator
-   // isTemporaryBased storageReferences just have a symRef but some other routines expect a node so use the below to fill in this symRef on this node
-   TR::Node *_dummyTempStorageRefNode;
 
    public:
    static TR_TreeEvaluatorFunctionPointer _nodeToInstrEvaluators[];

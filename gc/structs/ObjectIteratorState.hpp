@@ -47,9 +47,7 @@ public:
 		uintptr_t _index;					/**< index into arraylet */
 		fomrobject_t *_scanPtr;			/**< scan pointer into non-arraylet reference slot */
 	};
-#if defined(OMR_GC_HYBRID_ARRAYLETS)
 	bool _contiguous; /**< whether or not the array being iterated is contiguous */
-#endif /* OMR_GC_HYBRID_ARRAYLETS */
 #else
 	fomrobject_t *_scanPtr;				/**< scan pointer into next reference slot */
 #endif /* OMR_GC_ARRAYLETS */

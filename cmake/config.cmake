@@ -48,6 +48,9 @@ set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
 set(OMR_GC ON CACHE BOOL "Enable the GC")
 set(OMR_GC_TEST ${OMR_GC} CACHE BOOL "Enable the GC tests.")
 
+set(OMR_USE_NATIVE_ENCODING ON CACHE BOOL
+	"Indicates that runtime components should use the systems native encoding (currently only defined for z/OS)"
+)
 ## OMR_COMPILER is required for OMR_JITBUILDER and OMR_TEST_COMPILER
 if(NOT OMR_COMPILER)
 	if(OMR_JITBUILDER)
@@ -82,6 +85,10 @@ set(OMR_TOOLS_IMPORTFILE "IMPORTFILE-NOTFOUND" CACHE FILEPATH
 	"Point it to the ImportTools.cmake file of a native build"
 )
 
+set(OMR_TOOLS_USE_NATIVE_ENCODING ON CACHE BOOL
+	"Indicates if omr tooling should use system native character encoding (currently only defined for z/OS)"
+)
+
 ###
 ### Library names
 ###
@@ -110,7 +117,7 @@ set(OMR_CORE_GLUE_TARGET "NOTFOUND" CACHE STRING "The core glue target, must be 
 set(OMR_GC_ALLOCATION_TAX ON CACHE BOOL "TODO: Document")
 set(OMR_GC_API OFF CACHE BOOL "Enable a high-level GC API")
 set(OMR_GC_API_TEST OFF CACHE BOOL "Enable testing for the OMR GC API")
-set(OMR_GC_ARRAYLETS ON CACHE BOOL "TODO: Document")
+set(OMR_GC_ARRAYLETS ON CACHE INTERNAL "Enable Arraylets in OMR. Deprecated: flag is always on in OMR")
 set(OMR_GC_BATCH_CLEAR_TLH ON CACHE BOOL "TODO: Document")
 set(OMR_GC_COMBINATION_SPEC ON CACHE BOOL "TODO: Document")
 set(OMR_GC_DEBUG_ASSERTS ON CACHE BOOL "TODO: Document")
@@ -132,7 +139,7 @@ set(OMR_GC_MODRON_SCAVENGER OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_DOUBLE_MAP_ARRAYLETS OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_CONCURRENT_SCAVENGER OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_CONCURRENT_SWEEP OFF CACHE BOOL "TODO: Document")
-set(OMR_GC_HYBRID_ARRAYLETS OFF CACHE BOOL "TODO: Document")
+set(OMR_GC_HYBRID_ARRAYLETS ON CACHE INTERNAL "Enable Hybrid Arraylets in OMR. Requires OMR_GC_ARRAYLETS. Deprecated: flag is always on in OMR")
 set(OMR_GC_IDLE_HEAP_MANAGER OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_OBJECT_ALLOCATION_NOTIFY OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_REALTIME OFF CACHE BOOL "TODO: Document")

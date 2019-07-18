@@ -3799,11 +3799,9 @@ static TR::ILOpCodes doubleToCharOp(TR::ILOpCodes dOp)
       {
       case TR::ifdcmpeq:
       case TR::ifdcmpequ:
-         op = TR::ifsucmpeq;
          break;
       case TR::ifdcmpne:
       case TR::ifdcmpneu:
-         op = TR::ifsucmpne;
          break;
       case TR::ifdcmplt:
       case TR::ifdcmpltu:
@@ -3976,11 +3974,10 @@ static TR::ILOpCodes floatToCharOp(TR::ILOpCodes fOp)
       {
       case TR::iffcmpeq:
       case TR::iffcmpequ:
-         op = TR::ifsucmpeq;
          break;
       case TR::iffcmpne:
       case TR::iffcmpneu:
-         op = TR::ifsucmpne;
+
          break;
       case TR::iffcmplt:
       case TR::iffcmpltu:
@@ -10022,7 +10019,7 @@ TR::Node *ishlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       // Normalize shift by a constant into multiply by a constant
       //
-      TR::Node::recreate(node, node->getOpCodeValue() == TR::iushl ? TR::iumul : TR::imul);
+      TR::Node::recreate(node, TR::imul);
       int32_t multiplier = 1 << (secondChild->getInt() & INT_SHIFT_MASK);
       if (secondChild->getReferenceCount() > 1)
          {
@@ -14011,9 +14008,7 @@ TR::Node *ifCmpWithEqualitySimplifier(TR::Node * node, TR::Block * block, TR::Si
       switch (opCode)
          {
          case TR::ifbcmpeq:
-         case TR::ifbucmpeq:
          case TR::ifscmpeq:
-         case TR::ifsucmpeq:
             takeBranch = firstChild->get64bitIntegralValue() == secondChild->get64bitIntegralValue();
             foldBranch = true;
             break;
@@ -14114,9 +14109,7 @@ TR::Node *ifCmpWithoutEqualitySimplifier(TR::Node * node, TR::Block * block, TR:
       switch (opCode)
          {
          case TR::ifbcmpne:
-         case TR::ifbucmpne:
          case TR::ifscmpne:
-         case TR::ifsucmpne:
             takeBranch = firstChild->get64bitIntegralValue() != secondChild->get64bitIntegralValue();
             foldBranch = true;
             break;
@@ -16422,6 +16415,15 @@ TR::Node *nullchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
              if ((*edge)->getTo() != cfg->getEnd())
                 s->_blockRemoved |= cfg->removeEdge(*edge);
              }
+          }
+       else if (node->getOpCodeValue() == TR::NULLCHK
+                && !node->getFirstChild()->getOpCode().isLikeDef()
+                && node->getFirstChild()->exceptionsRaised() == 0
+                && node->getFirstChild()->getReferenceCount() == 1
+                && node->getFirstChild()->getNumChildren() == 1
+                && performTransformation(s->comp(), "%sNULLCHK passthrough simplification on n%dn\n", s->optDetailString(), node->getGlobalIndex()))
+          {
+          TR::Node::recreate(node->getFirstChild(), TR::PassThrough);
           }
        }
    return node;

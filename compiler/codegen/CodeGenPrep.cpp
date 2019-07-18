@@ -46,14 +46,9 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
-#include "cs2/hashtab.h"
 #include "il/AliasSetInterface.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/ObjectModel.hpp"
-#ifdef J9_PROJECT_SPECIFIC
-#include "runtime/RuntimeAssumptions.hpp"
-#include "env/PersistentCHTable.hpp"
-#endif
 #include "env/PersistentInfo.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"

@@ -255,10 +255,13 @@ WIN32_WINNT version constants :
 				case 0:
 					PPG_si_osType = "Windows 2000";
 					break;
+				case 1:
+					PPG_si_osType = "Windows XP"; /* 32-bit */
+					break;
 				case 2:
 					switch (versionInfo.wProductType) {
 					case VER_NT_WORKSTATION:
-						PPG_si_osType = "Windows XP";
+						PPG_si_osType = "Windows XP"; /* 64-bit */
 						break;
 					case VER_NT_DOMAIN_CONTROLLER: /* FALLTHROUGH */
 					case VER_NT_SERVER:

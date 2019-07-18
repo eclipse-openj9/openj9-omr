@@ -1163,7 +1163,7 @@ int32_t OMR::Compilation::compile()
                TR::Node*node = tt->getNode()->getFirstChild();
                if (node->getOpCode().isCall())
                   {
-                  TR_Method *method = node->getSymbol()->getMethodSymbol()->getMethod();
+                  TR::Method *method = node->getSymbol()->getMethodSymbol()->getMethod();
                   if (method)
                      {
                      TR_ByteCodeInfo &bcInfo = node->getByteCodeInfo();

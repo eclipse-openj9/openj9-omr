@@ -86,6 +86,9 @@ class GC_ObjectModelBase : public MM_BaseVirtual
  * Member data and types
  */
 private:
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	bool _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 	GC_ObjectModelDelegate _delegate;	/**< instance of object model delegate class */
 
 protected:
@@ -110,18 +113,36 @@ protected:
 	}
 
 	/**
-	 * Get the address of the fomrobject_t slot containing the object header.
+	 * Get the address of the slot containing the object header.
 	 *
 	 * @param objectPtr the object to obtain the header slot address for
-	 * @return the address of the fomrobject_t slot containing the object header
+	 * @return the address of the slot containing the object header
 	 */
-	MMINLINE fomrobject_t*
+	MMINLINE void*
 	getObjectHeaderSlotAddress(omrobjectptr_t objectPtr)
 	{
-		return (fomrobject_t*)(objectPtr) + _delegate.getObjectHeaderSlotOffset();
+		return (void*)(((uintptr_t)(objectPtr)) + _delegate.getObjectHeaderSlotOffset());
 	}
 
 public:
+	/**
+	 * Return back true if object references are compressed
+	 * @return true, if object references are compressed
+	 */
+	MMINLINE bool
+	compressObjectReferences()
+	{
+#if defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_GC_FULL_POINTERS)
+		return _compressObjectReferences;
+#else /* OMR_GC_FULL_POINTERS */
+		return true;
+#endif /* OMR_GC_FULL_POINTERS */
+#else /* OMR_GC_COMPRESSED_POINTERS */
+		return false;
+#endif /* OMR_GC_COMPRESSED_POINTERS */
+	}
+
 	/**
 	 * Initialize the receiver, a new instance of GC_ObjectModel
 	 *
@@ -168,7 +189,14 @@ public:
 	MMINLINE uintptr_t
 	getObjectFlags(omrobjectptr_t objectPtr)
 	{
-		return ((*getObjectHeaderSlotAddress(objectPtr)) >> getObjectHeaderSlotFlagsShift()) & (fomrobject_t)OMR_OBJECT_METADATA_FLAGS_MASK;
+		uintptr_t flags = 0;
+		void *headerSlotPtr = getObjectHeaderSlotAddress(objectPtr);
+		if (compressObjectReferences()) {
+			flags = *(uint32_t*)headerSlotPtr;
+		} else {
+			flags = *(uintptr_t*)headerSlotPtr;
+		}
+		return (flags >> getObjectHeaderSlotFlagsShift()) & (uintptr_t)OMR_OBJECT_METADATA_FLAGS_MASK;
 	}
 
 	/**
@@ -323,6 +351,9 @@ public:
 	MMINLINE void
 	setObjectAlignment(OMR_VM *omrVM)
 	{
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+		_compressObjectReferences = OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM);
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 		_objectAlignmentInBytes = OMR_MAX((uintptr_t)1 << omrVM->_compressedPointersShift, OMR_MINIMUM_OBJECT_ALIGNMENT);
 		_objectAlignmentShift = OMR_MAX(omrVM->_compressedPointersShift, OMR_MINIMUM_OBJECT_ALIGNMENT_SHIFT);
 
@@ -369,13 +400,24 @@ public:
 	MMINLINE bool
 	isDeadObject(void *objectPtr)
 	{
-		fomrobject_t *headerSlotPtr = getObjectHeaderSlotAddress((omrobjectptr_t)objectPtr);
+		bool result = false;
+		void *headerSlotPtr = getObjectHeaderSlotAddress((omrobjectptr_t)objectPtr);
+		if (compressObjectReferences()) {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		/* for ConcurrentScavenger, forwarded bit must be 0, otherwise it's a self-forwarded object */
-		return J9_GC_OBJ_HEAP_HOLE == (*headerSlotPtr & (J9_GC_OBJ_HEAP_HOLE | OMR_FORWARDED_TAG));
+			/* for ConcurrentScavenger, forwarded bit must be 0, otherwise it's a self-forwarded object */
+			result = ((uint32_t)J9_GC_OBJ_HEAP_HOLE == (*(uint32_t*)headerSlotPtr & (uint32_t)(J9_GC_OBJ_HEAP_HOLE | OMR_FORWARDED_TAG)));
 #else
-		return J9_GC_OBJ_HEAP_HOLE == (*headerSlotPtr & J9_GC_OBJ_HEAP_HOLE);
+			result = ((uint32_t)J9_GC_OBJ_HEAP_HOLE == (*(uint32_t*)headerSlotPtr & (uint32_t)J9_GC_OBJ_HEAP_HOLE));
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
+		} else {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+			/* for ConcurrentScavenger, forwarded bit must be 0, otherwise it's a self-forwarded object */
+			result = ((uintptr_t)J9_GC_OBJ_HEAP_HOLE == (*(uintptr_t*)headerSlotPtr & (uintptr_t)(J9_GC_OBJ_HEAP_HOLE | OMR_FORWARDED_TAG)));
+#else
+			result = ((uintptr_t)J9_GC_OBJ_HEAP_HOLE == (*(uintptr_t*)headerSlotPtr & (uintptr_t)J9_GC_OBJ_HEAP_HOLE));
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+		}
+		return result;
 	}
 
 	/**
@@ -386,8 +428,13 @@ public:
 	MMINLINE bool
 	isSingleSlotDeadObject(omrobjectptr_t objectPtr)
 	{
-		fomrobject_t *headerSlotPtr = getObjectHeaderSlotAddress((omrobjectptr_t)objectPtr);
-		bool result = (J9_GC_SINGLE_SLOT_HOLE == (*headerSlotPtr & J9_GC_OBJ_HEAP_HOLE_MASK));
+		bool result = false;
+		void *headerSlotPtr = getObjectHeaderSlotAddress((omrobjectptr_t)objectPtr);
+		if (compressObjectReferences()) {
+			result = ((uint32_t)J9_GC_SINGLE_SLOT_HOLE == (*(uint32_t*)headerSlotPtr & (uint32_t)J9_GC_OBJ_HEAP_HOLE_MASK));
+		} else {
+			result = ((uintptr_t)J9_GC_SINGLE_SLOT_HOLE == (*(uintptr_t*)headerSlotPtr & (uintptr_t)J9_GC_OBJ_HEAP_HOLE_MASK));
+		}	
 		return result;
 	}
 
@@ -439,16 +486,30 @@ public:
 	MMINLINE void
 	setObjectFlags(omrobjectptr_t objectPtr, uintptr_t bitsToClear, uintptr_t bitsToSet)
 	{
+		void *headerSlotPtr = getObjectHeaderSlotAddress(objectPtr);
+		if (compressObjectReferences()) {
 #if defined(OBJECT_MODEL_MODRON_ASSERTIONS)
-		Assert_MM_true(0 == (~(fomrobject_t)OMR_OBJECT_METADATA_FLAGS_MASK & (fomrobject_t)bitsToClear));
-		Assert_MM_true(0 == (~(fomrobject_t)OMR_OBJECT_METADATA_FLAGS_MASK & (fomrobject_t)bitsToSet));
+			Assert_MM_true(0 == (~(uint32_t)OMR_OBJECT_METADATA_FLAGS_MASK & (uint32_t)bitsToClear));
+			Assert_MM_true(0 == (~(uint32_t)OMR_OBJECT_METADATA_FLAGS_MASK & (uint32_t)bitsToSet));
 #endif /* defined(OBJECT_MODEL_MODRON_ASSERTIONS) */
 
-		fomrobject_t* flagsPtr = getObjectHeaderSlotAddress(objectPtr);
-		fomrobject_t clear = (fomrobject_t)bitsToClear << getObjectHeaderSlotFlagsShift();
-		fomrobject_t set = (fomrobject_t)bitsToSet << getObjectHeaderSlotFlagsShift();
+			uint32_t* flagsPtr = (uint32_t*)headerSlotPtr;
+			uint32_t clear = (uint32_t)bitsToClear << getObjectHeaderSlotFlagsShift();
+			uint32_t set = (uint32_t)bitsToSet << getObjectHeaderSlotFlagsShift();
 
-		*flagsPtr = (*flagsPtr & ~clear) | set;
+			*flagsPtr = (*flagsPtr & ~clear) | set;
+		} else {
+#if defined(OBJECT_MODEL_MODRON_ASSERTIONS)
+			Assert_MM_true(0 == (~(uintptr_t)OMR_OBJECT_METADATA_FLAGS_MASK & (uintptr_t)bitsToClear));
+			Assert_MM_true(0 == (~(uintptr_t)OMR_OBJECT_METADATA_FLAGS_MASK & (uintptr_t)bitsToSet));
+#endif /* defined(OBJECT_MODEL_MODRON_ASSERTIONS) */
+
+			uintptr_t* flagsPtr = (uintptr_t*)headerSlotPtr;
+			uintptr_t clear = (uintptr_t)bitsToClear << getObjectHeaderSlotFlagsShift();
+			uintptr_t set = (uintptr_t)bitsToSet << getObjectHeaderSlotFlagsShift();
+
+			*flagsPtr = (*flagsPtr & ~clear) | set;
+		}
 	}
 
 	/**
@@ -472,26 +533,40 @@ public:
 		Assert_MM_true(0 == (~(fomrobject_t)OMR_OBJECT_METADATA_FLAGS_MASK & bitsToSet));
 #endif /* defined(OBJECT_MODEL_MODRON_ASSERTIONS) */
 
-		volatile fomrobject_t* flagsPtr = getObjectHeaderSlotAddress(objectPtr);
-		fomrobject_t clear = (fomrobject_t)(bitsToClear << getObjectHeaderSlotFlagsShift());
-		fomrobject_t set = (fomrobject_t)(bitsToSet << getObjectHeaderSlotFlagsShift());
-		fomrobject_t oldFlags;
-		fomrobject_t newFlags;
+		void *headerSlotPtr = getObjectHeaderSlotAddress(objectPtr);
+		if (compressObjectReferences()) {
+			volatile uint32_t* flagsPtr = (uint32_t*)headerSlotPtr;
+			uint32_t clear = (uint32_t)(bitsToClear << getObjectHeaderSlotFlagsShift());
+			uint32_t set = (uint32_t)(bitsToSet << getObjectHeaderSlotFlagsShift());
+			uint32_t oldFlags;
+			uint32_t newFlags;
 
-		do {
-			oldFlags = *flagsPtr;
-			newFlags = (oldFlags & ~clear) | set;
+			do {
+				oldFlags = *flagsPtr;
+				newFlags = (oldFlags & ~clear) | set;
 
-			if (newFlags == oldFlags) {
-				result = false;
-				break;
-			}
+				if (newFlags == oldFlags) {
+					result = false;
+					break;
+				}
+			} while (oldFlags != MM_AtomicOperations::lockCompareExchangeU32(flagsPtr, oldFlags, newFlags));
+		} else {
+			volatile uintptr_t* flagsPtr = (uintptr_t*)headerSlotPtr;
+			uintptr_t clear = (uintptr_t)(bitsToClear << getObjectHeaderSlotFlagsShift());
+			uintptr_t set = (uintptr_t)(bitsToSet << getObjectHeaderSlotFlagsShift());
+			uintptr_t oldFlags;
+			uintptr_t newFlags;
+
+			do {
+				oldFlags = *flagsPtr;
+				newFlags = (oldFlags & ~clear) | set;
+
+				if (newFlags == oldFlags) {
+					result = false;
+					break;
+				}
+			} while (oldFlags != MM_AtomicOperations::lockCompareExchange(flagsPtr, oldFlags, newFlags));
 		}
-#if defined(OMR_GC_COMPRESSED_POINTERS)
-		while (oldFlags != MM_AtomicOperations::lockCompareExchangeU32(flagsPtr, oldFlags, newFlags));
-#else /* defined(OMR_GC_COMPRESSED_POINTERS) */
-		while (oldFlags != MM_AtomicOperations::lockCompareExchange(flagsPtr, (uintptr_t)oldFlags, (uintptr_t)newFlags));
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
 
 		return result;
 	}
@@ -573,27 +648,42 @@ public:
 		Assert_MM_true(0 == (~(fomrobject_t)OMR_OBJECT_METADATA_FLAGS_MASK & toState));
 #endif /* defined(OBJECT_MODEL_MODRON_ASSERTIONS) */
 
-		volatile fomrobject_t* flagsPtr = getObjectHeaderSlotAddress(objectPtr);
-		fomrobject_t from = (fomrobject_t)(fromState << getObjectHeaderSlotFlagsShift());
-		fomrobject_t to = (fomrobject_t)(toState << getObjectHeaderSlotFlagsShift());
-		fomrobject_t rememberedMask = (fomrobject_t)(OMR_OBJECT_METADATA_REMEMBERED_BITS  << getObjectHeaderSlotFlagsShift());
-		fomrobject_t oldFlags;
-		fomrobject_t newFlags;
+		void *headerSlotPtr = getObjectHeaderSlotAddress(objectPtr);
+		if (compressObjectReferences()) {
+			volatile uint32_t* flagsPtr = (uint32_t*)headerSlotPtr;
+			uint32_t from = (uint32_t)(fromState << getObjectHeaderSlotFlagsShift());
+			uint32_t to = (uint32_t)(toState << getObjectHeaderSlotFlagsShift());
+			uint32_t rememberedMask = (uint32_t)(OMR_OBJECT_METADATA_REMEMBERED_BITS  << getObjectHeaderSlotFlagsShift());
+			uint32_t oldFlags;
+			uint32_t newFlags;
 
-		do {
-			oldFlags = *flagsPtr;
-			if ((oldFlags & rememberedMask) == from) {
-				newFlags = (oldFlags & ~rememberedMask) | to;
-			} else {
-				result = false;
-				break;
-			}
+			do {
+				oldFlags = *flagsPtr;
+				if ((oldFlags & rememberedMask) == from) {
+					newFlags = (oldFlags & ~rememberedMask) | to;
+				} else {
+					result = false;
+					break;
+				}
+			} while (oldFlags != MM_AtomicOperations::lockCompareExchangeU32(flagsPtr, oldFlags, newFlags));
+		} else {
+			volatile uintptr_t* flagsPtr = (uintptr_t*)headerSlotPtr;
+			uintptr_t from = (uintptr_t)(fromState << getObjectHeaderSlotFlagsShift());
+			uintptr_t to = (uintptr_t)(toState << getObjectHeaderSlotFlagsShift());
+			uintptr_t rememberedMask = (uintptr_t)(OMR_OBJECT_METADATA_REMEMBERED_BITS  << getObjectHeaderSlotFlagsShift());
+			uintptr_t oldFlags;
+			uintptr_t newFlags;
+
+			do {
+				oldFlags = *flagsPtr;
+				if ((oldFlags & rememberedMask) == from) {
+					newFlags = (oldFlags & ~rememberedMask) | to;
+				} else {
+					result = false;
+					break;
+				}
+			} while (oldFlags != MM_AtomicOperations::lockCompareExchange(flagsPtr, oldFlags, newFlags));
 		}
-#if defined(OMR_GC_COMPRESSED_POINTERS)
-		while (oldFlags != MM_AtomicOperations::lockCompareExchangeU32(flagsPtr, oldFlags, newFlags));
-#else /* defined(OMR_GC_COMPRESSED_POINTERS) */
-		while (oldFlags != MM_AtomicOperations::lockCompareExchange(flagsPtr, (uintptr_t)oldFlags, (uintptr_t)newFlags));
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
 
 		return result;
 	}
@@ -618,29 +708,46 @@ public:
 		Assert_MM_true(0 == (~(fomrobject_t)OMR_OBJECT_METADATA_FLAGS_MASK & toState));
 #endif /* defined(OBJECT_MODEL_MODRON_ASSERTIONS) */
 
-		volatile fomrobject_t* flagsPtr = getObjectHeaderSlotAddress(objectPtr);
-		fomrobject_t to = (fomrobject_t)(toState << getObjectHeaderSlotFlagsShift());
-		fomrobject_t rememberedMask = (fomrobject_t)(OMR_OBJECT_METADATA_REMEMBERED_BITS << getObjectHeaderSlotFlagsShift());
-		fomrobject_t oldFlags;
-		fomrobject_t newFlags;
+		void *headerSlotPtr = getObjectHeaderSlotAddress(objectPtr);
+		if (compressObjectReferences()) {
+			volatile uint32_t* flagsPtr = (uint32_t*)headerSlotPtr;
+			uint32_t to = (uint32_t)(toState << getObjectHeaderSlotFlagsShift());
+			uint32_t rememberedMask = (uint32_t)(OMR_OBJECT_METADATA_REMEMBERED_BITS << getObjectHeaderSlotFlagsShift());
+			uint32_t oldFlags;
+			uint32_t newFlags;
 
-		do {
-			oldFlags = *flagsPtr;
-			newFlags = (oldFlags & ~rememberedMask) | to;
+			do {
+				oldFlags = *flagsPtr;
+				newFlags = (oldFlags & ~rememberedMask) | to;
+	
+				if (newFlags == oldFlags) {
+					result = false;
+					break;
+				}
+			} while (oldFlags != MM_AtomicOperations::lockCompareExchangeU32(flagsPtr, oldFlags, newFlags));
+			/* check to verify that this thread and no other thread atomically set flags -> toState */
+			result = result && (0 == (oldFlags & rememberedMask));
+		} else {
+			volatile uintptr_t* flagsPtr = (uintptr_t*)headerSlotPtr;
+			uintptr_t to = (uintptr_t)(toState << getObjectHeaderSlotFlagsShift());
+			uintptr_t rememberedMask = (uintptr_t)(OMR_OBJECT_METADATA_REMEMBERED_BITS << getObjectHeaderSlotFlagsShift());
+			uintptr_t oldFlags;
+			uintptr_t newFlags;
 
-			if (newFlags == oldFlags) {
-				result = false;
-				break;
-			}
+			do {
+				oldFlags = *flagsPtr;
+				newFlags = (oldFlags & ~rememberedMask) | to;
+	
+				if (newFlags == oldFlags) {
+					result = false;
+					break;
+				}
+			} while (oldFlags != MM_AtomicOperations::lockCompareExchange(flagsPtr, (uintptr_t)oldFlags, (uintptr_t)newFlags));
+			/* check to verify that this thread and no other thread atomically set flags -> toState */
+			result = result && (0 == (oldFlags & rememberedMask));
 		}
-#if defined(OMR_GC_COMPRESSED_POINTERS)
-		while (oldFlags != MM_AtomicOperations::lockCompareExchangeU32(flagsPtr, oldFlags, newFlags));
-#else /* defined(OMR_GC_COMPRESSED_POINTERS) */
-		while (oldFlags != MM_AtomicOperations::lockCompareExchange(flagsPtr, (uintptr_t)oldFlags, (uintptr_t)newFlags));
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
 
-		/* check to verify that this thread and no other thread atomically set flags -> toState */
-		return result ? (0 == (oldFlags & rememberedMask)) : false;
+		return result;
 	}
 
 	/**
@@ -663,25 +770,38 @@ public:
 		Assert_MM_true(0 == (~(fomrobject_t)OMR_OBJECT_METADATA_FLAGS_MASK & toState));
 #endif /* defined(OBJECT_MODEL_MODRON_ASSERTIONS) */
 
-		volatile fomrobject_t* flagsPtr = getObjectHeaderSlotAddress(objectPtr);
-		fomrobject_t to = (fomrobject_t)(toState << getObjectHeaderSlotFlagsShift());
-		fomrobject_t rememberedMask = (fomrobject_t)(OMR_OBJECT_METADATA_REMEMBERED_BITS << getObjectHeaderSlotFlagsShift());
-		fomrobject_t oldFlags;
-		fomrobject_t newFlags;
+		void *headerSlotPtr = getObjectHeaderSlotAddress(objectPtr);
+		if (compressObjectReferences()) {
+			volatile uint32_t* flagsPtr = (uint32_t*)headerSlotPtr;
+			uint32_t to = (uint32_t)(toState << getObjectHeaderSlotFlagsShift());
+			uint32_t rememberedMask = (uint32_t)(OMR_OBJECT_METADATA_REMEMBERED_BITS << getObjectHeaderSlotFlagsShift());
+			uint32_t oldFlags;
+			uint32_t newFlags;
 
-		do {
-			oldFlags = *flagsPtr;
-			if (0 != (oldFlags & rememberedMask)) {
-				result = false;
-				break;
-			}
-			newFlags = (oldFlags & ~rememberedMask) | to;
+			do {
+				oldFlags = *flagsPtr;
+				if (0 != (oldFlags & rememberedMask)) {
+					result = false;
+					break;
+				}
+				newFlags = (oldFlags & ~rememberedMask) | to;
+			} while (oldFlags != MM_AtomicOperations::lockCompareExchangeU32(flagsPtr, oldFlags, newFlags));
+		} else {
+			volatile uintptr_t* flagsPtr = (uintptr_t*)headerSlotPtr;
+			uintptr_t to = (uintptr_t)(toState << getObjectHeaderSlotFlagsShift());
+			uintptr_t rememberedMask = (uintptr_t)(OMR_OBJECT_METADATA_REMEMBERED_BITS << getObjectHeaderSlotFlagsShift());
+			uintptr_t oldFlags;
+			uintptr_t newFlags;
+
+			do {
+				oldFlags = *flagsPtr;
+				if (0 != (oldFlags & rememberedMask)) {
+					result = false;
+					break;
+				}
+				newFlags = (oldFlags & ~rememberedMask) | to;
+			} while (oldFlags != MM_AtomicOperations::lockCompareExchange(flagsPtr, oldFlags, newFlags));
 		}
-#if defined(OMR_GC_COMPRESSED_POINTERS)
-		while (oldFlags != MM_AtomicOperations::lockCompareExchangeU32(flagsPtr, oldFlags, newFlags));
-#else /* defined(OMR_GC_COMPRESSED_POINTERS) */
-		while (oldFlags != MM_AtomicOperations::lockCompareExchange(flagsPtr, (uintptr_t)oldFlags, (uintptr_t)newFlags));
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
 
 		return result;
 	}

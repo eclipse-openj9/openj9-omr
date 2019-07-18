@@ -271,7 +271,7 @@ enum TR_CompilationOptions
    // Option word 6
    //
    TR_EnableAggressiveLoopVersioning      = 0x00000020 + 6,
-   TR_EnableElementPrivatization          = 0x00000040 + 6,
+   // Available                           = 0x00000040 + 6,
    TR_CompileBit                          = 0x00000080 + 6,
    TR_WaitBit                             = 0x00000100 + 6,
    TR_DisableZ14                          = 0x00000200 + 6,
@@ -454,7 +454,7 @@ enum TR_CompilationOptions
    TR_DisablePartialInlining                  = 0x00000080 + 12,
    TR_AssumeStartupPhaseUntilToldNotTo        = 0x00000100 + 12,
    // Available                               = 0x00000200 + 12,
-   // Available                               = 0x00000400 + 12,
+   TR_DisableAOTBytesCompression              = 0x00000400 + 12,
    TR_X86UseMFENCE                            = 0x00000800 + 12,
    // Available                               = 0x00001000 + 12,
    // Available                               = 0x00002000 + 12,
@@ -1049,15 +1049,14 @@ enum TR_CompilationOptions
    //
    TR_TraceLRAResults                   = 0x00000800,
    // Available                         = 0x00001000,
-
+  
    // Register ITF tracing option word
-   //
-   TR_TraceRegisterITFBasic             = TR_TraceGRABasic,
-   // Avaialble                         = 0x00008000,
-   TR_TraceRegisterITFBuild             = 0x00010000,
+  
+   // Available                         = 0x00008000,
+   // Available                         = 0x00010000,
    // Available                         = 0x00020000,
-   TR_TraceRegisterITFColour            = 0x00040000,
-
+   // Available                         = 0x00040000,
+  
    // Register Spill Costs Analysis tracing option word
    //
    TR_TraceSpillCostsBasic              = TR_TraceGRABasic,
@@ -1139,7 +1138,7 @@ enum TR_VerboseFlags
    TR_VerboseSampleDensity,
    TR_VerboseProfiling,
    TR_VerboseJITaaS,
-
+   TR_VerboseAOTCompression,
    //If adding new options add an entry to _verboseOptionNames as well
    TR_NumVerboseOptions        // Must be the last one;
    };
@@ -1526,7 +1525,6 @@ public:
    bool      getRegisterAssignmentTraceOption(uint32_t mask) {return (_raTrace & mask) != 0;}
    bool      getTraceRAOption(uint32_t mask);
    bool      getTraceLRA(uint32_t mask) { return (_traceLRA & mask) != 0; }
-   bool      getTraceRegisterITF(uint32_t mask) { return (_traceRegisterITF & mask) != 0; }
    bool      getTraceSpillCosts(uint32_t mask) { return (_traceSpillCosts & mask) != 0; }
    bool      getTraceSimplifier(uint32_t mask) { return (_traceSimplifier & mask) != 0; }
    bool      getDebugEnableFlag(uint32_t mask) { return (_debugEnableFlags & mask) != 0; }
@@ -2329,7 +2327,6 @@ protected:
    int32_t                     _addressToEnumerate;   // Addresses enumeration option flags
    int32_t                     _raTrace;              // Register assigner trace flags
    int32_t                     _traceLRA;             // Live Register Analysis trace flags
-   int32_t                     _traceRegisterITF;     // Register ITF trace flags
    int32_t                     _traceILDeadCode;      // Instruction Level Dead Code trace flags
    int32_t                     _traceSpillCosts;      // Register Spill Costs trace flags
    int32_t                     _traceSimplifier;      // Simplifier trace flags

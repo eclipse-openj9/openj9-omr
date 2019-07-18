@@ -2025,7 +2025,15 @@ void TR_CompactNullChecks::compactNullChecks(TR::Block *block, TR_BitVector *wri
       if (prevNode->getOpCodeValue() == TR::BBStart)
          {
          block = prevNode->getBlock();
-              exitTree = block->getExit();
+         exitTree = block->getExit();
+         TR::Block *blockItr = block->getNextBlock();
+         while (blockItr && blockItr->isExtensionOfPreviousBlock())
+            {
+            if (blockItr->getPrevBlock()->getSuccessors().size() != 1)
+               break;
+            exitTree = blockItr->getExit();
+            blockItr = blockItr->getNextBlock();
+            }
          }
       if (block->isOSRInduceBlock() || block->isOSRCatchBlock() || block->isOSRCodeBlock())
          return;
@@ -2095,7 +2103,7 @@ void TR_CompactNullChecks::compactNullChecks(TR::Block *block, TR_BitVector *wri
          writtenSymbols->empty();
          bool replacedNullCheck = false;
          bool compactionDone = false;
-         while (cursorTreeTop != exitTree)
+         while (cursorTreeTop != exitTree && cursorTreeTop->getNode()->getOpCodeValue() != TR::BBEnd)
             {
             TR::Node *cursorNode = cursorTreeTop->getNode();
             replacedNullCheck = replaceNullCheckIfPossible(cursorNode, objectRef, prevNode,
@@ -2138,6 +2146,9 @@ bool TR_CompactNullChecks::replacePassThroughIfPossible(TR::Node *currentNode, T
       return false;
 
    currentNode->setVisitCount(visitCount);
+
+   if (currentNode->isNopableInlineGuard())
+      return false;
 
    int32_t i = 0;
    for (i = 0; i < currentNode->getNumChildren(); ++i)
@@ -2930,9 +2941,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
             else if (lastSeenAnd && noSideEffectsInBetween &&
                      andNode->getFirstChild()->getReferenceCount() == 1 &&
                      (isAndOfTwoFlags(comp(), andNode, lastRealNode, TR::ificmpeq,  TR::iand) ||
-                      isAndOfTwoFlags(comp(), andNode, lastRealNode, TR::ifiucmpeq, TR::iand) ||
-                      isAndOfTwoFlags(comp(), andNode, lastRealNode, TR::iflcmpeq,  TR::land) ||
-                      isAndOfTwoFlags(comp(), andNode, lastRealNode, TR::iflucmpeq, TR::land)))
+                      isAndOfTwoFlags(comp(), andNode, lastRealNode, TR::iflcmpeq,  TR::land)))
                {
                if (trace())
                    traceMsg(comp(), "Found two iand nodes: %p %p\n", andNode, lastRealNode);
@@ -4281,35 +4290,6 @@ TR_Rematerialization::TR_Rematerialization(TR::OptimizationManager *manager)
    : TR::Optimization(manager), _prefetchNodes(trMemory())
    {}
 
-void TR_Rematerialization::rematerializeSSAddress(TR::Node *parent, int32_t addrChildIndex)
-   {
-   TR::Node *addressNode = parent->getChild(addrChildIndex);
-
-   if (addressNode->getReferenceCount() > 1 &&
-        ((addressNode->getOpCodeValue() == TR::loadaddr  &&
-         addressNode->getSymbolReference()->getSymbol()->isAutoOrParm())
-        ||
-        (addressNode->getOpCode().isArrayRef() &&
-         addressNode->getSecondChild()->getOpCode().isLoadConst() &&
-         cg()->getSupportsConstantOffsetInAddressing(addressNode->getSecondChild()->get64bitIntegralValue()))))
-
-      {
-      if (performTransformation(comp(), "%sRematerializing SS address %s (%p)\n", optDetailString(),addressNode->getOpCode().getName(),addressNode))
-         {
-         TR::Node *newChild =TR::Node::copy(addressNode);
-         newChild->setFutureUseCount(0);
-         newChild->setReferenceCount(0);
-         for (int32_t j = 0; j < newChild->getNumChildren(); j++)
-            {
-            newChild->getChild(j)->incReferenceCount();
-            }
-         newChild->setFlags(addressNode->getFlags());
-         parent->setAndIncChild(addrChildIndex, newChild);
-         addressNode->recursivelyDecReferenceCount();
-         }
-      }
-   }
-
 
 void TR_Rematerialization::rematerializeAddresses(TR::Node *indirectNode, TR::TreeTop *treeTop, vcount_t visitCount)
    {
@@ -4321,10 +4301,7 @@ void TR_Rematerialization::rematerializeAddresses(TR::Node *indirectNode, TR::Tr
    indirectNode->setVisitCount(visitCount);
    bool isCommonedAiadd = false;
 
-   bool treatAsSS = false;
-
-   if (!treatAsSS &&
-      indirectNode->getOpCode().isIndirect())
+   if (indirectNode->getOpCode().isIndirect())
       {
       TR::Node *node = indirectNode->getFirstChild();
 
@@ -4467,11 +4444,6 @@ void TR_Rematerialization::rematerializeAddresses(TR::Node *indirectNode, TR::Tr
                }
             }
          }
-      }
-
-   if (treatAsSS && indirectNode->getOpCode().isIndirect())
-      {
-      rematerializeSSAddress(indirectNode, 0);
       }
 
    for (int32_t i = 0; i < indirectNode->getNumChildren(); ++i)
@@ -7329,6 +7301,11 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
 #ifdef J9_PROJECT_SPECIFIC
       if (methodSymbol->getRecognizedMethod() == TR::java_lang_invoke_MethodHandle_invokeExact && receiverInfo.hasKnownObjectIndex())
          specializeInvokeExactSymbol(node, receiverInfo.getKnownObjectIndex(), comp(), this);
+
+      // The method is a specialized thunk archetype, no further improvement is needed.
+      // Keeping running subsequent code may result in a crash because `offset` on the symref is not valid.
+      if (node->getSymbol()->castToMethodSymbol()->getMethod()->isArchetypeSpecimen())
+         return;
 #endif
       }
    else if (devirtualize)

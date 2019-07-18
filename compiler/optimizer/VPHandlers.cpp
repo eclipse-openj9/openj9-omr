@@ -1151,31 +1151,95 @@ TR::Node *constrainBCDAggrLoad(OMR::ValuePropagation *vp, TR::Node *node)
 TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
    {
    TR::DataType dataType = node->getDataType();
-
    // Optimize characters being loaded out of the values array of a constant string
    //
-   if (dataType == TR::Int16 && node->getOpCode().isIndirect() &&
+   if (node->getOpCode().isIndirect() &&
        node->getSymbol()->isArrayShadowSymbol() &&
        node->getFirstChild()->getOpCode().isAdd())
       {
       TR::Node *array = node->getFirstChild()->getFirstChild();
       TR::Node *index = node->getFirstChild()->getSecondChild();
-      if (index->getOpCode().isLoadConst() && array->getOpCode().isIndirect())
+      if (index->getOpCode().isLoadConst())
          {
          bool isGlobal;
-         TR::Node* base = array->getFirstChild();
-         TR::VPConstraint *baseVPConstraint = vp->getConstraint(base, isGlobal);
-         if (baseVPConstraint && baseVPConstraint->isConstString())
+         if (dataType == TR::Int16 && array->getOpCode().isIndirect())
             {
-            TR::VPConstString *constString = baseVPConstraint->getClassType()->asConstString();
-
-            uint16_t ch = constString->charAt(((TR::Compiler->target.is64Bit() ? index->getLongIntLow() : index->getInt())
-                                               - TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2, vp->comp());
-            if (ch != 0)
+            TR::Node* base = array->getFirstChild();
+            TR::VPConstraint *baseVPConstraint = vp->getConstraint(base, isGlobal);
+            if (baseVPConstraint && baseVPConstraint->isConstString())
                {
-               vp->replaceByConstant(node, TR::VPIntConst::create(vp, ch), true);
-               return node;
+               TR::VPConstString *constString = baseVPConstraint->getClassType()->asConstString();
+
+               uintptrj_t offset = TR::Compiler->target.is64Bit() ? (uintptrj_t)index->getUnsignedLongInt() : (uintptrj_t)index->getUnsignedInt();
+               uintptrj_t chIdx = (offset - (uintptrj_t)TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2;
+               uint16_t ch = constString->charAt(chIdx, vp->comp());
+               if (ch != 0)
+                  {
+                  vp->replaceByConstant(node, TR::VPShortConst::create(vp, ch), isGlobal);
+                  return node;
+                  }
                }
+            }
+         TR::VPConstraint *arrayVPConstraint = vp->getConstraint(array, isGlobal);
+         if (arrayVPConstraint)
+            {
+#ifdef J9_PROJECT_SPECIFIC
+            TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
+            TR::VPKnownObject *kobj = arrayVPConstraint->getKnownObject();
+            if (knot && kobj)
+               {
+               TR::KnownObjectTable::Index idx = kobj->getIndex();
+               if (kobj->isArrayWithConstantElements(vp->comp()) && kobj->isPrimitiveArray(vp->comp()))
+                  {
+                  TR::VMAccessCriticalSection constrainAnyIntLoadCriticalSection(vp->comp(),
+                     TR::VMAccessCriticalSection::tryToAcquireVMAccess);
+                  if (constrainAnyIntLoadCriticalSection.hasVMAccess())
+                     {
+                     uintptrj_t arrayObj = knot->getPointer(idx);
+                     uintptrj_t offset = TR::Compiler->target.is64Bit()
+                                         ? (uintptrj_t)index->getUnsignedLongInt() : (uintptrj_t)index->getUnsignedInt();
+                     uintptrj_t lengthInElements = TR::Compiler->om.getArrayLengthInElements(vp->comp(), arrayObj);
+                     TR::DataType elementType = kobj->getPrimitiveArrayDataType();
+                     uintptrj_t lengthInBytes = lengthInElements * TR::DataType::getSize(elementType);
+                     uintptrj_t validStart = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
+                     uintptrj_t validEnd = validStart + lengthInBytes;
+                     uintptrj_t accessSize = TR::DataType::getSize(dataType);
+                     uintptrj_t accessEnd = offset + accessSize;
+                     if (validStart <= offset && offset < accessEnd && accessEnd <= validEnd)
+                        {
+                        uintptrj_t elementAddress = TR::Compiler->om.getAddressOfElement(vp->comp(), arrayObj, offset);
+                        switch (dataType)
+                           {
+                           case TR::Int8:
+                              {
+                              uint8_t value = *((uint8_t*)(elementAddress));
+                              vp->replaceByConstant(node, TR::VPIntConst::create(vp, value), isGlobal);
+                              return node;
+                              }
+                           case TR::Int16:
+                              {
+                              uint16_t value = *((uint16_t*)(elementAddress));
+                              vp->replaceByConstant(node, TR::VPShortConst::create(vp, value), isGlobal);
+                              return node;
+                              }
+                           case TR::Int32:
+                              {
+                              uint32_t value = *((uint32_t*)(elementAddress));
+                              vp->replaceByConstant(node, TR::VPIntConst::create(vp, value), isGlobal);
+                              return node;
+                              }
+                           case TR::Int64:
+                              {
+                              uint64_t value = *((uint64_t*)(elementAddress));
+                              vp->replaceByConstant(node, TR::VPLongConst::create(vp, value), isGlobal);
+                              return node;
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+#endif
             }
          }
       }
@@ -4767,6 +4831,25 @@ TR::Node *constrainArraylength(OMR::ValuePropagation *vp, TR::Node *node)
          upperBoundLimit = arrayInfo->highBound();
          elementSize     = arrayInfo->elementSize();
          }
+#ifdef J9_PROJECT_SPECIFIC
+      TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
+      TR::VPKnownObject *kobj = constraint->getKnownObject();
+      if (knot && kobj)
+         {
+         TR::VMAccessCriticalSection constrainArraylengthCriticalSection(vp->comp(),
+                     TR::VMAccessCriticalSection::tryToAcquireVMAccess);
+         if (constrainArraylengthCriticalSection.hasVMAccess())
+            {
+            uintptrj_t array = knot->getPointer(kobj->getIndex());
+            if (vp->comp()->fej9()->isClassArray(vp->comp()->fej9()->getObjectClass(array)))
+               {
+               uintptrj_t length = vp->comp()->fej9()->getArrayLengthInElements(array);
+               vp->replaceByConstant(node, TR::VPIntConst::create(vp, length), isGlobal);
+               return node;
+               }
+            }
+         }
+#endif
       }
 
    // If the element size is still not known, try to get it from the node or
@@ -5086,7 +5169,7 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
 
       int32_t cpIndex = symRef->getCPIndex();
 
-      TR_Method * originalMethod = methodSymbol->getMethod();
+      TR::Method * originalMethod = methodSymbol->getMethod();
       len = originalMethod->classNameLength();
       s = classNameToSignature(originalMethod->classNameChars(), len, vp->comp());
       originalMethodClass = vp->fe()->getClassFromSignature(s, len, owningMethod);
@@ -5361,7 +5444,7 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
       // some value in parsing the return type of the method
       // being invoked to obtain better info about byte/bool/char/short
       //
-      TR_Method *method = node->getSymbol()->castToMethodSymbol()->getMethod();
+      TR::Method *method = node->getSymbol()->castToMethodSymbol()->getMethod();
       if (method)
          {
          TR::DataType dataType = method->returnType();
@@ -5583,7 +5666,7 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
                {
                //FIXME: add me to the list of calls to be inlined
                //
-               TR_Method *method = getHelpersSymRef->getSymbol()->castToMethodSymbol()->getMethod();
+               TR::Method *method = getHelpersSymRef->getSymbol()->castToMethodSymbol()->getMethod();
                TR::Node *helpersCallNode = TR::Node::createWithSymRef( node, method->directCallOpCode(), 0, getHelpersSymRef);
                TR::TreeTop *helpersCallTT = TR::TreeTop::create(vp->comp(), TR::Node::create(TR::treetop, 1, helpersCallNode));
                vp->_curTree->insertBefore(helpersCallTT);
@@ -7743,7 +7826,7 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
          TR::VPIntRange *range = rhs->asIntRange();
          int32_t low = range->getLowInt();
          int32_t high = range->getHighInt();
-       if((node->getFirstChild()->getOpCodeValue() == TR::imul || node->getFirstChild()->getOpCodeValue() == TR::iumul) &&
+       if(node->getFirstChild()->getOpCodeValue() == TR::imul &&
        ((high & 0x80000000) ==0) &&
        ((low & 0x80000000) ==0))
           {
@@ -7766,7 +7849,7 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
       else if(rhs->asIntConst())
          {
          int32_t iandMask =rhs->asIntConst()->getInt();
-         if((node->getFirstChild()->getOpCodeValue() == TR::imul || node->getFirstChild()->getOpCodeValue() == TR::iumul) &&
+         if(node->getFirstChild()->getOpCodeValue() == TR::imul &&
            ((iandMask & 0x80000000) ==0))
             {
             while(!(mask  & 0x1))
@@ -9788,7 +9871,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
              //The object's class can sometimes be less specific than the class of the call
              //if we ask for a rammethod in such a class we would trigger an assert ("no ram method in the vft slot")
              //to avoid this we would to insert another isInstanceOf (objectClass, callClass)
-             TR_Method* interfaceMethod = interfaceMethodSymbol->getMethod();
+             TR::Method *interfaceMethod = interfaceMethodSymbol->getMethod();
              //re-using len and sig for getting a class of a call
              len = interfaceMethod->classNameLength();
              sig = classNameToSignature(interfaceMethod->classNameChars(), len, vp->comp());

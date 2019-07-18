@@ -56,9 +56,7 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
-#include "cs2/bitvectr.h"
 #include "cs2/hashtab.h"
-#include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
 #include "env/RawAllocator.hpp"
@@ -962,7 +960,7 @@ TR_Debug::signature(TR::ResolvedMethodSymbol *s)
 TR_OpaqueClassBlock *
 TR_Debug::containingClass(TR::SymbolReference *symRef)
    {
-   TR_Method *method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
+   TR::Method *method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
 
    if (method)
       {
@@ -1858,7 +1856,7 @@ TR_Debug::getParmName(TR::SymbolReference * symRef)
 const char *
 TR_Debug::getMethodName(TR::SymbolReference * symRef)
    {
-   TR_Method * method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
+   TR::Method *method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
 
    if (method==NULL)
       {

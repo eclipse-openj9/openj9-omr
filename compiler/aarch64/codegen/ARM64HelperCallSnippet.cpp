@@ -20,20 +20,64 @@
  *******************************************************************************/
 
 #include "codegen/ARM64HelperCallSnippet.hpp"
+#include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/Relocation.hpp"
+#include "codegen/SnippetGCMap.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 uint8_t *
 TR::ARM64HelperCallSnippet::emitSnippetBody()
    {
-   TR_UNIMPLEMENTED();
+   uint8_t *cursor = cg()->getBinaryBufferCursor();
+   intptr_t distance = (intptr_t)(getDestination()->getSymbol()->castToMethodSymbol()->getMethodAddress()) - (intptr_t)cursor;
 
-   uint8_t *buffer = cg()->getBinaryBufferCursor();
-   return buffer;
+   getSnippetLabel()->setCodeLocation(cursor);
+
+   if (!constantIsSignedImm28(distance))
+      {
+      distance = TR::CodeCacheManager::instance()->findHelperTrampoline(getDestination()->getReferenceNumber(), (void *)cursor) - (intptr_t)cursor;
+      TR_ASSERT(constantIsSignedImm28(distance), "Trampoline too far away.");
+      }
+
+   if (_restartLabel == NULL)
+      {
+      // b distance
+      *(int32_t *)cursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::b) | ((distance >> 2) & 0x3ffffff); // imm26
+      }
+   else
+      {
+      // bl distance
+      *(int32_t *)cursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::bl) | ((distance >> 2) & 0x3ffffff); // imm26
+      }
+   cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
+                               cursor,
+                               (uint8_t *)getDestination(),
+                               TR_HelperAddress, cg()), __FILE__, __LINE__, getNode());
+   cursor += ARM64_INSTRUCTION_LENGTH;
+
+   gcMap().registerStackMap(cursor, cg());
+
+   if (_restartLabel != NULL)
+      {
+      distance = (intptr_t)(_restartLabel->getCodeLocation()) - (intptr_t)cursor;
+      if (constantIsSignedImm28(distance))
+         {
+         // b distance
+         *(int32_t *)cursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::b) | ((distance >> 2) & 0x3ffffff); // imm26
+         cursor += ARM64_INSTRUCTION_LENGTH;
+         }
+      else
+         {
+         TR_ASSERT(false, "Target too far away.  Not supported yet");
+         }
+      }
+
+   return cursor;
    }
 
 uint32_t
 TR::ARM64HelperCallSnippet::getLength(int32_t estimatedSnippetStart)
    {
-   TR_UNIMPLEMENTED();
-   return 0;
+   return ((_restartLabel == NULL) ? 1 : 2) * ARM64_INSTRUCTION_LENGTH;
    }

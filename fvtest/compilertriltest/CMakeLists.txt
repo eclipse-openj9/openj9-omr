@@ -47,6 +47,7 @@ add_executable(comptest
 	MaxMinTest.cpp
 	CompareTest.cpp
 	TypeConversionTest.cpp
+	TernaryTest.cpp
 )
 
 target_link_libraries(comptest
@@ -54,6 +55,10 @@ target_link_libraries(comptest
 	omrport
 	tril
 )
+
+if(OMR_HOST_OS STREQUAL "zos")
+	target_link_libraries(comptest j9a2e)
+endif()
 
 set_property(TARGET comptest PROPERTY FOLDER fvtest)
 

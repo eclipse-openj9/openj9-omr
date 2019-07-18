@@ -119,8 +119,6 @@ OMR::ValuePropagation::ValuePropagation(TR::OptimizationManager *manager)
      _javaLangClassGetComponentTypeCalls(trMemory()),
      _unknownTypeArrayCopyTrees(trMemory()),
      _scalarizedArrayCopies(trMemory()),
-     _cachedStringBufferVcalls(trMemory()),
-     _cachedStringPeepHolesVcalls(trMemory()),
      _predictedThrows(trMemory()),
      _prexClasses(trMemory()),
      _prexMethods(trMemory()),

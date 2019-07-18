@@ -76,12 +76,12 @@ class TR_FrontEnd;
 class TR_HashTabInt;
 class TR_InlineBlocks;
 class TR_InnerAssumption;
-class TR_Method;
 class TR_PrexArgInfo;
 class TR_ResolvedMethod;
 class TR_TransformInlinedFunction;
 namespace TR { class Block; }
 namespace TR { class CFG; }
+namespace TR { class Method; }
 namespace TR { class Node; }
 namespace TR { class ParameterSymbol; }
 namespace TR { class ResolvedMethodSymbol; }
@@ -415,8 +415,6 @@ class TR_InlinerBase: public TR_HasRandomGenerator
       TR::Node *_storeToCachedPrivateStatic;
 
       TR_InlinerTracer*         _tracer;
-      List<TR::Block>                           _GlobalLabels;
-      List<TR::Block > * getSuccessorsWithGlobalLabels(){ return &_GlobalLabels; }
       OMR_InlinerPolicy *_policy;
       OMR_InlinerUtil*_util;
    };
@@ -446,12 +444,29 @@ class TR_InlineCall : public TR_DumbInliner
 struct TR_ParameterMapping : TR_Link<TR_ParameterMapping>
    {
    TR_ParameterMapping(TR::ParameterSymbol * ps)
-      : _parmSymbol(ps), _replacementSymRef(0), _parameterNode(0),
-       _parmIsModified(false), _addressTaken(false), _isConst(false)
-      { }
+      : _parmSymbol(ps),
+        _replacementSymRef(NULL),
+        _replacementSymRefForInlinedBody(NULL),
+        _parameterNode(NULL),
+        _parmIsModified(false),
+        _addressTaken(false),
+        _isConst(false)
+       { }
 
    TR::ParameterSymbol * _parmSymbol;
+
+   /*
+    * The symbol reference of the priv arg temp.
+    *
+    * Used for replacing both the parm symbol references in the inlined body and args on the taken side of the guard.
+    */
    TR::SymbolReference * _replacementSymRef;
+   /*
+    * Used for replacing parm symbol reference in the inlined body when this field not NULL.
+    * Otherwise, the \ref _replacementSymRef is used.
+    */
+   TR::SymbolReference * _replacementSymRefForInlinedBody;
+
    TR::Node *            _parameterNode;                 //The Node under the call which matches the argument at argIndex
    uint32_t             _argIndex;
    bool                 _parmIsModified;
@@ -464,7 +479,7 @@ class TR_ParameterToArgumentMapper
    public:
       TR_ALLOC(TR_Memory::Inliner)
 
-      TR_ParameterToArgumentMapper(TR::ResolvedMethodSymbol *, TR::ResolvedMethodSymbol *, TR::Node *,
+      TR_ParameterToArgumentMapper(TR::ResolvedMethodSymbol *, TR::ResolvedMethodSymbol *, TR::Node *, TR_PrexArgInfo *,
                                    List<TR::SymbolReference> &, List<TR::SymbolReference> &,
                                    List<TR::SymbolReference> &, TR_InlinerBase *);
 
@@ -504,6 +519,7 @@ class TR_ParameterToArgumentMapper
       List<TR::SymbolReference> &       _availableTemps2;
       TR_InlinerTracer *               _tracer;
       TR_InlinerBase *                 _inliner;
+      TR_PrexArgInfo *                 _argInfo;
    };
 
 class OMR_InlinerHelper

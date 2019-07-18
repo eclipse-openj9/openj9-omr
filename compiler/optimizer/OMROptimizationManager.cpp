@@ -72,7 +72,7 @@ OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFact
          _flags.set(doesNotRequireAliasSets | canAddSymbolReference | verifyTrees | verifyBlocks | checkTheCFG | requiresAccurateNodeCount);
          break;
       case OMR::CFGSimplification:
-         _flags.set(verifyTrees | verifyBlocks | checkTheCFG);
+         _flags.set(verifyTrees | verifyBlocks | checkTheCFG | supportsIlGenOptLevel);
          break;
       case OMR::basicBlockExtension:
          _flags.set(requiresStructure);
@@ -122,8 +122,6 @@ OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFact
          break;
       case OMR::fieldPrivatization:
          _flags.set(requiresStructure);
-         if(self()->comp()->getOption(TR_EnableElementPrivatization))
-            _flags.set(requiresLocalsUseDefInfo | requiresLocalsValueNumbering | requiresStructure);
          break;
       case OMR::catchBlockRemoval:
          _flags.set(verifyTrees | verifyBlocks | checkTheCFG);

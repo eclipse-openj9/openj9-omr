@@ -23,7 +23,7 @@
 
 JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/compile/OSRData.cpp \
-    $(JIT_OMR_DIRTY_DIR)/compile/Method.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/OMRMethod.cpp \
     $(JIT_OMR_DIRTY_DIR)/compile/VirtualGuard.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/OMROptions.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/OptimizationPlan.cpp \
@@ -104,7 +104,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/optimizer/BackwardUnionBitVectorAnalysis.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/BitVectorAnalysis.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/CatchBlockRemover.cpp \
-    $(JIT_OMR_DIRTY_DIR)/optimizer/CFGSimplifier.cpp \
+    $(JIT_OMR_DIRTY_DIR)/optimizer/OMRCFGSimplifier.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/CompactLocals.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/CopyPropagation.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/DataFlowAnalysis.cpp \

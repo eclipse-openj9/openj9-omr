@@ -3861,8 +3861,8 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
           newBranchOpCond = convertComparisonBranchConditionToTestUnderMaskBranchCondition(constNode, fBranchOpCond);
           }
    else if (constNode &&
-         (node->getOpCodeValue()==TR::iflcmpeq || node->getOpCodeValue()==TR::iflucmpeq ||
-          node->getOpCodeValue()==TR::iflcmpne || node->getOpCodeValue()==TR::iflucmpne) &&
+         (node->getOpCodeValue()==TR::iflcmpeq ||
+          node->getOpCodeValue()==TR::iflcmpne) &&
          constNode->getLongInt() == 0 &&
          nonConstNode->getOpCodeValue()==TR::land &&
          nonConstNode->getReferenceCount() == 1 && nonConstNode->getRegister()==NULL &&
@@ -3890,7 +3890,7 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
       else
          generateRIInstruction(cg, TR::InstOpCode::TMHH, node, tempReg, (nonConstNode->getSecondChild()->getLongInt()&0xFFFF000000000000)>>48);
 
-      if (node->getOpCodeValue()==TR::iflcmpne || node->getOpCodeValue()==TR::iflucmpne)
+      if (node->getOpCodeValue()==TR::iflcmpne)
          {
          newBranchOpCond = TR::InstOpCode::COND_MASK7;
          }
@@ -3909,8 +3909,8 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
       cg->decReferenceCount(secondChild);
       }
    else if (constNode &&
-         (node->getOpCodeValue()==TR::ificmpeq || node->getOpCodeValue()==TR::ifiucmpeq ||
-          node->getOpCodeValue()==TR::ificmpne || node->getOpCodeValue()==TR::ifiucmpne) &&
+         (node->getOpCodeValue()==TR::ificmpeq ||
+          node->getOpCodeValue()==TR::ificmpne) &&
          constNode->getInt() == 0 &&
          nonConstNode->getOpCodeValue()==TR::iand &&
          nonConstNode->getReferenceCount() == 1 && nonConstNode->getRegister()==NULL &&
@@ -3931,7 +3931,7 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
       else
           generateRIInstruction(cg, TR::InstOpCode::TMLH, node, tempReg, (nonConstNode->getSecondChild()->getInt()&0xFFFF0000)>>16);
 
-      if (node->getOpCodeValue()==TR::ificmpne || node->getOpCodeValue()==TR::ifiucmpne)
+      if (node->getOpCodeValue()==TR::ificmpne)
          {
          newBranchOpCond = TR::InstOpCode::COND_MASK7;
          }
@@ -9897,12 +9897,12 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 #endif
                    true)
                   {
-                  sym->setAllocatedIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
+                  sym->setAssignedGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
                   }
                else
                   {
-                  sym->setAllocatedHigh(cg->getGlobalRegister(child->getChild(i)->getHighGlobalRegisterNumber()));
-                  sym->setAllocatedLow(cg->getGlobalRegister(child->getChild(i)->getLowGlobalRegisterNumber()));
+                  sym->setAssignedHighGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getHighGlobalRegisterNumber()));
+                  sym->setAssignedLowGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getLowGlobalRegisterNumber()));
                   }
                }
             }
@@ -9992,6 +9992,13 @@ OMR::Z::TreeEvaluator::BBEndEvaluator(TR::Node * node, TR::CodeGenerator * cg)
                baseReg = cg->gprClobberEvaluate(baseAddr);    \
             else                                                      \
                baseReg = cg->evaluate(baseAddr);              \
+            }                                                         \
+         }
+
+#define AlwaysClobberRegisterForLoops(evaluateChildren,baseAddr,baseReg) \
+         { if (evaluateChildren)                                      \
+            {                                                         \
+            baseReg = cg->gprClobberEvaluate(baseAddr);               \
             }                                                         \
          }
 
@@ -11121,7 +11128,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
          if (isZero)
             {
             MemClearVarLenMacroOp op(node, baseAddr, cg, elemsRegister, elemsExpr, lenMinusOne);
-            ClobberRegisterForLoops(evaluateChildren, op, baseAddr, baseReg);
+            AlwaysClobberRegisterForLoops(evaluateChildren, baseAddr, baseReg);
             op.setUseEXForRemainder(true);
             op.generate(baseReg);
             }
@@ -11130,14 +11137,14 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
             if (useMVI)
                {
                MemInitVarLenMacroOp op(node, baseAddr, cg, elemsRegister, constExpr->getByte(), elemsExpr, lenMinusOne);
-               ClobberRegisterForLoops(evaluateChildren, op, baseAddr, baseReg);
+               AlwaysClobberRegisterForLoops(evaluateChildren, baseAddr, baseReg);
                op.setUseEXForRemainder(true);
                op.generate(baseReg);
                }
             else
                {
                MemInitVarLenMacroOp op(node, baseAddr, cg, elemsRegister, constExprRegister, elemsExpr, lenMinusOne);
-               ClobberRegisterForLoops(evaluateChildren, op, baseAddr, baseReg);
+               AlwaysClobberRegisterForLoops(evaluateChildren, baseAddr, baseReg);
                op.setUseEXForRemainder(true);
                op.generate(baseReg);
                }
@@ -11988,15 +11995,27 @@ OMR::Z::TreeEvaluator::lRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
 TR::Register *
 OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   TR::Node * child = node->getFirstChild();
+   TR::Node* value = node->getFirstChild();
+
+   TR::Register* globalReg = NULL;
+
+   // If the child is an add/sub that could be used in a branch on count op, don't evaluate it here
+   if (isBranchOnCountAddSub(cg, value))
+      {
+      if (value->getFirstChild()->getGlobalRegisterNumber() == node->getGlobalRegisterNumber())
+         {
+         cg->decReferenceCount(value);
+
+         return globalReg;
+         }
+      }
+
    bool needsLGFR = node->needsSignExtension();
    bool useLGHI = false;
-   bool globalRegLive = false;
-   TR::Compilation *comp = cg->comp();
 
-   if (needsLGFR && child->getOpCode().isLoadConst() &&
-       (getIntegralValue(child)<MAX_IMMEDIATE_VAL) &&
-       (getIntegralValue(child)>MIN_IMMEDIATE_VAL) &&
+   if (needsLGFR && value->getOpCode().isLoadConst() &&
+       getIntegralValue(value) < MAX_IMMEDIATE_VAL &&
+       getIntegralValue(value) > MIN_IMMEDIATE_VAL &&
        !cg->comp()->compileRelocatableCode())
       {
       needsLGFR = false;
@@ -12006,73 +12025,44 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
          }
       }
 
-   bool noLGFgenerated =true;
-   bool childEvaluatedPreviously = child->getRegister() != NULL;
+   bool noLGFgenerated = true;
 
-   if (needsLGFR && child->getOpCode().isLoadVar() && (child->getRegister()==NULL) && child->getType().isInt32())
+   if (needsLGFR && value->getOpCode().isLoadVar() && value->getRegister() == NULL && value->getType().isInt32())
       {
-      child->setSignExtendTo64BitAtSource(true);
-      child->setUseSignExtensionMode(true);
+      value->setSignExtendTo64BitAtSource(true);
+      value->setUseSignExtensionMode(true);
       noLGFgenerated =false;
-      }
-
-   TR::Register * globalReg;
-   TR_GlobalRegisterNumber globalRegNum = node->getGlobalRegisterNumber();
-
-   // If the child is an add/sub that could be used in a branch on count op, don't evaluate it here
-   if (isBranchOnCountAddSub(cg, child))
-      {
-      TR::Node *regLoad = child->getFirstChild();
-      if (regLoad->getGlobalRegisterNumber() == globalRegNum)
-         {
-         cg->decReferenceCount(child);
-         return NULL;
-         }
       }
 
    if (!useLGHI)
       {
-      globalReg = cg->evaluate(child);
+      globalReg = cg->evaluate(value);
       }
    else
       {
-      globalReg = child->getRegister();
+      globalReg = value->getRegister();
       if (globalReg == NULL)
          {
-         globalReg = child->setRegister(cg->allocateRegister());
+         globalReg = value->setRegister(cg->allocateRegister());
          }
       globalReg->setIs64BitReg(true);
-      genLoadLongConstant(cg, child, getIntegralValue(child), globalReg);
+      genLoadLongConstant(cg, value, getIntegralValue(value), globalReg);
       }
 
    // Without extensive evaluation of children & context, assume that we might have swapped signs
    globalReg->resetAlreadySignExtended();
 
-   // LGB generated for  TR::bloadi or LLGH generated for TR::cloadi sign extend implicitly
-   bool child_sign_extended = ((child->getOpCodeValue() == TR::b2i) && (child->getFirstChild()->getOpCodeValue() == TR::bloadi)) ||
-                              ((child->getOpCodeValue() == TR::su2i) && (child->getFirstChild()->getOpCodeValue() == TR::cloadi)) ||
-                              ((child->getOpCodeValue() == TR::l2i) && (child->getFirstChild()->getOpCodeValue() == TR::i2l));
-
    if (needsLGFR)
       {
-      if ((noLGFgenerated) && (!child_sign_extended))
+      if (noLGFgenerated)
          {
          generateRRInstruction(cg, TR::InstOpCode::LGFR, node, globalReg, globalReg);
          }
-      static char * noMarkRegister = feGetEnv("TR_NRECORDLGFR");
-      if (noMarkRegister == NULL)
-         {
-         globalReg->setAlreadySignExtended();
-         } // any i2l using this reg will now be a nop
+
+      globalReg->setAlreadySignExtended();
       }
 
-   TR::Node * symNode = node->getFirstChild();
-   while (symNode->isUnneededConversion())
-      {
-      symNode = symNode->getFirstChild();
-      }
-
-   cg->decReferenceCount(child);
+   cg->decReferenceCount(value);
 
    return globalReg;
    }
@@ -12080,29 +12070,14 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::lRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   TR::Node * child = node->getFirstChild();
-   TR::Register * globalReg;
-   TR::Compilation *comp = cg->comp();
-   bool childEvaluatedPreviously = child->getRegister() != NULL;
-   TR::RegisterPair *globalPair=NULL;
-   TR::Register *globalRegLow;
-   TR::Register *globalRegHigh;
+   TR::Node* value = node->getFirstChild();
 
-   TR_GlobalRegisterNumber globalRegNum = node->getGlobalRegisterNumber();
-
-   globalReg = cg->evaluate(child);
-
-   globalPair = globalReg->getRegisterPair();
-   if(globalPair)
-     {
-     globalRegLow=globalPair->getLowOrder();
-     globalRegHigh=globalPair->getHighOrder();
-     }
+   TR::Register* globalReg = cg->evaluate(value);
 
    // GRA needs to tell LRA about the register type
    globalReg->setIs64BitReg(true);
 
-   cg->decReferenceCount(child);
+   cg->decReferenceCount(value);
 
    return globalReg;
    }
@@ -12884,8 +12859,8 @@ TR::InstOpCode::S390BranchCondition getButestBranchCondition(TR::ILOpCodes opCod
    TR_ASSERT(cmpValue >= 0 && cmpValue <= 3, "Unexpected butest cc test value %d\n", cmpValue);
    switch(opCode)
          {
-         case TR::ifiucmpeq: case TR::ificmpeq: rowNum = 0; break;
-         case TR::ifiucmpne: case TR::ificmpne: rowNum = 1; break;
+         case TR::ificmpeq: rowNum = 0; break;
+         case TR::ificmpne: rowNum = 1; break;
          case TR::ifiucmpgt: rowNum = 2; break;
          case TR::ifiucmpge: rowNum = 3; break;
          case TR::ifiucmplt: rowNum = 4; break;

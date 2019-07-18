@@ -93,9 +93,12 @@ struct ARM64LinkageProperties
    TR::RealRegister::RegNum _returnRegisters[TR::RealRegister::NumRegisters];
    uint8_t _numAllocatableIntegerRegisters;
    uint8_t _numAllocatableFloatRegisters;
+   uint32_t _preservedRegisterMapForGC;
    TR::RealRegister::RegNum _methodMetaDataRegister;
    TR::RealRegister::RegNum _stackPointerRegister;
    TR::RealRegister::RegNum _framePointerRegister;
+   TR::RealRegister::RegNum _vtableIndexArgumentRegister; // for icallVMprJavaSendPatchupVirtual
+   TR::RealRegister::RegNum _j9methodArgumentRegister; // for icallVMprJavaSendStatic
    uint8_t _numberOfDependencyGPRegisters;
    int8_t _offsetToFirstParm;
    int8_t _offsetToFirstLocal;
@@ -220,6 +223,11 @@ struct ARM64LinkageProperties
       return _numAllocatableFloatRegisters;
       }
 
+   uint32_t getPreservedRegisterMapForGC() const
+      {
+      return _preservedRegisterMapForGC;
+      }
+
    TR::RealRegister::RegNum getMethodMetaDataRegister() const
       {
       return _methodMetaDataRegister;
@@ -233,6 +241,16 @@ struct ARM64LinkageProperties
    TR::RealRegister::RegNum getFramePointerRegister() const
       {
       return _framePointerRegister;
+      }
+
+   TR::RealRegister::RegNum getVTableIndexArgumentRegister() const
+      {
+      return _vtableIndexArgumentRegister;
+      }
+
+   TR::RealRegister::RegNum getJ9MethodArgumentRegister() const
+      {
+      return _j9methodArgumentRegister;
       }
 
    int32_t getOffsetToFirstParm() const {return _offsetToFirstParm;}

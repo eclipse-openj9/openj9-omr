@@ -30,7 +30,6 @@
 #include "codegen/SystemLinkage.hpp"
 #include "codegen/snippet/PPA1Snippet.hpp"
 #include "codegen/snippet/PPA2Snippet.hpp"
-#include "cs2/arrayof.h"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
@@ -93,7 +92,7 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
 
    virtual TR::RealRegister::RegNum getENVPointerRegister();
    virtual TR::RealRegister::RegNum getCAAPointerRegister();
-   
+
    virtual int32_t getRegisterSaveOffset(TR::RealRegister::RegNum);
    virtual int32_t getOutgoingParameterBlockSize();
 
@@ -114,12 +113,12 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
     *     The stack pointer update label symbol if it exists; \c NULL otherwise.
     */
    TR::LabelSymbol* getStackPointerUpdateLabel() const;
-   
+
    /** \brief
     *     Gets the PPA1 (Program Prologue Area 1) snippet for this method body.
     */
    TR::PPA1Snippet* getPPA1Snippet() const;
-   
+
    /** \brief
     *     Gets the PPA2 (Program Prologue Area 2) snippet for this method body.
     */
@@ -128,7 +127,7 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
    private:
 
    virtual TR::Instruction* addImmediateToRealRegister(TR::RealRegister * targetReg, int32_t immediate, TR::RealRegister *tempReg, TR::Node *node, TR::Instruction *cursor, bool *checkTempNeeded=NULL);
-   
+
    TR::Instruction* fillGPRsInEpilogue(TR::Node* node, TR::Instruction* cursor);
    TR::Instruction* fillFPRsInEpilogue(TR::Node* node, TR::Instruction* cursor);
 
@@ -136,7 +135,7 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
    TR::Instruction* spillFPRsInPrologue(TR::Node* node, TR::Instruction* cursor);
 
    private:
-   
+
    TR::LabelSymbol* _entryPointMarkerLabel;
    TR::LabelSymbol* _stackPointerUpdateLabel;
 

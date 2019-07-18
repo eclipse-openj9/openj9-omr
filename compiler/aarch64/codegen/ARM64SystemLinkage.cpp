@@ -108,9 +108,12 @@ TR::ARM64SystemLinkage::ARM64SystemLinkage(TR::CodeGenerator *cg)
    _properties._numAllocatableIntegerRegisters = 27;
    _properties._numAllocatableFloatRegisters   = 32;
 
+   _properties._preservedRegisterMapForGC   = 0x00000000; // ToDo: Determine the value
    _properties._methodMetaDataRegister      = TR::RealRegister::NoReg;
    _properties._stackPointerRegister        = TR::RealRegister::sp;
    _properties._framePointerRegister        = TR::RealRegister::x29;
+   _properties._vtableIndexArgumentRegister = TR::RealRegister::NoReg;
+   _properties._j9methodArgumentRegister    = TR::RealRegister::NoReg;
 
    _properties._numberOfDependencyGPRegisters = 32; // To be determined
    _properties._offsetToFirstParm             = 0; // To be determined
@@ -813,12 +816,10 @@ TR::Register *TR::ARM64SystemLinkage::buildDirectDispatch(TR::Node *callNode)
    switch(callNode->getOpCodeValue())
       {
       case TR::icall:
-      case TR::iucall:
          retReg = dependencies->searchPostConditionRegister(
                      pp.getIntegerReturnRegister());
          break;
       case TR::lcall:
-      case TR::lucall:
       case TR::acall:
          retReg = dependencies->searchPostConditionRegister(
                      pp.getLongReturnRegister());

@@ -212,6 +212,7 @@ protected:
 	OMR_VM* _omrVM;
 	OMR::GC::Forge _forge;
 	MM_GlobalCollector* _globalCollector; /**< The global collector for the system */
+	uintptr_t lastGlobalGCFreeBytes;  /**< records the free memory size from after Global GC cycle */
 #if defined(OMR_GC_OBJECT_MAP)
 	MM_ObjectMap *_objectMap;
 #endif /* defined(OMR_GC_OBJECT_MAP) */
@@ -265,6 +266,7 @@ public:
 	MM_SublistPool rememberedSet;
 	uintptr_t oldHeapSizeOnLastGlobalGC;
 	uintptr_t freeOldHeapSizeOnLastGlobalGC;
+	float concurrentKickoffTenuringHeadroom; /**< percentage of free memory remaining in tenure heap. Used in conjunction with free memory to determine concurrent mark kickoff */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 #if defined(OMR_GC_REALTIME)
 	MM_RememberedSetSATB* sATBBarrierRememberedSet; /**< The snapshot at the beginning barrier remembered set used for the write barrier */
@@ -344,6 +346,7 @@ public:
 	bool debugLOAFreelist;
 	bool debugLOAAllocate;
 	int loaFreeHistorySize; /**< max size of _loaFreeRatioHistory array */
+	uintptr_t lastGlobalGCFreeBytesLOA; /**< records the LOA free memory size from after Global GC cycle */
 	ConcurrentMetering concurrentMetering;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
@@ -368,6 +371,7 @@ public:
 
 	float heapSizeStartupHintConservativeFactor; /**< Use only a fraction of hints stored in SC */
 	float heapSizeStartupHintWeightNewValue;		/**< Learn slowly by historic averaging of stored hints */	
+	bool useGCStartupHints; /**< Enabled/disable usage of heap sizing startup hints from Shared Cache */
 
 	uintptr_t workpacketCount; /**< this value is ONLY set if -Xgcworkpackets is specified - otherwise the workpacket count is determined heuristically */
 	uintptr_t packetListSplit; /**< the number of ways to split packet lists, set by -XXgc:packetListLockSplit=, or determined heuristically based on the number of GC threads */
@@ -456,6 +460,7 @@ public:
 	uintptr_t concurrentScavengerBackgroundThreads; /**< number of background GC threads during concurrent phase of Scavenge */
 	bool concurrentScavengerBackgroundThreadsForced; /**< true if concurrentScavengerBackgroundThreads set via command line option */
 	uintptr_t concurrentScavengerSlack; /**< amount of bytes added on top of avearge allocated bytes during concurrent cycle, in calcualtion for survivor size */
+	float concurrentScavengerAllocDeviationBoost; /**< boost factor for allocate rate and its deviation, used for tilt calcuation in Concurrent Scavenger */
 #endif	/* OMR_GC_CONCURRENT_SCAVENGER */
 	uintptr_t scavengerFailedTenureThreshold;
 	uintptr_t maxScavengeBeforeGlobal;
@@ -741,6 +746,9 @@ public:
 	double tarokConcurrentMarkingCostWeight; /**< How much we weigh concurrentMarking into our GMP scan time cost calculations */
 	bool tarokAutomaticDefragmentEmptinessThreshold; /**< Whether we should use the automatically derived value for tarokDefragmentEmptinessThreshold or not */
 	bool tarokEnableCopyForwardHybrid; /**< Enable CopyForward Hybrid mode */
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+	bool _isConcurrentCopyForward;
+#endif
 #endif /* defined (OMR_GC_VLHGC) */
 
 /* OMR_GC_VLHGC (in for all -- see 82589) */
@@ -769,7 +777,6 @@ public:
 
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	uintptr_t idleMinimumFree;   /**< percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
-	uintptr_t lastGCFreeBytes;  /**< records the free memory size from last Global GC cycle */
 	bool gcOnIdle; /**< Enables releasing free heap pages if true while systemGarbageCollect invoked with IDLE GC code, default is false */
 	bool compactOnIdle; /**< Forces compaction if global GC executed while VM Runtime State set to IDLE, default is false */
 	float gcOnIdleCompactThreshold; /**< Enables compaction when fragmented memory and dark matter exceed this limit. The larger this number, the more memory can be fragmented before compact is triggered **/
@@ -824,6 +831,10 @@ public:
 	 */
 	MMINLINE OMR::GC::Forge* getForge() { return &_forge; }
 
+	/**
+	 * Return back true if object references are compressed
+	 * @return true, if object references are compressed
+	 */
 	MMINLINE bool compressObjectReferences() {
 #if defined(OMR_GC_COMPRESSED_POINTERS)
 #if defined(OMR_GC_FULL_POINTERS)
@@ -851,6 +862,9 @@ public:
 
 	MMINLINE MM_GlobalCollector* getGlobalCollector() { return _globalCollector; }
 	MMINLINE void setGlobalCollector(MM_GlobalCollector* collector) { _globalCollector = collector; }
+
+	MMINLINE uintptr_t getLastGlobalGCFreeBytes(){ return lastGlobalGCFreeBytes; }
+	MMINLINE void setLastGlobalGCFreeBytes(uintptr_t globalGCFreeBytes){ lastGlobalGCFreeBytes = globalGCFreeBytes;}
 
 #if defined(OMR_GC_OBJECT_MAP)
 	MMINLINE MM_ObjectMap *getObjectMap() { return _objectMap; }
@@ -957,6 +971,16 @@ public:
 #if defined(OMR_GC_COMBINATION_SPEC)
 		_isVLHGC = value;
 #endif
+	}
+
+	MMINLINE bool
+	isConcurrentCopyForwardEnabled()
+	{
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+		return _isConcurrentCopyForward;
+#else
+		return false;
+#endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */
 	}
 
 	MMINLINE bool
@@ -1283,6 +1307,7 @@ public:
 		, _omrVM(NULL)
 		,_forge()
 		, _globalCollector(NULL)
+		, lastGlobalGCFreeBytes(0)
 #if defined(OMR_GC_OBJECT_MAP)
 		, _objectMap(NULL)
 #endif /* defined(OMR_GC_OBJECT_MAP) */
@@ -1322,6 +1347,7 @@ public:
 		, rememberedSet()
 		, oldHeapSizeOnLastGlobalGC(UDATA_MAX)
 		, freeOldHeapSizeOnLastGlobalGC(UDATA_MAX)
+		, concurrentKickoffTenuringHeadroom((float)0.02)
 #endif /* OMR_GC_MODRON_SCAVENGER */		
 #if defined(OMR_GC_REALTIME)
 		, sATBBarrierRememberedSet(NULL)
@@ -1378,13 +1404,14 @@ public:
 		, debugLOAFreelist(false)
 		, debugLOAAllocate(false)
 		, loaFreeHistorySize(15)
+		, lastGlobalGCFreeBytesLOA(0)
 		, concurrentMetering(METER_BY_SOA)
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 		, disableExplicitGC(false)
 		, heapAlignment(HEAP_ALIGNMENT)
 		, absoluteMinimumOldSubSpaceSize(MINIMUM_OLD_SPACE_SIZE)
 		, absoluteMinimumNewSubSpaceSize(MINIMUM_NEW_SPACE_SIZE)
-		, darkMatterCompactThreshold((float)0.20)
+		, darkMatterCompactThreshold((float)0.40)
 		, parSweepChunkSize(0)
 		, heapExpansionMinimumSize(1024 * 1024)
 		, heapExpansionMaximumSize(0)
@@ -1397,7 +1424,8 @@ public:
 		, heapExpansionStabilizationCount(0)
 		, heapContractionStabilizationCount(3)
 		, heapSizeStartupHintConservativeFactor((float)0.7)
-		, heapSizeStartupHintWeightNewValue((float)0.0)		
+		, heapSizeStartupHintWeightNewValue((float)0.8)	
+		, useGCStartupHints(true)	
 		, workpacketCount(0) /* only set if -Xgcworkpackets specified */
 		, packetListSplit(0)
 		, cacheListSplit(0)
@@ -1470,6 +1498,7 @@ public:
 		, concurrentScavengerBackgroundThreads(1)
 		, concurrentScavengerBackgroundThreadsForced(false)
 		, concurrentScavengerSlack(0)
+		, concurrentScavengerAllocDeviationBoost(2.0)
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 		, scavengerFailedTenureThreshold(0)
 		, maxScavengeBeforeGlobal(0)
@@ -1693,6 +1722,9 @@ public:
 		, tarokConcurrentMarkingCostWeight(0.05)
 		, tarokAutomaticDefragmentEmptinessThreshold(false)
 		, tarokEnableCopyForwardHybrid(true)
+#if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
+		, _isConcurrentCopyForward(false)
+#endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */
 #endif /* defined (OMR_GC_VLHGC) */
 		, tarokEnableExpensiveAssertions(false)
 		, sweepPoolManagerAddressOrderedList(NULL)
@@ -1710,7 +1742,6 @@ public:
 		, darkMatterSampleRate(32)
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 		, idleMinimumFree(0)
-		, lastGCFreeBytes(0)
 		, gcOnIdle(false)
 		, compactOnIdle(false)
 		, gcOnIdleCompactThreshold((float)0.25)

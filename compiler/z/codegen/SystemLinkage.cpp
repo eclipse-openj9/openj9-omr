@@ -70,9 +70,9 @@
 #include "z/codegen/SystemLinkage.hpp"
 
 TR::SystemLinkage::SystemLinkage(TR::CodeGenerator* cg, TR_S390LinkageConventions elc, TR_LinkageConventions lc)
-   : 
+   :
       TR::Linkage(cg, elc,lc),
-      _GPRSaveMask(0), 
+      _GPRSaveMask(0),
       _FPRSaveMask(0)
    {
    }
@@ -353,5 +353,5 @@ void TR::SystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t & s
 
 bool TR::SystemLinkage::hasToBeOnStack(TR::ParameterSymbol * parm)
    {
-   return parm->getAllocatedIndex() >=  0 &&  parm->isParmHasToBeOnStack();
+   return parm->getAssignedGlobalRegisterIndex() >=  0 &&  parm->isParmHasToBeOnStack();
    }

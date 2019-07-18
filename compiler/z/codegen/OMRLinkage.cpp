@@ -463,8 +463,8 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 
    for (paramCursor = paramIterator.getFirst(); paramCursor != NULL; paramCursor = paramIterator.getNext())
       {
-      int32_t ai = paramCursor->getAllocatedIndex();
-      int32_t ai_l = paramCursor->getAllocatedLow();  //  low reg of a pair
+      int32_t ai = paramCursor->getAssignedGlobalRegisterIndex();
+      int32_t ai_l = paramCursor->getAssignedLowGlobalRegisterIndex();  //  low reg of a pair
 
       // Contruct list of globally allocated registers
       //
@@ -522,7 +522,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
       {
       parmNum++;
       int32_t lri = paramCursor->getLinkageRegisterIndex();                // linkage register
-      int32_t ai = paramCursor->getAllocatedIndex();                       // global reg number
+      int32_t ai = paramCursor->getAssignedGlobalRegisterIndex();          // global reg number
       TR::DataType dtype = paramCursor->getDataType();
       int32_t offset = paramCursor->getParameterOffset() - frameOffset;
       TR::SymbolReference * paramSymRef = NULL;
@@ -889,7 +889,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 #ifdef J9_PROJECT_SPECIFIC
                   else if (dtype == TR::DecimalLongDouble)
                      {
-                     int32_t ai_l = paramCursor->getAllocatedLow();  //  low reg of a pair
+                     int32_t ai_l = paramCursor->getAssignedLowGlobalRegisterIndex();  //  low reg of a pair
                      TR_ASSERT( (ai_l == (ai+2)),"global RA incorrect for long double params");
                      cursor = generateRRInstruction(self()->cg(),  TR::InstOpCode::LXR, firstNode, self()->cg()->allocateFPRegisterPair(self()->getRealRegister(REGNUM(ai_l)), self()->getRealRegister(REGNUM(ai))),
                         self()->cg()->allocateFPRegisterPair(self()->getRealRegister(REGNUM(regNum+2)),self()->getRealRegister(REGNUM(regNum))), (TR::Instruction *) cursor);
@@ -1005,7 +1005,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 
          int32_t ai_l = 0;
          if (!skipLong)
-            ai_l = paramCursor->getAllocatedLow();
+            ai_l = paramCursor->getAssignedLowGlobalRegisterIndex();
          if (ai_l>=0 && !InPreProlog && !skipLong)
             {
             // Some linkages allow for the low half of the argument to be passed
@@ -1082,7 +1082,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
       //
       else if (ai>=0 && !InPreProlog)
          {
-         int32_t ai_l = paramCursor->getAllocatedLow();
+         int32_t ai_l = paramCursor->getAssignedLowGlobalRegisterIndex();
          switch (dtype)
             {
             case TR::Int8:

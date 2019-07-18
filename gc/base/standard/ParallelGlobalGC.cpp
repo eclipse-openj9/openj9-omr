@@ -719,7 +719,10 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 
 	{
 		MM_MemoryPool *memoryPool= _extensions->heap->getDefaultMemorySpace()->getTenureMemorySubSpace()->getMemoryPool();
-		uintptr_t darkMatterBytes = memoryPool->getDarkMatterBytes();
+		uintptr_t darkMatterBytes = 0;
+		if (!_extensions->concurrentSweep) {
+			darkMatterBytes = memoryPool->getDarkMatterBytes();
+		}
 		uintptr_t freeMemorySize = memoryPool->getActualFreeMemorySize();
 		float darkMatterRatio = ((float)darkMatterBytes)/((float)freeMemorySize);
 
@@ -741,7 +744,10 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 		uintptr_t freeMemory = stats->getFreeMemory();
 		uintptr_t reusableFreeMemory = stats->getPageAlignedFreeMemory(pageSize);
 
-		uintptr_t darkMatter = memoryPool->getDarkMatterBytes();
+		uintptr_t darkMatter = 0;
+		if (!_extensions->concurrentSweep){
+			darkMatter = memoryPool->getDarkMatterBytes();
+		}
 		uintptr_t memoryFragmentationDiff = freeMemory - reusableFreeMemory;
 		uintptr_t totalFragmentation = memoryFragmentationDiff + darkMatter;
 		float totalFragmentationRatio = ((float)totalFragmentation)/((float)freeMemory);
@@ -1107,9 +1113,10 @@ MM_ParallelGlobalGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSp
 	/* Clear overflow flag regardless */
 	_extensions->globalGCStats.workPacketStats.setSTWWorkStackOverflowOccured(false);
 	_extensions->allocationStats.clear();
-#if defined(OMR_GC_IDLE_HEAP_MANAGER)
-	_extensions->lastGCFreeBytes = _extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
-#endif
+	_extensions->setLastGlobalGCFreeBytes(_extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD));
+#if defined(OMR_GC_LARGE_OBJECT_AREA)
+	_extensions->lastGlobalGCFreeBytesLOA = _extensions->heap->getApproximateActiveFreeLOAMemorySize(MEMORY_TYPE_OLD); 
+#endif /* defined (OMR_GC_LARGE_OBJECT_AREA) */
 
 
 #if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)

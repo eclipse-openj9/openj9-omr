@@ -61,10 +61,8 @@
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/allocator.h"
 #include "cs2/bitmanip.h"
 #include "cs2/hashtab.h"
-#include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
 #include "env/PersistentInfo.hpp"
@@ -199,7 +197,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _codeCache(0),
      _committedToCodeCache(false),
      _codeCacheSwitched(false),
-     _dummyTempStorageRefNode(NULL),
      _blockRegisterPressureCache(NULL),
      _simulatedNodeStates(NULL),
      _availableSpillTemps(getTypedAllocator<TR::SymbolReference*>(TR::comp()->allocator())),
@@ -1796,7 +1793,7 @@ OMR::CodeGenerator::convertMultiplyToShift(TR::Node * node)
    secondChild = TR::Node::create(secondChild, TR::iconst, 0);
    node->setAndIncChild(1, secondChild);
 
-   if (node->getOpCodeValue() == TR::imul || node->getOpCodeValue() == TR::iumul)
+   if (node->getOpCodeValue() == TR::imul)
       TR::Node::recreate(node, TR::ishl);
    else
       {

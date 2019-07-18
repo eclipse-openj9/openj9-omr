@@ -55,7 +55,6 @@
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
 #include "env/ObjectModel.hpp"
 #include "env/StackMemoryRegion.hpp"
@@ -3297,7 +3296,6 @@ TR::MemoryReference *
 generateS390MemoryReference(int32_t iValue, TR::DataType type, TR::CodeGenerator * cg, TR::Register * treg, TR::Node *node)
    {
    TR::S390ConstantDataSnippet * targetsnippet = cg->findOrCreate4ByteConstant(node, iValue);
-
    return generateS390MemoryReference(targetsnippet, cg, treg, node);
    }
 
@@ -3359,7 +3357,7 @@ generateS390MemoryReference(TR::Node * node, TR::CodeGenerator * cg, bool canUse
    // A symbol reference is needed to adjust memory reference displacement (TR::MemoryReference::calcDisplacement).
    // If the node has no sym ref, this memory reference's gets a NULL symbol reference, which can lead to crashes in displacement
    // calculations.
-   TR_ASSERT(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
+   TR_ASSERT_FATAL(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
    return new (cg->trHeapMemory()) TR::MemoryReference(node, cg, canUseRX);
    }
 

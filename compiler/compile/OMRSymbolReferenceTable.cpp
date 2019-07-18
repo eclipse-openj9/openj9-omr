@@ -40,10 +40,7 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
-#include "cs2/allocator.h"
-#include "cs2/bitvectr.h"
 #include "cs2/hashtab.h"
-#include "cs2/sparsrbit.h"
 #include "env/ClassEnv.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/PersistentInfo.hpp"
@@ -1782,14 +1779,6 @@ OMR::SymbolReferenceTable::findOrCreateTemporaryWithKnowObjectIndex(TR::Resolved
                                  0 /*size*/,
                                  knownObjectIndex);
    }
-
-TR::SymbolReference *
-OMR::SymbolReferenceTable::createCoDependentTemporary(TR::ResolvedMethodSymbol *owningMethodSymbol, TR::DataType type, bool isInternalPointer, size_t size, TR::Symbol *coDependent, int32_t offset)
-   {
-   TR::SymbolReference *tempSymRef = findOrCreateAutoSymbol(owningMethodSymbol, offset, type, true, isInternalPointer, false, false, size);
-   return tempSymRef;
-   }
-
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreatePendingPushTemporary(

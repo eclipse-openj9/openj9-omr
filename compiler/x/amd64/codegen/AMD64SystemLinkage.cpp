@@ -896,7 +896,7 @@ TR::AMD64ABILinkage::mapIncomingParms(
    //
    for (parmCursor = parameterIterator.getFirst(); parmCursor; parmCursor = parameterIterator.getNext())
       {
-      if ((parmCursor->getLinkageRegisterIndex() >= 0) && (parmCursor->getAllocatedIndex() < 0 || hasToBeOnStack(parmCursor)))
+      if ((parmCursor->getLinkageRegisterIndex() >= 0) && (parmCursor->getAssignedGlobalRegisterIndex() < 0 || hasToBeOnStack(parmCursor)))
          {
          uint32_t align = getAlignment(parmCursor->getDataType());
          uint32_t alignMinus1 = (align <= AMD64_STACK_SLOT_SIZE) ? (AMD64_STACK_SLOT_SIZE - 1) : (align - 1);
@@ -909,11 +909,11 @@ TR::AMD64ABILinkage::mapIncomingParms(
          if (comp()->getOption(TR_TraceCG))
             traceMsg(comp(), "mapIncomingParms setParameterOffset %d for param symbol (reg param without home location) %p, hasToBeOnStack() %d\n", parmCursor->getParameterOffset(), parmCursor, hasToBeOnStack(parmCursor));
          }
-      else if (parmCursor->getLinkageRegisterIndex() >=0 && parmCursor->getAllocatedIndex() >= 0)
+      else if (parmCursor->getLinkageRegisterIndex() >=0 && parmCursor->getAssignedGlobalRegisterIndex() >= 0)
          {
          //parmCursor->setDontHaveStackSlot(0); // this is a hack , so as we could print stack layout table in createPrologue
          if (comp()->getOption(TR_TraceCG))
-            traceMsg(comp(), "mapIncomingParms no need to set parm %p, for it has got register %d assigned\n", parmCursor, parmCursor->getAllocatedIndex());
+            traceMsg(comp(), "mapIncomingParms no need to set parm %p, for it has got register %d assigned\n", parmCursor, parmCursor->getAssignedGlobalRegisterIndex());
          }
       }
    }

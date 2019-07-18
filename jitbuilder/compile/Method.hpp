@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,7 +30,10 @@
 
 #include <string.h>
 
-#include "compile/OMRMethod.hpp"
+// Choose the OMR base version directly.  This is only temporary
+// while the Method class is being made extensible.
+//
+#include "compiler/compile/Method.hpp"
 #include "compile/ResolvedMethod.hpp"
 
 namespace TR { class IlGeneratorMethodDetails; }
@@ -47,12 +50,12 @@ namespace TR { class FrontEnd; }
 namespace JitBuilder
 {
 
-class Method : public TR_Method
+class Method : public TR::Method
    {
    public:
    TR_ALLOC(TR_Memory::Method);
 
-   Method() : TR_Method(TR_Method::JitBuilder) {}
+   Method() : TR::Method(TR::Method::JitBuilder) {}
 
    // FIXME: need to provide real code for this group
    virtual uint16_t              classNameLength() { return strlen(classNameChars()); }
@@ -129,7 +132,7 @@ class ResolvedMethod : public ResolvedMethodBase, public Method
       computeSignatureChars();
       }
 
-   virtual TR_Method           * convertToMethod()                          { return this; }
+   virtual TR::Method          * convertToMethod()                          { return this; }
 
    virtual const char          * signature(TR_Memory *, TR_AllocationKind);
    virtual const char          * externalName(TR_Memory *, TR_AllocationKind);

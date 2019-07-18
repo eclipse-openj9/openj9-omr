@@ -90,36 +90,6 @@ char *feGetEnv(const char *s)
    }
 
 
-// Brought this debug stuff from Compilation.cpp
-//
-// Limit on the size of the debug string
-//
-const int indebugLimit = 1023;
-
-
-// The delimiter characters
-//
-static const char * delimiters = " ";
-// The original value of the environment variable
-//
-static const char *TR_DEBUGValue = 0;
-
-// The original string with embedded nulls between individual values
-//
-static char permDebugString[indebugLimit + 1];
-static int  permDebugStrLen = 0;
-
-struct DebugValue
-   {
-   DebugValue * next;
-   DebugValue *prev;
-   char       *value;
-   };
-
-static DebugValue *head = 0;
-
-
-
 // Options stuff
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"

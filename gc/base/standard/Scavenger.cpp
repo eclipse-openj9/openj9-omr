@@ -685,6 +685,9 @@ MM_Scavenger::mergeGCStatsBase(MM_EnvironmentBase *env, MM_ScavengerStats *final
 	finalGCStats->_aliasToCopyCacheCount += scavStats->_aliasToCopyCacheCount;
 	finalGCStats->_arraySplitCount += scavStats->_arraySplitCount;
 	finalGCStats->_arraySplitAmount += scavStats->_arraySplitAmount;
+	finalGCStats->_totalDeepStructures += scavStats->_totalDeepStructures;
+	finalGCStats->_totalObjsDeepScanned += scavStats->_totalObjsDeepScanned;
+	finalGCStats->_depthDeepestStructure = scavStats->_depthDeepestStructure;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
 
 	finalGCStats->_flipDiscardBytes += scavStats->_flipDiscardBytes;
@@ -895,9 +898,9 @@ MM_Scavenger::calculateOptimumCopyScanCacheSize(MM_EnvironmentStandard *env)
 		cacheSize = OMR_MIN(cacheSizeBasedOnWaitingCount, cacheSize);
 	}
 
-	uintptr_t scanCacheCount = _scavengeCacheScanList.getApproximateEntryCount();
-	if (scanCacheCount < threadCount) {
-		uintptr_t cacheSizeBasedOnScanCacheCount = calculateCopyScanCacheSizeForQueueLength(maxCacheSize, threadCount, scanCacheCount);
+	env->approxScanCacheCount = _scavengeCacheScanList.getApproximateEntryCount();
+	if (env->approxScanCacheCount < threadCount) {
+		uintptr_t cacheSizeBasedOnScanCacheCount = calculateCopyScanCacheSizeForQueueLength(maxCacheSize, threadCount, env->approxScanCacheCount);
 		cacheSize = OMR_MIN(cacheSizeBasedOnScanCacheCount, cacheSize);
 	}
 
@@ -1707,6 +1710,51 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 	return shouldRemember;
 }
 
+void
+MM_Scavenger::deepScanOutline(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t selfReferencingField1, uintptr_t selfReferencingField2)
+{
+	void *tempObj = objectPtr;
+	uintptr_t priorityField = selfReferencingField1;
+	/* Throttle - Deep scan should be terminated when the free list is utilized more than 50% */
+	uintptr_t freeListUtilizationLimit = _scavengeCacheFreeList.getAllocatedCacheCount() / 2;
+
+#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
+	uintptr_t objDeepScanned = 0;
+	env->_scavengerStats._totalDeepStructures += 1;
+#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
+
+	while (true) {
+		GC_SlotObject tempSlot(env->getOmrVM(), (fomrobject_t*)(((uintptr_t) tempObj) + priorityField));
+		if (NULL == tempSlot.readReferenceFromSlot()) {
+			if ((priorityField == selfReferencingField2) || (selfReferencingField2 == 0)) {
+				break;
+			}
+			priorityField = selfReferencingField2;
+		} else {
+			copyAndForward(env, &tempSlot);
+			/* Did we encounter an already visited object or hit throttling threshold? */
+			if (NULL == env->_effectiveCopyScanCache) {
+				break;
+			}
+
+#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
+			objDeepScanned += 1;
+#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
+
+			if(env->approxScanCacheCount > freeListUtilizationLimit){
+				break;
+			}
+			tempObj = tempSlot.readReferenceFromSlot();
+		}
+	}
+
+#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
+	env->_scavengerStats._totalObjsDeepScanned += objDeepScanned;
+	if (objDeepScanned > env->_scavengerStats._depthDeepestStructure) {
+		env->_scavengerStats._depthDeepestStructure = objDeepScanned;
+	}
+#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
+}
 /**
  * Scans the slots of a non-indexable object, remembering objects as required. Scanning is interrupted
  * as soon as there is a copy cache that is preferred to the current scan cache. This is returned

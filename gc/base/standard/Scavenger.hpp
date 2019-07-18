@@ -270,19 +270,19 @@ public:
 	 * Split into two functions deepScan and deepScanOutline. Frequently called checks (see lazy start check) must be inlined
 	 * @param env The environment.
 	 * @param objectPtr The pointer to the object.
-	 * @param selfReferencingField1 Offset to the first priority field of the object
-	 * @param selfReferencingField2 Offset to the second priority field, if it can't follow through in one direction, 
+	 * @param priorityFieldOffset1 Offset to the first priority field of the object
+	 * @param priorityFieldOffset2 Offset to the second priority field, if it can't follow through in one direction, 
 	 * it will attempt to use the second self referencing field 
 	 */
 	MMINLINE void
-	deepScan(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t selfReferencingField1, uintptr_t selfReferencingField2)
+	deepScan(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t priorityFieldOffset1, uintptr_t priorityFieldOffset2)
 	{
 		/**
 		* Inhibit the special treatment routine with relatively high probability to skip over most  
 		* false positives (shorter lists), while only marginally delay detection of very deep structures.
 		*/	
 		if (shouldStartDeepScan(env, objectPtr)) {
-			deepScanOutline(env, objectPtr, selfReferencingField1, selfReferencingField2);
+			deepScanOutline(env, objectPtr, priorityFieldOffset1, priorityFieldOffset2);
 		}
 	}
 	
@@ -300,7 +300,7 @@ public:
 	}
 	
 	
-	void deepScanOutline(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t selfReferencingField1, uintptr_t selfReferencingField2);
+	void deepScanOutline(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t priorityFieldOffset1, uintptr_t priorityFieldOffset2);
 
 	MMINLINE bool scavengeRememberedObject(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 	void scavengeRememberedSetList(MM_EnvironmentStandard *env);

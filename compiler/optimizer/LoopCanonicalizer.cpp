@@ -602,9 +602,11 @@ void TR_LoopTransformer::detectWhileLoops(ListAppender<TR_Structure> &whileLoops
                   {
                   TR::TreeTop *firstTree = hdrBlock->getFirstRealTreeTop();
                   static const bool skipTt = feGetEnv("TR_canonicalizerStopAtTreetop") == NULL;
+                  static const bool skipCRAnchor = feGetEnv("TR_canonicalizerStopAtCompressedRefsAnchor") == NULL;
                   while ((firstTree &&
                           (firstTree->getNode()->getOpCodeValue() == TR::asynccheck ||
                            (skipTt && firstTree->getNode()->getOpCodeValue() == TR::treetop) ||
+                           (skipCRAnchor && firstTree->getNode()->getOpCodeValue() == TR::compressedRefs) ||
                            firstTree->getNode()->getOpCode().isCheck())))
                     firstTree = firstTree->getNextTreeTop();
 

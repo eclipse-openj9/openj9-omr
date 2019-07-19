@@ -468,3 +468,11 @@ TR::Instruction *generateCSetInstruction(TR::CodeGenerator *cg, TR::Node *node,
       return new (cg->trHeapMemory()) TR::ARM64Trg1CondInstruction(op, node, treg, cc_invert(cc), preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64Trg1CondInstruction(op, node, treg, cc_invert(cc), cg);
    }
+
+TR::Instruction *generateSynchronizationInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,
+   TR::Node *node, uint32_t imm, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, imm, cg);
+   }

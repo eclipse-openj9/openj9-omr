@@ -88,6 +88,7 @@ static const char *opCodeToNameMap[] =
    "tbnz",
    "b_cond",
    "brkarm64",
+   "dsb",
    "br",
    "blr",
    "ret",

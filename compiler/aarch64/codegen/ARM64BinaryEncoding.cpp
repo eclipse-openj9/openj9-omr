@@ -440,3 +440,15 @@ uint8_t *TR::ARM64Src2Instruction::generateBinaryEncoding()
    setBinaryEncoding(instructionStart);
    return cursor;
    }
+
+uint8_t *TR::ARM64SynchronizationInstruction::generateBinaryEncoding()
+   {
+   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t *cursor = instructionStart;
+   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+   insertImmediateField(toARM64Cursor(cursor));
+   cursor += ARM64_INSTRUCTION_LENGTH;
+   setBinaryLength(ARM64_INSTRUCTION_LENGTH);
+   setBinaryEncoding(instructionStart);
+   return cursor;
+   }

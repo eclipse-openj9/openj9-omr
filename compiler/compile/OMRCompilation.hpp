@@ -350,6 +350,18 @@ public:
 
    bool compilationShouldBeInterrupted(TR_CallingContext) { return false; }
 
+   /**
+    * @brief denotes the start of a region wherein decisions do not need to be
+    *        remembered (for example, in relocatable compilations)
+    */
+   void enterHeuristicRegion() {}
+
+   /**
+    * @brief denotes the end of a region wherein decisions do not need to be
+    *        remembered (for example, in relocatable compilations)
+    */
+   void exitHeuristicRegion() {}
+
    /* Can be used to ensure that a implementer chosen for inlining is valid;
     * for example, to ensure that the implementer can be used for inlining
     * in a relocatable compilation

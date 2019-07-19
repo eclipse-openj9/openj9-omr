@@ -59,4 +59,5 @@ compiler_library(z
 	${CMAKE_CURRENT_LIST_DIR}/codegen/snippet/XPLINKCallDescriptorSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/env/OMRCPU.cpp
 	${CMAKE_CURRENT_LIST_DIR}/env/OMRDebugEnv.cpp
+	${CMAKE_CURRENT_LIST_DIR}/runtime/VirtualGuardRuntime.cpp
 )

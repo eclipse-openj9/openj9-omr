@@ -1986,25 +1986,6 @@ generateS390PseudoInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op
    {
    TR::Instruction* cursor;
 
-   switch (op)
-      {
-      case TR::InstOpCode::PROC:
-         {
-         if (cg->comp()->getOption(TR_EntryBreakPoints))
-            {
-            if (preced)
-               {
-               preced = new (INSN_HEAP) TR::S390EInstruction(TR::InstOpCode::BREAK, n, preced, cg);
-               }
-            else
-               {
-               preced = new (INSN_HEAP) TR::S390EInstruction(TR::InstOpCode::BREAK, n, cg);
-               }
-            }
-         }
-         break;
-      }
-
    if (preced)
       {
       cursor = new (INSN_HEAP) TR::S390PseudoInstruction(op, n, fenceNode, preced, cg);

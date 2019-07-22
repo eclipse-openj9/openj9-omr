@@ -184,7 +184,15 @@ class CFG
     *     addEdge(TR::CFGNode *f, TR::CFGNode *t);
     */
    TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind heapAlloc);
+
+   /**
+    * Create and store edge from CFGNode f to CFGNode t
+    * @param f   CFGNode from
+    * @param t   CFGNode to
+    * @return    Pointer to newly created edge
+    */
    TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t);
+
    /**
     * @deprecated
     * Please specify where edges are to be allocated during CFG initialization.
@@ -194,6 +202,13 @@ class CFG
     *     addExceptionEdgeEdge(TR::CFGNode *f, TR::CFGNode *t);
     */
    void addExceptionEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind heapAlloc);
+
+   /**
+    * Create and store exception edge from CFGNode f to CFGNode t 
+    * @param f   CFGNode from
+    * @param t   CFGNode to
+    * @return    Pointer to newly created exception edge
+    */
    void addExceptionEdge(TR::CFGNode *f, TR::CFGNode *t);
    void addSuccessorEdges(TR::Block * block);
 

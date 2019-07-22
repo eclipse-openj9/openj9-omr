@@ -29,6 +29,7 @@
 #include "codegen/TreeEvaluator.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
 #include "infra/Bit.hpp"
 
 /**
@@ -247,7 +248,7 @@ OMR::ARM64::TreeEvaluator::imulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
       {
-         mulConstant32(node, trgReg, src1Reg, value, cg);
+      mulConstant32(node, trgReg, src1Reg, value, cg);
       }
    else
       {
@@ -612,3 +613,46 @@ OMR::ARM64::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	// boolean xor of 2 integers
 	return genericBinaryEvaluator(node, TR::InstOpCode::eorx, TR::InstOpCode::eorimmx, true, cg);
 	}
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::aladdEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Register *trgReg = laddEvaluator(node, cg);
+
+   if (node->isInternalPointer())
+      {
+      TR::AutomaticSymbol *pinningArrayPointerSymbol = NULL;
+
+      if (node->getPinningArrayPointer())
+         {
+         pinningArrayPointerSymbol = node->getPinningArrayPointer();
+         }
+      else
+         {
+         TR::Node *firstChild = node->getFirstChild();
+         if ((firstChild->getOpCodeValue() == TR::aload) &&
+             firstChild->getSymbolReference()->getSymbol()->isAuto() &&
+             firstChild->getSymbolReference()->getSymbol()->isPinningArrayPointer())
+            {
+            TR::Symbol *firstChildSymbol = firstChild->getSymbolReference()->getSymbol();
+
+            pinningArrayPointerSymbol = firstChildSymbol->isInternalPointer() ?
+               firstChildSymbol->castToInternalPointerAutoSymbol()->getPinningArrayPointer() :
+               firstChildSymbol->castToAutoSymbol();
+            }
+         else if (firstChild->getRegister() &&
+                  firstChild->getRegister()->containsInternalPointer())
+            {
+            pinningArrayPointerSymbol = firstChild->getRegister()->getPinningArrayPointer();
+            }
+         }
+
+      if (pinningArrayPointerSymbol)
+         {
+         trgReg->setContainsInternalPointer();
+         trgReg->setPinningArrayPointer(pinningArrayPointerSymbol);
+         }
+      }
+
+   return trgReg;
+   }

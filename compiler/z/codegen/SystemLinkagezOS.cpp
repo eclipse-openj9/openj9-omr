@@ -536,7 +536,7 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::N
       uint32_t nopDescriptor = 0x47000000 | (static_cast<uint32_t>(callType) << 16);
       cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, nopDescriptor, cursor);
 
-      cg()->addRelocation(new (cg()->trHeapMemory()) InstructionLabelRelative16BitRelocation(cursor, 2, callDescriptor->getSnippetLabel(), 8));
+      cg()->addRelocation(new (cg()->trHeapMemory()) XPLINKCallDescriptorRelocation(cursor, callDescriptor->getSnippetLabel()));
       }
    else
       {
@@ -995,4 +995,32 @@ TR::S390zOSSystemLinkage::spillFPRsInPrologue(TR::Node* node, TR::Instruction* c
       }
 
    return cursor;
+   }
+
+TR::S390zOSSystemLinkage::XPLINKCallDescriptorRelocation::XPLINKCallDescriptorRelocation(TR::Instruction* nop, TR::LabelSymbol* callDescriptor)
+   :
+      TR::LabelRelocation(NULL, callDescriptor),
+      _nop(nop)
+   {
+   }
+
+uint8_t*
+TR::S390zOSSystemLinkage::XPLINKCallDescriptorRelocation::getUpdateLocation()
+   {
+   uint8_t* updateLocation = TR::LabelRelocation::getUpdateLocation();
+
+   if (updateLocation == NULL && _nop->getBinaryEncoding() != NULL)
+      {
+      updateLocation = setUpdateLocation(_nop->getBinaryEncoding() + 2);
+      }
+
+   return updateLocation;
+   }
+
+void
+TR::S390zOSSystemLinkage::XPLINKCallDescriptorRelocation::apply(TR::CodeGenerator* cg)
+   {
+   uint8_t* p = getUpdateLocation();
+
+   *reinterpret_cast<int16_t*>(p) = static_cast<int16_t>(getLabel()->getCodeLocation() - (_nop->getBinaryEncoding() - 7)) / 8;
    }

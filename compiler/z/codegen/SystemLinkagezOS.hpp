@@ -27,6 +27,7 @@
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
+#include "codegen/Relocation.hpp"
 #include "codegen/SystemLinkage.hpp"
 #include "codegen/snippet/PPA1Snippet.hpp"
 #include "codegen/snippet/PPA2Snippet.hpp"
@@ -72,6 +73,38 @@ namespace TR {
 
 class S390zOSSystemLinkage : public TR::SystemLinkage
    {
+   private:
+
+   /** \brief
+    *
+    *  Represents the XPLINK 31-bit call descriptor relocation which is a (positive) signed offset in doublewords from 
+    *  the doubleword at or preceding the return point (NOP) to the XPLINK call descriptor for this signature.
+    *
+    *  [1] https://www-01.ibm.com/servers/resourcelink/svc00100.nsf/pages/zOSV2R3SA380688/$file/ceev100_v2r3.pdf (page 137)
+    */
+   class XPLINKCallDescriptorRelocation : public TR::LabelRelocation
+      {
+      public:
+
+      /** \brief
+       *     Initializes the XPLINKCallDescriptorRelocation relocation using a \c NULL base target pointer
+       *
+       *  \param nop
+       *     The 4-byte NOP descriptor instruction whose binary encoding location (+2) will be used for the relocation
+       *
+       *  \param callDescriptor
+       *     The label marking the call descriptor for this signature
+       */
+      XPLINKCallDescriptorRelocation(TR::Instruction* nop, TR::LabelSymbol* callDescriptor);
+      
+      virtual uint8_t* getUpdateLocation();
+      virtual void apply(TR::CodeGenerator* cg);
+
+      private:
+
+      TR::Instruction* _nop;
+      };
+
    public:
 
    /** \brief

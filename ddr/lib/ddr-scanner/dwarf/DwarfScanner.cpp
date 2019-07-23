@@ -696,10 +696,11 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, NamespaceUDT *outerUDT, 
 	}
 
 	if (DDR_RC_OK == rc) {
-		if (!isNewType) {
-			/* Entry is for a type that has already been found. */
-		} else if (dieBlackListed) {
+		if (dieBlackListed) {
 			newType->_blacklisted = true;
+		}
+		if (newType->_blacklisted) {
+			/* ignore blacklisted types */
 		} else if ((DW_TAG_class_type == tag)
 				|| (DW_TAG_structure_type == tag)
 				|| (DW_TAG_union_type == tag)
@@ -707,7 +708,11 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, NamespaceUDT *outerUDT, 
 				|| (DW_TAG_enumeration_type == tag)
 				|| (DW_TAG_typedef == tag)
 		) {
-			/* If the type was added as a stub with an outer type, such as is the case
+			/*
+			 * Even if this is not a new type we may need to consider child tags
+			 * (we may have only seen forward declarations so far).
+			 *
+			 * If the type was added as a stub with an outer type, such as is the case
 			 * for types defined within namespaces, do not add it to the main list of types.
 			 */
 			isSubUDT = isSubUDT || (string::npos != newType->getFullName().find("::"));
@@ -1059,8 +1064,12 @@ DDR_RC
 DwarfVisitor::visitClass(ClassUDT *newType) const
 {
 	DDR_RC rc = DDR_RC_OK;
-	if (!newType->_isComplete) {
-		newType->_isComplete = true;
+	/* scan this type if we haven't seen any structure */
+	if ((NULL == newType->_superClass)
+		&& newType->_fieldMembers.empty()
+		&& newType->_enumMembers.empty()
+		&& newType->_subUDTs.empty()
+	) {
 		rc = _scanner->scanClassChildren(newType, _die);
 	}
 	return rc;
@@ -1070,8 +1079,11 @@ DDR_RC
 DwarfVisitor::visitUnion(UnionUDT *newType) const
 {
 	DDR_RC rc = DDR_RC_OK;
-	if (!newType->_isComplete) {
-		newType->_isComplete = true;
+	/* scan this type if we haven't seen any structure */
+	if (newType->_fieldMembers.empty()
+		&& newType->_enumMembers.empty()
+		&& newType->_subUDTs.empty()
+	) {
 		rc = _scanner->scanClassChildren(newType, _die);
 	}
 	return rc;

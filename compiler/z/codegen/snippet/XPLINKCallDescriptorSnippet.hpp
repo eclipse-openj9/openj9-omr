@@ -56,7 +56,7 @@ namespace TR {
  *       +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
  *  \endverbatim
  */
-class XPLINKCallDescriptorSnippet : public TR::Snippet
+class XPLINKCallDescriptorSnippet : public TR::S390ConstantDataSnippet
    {
    public:
 
@@ -72,8 +72,6 @@ class XPLINKCallDescriptorSnippet : public TR::Snippet
    XPLINKCallDescriptorSnippet(TR::CodeGenerator* cg, TR::S390zOSSystemLinkage* linkage, uint32_t callDescriptorValue);
 
    virtual uint8_t* emitSnippetBody();
-
-   virtual uint32_t getLength(int32_t estimatedSnippetStart);
 
    private:
    

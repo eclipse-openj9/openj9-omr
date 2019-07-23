@@ -2335,9 +2335,9 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       cursor = cursor->getNext();
       }
 
-   if (comp()->getOption(TR_EntryBreakPoints))
+   if (self()->comp()->getOption(TR_EntryBreakPoints))
       {
-      TR::Node *node = comp()->getStartTree()->getNode();
+      TR::Node *node = self()->comp()->getStartTree()->getNode();
       cursor = generateS390EInstruction(self(), TR::InstOpCode::BREAK, node, cursor);
       }
 

@@ -22,6 +22,10 @@
 
 include(OmrFindFiles)
 
+if (OMR_HOST_OS STREQUAL "zos")
+	include(OmrMetalC)
+endif()
+
 set(OBJECTS "")
 set(VPATH "")
 
@@ -51,6 +55,14 @@ endif()
 
 
 if(OMR_HOST_OS STREQUAL "zos")
+	omr_compile_metalc(
+	    zos390/omrlpdat.mc
+	    zos390/omrlpdat.o
+	)
+	target_sources(omrport_obj
+		PRIVATE
+			${CMAKE_CURRENT_BINARY_DIR}/zos390/omrlpdat.o
+	)
 	list(APPEND OBJECTS
 		omrgenerate_ieat_dump.s
 		omrget_large_pageable_pages_supported.s
@@ -61,7 +73,6 @@ if(OMR_HOST_OS STREQUAL "zos")
 		omrjobname.s
 		omruserid.s
 		omrzfs.c
-		omrlpdat.mc
 	)
 	#TODO more objects here. See port_objects.mk:55
 	if(OMR_ENV_DATA64)

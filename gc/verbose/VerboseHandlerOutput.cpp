@@ -234,9 +234,7 @@ MM_VerboseHandlerOutput::handleInitializedRegion(J9HookInterface** hook, uintptr
 	writer->formatAndOutput(env, 1, "<region>");
 	writer->formatAndOutput(env, 2, "<attribute name=\"regionSize\" value=\"%zu\" />", event->regionSize);
 	writer->formatAndOutput(env, 2, "<attribute name=\"regionCount\" value=\"%zu\" />", event->regionCount);
-#if defined(OMR_GC_ARRAYLETS)
 	writer->formatAndOutput(env, 2, "<attribute name=\"arrayletLeafSize\" value=\"%zu\" />", event->arrayletLeafSize);
-#endif	
 	writer->formatAndOutput(env, 1, "</region>");
 }
 

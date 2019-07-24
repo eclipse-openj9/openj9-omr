@@ -23,6 +23,7 @@
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/SystemLinkagezOS.hpp"
 #include "codegen/snippet/XPLINKCallDescriptorSnippet.hpp"
+#include "OMR/Bytes.hpp"
 
 uint32_t TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(TR::S390zOSSystemLinkage* linkage, TR::Node* callNode)
    {
@@ -199,10 +200,12 @@ uint32_t TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(TR::S390zO
 
 TR::XPLINKCallDescriptorSnippet::XPLINKCallDescriptorSnippet(TR::CodeGenerator* cg, TR::S390zOSSystemLinkage* linkage, uint32_t callDescriptorValue)
    :
-   TR::Snippet(cg, NULL, generateLabelSymbol(cg)),
+   TR::S390ConstantDataSnippet(cg, NULL, NULL, SIZE),
    _linkage(linkage),
    _callDescriptorValue(callDescriptorValue)
    {
+   *(reinterpret_cast<uint32_t*>(_value) + 0) = 0;
+   *(reinterpret_cast<uint32_t*>(_value) + 1) = callDescriptorValue;
    }
 
 uint8_t*
@@ -213,10 +216,13 @@ TR::XPLINKCallDescriptorSnippet::emitSnippetBody()
    // TODO: We should not have to do this here. This should be done by the caller.
    getSnippetLabel()->setCodeLocation(cursor);
 
+   TR_ASSERT_FATAL((reinterpret_cast<uintptr_t>(cursor) % 8) == 0, "XPLINKCallDescriptorSnippet is not aligned on a doubleword bounary");
+
    // Signed offset, in bytes, to Entry Point Marker (if it exists)
    if (_linkage->getEntryPointMarkerLabel() != NULL)
       {
       *reinterpret_cast<int32_t*>(cursor) = _linkage->getEntryPointMarkerLabel()->getInstruction()->getBinaryEncoding() - cursor;
+      *reinterpret_cast<int32_t*>(_value) = *reinterpret_cast<int32_t*>(cursor);
       }
    else
       {
@@ -230,10 +236,4 @@ TR::XPLINKCallDescriptorSnippet::emitSnippetBody()
    cursor += sizeof(int32_t);
 
    return cursor;
-   }
-
-uint32_t
-TR::XPLINKCallDescriptorSnippet::getLength(int32_t estimatedSnippetStart)
-   {
-   return SIZE;
    }

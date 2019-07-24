@@ -586,6 +586,17 @@ public:
                      TR::IlBuilder **caseBuilder,
                      int32_t caseFallsThrough);
 
+   // ternary
+   /**
+    * @brief Service to select a value based on a condition without branching
+    *
+    * @param condition the condition value
+    * @param trueValue value to select if true
+    * @param falseValue value to select if false
+    * @return TR::IlValue* IlValue corresponding to the selected value
+    */
+   TR::IlValue * Select(TR::IlValue * condition, TR::IlValue * trueValue, TR::IlValue * falseValue);
+
    /**
     * @brief associates this object with a particular client object
     */

@@ -1028,5 +1028,5 @@ TR::S390zOSSystemLinkage::XPLINKCallDescriptorRelocation::apply(TR::CodeGenerato
       }
 
    uint8_t* p = getUpdateLocation();
-   *reinterpret_cast<int16_t*>(p) = static_cast<int16_t>(getLabel()->getCodeLocation() - (_nop->getBinaryEncoding() - 7)) / 8;
+   *reinterpret_cast<int16_t*>(p) = static_cast<int16_t>(offsetToCallDescriptor);
    }

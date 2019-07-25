@@ -1828,6 +1828,9 @@ MM_ConcurrentGC::potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescript
 		if (!scavengerStats->isAvailable(env)) {
 			return (uintptr_t)-1;
 		}
+		
+		nurseryPromotion = scavengerStats->_avgTenureBytes == 0 ? 1: (uintptr_t)(scavengerStats->_avgTenureBytes + (env->getExtensions()->tenureBytesDeviationBoost * scavengerStats->_avgTenureBytesDeviation));
+
 #if defined(OMR_GC_LARGE_OBJECT_AREA)
 		/* Do we need to tax this allocation ? */
 		if (LOA == _meteringType) {
@@ -1835,13 +1838,11 @@ MM_ConcurrentGC::potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescript
 			currentOldFree = oldSubspace->getApproximateActiveFreeLOAMemorySize();
 			headRoom = (uintptr_t)(_extensions->concurrentKickoffTenuringHeadroom * _extensions->lastGlobalGCFreeBytesLOA);
 		} else {
-			assume0(SOA == _meteringType);
-			nurseryPromotion = scavengerStats->_avgTenureSOABytes == 0 ? 1 : scavengerStats->_avgTenureSOABytes;
+			assume0(SOA == _meteringType);			
 			currentOldFree = oldSubspace->getApproximateActiveFreeMemorySize() - oldSubspace->getApproximateActiveFreeLOAMemorySize();
 			headRoom = (uintptr_t)(_extensions->concurrentKickoffTenuringHeadroom * (_extensions->getLastGlobalGCFreeBytes() - _extensions->lastGlobalGCFreeBytesLOA));
 		}
 #else
-		nurseryPromotion = scavengerStats->_avgTenureBytes == 0 ? 1: scavengerStats->_avgTenureBytes;
 		currentOldFree = oldSubspace->getApproximateActiveFreeMemorySize();
 		headRoom = (uintptr_t)(_extensions->concurrentKickoffTenuringHeadroom * _extensions->getLastGlobalGCFreeBytes()); 
 #endif

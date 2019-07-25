@@ -100,7 +100,7 @@
 #include "ut_omrmm.h"
 
 #define INITIAL_FREE_HISTORY_WEIGHT ((float)0.8)
-#define TENURE_BYTES_HISTORY_WEIGHT ((float)0.8)
+#define TENURE_BYTES_HISTORY_WEIGHT ((float)0.9)
 
 #define FLIP_TENURE_LARGE_SCAN 4
 #define FLIP_TENURE_LARGE_SCAN_DEFERRED 5
@@ -827,28 +827,44 @@ MM_Scavenger::calcGCStats(MM_EnvironmentStandard *env)
 		MM_ScavengerStats *scavengerGCStats;
 		scavengerGCStats = &_extensions->scavengerStats;
 		uintptr_t initialFree = env->_cycleState->_activeSubSpace->getActualActiveFreeMemorySize();
+		uintptr_t tenureAggregateBytes = 0;
+		float tenureBytesDeviation = 0;
 
 		/* First collection  ? */
 		if (scavengerGCStats->_gcCount > 1 ) {
 			scavengerGCStats->_avgInitialFree = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgInitialFree, (float)initialFree, INITIAL_FREE_HISTORY_WEIGHT);
-			scavengerGCStats->_avgTenureBytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureBytes, (float)scavengerGCStats->_tenureAggregateBytes, TENURE_BYTES_HISTORY_WEIGHT);
+			
 #if defined(OMR_GC_LARGE_OBJECT_AREA)
-			scavengerGCStats->_avgTenureSOABytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureSOABytes,
-																		(float)(scavengerGCStats->_tenureAggregateBytes - scavengerGCStats->_tenureLOABytes),
-																		TENURE_BYTES_HISTORY_WEIGHT);
+			tenureAggregateBytes = scavengerGCStats->_tenureAggregateBytes - scavengerGCStats->_tenureLOABytes;															
 			scavengerGCStats->_avgTenureLOABytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureLOABytes,
 																		(float)scavengerGCStats->_tenureLOABytes,
 																		TENURE_BYTES_HISTORY_WEIGHT);
-
+#else /* OMR_GC_LARGE_OBJECT_AREA */
+			tenureAggregateBytes = scavengerGCStats->_tenureAggregateBytes;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
+			scavengerGCStats->_avgTenureBytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureBytes, 
+																					(float)tenureAggregateBytes, 
+																					TENURE_BYTES_HISTORY_WEIGHT);
+			tenureBytesDeviation = (float)tenureAggregateBytes - scavengerGCStats->_avgTenureBytes;
+			scavengerGCStats->_avgTenureBytesDeviation = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureBytesDeviation, 
+																				MM_Math::abs(tenureBytesDeviation), 
+																				TENURE_BYTES_HISTORY_WEIGHT);																											
 		} else {
 			scavengerGCStats->_avgInitialFree = initialFree;
-			scavengerGCStats->_avgTenureBytes = scavengerGCStats->_tenureAggregateBytes;
-#if defined(OMR_GC_LARGE_OBJECT_AREA)
-			scavengerGCStats->_avgTenureSOABytes = scavengerGCStats->_tenureAggregateBytes - scavengerGCStats->_tenureLOABytes;
-			scavengerGCStats->_avgTenureLOABytes = scavengerGCStats->_tenureLOABytes;
-#endif /* OMR_GC_LARGE_OBJECT_AREA */
+
+			/* We can assume that in the first GC, about half of the objects are long lived objects, so we use this heuristic to give a rough estimate for the starting point */
+			scavengerGCStats->_avgTenureBytes = (uintptr_t)(scavengerGCStats->_flipBytes / 2);
 		}
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+			if (_extensions->debugConcurrentMark) {
+				OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+            	omrtty_printf("Tenured bytes: %zu\navgTenureBytes: %zu\ntenureBytesDeviation: %f\navgTenureBytesDeviation: %zu\n",
+				tenureAggregateBytes,
+				scavengerGCStats->_avgTenureBytes,
+				tenureBytesDeviation, 
+				scavengerGCStats->_avgTenureBytesDeviation);
+			}
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */	
 	}
 }
 

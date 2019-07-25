@@ -901,7 +901,7 @@ static std::pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber> findAvailableR
       end = lastVRF;
       }
    else
-      TR_ASSERT_FATAL(false, "Unknown data type encountered when trying to pick a register for postGRA block splitting!");
+      TR_ASSERT_FATAL(false, "Unknown data type %s encountered when trying to pick a register for postGRA block splitting!", dt.toString());
 
    for (TR_GlobalRegisterNumber itr = start; itr < end; ++itr)
       {
@@ -943,7 +943,7 @@ static std::pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber> findAvailableR
 static bool checkIfRegisterIsAvailable(TR::Compilation *comp, TR::Node *node, TR_BitVector &unavailableRegisters)
    {
    // Following assert is to make sure that this function is called with node which have Global Registers associated with it.
-   TR_ASSERT_FATAL(node->getOpCode().isStoreReg(), "checkIfRegisterIsAvailable is intended to use with RegStore nodes only");
+   TR_ASSERT_FATAL(node->getOpCode().isStoreReg(), "checkIfRegisterIsAvailable is used with %s while it is intended to use with RegStore nodes only", node->getName(comp->getDebug()));
    bool registersAreAvailable = !unavailableRegisters.isSet(node->getGlobalRegisterNumber());
    if (node->requiresRegisterPair(comp))
       registersAreAvailable &= !unavailableRegisters.isSet(node->getHighGlobalRegisterNumber());
@@ -1059,14 +1059,9 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                   {
                   // See if we have stored constants in register before split point.
                   auto storeRegNodeInfoEntry = storeNodeInfo->find(value);
-                  if (storeRegNodeInfoEntry != storeNodeInfo->end())
-                     {
-                     ref = storeRegNodeInfoEntry->second->getRegLoadStoreSymbolReference();
-                     }
-                  else 
-                     {
-                     TR_ASSERT_FATAL(false, "We have a node under PassThrough and we did not find a regStore that is using the info.");
-                     }
+                  TR_ASSERT_FATAL(storeRegNodeInfoEntry != storeNodeInfo->end(),
+                     "We have a node n%dn under PassThrough node n%dn but we did not find a regStore that is using the info.", value->getGlobalIndex(), dep->getGlobalIndex());
+                  ref = storeRegNodeInfoEntry->second->getRegLoadStoreSymbolReference();
                   }
                else
                   {
@@ -1080,7 +1075,7 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
          }
       else if (!dep->getOpCode().isLoadReg())
          {
-         TR_ASSERT_FATAL(false, "Expected to find only PassThrough and regLoad operations under a GlRegDepNode");
+         TR_ASSERT_FATAL(false, "Expected to find only PassThrough and regLoad operations under a GlRegDepNode, but got %s\n", dep->getName(comp->getDebug()));
          }
       }
    }
@@ -1216,11 +1211,10 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
  * @param cfg TR::CFG object
  * @param copyExceptionSuccessors Boolean stating if we need to copy the exceptionSuccessors of the original blocks to new block
  * @param methodSymbol TR::ResolvedMethodSymbol object
- * @param trace Boolean stating if tracing is requested
  * @return TR::Block* Returns new Block
  */
 TR::Block *
-OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyExceptionSuccessors, TR::ResolvedMethodSymbol *methodSymbol, bool trace)
+OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyExceptionSuccessors, TR::ResolvedMethodSymbol *methodSymbol)
    {
    TR::Compilation *comp = cfg->comp();
    TR::Block *newBlock = self()->split(startOfNewBlock, cfg, false, copyExceptionSuccessors, methodSymbol);
@@ -1264,15 +1258,10 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
             }
          }
 
-      if (trace)
-         traceMsg(comp, "\t\t\tPost Split GRA - Splitting block_%d\n",self()->getNumber());
-
       // Step-2 : Compute the unavailable registers
       TR_BitVector unavailableRegisters(0, comp->trMemory(), stackAlloc);
       for (auto iter = nodeInfo->begin(), end = nodeInfo->end(); iter != end; ++iter)
          {
-         if (trace)
-            traceMsg(comp, "\t\t\t\t n%dn Refcount from the splitpoint = %d\n",iter->first->getGlobalIndex(), iter->second.first);
          TR::Node *node = iter->first;
          /**
           * If a node which requires uncommoning is RegLoad or Load constant we do not need to store it.
@@ -1386,7 +1375,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
        *             1) a store to a temp at the end of the original block
        */
 
-     int depCount = 0;
+      int depCount = 0;
       List<TR::Node> exitDeps(stackMemoryRegion);
       List<TR::Node> entryDeps(stackMemoryRegion);
       for (auto iter = nodeInfo->begin(), end = nodeInfo->end(); iter != end; ++iter)
@@ -1459,7 +1448,6 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          for (TR::Node *dep = entryIter.getCurrent(); dep; dep=entryIter.getNext())
             {
             entryGlRegDeps->setAndIncChild(childIdx++, dep);
-            traceMsg(comp, "n%dn RegLoad, Child = %d\n", dep->getGlobalIndex(), dep->getNumChildren());
             }
 
          ListIterator<TR::Node> exitIter(&exitDeps);
@@ -1474,14 +1462,6 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          self()->getExit()->getNode()->addChildren(&exitGlRegDeps, 1);
          }
       replaceNodesInTrees(comp, newBlock->getEntry()->getNextTreeTop(), nodeInfo);
-      if (trace)
-         {
-         traceMsg(comp, "After replacing nodes\n");
-         for (auto iter = nodeInfo->begin(), end = nodeInfo->end(); iter != end; ++iter)
-            {
-            traceMsg(comp, "\t\t\t\t n%dn Refcount  = %d\n",iter->first->getGlobalIndex(), iter->first->getReferenceCount()); 
-            }
-         }
       }
    return newBlock;
    }

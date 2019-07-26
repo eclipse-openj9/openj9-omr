@@ -57,7 +57,7 @@ genericBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstO
       }
    else if(1 == secondChild->getReferenceCount() && secondChild->getRegister() != NULL)
       {
-      trgReg = src2Reg;
+      trgReg = secondChild->getRegister();
       }
    else
       {

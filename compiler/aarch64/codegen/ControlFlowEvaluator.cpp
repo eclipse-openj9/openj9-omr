@@ -467,17 +467,19 @@ OMR::ARM64::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lookupEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   // Only temporary (#3963 implements this)
+   cg->comp()->failCompilation<TR::AssertionFailure>("lookupEvaluator");
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::tableEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   // Only temporary (#3858 implements this)
+   cg->comp()->failCompilation<TR::AssertionFailure>("tableEvaluator");
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::NULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)

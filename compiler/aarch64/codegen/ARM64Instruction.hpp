@@ -69,6 +69,16 @@ inline bool constantIsUnsignedImm12(uint64_t intValue)
    }
 
 /*
+ * @brief Answers if the unsigned integer value can be encoded in a 16-bit field
+ * @param[in] intValue : unsigned integer value
+ * @return true if the value can be encoded in a 16-bit field, false otherwise
+ */
+inline bool constantIsUnsignedImm16(uint64_t intValue)
+   {
+   return (intValue < (1<<16));  // 65536
+   }
+
+/*
  * @brief Answers if the signed integer value can be placed in 28-bit field
  * @param[in] intValue : signed integer value
  * @return true if the value can be placed in 28-bit field, false otherwise
@@ -132,7 +142,7 @@ public:
    uint32_t setSourceImmediate(uint32_t si) {return (_sourceImmediate = si);}
 
    /**
-    * @brief Encodes the immediate field into the instruction
+    * @brief Encodes the immediate value into the instruction
     * @param[in] instruction : instruction address
     */
    virtual void insertImmediateField(uint32_t *instruction)
@@ -2599,10 +2609,65 @@ class ARM64SynchronizationInstruction : public ARM64ImmInstruction
     */
    virtual Kind getKind() { return IsSynchronization; }
 
+   /**
+    * @brief Encodes the immediate value into the instruction
+    * @param[in] instruction : instruction address
+    */
    virtual void insertImmediateField(uint32_t *instruction)
       {
       TR_ASSERT_FATAL(constantIsUnsignedImm4(getSourceImmediate()), "Immediate value exceeds 4 bits.");
       *instruction |= ((getSourceImmediate() & 0xF) << 8);
+      }
+
+   };
+
+class ARM64ExceptionInstruction : public ARM64ImmInstruction
+   {
+
+   public:
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] imm : immediate value
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64ExceptionInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
+                                    uint32_t imm, TR::CodeGenerator *cg)
+      : ARM64ImmInstruction(op, node, imm, cg)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] imm : immediate value
+    * @param[in] preced : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64ExceptionInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
+                                    uint32_t imm, TR::Instruction *precedingInstruction,
+                                    TR::CodeGenerator *cg)
+      : ARM64ImmInstruction(op, node, imm, precedingInstruction, cg)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsException; }
+
+   /**
+    * @brief Encodes the immediate value into the instruction
+    * @param[in] instruction : instruction address
+    */
+   virtual void insertImmediateField(uint32_t *instruction)
+      {
+      TR_ASSERT_FATAL(constantIsUnsignedImm16(getSourceImmediate()), "Immediate value exceeds 16 bits.");
+      *instruction |= ((getSourceImmediate() & 0xFFFF) << 5);
       }
 
    };

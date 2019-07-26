@@ -27,6 +27,7 @@
    IsNotExtended,
    IsImm,
       IsSynchronization,
+      IsException,
    IsImmSym,
    IsLabel,
       IsConditionalBranch,

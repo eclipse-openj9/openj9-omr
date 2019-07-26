@@ -750,4 +750,20 @@ TR::ARM64SynchronizationInstruction *generateSynchronizationInstruction(
                   uint32_t imm,
                   TR::Instruction *preced = NULL);
 
+/*
+ * @brief Generates exception generating instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] imm : immediate value
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::ARM64ExceptionInstruction *generateExceptionInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::InstOpCode::Mnemonic op,
+                  TR::Node *node,
+                  uint32_t imm,
+                  TR::Instruction *preced = NULL);
+
 #endif

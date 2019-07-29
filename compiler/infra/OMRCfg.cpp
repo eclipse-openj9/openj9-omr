@@ -145,30 +145,6 @@ OMR::CFG::addEdge(TR::CFGEdge *e)
    }
 
 
-/**
- * @deprecated
- * Please specify where edges are to be allocated during CFG initialization.
- * E.g.,
- *     OMR::CFG(c, m, TR::Region &region)
- * and use the following method to add edges to that region.
- *     addEdge(TR::CFGNode *f, TR::CFGNode *t);
- */
-TR::CFGEdge *
-OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind allocKind)
-   {
-
-   if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-      {
-      traceMsg(comp(),"\nAdding real edge %d-->%d:\n", f->getNumber(), t->getNumber());
-      }
-
-   TR_ASSERT(!f->hasExceptionSuccessor(t), "adding a non exception edge when there's already an exception edge");
-
-   TR::CFGEdge * e = TR::CFGEdge::createEdge(f, t, trMemory(), allocKind);
-   addEdge(e);
-   return e;
-   }
-
 TR::CFGEdge *
 OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t)
    {
@@ -183,80 +159,6 @@ OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t)
    TR::CFGEdge * e = TR::CFGEdge::createEdge(f, t, _internalRegion);
    addEdge(e);
    return e;
-   }
-
-/**
- * @deprecated
- * Please specify where edges are to be allocated during CFG initialization.
- * E.g.,
- *     OMR::CFG(c, m, TR::Region &region)
- * and use the following method to add edges to that region.
- *     addExceptionEdge(TR::CFGNode *f, TR::CFGNode *t);
- */
-void
-OMR::CFG::addExceptionEdge(
-      TR::CFGNode *f,
-      TR::CFGNode *t,
-      TR_AllocationKind allocKind)
-   {
-   if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-      {
-      traceMsg(comp(),"\nAdding exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
-      }
-
-   TR_ASSERT(!f->hasSuccessor(t), "adding an exception edge when there's already a non exception edge");
-   TR::Block * newCatchBlock = toBlock(t);
-   for (auto e = f->getExceptionSuccessors().begin(); e != f->getExceptionSuccessors().end(); ++e)
-      {
-      TR::Block * existingCatchBlock = toBlock((*e)->getTo());
-      if (newCatchBlock == existingCatchBlock) return;
-
-      // OSR exception edges are special and we do not want any 'optimization' done to them
-      // from the following special checks
-      if (newCatchBlock->isOSRCatchBlock() || existingCatchBlock->isOSRCatchBlock()) continue;
-
-      // If the existing catch block is going to be considered first and it catches everything that
-      // the new catch block does then the new catch block isn't reaching from the 'f' block
-      //
-      // Catch block 'A' is considered before catch block 'B' if 'A' is from a greater inline depth
-      // or 'A' and 'B' are from the same inline depth and 'A' handler index is less than 'B's.
-      //
-      int32_t existingDepth = existingCatchBlock->getInlineDepth();
-      int32_t newDepth = newCatchBlock->getInlineDepth();
-      if (existingDepth < newDepth ||
-          (existingDepth == newDepth && existingCatchBlock->getHandlerIndex() > newCatchBlock->getHandlerIndex()))
-         continue;
-
-      // The existing catch block is going to be considered first.  Don't add an edge to the new catch
-      // block if the existing one catches everything that the new one catches.
-      //
-      /////void * newEC = newCatchBlock->getExceptionClass(), * existingEC = existingCatchBlock->getExceptionClass();
-
-      if (existingCatchBlock->getCatchType() == 0 ||
-          /////(newEC && existingEC && isInstanceOf(newEC, existingEC)) ||
-          (existingDepth == newDepth && existingCatchBlock->getCatchType() == newCatchBlock->getCatchType()))
-         {
-         if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-            {
-            traceMsg(comp(),"\nAddition of exception edge aborted - existing catch alredy handles this case!");
-            }
-         return;
-         }
-      }
-   TR::CFGEdge* e = TR::CFGEdge::createExceptionEdge(f,t, trMemory(), allocKind);
-   _numEdges++;
-
-   // Tell the control tree to modify the structures containing this edge
-   //
-   if (getStructure() != NULL)
-      {
-      getStructure()->addEdge(e, true);
-      if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-         {
-         traceMsg(comp(),"\nStructures after adding exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
-         comp()->getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
-         }
-      }
    }
 
 void

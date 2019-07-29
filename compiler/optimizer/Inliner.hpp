@@ -630,6 +630,13 @@ class OMR_InlinerPolicy : public TR::OptimizationPolicy, public OMR_InlinerHelpe
        */
       virtual bool isInlineableNativeMethod(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymbol) { return false; }
 
+      /**
+       * \brief sometimes we choose not to inline certain callsite because they will be handled specially in other optimizations or in codegen
+       *
+       * \return true if the method shouldn't be inlined in inliner
+       */
+      virtual bool supressInliningRecognizedInitialCallee(TR_CallSite* callsite, TR::Compilation* comp);
+
    protected:
       virtual bool tryToInlineTrivialMethod (TR_CallStack* callStack, TR_CallTarget* calltarget);
       virtual bool alwaysWorthInlining(TR_ResolvedMethod * calleeMethod, TR::Node *callNode);
@@ -637,7 +644,6 @@ class OMR_InlinerPolicy : public TR::OptimizationPolicy, public OMR_InlinerHelpe
       bool tryToInlineGeneral(TR_CallTarget *, TR_CallStack *, bool);
       virtual bool callMustBeInlined(TR_CallTarget *calltarget);
       bool mustBeInlinedEvenInDebug(TR_ResolvedMethod * calleeMethod, TR::TreeTop *callNodeTreeTop);
-      virtual bool supressInliningRecognizedInitialCallee(TR_CallSite* callsite, TR::Compilation* comp);
       virtual TR_InlinerFailureReason checkIfTargetInlineable(TR_CallTarget* target, TR_CallSite* callsite, TR::Compilation* comp);
       virtual bool suitableForRemat(TR::Compilation *comp, TR::Node *node, TR_VirtualGuardSelection *guard);
    };

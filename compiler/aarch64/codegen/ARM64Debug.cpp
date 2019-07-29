@@ -676,7 +676,10 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CompareBranchInstruction *instr)
    {
    printPrefix(pOutFile, instr);
-   TR_UNIMPLEMENTED();
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getLabelSymbol());
+   trfflush(_comp->getOutFile());
    }
 
 void

@@ -2013,6 +2013,20 @@ TR_BitVector *OMR::SymbolReferenceTable::getSharedAliases(TR::SymbolReference *s
    return NULL;
    }
 
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderSymbolRef(CommonNonhelperSymbol index)
+   {
+   TR_ASSERT_FATAL(index == jProfileValueSymbol || index == jProfileValueWithNullCHKSymbol, "findOrCreateJProfileValuePlaceHolderSymbolRef should be used with either jProfileValueSymbol or jProfileValueWithNullCHKSymbol");
+   if (!element(index))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
+      sym->setHelper();
+      element(index) = new (trHeapMemory()) TR::SymbolReference(self(), index, sym);
+      }
+   return element(index);
+   }
+
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreatePotentialOSRPointHelperSymbolRef()
    {

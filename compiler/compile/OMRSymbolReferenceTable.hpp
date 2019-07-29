@@ -334,6 +334,19 @@ class SymbolReferenceTable
        */
       atomicCompareAndSwapReturnValueSymbol,
 
+      /** \brief
+       *  
+       * These symbols represent placeholder calls for profiling value which will be lowered into trees later.
+       * 
+       * \code
+       *    call <jProfileValue/jProfileValueWithNullCHK>
+       *       <value to be profiled>
+       *       <table address>
+       * \endcode
+       */
+      jProfileValueSymbol, 
+      jProfileValueWithNullCHKSymbol,
+
       firstPerCodeCacheHelperSymbol,
       lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,
 
@@ -444,6 +457,7 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateRuntimeHelper(TR_RuntimeHelper index, bool canGCandReturn, bool canGCandExcept, bool preservesAllRegisters);
 
    TR::SymbolReference * findOrCreateCodeGenInlinedHelper(CommonNonhelperSymbol index);
+   TR::SymbolReference * findOrCreateJProfileValuePlaceHolderSymbolRef(CommonNonhelperSymbol index);
    TR::SymbolReference * findOrCreatePotentialOSRPointHelperSymbolRef();
    TR::SymbolReference * findOrCreateOSRFearPointHelperSymbolRef();
    TR::SymbolReference * findOrCreateInduceOSRSymbolRef(TR_RuntimeHelper induceOSRHelper);

@@ -1327,7 +1327,7 @@ TR::Node *
 OMR::Node::createAllocationFence(TR::Node *originatingByteCodeNode, TR::Node *fenceNode)
    {
    TR::Node *node = TR::Node::create(originatingByteCodeNode, TR::allocationFence, 0, 0);
-   node->setChild(0, fenceNode);
+   node->setAllocation(fenceNode);
    return node;
    }
 

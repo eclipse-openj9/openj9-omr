@@ -25,6 +25,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/ARM64ConditionCode.hpp"
+#include "codegen/ARM64Instruction.hpp"
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
@@ -64,49 +65,11 @@ TR::Instruction *generateInstruction(
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
-TR::Instruction *generateImmInstruction(
+TR::ARM64ImmInstruction *generateImmInstruction(
                    TR::CodeGenerator *cg,
                    TR::InstOpCode::Mnemonic op,
                    TR::Node *node,
                    uint32_t imm,
-                   TR::Instruction *preced = NULL);
-
-/*
- * @brief Generates imm instruction with relocation
- * @param[in] cg : CodeGenerator
- * @param[in] op : instruction opcode
- * @param[in] node : node
- * @param[in] imm : immediate value
- * @param[in] relocationKind : relocation kind
- * @param[in] preced : preceding instruction
- * @return generated instruction
- */
-TR::Instruction *generateImmInstruction(
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic op,
-                   TR::Node *node,
-                   uint32_t imm,
-                   TR_ExternalRelocationTargetKind relocationKind,
-                   TR::Instruction *preced = NULL);
-
-/*
- * @brief Generates imm instruction with symbol reference
- * @param[in] cg : CodeGenerator
- * @param[in] op : instruction opcode
- * @param[in] node : node
- * @param[in] imm : immediate value
- * @param[in] relocationKind : relocation kind
- * @param[in] sr : symbol reference
- * @param[in] preced : preceding instruction
- * @return generated instruction
- */
-TR::Instruction *generateImmInstruction(
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic op,
-                   TR::Node *node,
-                   uint32_t imm,
-                   TR_ExternalRelocationTargetKind relocationKind,
-                   TR::SymbolReference *sr,
                    TR::Instruction *preced = NULL);
 
 /*
@@ -780,7 +743,7 @@ TR::Instruction *generateCSetInstruction(
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
-TR::Instruction *generateSynchronizationInstruction(
+TR::ARM64SynchronizationInstruction *generateSynchronizationInstruction(
                   TR::CodeGenerator *cg,
                   TR::InstOpCode::Mnemonic op,
                   TR::Node *node,

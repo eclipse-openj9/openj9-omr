@@ -512,6 +512,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsImm:
          print(pOutFile, (TR::ARM64ImmInstruction *)instr);
          break;
+      case OMR::Instruction::IsSynchronization:
+         print(pOutFile, (TR::ARM64ImmInstruction *)instr); // printing handled by superclass
+         break;
       case OMR::Instruction::IsImmSym:
          print(pOutFile, (TR::ARM64ImmSymInstruction *)instr);
          break;

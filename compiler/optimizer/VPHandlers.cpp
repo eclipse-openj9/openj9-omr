@@ -681,8 +681,7 @@ static bool findConstant(OMR::ValuePropagation *vp, TR::Node *node)
 
 static bool containsUnsafeSymbolReference(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   if (vp->comp()->getSymRefTab()->findDLPStaticSymbolReference(node->getSymbolReference()) ||
-       node->getSymbolReference()->isLitPoolReference())
+   if (node->getSymbolReference()->isLitPoolReference())
       return true;
 
    if (node->getSymbolReference()->getSymbol()->isShadow())

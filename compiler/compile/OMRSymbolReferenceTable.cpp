@@ -107,7 +107,6 @@ OMR::SymbolReferenceTable::SymbolReferenceTable(size_t sizeHint, TR::Compilation
      _vtableEntrySymbolRefs(comp->trMemory()),
      _classLoaderSymbolRefs(comp->trMemory()),
      _classStaticsSymbolRefs(comp->trMemory()),
-     _classDLPStaticsSymbolRefs(comp->trMemory()),
      _debugCounterSymbolRefs(comp->trMemory()),
      _methodsBySignature(8, comp->allocator("SymRefTab")), // TODO: Determine a suitable default size
      _hasImmutable(false),
@@ -1119,52 +1118,6 @@ OMR::SymbolReferenceTable::strdup(const char *arg)
    return result;
    }
 
-TR::SymbolReference *
-OMR::SymbolReferenceTable::findDLPStaticSymbolReference(TR::SymbolReference * staticSymbolReference)
-   {
-   ListIterator<TR::SymbolReference> i(&_classDLPStaticsSymbolRefs);
-   TR::SymbolReference * symRef;
-   for (symRef = i.getFirst(); symRef; symRef = i.getNext())
-      if (symRef == staticSymbolReference)
-         return symRef;
-
-   return NULL;
-   }
-
-
-TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateDLPStaticSymbolReference(TR::SymbolReference * staticSymbolReference)
-   {
-
-   ListIterator<TR::SymbolReference> i(&_classDLPStaticsSymbolRefs);
-   TR::SymbolReference * symRef;
-
-   if(!staticSymbolReference->isUnresolved())
-      {
-      for (symRef = i.getFirst(); symRef; symRef = i.getNext())
-         if (symRef->getSymbol()->getStaticSymbol()->getStaticAddress() == staticSymbolReference->getSymbol()->getStaticSymbol()->getStaticAddress())
-            return symRef;
-      }
-
-   TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),TR::Address);
-   sym->setStaticAddress(staticSymbolReference->getSymbol()->getStaticSymbol()->getStaticAddress());
-   sym->setNotCollected();
-   symRef = new (trHeapMemory()) TR::SymbolReference(self(), *staticSymbolReference,0);
-   symRef->setSymbol(sym);
-   int32_t flags =  staticSymbolReference->getSymbol()->getStaticSymbol()->getFlags();
-   sym->setUpDLPFlags(flags);
-
-   if(staticSymbolReference->isUnresolved())
-      {
-      symRef->setCanGCandReturn();
-      symRef->setCanGCandExcept();
-      symRef->setUnresolved();
-      }
-
-   _classDLPStaticsSymbolRefs.add(symRef);
-   return symRef;
-   }
-
 TR::Symbol *
 OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbol()
    {
@@ -1173,8 +1126,6 @@ OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbol()
 
    return _genericIntShadowSymbol;
    }
-
-
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector)

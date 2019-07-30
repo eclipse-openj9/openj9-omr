@@ -585,10 +585,6 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateMonitorEntrySymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateMonitorExitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
 
-   // Z
-   TR::SymbolReference * findDLPStaticSymbolReference(TR::SymbolReference * staticSymbolReference);
-   TR::SymbolReference * findOrCreateDLPStaticSymbolReference(TR::SymbolReference * staticSymbolReference);
-
    TR::SymbolReference * findOrCreateGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector = false);
    TR::SymbolReference * createGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector = false);
    TR::SymbolReference * findOrCreateGenericIntArrayShadowSymbolReference(intptrj_t offset);
@@ -686,7 +682,6 @@ class SymbolReferenceTable
    List<TR::SymbolReference>            _vtableEntrySymbolRefs;
    List<TR::SymbolReference>            _classLoaderSymbolRefs;
    List<TR::SymbolReference>            _classStaticsSymbolRefs;
-   List<TR::SymbolReference>            _classDLPStaticsSymbolRefs;
    List<TR::SymbolReference>            _debugCounterSymbolRefs;
 
    uint32_t                            _nextRegShadowIndex;

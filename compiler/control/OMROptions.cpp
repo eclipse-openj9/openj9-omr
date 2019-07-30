@@ -687,6 +687,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableJITaaSHeuristics",             "O\tenable JITaaS heuristics", SET_OPTION_BIT(TR_EnableJITaaSHeuristics), "F"},
    {"enableJITHelpershashCodeImpl",       "O\tenable java version of object hashCode()", SET_OPTION_BIT(TR_EnableJITHelpershashCodeImpl), "F"},
    {"enableJITHelpersoptimizedClone",     "O\tenable java version of object clone()", SET_OPTION_BIT(TR_EnableJITHelpersoptimizedClone), "F"},
+   {"enableJITServerFollowRemoteCompileWithLocalCompile", "O\tenable JITServer to perform local compilations for its remotely compiled methods", SET_OPTION_BIT(TR_JITServerFollowRemoteCompileWithLocalCompile), "F"},
+   {"enableJITServerHeuristics",          "O\tenable JITServer heuristics", SET_OPTION_BIT(TR_EnableJITServerHeuristics), "F"},
    {"enableJProfiling",                   "O\tenable JProfiling", SET_OPTION_BIT(TR_EnableJProfiling), "F"},
    {"enableJProfilingInProfilingCompilations","O\tuse jprofiling instrumentation in profiling compilations", SET_OPTION_BIT(TR_EnableJProfilingInProfilingCompilations), "F"},
    {"enableJVMPILineNumbers",            "M\tenable output of line numbers via JVMPI",       SET_OPTION_BIT(TR_EnableJVMPILineNumbers), "F"},
@@ -4784,6 +4786,7 @@ char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "sampleDensity",
    "profiling",
    "JITaaS",
+   "JITServer",
    "aotcompression",
    };
 

@@ -2015,16 +2015,27 @@ TR_BitVector *OMR::SymbolReferenceTable::getSharedAliases(TR::SymbolReference *s
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderSymbolRef(CommonNonhelperSymbol index)
+OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderSymbolRef()
    {
-   TR_ASSERT_FATAL(index == jProfileValueSymbol || index == jProfileValueWithNullCHKSymbol, "findOrCreateJProfileValuePlaceHolderSymbolRef should be used with either jProfileValueSymbol or jProfileValueWithNullCHKSymbol");
-   if (!element(index))
+   if (!element(jProfileValueSymbol))
       {
       TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
       sym->setHelper();
-      element(index) = new (trHeapMemory()) TR::SymbolReference(self(), index, sym);
+      element(jProfileValueSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), jProfileValueSymbol, sym);
       }
-   return element(index);
+   return element(jProfileValueSymbol);
+   }
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderWithNullCHKSymbolRef()
+   {
+   if (!element(jProfileValueWithNullCHKSymbol))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
+      sym->setHelper();
+      element(jProfileValueWithNullCHKSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), jProfileValueWithNullCHKSymbol, sym);
+      }
+   return element(jProfileValueWithNullCHKSymbol); 
    }
 
 TR::SymbolReference *

@@ -457,7 +457,8 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateRuntimeHelper(TR_RuntimeHelper index, bool canGCandReturn, bool canGCandExcept, bool preservesAllRegisters);
 
    TR::SymbolReference * findOrCreateCodeGenInlinedHelper(CommonNonhelperSymbol index);
-   TR::SymbolReference * findOrCreateJProfileValuePlaceHolderSymbolRef(CommonNonhelperSymbol index);
+   TR::SymbolReference * findOrCreateJProfileValuePlaceHolderSymbolRef();
+   TR::SymbolReference * findOrCreateJProfileValuePlaceHolderWithNullCHKSymbolRef();
    TR::SymbolReference * findOrCreatePotentialOSRPointHelperSymbolRef();
    TR::SymbolReference * findOrCreateOSRFearPointHelperSymbolRef();
    TR::SymbolReference * findOrCreateInduceOSRSymbolRef(TR_RuntimeHelper induceOSRHelper);

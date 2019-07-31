@@ -1964,6 +1964,31 @@ TR_BitVector *OMR::SymbolReferenceTable::getSharedAliases(TR::SymbolReference *s
    return NULL;
    }
 
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderSymbolRef()
+   {
+   if (!element(jProfileValueSymbol))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
+      sym->setHelper();
+      element(jProfileValueSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), jProfileValueSymbol, sym);
+      }
+   return element(jProfileValueSymbol);
+   }
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderWithNullCHKSymbolRef()
+   {
+   if (!element(jProfileValueWithNullCHKSymbol))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
+      sym->setHelper();
+      element(jProfileValueWithNullCHKSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), jProfileValueWithNullCHKSymbol, sym);
+      }
+   return element(jProfileValueWithNullCHKSymbol); 
+   }
+
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreatePotentialOSRPointHelperSymbolRef()
    {

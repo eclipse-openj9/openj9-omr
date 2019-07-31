@@ -1137,6 +1137,19 @@ public:
       return TR::BadILOp;
       }
 
+   static TR::ILOpCodes ternaryOpCode(TR::DataType type)
+      {
+      switch(type)
+         {
+         case TR::Int8:     return TR::bternary;
+         case TR::Int16:    return TR::sternary;
+         case TR::Int32:    return TR::iternary;
+         case TR::Int64:    return TR::lternary;
+         case TR::Address:  return TR::aternary;
+         default: return TR::BadILOp;
+         }
+      }
+
    static TR::ILOpCodes getCorrespondingLogicalComparison(TR::ILOpCodes op)
          {
          switch (op)

@@ -2006,8 +2006,23 @@ TR_InlinerBase::addGuardForVirtual(
    // When running with HCR implemented using OSR plain HCR guards will be processed later in the
    // compilation and those later processes will handle them using OSR so we don't want to complicate
    // that with additional OSR at this point
+
+   // Late inlining may result in callerSymbol not being the resolved method that actually calls the inlined method
+   // This is problematic for linking OSR blocks
+   TR::ResolvedMethodSymbol *callingMethod = callNode->getByteCodeInfo().getCallerIndex() == -1 ?
+      comp()->getMethodSymbol() : comp()->getInlinedResolvedMethodSymbol(callNode->getByteCodeInfo().getCallerIndex());
+
+   // TODO:  Need to coordinate change between OMR's inliner and downstream
+   //        implementations of inliner.  They must access the calling method
+   //        for OSR in the same way, guarded by INLINER_OSR_CALLING_METHOD,
+   //        until INLINER_OSR_CALLING_METHOD is ultimately defined in OMR.
+#if defined(INLINER_OSR_CALLING_METHOD)
+   if ((comp()->getHCRMode() != TR::osr || guard->_kind != TR_HCRGuard)
+       && callingMethod->supportsInduceOSR(callNode->getByteCodeInfo(), block1, comp(), false))
+#else /* !defined(INLINER_OSR_CALLING_METHOD) */
    if ((comp()->getHCRMode() != TR::osr || guard->_kind != TR_HCRGuard)
        && callNode->getSymbolReference()->getOwningMethodSymbol(comp())->supportsInduceOSR(callNode->getByteCodeInfo(), block1, comp(), false))
+#endif /* defined(INLINER_OSR_CALLING_METHOD) */
       {
       bool shouldUseOSR = heuristicForUsingOSR(callNode, calleeSymbol, callerSymbol, createdHCRAndVirtualGuard);
 
@@ -2018,11 +2033,6 @@ TR_InlinerBase::addGuardForVirtual(
            createdHCRGuard ||
            (osrForNonHCRGuards && shouldAttemptOSR)))
          {
-         // Late inlining may result in callerSymbol not being the resolved method that actually calls the inlined method
-         // This is problematic for linking OSR blocks
-         TR::ResolvedMethodSymbol *callingMethod = callNode->getByteCodeInfo().getCallerIndex() == -1 ?
-            comp()->getMethodSymbol() : comp()->getInlinedResolvedMethodSymbol(callNode->getByteCodeInfo().getCallerIndex());
-
          TR::TreeTop *induceTree = callingMethod->genInduceOSRCall(guardedCallNodeTreeTop, callNode->getByteCodeInfo().getCallerIndex(), (callNode->getNumChildren() - callNode->getFirstArgumentIndex()), false, false, callerSymbol->getFlowGraph());
          if (induceOSRCallTree)
             *induceOSRCallTree = induceTree;

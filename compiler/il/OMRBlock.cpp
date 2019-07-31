@@ -973,6 +973,12 @@ static bool checkStoreRegNodeListForNode(TR::Node *passThroughNode, List<TR::Nod
 
 /*
  * Analyze the register dependency and update the list of unavailable registers.
+ * It examines the node under passthrough children of the glRegDeps and does the following.
+ *    If node requires uncommoning and we do not have replacement yet, looks into the list
+ *    that contains regStore before split point.
+ *       a. If register is available, uses the register to create replacement.
+ *       b. If register is not available, and corresponding is before splitPoint 
+ *          then creates a regStore of the node to that register before passThrough node which uses it
  *
  * @param Compilation object
  * @param GlRegDep node which will be analyzed
@@ -1207,6 +1213,23 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
  * Splits the blocks from the split point manually handling the GlRegDeps created by the Global Register Allocator.
  * If there are available global registers which can be used, it will utililze them to uncommon nodes across split points.
  * 
+ * @details
+ * It uses following simplified algorithm to split blocks and uncommon nodes. 
+ * 1. Analyze trees before the split point to gather information about nodes which are referenced in new block and needs replacement after split.
+ * 2. Now as it has information about all the nodes which are required to be uncommoned, it starts cretaing replacment nodes as per following rules.
+ *    a. If node to be uncommoned is regLoad / load of constant then replacement node will be copy of the original node and also mark the used register unavailable. 
+ *    b. If node to be uncommoned is stored into a register after split point and that register is available, then replacement node will be regLoad from that
+ *       register. It also makes sure that regStore tree is moved to before split point also marks used register unavailable.
+ *    c. If node to be uncommoned is stored into a register before split point and node does not succeeds in [b] case and register is available then replacement
+ *       node will be regLoad from that register also marks used register unavailable.
+ * 3. While checking for case-b and case-c from Step 2 it also checks regStores and PassThrough nodes after split point. 
+ *    a. If node under pass through requires to be uncommoned and uses different register then the replacement node
+ *       then it stores replacement node into a register used by passThrough before the tree containing that passthrough node.
+ *    b. If node under regStore does not need to be uncommoned, then mark the used register unavailable. 
+ * 4. For the remaining of nodes to be uncommoned, it tries to find the available register using list of unavailable registers and if it can find one, then stores node
+ *    into that register otherwise creates a auto/temp slot to uncommon them. 
+ * 5. Last step is to start walking treetops after split point and replace nodes to be uncommoned with corresponding replacement nodes.
+ * 
  * @param startOfNewBlock TreeTop from which new block will start
  * @param cfg TR::CFG object
  * @param copyExceptionSuccessors Boolean stating if we need to copy the exceptionSuccessors of the original blocks to new block
@@ -1229,8 +1252,12 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
       TR::Block *startOfExtendedBlock = self()->startOfExtendedBlock();
       TR::TreeTop *start = startOfExtendedBlock->getEntry();
       TR::TreeTop *end = self()->getExit();
-
-      // Step-1 : Analyze the trees before split point to record nodes which will be referenced in new block and needs replacement after split
+      /**
+       * Step-1 : Analyze the trees before split point to record nodes which will be referenced in new block and needs replacement after split
+       * It collects following information.
+       * a. Node which are referenced after split point in nodeInfo
+       * b. Node which are referenced after split point and stored into register in storeNodeInfo
+       */
       for (TR::PostorderNodeOccurrenceIterator iter(start, comp, "FIX_POSTGRA_SPLIT_COMMONING"); 
          iter != end; ++iter)
          {
@@ -1258,16 +1285,16 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
             }
          }
 
-      // Step-2 : Compute the unavailable registers
+      /** 
+       * Step - 2: Analyze nodeInfo for regLoad / load constant.
+       *    if found, create a replacement node which is copy of the original node. 
+       *    In case of regLoad mark used registers unavailable
+       */ 
+      
       TR_BitVector unavailableRegisters(0, comp->trMemory(), stackAlloc);
       for (auto iter = nodeInfo->begin(), end = nodeInfo->end(); iter != end; ++iter)
          {
          TR::Node *node = iter->first;
-         /**
-          * If a node which requires uncommoning is RegLoad or Load constant we do not need to store it.
-          * We just need to replace that node after split point with newly copied node from original node.
-          * In case of the RegLoad we need to mark used registers unavailable.
-          */
          if (node->getOpCode().isLoadReg())
             {
             if (node->requiresRegisterPair(comp))
@@ -1290,8 +1317,15 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
             }
          }
       /**
-       * Now look Through the Trees after split point for regStore and Pass Through
-       * Use the regStore Info only if we find the use of regStore after split point.
+       * Step - 3 : Walk though treeTops after split point analyzing regStore/PassThrough nodes. 
+       *    a. regStore Node :
+       *       1. If it stores a node which is required to be uncommoned and the used register is available, 
+       *          then create a replacement node for that node using the register and mark used register unavailable
+       *       2. If node under regStore is not required to be uncommoned then mark the used register unavailable.
+       *    b. PassThrough Node (Analysis of these kind of nodes are done in gatherUnavailableRegisters)
+       *       1. If node under PassThrough node is stored into the same register after split point, we do not have to do anything. 
+       *       2. If node is stored into same register before split point and if register is available, then use the information to store the node. 
+       *             In other cases where register used in the PassThrough is not available, then create a Store into a register same as PassThrough before the tree containing the passThrough node.
        */
       List<TR::Node> storeRegNodePostSplitPoint(stackMemoryRegion);
       TR::TreeTop *nextExtendedBlockEntry = newBlock->getNextExtendedBlock() ? newBlock->getNextExtendedBlock()->getEntry() : NULL;
@@ -1304,10 +1338,10 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
             {
             TR::Node *storedNode = node->getFirstChild();
             auto nodeInfoEntry = nodeInfo->find(storedNode);
+            // If storedNode is needed to be uncommoned and we do not have found replacement node yet and it is stored in register which is still available
+            // then use the register to store the node.
             if (nodeInfoEntry != nodeInfo->end() && nodeInfoEntry->second.second == NULL && checkIfRegisterIsAvailable(comp, node, unavailableRegisters))
                {
-               // Node needs uncommoning, we have not found replacement yet, and register is available
-               // Using that register for replacement. 
                TR::Node *regLoad = TR::Node::create(storedNode, comp->il.opCodeForRegisterLoad(storedNode->getDataType()));
                regLoad->setRegLoadStoreSymbolReference(node->getRegLoadStoreSymbolReference());
                regLoad->setGlobalRegisterNumber(node->getGlobalRegisterNumber());
@@ -1367,7 +1401,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          }
 
       /**
-       * Step - 3 : Create nodes for the entries remaining in the nodeInfo map:
+       * Step - 4 : Create nodes for the entries remaining in the nodeInfo map:
        *         if we have ar register available:
        *             1) a PassThrough on the exit glregdeps with the register and the node and a RegStore
        *             2) a regload of the appropriate regiser on the entry glregdeps
@@ -1381,6 +1415,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
       for (auto iter = nodeInfo->begin(), end = nodeInfo->end(); iter != end; ++iter)
          {
          TR::Node *value = iter->first;
+         // For all the nodes in the nodeTable for which we can not find replacement yet, create replacement node using available registers.
          if (!iter->second.second)
             {
             TR::SymbolReference *ref = value->getOpCode().isLoadReg() ? value->getRegLoadStoreSymbolReference() : createSymRefForNode(comp, methodSymbol, value, self()->getExit());
@@ -1461,6 +1496,8 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          newBlock->getEntry()->getNode()->addChildren(&entryGlRegDeps, 1);
          self()->getExit()->getNode()->addChildren(&exitGlRegDeps, 1);
          }
+
+      // Step - 5  : Now replace all the occurrences of nodes to be uncommoned with replacement nodes.
       replaceNodesInTrees(comp, newBlock->getEntry()->getNextTreeTop(), nodeInfo);
       }
    return newBlock;

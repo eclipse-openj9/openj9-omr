@@ -4819,6 +4819,8 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
          }
       }
 
+   getUtil()->requestAdditionalOptimizations(calltarget);
+
    if (comp()->getOption(TR_FullSpeedDebug) && !getPolicy()->mustBeInlinedEvenInDebug(calleeSymbol->getResolvedMethod(), callNodeTreeTop) && (!comp()->getOption(TR_EnableOSR) || comp()->getOption(TR_MimicInterpreterFrameShape)))
       {
       TR::Node *decompPoint = findPotentialDecompilationPoint(calleeSymbol, comp());
@@ -5419,14 +5421,6 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       }
 
    updateCallersFlags(callerSymbol, calleeSymbol, _optimizer);
-
-
-   if (getUtil()->needTargetedInlining(calleeSymbol))
-      {
-      _optimizer->setRequestOptimization(OMR::methodHandleInvokeInliningGroup);
-      if (comp()->trace(OMR::inlining))
-         heuristicTrace(tracer(),"Requesting another pass of targeted inlining due to %s\n", tracer()->traceSignature(calleeSymbol));
-      }
 
    // Append the callee's catch block to the end of the caller
    //
@@ -6460,4 +6454,17 @@ TR_InlinerTracer *
 OMR_InlinerUtil::getInlinerTracer(TR::Optimization *optimization)
    {
    return new (comp()->trHeapMemory()) TR_InlinerTracer(comp(),fe(),optimization);
+   }
+
+
+void
+OMR_InlinerUtil::requestAdditionalOptimizations(TR_CallTarget *calltarget)
+   {
+   // This code will be removed once the dependent down stream project is merged properly
+   if (needTargetedInlining(calltarget->_calleeSymbol))
+      {
+      inliner()->getOptimizer()->setRequestOptimization(OMR::methodHandleInvokeInliningGroup);
+      if (comp()->trace(OMR::inlining))
+         heuristicTrace(tracer(),"Requesting another pass of targeted inlining due to %s\n", tracer()->traceSignature(calltarget->_calleeSymbol));
+      }
    }

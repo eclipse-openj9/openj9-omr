@@ -30,6 +30,13 @@
 #ifndef INLINER_INCL
 #define INLINER_INCL
 
+// TODO:  This macro enables a change to the way the calling method is found
+//        for OSR-related code in the Inliner.  Once downstream components
+//        have had their changes enabled unconditionalloy, corresponding
+//        changes in OMR that are guarded by this macro can be made
+//        unconditional, and this definition can be removed.
+#define INLINER_OSR_CALLING_METHOD
+
 #include "optimizer/CallInfo.hpp"
 
 #include <stddef.h>

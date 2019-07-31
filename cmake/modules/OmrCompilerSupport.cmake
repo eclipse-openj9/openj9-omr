@@ -346,7 +346,7 @@ function(create_omr_compiler_library)
 	# Generate a build name file.
 	set(BUILD_NAME_FILE "${CMAKE_BINARY_DIR}/${COMPILER_NAME}Name.cpp")
 	add_custom_command(OUTPUT ${BUILD_NAME_FILE}
-		COMMAND perl ${omr_SOURCE_DIR}/tools/compiler/scripts/generateVersion.pl ${COMPILER_NAME} ${BUILD_NAME_FILE}
+		COMMAND ${PERL_EXECUTABLE} ${omr_SOURCE_DIR}/tools/compiler/scripts/generateVersion.pl ${COMPILER_NAME} ${BUILD_NAME_FILE}
 		VERBATIM
 		COMMENT "Generate ${BUILD_NAME_FILE}"
 	)

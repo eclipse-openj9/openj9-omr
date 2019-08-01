@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,6 +41,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0xD4200000,	/* BRK       	brkarm64	AArch64 Specific BRK */
 	/* System */
 		0xD503309F,	/* DSB       	dsb	 */
+		0xD50330BF,	/* DMB       	dmb	 */
 	/* Unconditional branch (register) */
 		0xD61F0000,	/* BR        	br	 */
 		0xD63F0000,	/* BLR       	blr	 */

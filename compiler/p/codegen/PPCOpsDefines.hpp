@@ -22,6 +22,35 @@
 #ifndef TR_PPCOPSDEFINES_INCL
 #define TR_PPCOPSDEFINES_INCL
 
+#define UNKNOWN_FORMAT 0
+#define A_FORMAT 1
+#define B_FORMAT 2
+#define D_FORMAT 3
+#define DQ_FORMAT 4
+#define DS_FORMAT 5
+#define DX_FORMAT 6
+#define I_FORMAT 7
+#define M_FORMAT 8
+#define MD_FORMAT 9
+#define MDS_FORMAT 10
+#define SC_FORMAT 11
+#define VA_FORMAT 12
+#define VC_FORMAT 13
+#define VX_FORMAT 14
+#define X_FORMAT 15
+#define XFL_FORMAT 16
+#define XFX_FORMAT 17
+#define XL_FORMAT 18
+#define XO_FORMAT 19
+#define XS_FORMAT 20
+#define XX1_FORMAT 21
+#define XX2_FORMAT 22
+#define XX3_FORMAT 23
+#define XX4_FORMAT 24
+#define Z22_FORMAT 25
+#define Z23_FORMAT 26
+
+#define PPCOpProp_None              0x00000000
 #define PPCOpProp_HasRecordForm     0x00000001
 #define PPCOpProp_SetsCarryFlag     0x00000002
 #define PPCOpProp_SetsOverflowFlag  0x00000004

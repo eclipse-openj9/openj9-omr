@@ -72,12 +72,10 @@ int jitDebugPPC;
 namespace TR { class PPCForceRecompilationSnippet; }
 namespace TR { class PPCRecompilationSnippet; }
 
-extern const char * ppcOpCodeToNameMap[][2];
-
 const char *
 TR_Debug::getOpCodeName(TR::InstOpCode * opCode)
    {
-   return ppcOpCodeToNameMap[opCode->getOpCodeValue()][1];
+   return TR::InstOpCode::metadata[opCode->getOpCodeValue()].name;
    }
 
 void

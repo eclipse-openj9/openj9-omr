@@ -94,7 +94,6 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/ras/LimitFile.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/LogTracer.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/OptionsDebug.cpp \
-    $(JIT_OMR_DIRTY_DIR)/ras/PPCOpNames.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/Tree.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/AsyncCheckInsertion.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/BackwardBitVectorAnalysis.cpp \

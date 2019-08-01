@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -62,6 +62,7 @@ const char * TR_VerboseLog::_vlogTable[] =
    "#RECLAMATION: ",
    "#PROFILING: ",
    "#JITaaS: ",
+   "#JITServer: ",
    "#AOTCOMPRESSION: ",
    };
 

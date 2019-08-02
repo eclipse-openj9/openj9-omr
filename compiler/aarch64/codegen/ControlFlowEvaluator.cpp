@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "codegen/ARM64ConditionCode.hpp"
+#include "codegen/ARM64HelperCallSnippet.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
@@ -482,10 +483,82 @@ OMR::ARM64::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register *
+evaluateNULLCHKWithPossibleResolve(TR::Node *node, bool needsResolve, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::ILOpCode &opCode = firstChild->getOpCode();
+   TR::Node *reference = NULL;
+   TR::Compilation *comp = cg->comp();
+   bool useCompressedPointers = comp->useCompressedPointers();
+
+   if (useCompressedPointers && firstChild->getOpCodeValue() == TR::l2a)
+      {
+      TR::ILOpCodes loadOp = cg->comp()->il.opCodeForIndirectLoad(TR::Int32);
+      TR::ILOpCodes rdbarOp = cg->comp()->il.opCodeForIndirectReadBarrier(TR::Int32);
+      TR::Node *n = firstChild;
+      while ((n->getOpCodeValue() != loadOp) && (n->getOpCodeValue() != rdbarOp))
+         n = n->getFirstChild();
+      reference = n->getFirstChild();
+      }
+   else
+      reference = node->getNullCheckReference();
+
+   /* TODO: Resolution */
+   /* if(needsResolve) ... */
+
+   // Only explicit test needed for now.
+   TR::LabelSymbol *snippetLabel = generateLabelSymbol(cg);
+   cg->addSnippet(new (cg->trHeapMemory()) TR::ARM64HelperCallSnippet(cg, node, snippetLabel, node->getSymbolReference(), NULL));
+   TR::Register *referenceReg = cg->evaluate(reference);
+   TR::InstOpCode::Mnemonic compareOp = useCompressedPointers ? TR::InstOpCode::cbzw : TR::InstOpCode::cbzx;
+   TR::Instruction *cbzInstruction = generateCompareBranchInstruction(cg, compareOp, node, referenceReg, snippetLabel, NULL);
+   cbzInstruction->setNeedsGCMap(0xffffffff);
+
+   /*
+    * If the first child is a load with a ref count of 1, just decrement the reference count on the child.
+    * If the first child does not have a register, it means it was never evaluated.
+    * As a result, the grandchild (the variable reference) needs to be decremented as well.
+    *
+    * In other cases, evaluate the child node.
+    *
+    * Under compressedpointers, the first child will have a refCount of at least 2 (the other under an anchor node).
+    */
+   if (opCode.isLoad() && firstChild->getReferenceCount() == 1 
+         && !(firstChild->getSymbolReference()->isUnresolved()))
+      {
+      cg->decReferenceCount(firstChild);
+      if (firstChild->getRegister() == NULL)
+         {
+         cg->decReferenceCount(reference);
+         }
+      }
+   else
+      {
+      if (useCompressedPointers)
+         {
+         bool fixRefCount = false;
+         if (firstChild->getOpCode().isStoreIndirect() 
+               && firstChild->getReferenceCount() > 1)
+            {
+            firstChild->decReferenceCount();
+            fixRefCount = true;
+            }
+         cg->evaluate(firstChild);
+         if (fixRefCount)
+            firstChild->incReferenceCount();
+         }
+      else
+         cg->evaluate(firstChild);
+      cg->decReferenceCount(firstChild);
+      }
+
+   return NULL;
+   }
+
+TR::Register *
 OMR::ARM64::TreeEvaluator::NULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::NULLCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
+	return evaluateNULLCHKWithPossibleResolve(node, false, cg);
 	}
 
 TR::Register *

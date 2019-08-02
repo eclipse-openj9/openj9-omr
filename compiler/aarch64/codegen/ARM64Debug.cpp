@@ -552,6 +552,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsTrg1Src2:
          print(pOutFile, (TR::ARM64Trg1Src2Instruction *)instr);
          break;
+      case OMR::Instruction::IsCondTrg1Src2:
+         print(pOutFile, (TR::ARM64CondTrg1Src2Instruction *)instr);
+         break;
       case OMR::Instruction::IsTrg1Src2Shifted:
          print(pOutFile, (TR::ARM64Trg1Src2ShiftedInstruction *)instr);
          break;
@@ -796,6 +799,23 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src2Instruction *instr)
    print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource2Register(), TR_WordReg);
+
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
+
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CondTrg1Src2Instruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg);
+   trfprintf(pOutFile, ", %s", ARM64ConditionNames[instr->getConditionCode()]);
 
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());

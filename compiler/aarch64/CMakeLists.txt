@@ -23,6 +23,7 @@ compiler_library(aarch64
 # Target files
 	${CMAKE_CURRENT_LIST_DIR}/codegen/ARM64BinaryEncoding.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/ARM64Debug.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/ARM64HelperCallSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/ARM64Instruction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/ARM64OutOfLineCodeSection.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/ARM64SystemLinkage.cpp

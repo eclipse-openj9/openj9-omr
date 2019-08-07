@@ -44,18 +44,25 @@ void TR_CallStackIterator::printStackBacktrace(TR::Compilation *comp)
 #include <demangle.h>
 #include <sys/debug.h>
 
-void * getCurrPC();
-#pragma mc_func getCurrPC \
-   { \
-   "48000005"  /* bl .+4   */ \
-   "7C6802A6"  /* mfspr r3,lr */ \
-   }
+#define GET_CURR_PC(dst) \
+   do                    \
+   {                     \
+   asm("bl $+4;" /*branch and link to next instruction*/ \
+        "mflr %0;" /*copy contents of link register (which now contains address of this instruction) to dst*/ \
+      : "=r" (dst)       \
+      : /*no inputs*/    \
+      : "lr");           \
+   }                     \
+   while (0)
 
-void * getCurrTos();
-#pragma mc_func getCurrTos \
-   { \
-   "38610000"  /* mr r3, r1   */ \
-   }
+
+#define GET_CURR_TOS(dst) \
+   do                     \
+   {                      \
+   /*copy current stack pointer to dst*/ \
+   asm("la %0, 0(r1)" : "=r" (dst)); \
+   }                      \
+   while (0)             
 
 void TR_PPCCallStackIterator::_set_tb_table()
    {
@@ -98,8 +105,8 @@ void TR_PPCCallStackIterator::_set_tb_table()
 
 TR_PPCCallStackIterator::TR_PPCCallStackIterator() : TR_CallStackIterator(), _num_next(0)
    {
-   _pc = getCurrPC();
-   _tos = getCurrTos();
+   GET_CURR_PC(_pc);
+   GET_CURR_TOS(_tos);
    _set_tb_table();
    _done = (_tb_table == NULL);
    getNext();     // Skip this constructor

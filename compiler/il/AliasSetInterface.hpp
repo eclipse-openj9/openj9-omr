@@ -408,7 +408,11 @@ TR_BitVector *TR_SymAliasSetInterface<useDefAliasSet>::getTRAliases_impl(bool is
 
 template <> inline
 TR_BitVector *TR_SymAliasSetInterface<UseOnlyAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
-   {
+   {      
+   if(!_symbolReference)
+      //if there is no symbol reference, then we return an empty bit container
+      return NULL;
+      
    return _symbolReference->getUseonlyAliasesBV(TR::comp()->getSymRefTab());
    }
 

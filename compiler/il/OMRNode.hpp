@@ -52,6 +52,7 @@ class TR_Debug;
 class TR_DebugExt;
 class TR_NodeKillAliasSetInterface;
 class TR_NodeUseAliasSetInterface;
+class TR_UseOnlyAliasSetInterface;
 class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;
 class TR_ResolvedMethod;
@@ -634,7 +635,7 @@ public:
 
    // CS2 Alias Interface:
    // implemented in base/AliasSetInterface.hpp right now.
-   inline                 TR_NodeUseAliasSetInterface mayUse();
+   inline                 TR_UseOnlyAliasSetInterface mayUse();
    inline                 TR_NodeKillAliasSetInterface mayKill(bool gcSafe = false);
 
    /** \brief

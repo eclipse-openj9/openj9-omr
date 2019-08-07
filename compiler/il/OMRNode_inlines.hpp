@@ -171,11 +171,20 @@ OMR::Node::getType()
    return self()->getDataType();
    }
 
-TR_NodeUseAliasSetInterface
+TR_UseOnlyAliasSetInterface
 OMR::Node::mayUse()
    {
-   TR_NodeUseAliasSetInterface aliasSetInterface(self());
-   return aliasSetInterface;
+   if (self()->getOpCode().isLikeUse() && self()->getOpCode().hasSymbolReference())
+      {
+      TR_UseOnlyAliasSetInterface aliasSetInterface(self()->getSymbolReference());
+      return aliasSetInterface;
+      }
+   else 
+      {
+      //if there is no symbolreference, then return an empty aliseset
+       TR_UseOnlyAliasSetInterface aliasSetInterface(NULL);
+      return aliasSetInterface;
+      }
    }
 
 TR_NodeKillAliasSetInterface

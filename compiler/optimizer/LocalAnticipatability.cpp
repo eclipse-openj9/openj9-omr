@@ -874,7 +874,7 @@ void TR_LocalAnticipatability::updateUsesAndDefs(TR::Node *node, TR::Block *bloc
          TR::SymbolReference *childSymRef = node->getFirstChild()->getSymbolReference();
 
 
-         TR_NodeKillAliasSetInterface aliasSet = node->getFirstChild()->mayKill(true);
+         TR_UseDefAliasSetInterface aliasSet = node->getFirstChild()->mayKill(true);
          if (!aliasSet.isZero(comp()))
             {
             temp->empty();
@@ -907,7 +907,7 @@ void TR_LocalAnticipatability::updateUsesAndDefs(TR::Node *node, TR::Block *bloc
 
          if (!opCode.isCheck() && !opCode.isStore())
             {
-            TR_NodeKillAliasSetInterface useDefAliases = node->mayKill(true);
+            TR_UseDefAliasSetInterface useDefAliases = node->mayKill(true);
             if (!useDefAliases.isZero(comp()))
                {
 #if FLEX_PRE
@@ -952,7 +952,7 @@ void TR_LocalAnticipatability::updateUsesAndDefs(TR::Node *node, TR::Block *bloc
                      seenDefinedSymbolReferences->set(symReference->getReferenceNumber());
                   }
 
-               TR_NodeKillAliasSetInterface aliases = node->mayKill(true);
+               TR_UseDefAliasSetInterface aliases = node->mayKill(true);
                if (!aliases.isZero(comp()))
                   {
                   bool bitAlreadySet = false;

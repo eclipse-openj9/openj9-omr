@@ -53,6 +53,7 @@ class TR_DebugExt;
 class TR_NodeKillAliasSetInterface;
 class TR_NodeUseAliasSetInterface;
 class TR_UseOnlyAliasSetInterface;
+class TR_UseDefAliasSetInterface;
 class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;
 class TR_ResolvedMethod;
@@ -636,7 +637,7 @@ public:
    // CS2 Alias Interface:
    // implemented in base/AliasSetInterface.hpp right now.
    inline                 TR_UseOnlyAliasSetInterface mayUse();
-   inline                 TR_NodeKillAliasSetInterface mayKill(bool gcSafe = false);
+   inline                 TR_UseDefAliasSetInterface mayKill(bool gcSafe = false);
 
    /** \brief
     *     Determines whether this node should be sign/zero extended to 32-bit at the point of evaluation (source) by

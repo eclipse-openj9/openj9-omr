@@ -500,7 +500,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    // Code below deals with how the availability and copy propagation
    // information is updated once this node is seen
    //
-   TR_NodeKillAliasSetInterface UseDefAliases = node->mayKill(true);
+   TR_UseDefAliasSetInterface UseDefAliases = node->mayKill(true);
    bool hasAliases = !UseDefAliases.isZero(comp());
    bool alreadyKilledAtVolatileLoad = false;
    if (hasAliases && !doneCommoning)
@@ -1381,7 +1381,7 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
 // This routine kills all prior volatile loads of the same (or aliased) sym ref before we add the current
 // volatile load to the available expressions
 //
-bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences, TR_NodeKillAliasSetInterface &UseDefAliases)
+bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences, TR_UseDefAliasSetInterface &UseDefAliases)
    {
    bool isVolatileRead = false;
    if (!node->getOpCode().isLikeDef() && node->mightHaveVolatileSymbolReference())
@@ -1499,7 +1499,7 @@ void OMR::LocalCSE::killAvailableExpressionsUsingAliases(TR_BitVector &aliases)
 
 
 
-void OMR::LocalCSE::killAvailableExpressionsUsingAliases(TR_NodeKillAliasSetInterface &UseDefAliases)
+void OMR::LocalCSE::killAvailableExpressionsUsingAliases(TR_UseDefAliasSetInterface &UseDefAliases)
    {
    TR_BitVector tmp(_availableLoadExprs);
    UseDefAliases.getAliasesAndSubtractFrom(_availableLoadExprs);

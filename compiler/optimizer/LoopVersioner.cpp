@@ -3133,7 +3133,7 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
 
    if (defNode)
       {
-      TR_NodeKillAliasSetInterface defAliases = defNode->mayKill();
+      TR_UseDefAliasSetInterface defAliases = defNode->mayKill();
       defAliases.getAliasesAndUnionWith(*_seenDefinedSymbolReferences);
 
       if (opCode.isStore())

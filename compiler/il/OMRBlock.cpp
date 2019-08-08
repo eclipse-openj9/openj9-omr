@@ -808,11 +808,11 @@ OMR::Block::splitWithGivenMethodSymbol(TR::ResolvedMethodSymbol *methodSymbol, T
 }
 
 // Required data structures for analysis in SplitPostGRA
-typedef TR::typed_allocator<std::pair<TR::Node *, std::pair<int32_t, TR::Node *> >, TR::Region&> NodeTableAllocator; 
+typedef TR::typed_allocator<std::pair<TR::Node* const, std::pair<int32_t, TR::Node *> >, TR::Region&> NodeTableAllocator; 
 typedef std::less< TR::Node *> NodeTableComparator; 
 typedef std::map<TR::Node *, std::pair<int32_t, TR::Node *>, NodeTableComparator, NodeTableAllocator> NodeTable;
 
-typedef TR::typed_allocator<std::pair <int32_t, TR::Node *>, TR::Region&> StoreRegNodeTableAllocator;
+typedef TR::typed_allocator<std::pair <TR::Node* const, TR::Node *>, TR::Region&> StoreRegNodeTableAllocator;
 typedef std::map<TR::Node *, TR::Node *, NodeTableComparator, StoreRegNodeTableAllocator> StoreRegNodeTable;
 
 /*

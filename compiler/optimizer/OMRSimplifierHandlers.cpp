@@ -4662,19 +4662,7 @@ static bool checkAndReplaceRotation(TR::Node *node,TR::Block *block, TR::Simplif
    if (!performTransformation(s->comp(), "%sReduced or/xor/add in node [" POINTER_PRINTF_FORMAT "] to rol\n", s->optDetailString(), node))
       return false;
 
-   TR::Node *newConstNode = 0;
-   switch (mulConstNode->getDataType())
-      {
-      case TR::Int32:
-         newConstNode = TR::Node::iconst(mulConstNode, correctLeftShiftAmount);
-         break;
-      case TR::Int64:
-         newConstNode = TR::Node::lconst(mulConstNode, correctLeftShiftAmount);
-         break;
-      default:
-         TR_ASSERT(0, "Data Type of node %p not supported in checkAndReplaceRotation!\n",mulConstNode);
-      }
-
+   TR::Node *newConstNode = TR::Node::iconst(mulConstNode, correctLeftShiftAmount);
    TR::Node::recreate(node, TR::ILOpCode::getRotateOpCodeFromDt(mulConstNode->getDataType())); // this line will have to change based on T
 
    // Set the common nonconst node (child of mul and shift) as the child of rol node,

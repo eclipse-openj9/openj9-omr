@@ -760,7 +760,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmInstruction *instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_WordReg);
-   trfprintf(pOutFile, ", 0x%08x", instr->getSourceImmediate());
+   uint32_t imm = instr->getSourceImmediate() & 0xFFFF;
+   uint32_t shift = (instr->getSourceImmediate() & 0x30000) >> 12;
+   trfprintf(pOutFile, ", 0x%04x", imm);
+   if (shift != 0)
+      {
+      trfprintf(pOutFile, ", LSL #%d", shift);
+      }
    trfflush(_comp->getOutFile());
    }
 

@@ -2841,7 +2841,7 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
          case TR_DataAddress:
             {
-            if (comp->needRelocationsForStatics())
+            if (cg()->needRelocationsForStatics())
                {
                cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                          (uint8_t *) getSymbolReference(),

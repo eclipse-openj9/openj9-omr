@@ -460,3 +460,11 @@ TR::ARM64SynchronizationInstruction *generateSynchronizationInstruction(TR::Code
       return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, imm, preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, imm, cg);
    }
+
+TR::ARM64ExceptionInstruction *generateExceptionInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,
+   TR::Node *node, uint32_t imm, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64ExceptionInstruction(op, node, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64ExceptionInstruction(op, node, imm, cg);
+   }

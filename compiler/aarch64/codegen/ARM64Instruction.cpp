@@ -455,3 +455,41 @@ void TR::ARM64CompareBranchInstruction::assignRegisters(TR_RegisterKinds kindToB
 
    setSource1Register(assignedSource1Register);
    }
+
+// TR::ARM64RegBranchInstruction:: member functions
+
+bool TR::ARM64RegBranchInstruction::refsRegister(TR::Register *reg)
+   {
+   return (reg == getTargetRegister());
+   }
+
+bool TR::ARM64RegBranchInstruction::usesRegister(TR::Register *reg)
+   {
+   return (reg == getTargetRegister());
+   }
+
+bool TR::ARM64RegBranchInstruction::defsRegister(TR::Register *reg)
+   {
+   return false;
+   }
+
+bool TR::ARM64RegBranchInstruction::defsRealRegister(TR::Register *reg)
+   {
+   return false;
+   }
+
+void TR::ARM64RegBranchInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   TR::Machine *machine = cg()->machine();
+   TR::Register *targetVirtual = getTargetRegister();
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
+
+   TR::RealRegister *assignedTargetRegister = machine->assignOneRegister(this, targetVirtual);
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
+
+   setTargetRegister(assignedTargetRegister);
+   }

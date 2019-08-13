@@ -194,7 +194,19 @@ TR::Instruction * generateS390CompareAndBranchInstruction(
                    TR::InstOpCode::Mnemonic compareOpCode,
                    TR::Node * node,
                    TR::Register * first,
-                   int32_t second,
+                   TR::RealRegister * second,
+                   TR::InstOpCode::S390BranchCondition bc,
+                   TR::LabelSymbol * branchDestination,
+                   bool needsCC = true,
+                   bool targetIsFarAndCold = false);
+
+template <typename imm32Or64Bit>
+TR::Instruction * generateS390CompareAndBranchInstruction(
+                   TR::CodeGenerator * cg,
+                   TR::InstOpCode::Mnemonic compareOpCode,
+                   TR::Node * node,
+                   TR::Register * first,
+                   imm32Or64Bit second,
                    TR::InstOpCode::S390BranchCondition bc,
                    TR::LabelSymbol * branchDestination,
                    bool needsCC = true,

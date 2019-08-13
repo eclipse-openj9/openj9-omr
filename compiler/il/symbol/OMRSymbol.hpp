@@ -499,7 +499,6 @@ public:
       AddressIsCPIndexOfStatic  = 0x40000000,
       RecognizedStatic          = 0x20000000,
       ConstantPoolAddress       = 0x10000000,
-      SetUpDLPFlags             = 0xF0000000, ///< Used by TR::StaticSymbol::SetupDLPFlags(), == ConstString | AddressIsCPIndexOfStatic | RecognizedStatic
       CompiledMethod            = 0x08000000,
       StartPC                   = 0x04000000,
       CountForRecompile         = 0x02000000,

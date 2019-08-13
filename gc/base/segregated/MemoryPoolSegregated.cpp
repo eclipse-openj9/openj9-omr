@@ -29,9 +29,7 @@
 #include <string.h>
 
 #include "AllocateDescription.hpp"
-#if defined(OMR_GC_ARRAYLETS)
 #include "ArrayletObjectModel.hpp"
-#endif /* OMR_GC_ARRAYLETS */
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
@@ -123,7 +121,6 @@ MM_MemoryPoolSegregated::moveInUseToSweep(MM_EnvironmentBase *env)
 	_regionPool->moveInUseToSweep(env);
 }
 
-#if defined(OMR_GC_ARRAYLETS)
 void*
 MM_MemoryPoolSegregated::allocateChunkedArray(MM_EnvironmentBase *env, MM_AllocateDescription *allocDesc, MM_AllocationContextSegregated *ac)
 {
@@ -203,7 +200,6 @@ MM_MemoryPoolSegregated::allocateArrayletLeaf(MM_EnvironmentBase *env, MM_Alloca
 	
 	return allocationContext->allocateArraylet(env, spine);
 }
-#endif /* OMR_GC_ARRAYLETS */
 
 /**
  * @todo Provide function documentation
@@ -214,7 +210,6 @@ MM_MemoryPoolSegregated::allocateObject(MM_EnvironmentBase *env, MM_AllocateDesc
 	void *result = NULL;
 	MM_AllocationContextSegregated *allocationContext = (MM_AllocationContextSegregated *)env->getAllocationContext();
 
-#if defined(OMR_GC_ARRAYLETS)
 	if (allocDesc->isArrayletSpine()) {
 		result = (void *) allocateContiguous(env, allocDesc, allocationContext);
 	} else if (allocDesc->isChunkedArray()) {
@@ -222,9 +217,6 @@ MM_MemoryPoolSegregated::allocateObject(MM_EnvironmentBase *env, MM_AllocateDesc
 	} else {
 		result = (void *) allocateContiguous(env, allocDesc, allocationContext);
 	}
-#else /* defined(OMR_GC_ARRAYLETS) */
-	result = (void *) allocateContiguous(env, allocDesc, allocationContext);
-#endif /* defined(OMR_GC_ARRAYLETS) */
 	return result;
 }
 

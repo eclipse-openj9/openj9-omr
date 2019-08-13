@@ -67,11 +67,11 @@ MM_ScavengerStats::MM_ScavengerStats()
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
 	,_avgInitialFree(0)
 	,_avgTenureBytes(0)
+	,_avgTenureBytesDeviation(0)
 	,_tiltRatio(0)
 	,_nextScavengeWillPercolate(false)
 #if defined(OMR_GC_LARGE_OBJECT_AREA)	
 	,_avgTenureLOABytes(0)
-	,_avgTenureSOABytes(0)
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 	,_flipDiscardBytes(0)
 	,_tenureDiscardBytes(0)

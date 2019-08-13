@@ -334,6 +334,19 @@ class SymbolReferenceTable
        */
       atomicCompareAndSwapReturnValueSymbol,
 
+      /** \brief
+       *  
+       * These symbols represent placeholder calls for profiling value which will be lowered into trees later.
+       * 
+       * \code
+       *    call <jProfileValue/jProfileValueWithNullCHK>
+       *       <value to be profiled>
+       *       <table address>
+       * \endcode
+       */
+      jProfileValueSymbol, 
+      jProfileValueWithNullCHKSymbol,
+
       firstPerCodeCacheHelperSymbol,
       lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,
 
@@ -444,6 +457,8 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateRuntimeHelper(TR_RuntimeHelper index, bool canGCandReturn, bool canGCandExcept, bool preservesAllRegisters);
 
    TR::SymbolReference * findOrCreateCodeGenInlinedHelper(CommonNonhelperSymbol index);
+   TR::SymbolReference * findOrCreateJProfileValuePlaceHolderSymbolRef();
+   TR::SymbolReference * findOrCreateJProfileValuePlaceHolderWithNullCHKSymbolRef();
    TR::SymbolReference * findOrCreatePotentialOSRPointHelperSymbolRef();
    TR::SymbolReference * findOrCreateOSRFearPointHelperSymbolRef();
    TR::SymbolReference * findOrCreateInduceOSRSymbolRef(TR_RuntimeHelper induceOSRHelper);
@@ -585,10 +600,6 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateMonitorEntrySymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateMonitorExitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
 
-   // Z
-   TR::SymbolReference * findDLPStaticSymbolReference(TR::SymbolReference * staticSymbolReference);
-   TR::SymbolReference * findOrCreateDLPStaticSymbolReference(TR::SymbolReference * staticSymbolReference);
-
    TR::SymbolReference * findOrCreateGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector = false);
    TR::SymbolReference * createGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector = false);
    TR::SymbolReference * findOrCreateGenericIntArrayShadowSymbolReference(intptrj_t offset);
@@ -604,7 +615,7 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateCounterAddressSymbolRef();
    TR::SymbolReference * findOrCreateCounterSymRef(char *name, TR::DataType d, void *address);
    TR::SymbolReference * createRefinedArrayShadowSymbolRef(TR::DataType);
-   TR::SymbolReference * createRefinedArrayShadowSymbolRef(TR::DataType, TR::Symbol *); // TODO: to be changed to a special sym ref
+   TR::SymbolReference * createRefinedArrayShadowSymbolRef(TR::DataType, TR::Symbol *, TR::SymbolReference *original); // TODO: to be changed to a special sym ref
    bool                 isRefinedArrayShadow(TR::SymbolReference *symRef);
    bool                 isImmutableArrayShadow(TR::SymbolReference *symRef);
 
@@ -625,6 +636,9 @@ class SymbolReferenceTable
    void makeSharedAliases(TR::SymbolReference *sr1, TR::SymbolReference *sr2);
    // Retrieve shared aliases bitvector for a given symbol reference
    TR_BitVector *getSharedAliases(TR::SymbolReference *sr);
+
+   // For code motion
+   TR::SymbolReference *getOriginalUnimprovedSymRef(TR::SymbolReference *symRef);
 
    protected:
    /** \brief
@@ -665,6 +679,8 @@ class SymbolReferenceTable
 
    char *strdup(const char *arg);
 
+   void rememberOriginalUnimprovedSymRef(TR::SymbolReference *improved, TR::SymbolReference *original);
+
    TR::Symbol *                       _genericIntShadowSymbol;
 
    TR::Symbol *                         _constantAreaSymbol;
@@ -681,7 +697,6 @@ class SymbolReferenceTable
    List<TR::SymbolReference>            _vtableEntrySymbolRefs;
    List<TR::SymbolReference>            _classLoaderSymbolRefs;
    List<TR::SymbolReference>            _classStaticsSymbolRefs;
-   List<TR::SymbolReference>            _classDLPStaticsSymbolRefs;
    List<TR::SymbolReference>            _debugCounterSymbolRefs;
 
    uint32_t                            _nextRegShadowIndex;
@@ -703,6 +718,14 @@ class SymbolReferenceTable
    typedef TR::typed_allocator<std::pair<int32_t const, TR_BitVector * >, TR::Allocator> AliasMapAllocator;
    typedef std::map<int32_t, TR_BitVector *, std::less<int32_t>, AliasMapAllocator> AliasMap;
    AliasMap                            *_sharedAliasMap;
+
+   // _originalUnimprovedSymRefs maps the reference number of an
+   // improved/refined symbol reference to the reference number of the original
+   // unimproved/unrefined symbol reference, which is suitable for code motion
+   // in case the improvement was due to a flow-sensitive analysis.
+   typedef TR::typed_allocator<std::pair<const int32_t, int32_t>, TR::Allocator> OriginalUnimprovedMapAlloc;
+   typedef std::map<int32_t, int32_t, std::less<int32_t>, OriginalUnimprovedMapAlloc> OriginalUnimprovedMap;
+   OriginalUnimprovedMap               _originalUnimprovedSymRefs;
 
    TR_FrontEnd *_fe;
    TR::Compilation *_compilation;

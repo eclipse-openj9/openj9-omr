@@ -116,6 +116,7 @@ static const char * const STATEMENT_UNSIGNEDSHIFTR               = "UnsignedShif
 static const char * const STATEMENT_RETURN                       = "Return";
 static const char * const STATEMENT_RETURNVALUE                  = "ReturnValue";
 static const char * const STATEMENT_IFTHENELSE                   = "IfThenElse";
+static const char * const STATEMENT_SELECT                       = "Select";
 static const char * const STATEMENT_IFCMPEQUALZERO               = "IfCmpEqualZero";
 static const char * const STATEMENT_IFCMPNOTEQUALZERO            = "IfCmpNotEqualZero";
 static const char * const STATEMENT_IFCMPNOTEQUAL                = "IfCmpNotEqual";

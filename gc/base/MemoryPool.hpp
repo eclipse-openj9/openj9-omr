@@ -223,12 +223,10 @@ public:
 	 * VMs, and arraylet spines (including their leaves, if inline) take this path.
 	 */
 	virtual void *allocateObject(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription) = 0;
-#if defined(OMR_GC_ARRAYLETS)
 	/**
 	 * Allocate an arraylet leaf.
 	 */	
 	virtual void *allocateArrayletLeaf(MM_EnvironmentBase *env, MM_AllocateDescription *allocDesc);
-#endif /* OMR_GC_ARRAYLETS */
 	virtual void *collectorAllocate(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool lockingRequired);
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
 	virtual void *allocateTLH(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uintptr_t maximumSizeInBytesRequired, void * &addrBase, void * &addrTop);

@@ -334,6 +334,21 @@ MergeVisitor::visitComposite(ClassType *type) const
 DDR_RC
 MergeVisitor::visitClass(ClassUDT *type) const
 {
+	if (NULL == type->_superClass) {
+		ClassUDT *otherSuper = ((ClassUDT *)_other)->_superClass;
+
+		if (NULL != otherSuper) {
+			Type *thisSuper = _ir->findTypeInMap(otherSuper);
+
+			if (NULL != thisSuper) {
+				otherSuper = (ClassUDT *)thisSuper;
+			} else {
+				_merged->push_back(otherSuper);
+			}
+			type->_superClass = otherSuper;
+		}
+	}
+
 	return visitComposite(type);
 }
 

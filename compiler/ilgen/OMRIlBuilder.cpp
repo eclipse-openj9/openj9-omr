@@ -2679,6 +2679,37 @@ OMR::IlBuilder::MakeCase(int32_t caseValue, TR::IlBuilder **caseBuilder, int32_t
    return c;
    }
 
+TR::IlValue *
+OMR::IlBuilder::Select(TR::IlValue * condition, TR::IlValue * trueValue, TR::IlValue * falseValue)
+   {
+   TR_ASSERT(condition != NULL && trueValue != NULL && falseValue != NULL,
+                     "Select requires condition, trueValue and falseValue");
+   TR::DataType dt = trueValue->getDataType();
+   TR_ASSERT(dt == falseValue->getDataType(),
+                     "Select requires trueValue and falseValue to be of the same type");
+   TR::ILOpCodes opCode = TR::ILOpCode::ternaryOpCode(dt);
+   TR::IlValue * result = NULL;
+   if (opCode == TR::BadILOp)
+      {
+      TR::IlBuilder * trueBuilder = OrphanBuilder();
+      TR::IlBuilder * falseBuilder = OrphanBuilder();
+      TR::Node * resultNode = TR::Node::create(TR::ILOpCode::constOpCode(dt),0);
+      result = newValue(dt, resultNode);
+      trueBuilder->StoreOver(result,trueValue);
+      falseBuilder->StoreOver(result,falseValue);
+      IfThenElse(&trueBuilder,&falseBuilder,condition);
+      }
+   else
+      {
+      TR::Node * conditionNode = loadValue(condition);
+      TR::Node * ifTrueNode = loadValue(trueValue);
+      TR::Node * ifFalseNode = loadValue(falseValue);
+      TR::Node * resultNode = createWithoutSymRef(opCode, 3, conditionNode, ifTrueNode, ifFalseNode);
+      result = newValue(dt, resultNode);
+      }
+   return result;
+   }
+
 TR::IlBuilder::JBCase **
 OMR::IlBuilder::createCaseArray(uint32_t numCases, va_list args)
    {

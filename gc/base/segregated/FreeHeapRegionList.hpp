@@ -84,10 +84,8 @@ public:
 			region->setRangeHead(region);
 			if (szClass == OMR_SIZECLASSES_LARGE) {
 				region->setLarge(1);
-#if defined(OMR_GC_ARRAYLETS)
 			} else if (szClass == OMR_SIZECLASSES_ARRAYLET) {
 				region->setArraylet();
-#endif /* defined(OMR_GC_ARRAYLETS) */		
 			} else {
 				region->setSmall(szClass);
 			}

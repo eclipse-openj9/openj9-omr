@@ -441,7 +441,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableNewBVA",                      "O\tdisable structure based bit vector analysis",SET_OPTION_BIT(TR_DisableNewBVA), "F"},
    {"disableNewInliningInfrastructure",  "O\tdisable new inlining infrastructure ",        SET_OPTION_BIT(TR_DisableNewInliningInfrastructure), "F"},
    {DisableNewInstanceImplOptString,      "O\tdisable newInstanceImpl opt",                    SET_OPTION_BIT(TR_DisableNewInstanceImplOpt), "F"},
-   {"disableNewLoopTransfer",             "O\tdisable loop transfer for virtual guards",       SET_OPTION_BIT(TR_DisableNewLoopTransfer), "F"},
    {"disableNewMethodOverride",           "O\tdisable replacement for jitUpdateInlineAttribute", SET_OPTION_BIT(TR_DisableNewMethodOverride), "F"},
    {"disableNewStoreHint",                "O\tdisable re-initializing BCD nodes to a new store hint when one is available", SET_OPTION_BIT(TR_DisableNewStoreHint), "F"},
    {"disableNewX86VolatileSupport",        "O\tdisable new X86 Volatile Support", SET_OPTION_BIT(TR_DisableNewX86VolatileSupport), "F"},
@@ -688,6 +687,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableJITaaSHeuristics",             "O\tenable JITaaS heuristics", SET_OPTION_BIT(TR_EnableJITaaSHeuristics), "F"},
    {"enableJITHelpershashCodeImpl",       "O\tenable java version of object hashCode()", SET_OPTION_BIT(TR_EnableJITHelpershashCodeImpl), "F"},
    {"enableJITHelpersoptimizedClone",     "O\tenable java version of object clone()", SET_OPTION_BIT(TR_EnableJITHelpersoptimizedClone), "F"},
+   {"enableJITServerFollowRemoteCompileWithLocalCompile", "O\tenable JITServer to perform local compilations for its remotely compiled methods", SET_OPTION_BIT(TR_JITServerFollowRemoteCompileWithLocalCompile), "F"},
+   {"enableJITServerHeuristics",          "O\tenable JITServer heuristics", SET_OPTION_BIT(TR_EnableJITServerHeuristics), "F"},
    {"enableJProfiling",                   "O\tenable JProfiling", SET_OPTION_BIT(TR_EnableJProfiling), "F"},
    {"enableJProfilingInProfilingCompilations","O\tuse jprofiling instrumentation in profiling compilations", SET_OPTION_BIT(TR_EnableJProfilingInProfilingCompilations), "F"},
    {"enableJVMPILineNumbers",            "M\tenable output of line numbers via JVMPI",       SET_OPTION_BIT(TR_EnableJVMPILineNumbers), "F"},
@@ -4785,6 +4786,7 @@ char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "sampleDensity",
    "profiling",
    "JITaaS",
+   "JITServer",
    "aotcompression",
    };
 

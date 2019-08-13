@@ -100,7 +100,7 @@
 #include "ut_omrmm.h"
 
 #define INITIAL_FREE_HISTORY_WEIGHT ((float)0.8)
-#define TENURE_BYTES_HISTORY_WEIGHT ((float)0.8)
+#define TENURE_BYTES_HISTORY_WEIGHT ((float)0.9)
 
 #define FLIP_TENURE_LARGE_SCAN 4
 #define FLIP_TENURE_LARGE_SCAN_DEFERRED 5
@@ -827,28 +827,44 @@ MM_Scavenger::calcGCStats(MM_EnvironmentStandard *env)
 		MM_ScavengerStats *scavengerGCStats;
 		scavengerGCStats = &_extensions->scavengerStats;
 		uintptr_t initialFree = env->_cycleState->_activeSubSpace->getActualActiveFreeMemorySize();
+		uintptr_t tenureAggregateBytes = 0;
+		float tenureBytesDeviation = 0;
 
 		/* First collection  ? */
 		if (scavengerGCStats->_gcCount > 1 ) {
 			scavengerGCStats->_avgInitialFree = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgInitialFree, (float)initialFree, INITIAL_FREE_HISTORY_WEIGHT);
-			scavengerGCStats->_avgTenureBytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureBytes, (float)scavengerGCStats->_tenureAggregateBytes, TENURE_BYTES_HISTORY_WEIGHT);
+			
 #if defined(OMR_GC_LARGE_OBJECT_AREA)
-			scavengerGCStats->_avgTenureSOABytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureSOABytes,
-																		(float)(scavengerGCStats->_tenureAggregateBytes - scavengerGCStats->_tenureLOABytes),
-																		TENURE_BYTES_HISTORY_WEIGHT);
+			tenureAggregateBytes = scavengerGCStats->_tenureAggregateBytes - scavengerGCStats->_tenureLOABytes;															
 			scavengerGCStats->_avgTenureLOABytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureLOABytes,
 																		(float)scavengerGCStats->_tenureLOABytes,
 																		TENURE_BYTES_HISTORY_WEIGHT);
-
+#else /* OMR_GC_LARGE_OBJECT_AREA */
+			tenureAggregateBytes = scavengerGCStats->_tenureAggregateBytes;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
+			scavengerGCStats->_avgTenureBytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureBytes, 
+																					(float)tenureAggregateBytes, 
+																					TENURE_BYTES_HISTORY_WEIGHT);
+			tenureBytesDeviation = (float)tenureAggregateBytes - scavengerGCStats->_avgTenureBytes;
+			scavengerGCStats->_avgTenureBytesDeviation = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureBytesDeviation, 
+																				MM_Math::abs(tenureBytesDeviation), 
+																				TENURE_BYTES_HISTORY_WEIGHT);																											
 		} else {
 			scavengerGCStats->_avgInitialFree = initialFree;
-			scavengerGCStats->_avgTenureBytes = scavengerGCStats->_tenureAggregateBytes;
-#if defined(OMR_GC_LARGE_OBJECT_AREA)
-			scavengerGCStats->_avgTenureSOABytes = scavengerGCStats->_tenureAggregateBytes - scavengerGCStats->_tenureLOABytes;
-			scavengerGCStats->_avgTenureLOABytes = scavengerGCStats->_tenureLOABytes;
-#endif /* OMR_GC_LARGE_OBJECT_AREA */
+
+			/* We can assume that in the first GC, about half of the objects are long lived objects, so we use this heuristic to give a rough estimate for the starting point */
+			scavengerGCStats->_avgTenureBytes = (uintptr_t)(scavengerGCStats->_flipBytes / 2);
 		}
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+			if (_extensions->debugConcurrentMark) {
+				OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+            	omrtty_printf("Tenured bytes: %zu\navgTenureBytes: %zu\ntenureBytesDeviation: %f\navgTenureBytesDeviation: %zu\n",
+				tenureAggregateBytes,
+				scavengerGCStats->_avgTenureBytes,
+				tenureBytesDeviation, 
+				scavengerGCStats->_avgTenureBytesDeviation);
+			}
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */	
 	}
 }
 
@@ -1711,10 +1727,10 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 }
 
 void
-MM_Scavenger::deepScanOutline(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t selfReferencingField1, uintptr_t selfReferencingField2)
+MM_Scavenger::deepScanOutline(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t priorityFieldOffset1, uintptr_t priorityFieldOffset2)
 {
-	void *tempObj = objectPtr;
-	uintptr_t priorityField = selfReferencingField1;
+	void *currentDeepObj = objectPtr;
+	uintptr_t priorityField = priorityFieldOffset1;
 	/* Throttle - Deep scan should be terminated when the free list is utilized more than 50% */
 	uintptr_t freeListUtilizationLimit = _scavengeCacheFreeList.getAllocatedCacheCount() / 2;
 
@@ -1723,30 +1739,31 @@ MM_Scavenger::deepScanOutline(MM_EnvironmentStandard *env, omrobjectptr_t object
 	env->_scavengerStats._totalDeepStructures += 1;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
 
-	while (true) {
-		GC_SlotObject tempSlot(env->getOmrVM(), (fomrobject_t*)(((uintptr_t) tempObj) + priorityField));
-		if (NULL == tempSlot.readReferenceFromSlot()) {
-			if ((priorityField == selfReferencingField2) || (selfReferencingField2 == 0)) {
+	do {
+		GC_SlotObject prioritySlot(env->getOmrVM(), (fomrobject_t*)(((uintptr_t) currentDeepObj) + priorityField));
+		copyAndForward(env, &prioritySlot);
+		/* Did we encounter an already visited/NULL object? */
+		if (NULL == env->_effectiveCopyScanCache) {
+			/* Can't continue any further - attempt to deep scan with other self referencing field (e.g, prev field) */
+			if ((priorityField == priorityFieldOffset2) || (priorityFieldOffset2 == 0)) {
 				break;
 			}
-			priorityField = selfReferencingField2;
-		} else {
-			copyAndForward(env, &tempSlot);
-			/* Did we encounter an already visited object or hit throttling threshold? */
-			if (NULL == env->_effectiveCopyScanCache) {
-				break;
-			}
+			priorityField = priorityFieldOffset2;
+			continue;
+		}
 
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
-			objDeepScanned += 1;
+		objDeepScanned += 1;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
 
-			if(env->approxScanCacheCount > freeListUtilizationLimit){
-				break;
-			}
-			tempObj = tempSlot.readReferenceFromSlot();
+		if(env->approxScanCacheCount > freeListUtilizationLimit) {
+			break;
 		}
-	}
+		currentDeepObj = prioritySlot.readReferenceFromSlot();
+
+	/* The successfully copied object slot can possibly be overwritten with NULL by a mutator (CS).
+	 * To avoid race condition, we need a NULL check before we proceed. */
+	} while (NULL != currentDeepObj);
 
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 	env->_scavengerStats._totalObjsDeepScanned += objDeepScanned;

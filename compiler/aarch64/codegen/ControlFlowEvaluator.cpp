@@ -467,17 +467,19 @@ OMR::ARM64::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lookupEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   // Only temporary (#3963 implements this)
+   cg->comp()->failCompilation<TR::AssertionFailure>("lookupEvaluator");
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::tableEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   // Only temporary (#3858 implements this)
+   cg->comp()->failCompilation<TR::AssertionFailure>("tableEvaluator");
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::NULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -534,3 +536,62 @@ OMR::ARM64::TreeEvaluator::ArrayCHKEvaluator(TR::Node *node, TR::CodeGenerator *
 	// TODO:ARM64: Enable TR::TreeEvaluator::ArrayCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
+
+static TR::Register *
+commonMinMaxEvaluator(TR::Node *node, bool is64bit, TR::ARM64ConditionCode cc, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *trgReg;
+
+   if (cg->canClobberNodesRegister(firstChild))
+      {
+      trgReg = src1Reg; // use the first child as the target
+      }
+   else
+      {
+      trgReg = cg->allocateRegister();
+      }
+
+   TR_ASSERT(node->getNumChildren() == 2, "The number of children for imax/imin/lmax/lmin must be 2.");
+
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+
+   // ToDo:
+   // Optimize the code by using generateCompareImmInstruction() when possible
+   generateCompareInstruction(cg, node, src1Reg, src2Reg, is64bit);
+
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::cselx : TR::InstOpCode::cselw;
+   generateCondTrg1Src2Instruction(cg, op, node, trgReg, src1Reg, src2Reg, cc);
+
+   node->setRegister(trgReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return trgReg;
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::imaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonMinMaxEvaluator(node, false, TR::CC_GT, cg);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::lmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonMinMaxEvaluator(node, true, TR::CC_GT, cg);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::iminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonMinMaxEvaluator(node, false, TR::CC_LT, cg);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::lminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonMinMaxEvaluator(node, true, TR::CC_LT, cg);
+   }

@@ -97,21 +97,6 @@ public:
    uint32_t getTOCIndex()                     { return _assignedTOCIndex; }
    void     setTOCIndex(uint32_t idx)         { _assignedTOCIndex = idx; }
 
-
-   /**
-    * Copies a subset of bits from an input flags
-    *
-    * Used as part of the Dynamic Literal Pool code.
-    *
-    * \TODO: Better document this function and what exactly it's intended
-    *        accomplish, as it's not clear at all.
-    */
-   void setUpDLPFlags(int32_t flags)
-      {
-      int32_t value = flags & SetUpDLPFlags;
-      _flags.set(value);
-      }
-
 private:
 
    void * _staticAddress;

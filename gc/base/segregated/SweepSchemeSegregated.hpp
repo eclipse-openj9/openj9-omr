@@ -93,9 +93,7 @@ protected:
 private:
 	void unmarkRegion(MM_EnvironmentBase *env, MM_HeapRegionDescriptorSegregated *region);
 	void sweepSmallRegion(MM_EnvironmentBase *env, MM_HeapRegionDescriptorSegregated *region);
-#if defined(OMR_GC_ARRAYLETS)
 	void sweepArrayletRegion(MM_EnvironmentBase *env, MM_HeapRegionDescriptorSegregated *region);
-#endif /* defined(OMR_GC_ARRAYLETS) */
 	void sweepLargeRegion(MM_EnvironmentBase *env, MM_HeapRegionDescriptorSegregated *region);
 	void addBytesFreedAfterSweep(MM_EnvironmentBase *env, MM_HeapRegionDescriptorSegregated *region);
 	void incrementalSweepSmall(MM_EnvironmentBase *env);

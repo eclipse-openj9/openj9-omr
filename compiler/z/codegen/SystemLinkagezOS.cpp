@@ -530,13 +530,13 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::N
       {
       uint32_t callDescriptorValue = TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(this, callNode);
 
-      TR::Snippet* callDescriptor = new (self()->trHeapMemory()) TR::XPLINKCallDescriptorSnippet(cg(), this, callDescriptorValue);
-      cg()->addSnippet(callDescriptor);
+      TR::S390ConstantDataSnippet* callDescriptor = new (self()->trHeapMemory()) TR::XPLINKCallDescriptorSnippet(cg(), this, callDescriptorValue);
+      cg()->addDataConstantSnippet(callDescriptor);
 
       uint32_t nopDescriptor = 0x47000000 | (static_cast<uint32_t>(callType) << 16);
       cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, nopDescriptor, cursor);
 
-      cg()->addRelocation(new (cg()->trHeapMemory()) InstructionLabelRelative16BitRelocation(cursor, 2, callDescriptor->getSnippetLabel(), 8));
+      cg()->addRelocation(new (cg()->trHeapMemory()) XPLINKCallDescriptorRelocation(cursor, callDescriptor->getSnippetLabel()));
       }
    else
       {
@@ -995,4 +995,38 @@ TR::S390zOSSystemLinkage::spillFPRsInPrologue(TR::Node* node, TR::Instruction* c
       }
 
    return cursor;
+   }
+
+TR::S390zOSSystemLinkage::XPLINKCallDescriptorRelocation::XPLINKCallDescriptorRelocation(TR::Instruction* nop, TR::LabelSymbol* callDescriptor)
+   :
+      TR::LabelRelocation(NULL, callDescriptor),
+      _nop(nop)
+   {
+   }
+
+uint8_t*
+TR::S390zOSSystemLinkage::XPLINKCallDescriptorRelocation::getUpdateLocation()
+   {
+   uint8_t* updateLocation = TR::LabelRelocation::getUpdateLocation();
+
+   if (updateLocation == NULL && _nop->getBinaryEncoding() != NULL)
+      {
+      updateLocation = setUpdateLocation(_nop->getBinaryEncoding() + 2);
+      }
+
+   return updateLocation;
+   }
+
+void
+TR::S390zOSSystemLinkage::XPLINKCallDescriptorRelocation::apply(TR::CodeGenerator* cg)
+   {
+   int64_t offsetToCallDescriptor = static_cast<int64_t>(getLabel()->getCodeLocation() - (_nop->getBinaryEncoding() - 7)) / 8;
+
+   if (offsetToCallDescriptor < std::numeric_limits<int16_t>::min() || offsetToCallDescriptor > std::numeric_limits<int16_t>::max())
+      {
+      cg->comp()->failCompilation<TR::ExcessiveComplexity>("Unable to encode offset to XPLINK call descriptor");
+      }
+
+   uint8_t* p = getUpdateLocation();
+   *reinterpret_cast<int16_t*>(p) = static_cast<int16_t>(offsetToCallDescriptor);
    }

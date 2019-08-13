@@ -44,28 +44,12 @@ TR::Instruction *generateInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnem
    return new (cg->trHeapMemory()) TR::Instruction(op, node, cg);
    }
 
-TR::Instruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node, uint32_t imm,
+TR::ARM64ImmInstruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node, uint32_t imm,
                                        TR::Instruction *preced)
    {
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64ImmInstruction(op, node, imm, preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64ImmInstruction(op, node, imm, cg);
-   }
-
-TR::Instruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node, uint32_t imm,
-                                       TR_ExternalRelocationTargetKind relocationKind, TR::Instruction *preced)
-   {
-   if (preced)
-      return new (cg->trHeapMemory()) TR::ARM64ImmInstruction(op, node, imm, relocationKind, preced, cg);
-   return new (cg->trHeapMemory()) TR::ARM64ImmInstruction(op, node, imm, relocationKind, cg);
-   }
-
-TR::Instruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node, uint32_t imm,
-                                       TR_ExternalRelocationTargetKind relocationKind, TR::SymbolReference *sr, TR::Instruction *preced)
-   {
-   if (preced)
-      return new (cg->trHeapMemory()) TR::ARM64ImmInstruction(op, node, imm, relocationKind, sr, preced, cg);
-   return new (cg->trHeapMemory()) TR::ARM64ImmInstruction(op, node, imm, relocationKind, sr, cg);
    }
 
 TR::Instruction *generateImmSymInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
@@ -467,4 +451,12 @@ TR::Instruction *generateCSetInstruction(TR::CodeGenerator *cg, TR::Node *node,
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64Trg1CondInstruction(op, node, treg, cc_invert(cc), preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64Trg1CondInstruction(op, node, treg, cc_invert(cc), cg);
+   }
+
+TR::ARM64SynchronizationInstruction *generateSynchronizationInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,
+   TR::Node *node, uint32_t imm, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, imm, cg);
    }

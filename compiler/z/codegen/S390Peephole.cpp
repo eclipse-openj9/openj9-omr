@@ -2046,7 +2046,7 @@ TR_S390PostRAPeephole::revertTo32BitShift()
    // Note the NOT in front of second boolean expr. pair
    TR::InstOpCode::Mnemonic oldOpCode = instr->getOpCodeValue();
    if ((oldOpCode == TR::InstOpCode::SLLG || oldOpCode == TR::InstOpCode::SLAG)
-         && !(instr->getNode()->getOpCodeValue() == TR::ishl || instr->getNode()->getOpCodeValue() == TR::iushl))
+         && instr->getNode()->getOpCodeValue() != TR::ishl)
       {
       return false;
       }

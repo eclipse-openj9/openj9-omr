@@ -2006,8 +2006,23 @@ TR_InlinerBase::addGuardForVirtual(
    // When running with HCR implemented using OSR plain HCR guards will be processed later in the
    // compilation and those later processes will handle them using OSR so we don't want to complicate
    // that with additional OSR at this point
+
+   // Late inlining may result in callerSymbol not being the resolved method that actually calls the inlined method
+   // This is problematic for linking OSR blocks
+   TR::ResolvedMethodSymbol *callingMethod = callNode->getByteCodeInfo().getCallerIndex() == -1 ?
+      comp()->getMethodSymbol() : comp()->getInlinedResolvedMethodSymbol(callNode->getByteCodeInfo().getCallerIndex());
+
+   // TODO:  Need to coordinate change between OMR's inliner and downstream
+   //        implementations of inliner.  They must access the calling method
+   //        for OSR in the same way, guarded by INLINER_OSR_CALLING_METHOD,
+   //        until INLINER_OSR_CALLING_METHOD is ultimately defined in OMR.
+#if defined(INLINER_OSR_CALLING_METHOD)
+   if ((comp()->getHCRMode() != TR::osr || guard->_kind != TR_HCRGuard)
+       && callingMethod->supportsInduceOSR(callNode->getByteCodeInfo(), block1, comp(), false))
+#else /* !defined(INLINER_OSR_CALLING_METHOD) */
    if ((comp()->getHCRMode() != TR::osr || guard->_kind != TR_HCRGuard)
        && callNode->getSymbolReference()->getOwningMethodSymbol(comp())->supportsInduceOSR(callNode->getByteCodeInfo(), block1, comp(), false))
+#endif /* defined(INLINER_OSR_CALLING_METHOD) */
       {
       bool shouldUseOSR = heuristicForUsingOSR(callNode, calleeSymbol, callerSymbol, createdHCRAndVirtualGuard);
 
@@ -2018,11 +2033,6 @@ TR_InlinerBase::addGuardForVirtual(
            createdHCRGuard ||
            (osrForNonHCRGuards && shouldAttemptOSR)))
          {
-         // Late inlining may result in callerSymbol not being the resolved method that actually calls the inlined method
-         // This is problematic for linking OSR blocks
-         TR::ResolvedMethodSymbol *callingMethod = callNode->getByteCodeInfo().getCallerIndex() == -1 ?
-            comp()->getMethodSymbol() : comp()->getInlinedResolvedMethodSymbol(callNode->getByteCodeInfo().getCallerIndex());
-
          TR::TreeTop *induceTree = callingMethod->genInduceOSRCall(guardedCallNodeTreeTop, callNode->getByteCodeInfo().getCallerIndex(), (callNode->getNumChildren() - callNode->getFirstArgumentIndex()), false, false, callerSymbol->getFlowGraph());
          if (induceOSRCallTree)
             *induceOSRCallTree = induceTree;
@@ -3935,6 +3945,7 @@ void TR_InlinerBase::getSymbolAndFindInlineTargets(TR_CallStack *callStack, TR_C
 
    if (callsite->_initialCalleeSymbol)
       {
+      callsite->_initialCalleeMethod = callsite->_initialCalleeSymbol->getResolvedMethod();
       if (getPolicy()->supressInliningRecognizedInitialCallee(callsite, comp()))
          isInlineable = Recognized_Callee;
 
@@ -3951,9 +3962,6 @@ void TR_InlinerBase::getSymbolAndFindInlineTargets(TR_CallStack *callStack, TR_C
          TR_VirtualGuardSelection *guard = new (trStackMemory()) TR_VirtualGuardSelection(TR_NoGuard);
          callsite->addTarget(trMemory(),this ,guard ,callsite->_initialCalleeSymbol->getResolvedMethod(),callsite->_receiverClass);
          }
-
-      callsite->_initialCalleeMethod = callsite->_initialCalleeSymbol->getResolvedMethod();
-
       }
    else if ((isInlineable = static_cast<TR_InlinerFailureReason> (checkInlineableWithoutInitialCalleeSymbol (callsite, comp()))) != InlineableTarget)
       {
@@ -4075,58 +4083,6 @@ void TR_InlinerBase::applyPolicyToTargets(TR_CallStack *callStack, TR_CallSite *
          continue;
          }
 
-      int32_t bytecodeSize = getPolicy()->getInitialBytecodeSize(calltarget->_calleeMethod, calltarget->_calleeSymbol, comp());
-
-      if (!forceInline(calltarget))
-         getUtil()->estimateAndRefineBytecodeSize(callsite, calltarget, callStack, bytecodeSize);
-
-      if (calltarget->_calleeSymbol && strstr(calltarget->_calleeSymbol->signature(trMemory()), "FloatingDecimal"))
-         {
-         bytecodeSize >>= 1;
-
-         if (comp()->trace(OMR::inlining))
-            traceMsg( comp(), "Reducing bytecode size to %d because it's method of FloatingDecimal\n", bytecodeSize);
-         }
-
-      bool toInline = getPolicy()->tryToInline(calltarget, callStack, true);
-
-      TR_ByteCodeInfo &bcInfo = callsite->_bcInfo;
-      // get the number of locals in the callee
-      int32_t numberOfLocalsInCallee = calltarget->_calleeMethod->numberOfParameterSlots();// + calleeResolvedMethod->numberOfTemps();
-      if (!forceInline(calltarget) &&
-            exceedsSizeThreshold(callsite, bytecodeSize,
-                                   (callsite->_callerBlock != NULL) ? callsite->_callerBlock :
-                                      (callsite->_callNodeTreeTop ? callsite->_callNodeTreeTop->getEnclosingBlock() : 0),
-                                   bcInfo, numberOfLocalsInCallee, callsite->_callerResolvedMethod,
-                                   calltarget->_calleeMethod,callsite->_callNode,callsite->_allConsts)
-
-         )
-         {
-         if (toInline)
-            {
-            if (comp()->trace(OMR::inlining))
-               traceMsg(comp(), "tryToInline pattern matched.  Skipping size check for %s\n", calltarget->_calleeMethod->signature(comp()->trMemory()));
-            callsite->tagcalltarget(i, tracer(), OverrideInlineTarget);
-            }
-         else
-           {
-            // debugging counters inserted in call
-            callsite->removecalltarget(i, tracer(), Exceeds_ByteCode_Threshold);
-            i--;
-            continue;
-            }
-         }
-      else
-         {
-         if (toInline)
-            {
-            if (comp()->trace(OMR::inlining))
-               traceMsg(comp(), "tryToInline pattern matched.  Within the size check for %s\n", calltarget->_calleeMethod->signature(comp()->trMemory()));
-            // change the default InlineableTarget
-            callsite->tagcalltarget(i,tracer(),TryToInlineTarget);
-            }
-         }
-
       // only inline recursive calls once
       //
       static char *selfInliningLimitStr = feGetEnv("TR_selfInliningLimit");
@@ -4231,7 +4187,57 @@ void TR_InlinerBase::applyPolicyToTargets(TR_CallStack *callStack, TR_CallSite *
             }
          }
 
+      int32_t bytecodeSize = getPolicy()->getInitialBytecodeSize(calltarget->_calleeMethod, calltarget->_calleeSymbol, comp());
 
+      if (!forceInline(calltarget))
+         getUtil()->estimateAndRefineBytecodeSize(callsite, calltarget, callStack, bytecodeSize);
+
+      if (calltarget->_calleeSymbol && strstr(calltarget->_calleeSymbol->signature(trMemory()), "FloatingDecimal"))
+         {
+         bytecodeSize >>= 1;
+
+         if (comp()->trace(OMR::inlining))
+            traceMsg( comp(), "Reducing bytecode size to %d because it's method of FloatingDecimal\n", bytecodeSize);
+         }
+
+      bool toInline = getPolicy()->tryToInline(calltarget, callStack, true);
+
+      TR_ByteCodeInfo &bcInfo = callsite->_bcInfo;
+      // get the number of locals in the callee
+      int32_t numberOfLocalsInCallee = calltarget->_calleeMethod->numberOfParameterSlots();// + calleeResolvedMethod->numberOfTemps();
+      if (!forceInline(calltarget) &&
+            exceedsSizeThreshold(callsite, bytecodeSize,
+                                   (callsite->_callerBlock != NULL) ? callsite->_callerBlock :
+                                      (callsite->_callNodeTreeTop ? callsite->_callNodeTreeTop->getEnclosingBlock() : 0),
+                                   bcInfo, numberOfLocalsInCallee, callsite->_callerResolvedMethod,
+                                   calltarget->_calleeMethod,callsite->_callNode,callsite->_allConsts)
+
+         )
+         {
+         if (toInline)
+            {
+            if (comp()->trace(OMR::inlining))
+               traceMsg(comp(), "tryToInline pattern matched.  Skipping size check for %s\n", calltarget->_calleeMethod->signature(comp()->trMemory()));
+            callsite->tagcalltarget(i, tracer(), OverrideInlineTarget);
+            }
+         else
+           {
+            // debugging counters inserted in call
+            callsite->removecalltarget(i, tracer(), Exceeds_ByteCode_Threshold);
+            i--;
+            continue;
+            }
+         }
+      else
+         {
+         if (toInline)
+            {
+            if (comp()->trace(OMR::inlining))
+               traceMsg(comp(), "tryToInline pattern matched.  Within the size check for %s\n", calltarget->_calleeMethod->signature(comp()->trMemory()));
+            // change the default InlineableTarget
+            callsite->tagcalltarget(i,tracer(),TryToInlineTarget);
+            }
+         }
       }
 
    return;
@@ -4822,6 +4828,8 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
          comp()->dumpMethodTrees("after inlining while inlining", calleeSymbol);
          }
       }
+
+   getUtil()->requestAdditionalOptimizations(calltarget);
 
    if (comp()->getOption(TR_FullSpeedDebug) && !getPolicy()->mustBeInlinedEvenInDebug(calleeSymbol->getResolvedMethod(), callNodeTreeTop) && (!comp()->getOption(TR_EnableOSR) || comp()->getOption(TR_MimicInterpreterFrameShape)))
       {
@@ -5423,14 +5431,6 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       }
 
    updateCallersFlags(callerSymbol, calleeSymbol, _optimizer);
-
-
-   if (getUtil()->needTargetedInlining(calleeSymbol))
-      {
-      _optimizer->setRequestOptimization(OMR::methodHandleInvokeInliningGroup);
-      if (comp()->trace(OMR::inlining))
-         heuristicTrace(tracer(),"Requesting another pass of targeted inlining due to %s\n", tracer()->traceSignature(calleeSymbol));
-      }
 
    // Append the callee's catch block to the end of the caller
    //
@@ -6464,4 +6464,17 @@ TR_InlinerTracer *
 OMR_InlinerUtil::getInlinerTracer(TR::Optimization *optimization)
    {
    return new (comp()->trHeapMemory()) TR_InlinerTracer(comp(),fe(),optimization);
+   }
+
+
+void
+OMR_InlinerUtil::requestAdditionalOptimizations(TR_CallTarget *calltarget)
+   {
+   // This code will be removed once the dependent down stream project is merged properly
+   if (needTargetedInlining(calltarget->_calleeSymbol))
+      {
+      inliner()->getOptimizer()->setRequestOptimization(OMR::methodHandleInvokeInliningGroup);
+      if (comp()->trace(OMR::inlining))
+         heuristicTrace(tracer(),"Requesting another pass of targeted inlining due to %s\n", tracer()->traceSignature(calltarget->_calleeSymbol));
+      }
    }

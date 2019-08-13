@@ -162,7 +162,6 @@ MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_
 	return addr;
 }
 
-#if defined(OMR_GC_ARRAYLETS)
 void *
 MM_MemorySubSpaceSemiSpace::allocateArrayletLeaf(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, MM_MemorySubSpace *baseSubSpace, MM_MemorySubSpace *previousSubSpace, bool shouldCollectOnFailure)
 {
@@ -188,7 +187,6 @@ MM_MemorySubSpaceSemiSpace::allocateArrayletLeaf(MM_EnvironmentBase *env, MM_All
 	
 	return addr;	
 }
-#endif /* OMR_GC_ARRAYLETS */
 
 void *
 MM_MemorySubSpaceSemiSpace::allocateTLH(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, MM_ObjectAllocationInterface *objectAllocationInterface, MM_MemorySubSpace *baseSubSpace, MM_MemorySubSpace *previousSubSpace, bool shouldCollectOnFailure)

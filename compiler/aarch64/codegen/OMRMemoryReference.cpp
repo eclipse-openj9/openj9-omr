@@ -226,15 +226,37 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _offset(0),
    _symbolReference(symRef)
    {
-   TR_UNIMPLEMENTED();
-   }
+   TR::Symbol *symbol = symRef->getSymbol();
 
+   if (symbol->isStatic())
+      {
+      if (symRef->isUnresolved())
+         {
+         self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef, false, false));
+         cg->addSnippet(self()->getUnresolvedSnippet());
+         }
+      else
+         {
+         _baseRegister = cg->allocateRegister();
+         self()->setBaseModifiable();
+         loadRelocatableConstant(node, symRef, _baseRegister, self(), cg);
+         }
+      }
 
-bool OMR::ARM64::MemoryReference::useIndexedForm()
-   {
-   TR_UNIMPLEMENTED();
+   if (symbol->isRegisterMappedSymbol())
+      {
+      if (!symbol->isMethodMetaData())
+         { // must be either auto or parm or error.
+         _baseRegister = cg->getStackPointerRegister();
+         }
+      else
+         {
+         _baseRegister = cg->getMethodMetaDataRegister();
+         }
+      }
 
-   return false;
+   self()->setSymbol(symbol, cg);
+   self()->addToOffset(0, symRef->getOffset(), cg);
    }
 
 

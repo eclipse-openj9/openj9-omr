@@ -107,12 +107,12 @@ OMR::SymbolReferenceTable::SymbolReferenceTable(size_t sizeHint, TR::Compilation
      _vtableEntrySymbolRefs(comp->trMemory()),
      _classLoaderSymbolRefs(comp->trMemory()),
      _classStaticsSymbolRefs(comp->trMemory()),
-     _classDLPStaticsSymbolRefs(comp->trMemory()),
      _debugCounterSymbolRefs(comp->trMemory()),
      _methodsBySignature(8, comp->allocator("SymRefTab")), // TODO: Determine a suitable default size
      _hasImmutable(false),
      _hasUserField(false),
-     _sharedAliasMap(NULL)
+     _sharedAliasMap(NULL),
+     _originalUnimprovedSymRefs(std::less<int32_t>(), comp->allocator())
    {
    _numHelperSymbols = TR_numRuntimeHelpers + 1;;
 
@@ -474,14 +474,17 @@ OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(TR::DataType type)
    TR::SymbolReference * symRef = getSymRef(getArrayShadowIndex(type));
    symRef->setReallySharesSymbol();
 
-   return createRefinedArrayShadowSymbolRef(type, (TR::Symbol *) symRef->getSymbol());
+   return createRefinedArrayShadowSymbolRef(type, (TR::Symbol *) symRef->getSymbol(), symRef);
    }
 
 
 
 //TODO: to be changed to a special sym ref to be used by intrinsics
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(TR::DataType type, TR::Symbol *sym)
+OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(
+   TR::DataType type,
+   TR::Symbol *sym,
+   TR::SymbolReference *original)
    {
    const bool trace=false;
    sym->setArrayShadowSymbol();
@@ -519,6 +522,8 @@ OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(TR::DataType type, 
       aliasBuilder.refinedNonIntPrimitiveArrayShadows().print(comp());
       traceMsg(comp(),"\n");
       }
+
+   rememberOriginalUnimprovedSymRef(newRef, original);
    return newRef;
    }
 
@@ -1037,6 +1042,7 @@ OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference
       aliasBuilder.immutableArrayElementSymRefs().set(index);
       }
 
+   rememberOriginalUnimprovedSymRef(result, originalSymRef);
    return result;
    }
 
@@ -1112,52 +1118,6 @@ OMR::SymbolReferenceTable::strdup(const char *arg)
    return result;
    }
 
-TR::SymbolReference *
-OMR::SymbolReferenceTable::findDLPStaticSymbolReference(TR::SymbolReference * staticSymbolReference)
-   {
-   ListIterator<TR::SymbolReference> i(&_classDLPStaticsSymbolRefs);
-   TR::SymbolReference * symRef;
-   for (symRef = i.getFirst(); symRef; symRef = i.getNext())
-      if (symRef == staticSymbolReference)
-         return symRef;
-
-   return NULL;
-   }
-
-
-TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateDLPStaticSymbolReference(TR::SymbolReference * staticSymbolReference)
-   {
-
-   ListIterator<TR::SymbolReference> i(&_classDLPStaticsSymbolRefs);
-   TR::SymbolReference * symRef;
-
-   if(!staticSymbolReference->isUnresolved())
-      {
-      for (symRef = i.getFirst(); symRef; symRef = i.getNext())
-         if (symRef->getSymbol()->getStaticSymbol()->getStaticAddress() == staticSymbolReference->getSymbol()->getStaticSymbol()->getStaticAddress())
-            return symRef;
-      }
-
-   TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),TR::Address);
-   sym->setStaticAddress(staticSymbolReference->getSymbol()->getStaticSymbol()->getStaticAddress());
-   sym->setNotCollected();
-   symRef = new (trHeapMemory()) TR::SymbolReference(self(), *staticSymbolReference,0);
-   symRef->setSymbol(sym);
-   int32_t flags =  staticSymbolReference->getSymbol()->getStaticSymbol()->getFlags();
-   sym->setUpDLPFlags(flags);
-
-   if(staticSymbolReference->isUnresolved())
-      {
-      symRef->setCanGCandReturn();
-      symRef->setCanGCandExcept();
-      symRef->setUnresolved();
-      }
-
-   _classDLPStaticsSymbolRefs.add(symRef);
-   return symRef;
-   }
-
 TR::Symbol *
 OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbol()
    {
@@ -1166,8 +1126,6 @@ OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbol()
 
    return _genericIntShadowSymbol;
    }
-
-
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector)
@@ -2006,6 +1964,31 @@ TR_BitVector *OMR::SymbolReferenceTable::getSharedAliases(TR::SymbolReference *s
    return NULL;
    }
 
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderSymbolRef()
+   {
+   if (!element(jProfileValueSymbol))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
+      sym->setHelper();
+      element(jProfileValueSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), jProfileValueSymbol, sym);
+      }
+   return element(jProfileValueSymbol);
+   }
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderWithNullCHKSymbolRef()
+   {
+   if (!element(jProfileValueWithNullCHKSymbol))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
+      sym->setHelper();
+      element(jProfileValueWithNullCHKSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), jProfileValueWithNullCHKSymbol, sym);
+      }
+   return element(jProfileValueWithNullCHKSymbol); 
+   }
+
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreatePotentialOSRPointHelperSymbolRef()
    {
@@ -2030,4 +2013,33 @@ OMR::SymbolReferenceTable::findOrCreateOSRFearPointHelperSymbolRef()
       element(osrFearPointHelperSymbol) = symRef;
       }
    return element(osrFearPointHelperSymbol);
+   }
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::getOriginalUnimprovedSymRef(TR::SymbolReference *symRef)
+   {
+   auto entry = _originalUnimprovedSymRefs.find(symRef->getReferenceNumber());
+   if (entry == _originalUnimprovedSymRefs.end())
+      return symRef;
+   else
+      return getSymRef(entry->second);
+   }
+
+void
+OMR::SymbolReferenceTable::rememberOriginalUnimprovedSymRef(
+   TR::SymbolReference *improved,
+   TR::SymbolReference *original)
+   {
+   original = getOriginalUnimprovedSymRef(original);
+   auto insertResult = _originalUnimprovedSymRefs.insert(
+      std::make_pair(improved->getReferenceNumber(), original->getReferenceNumber()));
+
+   auto entryPreventingInsertion = insertResult.first;
+   bool insertionSucceeded = insertResult.second;
+   TR_ASSERT_FATAL(
+      insertionSucceeded,
+      "original unimproved symref collision for #%d: originals are #%d and #%d",
+      improved->getReferenceNumber(),
+      entryPreventingInsertion->second,
+      original->getReferenceNumber());
    }

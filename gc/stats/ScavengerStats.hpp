@@ -103,6 +103,7 @@ public:
 	 */ 
 	uintptr_t _avgInitialFree;
 	uintptr_t _avgTenureBytes;
+	uintptr_t _avgTenureBytesDeviation; /**< The average, weighted deviation of the tenureBytes*/
 	
 	uintptr_t _tiltRatio;	/**< use to pass tiltRatio to verbose */
 
@@ -110,7 +111,6 @@ public:
 	
 #if defined(OMR_GC_LARGE_OBJECT_AREA)	
 	uintptr_t _avgTenureLOABytes;
-	uintptr_t _avgTenureSOABytes;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
 	uintptr_t _flipDiscardBytes;		/**< Bytes of survivor discarded by copy scan cache */

@@ -19,6 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include "codegen/ARM64Instruction.hpp"
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
@@ -390,13 +391,6 @@ OMR::ARM64::TreeEvaluator::monexitEvaluator(TR::Node *node, TR::CodeGenerator *c
 	}
 
 TR::Register *
-OMR::ARM64::TreeEvaluator::monexitfenceEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::monexitfenceEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
-
-TR::Register *
 OMR::ARM64::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
 	// TODO:ARM64: Enable TR::TreeEvaluator::arraytranslateAndTestEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
@@ -498,10 +492,69 @@ OMR::ARM64::TreeEvaluator::exceptionRangeFenceEvaluator(TR::Node *node, TR::Code
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::loadaddrEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Register *resultReg;
+   TR::Symbol *sym = node->getSymbol();
+   TR::Compilation *comp = cg->comp();
+   TR::MemoryReference *mref = new (cg->trHeapMemory()) TR::MemoryReference(node, node->getSymbolReference(), 0, cg);
+
+   if (mref->getUnresolvedSnippet() != NULL)
+      {
+      resultReg = sym->isLocalObject() ? cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
+      if (mref->useIndexedForm())
+         {
+         TR_ASSERT(false, "Unresolved indexed snippet is not supported");
+         }
+      else
+         {
+         TR_UNIMPLEMENTED();
+         }
+      }
+   else
+      {
+      if (mref->useIndexedForm())
+         {
+         resultReg = sym->isLocalObject() ? cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, resultReg, mref->getBaseRegister(), mref->getIndexRegister());
+         }
+      else
+         {
+         int32_t offset = mref->getOffset();
+         if (mref->hasDelayedOffset() || offset != 0)
+            {
+            resultReg = sym->isLocalObject() ? cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
+            if (mref->hasDelayedOffset())
+               {
+               TR_UNIMPLEMENTED();
+               }
+            else
+               {
+               if (offset >= 0 && constantIsUnsignedImm12(offset))
+                  {
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, resultReg, mref->getBaseRegister(), offset);
+                  }
+               else
+                  {
+                  loadConstant64(cg, node, offset, resultReg);
+                  generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, resultReg, mref->getBaseRegister(), resultReg);
+                  }
+               }
+            }
+         else
+            {
+            resultReg = mref->getBaseRegister();
+            if (resultReg == cg->getMethodMetaDataRegister())
+               {
+               resultReg = cg->allocateRegister();
+               generateMovInstruction(cg, node, resultReg, mref->getBaseRegister());
+               }
+            }
+         }
+      }
+   node->setRegister(resultReg);
+   mref->decNodeReferenceCounts(cg);
+   return resultReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::aRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)

@@ -267,6 +267,7 @@ public:
 	uintptr_t oldHeapSizeOnLastGlobalGC;
 	uintptr_t freeOldHeapSizeOnLastGlobalGC;
 	float concurrentKickoffTenuringHeadroom; /**< percentage of free memory remaining in tenure heap. Used in conjunction with free memory to determine concurrent mark kickoff */
+	float tenureBytesDeviationBoost; /**< boost factor for tenuring deviation used for concurrent mark kickoff math */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 #if defined(OMR_GC_REALTIME)
 	MM_RememberedSetSATB* sATBBarrierRememberedSet; /**< The snapshot at the beginning barrier remembered set used for the write barrier */
@@ -1348,6 +1349,7 @@ public:
 		, oldHeapSizeOnLastGlobalGC(UDATA_MAX)
 		, freeOldHeapSizeOnLastGlobalGC(UDATA_MAX)
 		, concurrentKickoffTenuringHeadroom((float)0.02)
+		, tenureBytesDeviationBoost((float)2)
 #endif /* OMR_GC_MODRON_SCAVENGER */		
 #if defined(OMR_GC_REALTIME)
 		, sATBBarrierRememberedSet(NULL)

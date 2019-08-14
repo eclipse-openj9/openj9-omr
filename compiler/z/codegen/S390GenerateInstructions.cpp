@@ -360,21 +360,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
 
    return returnInstruction;
    }
-
-TR::Instruction *
-generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
-                                        TR::InstOpCode::Mnemonic compareOpCode,
-                                        TR::Node * node,
-                                        TR::Register * first ,
-                                        TR::RealRegister * second,
-                                        TR::InstOpCode::S390BranchCondition bc,
-                                        TR::LabelSymbol * branchDestination,
-                                        bool needsCC,
-                                        bool targetIsFarAndCold)
-   {
-   return generateS390CompareAndBranchInstruction(cg, compareOpCode, node, first, static_cast<TR::Register *>(second), bc, branchDestination, needsCC, targetIsFarAndCold);
-   }
-
+   
 /**
  * Generate a compare and a branch instruction.  if z10 is available, this will
  * attempt to generate a COMPARE AND BRANCH instruction, otherwise the a

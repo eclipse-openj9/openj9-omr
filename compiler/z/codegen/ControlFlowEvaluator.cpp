@@ -1774,14 +1774,14 @@ OMR::Z::TreeEvaluator::tableEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       case AddressTable32bit:
          {
          if(!node->chkCannotOverflow())
-           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int64_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
+           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int32_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
          generateRSInstruction(cg, TR::InstOpCode::SLL, node, selectorReg, 2);
          }
          break;
       case AddressTable64bitIntLookup:
          {
          if(!node->chkCannotOverflow())
-           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int64_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);
+           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int32_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);
 
          generateRSInstruction(cg, TR::InstOpCode::SLLG, node, selectorReg, selectorReg, 3);
          }
@@ -1798,14 +1798,14 @@ OMR::Z::TreeEvaluator::tableEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       case RelativeTable32bit:
          {
          if(!node->chkCannotOverflow())
-           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int64_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
+           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int32_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
          generateRSInstruction(cg, TR::InstOpCode::SLL, node, selectorReg, 2);
          }
          break;
       case RelativeTable64bitIntLookup:
          {
          if(!node->chkCannotOverflow())
-           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int64_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
+           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int32_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
          generateRSInstruction(cg, TR::InstOpCode::SLL, node, selectorReg, 2);
          }
          break;

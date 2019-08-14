@@ -88,6 +88,16 @@ enum TR_X86ProcessorFeatures
    TR_X86ProcessorInfoInitialized   = 0x80000000  // FIXME: Using a reserved bit for our purposes.
    };
 
+inline uint32_t getFeatureFlagsMask()
+   {
+   return  TR_BuiltInFPU
+         | TR_CMPXCHG8BInstruction
+         | TR_CMOVInstructions
+         | TR_MMXInstructions
+         | TR_SSE
+         | TR_SSE2;
+   }
+
 enum TR_X86ProcessorFeatures2
    {
    TR_SSE3                          = 0x00000001,
@@ -124,6 +134,16 @@ enum TR_X86ProcessorFeatures2
    // Not used by Intel             = 0x80000000,
    };
 
+inline uint32_t getFeatureFlags2Mask()
+   {
+   return  TR_SSSE3
+         | TR_SSE4_1
+         | TR_POPCNT
+         | TR_AESNI
+         | TR_OSXSAVE
+         | TR_AVX;
+   }
+
 enum TR_X86ProcessorFeatures8
    {
    TR_FSGSBASE                = 0x00000001,
@@ -159,6 +179,12 @@ enum TR_X86ProcessorFeatures8
    // Reserved by Intel       = 0x40000000,
    // Reserved by Intel       = 0x80000000,
    };
+
+inline uint32_t getFeatureFlags8Mask()
+   {
+   return  TR_HLE
+         | TR_RTM;
+   }
 
 enum TR_ProcessorDescription
    {

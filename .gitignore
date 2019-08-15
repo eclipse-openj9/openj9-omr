@@ -197,3 +197,6 @@ VerboseGC_*.xml*
 *.swp
 tags
 *~
+
+# test results
+*-results.xml

@@ -15,6 +15,7 @@ pipeline {
     environment {
         GTEST_FILTER = "-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended:*DeathTest*"
         PATH = "/usr/local/opt/ccache/libexec:$PATH"
+        GTEST_COLOR = "0"
     }
     stages {
         stage('Get Sources') {
@@ -51,6 +52,7 @@ pipeline {
                     dir('build') {
                         echo "Sanity Test..."
                         sh'''ctest -V'''
+                        junit '**/*results.xml'
                     }
                 }
             }

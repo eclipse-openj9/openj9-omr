@@ -16,6 +16,7 @@ pipeline {
         PATH = "/home/u0020236/tools:$PATH"
         LIBPATH="."
         CCACHE_CPP2="1"
+        GTEST_COLOR = "0"
     }
     stages {
         stage('Get Sources') {
@@ -52,6 +53,7 @@ pipeline {
                     dir('build') {
                         echo "Sanity Test..."
                         sh'''ctest -V'''
+                        junit '**/*results.xml'
                     }
                 }
             }

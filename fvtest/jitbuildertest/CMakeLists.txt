@@ -56,4 +56,4 @@ target_link_libraries(jitbuildertest
 
 set_property(TARGET jitbuildertest PROPERTY FOLDER fvtest)
 
-add_test(NAME JitBuilderTest COMMAND jitbuildertest)
+add_test(NAME JitBuilderTest COMMAND jitbuildertest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/jitbuildertest-results.xml)

@@ -64,5 +64,5 @@ set_property(TARGET comptest PROPERTY FOLDER fvtest)
 
 add_test(
 	NAME comptest
-	COMMAND comptest --gtest_color=yes
+	COMMAND comptest --gtest_color=yes --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/comptest-results.xml
 )

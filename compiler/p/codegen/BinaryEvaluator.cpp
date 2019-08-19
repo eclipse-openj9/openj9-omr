@@ -198,7 +198,7 @@ static bool genNullTestForCompressedPointers(TR::Node *node,
    return false;
    }
 
-// Also handles TR::aiadd, TR::iuadd, aiuadd
+// Also handles TR::badd, TR::aiadd, TR::iuadd, aiuadd
 TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *src1Reg = NULL;
@@ -206,7 +206,6 @@ TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeG
    TR::Node     *secondChild = node->getSecondChild();
 
    TR::Node *firstChild = node->getFirstChild();
-   TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
 
   if (TR::Compiler->target.cpu.id() >= TR_PPCp9 &&
       firstChild->getOpCodeValue() == TR::imul &&
@@ -226,10 +225,9 @@ TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeG
   else
      {
       src1Reg = cg->evaluate(firstChild);
-      if ((secondOp == TR::iconst || secondOp == TR::iuconst) &&
-          secondChild->getRegister() == NULL)
+      if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
          {
-         trgReg = addConstantToInteger(node, src1Reg, secondChild->getInt(), cg);
+         trgReg = addConstantToInteger(node, src1Reg, secondChild->get32bitIntegralValue(), cg);
          }
       else
          {
@@ -633,7 +631,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
 
 
 // aiaddEvaluator handled by iaddEvaluator
-// also handles TR::iusub and TR::asub
+// also handles TR::bsub, TR::iusub and TR::asub
 TR::Register *OMR::Power::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *secondChild    = node->getSecondChild();
@@ -642,12 +640,11 @@ TR::Register *OMR::Power::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeG
    TR::Register *src1Reg = NULL;
    int32_t value;
    TR::ILOpCodes firstOp = firstChild->getOpCodeValue();
-   TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
 
    if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
       {
       src1Reg = cg->evaluate(firstChild);
-      value = secondChild->getInt();
+      value = secondChild->get32bitIntegralValue();
       trgReg = addConstantToInteger(node, src1Reg , -value, cg);
       }
    else
@@ -657,7 +654,7 @@ TR::Register *OMR::Power::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeG
       if (firstChild->getOpCode().isLoadConst() && firstChild->getRegister() == NULL)
          {
          trgReg = cg->allocateRegister();
-         value = firstChild->getInt();
+         value = firstChild->get32bitIntegralValue();
          if (value >= LOWER_IMMED && value <= UPPER_IMMED)
             {
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, trgReg, src2Reg, value);

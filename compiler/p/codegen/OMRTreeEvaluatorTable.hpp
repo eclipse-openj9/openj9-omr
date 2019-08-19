@@ -106,13 +106,13 @@
    TR::TreeEvaluator::laddEvaluator,                    // TR::ladd
    TR::TreeEvaluator::faddEvaluator,                    // TR::fadd
    TR::TreeEvaluator::daddEvaluator,                    // TR::dadd
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::badd
+   TR::TreeEvaluator::iaddEvaluator,                    // TR::badd
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::sadd
    TR::TreeEvaluator::isubEvaluator,                    // TR::isub
    TR::TreeEvaluator::lsubEvaluator,                    // TR::lsub
    TR::TreeEvaluator::fsubEvaluator,                    // TR::fsub
    TR::TreeEvaluator::dsubEvaluator,                    // TR::dsub
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::bsub
+   TR::TreeEvaluator::isubEvaluator,                    // TR::bsub
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::ssub
    TR::TreeEvaluator::asubEvaluator,                    // TR::asub
    TR::TreeEvaluator::imulEvaluator,                    // TR::imul

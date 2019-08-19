@@ -61,7 +61,6 @@ const char * TR_VerboseLog::_vlogTable[] =
    "#DISPATCH: ",
    "#RECLAMATION: ",
    "#PROFILING: ",
-   "#JITaaS: ",
    "#JITServer: ",
    "#AOTCOMPRESSION: ",
    };

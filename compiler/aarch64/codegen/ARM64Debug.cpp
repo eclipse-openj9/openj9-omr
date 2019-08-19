@@ -27,6 +27,7 @@
 #include "codegen/ARM64ConditionCode.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/GCRegisterMap.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -1023,7 +1024,16 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference *mr)
 void
 TR_Debug::printARM64GCRegisterMap(TR::FILE *pOutFile, TR::GCRegisterMap *map)
    {
-   TR_UNIMPLEMENTED();
+   TR::Machine *machine = _cg->machine();
+
+   trfprintf(pOutFile, "    registers: {");
+   for (int i = 0; i < 32; i++)
+      {
+      if (map->getMap() & (1 << i))
+         trfprintf(pOutFile, "%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum)(i + TR::RealRegister::FirstGPR))));
+      }
+
+   trfprintf(pOutFile, "}\n");
    }
 
 void

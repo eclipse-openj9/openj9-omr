@@ -2907,6 +2907,10 @@ TR_Debug::getName(TR::Snippet *snippet)
    if (TR::Compiler->target.cpu.isARM())
       return getNamea(snippet);
 #endif
+#if defined(TR_TARGET_ARM64)
+   if (TR::Compiler->target.cpu.isARM64())
+      return getNamea64(snippet);
+#endif
    return "<unknown snippet>"; // TODO: Return a more informative name
    }
 
@@ -2938,6 +2942,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Snippet * snippet)
    if (TR::Compiler->target.cpu.isZ())
       {
       printz(pOutFile, (TR::Snippet *)snippet);
+      return;
+      }
+#endif
+#if defined(TR_TARGET_ARM64)
+   if (TR::Compiler->target.cpu.isARM64())
+      {
+      printa64(pOutFile, snippet);
       return;
       }
 #endif

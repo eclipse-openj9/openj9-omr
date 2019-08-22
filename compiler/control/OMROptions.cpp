@@ -2445,6 +2445,12 @@ OMR::Options::jitPreProcess()
    // All projects
    //
 
+   // Disable decimal format peephole due to multiple bugs.
+   // Can be re-enabled with -Xjit:!disableDecimalFormatPeephole
+   // The optimisation will be completely removed once issue
+   // #4236 is complete
+   self()->setOption(TR_DisableDecimalFormatPeephole);
+
    self()->setOption(TR_RestrictStaticFieldFolding);
 
    if (TR::Compiler->target.cpu.isPower())

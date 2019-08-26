@@ -662,7 +662,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64LabelInstruction *instr)
       print(pOutFile, label);
       if (snippet)
          {
-         TR_UNIMPLEMENTED();
+         trfprintf(pOutFile, " (%s)", getName(snippet));
          }
       }
    printInstructionComment(pOutFile, 1, instr);
@@ -675,9 +675,16 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ConditionalBranchInstruction *instr)
    {
    printPrefix(pOutFile, instr);
+
+   TR::LabelSymbol *label = instr->getLabelSymbol();
+   TR::Snippet *snippet = label ? label->getSnippet() : NULL;
    TR_ASSERT(instr->getOpCodeValue() == TR::InstOpCode::b_cond, "Unsupported instruction for conditional branch");
    trfprintf(pOutFile, "b.%s \t", ARM64ConditionNames[instr->getConditionCode()]);
-   print(pOutFile, instr->getLabelSymbol());
+   print(pOutFile, label);
+   if (snippet)
+      {
+      trfprintf(pOutFile, " (%s)", getName(snippet));
+      }
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
@@ -687,9 +694,16 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CompareBranchInstruction *instr)
    {
    printPrefix(pOutFile, instr);
+
+   TR::LabelSymbol *label = instr->getLabelSymbol();
+   TR::Snippet *snippet = label ? label->getSnippet() : NULL;
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
-   print(pOutFile, instr->getLabelSymbol());
+   print(pOutFile, label);
+   if (snippet)
+      {
+      trfprintf(pOutFile, " (%s)", getName(snippet));
+      }
    trfflush(_comp->getOutFile());
    }
 

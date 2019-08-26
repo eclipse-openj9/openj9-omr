@@ -64,6 +64,14 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    TR::UnresolvedDataSnippet *_unresolvedSnippet;
    TR::SymbolReference *_symbolReference;
 
+   // Any downstream project can use this extra register to associate an additional
+   // register to a memory reference that can be used for project-specific purposes.
+   // This register is in addition to the base and index registers and isn't directly
+   // part of the addressing expression in the memory reference.
+   // An example of what this could be used for is to help synthesize unresolved data
+   // reference addresses at runtime.
+   TR::Register *_extraRegister;
+
    uint8_t _flag;
    uint8_t _length;
    uint8_t _scale;
@@ -186,6 +194,18 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    TR::Node *setIndexNode(TR::Node *in) {return (_indexNode = in);}
 
    /**
+    * @brief Gets extra register
+    * @return extra register
+    */
+   TR::Register *getExtraRegister() {return _extraRegister;}
+   /**
+    * @brief Sets extra register
+    * @param[in] er : extra register
+    * @return extra register
+    */
+   TR::Register *setExtraRegister(TR::Register *er) {return (_extraRegister = er);}
+
+   /**
     * @brief Gets length
     * @return length
     */
@@ -254,7 +274,8 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    bool refsRegister(TR::Register *reg)
       {
       return (reg == _baseRegister ||
-              reg == _indexRegister);
+              reg == _indexRegister ||
+              reg == _extraRegister);
       }
 
    /**
@@ -270,6 +291,10 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
          {
          _indexRegister->block();
          }
+      if (_extraRegister != NULL)
+         {
+         _extraRegister->block();
+         }
       }
 
    /**
@@ -284,6 +309,10 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
       if (_indexRegister != NULL)
          {
          _indexRegister->unblock();
+         }
+      if (_extraRegister != NULL)
+         {
+         _extraRegister->unblock();
          }
       }
 

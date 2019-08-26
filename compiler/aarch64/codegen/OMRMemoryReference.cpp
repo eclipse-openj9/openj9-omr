@@ -90,7 +90,8 @@ static void loadRelocatableConstant(TR::Node *node,
          }
       else
          {
-         cg->addSnippet(mr->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, node->getOpCode().isStore(), false)));
+         mr->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, node->getOpCode().isStore(), false));
+         cg->addSnippet(mr->getUnresolvedSnippet());
          }
       }
    else
@@ -105,6 +106,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _baseNode(NULL),
    _indexRegister(NULL),
    _indexNode(NULL),
+   _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
    _length(0),
@@ -123,6 +125,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _baseNode(NULL),
    _indexRegister(ir),
    _indexNode(NULL),
+   _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
    _length(0),
@@ -141,6 +144,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _baseNode(NULL),
    _indexRegister(NULL),
    _indexNode(NULL),
+   _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
    _length(0),
@@ -159,6 +163,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _baseNode(NULL),
    _indexRegister(NULL),
    _indexNode(NULL),
+   _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
    _length(len),
@@ -223,6 +228,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _baseNode(NULL),
    _indexRegister(NULL),
    _indexNode(NULL),
+   _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
    _length(len),
@@ -374,6 +380,11 @@ void OMR::ARM64::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)
          cg->decReferenceCount(_indexNode);
       else
          cg->stopUsingRegister(_indexRegister);
+      }
+
+   if (_extraRegister != NULL)
+      {
+      cg->stopUsingRegister(_extraRegister);
       }
    }
 
@@ -599,6 +610,10 @@ void OMR::ARM64::MemoryReference::incRegisterTotalUseCounts(TR::CodeGenerator * 
    if (_indexRegister != NULL)
       {
       _indexRegister->incTotalUseCount();
+      }
+   if (_extraRegister != NULL)
+      {
+      _extraRegister->incTotalUseCount();
       }
    }
 

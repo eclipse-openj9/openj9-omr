@@ -63,7 +63,9 @@
 #if defined(J9OS_I5)
 #include "Xj9I5OSInterface.H"
 #endif
+#if !defined(J9ZOS390)
 #include <sys/param.h>
+#endif /* !defined(J9ZOS390) */
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <nl_types.h>

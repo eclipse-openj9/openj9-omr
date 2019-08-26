@@ -422,8 +422,6 @@ static int32_t retrieveLinuxMemoryStats(struct OMRPortLibrary *portLibrary, stru
 static int32_t retrieveOSXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo);
 #elif defined(AIXPPC)
 static int32_t retrieveAIXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo);
-#elif defined(J9ZOS390)
-static int32_t retrieveZOSMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo);
 #endif
 
 /**

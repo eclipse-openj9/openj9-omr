@@ -742,8 +742,14 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
             base->setRegisterFieldRN(wcursor);
             index->setRegisterFieldRM(wcursor);
 
-            if (self()->getScale() != 0)
+            if (self()->getScale() == 0)
                {
+               // default: LSL #0
+               *wcursor |= 0x6 << 12;
+               }
+            else
+               {
+               // Eclipse OMR Issue #4227 tracks this
                TR_UNIMPLEMENTED();
                }
 

@@ -296,12 +296,12 @@ genNullTestForCompressedPointers(TR::Node *node, TR::CodeGenerator *cg, TR::Regi
             {
             TR::Register* r = addOrSubNode->getFirstChild()->getRegister();
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
-            generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, r, (signed char)0, TR::InstOpCode::COND_BE, skipAdd);
+            generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, r, 0, TR::InstOpCode::COND_BE, skipAdd);
             }
          else
             {
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
-            generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, targetRegister, (signed char)0, TR::InstOpCode::COND_BE, skipAdd);
+            generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, targetRegister, 0, TR::InstOpCode::COND_BE, skipAdd);
             }
 
          cFlowRegionStart->setStartInternalControlFlow();
@@ -809,7 +809,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
 
                generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
                cFlowRegionStart->setStartInternalControlFlow();
-               generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CG, node, firstRegister, (signed char)0,TR::InstOpCode::COND_BNL, skipSet);
+               generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CG, node, firstRegister, 0,TR::InstOpCode::COND_BNL, skipSet);
 
                //adjustment to dividend if dividend is negative
                TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
@@ -1126,7 +1126,7 @@ iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
 
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, node, doDiv);
 
-      generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::C, node, sourceRegister, (signed char)-1, TR::InstOpCode::COND_BNE, doDiv);
+      generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::C, node, sourceRegister, -1, TR::InstOpCode::COND_BNE, doDiv);
       cursor =
          generateRRInstruction(cg, TR::InstOpCode::LR, node, quoRegister, remRegister);
 
@@ -2373,7 +2373,7 @@ OMR::Z::TreeEvaluator::lmulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       // positive first child, branch to posMulh label
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
       cFlowRegionStart->setStartInternalControlFlow();
-      generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CG, node, sourceRegister, (signed char)0, TR::InstOpCode::COND_BNL, posMulh);
+      generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CG, node, sourceRegister, 0, TR::InstOpCode::COND_BNL, posMulh);
 
       // Negative first child, do complements on register
       generateRRInstruction(cg, TR::InstOpCode::LCGR, node, sourceRegister, sourceRegister);

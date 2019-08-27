@@ -15359,7 +15359,7 @@ inlineStringHashCode(TR::Node* node, TR::CodeGenerator* cg, bool isCompressed)
    generateRREInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, registerHash, registerHash);
 
    // Branch to labelSerial if registerCount < stringSize
-   generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalOpCode(), node, registerCount, stringSize, TR::InstOpCode::COND_MASK4, labelSerial, false, false);
+   generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalOpCode(), node, registerCount, static_cast<int32_t>(stringSize), TR::InstOpCode::COND_MASK4, labelSerial, false, false);
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, labelVector);
 

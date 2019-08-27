@@ -1815,6 +1815,10 @@ TR_InlinerBase::addGuardForVirtual(
    if (!disableHCRGuards && comp()->getHCRMode() != TR::none && guard->_kind != TR_HCRGuard && !skipHCRGuardForCallee)
       {
       createdHCRAndVirtualGuard = true;
+      TR_OpaqueClassBlock* methodClass = calleeSymbol->getResolvedMethod()->classOfMethod();
+      TR_ASSERT(methodClass, "Class of inlined method shoun't be null");
+      if (comp()->trace(OMR::inlining))
+         traceMsg(comp(), "HCR guard method class is %p\n", methodClass);
 
       // we merge virtual guards and OSR guards for simplicity in most modes
       // when using OSR to implement HCR we keep the HCR guards distinct since they
@@ -1826,10 +1830,14 @@ TR_InlinerBase::addGuardForVirtual(
          if (guardNode)
             {
             TR_VirtualGuard *virtualGuard = comp()->findVirtualGuardInfo(guardNode);
-            if (virtualGuard)
+            if (virtualGuard &&
+                virtualGuard->getThisClass() &&
+                virtualGuard->getThisClass() == methodClass)
                {
                virtualGuard->setMergedWithHCRGuard();
                skipHCRGuardCreation = true;
+               if (comp()->trace(OMR::inlining))
+                  traceMsg(comp(), "Merge HCR guard with virtual guard %p n%dn\n", guardNode, guardNode->getGlobalIndex());
                }
             }
          }
@@ -1847,7 +1855,7 @@ TR_InlinerBase::addGuardForVirtual(
          hcrTreeTop = hcrBlock->append(TR::TreeTop::create(comp(),
                                        createVirtualGuard(callNode, calleeSymbol, block4->getEntry(),
                                           calleeSymbol->getFirstTreeTop()->getNode()->getInlinedSiteIndex(),
-                                          thisClass, tif.favourVftCompare(), hcrGuard)));
+                                          methodClass, tif.favourVftCompare(), hcrGuard)));
          hcrBlock->setDoNotProfile();
          block1->getExit()->join(hcrBlock->getEntry());
          hcrBlock->getExit()->join(block2->getEntry());

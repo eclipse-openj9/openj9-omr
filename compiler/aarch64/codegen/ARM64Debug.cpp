@@ -25,6 +25,7 @@
 #include "ras/Debug.hpp"
 
 #include "codegen/ARM64ConditionCode.hpp"
+#include "codegen/ARM64HelperCallSnippet.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GCRegisterMap.hpp"
@@ -35,8 +36,16 @@
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
+#include "codegen/Snippet.hpp"
 #include "env/IO.hpp"
 #include "il/Block.hpp"
+
+#ifdef J9_PROJECT_SPECIFIC
+#include "aarch64/codegen/CallSnippet.hpp"
+#include "aarch64/codegen/StackCheckFailureSnippet.hpp"
+
+namespace TR { class ARM64ForceRecompilationSnippet; }
+#endif
 
 static const char *ARM64ConditionNames[] =
    {
@@ -1147,4 +1156,91 @@ TR_Debug::getARM64RegisterName(uint32_t regNum, bool is64bit)
 void TR_Debug::printARM64OOLSequences(TR::FILE *pOutFile)
    {
    TR_UNIMPLEMENTED();
+   }
+
+const char *
+TR_Debug::getNamea64(TR::Snippet * snippet)
+   {
+   switch (snippet->getKind())
+      {
+      case TR::Snippet::IsCall:
+         return "Call Snippet";
+         break;
+      case TR::Snippet::IsUnresolvedCall:
+         return "Unresolved Call Snippet";
+         break;
+      case TR::Snippet::IsVirtualUnresolved:
+         return "Unresolved Virtual Call Snippet";
+         break;
+      case TR::Snippet::IsInterfaceCall:
+         return "Interface Call Snippet";
+         break;
+      case TR::Snippet::IsStackCheckFailure:
+         return "Stack Check Failure Snippet";
+         break;
+      case TR::Snippet::IsUnresolvedData:
+         return "Unresolved Data Snippet";
+         break;
+      case TR::Snippet::IsRecompilation:
+         return "Recompilation Snippet";
+         break;
+      case TR::Snippet::IsHelperCall:
+         return "Helper Call Snippet";
+         break;
+      case TR::Snippet::IsMonitorEnter:
+         return "MonitorEnter Inc Counter";
+         break;
+      case TR::Snippet::IsMonitorExit:
+         return "MonitorExit Dec Counter";
+         break;
+      default:
+         return "<unknown snippet>";
+      }
+   }
+
+void
+TR_Debug::printa64(TR::FILE *pOutFile, TR::Snippet * snippet)
+   {
+   if (pOutFile == NULL)
+      return;
+   switch (snippet->getKind())
+      {
+#ifdef J9_PROJECT_SPECIFIC
+      case TR::Snippet::IsCall:
+         print(pOutFile, (TR::ARM64CallSnippet *)snippet);
+         break;
+      case TR::Snippet::IsUnresolvedCall:
+         print(pOutFile, (TR::ARM64UnresolvedCallSnippet *)snippet);
+         break;
+      case TR::Snippet::IsVirtualUnresolved:
+         print(pOutFile, (TR::ARM64VirtualUnresolvedSnippet *)snippet);
+         break;
+      case TR::Snippet::IsInterfaceCall:
+         print(pOutFile, (TR::ARM64InterfaceCallSnippet *)snippet);
+         break;
+      case TR::Snippet::IsStackCheckFailure:
+         print(pOutFile, (TR::ARM64StackCheckFailureSnippet *)snippet);
+         break;
+      case TR::Snippet::IsForceRecompilation:
+         print(pOutFile, (TR::ARM64ForceRecompilationSnippet *)snippet);
+         break;
+      case TR::Snippet::IsRecompilation:
+         TR_UNIMPLEMENTED();
+         break;
+#endif
+      case TR::Snippet::IsHelperCall:
+         print(pOutFile, (TR::ARM64HelperCallSnippet *)snippet);
+         break;
+      case TR::Snippet::IsUnresolvedData:
+         print(pOutFile, (TR::UnresolvedDataSnippet *)snippet);
+         break;
+
+
+      case TR::Snippet::IsMonitorExit:
+      case TR::Snippet::IsMonitorEnter:
+         snippet->print(pOutFile, this);
+         break;
+      default:
+         TR_ASSERT( 0, "unexpected snippet kind");
+      }
    }

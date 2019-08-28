@@ -86,43 +86,62 @@ TR::Block *
 OMR::Block::asBlock() { return self(); }
 
 OMR::Block::Block(TR_Memory * m) :
-   TR::CFGNode(m),
-   _pEntry(NULL),
-   _pExit(NULL),
-   _pStructureOf(NULL),
-   _liveLocals(NULL),
-   _globalRegisters(0),
-   _catchBlockExtension(NULL),
-   _firstInstruction(NULL),
-   _lastInstruction(NULL),
-   _blockSize(-1),
-   _debugCounters(NULL),
-   _flags(0),
-   _moreflags(0)
+   TR::CFGNode(m)
    {
+   self()->init(NULL, NULL);
+   self()->setFrequency(-1);
+   self()->setUnrollFactor(0);
+   }
+
+OMR::Block::Block(TR::CFG &cfg) :
+   TR::CFGNode(cfg.getInternalRegion())
+   {
+   self()->init(NULL, NULL);
    self()->setFrequency(-1);
    self()->setUnrollFactor(0);
    }
 
 OMR::Block::Block(TR::TreeTop *entry, TR::TreeTop *exit, TR_Memory * m) :
-   TR::CFGNode(m),
-   _pEntry(entry),
-   _pExit(exit),
-   _pStructureOf(NULL),
-   _liveLocals(NULL),
-   _globalRegisters(0),
-   _catchBlockExtension(NULL),
-   _firstInstruction(NULL),
-   _lastInstruction(NULL),
-   _blockSize(-1),
-   _debugCounters(NULL),
-   _flags(0),
-   _moreflags(0)
+   TR::CFGNode(m)
    {
+   self()->init(entry, exit);
    self()->setFrequency(-1);
    self()->setUnrollFactor(0);
    if (entry && entry->getNode()) entry->getNode()->setBlock(self());
    if (exit && exit->getNode())   exit->getNode()->setBlock(self());
+   }
+
+OMR::Block::Block(TR::TreeTop *entry, TR::TreeTop *exit, TR::CFG &cfg) :
+   TR::CFGNode(cfg.getInternalRegion())
+   {
+   self()->init(entry, exit);
+   self()->setFrequency(-1);
+   self()->setUnrollFactor(0);
+   if (entry && entry->getNode()) entry->getNode()->setBlock(self());
+   if (exit && exit->getNode())   exit->getNode()->setBlock(self());
+   }
+
+void
+OMR::Block::init(TR::TreeTop *entry, TR::TreeTop *exit)
+   {
+   _pEntry = entry;
+   _pExit = exit;
+   _pStructureOf = NULL;
+   _liveLocals = NULL;
+   _globalRegisters = 0;
+   _catchBlockExtension = NULL;
+   _firstInstruction = NULL;
+   _lastInstruction = NULL;
+   _blockSize = -1;
+   _debugCounters = NULL;
+   _flags = 0;
+   _moreflags = 0;
+   }
+
+TR::Block*
+OMR::Block::createBlock(TR::TreeTop *entry, TR::TreeTop *exit, TR::CFG &cfg)
+   {
+   return new (cfg.getInternalRegion()) TR::Block(entry, exit, cfg);
    }
 
 /// Copy constructor

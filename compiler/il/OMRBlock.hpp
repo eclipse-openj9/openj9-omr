@@ -104,9 +104,12 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    TR::Block * self();
 
    Block(TR_Memory * m);
+   Block(TR::CFG &cfg);
 
    /// Create a block with the given entry and exit.
    Block(TR::TreeTop *entry, TR::TreeTop *exit, TR_Memory * m);
+   Block(TR::TreeTop *entry, TR::TreeTop *exit, TR::CFG &cfg);
+
 
    /// Copy Constructor.
    ///
@@ -124,7 +127,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       }
 
    virtual const char * getName(TR_Debug *);
-
+   static TR::Block * createBlock(TR::TreeTop *entry, TR::TreeTop *exit, TR::CFG &cfg);
    static TR::Block * createEmptyBlock(TR::Node *, TR::Compilation *, int32_t frequency = -1, TR::Block *block = NULL);
    static TR::Block * createEmptyBlock(TR::Compilation *comp, int32_t frequency = -1, TR::Block *block = NULL);
 
@@ -483,6 +486,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
     */
 
    private:
+   void init(TR::TreeTop *entry, TR::TreeTop *exit);
 
    void uncommonNodesBetweenBlocks(TR::Compilation *, TR::Block *, TR::ResolvedMethodSymbol *methodSymbol = NULL);
 

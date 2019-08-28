@@ -3256,3 +3256,9 @@ OMR::CFG::findReachableBlocks(TR_BitVector *result)
          addEdge(getStart(), edge->getTo());
       }
    }
+
+TR::Region&
+OMR::CFG::getInternalRegion()
+   {
+   return self()->_internalRegion;
+   }

@@ -354,7 +354,17 @@ namespace TR { class ARM64MemInstruction; }
 namespace TR { class ARM64MemSrc1Instruction; }
 namespace TR { class ARM64Src1Instruction; }
 namespace TR { class ARM64Src2Instruction; }
+namespace TR { class ARM64HelperCallSnippet; }
 
+#ifdef J9_PROJECT_SPECIFIC
+namespace TR { class ARM64InterfaceCallSnippet; }
+namespace TR { class ARM64StackCheckFailureSnippet; }
+namespace TR { class ARM64ForceRecompilationSnippet; }
+namespace TR { class ARM64RecompilationSnippet; }
+namespace TR { class ARM64CallSnippet; }
+namespace TR { class ARM64UnresolvedCallSnippet; }
+namespace TR { class ARM64VirtualUnresolvedSnippet; }
+#endif
 
 TR_Debug *createDebugObject(TR::Compilation *);
 
@@ -1108,6 +1118,21 @@ public:
    void printMemoryReferenceComment(TR::FILE *, TR::MemoryReference *);
 
    const char *getARM64RegisterName(uint32_t, bool = true);
+
+   void printa64(TR::FILE *, TR::Snippet *);
+   const char * getNamea64(TR::Snippet *);
+
+#ifdef J9_PROJECT_SPECIFIC
+   void print(TR::FILE *, TR::ARM64CallSnippet *);
+   void print(TR::FILE *, TR::ARM64UnresolvedCallSnippet *);
+   void print(TR::FILE *, TR::ARM64VirtualUnresolvedSnippet *);
+   void print(TR::FILE *, TR::ARM64InterfaceCallSnippet *);
+   void print(TR::FILE *, TR::ARM64StackCheckFailureSnippet *);
+   void print(TR::FILE *, TR::ARM64ForceRecompilationSnippet *);
+   void print(TR::FILE *, TR::ARM64RecompilationSnippet *);
+#endif
+   void print(TR::FILE *, TR::ARM64HelperCallSnippet *);
+
 #endif
 
    friend class TR_CFGChecker;

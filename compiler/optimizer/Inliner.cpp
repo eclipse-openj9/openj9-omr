@@ -292,7 +292,7 @@ TR_InlinerBase::setSizeThreshold(uint32_t size)
 
    _methodByteCodeSizeThreshold = size;
 
-   alwaysTrace(tracer(),"Setting method size threshold (_methodByteCodeSizeThreshold) to %d\n",_methodByteCodeSizeThreshold);
+   heuristicTrace(tracer(),"Setting method size threshold (_methodByteCodeSizeThreshold) to %d\n",_methodByteCodeSizeThreshold);
    }
 
 void

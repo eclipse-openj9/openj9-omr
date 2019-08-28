@@ -1841,7 +1841,9 @@ void OMR::Compilation::reportFailure(const char *reason)
    {
    traceMsg(self(), "Compilation Failed Because: %s\n", reason);
    if (self()->getOption(TR_PrintErrorInfoOnCompFailure))
+      {
       fprintf(stderr, "Compilation Failed Because: %s\n", reason);
+      }
    }
 
 void OMR::Compilation::AddCopyPropagationRematerializationCandidate(TR::SymbolReference * sr)

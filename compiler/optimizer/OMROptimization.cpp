@@ -136,6 +136,12 @@ OMR::Optimization::setTrace(bool trace)
    }
 
 bool
+OMR::Optimization::traceAny()
+   {
+   return (self()->trace() || self()->comp()->getOptions()->getAnyOption(TR_TraceAll));
+   }
+
+bool
 OMR::Optimization::getLastRun()
    {
    return self()->manager()->getLastRun();

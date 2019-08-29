@@ -93,7 +93,7 @@
     TR::TreeEvaluator::lreturnEvaluator, // TR::lreturn		// return a long integer
     TR::TreeEvaluator::freturnEvaluator, // TR::freturn		// return a float
     TR::TreeEvaluator::dreturnEvaluator, // TR::dreturn		// return a double
-    TR::TreeEvaluator::lreturnEvaluator, // TR::areturn		// return an address
+    TR::TreeEvaluator::areturnEvaluator, // TR::areturn		// return an address
     TR::TreeEvaluator::returnEvaluator, // TR::return		// void return
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::asynccheckEvaluator ,	// TR::asynccheck	// GC point
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::athrowEvaluator ,	// TR::athrow		// throw an exception

@@ -227,6 +227,15 @@ static struct {
 	{OMRPORT_SIG_FLAG_SIGSYS, SIGSYS},
 	{OMRPORT_SIG_FLAG_SIGTTIN, SIGTTIN},
 	{OMRPORT_SIG_FLAG_SIGTTOU, SIGTTOU}
+#if defined(SIGINFO)
+	, {OMRPORT_SIG_FLAG_SIGINFO, SIGINFO}
+#endif /* defined(SIGINFO) */
+#if defined(SIGIOT)
+	, {OMRPORT_SIG_FLAG_SIGIOT, SIGIOT}
+#endif /* defined(SIGIOT) */
+#if defined(SIGPOLL)
+	, {OMRPORT_SIG_FLAG_SIGPOLL, SIGPOLL}
+#endif /* defined(SIGPOLL) */
 #if defined(AIXPPC)
 	, {OMRPORT_SIG_FLAG_SIGRECONFIG, SIGRECONFIG}
 #endif /* defined(AIXPPC) */

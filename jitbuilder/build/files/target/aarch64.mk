@@ -33,6 +33,7 @@ JIT_PRODUCT_BACKEND_SOURCES+= \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/GenerateInstructions.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/OMRCodeGenerator.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/OMRInstruction.cpp \
+    $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/OMRInstructionDelegate.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/OMRLinkage.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/OMRMachine.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/OMRMemoryReference.cpp \

@@ -33,6 +33,7 @@ compiler_library(aarch64
 	${CMAKE_CURRENT_LIST_DIR}/codegen/GenerateInstructions.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRCodeGenerator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRInstruction.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRInstructionDelegate.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRLinkage.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRMachine.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRMemoryReference.cpp

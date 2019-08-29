@@ -219,7 +219,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _relocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
      _externalRelocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
      _staticRelocationList(_compilation->allocator()),
-     _breakPointList(getTypedAllocator<uint8_t*>(TR::comp()->allocator())),
      _preJitMethodEntrySize(0),
      _jitMethodEntryPaddingSize(0),
      _lastInstructionBeforeCurrentEvaluationTreeTop(NULL),

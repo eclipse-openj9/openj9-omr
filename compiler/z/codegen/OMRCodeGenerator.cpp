@@ -2482,11 +2482,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
    while (data.cursorInstruction)
       {
-      uint8_t * const instructionStart = self()->getBinaryBufferCursor();
-      if (data.cursorInstruction->isBreakPoint())
-         {
-         self()->addBreakPointAddress(instructionStart);
-         }
+      uint8_t* const instructionStart = self()->getBinaryBufferCursor();
 
       self()->setBinaryBufferCursor(data.cursorInstruction->generateBinaryEncoding());
 

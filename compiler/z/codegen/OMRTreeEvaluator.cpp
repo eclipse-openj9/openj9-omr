@@ -9856,11 +9856,6 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       //keeping proper track of block indexes by codegen, can comment out following
       //cg->setCurrentBlockIndex(node->getBlock()->getNumber());
       node->getLabel()->setInstruction(labelInstr);
-
-      if (comp->getOption(TR_BreakBBStart))
-         {
-         firstInstr->setBreakPoint(true);
-         }
       }
 
 

@@ -231,7 +231,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    bool     sourceRegUsedInMemoryReference(uint32_t i);
 
    void addComment(char *) { }
-   void      setBreakPoint(bool v) {v ? _index |= BreakPoint : _index &= ~BreakPoint;}
 
    virtual bool isCall();
 
@@ -246,7 +245,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    void clearCCInfo();
 
    const char *getName(TR_Debug * debug);
-   bool isBreakPoint() {return (_index & BreakPoint) != 0;}
    bool isWillBePatched() { return (_index & WillBePatched) != 0; }
    void setWillBePatched() { _index |= WillBePatched; }
    virtual char *description() { return "S390"; }
@@ -276,7 +274,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
       StartInternalControlFlow            = 0x2000,
       EndInternalControlFlow              = 0x4000,
       WillBePatched                       = 0x08000000,
-      BreakPoint                          = 0x20000000,  ///< Z codegen
       DebugHookOp                         = 0x8000 ///< (WCODE) instruction for debug hooks
       };
 

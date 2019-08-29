@@ -5009,16 +5009,6 @@ void TR_Debug::setupDebugger(void *startaddr, void *endaddr, bool before)
                printf("\n methodStartAddress = %p",startaddr);
                printf("\n methodEndAddress = %p\n",endaddr);
                fprintf(cf, "break *%p\n",startaddr);
-
-               // Insert breakpoints requested by codegen
-               //
-               for (auto bpIterator = _comp->cg()->getBreakPointList().begin();
-                    bpIterator != _comp->cg()->getBreakPointList().end();
-                    ++bpIterator)
-                  {
-                  fprintf(cf, "break *%p\n",*bpIterator);
-                  }
-
                fprintf(cf, "disassemble %p %p\n",startaddr,endaddr);
                }
 
@@ -5090,15 +5080,6 @@ void TR_Debug::setupDebugger(void *startaddr, void *endaddr, bool before)
                {
                printf("\n methodStartAddress = %p",startaddr);
                printf("\n methodEndAddress = %p\n",endaddr);
-
-               // Insert breakpoints requested by codegen
-               //
-               for (auto bpIterator = _comp->cg()->getBreakPointList().begin();
-                    bpIterator != _comp->cg()->getBreakPointList().end(); ++bpIterator)
-                  {
-                  fprintf(cf, "stopi at 0x%p\n",*bpIterator);
-                  }
-
                fprintf(cf, "stopi at 0x%p\n" ,startaddr);
                }
 

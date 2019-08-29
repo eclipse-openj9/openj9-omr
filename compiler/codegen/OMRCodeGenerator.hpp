@@ -547,9 +547,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // Z only
    //
 
-   TR::list<uint8_t*>& getBreakPointList() {return _breakPointList;}
-   void addBreakPointAddress(uint8_t *b) {_breakPointList.push_front(b);}
-
    bool AddArtificiallyInflatedNodeToStack(TR::Node* n);
 
    // --------------------------------------------------------------------------
@@ -1859,7 +1856,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::list<TR::Relocation *> _relocationList;
    TR::list<TR::Relocation *> _externalRelocationList;
    TR::list<TR::StaticRelocation> _staticRelocationList;
-   TR::list<uint8_t*> _breakPointList;
 
    TR::list<TR::SymbolReference*> _variableSizeSymRefPendingFreeList;
    TR::list<TR::SymbolReference*> _variableSizeSymRefFreeList;

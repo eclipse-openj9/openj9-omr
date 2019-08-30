@@ -227,12 +227,21 @@ static struct {
 	{OMRPORT_SIG_FLAG_SIGSYS, SIGSYS},
 	{OMRPORT_SIG_FLAG_SIGTTIN, SIGTTIN},
 	{OMRPORT_SIG_FLAG_SIGTTOU, SIGTTOU}
-#if defined(AIXPPC)
+#if defined(SIGINFO)
+	, {OMRPORT_SIG_FLAG_SIGINFO, SIGINFO}
+#endif /* defined(SIGINFO) */
+#if defined(SIGIOT)
+	, {OMRPORT_SIG_FLAG_SIGIOT, SIGIOT}
+#endif /* defined(SIGIOT) */
+#if defined(SIGPOLL)
+	, {OMRPORT_SIG_FLAG_SIGPOLL, SIGPOLL}
+#endif /* defined(SIGPOLL) */
+#if defined(SIGRECONFIG)
 	, {OMRPORT_SIG_FLAG_SIGRECONFIG, SIGRECONFIG}
-#endif /* defined(AIXPPC) */
-#if defined(J9ZOS390)
+#endif /* defined(SIGRECONFIG) */
+#if defined(SIGABND)
 	, {OMRPORT_SIG_FLAG_SIGABEND, SIGABND}
-#endif /* defined(J9ZOS390) */
+#endif /* defined(SIGABND) */
 };
 
 static omrthread_t asynchSignalReporterThread = NULL;

@@ -149,16 +149,16 @@
    TR::TreeEvaluator::dabsEvaluator,                    // TR::dabs
    TR::TreeEvaluator::ishlEvaluator,                    // TR::ishl
    TR::TreeEvaluator::lshlEvaluator,                    // TR::lshl
-   TR::TreeEvaluator::ishlEvaluator,                    // TR::bshl
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::sshl
+   TR::TreeEvaluator::bshlEvaluator,                    // TR::bshl
+   TR::TreeEvaluator::sshlEvaluator,                    // TR::sshl
    TR::TreeEvaluator::ishrEvaluator,                    // TR::ishr
    TR::TreeEvaluator::lshrEvaluator,                    // TR::lshr
-   TR::TreeEvaluator::ishrEvaluator,                    // TR::bshr
-   TR::TreeEvaluator::ishrEvaluator,                    // TR::sshr
+   TR::TreeEvaluator::bshrEvaluator,                    // TR::bshr
+   TR::TreeEvaluator::sshrEvaluator,                    // TR::sshr
    TR::TreeEvaluator::iushrEvaluator,                   // TR::iushr
    TR::TreeEvaluator::lushrEvaluator,                   // TR::lushr
-   TR::TreeEvaluator::iushrEvaluator,                   // TR::bushr
-   TR::TreeEvaluator::iushrEvaluator,                   // TR::sushr
+   TR::TreeEvaluator::bushrEvaluator,                   // TR::bushr
+   TR::TreeEvaluator::sushrEvaluator,                   // TR::sushr
    TR::TreeEvaluator::irolEvaluator,                    // TR::irol
    TR::TreeEvaluator::lrolEvaluator,                    // TR::lrol
    TR::TreeEvaluator::iandEvaluator,                    // TR::iand

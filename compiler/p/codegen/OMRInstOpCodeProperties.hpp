@@ -6067,26 +6067,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::ifx,
-   /* .name        = */ "ifx",
-   /* .description =    "compare and branch complex", */
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ UNKNOWN_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::setbx,
-   /* .name        = */ "setbx",
-   /* .description =    "compare complex and set boolean", */
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ UNKNOWN_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::iternary,
    /* .name        = */ "iternary",
    /* .description =    "ternary evaluator", */

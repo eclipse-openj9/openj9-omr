@@ -1308,24 +1308,6 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
             cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), getOpCode2Value(), currentNode, getLabelSymbol(), getTargetRegister(0), cursor));
             }
          break;
-      case TR::InstOpCode::ifx:
-         cg()->traceRAInstruction(cursor = generateTrg1Src2Instruction(cg(), TR::InstOpCode::fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cursor));
-         if (getOpCode2Value() == TR::InstOpCode::bne)
-            cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), TR::InstOpCode::bne, currentNode, getLabelSymbol(), getTargetRegister(0), cursor));
-         else
-            cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), TR::InstOpCode::bne, currentNode, label2, getTargetRegister(0), cursor));
-         cg()->traceRAInstruction(cursor = generateTrg1Src2Instruction(cg(), TR::InstOpCode::fcmpu, currentNode, getTargetRegister(0), getSourceRegister(1), getSourceRegister(3), cursor));
-         if (getOpCode2Value() == TR::InstOpCode::beq)
-            {
-            cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), getOpCode2Value(), currentNode, getLabelSymbol(), getTargetRegister(0), cursor));
-            cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label2, cursor));
-            }
-         else
-            {
-            cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label2, cursor));
-            cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), getOpCode2Value(), currentNode, getLabelSymbol(), getTargetRegister(0), cursor));
-            }
-         break;
       case TR::InstOpCode::setblong:
          label1 = TR::LabelSymbol::create(cg()->trHeapMemory(),cg());
          cg()->traceRAInstruction(cursor = generateTrg1Src2Instruction(cg(), getOpCode2Value(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cursor));
@@ -1334,17 +1316,6 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
          cg()->traceRAInstruction(cursor = generateTrg1Src2Instruction(cg(), TR::InstOpCode::cmpl4, currentNode, getTargetRegister(0), getSourceRegister(1), getSourceRegister(3), cursor));
          cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label1, cursor));
          cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), getOpCode3Value(), currentNode, label2, getTargetRegister(0), cursor));
-         cg()->traceRAInstruction(cursor = generateTrg1ImmInstruction(cg(), TR::InstOpCode::li, currentNode, getTargetRegister(1), 0, cursor));
-         cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label2, cursor));
-         break;
-      case TR::InstOpCode::setbx:
-         label1 = TR::LabelSymbol::create(cg()->trHeapMemory(),cg());
-         cg()->traceRAInstruction(cursor = generateTrg1Src2Instruction(cg(), TR::InstOpCode::fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cursor));
-         cg()->traceRAInstruction(cursor = generateTrg1ImmInstruction(cg(), TR::InstOpCode::li, currentNode, getTargetRegister(1), 1, cursor));
-         cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), TR::InstOpCode::bne, currentNode, label1, getTargetRegister(0), cursor));
-         cg()->traceRAInstruction(cursor = generateTrg1Src2Instruction(cg(), TR::InstOpCode::fcmpu, currentNode, getTargetRegister(0), getSourceRegister(1), getSourceRegister(3), cursor));
-         cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label1, cursor));
-         cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), getOpCode2Value(), currentNode, label2, getTargetRegister(0), cursor));
          cg()->traceRAInstruction(cursor = generateTrg1ImmInstruction(cg(), TR::InstOpCode::li, currentNode, getTargetRegister(1), 0, cursor));
          cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label2, cursor));
          break;

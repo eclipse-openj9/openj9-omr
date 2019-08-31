@@ -723,14 +723,14 @@
    TR::TreeEvaluator::dsqrtEvaluator,                   // TR::dsqrt
    TR::TreeEvaluator::getstackEvaluator,                // TR::getstack
    TR::TreeEvaluator::deallocaEvaluator,                // TR::dealloca
-   TR::TreeEvaluator::ishflEvaluator,                   // TR::ishfl
-   TR::TreeEvaluator::lshflEvaluator,                   // TR::lshfl
-   TR::TreeEvaluator::ishflEvaluator,                   // TR::iushfl
-   TR::TreeEvaluator::lshflEvaluator,                   // TR::lushfl
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::bshfl
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::sshfl
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::bushfl
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::sushfl
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::ishfl
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::lshfl
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::iushfl
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::lushfl
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::bshfl
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::sshfl
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::bushfl
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::sushfl
    TR::TreeEvaluator::idozEvaluator,                    // TR::idoz
    TR::TreeEvaluator::libmFuncEvaluator,                // TR::dcos
    TR::TreeEvaluator::libmFuncEvaluator,                // TR::dsin

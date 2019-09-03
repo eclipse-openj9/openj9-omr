@@ -50,6 +50,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRTreeEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/UnaryEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRInstruction.cpp \
+    $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRInstructionDelegate.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/InstOpCode.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRRegister.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRRealRegister.cpp \

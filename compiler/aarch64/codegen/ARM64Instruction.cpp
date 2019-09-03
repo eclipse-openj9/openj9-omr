@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -416,4 +416,80 @@ void TR::ARM64Src2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned
 
    setSource1Register(assignedSource1Register);
    setSource2Register(assignedSource2Register);
+   }
+
+// TR::ARM64CompareBranchInstruction:: member functions
+
+bool TR::ARM64CompareBranchInstruction::refsRegister(TR::Register *reg)
+   {
+   return (reg == getSource1Register());
+   }
+
+bool TR::ARM64CompareBranchInstruction::usesRegister(TR::Register *reg)
+   {
+   return (reg == getSource1Register());
+   }
+
+bool TR::ARM64CompareBranchInstruction::defsRegister(TR::Register *reg)
+   {
+   return false;
+   }
+
+bool TR::ARM64CompareBranchInstruction::defsRealRegister(TR::Register *reg)
+   {
+   return false;
+   }
+
+void TR::ARM64CompareBranchInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   TR::Machine *machine = cg()->machine();
+   TR::Register *source1Virtual = getSource1Register();
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
+
+   TR::RealRegister *assignedSource1Register = machine->assignOneRegister(this, source1Virtual);
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
+
+   setSource1Register(assignedSource1Register);
+   }
+
+// TR::ARM64RegBranchInstruction:: member functions
+
+bool TR::ARM64RegBranchInstruction::refsRegister(TR::Register *reg)
+   {
+   return (reg == getTargetRegister());
+   }
+
+bool TR::ARM64RegBranchInstruction::usesRegister(TR::Register *reg)
+   {
+   return (reg == getTargetRegister());
+   }
+
+bool TR::ARM64RegBranchInstruction::defsRegister(TR::Register *reg)
+   {
+   return false;
+   }
+
+bool TR::ARM64RegBranchInstruction::defsRealRegister(TR::Register *reg)
+   {
+   return false;
+   }
+
+void TR::ARM64RegBranchInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   TR::Machine *machine = cg()->machine();
+   TR::Register *targetVirtual = getTargetRegister();
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
+
+   TR::RealRegister *assignedTargetRegister = machine->assignOneRegister(this, targetVirtual);
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
+
+   setTargetRegister(assignedTargetRegister);
    }

@@ -26,12 +26,6 @@
 
 #include <string.h>
 
-#if defined(__xlC__)
-void dcbz(char *);
-#pragma mc_func dcbz  {"7c001fec"}  /* dcbz, 0, r3 */
-#pragma reg_killed_by dcbz
-#endif
-
 #if (defined(LINUX) && defined(S390))
 /* _j9Z10Zero() is defined in j9memclrz10_31.s and j9memclrz10_64.s */
 extern void _j9Z10Zero(void *ptr, uintptr_t length);
@@ -101,11 +95,7 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 	/* dcbz forms a group on POWER4, so there is no reason to unroll */
 	limit = (char *)(((uintptr_t)ptr + length) & ~(localCacheLineSize - 1));
 	for (; addr < limit; addr += localCacheLineSize) {
-#if defined(__xlC__)
-		dcbz(addr);
-#else
 		__asm__ __volatile__("dcbz 0,%0" : /* no outputs */ : "r"(addr));
-#endif /* defined(__xlC__) */
 	}
 
 	/* zero final portion smaller than a cache line */
@@ -160,11 +150,7 @@ getCacheLineSize(void)
 
 	/* xlc -O3 inlines/unrolls this memset */
 	memset(buf, 255, 1024);
-#if defined(__xlC__)
-	dcbz(&buf[512]);
-#else
 	__asm__ __volatile__("dcbz 0,%0" : /* no outputs */ : "r"(&buf[512]));
-#endif
 	for (i = 0, ppcCacheLineSize = 0; i < 1024; i++) {
 		if (buf[i] == 0) {
 			ppcCacheLineSize++;

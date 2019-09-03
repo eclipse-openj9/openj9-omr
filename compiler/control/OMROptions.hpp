@@ -192,7 +192,6 @@ enum TR_CompilationOptions
    TR_DisableAsyncCompilation             = 0x00004000 + 3,
    TR_DisableCompilationThread            = 0x00008000 + 3,
    TR_EnableCompilationThread             = 0x00010000 + 3,
-   TR_EnableJITaaSHeuristics              = 0x00020000 + 3,
    TR_EnableJITServerHeuristics           = 0x00020000 + 3,
    TR_SoftFailOnAssume                    = 0x00040000 + 3,
    TR_DisableNewBlockOrdering             = 0x00080000 + 3,
@@ -336,7 +335,6 @@ enum TR_CompilationOptions
    TR_DisableDirectToJNI                  = 0x00000040 + 8,
    TR_OldJVMPI                            = 0x00000080 + 8,
    TR_EmitExecutableELFFile               = 0x00000100 + 8,
-   TR_EnableJITaaSDoLocalCompilesForRemoteCompiles = 0x00000200 + 8,
    TR_JITServerFollowRemoteCompileWithLocalCompile = 0x00000200 + 8,
    // Available                           = 0x00000800 + 8,
    TR_DisableLinkageRegisterAllocation    = 0x00001000 + 8,
@@ -1139,7 +1137,6 @@ enum TR_VerboseFlags
    TR_VerboseHookDetailsClassUnloading,
    TR_VerboseSampleDensity,
    TR_VerboseProfiling,
-   TR_VerboseJITaaS,
    TR_VerboseJITServer,
    TR_VerboseAOTCompression,
    //If adding new options add an entry to _verboseOptionNames as well

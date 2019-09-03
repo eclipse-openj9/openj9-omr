@@ -45,7 +45,7 @@ if(OMR_HOST_ARCH STREQUAL "x86")
 endif()
 
 if(NOT OMR_HOST_ARCH STREQUAL "ppc")
-	target_sources(jitbuildertest PUBLIC UnsignedDivRemTest.cpp)
+	target_sources(jitbuildertest PRIVATE UnsignedDivRemTest.cpp)
 endif()
 
 target_link_libraries(jitbuildertest

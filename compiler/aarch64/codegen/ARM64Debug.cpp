@@ -27,6 +27,7 @@
 #include "codegen/ARM64ConditionCode.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/GCRegisterMap.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -516,6 +517,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsSynchronization:
          print(pOutFile, (TR::ARM64ImmInstruction *)instr); // printing handled by superclass
          break;
+      case OMR::Instruction::IsException:
+         print(pOutFile, (TR::ARM64ImmInstruction *)instr); // printing handled by superclass
+         break;
       case OMR::Instruction::IsImmSym:
          print(pOutFile, (TR::ARM64ImmSymInstruction *)instr);
          break;
@@ -760,7 +764,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmInstruction *instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_WordReg);
-   trfprintf(pOutFile, ", 0x%08x", instr->getSourceImmediate());
+   uint32_t imm = instr->getSourceImmediate() & 0xFFFF;
+   uint32_t shift = (instr->getSourceImmediate() & 0x30000) >> 12;
+   trfprintf(pOutFile, ", 0x%04x", imm);
+   if (shift != 0)
+      {
+      trfprintf(pOutFile, ", LSL #%d", shift);
+      }
    trfflush(_comp->getOutFile());
    }
 
@@ -779,8 +789,24 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
-   print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   bool isCmp = false;
+   if (op == TR::InstOpCode::subsimmx || op == TR::InstOpCode::subsimmw)
+      {
+      TR::Register *r = instr->getTargetRegister();
+      if (r && r->getRealRegister()
+          && toRealRegister(r)->getRegisterNumber() == TR::RealRegister::xzr)
+         {
+         // cmp alias
+         isCmp = true;
+         trfprintf(pOutFile, "cmpimm%c \t", (op == TR::InstOpCode::subsimmx) ? 'x' : 'w');
+         }
+      }
+   if (!isCmp)
+      {
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      }
    print(pOutFile, instr->getSource1Register(), TR_WordReg);
    trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
 
@@ -794,9 +820,24 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src2Instruction *instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
-
-   print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   bool isCmp = false;
+   if (op == TR::InstOpCode::subsx || op == TR::InstOpCode::subsw)
+      {
+      TR::Register *r = instr->getTargetRegister();
+      if (r && r->getRealRegister()
+          && toRealRegister(r)->getRegisterNumber() == TR::RealRegister::xzr)
+         {
+         // cmp alias
+         isCmp = true;
+         trfprintf(pOutFile, "cmp%c \t", (op == TR::InstOpCode::subsx) ? 'x' : 'w');
+         }
+      }
+   if (!isCmp)
+      {
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      }
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource2Register(), TR_WordReg);
 
@@ -983,7 +1024,16 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference *mr)
 void
 TR_Debug::printARM64GCRegisterMap(TR::FILE *pOutFile, TR::GCRegisterMap *map)
    {
-   TR_UNIMPLEMENTED();
+   TR::Machine *machine = _cg->machine();
+
+   trfprintf(pOutFile, "    registers: {");
+   for (int i = 0; i < 32; i++)
+      {
+      if (map->getMap() & (1 << i))
+         trfprintf(pOutFile, "%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum)(i + TR::RealRegister::FirstGPR))));
+      }
+
+   trfprintf(pOutFile, "}\n");
    }
 
 void

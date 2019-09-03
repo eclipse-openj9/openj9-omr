@@ -124,8 +124,8 @@ function(process_source_files src_files)
 				COMMAND ${CMAKE_COMMAND} -DAWK_SCRIPT=${DDR_SUPPORT_DIR}/cmake_ddr.awk -Dinput_file=${abs_file} -Doutput_file=${stub_file} -P ${DDR_SUPPORT_DIR}/GenerateStub.cmake
 		)
 
-		#TODO don't hardcode command
-		set(pp_command "gcc")
+		#TODO this will break when we use a compiler which doesnt take UNIX style args (IE MSVC)
+		set(pp_command "@CMAKE_C_COMPILER@")
 		list(APPEND pp_command ${BASE_ARGS} "-E" "${stub_file}" )
 		add_custom_command(
 			OUTPUT "${annt_file}"

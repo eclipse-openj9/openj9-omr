@@ -218,13 +218,11 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
    generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
 
-   /*
-    * Enable this part when dmb instruction becomes available
    if (needSync)
       {
-      generateInstruction(cg, TR::InstOpCode::dmb, node);
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xF); // dmb SY
       }
-    */
+
    tempMR->decNodeReferenceCounts(cg);
 
    return tempReg;
@@ -263,14 +261,12 @@ OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrimmx, node, tempReg, tempMR);
 
-   /*
-    * Enable this part when dmb instruction becomes available
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
    if (needSync)
       {
-      generateInstruction(cg, TR::InstOpCode::dmb, node);
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xF); // dmb SY
       }
-    */
+
    tempMR->decNodeReferenceCounts(cg);
 
    return tempReg;
@@ -326,21 +322,15 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
       valueChild = node->getFirstChild();
       }
 
-   /*
-    * Enable this part when dmb instruction becomes available
    if (needSync)
       {
-      generateInstruction(cg, TR::InstOpCode::dmb, node);
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xE); // dmb ST
       }
-    */
    generateMemSrc1Instruction(cg, op, node, tempMR, cg->evaluate(valueChild));
-   /*
-    * Enable this part when dmb instruction becomes available
    if (needSync)
       {
-      generateInstruction(cg, TR::InstOpCode::dmb, node);
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xF); // dmb SY
       }
-    */
 
    valueChild->decReferenceCount();
    tempMR->decNodeReferenceCounts(cg);

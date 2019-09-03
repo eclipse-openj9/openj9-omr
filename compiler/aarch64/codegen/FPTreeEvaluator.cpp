@@ -140,14 +140,14 @@ OMR::ARM64::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::fstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonLoadEvaluator(node, TR::InstOpCode::vstrimms, 4, cg);
+   return commonStoreEvaluator(node, TR::InstOpCode::vstrimms, 4, cg);
    }
 
 // also handles dstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonLoadEvaluator(node, TR::InstOpCode::vstrimmd, 8, cg);
+   return commonStoreEvaluator(node, TR::InstOpCode::vstrimmd, 8, cg);
    }
 
 TR::Register *

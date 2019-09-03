@@ -182,7 +182,7 @@ void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compil
    intptr_t offset;
    intptr_t address;
 
-   int rc = sscanf(sig, "%255[^(](%255[^+]+%llx) [%llx]", lib, func, &offset, &address);
+   int rc = sscanf(sig, "%255[^(](%255[^+]+%lx) [%lx]", lib, func, &offset, &address);
    if (rc == 4)
       {
       char *funcToPrint = func;
@@ -192,13 +192,13 @@ void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compil
       char *demangled = abi::__cxa_demangle(func, buffer, &length, &status);
       if (status == 0) funcToPrint = demangled;
       if (comp)
-         traceMsg(comp, "#%d: function %s+%#x [%#p]\n",
+         traceMsg(comp, "#%d: function %s+%#lx [%#p]\n",
               frame,
               funcToPrint,
               offset,
               address);
       else
-         fprintf(stderr, "#%d: function %s+%#x [%#p]\n",
+         fprintf(stderr, "#%d: function %s+%#lx [%#p]\n",
                  frame,
                  funcToPrint,
                  offset,

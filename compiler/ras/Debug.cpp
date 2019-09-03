@@ -5013,7 +5013,6 @@ void TR_Debug::setupDebugger(void *startaddr, void *endaddr, bool before)
 
             fprintf(cf, "finish\n");
             fprintf(cf, "shell rm %s\n",cfname);
-            fprintf(cf, "");
             fclose(cf);
 
             Argv[1] = "-x";

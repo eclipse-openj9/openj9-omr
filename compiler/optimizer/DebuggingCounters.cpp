@@ -232,7 +232,7 @@ void TR_DebuggingCounters::report()
          int32_t deviation = ((counterInfo->delta + 1)*counterInfo->bucketSize);
 
          if (deviation != INT_MAX)
-            fprintf(output, "Name: [%31s (%5d)] dynamic : (%5.2lf ) static : (%5.2lf ) [%llu]\n",
+            fprintf(output, "Name: [%31s (%5d)] dynamic : (%5.2lf ) static : (%5.2lf ) [%lu]\n",
 	   	             counterInfo->counterName,
                    ((counterInfo->delta + 1)*counterInfo->bucketSize),
                    //(uint32_t) counterInfo->totalCount,
@@ -252,7 +252,7 @@ void TR_DebuggingCounters::report()
 	       }
       }
 
-   fprintf(output, "Compilation sum %d Dynamic sum %llu \n", (int32_t) compilationSum, dynamicSum);
+   fprintf(output, "Compilation sum %d Dynamic sum %lu \n", (int32_t) compilationSum, dynamicSum);
    fprintf(output, "\n");
 
    if (output != stdout)

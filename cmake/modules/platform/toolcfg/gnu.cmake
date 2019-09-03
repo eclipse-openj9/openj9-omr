@@ -23,6 +23,10 @@ set(OMR_WARNING_AS_ERROR_FLAG -Werror)
 
 set(OMR_ENHANCED_WARNING_FLAG -Wall)
 
+# disable builtin strncpy buffer length check for components that use variable length
+# array fields at the end of structs
+set(OMR_STRNCPY_FORTIFY_OPTIONS -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1)
+
 list(APPEND OMR_PLATFORM_COMPILE_OPTIONS -pthread -fno-strict-aliasing)
 
 list(APPEND OMR_PLATFORM_CXX_COMPILE_OPTIONS -std=c++0x)

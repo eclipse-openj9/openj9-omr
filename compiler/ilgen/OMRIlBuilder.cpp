@@ -210,14 +210,14 @@ OMR::IlBuilder::printBlock(TR::Block *block)
 TR::SymbolReference *
 OMR::IlBuilder::lookupSymbol(const char *name)
    {
-   TR_ASSERT(_methodBuilder, "cannot look up symbols in an IlBuilder that has no MethodBuilder");
+   TR_ASSERT_FATAL(_methodBuilder, "cannot look up symbols in an IlBuilder that has no MethodBuilder");
    return _methodBuilder->lookupSymbol(name);
    }
 
 void
 OMR::IlBuilder::defineSymbol(const char *name, TR::SymbolReference *symRef)
    {
-   TR_ASSERT(_methodBuilder, "cannot define symbols in an IlBuilder that has no MethodBuilder");
+   TR_ASSERT_FATAL(_methodBuilder, "cannot define symbols in an IlBuilder that has no MethodBuilder");
    _methodBuilder->defineSymbol(name, symRef);
    }
 
@@ -279,16 +279,16 @@ OMR::IlBuilder::Copy(TR::IlValue *value)
 TR::TreeTop *
 OMR::IlBuilder::getFirstTree()
    {
-   TR_ASSERT(_blocks, "_blocks not created yet");
-   TR_ASSERT(_blocks[0], "_blocks[0] not created yet");
+   TR_ASSERT_FATAL(_blocks, "_blocks not created yet");
+   TR_ASSERT_FATAL(_blocks[0], "_blocks[0] not created yet");
    return _blocks[0]->getEntry();
    }
 
 TR::TreeTop *
 OMR::IlBuilder::getLastTree()
    {
-   TR_ASSERT(_blocks, "_blocks not created yet");
-   TR_ASSERT(_blocks[_numBlocks], "_blocks[0] not created yet");
+   TR_ASSERT_FATAL(_blocks, "_blocks not created yet");
+   TR_ASSERT_FATAL(_blocks[_numBlocks], "_blocks[0] not created yet");
    return _blocks[_numBlocks]->getExit();
    }
 
@@ -453,7 +453,7 @@ OMR::IlBuilder::zero(TR::DataType dt)
       case TR::Int64 : return TR::Node::lconst(0);
       default :        return TR::Node::create(TR::ILOpCode::constOpCode(dt), 0, 0);
       }
-   TR_ASSERT(0, "should not reach here");
+   TR_ASSERT_FATAL(0, "should not reach here");
    }
 
 TR::Node *
@@ -546,7 +546,7 @@ OMR::IlBuilder::appendBlock(TR::Block *newBlock, bool addEdge)
 void
 OMR::IlBuilder::AppendBuilder(TR::IlBuilder *builder)
    {
-   TR_ASSERT(builder->_partOfSequence == false, "builder cannot be in two places");
+   TR_ASSERT_FATAL(builder->_partOfSequence == false, "builder cannot be in two places");
 
    builder->_partOfSequence = true;
    _sequenceAppender->add(builderEntry(builder));
@@ -588,10 +588,10 @@ OMR::IlBuilder::indirectStoreNode(TR::Node *addr, TR::Node *v)
 TR::IlValue *
 OMR::IlBuilder::indirectLoadNode(TR::IlType *dt, TR::Node *addr, bool isVectorLoad)
    {
-   TR_ASSERT(dt->isPointer(), "indirectLoadNode must apply to pointer type");
+   TR_ASSERT_FATAL(dt->isPointer(), "indirectLoadNode must apply to pointer type");
    TR::IlType * baseType = dt->baseType();
    TR::DataType primType = baseType->getPrimitiveType();
-   TR_ASSERT(primType != TR::NoType, "Dereferencing an untyped pointer.");
+   TR_ASSERT_FATAL(primType != TR::NoType, "Dereferencing an untyped pointer.");
    TR::DataType symRefType = primType;
    if (isVectorLoad)
       symRefType = symRefType.scalarToVector();
@@ -674,7 +674,7 @@ OMR::IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
 void
 OMR::IlBuilder::StoreAt(TR::IlValue *address, TR::IlValue *value)
    {
-   TR_ASSERT(address->getDataType() == TR::Address, "StoreAt needs an address operand");
+   TR_ASSERT_FATAL(address->getDataType() == TR::Address, "StoreAt needs an address operand");
 
    TraceIL("IlBuilder[ %p ]::StoreAt address %d gets %d\n", this, address->getID(), value->getID());
    indirectStoreNode(loadValue(address), loadValue(value));
@@ -689,7 +689,7 @@ OMR::IlBuilder::StoreAt(TR::IlValue *address, TR::IlValue *value)
 void
 OMR::IlBuilder::VectorStoreAt(TR::IlValue *address, TR::IlValue *value)
    {
-   TR_ASSERT(address->getDataType() == TR::Address, "VectorStoreAt needs an address operand");
+   TR_ASSERT_FATAL(address->getDataType() == TR::Address, "VectorStoreAt needs an address operand");
 
    TraceIL("IlBuilder[ %p ]::VectorStoreAt address %d gets %d\n", this, address->getID(), value->getID());
 
@@ -769,7 +769,7 @@ OMR::IlBuilder::VectorLoad(const char *name)
    {
    TR::SymbolReference *nameSymRef = lookupSymbol(name);
    TR::DataType returnType = nameSymRef->getSymbol()->getDataType();
-   TR_ASSERT(returnType.isVector(), "VectorLoad must load symbol with a vector type");
+   TR_ASSERT_FATAL(returnType.isVector(), "VectorLoad must load symbol with a vector type");
 
    TR::Node *loadNode = TR::Node::createWithSymRef(0, TR::comp()->il.opCodeForDirectLoad(returnType), 0, nameSymRef);
    TR::IlValue *returnValue = newValue(returnType, loadNode);
@@ -792,7 +792,7 @@ OMR::IlBuilder::LoadIndirect(const char *type, const char *field, TR::IlValue *o
 TR::IlValue *
 OMR::IlBuilder::LoadAt(TR::IlType *dt, TR::IlValue *address)
    {
-   TR_ASSERT(address->getDataType() == TR::Address, "LoadAt needs an address operand");
+   TR_ASSERT_FATAL(address->getDataType() == TR::Address, "LoadAt needs an address operand");
    TR::IlValue *returnValue = indirectLoadNode(dt, loadValue(address));
    TraceIL("IlBuilder[ %p ]::%d is LoadAt type %d address %d\n", this, returnValue->getID(), dt->getPrimitiveType(), address->getID());
    return returnValue;
@@ -801,7 +801,7 @@ OMR::IlBuilder::LoadAt(TR::IlType *dt, TR::IlValue *address)
 TR::IlValue *
 OMR::IlBuilder::VectorLoadAt(TR::IlType *dt, TR::IlValue *address)
    {
-   TR_ASSERT(address->getDataType() == TR::Address, "LoadAt needs an address operand");
+   TR_ASSERT_FATAL(address->getDataType() == TR::Address, "LoadAt needs an address operand");
    TR::IlValue *returnValue = indirectLoadNode(dt, loadValue(address), true);
    TraceIL("IlBuilder[ %p ]::%d is VectorLoadAt type %d address %d\n", this, returnValue->getID(), dt->getPrimitiveType(), address->getID());
    return returnValue;
@@ -811,9 +811,9 @@ TR::IlValue *
 OMR::IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
    {
    TR::IlType *elemType = dt->baseType();
-   TR_ASSERT(base->getDataType() == TR::Address, "IndexAt must be called with a pointer base");
-   TR_ASSERT(elemType != NULL, "IndexAt should be called with pointer type");
-   TR_ASSERT(elemType->getPrimitiveType() != TR::NoType, "Cannot use IndexAt with pointer to NoType.");
+   TR_ASSERT_FATAL(base->getDataType() == TR::Address, "IndexAt must be called with a pointer base");
+   TR_ASSERT_FATAL(elemType != NULL, "IndexAt should be called with pointer type");
+   TR_ASSERT_FATAL(elemType->getPrimitiveType() != TR::NoType, "Cannot use IndexAt with pointer to NoType.");
    TR::Node *baseNode = loadValue(base);
    TR::Node *indexNode = loadValue(index);
    TR::Node *elemSizeNode;
@@ -973,7 +973,7 @@ OMR::IlBuilder::ConstInteger(TR::IlType *intType, int64_t value)
    else if (intType == Int32) return ConstInt32((int32_t) value);
    else if (intType == Int64) return ConstInt64(          value);
 
-   TR_ASSERT(0, "unknown integer type");
+   TR_ASSERT_FATAL(0, "unknown integer type");
    return NULL;
    }
 
@@ -1013,7 +1013,7 @@ OMR::IlBuilder::Negate(TR::IlValue *v)
    TR::DataType dataType = v->getDataType();
 
    TR::ILOpCodes negateOp = ILOpCode::negateOpCode(dataType);
-   TR_ASSERT(negateOp != TR::BadILOp, "Builder [ %p ] cannot negate value %d of type %s", this, v->getID(), dataType.toString());
+   TR_ASSERT_FATAL(negateOp != TR::BadILOp, "Builder [ %p ] cannot negate value %d of type %s", this, v->getID(), dataType.toString());
 
    TR::Node *result = TR::Node::create(negateOp, 1, loadValue(v));
    TR::IlValue *negatedValue = newValue(dataType, result);
@@ -1027,7 +1027,7 @@ OMR::IlBuilder::convertTo(TR::DataType typeTo, TR::IlValue *v, bool needUnsigned
    TR::DataType typeFrom = v->getDataType();
 
    TR::ILOpCodes convertOp = ILOpCode::getProperConversion(typeFrom, typeTo, needUnsigned);
-   TR_ASSERT(convertOp != TR::BadILOp, "Builder [ %p ] unknown conversion requested for value %d %s to %s", this, v->getID(), typeFrom.toString(), typeTo.toString());
+   TR_ASSERT_FATAL(convertOp != TR::BadILOp, "Builder [ %p ] unknown conversion requested for value %d %s to %s", this, v->getID(), typeFrom.toString(), typeTo.toString());
 
    TR::Node *result = TR::Node::create(convertOp, 1, loadValue(v));
    TR::IlValue *convertedValue = newValue(typeTo, result);
@@ -1047,10 +1047,10 @@ OMR::IlBuilder::ConvertBitsTo(TR::IlType* t, TR::IlValue* v)
       }
 
    TR::ILOpCodes convertOpcode = TR::DataType::getDataTypeBitConversion(typeFrom, typeTo);
-   TR_ASSERT(convertOpcode != TR::BadILOp && TR::DataType::getSize(typeTo) == TR::DataType::getSize(typeFrom),
+   TR_ASSERT_FATAL(convertOpcode != TR::BadILOp && TR::DataType::getSize(typeTo) == TR::DataType::getSize(typeFrom),
              "Builder [ %p ] requested bit conversion for value %d from type of size %d (%s) to type of size %d (%s) (consider using ConvertTo() to for narrowing/widening)",
              this, v->getID(), TR::DataType::getSize(typeFrom), typeFrom.toString(), TR::DataType::getSize(typeTo), typeTo.toString());
-   TR_ASSERT(convertOpcode != TR::BadILOp, "Builder [ %p ] unknown bit conversion requested for value %d (%s) to type %s", this, v->getID(), typeFrom.toString(), t->getName());
+   TR_ASSERT_FATAL(convertOpcode != TR::BadILOp, "Builder [ %p ] unknown bit conversion requested for value %d (%s) to type %s", this, v->getID(), typeFrom.toString(), t->getName());
 
    TR::Node *result = TR::Node::create(convertOpcode, 1, loadValue(v));
    TR::IlValue *convertedValue = newValue(t, result);
@@ -1113,7 +1113,7 @@ OMR::IlBuilder::binaryOpNodeFromNodes(TR::ILOpCodes op,
                             (rightType == TR::Int32 || rightType == TR::Int64));
    bool isRevAddressBump = ((rightType == TR::Address) &&
                                (leftType == TR::Int32 || leftType == TR::Int64));
-   TR_ASSERT(leftType == rightType || isAddressBump || isRevAddressBump, "binaryOp requires both left and right operands to have same type or one is address and other is Int32/64");
+   TR_ASSERT_FATAL(leftType == rightType || isAddressBump || isRevAddressBump, "binaryOp requires both left and right operands to have same type or one is address and other is Int32/64");
 
    if (isRevAddressBump) // swap them
       {
@@ -1190,7 +1190,7 @@ OMR::IlBuilder::Goto(TR::IlBuilder **dest)
 void
 OMR::IlBuilder::Goto(TR::IlBuilder *dest)
    {
-   TR_ASSERT(dest != NULL, "This goto implementation requires a non-NULL builder object");
+   TR_ASSERT_FATAL(dest != NULL, "This goto implementation requires a non-NULL builder object");
    TraceIL("IlBuilder[ %p ]::Goto %p\n", this, dest);
    appendGoto(dest->getEntry());
    setDoesNotComeBack();
@@ -1202,7 +1202,7 @@ OMR::IlBuilder::Return()
    TR::IlBuilder *returnBuilder = _methodBuilder->returnBuilder();
    if (returnBuilder != NULL)
       {
-      TR_ASSERT(_methodBuilder->returnSymbol() == NULL, "Return() from inlined call did not expect a pre-existing returnSymbol");
+      TR_ASSERT_FATAL(_methodBuilder->returnSymbol() == NULL, "Return() from inlined call did not expect a pre-existing returnSymbol");
       TraceIL("IlBuilder[ %p ]::Return back to caller's returnBuilder [ %p ]\n", this, returnBuilder);
 
       // redirect flow back to the caller's return block
@@ -1335,7 +1335,7 @@ OMR::IlBuilder::appendExceptionHandler(TR::Block *blockThrowsException, TR::IlBu
  
    //append handler, add exception edge and merge edge
    *handler = createBuilderIfNeeded(*handler);
-   TR_ASSERT(*handler != NULL, "exception handler cannot be NULL\n");
+   TR_ASSERT_FATAL(*handler != NULL, "exception handler cannot be NULL\n");
    (*handler)->_isHandler = true;
    cfg()->addExceptionEdge(blockThrowsException, (*handler)->getEntry());
    AppendBuilder(*handler);
@@ -1403,7 +1403,7 @@ OMR::IlBuilder::getOpCode(TR::IlValue *leftValue, TR::IlValue *rightValue)
    TR::ILOpCodes op;
    if (leftValue->getDataType() == TR::Address)
       {
-      TR_ASSERT((TR::Compiler->target.is64Bit() && rightValue->getDataType() == TR::Int64) || (TR::Compiler->target.is32Bit() && rightValue->getDataType() == TR::Int32),
+      TR_ASSERT_FATAL((TR::Compiler->target.is64Bit() && rightValue->getDataType() == TR::Int64) || (TR::Compiler->target.is32Bit() && rightValue->getDataType() == TR::Int32),
                 "the right child type must be either TR::Int32 (on 32-bit ISA) or TR::Int64 (on 64-bit ISA) when the left child of Add is TR::Address\n");
       op = TR::Compiler->target.is32Bit() ? TR::aiadd : TR::aladd;
       }
@@ -1591,7 +1591,7 @@ OMR::IlBuilder::shiftOpNodeFromNodes(TR::ILOpCodes op,
    {
    TR::DataType leftType = leftNode->getDataType();
    TR::DataType rightType = rightNode->getDataType();
-   TR_ASSERT(leftType.isIntegral() && rightType.isInt32(), "shift operation first operand must be an integer, and shift amount must be 32-bit integer");
+   TR_ASSERT_FATAL(leftType.isIntegral() && rightType.isInt32(), "shift operation first operand must be an integer, and shift amount must be 32-bit integer");
 
    return TR::Node::create(op, 2, leftNode, rightNode);
    }
@@ -1613,7 +1613,7 @@ OMR::IlBuilder::shiftOpFromOpMap(OpCodeMapper mapOp,
    {
    TR::Node *leftNode = loadValue(left);
    TR::DataType leftType = leftNode->getDataType();
-   TR_ASSERT(leftType.isIntegral(), "left operand of shift must be integer type");
+   TR_ASSERT_FATAL(leftType.isIntegral(), "left operand of shift must be integer type");
 
    TR::Node *rightNode = loadValue(right);
    if (!rightNode->getDataType().isInt32())
@@ -1726,7 +1726,7 @@ void
 OMR::IlBuilder::IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBuilder, int32_t numTerms, ...)
    {
    JBCondition **terms = (JBCondition **) _comp->trMemory()->allocateHeapMemory(numTerms * sizeof(JBCondition *));
-   TR_ASSERT(NULL != terms, "out of memory");
+   TR_ASSERT_FATAL(NULL != terms, "out of memory");
 
    va_list args;
    va_start(args, numTerms);
@@ -1823,7 +1823,7 @@ void
 OMR::IlBuilder::IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBuilder, int32_t numTerms, ...)
    {
    JBCondition **terms = (JBCondition **) _comp->trMemory()->allocateHeapMemory(numTerms * sizeof(JBCondition *));
-   TR_ASSERT(NULL != terms, "out of memory");
+   TR_ASSERT_FATAL(NULL != terms, "out of memory");
 
    va_list args;
    va_start(args, numTerms);
@@ -1839,8 +1839,8 @@ OMR::IlBuilder::IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBui
 TR::IlBuilder::JBCondition *
 OMR::IlBuilder::MakeCondition(TR::IlBuilder *conditionBuilder, TR::IlValue *conditionValue)
    {
-   TR_ASSERT(conditionBuilder != NULL, "MakeCondition needs to have non-null conditionBuilder");
-   TR_ASSERT(conditionValue != NULL, "MakeCondition needs to have non-null conditionValue");
+   TR_ASSERT_FATAL(conditionBuilder != NULL, "MakeCondition needs to have non-null conditionBuilder");
+   TR_ASSERT_FATAL(conditionValue != NULL, "MakeCondition needs to have non-null conditionValue");
    return new (_comp->trHeapMemory()) JBCondition(conditionBuilder, conditionValue);
    }
 
@@ -1964,7 +1964,7 @@ OMR::IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, ...)
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
    if (resolvedMethod == NULL && _methodBuilder->RequestFunction(functionName))
       resolvedMethod = _methodBuilder->lookupFunction(functionName);
-   TR_ASSERT(resolvedMethod, "Could not identify function %s\n", functionName);
+   TR_ASSERT_FATAL(resolvedMethod, "Could not identify function %s\n", functionName);
 
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateComputedStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
    return genCall(methodSymRef, numArgs, argValues, false /*isDirectCall*/);
@@ -1983,7 +1983,7 @@ OMR::IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, TR::IlVa
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
    if (resolvedMethod == NULL && _methodBuilder->RequestFunction(functionName))
       resolvedMethod = _methodBuilder->lookupFunction(functionName);
-   TR_ASSERT(resolvedMethod, "Could not identify function %s\n", functionName);
+   TR_ASSERT_FATAL(resolvedMethod, "Could not identify function %s\n", functionName);
 
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateComputedStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
    return genCall(methodSymRef, numArgs, argValues, false /*isDirectCall*/);
@@ -2083,7 +2083,7 @@ OMR::IlBuilder::Call(const char *functionName, int32_t numArgs, ...)
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
    if (resolvedMethod == NULL && _methodBuilder->RequestFunction(functionName))
       resolvedMethod = _methodBuilder->lookupFunction(functionName);
-   TR_ASSERT(resolvedMethod, "Could not identify function %s\n", functionName);
+   TR_ASSERT_FATAL(resolvedMethod, "Could not identify function %s\n", functionName);
 
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
    return genCall(methodSymRef, numArgs, argValues);
@@ -2096,7 +2096,7 @@ OMR::IlBuilder::Call(const char *functionName, int32_t numArgs, TR::IlValue ** a
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
    if (resolvedMethod == NULL && _methodBuilder->RequestFunction(functionName))
       resolvedMethod = _methodBuilder->lookupFunction(functionName);
-   TR_ASSERT(resolvedMethod, "Could not identify function %s\n", functionName);
+   TR_ASSERT_FATAL(resolvedMethod, "Could not identify function %s\n", functionName);
 
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
    return genCall(methodSymRef, numArgs, argValues);
@@ -2149,11 +2149,11 @@ OMR::IlBuilder::genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::
 TR::IlValue *
 OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
    {
-   TR_ASSERT(baseAddress->getDataType() == TR::Address, "baseAddress must be TR::Address");
+   TR_ASSERT_FATAL(baseAddress->getDataType() == TR::Address, "baseAddress must be TR::Address");
 
    //Determine the implementation type and returnType by detecting "value"'s type
    TR::DataType returnType = value->getDataType();
-   TR_ASSERT(returnType == TR::Int32 || (returnType == TR::Int64 && TR::Compiler->target.is64Bit()), "AtomicAdd currently only supports Int32/64 values");
+   TR_ASSERT_FATAL(returnType == TR::Int32 || (returnType == TR::Int64 && TR::Compiler->target.is64Bit()), "AtomicAdd currently only supports Int32/64 values");
    TraceIL("IlBuilder[ %p ]::AtomicAdd(%d, %d)\n", this, baseAddress->getID(), value->getID());
 
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateCodeGenInlinedHelper(TR::SymbolReferenceTable::atomicAddSymbol);
@@ -2241,7 +2241,7 @@ void
 OMR::IlBuilder::Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuilder **transientFailureBuilder, TR::IlBuilder **transactionBuilder)
    {   
    //This assertion is to rule out platforms which don't have tstart evaluator yet. 
-   TR_ASSERT(comp()->cg()->hasTMEvaluator(), "this platform doesn't support tstart or tfinish evaluator yet");   
+   TR_ASSERT_FATAL(comp()->cg()->hasTMEvaluator(), "this platform doesn't support tstart or tfinish evaluator yet");   
     
    TraceIL("IlBuilder[ %p ]::transactionBegin %p, %p, %p, %p)\n", this, *persistentFailureBuilder, *transientFailureBuilder, *transactionBuilder);
 
@@ -2323,7 +2323,7 @@ OMR::IlBuilder::IfCmpNotEqualZero(TR::IlBuilder **target, TR::IlValue *condition
 void
 OMR::IlBuilder::IfCmpNotEqualZero(TR::IlBuilder *target, TR::IlValue *condition)
    {
-   TR_ASSERT(target != NULL, "This IfCmpNotEqualZero requires a non-NULL builder object");
+   TR_ASSERT_FATAL(target != NULL, "This IfCmpNotEqualZero requires a non-NULL builder object");
    TraceIL("IlBuilder[ %p ]::IfCmpNotEqualZero %d? -> [ %p ] B%d\n", this, condition->getID(), target, target->getEntry()->getNumber());
    ifCmpNotEqualZero(condition, target->getEntry());
    }
@@ -2338,7 +2338,7 @@ OMR::IlBuilder::IfCmpNotEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlV
 void
 OMR::IlBuilder::IfCmpNotEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
-   TR_ASSERT(target != NULL, "This IfCmpNotEqual requires a non-NULL builder object");
+   TR_ASSERT_FATAL(target != NULL, "This IfCmpNotEqual requires a non-NULL builder object");
    TraceIL("IlBuilder[ %p ]::IfCmpNotEqual %d == %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpNE, false, left, right, target->getEntry());
    }
@@ -2353,7 +2353,7 @@ OMR::IlBuilder::IfCmpEqualZero(TR::IlBuilder **target, TR::IlValue *condition)
 void
 OMR::IlBuilder::IfCmpEqualZero(TR::IlBuilder *target, TR::IlValue *condition)
    {
-   TR_ASSERT(target != NULL, "This IfCmpEqualZero requires a non-NULL builder object");
+   TR_ASSERT_FATAL(target != NULL, "This IfCmpEqualZero requires a non-NULL builder object");
    TraceIL("IlBuilder[ %p ]::IfCmpEqualZero %d == 0? -> [ %p ] B%d\n", this, condition->getID(), target, target->getEntry()->getNumber());
    ifCmpEqualZero(condition, target->getEntry());
    }
@@ -2368,7 +2368,7 @@ OMR::IlBuilder::IfCmpEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValu
 void
 OMR::IlBuilder::IfCmpEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
-   TR_ASSERT(target != NULL, "This IfCmpEqual requires a non-NULL builder object");
+   TR_ASSERT_FATAL(target != NULL, "This IfCmpEqual requires a non-NULL builder object");
    TraceIL("IlBuilder[ %p ]::IfCmpEqual %d == %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpEQ, false, left, right, target->getEntry());
    }
@@ -2383,7 +2383,7 @@ OMR::IlBuilder::IfCmpLessThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlV
 void
 OMR::IlBuilder::IfCmpLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
-   TR_ASSERT(target != NULL, "This IfCmpLessThan requires a non-NULL builder object");
+   TR_ASSERT_FATAL(target != NULL, "This IfCmpLessThan requires a non-NULL builder object");
    TraceIL("IlBuilder[ %p ]::IfCmpLessThan %d < %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpLT, false, left, right, target->getEntry());
    }
@@ -2398,7 +2398,7 @@ OMR::IlBuilder::IfCmpUnsignedLessThan(TR::IlBuilder **target, TR::IlValue *left,
 void
 OMR::IlBuilder::IfCmpUnsignedLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
-   TR_ASSERT(target != NULL, "This IfCmpUnsignedLessThan requires a non-NULL builder object");
+   TR_ASSERT_FATAL(target != NULL, "This IfCmpUnsignedLessThan requires a non-NULL builder object");
    TraceIL("IlBuilder[ %p ]::IfCmpUnsignedLessThan %d < %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpLT, true, left, right, target->getEntry());
    }
@@ -2413,7 +2413,7 @@ OMR::IlBuilder::IfCmpLessOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::
 void
 OMR::IlBuilder::IfCmpLessOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
-   TR_ASSERT(target != NULL, "This IfCmpLessOrEqual requires a non-NULL builder object");
+   TR_ASSERT_FATAL(target != NULL, "This IfCmpLessOrEqual requires a non-NULL builder object");
    TraceIL("IlBuilder[ %p ]::IfCmpLessOrEqual %d <= %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpLE, false, left, right, target->getEntry());
    }
@@ -2428,7 +2428,7 @@ OMR::IlBuilder::IfCmpUnsignedLessOrEqual(TR::IlBuilder **target, TR::IlValue *le
 void
 OMR::IlBuilder::IfCmpUnsignedLessOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
-   TR_ASSERT(target != NULL, "This IfCmpUnsignedLessOrEqual requires a non-NULL builder object");
+   TR_ASSERT_FATAL(target != NULL, "This IfCmpUnsignedLessOrEqual requires a non-NULL builder object");
    TraceIL("IlBuilder[ %p ]::IfCmpUnsignedLessOrEqual %d <= %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpLE, true, left, right, target->getEntry());
    }
@@ -2534,7 +2534,7 @@ OMR::IlBuilder::appendGoto(TR::Block *destBlock)
 void
 OMR::IlBuilder::IfThenElse(TR::IlBuilder **thenPath, TR::IlBuilder **elsePath, TR::IlValue *condition)
    {
-   TR_ASSERT(thenPath != NULL || elsePath != NULL, "IfThenElse needs at least one conditional path");
+   TR_ASSERT_FATAL(thenPath != NULL || elsePath != NULL, "IfThenElse needs at least one conditional path");
 
    TR::Block *thenEntry = NULL;
    TR::Block *elseEntry = NULL;
@@ -2605,7 +2605,7 @@ OMR::IlBuilder::Switch(const char *selectionVar,
                   JBCase **cases)
    {
    TR::IlValue *selectorValue = Load(selectionVar);
-   TR_ASSERT(selectorValue->getDataType() == TR::Int32, "Switch only supports selector having type Int32");
+   TR_ASSERT_FATAL(selectorValue->getDataType() == TR::Int32, "Switch only supports selector having type Int32");
    *defaultBuilder = createBuilderIfNeeded(*defaultBuilder);
 
    TR::Node *defaultNode = TR::Node::createCase(0, (*defaultBuilder)->getEntry()->getEntry());
@@ -2636,12 +2636,12 @@ OMR::IlBuilder::TableSwitch(const char *selectionVar,
                   JBCase **cases)
    {
    TR::IlValue *selectorValue = Load(selectionVar);
-   TR_ASSERT(selectorValue->getDataType() == TR::Int32, "TableSwitch only supports selector having type Int32");
-   TR_ASSERT(numCases > 0, "TableSwitch requires at least 1 case");
+   TR_ASSERT_FATAL(selectorValue->getDataType() == TR::Int32, "TableSwitch only supports selector having type Int32");
+   TR_ASSERT_FATAL(numCases > 0, "TableSwitch requires at least 1 case");
    int32_t low = cases[0]->_value;
    int32_t high = cases[numCases -1]->_value;
    int32_t casesCovered = (high - low) + 1;
-   TR_ASSERT(numCases == casesCovered, "TableSwitch only supports dense case sets");
+   TR_ASSERT_FATAL(numCases == casesCovered, "TableSwitch only supports dense case sets");
    if (low != 0)
       selectorValue = Sub(selectorValue, ConstInt32(low));
 
@@ -2673,7 +2673,7 @@ OMR::IlBuilder::TableSwitch(const char *selectionVar,
 TR::IlBuilder::JBCase *
 OMR::IlBuilder::MakeCase(int32_t caseValue, TR::IlBuilder **caseBuilder, int32_t caseFallsThrough)
    {
-   TR_ASSERT(caseBuilder != NULL, "MakeCase, needs to have non-null caseBuilder");
+   TR_ASSERT_FATAL(caseBuilder != NULL, "MakeCase, needs to have non-null caseBuilder");
    *caseBuilder = createBuilderIfNeeded(*caseBuilder);
    auto * c = new (_comp->trHeapMemory()) JBCase(caseValue, *caseBuilder, caseFallsThrough);
    return c;
@@ -2682,10 +2682,10 @@ OMR::IlBuilder::MakeCase(int32_t caseValue, TR::IlBuilder **caseBuilder, int32_t
 TR::IlValue *
 OMR::IlBuilder::Select(TR::IlValue * condition, TR::IlValue * trueValue, TR::IlValue * falseValue)
    {
-   TR_ASSERT(condition != NULL && trueValue != NULL && falseValue != NULL,
+   TR_ASSERT_FATAL(condition != NULL && trueValue != NULL && falseValue != NULL,
                      "Select requires condition, trueValue and falseValue");
    TR::DataType dt = trueValue->getDataType();
-   TR_ASSERT(dt == falseValue->getDataType(),
+   TR_ASSERT_FATAL(dt == falseValue->getDataType(),
                      "Select requires trueValue and falseValue to be of the same type");
    TR::ILOpCodes opCode = TR::ILOpCode::ternaryOpCode(dt);
    TR::IlValue * result = NULL;
@@ -2714,7 +2714,7 @@ TR::IlBuilder::JBCase **
 OMR::IlBuilder::createCaseArray(uint32_t numCases, va_list args)
    {
    JBCase **cases = (JBCase **) _comp->trMemory()->allocateHeapMemory(numCases * sizeof(JBCase *));
-   TR_ASSERT(NULL != cases, "out of memory");
+   TR_ASSERT_FATAL(NULL != cases, "out of memory");
 
    for (uint32_t c = 0; c < numCases; ++c)
       {
@@ -2782,7 +2782,7 @@ OMR::IlBuilder::ForLoop(bool countsUp,
                    TR::IlValue *increment)
    {
    methodSymbol()->setMayHaveLoops(true);
-   TR_ASSERT(loopCode != NULL, "ForLoop needs to have loopCode builder");
+   TR_ASSERT_FATAL(loopCode != NULL, "ForLoop needs to have loopCode builder");
    *loopCode = createBuilderIfNeeded(*loopCode);
 
    TraceIL("IlBuilder[ %p ]::ForLoop ind %s initial %d end %d increment %d loopCode %p countsUp %d\n", this, indVar, initial->getID(), end->getID(), increment->getID(), *loopCode, countsUp);
@@ -2799,14 +2799,14 @@ OMR::IlBuilder::ForLoop(bool countsUp,
 
    if (breakBuilder)
       {
-      TR_ASSERT(*breakBuilder == NULL, "ForLoop returns breakBuilder, cannot provide breakBuilder as input");
+      TR_ASSERT_FATAL(*breakBuilder == NULL, "ForLoop returns breakBuilder, cannot provide breakBuilder as input");
       *breakBuilder = OrphanBuilder();
       AppendBuilder(*breakBuilder);
       }
 
    if (continueBuilder)
       {
-      TR_ASSERT(*continueBuilder == NULL, "ForLoop returns continueBuilder, cannot provide continueBuilder as input");
+      TR_ASSERT_FATAL(*continueBuilder == NULL, "ForLoop returns continueBuilder, cannot provide continueBuilder as input");
       *continueBuilder = loopContinue;
       }
 
@@ -2839,7 +2839,7 @@ void
 OMR::IlBuilder::DoWhileLoop(const char *whileCondition, TR::IlBuilder **body, TR::IlBuilder **breakBuilder, TR::IlBuilder **continueBuilder)
    {
    methodSymbol()->setMayHaveLoops(true);
-   TR_ASSERT(body != NULL, "doWhileLoop needs to have a body");
+   TR_ASSERT_FATAL(body != NULL, "doWhileLoop needs to have a body");
 
    if (!_methodBuilder->symbolDefined(whileCondition))
       _methodBuilder->defineValue(whileCondition, Int32);
@@ -2852,7 +2852,7 @@ OMR::IlBuilder::DoWhileLoop(const char *whileCondition, TR::IlBuilder **body, TR
 
    if (continueBuilder)
       {
-      TR_ASSERT(*continueBuilder == NULL, "DoWhileLoop returns continueBuilder, cannot provide continueBuilder as input");
+      TR_ASSERT_FATAL(*continueBuilder == NULL, "DoWhileLoop returns continueBuilder, cannot provide continueBuilder as input");
       loopContinue = *continueBuilder = OrphanBuilder();
       }
    else
@@ -2864,7 +2864,7 @@ OMR::IlBuilder::DoWhileLoop(const char *whileCondition, TR::IlBuilder **body, TR
 
    if (breakBuilder)
       {
-      TR_ASSERT(*breakBuilder == NULL, "DoWhileLoop returns breakBuilder, cannot provide breakBuilder as input");
+      TR_ASSERT_FATAL(*breakBuilder == NULL, "DoWhileLoop returns breakBuilder, cannot provide breakBuilder as input");
       *breakBuilder = OrphanBuilder();
       AppendBuilder(*breakBuilder);
       }
@@ -2877,20 +2877,20 @@ void
 OMR::IlBuilder::WhileDoLoop(const char *whileCondition, TR::IlBuilder **body, TR::IlBuilder **breakBuilder, TR::IlBuilder **continueBuilder)
    {
    methodSymbol()->setMayHaveLoops(true);
-   TR_ASSERT(body != NULL, "WhileDo needs to have a body");
+   TR_ASSERT_FATAL(body != NULL, "WhileDo needs to have a body");
    TraceIL("IlBuilder[ %p ]::WhileDoLoop while %s do body %p\n", this, whileCondition, *body);
 
    TR::IlBuilder *done = OrphanBuilder();
    if (breakBuilder)
       {
-      TR_ASSERT(*breakBuilder == NULL, "WhileDoLoop returns breakBuilder, cannot provide breakBuilder as input");
+      TR_ASSERT_FATAL(*breakBuilder == NULL, "WhileDoLoop returns breakBuilder, cannot provide breakBuilder as input");
       *breakBuilder = done;
       }
 
    TR::IlBuilder *loopContinue = OrphanBuilder();
    if (continueBuilder)
       {
-      TR_ASSERT(*continueBuilder == NULL, "WhileDoLoop returns continueBuilder, cannot provide continueBuilder as input");
+      TR_ASSERT_FATAL(*continueBuilder == NULL, "WhileDoLoop returns continueBuilder, cannot provide continueBuilder as input");
       *continueBuilder = loopContinue;
       }
 

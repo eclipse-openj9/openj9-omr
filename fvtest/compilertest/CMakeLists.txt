@@ -122,4 +122,4 @@ target_link_libraries(compilertest
 
 set_property(TARGET compilertest PROPERTY FOLDER fvtest)
 
-add_test(NAME CompilerTest COMMAND compilertest)
+add_test(NAME CompilerTest COMMAND compilertest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/compilertest-results.xml)

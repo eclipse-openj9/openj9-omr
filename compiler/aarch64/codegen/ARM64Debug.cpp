@@ -39,6 +39,7 @@
 #include "codegen/Snippet.hpp"
 #include "env/IO.hpp"
 #include "il/Block.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "aarch64/codegen/CallSnippet.hpp"
@@ -1243,4 +1244,22 @@ TR_Debug::printa64(TR::FILE *pOutFile, TR::Snippet * snippet)
       default:
          TR_ASSERT( 0, "unexpected snippet kind");
       }
+   }
+
+// This function assumes that if a trampoline is required then it must be to a helper function.
+// Use this API only for inquiring about branches to helpers.
+bool
+TR_Debug::isBranchToTrampoline(TR::SymbolReference *symRef, uint8_t *cursor, int32_t &distance)
+   {
+   uintptrj_t target = (uintptrj_t)symRef->getMethodAddress();
+   bool requiresTrampoline = false;
+
+   if (_cg->directCallRequiresTrampoline(target, (intptrj_t)cursor))
+      {
+      target = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
+      requiresTrampoline = true;
+      }
+
+   distance = (int32_t)(target - (intptrj_t)cursor);
+   return requiresTrampoline;
    }

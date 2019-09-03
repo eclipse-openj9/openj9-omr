@@ -52,11 +52,7 @@ target_include_directories(j9a2e
 		.
 )
 
-add_custom_command(TARGET j9a2e
-	POST_BUILD
-	COMMAND cp -f libj9a2e.x ${CMAKE_BINARY_DIR}/libj9a2e.x
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
+omr_process_exports(j9a2e)
 
 install(
 	TARGETS j9a2e
@@ -67,6 +63,7 @@ install(
 )
 
 set_property(TARGET j9a2e PROPERTY FOLDER util)
+
 
 target_enable_ddr(j9a2e)
 ddr_set_add_targets(omrddr j9a2e)

@@ -160,130 +160,119 @@ TR::Register *OMR::Power::TreeEvaluator::acmpleEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::Mnemonic branchOp, TR::LabelSymbol *dstLabel, TR::Node *node, TR::CodeGenerator *cg, bool isSigned, bool isHint, bool likeliness)
    {
-   static bool  noli = (feGetEnv("TR_noLoopInversion")!=NULL);
    TR::Register *condReg = cg->allocateRegister(TR_CCR);
    TR::Node     *secondChild = node->getSecondChild();
    TR::Node     *firstChild = node->getFirstChild();
 
-   bool         loopInversed;
-   loopInversed = false;
-
-   if (!loopInversed)
+   TR::Register *src1Reg   = cg->evaluate(firstChild);
+   if (secondChild->getOpCode().isLoadConst())
       {
-      TR::Register *src1Reg   = cg->evaluate(firstChild);
-      if (secondChild->getOpCode().isLoadConst())
+      TR::InstOpCode::Mnemonic cmpOp;
+      if (isSigned)
          {
-         TR::InstOpCode::Mnemonic cmpOp;
-         if (isSigned)
+         int64_t value = secondChild->get64bitIntegralValue();
+         if (value >= LOWER_IMMED && value <= UPPER_IMMED)
             {
-            int64_t value = secondChild->get64bitIntegralValue();
-            if (value >= LOWER_IMMED && value <= UPPER_IMMED)
-               {
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, src1Reg, value);
-               }
-            else
-               {
-               TR::Register *src2Reg = cg->evaluate(secondChild);
-               generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, src1Reg, src2Reg);
-               }
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, src1Reg, value);
             }
          else
             {
-            uint64_t value = (uint64_t) secondChild->get64bitIntegralValue();
-
-            TR::Register *tReg = NULL;
-            bool newReg = false;
-            if (node->getOpCodeValue() == TR::ifbucmplt || node->getOpCodeValue() == TR::ifbucmple || node->getOpCodeValue() == TR::ifbucmpgt || node->getOpCodeValue() == TR::ifbucmpge)
-               {
-               tReg = cg->allocateRegister();
-               newReg = true;
-               generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xff);
-               value &= (uint64_t)0xff;
-               }
-            else if (node->getOpCodeValue() == TR::ifsucmplt || node->getOpCodeValue() == TR::ifsucmple || node->getOpCodeValue() == TR::ifsucmpgt || node->getOpCodeValue() == TR::ifsucmpge)
-               {
-               tReg = cg->allocateRegister();
-               newReg = true;
-               generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xffff);
-               value &= (uint64_t)0xffff;
-               }
-            else
-               tReg = src1Reg;
-
-            if (value <= (uint64_t)0xFFFF)
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, tReg, value);
-            else
-               {
-               TR::Register *secondReg = NULL;
-               bool sNewReg = false;
-               if (node->getOpCodeValue() == TR::ifbucmplt || node->getOpCodeValue() == TR::ifbucmple || node->getOpCodeValue() == TR::ifbucmpgt || node->getOpCodeValue() == TR::ifbucmpge)
-                  {
-                  secondReg = cg->gprClobberEvaluate(secondChild);
-                  sNewReg = true;
-                  generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, secondReg, secondReg, 0, 0xff);
-                  }
-               else if (node->getOpCodeValue() == TR::ifsucmplt || node->getOpCodeValue() == TR::ifsucmple || node->getOpCodeValue() == TR::ifsucmpgt || node->getOpCodeValue() == TR::ifsucmpge)
-                  {
-                  secondReg = cg->gprClobberEvaluate(secondChild);
-                  sNewReg = true;
-                  generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, secondReg, secondReg, 0, 0xffff);
-                  }
-               else
-                 secondReg = cg->evaluate(secondChild);
-
-               generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg, tReg, secondReg);
-
-               if (sNewReg)
-                  cg->stopUsingRegister(secondReg);
-               }
-
-            if (newReg)
-               cg->stopUsingRegister(tReg);
+            TR::Register *src2Reg = cg->evaluate(secondChild);
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, src1Reg, src2Reg);
             }
          }
       else
          {
+         uint64_t value = (uint64_t) secondChild->get64bitIntegralValue();
+
          TR::Register *tReg = NULL;
          bool newReg = false;
-         TR::Register *src2Reg = NULL;
-
          if (node->getOpCodeValue() == TR::ifbucmplt || node->getOpCodeValue() == TR::ifbucmple || node->getOpCodeValue() == TR::ifbucmpgt || node->getOpCodeValue() == TR::ifbucmpge)
             {
             tReg = cg->allocateRegister();
             newReg = true;
             generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xff);
-            src2Reg = cg->gprClobberEvaluate(secondChild);
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, src2Reg, src2Reg, 0, 0xff);
+            value &= (uint64_t)0xff;
             }
          else if (node->getOpCodeValue() == TR::ifsucmplt || node->getOpCodeValue() == TR::ifsucmple || node->getOpCodeValue() == TR::ifsucmpgt || node->getOpCodeValue() == TR::ifsucmpge)
             {
             tReg = cg->allocateRegister();
             newReg = true;
             generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xffff);
-            src2Reg = cg->gprClobberEvaluate(secondChild);
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, src2Reg, src2Reg, 0, 0xffff);
+            value &= (uint64_t)0xffff;
             }
+         else
+            tReg = src1Reg;
+
+         if (value <= (uint64_t)0xFFFF)
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, tReg, value);
          else
             {
-            tReg = src1Reg;
-            src2Reg = cg->evaluate(secondChild);
-            }
+            TR::Register *secondReg = NULL;
+            bool sNewReg = false;
+            if (node->getOpCodeValue() == TR::ifbucmplt || node->getOpCodeValue() == TR::ifbucmple || node->getOpCodeValue() == TR::ifbucmpgt || node->getOpCodeValue() == TR::ifbucmpge)
+               {
+               secondReg = cg->gprClobberEvaluate(secondChild);
+               sNewReg = true;
+               generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, secondReg, secondReg, 0, 0xff);
+               }
+            else if (node->getOpCodeValue() == TR::ifsucmplt || node->getOpCodeValue() == TR::ifsucmple || node->getOpCodeValue() == TR::ifsucmpgt || node->getOpCodeValue() == TR::ifsucmpge)
+               {
+               secondReg = cg->gprClobberEvaluate(secondChild);
+               sNewReg = true;
+               generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, secondReg, secondReg, 0, 0xffff);
+               }
+            else
+               secondReg = cg->evaluate(secondChild);
 
-         if (isSigned)
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, tReg, src2Reg);
-         else
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg, tReg, src2Reg);
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg, tReg, secondReg);
+
+            if (sNewReg)
+               cg->stopUsingRegister(secondReg);
+            }
 
          if (newReg)
-            {
-            cg->stopUsingRegister(src2Reg);
             cg->stopUsingRegister(tReg);
-            }
          }
       }
    else
       {
-      branchOp = TR::InstOpCode::bdnz;
+      TR::Register *tReg = NULL;
+      bool newReg = false;
+      TR::Register *src2Reg = NULL;
+
+      if (node->getOpCodeValue() == TR::ifbucmplt || node->getOpCodeValue() == TR::ifbucmple || node->getOpCodeValue() == TR::ifbucmpgt || node->getOpCodeValue() == TR::ifbucmpge)
+         {
+         tReg = cg->allocateRegister();
+         newReg = true;
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xff);
+         src2Reg = cg->gprClobberEvaluate(secondChild);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, src2Reg, src2Reg, 0, 0xff);
+         }
+      else if (node->getOpCodeValue() == TR::ifsucmplt || node->getOpCodeValue() == TR::ifsucmple || node->getOpCodeValue() == TR::ifsucmpgt || node->getOpCodeValue() == TR::ifsucmpge)
+         {
+         tReg = cg->allocateRegister();
+         newReg = true;
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tReg, src1Reg, 0, 0xffff);
+         src2Reg = cg->gprClobberEvaluate(secondChild);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, src2Reg, src2Reg, 0, 0xffff);
+         }
+      else
+         {
+         tReg = src1Reg;
+         src2Reg = cg->evaluate(secondChild);
+         }
+
+      if (isSigned)
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, tReg, src2Reg);
+      else
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg, tReg, src2Reg);
+
+      if (newReg)
+         {
+         cg->stopUsingRegister(src2Reg);
+         cg->stopUsingRegister(tReg);
+         }
       }
 
    if (node->getOpCode().isIf() && node->getNumChildren() == 3)

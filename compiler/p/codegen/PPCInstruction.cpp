@@ -1198,8 +1198,6 @@ bool TR::PPCControlFlowInstruction::usesRegister(TR::Register *reg)
    return false;
    }
 
-extern bool skipCompare(TR::Node*);
-
 void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Machine *machine = cg()->machine();
@@ -1340,8 +1338,7 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
             }
          else
             {
-            if (!skipCompare(currentNode))
-               cg()->traceRAInstruction(cursor = generateTrg1Src2Instruction(cg(), getCmpOpValue(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cursor));
+            cg()->traceRAInstruction(cursor = generateTrg1Src2Instruction(cg(), getCmpOpValue(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cursor));
             cg()->traceRAInstruction(cursor = generateTrg1ImmInstruction(cg(), TR::InstOpCode::li, currentNode, getTargetRegister(1), 1, cursor));
             cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), getOpCode2Value(), currentNode, label2, getTargetRegister(0), cursor));
             cg()->traceRAInstruction(cursor = generateTrg1ImmInstruction(cg(), TR::InstOpCode::li, currentNode, getTargetRegister(1), 0, cursor));

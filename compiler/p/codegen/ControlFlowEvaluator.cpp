@@ -93,13 +93,6 @@ TR::Register *computeCC_compareUnsigned(TR::Node *node,
    TR_ASSERT(false, "setting below currently only valid for zEmulator\n");
    }
 
-bool skipCompare (TR::Node *node)
-   {
-   TR::Node     *firstChild  = node->getFirstChild();
-   TR::Node     *secondChild = node->getSecondChild();
-   return false;
-   }
-
 TR::Register *OMR::Power::TreeEvaluator::ifacmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
@@ -175,15 +168,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::Mne
    bool         loopInversed;
    loopInversed = false;
 
-   if (skipCompare(node))
-      {
-      TR_ASSERT(secondChild->getOpCode().isLoadConst(), "_clc should be compared with 0");
-      if (loopInversed)
-         branchOp = TR::InstOpCode::bdnz;
-      else
-         cg->evaluate(firstChild);
-      }
-   else if (!loopInversed)
+   if (!loopInversed)
       {
       TR::Register *src1Reg   = cg->evaluate(firstChild);
       if (secondChild->getOpCode().isLoadConst())
@@ -320,14 +305,6 @@ TR::Register *OMR::Power::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::Mne
          generateConditionalBranchInstruction(cg, branchOp, likeliness, node, dstLabel, condReg);
       else
          generateConditionalBranchInstruction(cg, branchOp, node, dstLabel, condReg);
-      }
-
-   if (skipCompare(node))
-      {
-      TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-      TR::addDependency(dep, condReg, TR::RealRegister::cr0, TR_CCR, cg);
-      TR::LabelSymbol *label = generateLabelSymbol(cg);
-      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, label, dep);
       }
 
    cg->stopUsingRegister(condReg);
@@ -1021,7 +998,6 @@ TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::C
       TR::Register    *ccr = cg->allocateRegister(TR_CCR);
       TR::LabelSymbol *doneLabel  = generateLabelSymbol(cg);
 
-      bool skip_compare = skipCompare(firstChild);
       bool useImmediateCompare = false;
 
       if (compare_type.isIntegral() || compare_type.isAddress())
@@ -1041,19 +1017,17 @@ TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::C
             cmp2Reg = cg->evaluate(firstChild->getSecondChild());
             }
 
-         if(!skip_compare)
+         if (useImmediateCompare)
             {
-            if (useImmediateCompare)
-               {
-               generateTrg1Src1ImmInstruction(cg, cmp2cmpi(firstChild->getOpCodeValue(), cg), node, ccr,
-                                              cmp1Reg, value);
-               }
-            else
-               {
-               generateTrg1Src2Instruction(cg, cmp2cmp(firstChild->getOpCodeValue(), cg), node, ccr,
-                                           cmp1Reg, cmp2Reg);
-               }
+            generateTrg1Src1ImmInstruction(cg, cmp2cmpi(firstChild->getOpCodeValue(), cg), node, ccr,
+                                             cmp1Reg, value);
             }
+         else
+            {
+            generateTrg1Src2Instruction(cg, cmp2cmp(firstChild->getOpCodeValue(), cg), node, ccr,
+                                          cmp1Reg, cmp2Reg);
+            }
+
          if (two_reg)
             {
             generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), trueReg->getHighOrder());
@@ -1077,8 +1051,7 @@ TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::C
       else if (compare_type.isFloatingPoint())
          {
          cmp2Reg = cg->evaluate(firstChild->getSecondChild());
-         if (!skip_compare)
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, ccr, cmp1Reg, cmp2Reg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, ccr, cmp1Reg, cmp2Reg);
 
          if (two_reg)
             {
@@ -1330,61 +1303,53 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
 
     bool isSigned = !node->getOpCode().isUnsignedCompare();
 
-    if (skipCompare(node))
-       {
-       if (!secondChild->getOpCode().isLoadConst())
-          cg->evaluate(secondChild);
-       }
-    else
-       {
-       if (isSigned)
-          {
-          if (secondChild->getOpCode().isLoadConst() &&
-              secondChild->getRegister() == NULL &&
-              value >= LOWER_IMMED && value <= UPPER_IMMED)
-             {
-             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, src1Reg, value);
-             }
-          else
-             {
-             TR::Register *src2Reg = cg->evaluate(secondChild);
-             generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, src1Reg, src2Reg);
-             }
-          }
-       else
-          {
-          if (secondChild->getOpCode().isLoadConst() &&
-              secondChild->getRegister() == NULL &&
-              secondChild->get64bitIntegralValue() >= 0 &&
-              secondChild->get64bitIntegralValue() <= 0xFFFF)
-             {
+   if (isSigned)
+      {
+      if (secondChild->getOpCode().isLoadConst() &&
+         secondChild->getRegister() == NULL &&
+         value >= LOWER_IMMED && value <= UPPER_IMMED)
+         {
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, src1Reg, value);
+         }
+      else
+         {
+         TR::Register *src2Reg = cg->evaluate(secondChild);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, src1Reg, src2Reg);
+         }
+      }
+   else
+      {
+      if (secondChild->getOpCode().isLoadConst() &&
+         secondChild->getRegister() == NULL &&
+         secondChild->get64bitIntegralValue() >= 0 &&
+         secondChild->get64bitIntegralValue() <= 0xFFFF)
+         {
 
-             TR::Register *tReg = NULL;
-             bool newReg = false;
-             uint64_t value = secondChild->get64bitIntegralValue();
-             tReg = src1Reg;
+         TR::Register *tReg = NULL;
+         bool newReg = false;
+         uint64_t value = secondChild->get64bitIntegralValue();
+         tReg = src1Reg;
 
-             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, tReg, value);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, tReg, value);
 
-             if (newReg)
-               cg->stopUsingRegister(tReg);
-             }
-          else
-             {
-             TR::Register *tReg = NULL;
-             bool newReg = false;
-             TR::Register *secondReg = NULL;
-             tReg = src1Reg;
-             secondReg = cg->evaluate(secondChild);
+         if (newReg)
+         cg->stopUsingRegister(tReg);
+         }
+      else
+         {
+         TR::Register *tReg = NULL;
+         bool newReg = false;
+         TR::Register *secondReg = NULL;
+         tReg = src1Reg;
+         secondReg = cg->evaluate(secondChild);
 
-             generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg, tReg, secondReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg, tReg, secondReg);
 
-             if (newReg)
-               cg->stopUsingRegister(tReg);
-               cg->stopUsingRegister(secondReg);
-             }
-          }
-       }
+         if (newReg)
+         cg->stopUsingRegister(tReg);
+         cg->stopUsingRegister(secondReg);
+         }
+      }
 
     if (node->getOpCode().isIf() && node->getNumChildren() == 3)
        {
@@ -1406,14 +1371,6 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
        else
           generateConditionalBranchInstruction(cg, branchOp, node, dstLabel, condReg);
        }
-
-   if (skipCompare(node))
-      {
-      TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-      TR::addDependency(dep, condReg, TR::RealRegister::cr0, TR_CCR, cg);
-      TR::LabelSymbol *label = generateLabelSymbol(cg);
-      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, label, dep);
-      }
 
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
@@ -1758,44 +1715,11 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpneEvaluator(TR::Node *node, TR::C
    return NULL;
    }
 
-TR::Register *handleSkipCompare(TR::Node * node, TR::InstOpCode::Mnemonic opcode, TR::CodeGenerator *cg)
-   {
-   TR::Register *trgReg    = cg->allocateRegister();
-   TR::Node     *firstChild   = node->getFirstChild();
-   TR::Node     *secondChild  = node->getSecondChild();
-   TR::Register *src1Reg = cg->evaluate(firstChild);
-   TR::Register   *src2Reg = cg->evaluate(secondChild);
-
-   TR::Register   *condReg = cg->allocateRegister(TR_CCR);
-   TR::PPCControlFlowInstruction *cfop = (TR::PPCControlFlowInstruction *)
-         generateControlFlowInstruction(cg, TR::InstOpCode::setbool, node);
-   cfop->addTargetRegister(condReg);
-   cfop->addTargetRegister(trgReg);
-   cfop->addSourceRegister(src1Reg);
-   cfop->addSourceRegister(src2Reg);
-   cfop->setOpCode2Value(opcode);
-
-   cg->stopUsingRegister(condReg);
-   node->setRegister(trgReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-   TR::addDependency(dep, condReg, TR::RealRegister::cr0, TR_CCR, cg);
-   TR::LabelSymbol *label = generateLabelSymbol(cg);
-   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, label, dep);
-
-   return trgReg;
-   }
-
 
 // also handles acmpeq in 32-bit mode
 // and also: bcmpeq, scmpeq
 TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (skipCompare(node))
-      return handleSkipCompare(node, TR::InstOpCode::beq, cg);
-
    TR::Register *trgReg    = cg->allocateRegister();
    TR::Node     *firstChild   = node->getFirstChild();
    TR::Node     *secondChild  = node->getSecondChild();
@@ -1803,11 +1727,6 @@ TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::Cod
    TR::Register *temp1Reg     = NULL;
    TR::Register *temp2Reg     = cg->allocateRegister();
    bool         killTemp1    = false;
-
-   if (skipCompare(node))
-      {
-      return handleSkipCompare(node, TR::InstOpCode::beq, cg);
-      }
 
    if (secondChild->getOpCode().isLoadConst() &&
        secondChild->getRegister() == NULL)
@@ -1855,9 +1774,6 @@ TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::Cod
 // and also: bcmpne, scmpne
 TR::Register *OMR::Power::TreeEvaluator::icmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (skipCompare(node))
-      return handleSkipCompare(node, TR::InstOpCode::bne, cg);
-
    TR::Register *trgReg    = cg->allocateRegister();
    TR::Node     *firstChild   = node->getFirstChild();
    TR::Node     *secondChild  = node->getSecondChild();
@@ -1931,9 +1847,6 @@ void OMR::Power::TreeEvaluator::genBranchSequence(TR::Node* node,
 // also handles bcmplt, scmplt
 TR::Register *OMR::Power::TreeEvaluator::icmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (skipCompare(node))
-      return handleSkipCompare(node, TR::InstOpCode::blt, cg);
-
    TR::Node     *firstChild   = node->getFirstChild();
    TR::Node     *secondChild  = node->getSecondChild();
    TR::Register *src1Reg      = cg->evaluate(firstChild);
@@ -1982,9 +1895,6 @@ TR::Register *OMR::Power::TreeEvaluator::icmpltEvaluator(TR::Node *node, TR::Cod
 // also handles bcmple, scmple
 TR::Register *OMR::Power::TreeEvaluator::icmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (skipCompare(node))
-      return handleSkipCompare(node, TR::InstOpCode::ble, cg);
-
    TR::Node     *firstChild   = node->getFirstChild();
    TR::Node     *secondChild  = node->getSecondChild();
    TR::Register *src1Reg      = cg->evaluate(firstChild);
@@ -2032,9 +1942,6 @@ TR::Register *OMR::Power::TreeEvaluator::icmpleEvaluator(TR::Node *node, TR::Cod
 // also handles bcmpge, scmpge
 TR::Register *OMR::Power::TreeEvaluator::icmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (skipCompare(node))
-      return handleSkipCompare(node, TR::InstOpCode::bge, cg);
-
    TR::Node     *firstChild   = node->getFirstChild();
    TR::Node     *secondChild  = node->getSecondChild();
    TR::Register *src1Reg      = cg->evaluate(firstChild);
@@ -2079,9 +1986,6 @@ TR::Register *OMR::Power::TreeEvaluator::icmpgeEvaluator(TR::Node *node, TR::Cod
 // also handles bcmpgt, scmpgt
 TR::Register *OMR::Power::TreeEvaluator::icmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (skipCompare(node))
-      return handleSkipCompare(node, TR::InstOpCode::bgt, cg);
-
    TR::Node     *firstChild   = node->getFirstChild();
    TR::Node     *secondChild  = node->getSecondChild();
    TR::Register *src1Reg      = cg->evaluate(firstChild);

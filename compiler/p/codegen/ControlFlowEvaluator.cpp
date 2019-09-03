@@ -82,17 +82,6 @@ static void lookupScheme2(TR::Node *node, bool unbalanced, bool fromTableEval, T
 static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg);
 static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg);
 
-TR::Register *computeCC_compareUnsigned(TR::Node *node,
-                                        TR::Register *trgReg,
-                                        TR::Register *src1Reg,
-                                        TR::Register *src2Reg,
-                                        bool is64BitCompare,
-                                        bool needsZeroExtension,
-                                        TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(false, "setting below currently only valid for zEmulator\n");
-   }
-
 TR::Register *OMR::Power::TreeEvaluator::ifacmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())

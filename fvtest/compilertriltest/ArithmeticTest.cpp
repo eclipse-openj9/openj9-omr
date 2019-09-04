@@ -32,61 +32,44 @@ namespace std
 }
 #endif
 
-int32_t iadd(int32_t l, int32_t r) {
-    return l+r;
+template <typename T>
+T add(T l, T r) {
+    return l + r;
 }
 
-int32_t isub(int32_t l, int32_t r) {
-    return l-r;
+template <typename T>
+T sub(T l, T r) {
+    return l - r;
 }
 
-int32_t imul(int32_t l, int32_t r) {
-    return l*r;
+template <typename T>
+T mul(T l, T r) {
+    return l * r;
+}
+
+template <typename T>
+T div(T l, T r) {
+    return l / r;
+}
+
+template <typename T>
+T udiv(T l, T r) {
+    return l / r;
+}
+
+template <typename T>
+T rem(T l, T r) {
+    return l % r;
+}
+
+template <typename T>
+T urem(T l, T r) {
+    return l % r;
 }
 
 int32_t imulh(int32_t l, int32_t r) {
     int64_t x = static_cast<int64_t>(l) * static_cast<int64_t>(r);
     return static_cast<int32_t>(x >> 32); // upper 32 bits
-}
-
-int32_t idiv(int32_t l, int32_t r) {
-    return l/r;
-}
-
-uint32_t iudiv(uint32_t l, uint32_t r) {
-    return l/r;
-}
-
-int32_t irem(int32_t l, int32_t r) {
-    return l%r;
-}
-
-uint32_t iurem(uint32_t l, uint32_t r) {
-    return l%r;
-}
-
-int64_t ladd(int64_t l, int64_t r) {
-    return l+r;
-}
-
-int64_t lsub(int64_t l, int64_t r) {
-    return l-r;
-}
-
-int64_t lmul(int64_t l, int64_t r) {
-    return l*r;
-}
-
-int64_t _ldiv(int64_t l, int64_t r) {
-    return l/r;
-}
-
-uint64_t ludiv(uint64_t l, uint64_t r) {
-    return l/r;
-}
-
-int64_t lrem(int64_t l, int64_t r) {
-    return l%r;
 }
 
 class Int32Arithmetic : public TRTest::BinaryOpTest<int32_t> {};
@@ -332,17 +315,17 @@ TEST_P(UInt64Arithmetic, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("iadd", iadd),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("isub", isub),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("imul", imul),
+        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("iadd", add),
+        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("isub", sub),
+        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("imul", mul),
         std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("imulh", imulh))));
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int64Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int64_t, int64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("ladd", ladd),
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lsub", lsub),
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lmul", lmul))));
+        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("ladd", add),
+        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lsub", sub),
+        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lmul", mul))));
 
 /**
  * @brief Filter function for *div opcodes
@@ -370,15 +353,15 @@ INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<int32_t, int32_t>(), div_filter<int32_t> )),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("idiv", idiv),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("irem", irem))));
+        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("idiv", div),
+        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("irem", rem))));
 
 INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int64Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<int64_t, int64_t>(), div_filter<int64_t> )),
     ::testing::Values(
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("ldiv", _ldiv),
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lrem", lrem))));
+        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("ldiv", div),
+        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lrem", rem))));
 
 /**
  * @brief Filter function for *udiv opcodes
@@ -398,14 +381,14 @@ INSTANTIATE_TEST_CASE_P(DivArithmeticTest, UInt32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<uint32_t, uint32_t>(), udiv_filter<uint32_t> )),
     ::testing::Values(
-        std::make_tuple<const char*, uint32_t(*)(uint32_t, uint32_t)>("iudiv", iudiv),
-        std::make_tuple<const char*, uint32_t(*)(uint32_t, uint32_t)>("iurem", iurem))));
+        std::make_tuple<const char*, uint32_t(*)(uint32_t, uint32_t)>("iudiv", udiv),
+        std::make_tuple<const char*, uint32_t(*)(uint32_t, uint32_t)>("iurem", urem))));
 
 INSTANTIATE_TEST_CASE_P(DivArithmeticTest, UInt64Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<uint64_t, uint64_t>(), udiv_filter<uint64_t> )),
     ::testing::Values(
-        std::make_tuple<const char*, uint64_t(*)(uint64_t, uint64_t)>("ludiv", ludiv))));
+        std::make_tuple<const char*, uint64_t(*)(uint64_t, uint64_t)>("ludiv", udiv))));
 
 template <typename T>
 bool smallFp_filter(std::tuple<T, T> a)
@@ -416,21 +399,6 @@ bool smallFp_filter(std::tuple<T, T> a)
    return ((std::abs(a0) < 0.01 && a0 != 0.0) || (std::abs(a1) < 0.01 && a1 != 0.0));
    }
 
-float fadd(float l, float r) {
-    return l+r;
-}
-
-float fsub(float l, float r) {
-    return l-r;
-}
-
-float fmul(float l, float r) {
-    return l*r;
-}
-
-float fdiv(float l, float r) {
-    return l/r;
-}
 
 class FloatArithmetic : public TRTest::BinaryOpTest<float> {};
 
@@ -502,27 +470,12 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatArithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
     ::testing::Values(
-        std::make_tuple<const char*, float (*)(float, float)>("fadd", static_cast<float (*)(float, float)>(fadd)),
-        std::make_tuple<const char*, float (*)(float, float)>("fsub", static_cast<float (*)(float, float)>(fsub)),
-        std::make_tuple<const char*, float (*)(float, float)>("fmul", static_cast<float (*)(float, float)>(fmul)),
-        std::make_tuple<const char*, float (*)(float, float)>("fdiv", static_cast<float (*)(float, float)>(fdiv))
+        std::make_tuple<const char*, float (*)(float, float)>("fadd", static_cast<float (*)(float, float)>(add)),
+        std::make_tuple<const char*, float (*)(float, float)>("fsub", static_cast<float (*)(float, float)>(sub)),
+        std::make_tuple<const char*, float (*)(float, float)>("fmul", static_cast<float (*)(float, float)>(mul)),
+        std::make_tuple<const char*, float (*)(float, float)>("fdiv", static_cast<float (*)(float, float)>(div))
     )));
 
-double dadd(double l, double r) {
-    return l+r;
-}
-
-double dsub(double l, double r) {
-    return l-r;
-}
-
-double dmul(double l, double r) {
-    return l*r;
-}
-
-double ddiv(double l, double r) {
-    return l/r;
-}
 
 class DoubleArithmetic : public TRTest::BinaryOpTest<double> {};
 
@@ -594,10 +547,10 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, DoubleArithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
     ::testing::Values(
-        std::make_tuple<const char*, double (*)(double, double)>("dadd", dadd),
-        std::make_tuple<const char*, double (*)(double, double)>("dsub", dsub),
-        std::make_tuple<const char*, double (*)(double, double)>("dmul", dmul),
-        std::make_tuple<const char*, double (*)(double, double)>("ddiv", ddiv)
+        std::make_tuple<const char*, double (*)(double, double)>("dadd", add),
+        std::make_tuple<const char*, double (*)(double, double)>("dsub", sub),
+        std::make_tuple<const char*, double (*)(double, double)>("dmul", mul),
+        std::make_tuple<const char*, double (*)(double, double)>("ddiv", div)
     )));
 
 template <typename T>

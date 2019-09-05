@@ -256,11 +256,10 @@ TR::Instruction *generateArithmeticShiftRightImmInstruction(TR::CodeGenerator *c
    bool is64bit = node->getDataType().isInt64();
    TR_ASSERT(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
 
-   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::sbfmx : TR::InstOpCode::Mnemonic::sbfmw;
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::sbfmx : TR::InstOpCode::sbfmw;
    uint32_t imms = is64bit ? 0x3f : 0x1f;
    uint32_t immr = shiftAmount;
-   uint32_t n = is64bit ? 1 : 0;
-   uint32_t imm = (n << 12) | (immr << 6) | imms;
+   uint32_t imm = (immr << 6) | imms;
 
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, preced, cg);
@@ -275,11 +274,10 @@ TR::Instruction *generateLogicalShiftRightImmInstruction(TR::CodeGenerator *cg, 
    bool is64bit = node->getDataType().isInt64();
    TR_ASSERT(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
 
-   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::ubfmx : TR::InstOpCode::Mnemonic::ubfmw;
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw;
    uint32_t imms = is64bit ? 0x3f : 0x1f;
    uint32_t immr = shiftAmount;
-   uint32_t n = is64bit ? 1 : 0;
-   uint32_t imm = (n << 12) | (immr << 6) | imms;
+   uint32_t imm = (immr << 6) | imms;
 
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, preced, cg);
@@ -297,8 +295,7 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, T
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::ubfmx : TR::InstOpCode::Mnemonic::ubfmw;
    uint32_t imms = (is64bit ? 63 : 31) - shiftAmount;
    uint32_t immr = imms + 1;
-   uint32_t n = is64bit ? 1 : 0;
-   uint32_t imm = (n << 12) | (immr << 6) | imms;
+   uint32_t imm = (immr << 6) | imms;
 
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, preced, cg);

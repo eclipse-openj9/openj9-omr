@@ -301,6 +301,14 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, T
       return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, cg);
    }
+TR::Instruction *generateLogicalImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,
+   TR::Node *node, TR::Register *treg, TR::Register *s1reg, bool N, uint32_t imm, TR::Instruction *preced)
+   {
+   TR::ARM64Trg1Src1ImmInstruction *intr;
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, s1reg, N, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node,treg, s1reg, N, imm, cg);
+   }
 
 /* Use xzr as the target register */
 static TR::Instruction *generateZeroSrc1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,

@@ -117,8 +117,16 @@ TEST_P(Int32ShiftAndRotate, UsingConst) {
 TEST_P(Int32ShiftAndRotate, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32] (block (ireturn (%s (iload parm=0) (iconst %d)))))", param.opcode.c_str(), param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iload parm=0)"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -134,8 +142,16 @@ TEST_P(Int32ShiftAndRotate, UsingRhsConst) {
 TEST_P(Int32ShiftAndRotate, UsingLhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32] (block (ireturn (%s (iconst %d) (iload parm=0)))))", param.opcode.c_str(), param.lhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iconst %d)"
+        "        (iload parm=0)))))",
+        param.opcode.c_str(),
+        param.lhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -151,8 +167,15 @@ TEST_P(Int32ShiftAndRotate, UsingLhsConst) {
 TEST_P(Int32ShiftAndRotate, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (%s (iload parm=0) (iload parm=1)))))", param.opcode.c_str());
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32 args=[Int32, Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iload parm=0)"
+        "        (iload parm=1)))))",
+        param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -177,8 +200,17 @@ class Int64ShiftAndRotate : public ShiftAndRotateArithmetic<int64_t> {};
 TEST_P(Int64ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %" OMR_PRId64 ") (iconst %d)))))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lconst %" PRId64 ")"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.lhs,
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -194,8 +226,16 @@ TEST_P(Int64ShiftAndRotate, UsingConst) {
 TEST_P(Int64ShiftAndRotate, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64] (block (lreturn (%s (lload parm=0) (iconst %d)))))", param.opcode.c_str(), param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64 args=[Int64]"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lload parm=0)"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -211,8 +251,16 @@ TEST_P(Int64ShiftAndRotate, UsingRhsConst) {
 TEST_P(Int64ShiftAndRotate, UsingLhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int32] (block (lreturn (%s (lconst %" OMR_PRId64 ") (iload parm=0)))))", param.opcode.c_str(), param.lhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64 args=[Int32]"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lconst %" PRId64 ")"
+        "        (iload parm=0)))))",
+        param.opcode.c_str(),
+        param.lhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -228,8 +276,15 @@ TEST_P(Int64ShiftAndRotate, UsingLhsConst) {
 TEST_P(Int64ShiftAndRotate, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64, Int32] (block (lreturn (%s (lload parm=0) (iload parm=1)))))", param.opcode.c_str());
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64 args=[Int64, Int32]"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lload parm=0)"
+        "        (iload parm=1)))))",
+        param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -254,8 +309,18 @@ class Int8ShiftAndRotate : public ShiftAndRotateArithmetic<int8_t> {};
 TEST_P(Int8ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int8 (block (ireturn (b2i (%s (bconst %d) (iconst %d))))))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int8"
+        "  (block"
+        "    (ireturn"
+        "      (b2i"
+        "        (%s"
+        "          (bconst %d)"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.lhs,
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -275,8 +340,17 @@ TEST_P(Int8ShiftAndRotate, UsingRhsConst) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int8 args=[Int8] (block (ireturn (b2i (%s (bload parm=0) (iconst %d))))))", param.opcode.c_str(), param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int8 args=[Int8]"
+        "  (block"
+        "    (ireturn"
+        "      (b2i"
+        "        (%s"
+        "          (bload parm=0)"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -296,8 +370,17 @@ TEST_P(Int8ShiftAndRotate, UsingLhsConst) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int8 args=[Int32] (block (ireturn (b2i (%s (bconst %d) (iload parm=0))))))", param.opcode.c_str(), param.lhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int8 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (b2i"
+        "        (%s"
+        "          (bconst %d)"
+        "          (iload parm=0))))))",
+        param.opcode.c_str(),
+        param.lhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -317,8 +400,16 @@ TEST_P(Int8ShiftAndRotate, UsingLoadParam) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int8 args=[Int8, Int32] (block (ireturn (b2i (%s (bload parm=0) (iload parm=1))))))", param.opcode.c_str());
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int8 args=[Int8, Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (b2i"
+        "        (%s"
+        "          (bload parm=0)"
+        "          (iload parm=1))))))",
+        param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -342,8 +433,18 @@ class Int16ShiftAndRotate : public ShiftAndRotateArithmetic<int16_t> {};
 TEST_P(Int16ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int16 (block (ireturn (s2i (%s (sconst %d) (iconst %d))))))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int16"
+        "  (block"
+        "    (ireturn"
+        "      (s2i"
+        "        (%s"
+        "          (sconst %d)"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.lhs,
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -363,8 +464,17 @@ TEST_P(Int16ShiftAndRotate, UsingRhsConst) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int16 args=[Int16] (block (ireturn (s2i (%s (sload parm=0) (iconst %d))))))", param.opcode.c_str(), param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int16 args=[Int16]"
+        "  (block"
+        "    (ireturn"
+        "      (s2i"
+        "        (%s"
+        "          (sload parm=0)"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -384,8 +494,17 @@ TEST_P(Int16ShiftAndRotate, UsingLhsConst) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int16 args=[Int32] (block (ireturn (s2i (%s (sconst %d) (iload parm=0))))))", param.opcode.c_str(), param.lhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int16 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (s2i"
+        "        (%s"
+        "          (sconst %d)"
+        "          (iload parm=0))))))",
+        param.opcode.c_str(),
+        param.lhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -405,8 +524,16 @@ TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int16 args=[Int16, Int32] (block (ireturn (s2i (%s (sload parm=0) (iload parm=1))))))", param.opcode.c_str());
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int16 args=[Int16, Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (s2i"
+        "        (%s"
+        "          (sload parm=0)"
+        "          (iload parm=1))))))",
+        param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -430,8 +557,17 @@ class UInt32ShiftAndRotate : public ShiftAndRotateArithmetic<uint32_t> {};
 TEST_P(UInt32ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (%s (iconst %u) (iconst %d)))))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iconst %u)"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.lhs,
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -447,8 +583,16 @@ TEST_P(UInt32ShiftAndRotate, UsingConst) {
 TEST_P(UInt32ShiftAndRotate, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32] (block (ireturn (%s (iload parm=0) (iconst %d)))))", param.opcode.c_str(), param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iload parm=0)"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -464,8 +608,16 @@ TEST_P(UInt32ShiftAndRotate, UsingRhsConst) {
 TEST_P(UInt32ShiftAndRotate, UsingLhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32] (block (ireturn (%s (iconst %u) (iload parm=0)))))", param.opcode.c_str(), param.lhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iconst %u)"
+        "        (iload parm=0)))))",
+        param.opcode.c_str(),
+        param.lhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -481,8 +633,15 @@ TEST_P(UInt32ShiftAndRotate, UsingLhsConst) {
 TEST_P(UInt32ShiftAndRotate, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (%s (iload parm=0) (iload parm=1)))))", param.opcode.c_str());
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32 args=[Int32, Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iload parm=0)"
+        "        (iload parm=1)))))",
+        param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -505,8 +664,17 @@ class UInt64ShiftAndRotate : public ShiftAndRotateArithmetic<uint64_t> {};
 TEST_P(UInt64ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %" PRIu64 ") (iconst %d)))))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lconst %" PRIu64 ")"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.lhs,
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -522,8 +690,16 @@ TEST_P(UInt64ShiftAndRotate, UsingConst) {
 TEST_P(UInt64ShiftAndRotate, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64] (block (lreturn (%s (lload parm=0) (iconst %d)))))", param.opcode.c_str(), param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64 args=[Int64]"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lload parm=0)"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -539,8 +715,16 @@ TEST_P(UInt64ShiftAndRotate, UsingRhsConst) {
 TEST_P(UInt64ShiftAndRotate, UsingLhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int32] (block (lreturn (%s (lconst %" PRIu64 ") (iload parm=0)))))", param.opcode.c_str(), param.lhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64 args=[Int32]"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lconst %" PRIu64 ")"
+        "        (iload parm=0)))))",
+        param.opcode.c_str(),
+        param.lhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -556,8 +740,15 @@ TEST_P(UInt64ShiftAndRotate, UsingLhsConst) {
 TEST_P(UInt64ShiftAndRotate, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64, Int32] (block (lreturn (%s (lload parm=0) (iload parm=1)))))", param.opcode.c_str());
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64 args=[Int64, Int32]"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lload parm=0)"
+        "        (iload parm=1)))))",
+        param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -580,8 +771,18 @@ class UInt8ShiftAndRotate : public ShiftAndRotateArithmetic<uint8_t> {};
 TEST_P(UInt8ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int8 (block (ireturn (bu2i (%s (bconst %u) (iconst %d))))))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int8"
+        "  (block"
+        "    (ireturn"
+        "      (bu2i"
+        "        (%s"
+        "          (bconst %u)"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.lhs,
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -601,8 +802,17 @@ TEST_P(UInt8ShiftAndRotate, UsingRhsConst) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int8 args=[Int8] (block (ireturn (bu2i (%s (bload parm=0) (iconst %d))))))", param.opcode.c_str(), param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int8 args=[Int8]"
+        "  (block"
+        "    (ireturn"
+        "      (bu2i"
+        "        (%s"
+        "          (bload parm=0)"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -622,8 +832,17 @@ TEST_P(UInt8ShiftAndRotate, UsingLhsConst) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int8 args=[Int32] (block (ireturn (bu2i (%s (bconst %u) (iload parm=0)) ))))", param.opcode.c_str(), param.lhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int8 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (bu2i"
+        "        (%s"
+        "          (bconst %u)"
+        "          (iload parm=0))))))",
+        param.opcode.c_str(),
+        param.lhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -643,8 +862,16 @@ TEST_P(UInt8ShiftAndRotate, UsingLoadParam) {
 
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int8 args=[Int8, Int32] (block (ireturn (bu2i (%s (bload parm=0) (iload parm=1))))))", param.opcode.c_str());
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int8 args=[Int8, Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (bu2i"
+        "        (%s"
+        "          (bload parm=0)"
+        "          (iload parm=1))))))",
+        param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -667,8 +894,18 @@ class UInt16ShiftAndRotate : public ShiftAndRotateArithmetic<uint16_t> {};
 TEST_P(UInt16ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int16 (block (ireturn (su2i (%s (sconst %u) (iconst %d))))))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int16"
+        "  (block"
+        "    (ireturn"
+        "      (su2i"
+        "        (%s"
+        "          (sconst %u)"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.lhs,
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -688,8 +925,17 @@ TEST_P(UInt16ShiftAndRotate, UsingRhsConst) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int16 args=[Int16] (block (ireturn (su2i (%s (sload parm=0) (iconst %d))))))", param.opcode.c_str(), param.rhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int16 args=[Int16]"
+        "  (block"
+        "    (ireturn"
+        "      (su2i"
+        "        (%s"
+        "          (sload parm=0)"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -709,8 +955,17 @@ TEST_P(UInt16ShiftAndRotate, UsingLhsConst) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int16 args=[Int32] (block (ireturn (su2i (%s (sconst %u) (iload parm=0))))))", param.opcode.c_str(), param.lhs);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int16 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (su2i"
+        "        (%s"
+        "          (sconst %u)"
+        "          (iload parm=0))))))",
+        param.opcode.c_str(),
+        param.lhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -730,8 +985,16 @@ TEST_P(UInt16ShiftAndRotate, UsingLoadParam) {
 
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int16 args=[Int16, Int32] (block (ireturn (su2i (%s (sload parm=0) (iload parm=1))))))", param.opcode.c_str());
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int16 args=[Int16, Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (su2i"
+        "        (%s"
+        "          (sload parm=0)"
+        "          (iload parm=1))))))",
+        param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -898,8 +1161,19 @@ class UInt64MaskThenShift : public MaskThenShiftArithmetic<uint64_t> {};
 TEST_P(UInt64MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    char inputTrees[200] = {0};
-    std::snprintf(inputTrees, 200, "(method return=Int64 args=[Int64] (block (lreturn (%s (land (lload parm=0) (lconst %" PRIu64 ")) (iconst %d)))))", param.opcode.c_str(), param.mask, param.shift);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64 args=[Int64]"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (land"
+        "          (lload parm=0)"
+        "          (lconst %" PRIu64 "))"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.mask,
+        param.shift);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -922,8 +1196,19 @@ class Int64MaskThenShift : public MaskThenShiftArithmetic<int64_t> {};
 TEST_P(Int64MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    char inputTrees[200] = {0};
-    std::snprintf(inputTrees, 200, "(method return=Int64 args=[Int64] (block (lreturn (%s (land (lload parm=0) (lconst %" PRId64 ")) (iconst %d)))))", param.opcode.c_str(), param.mask, param.shift);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64 args=[Int64]"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (land"
+        "          (lload parm=0)"
+        "          (lconst %" PRIu64 "))"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.mask,
+        param.shift);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -946,8 +1231,19 @@ class UInt32MaskThenShift : public MaskThenShiftArithmetic<uint32_t> {};
 TEST_P(UInt32MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    char inputTrees[200] = {0};
-    std::snprintf(inputTrees, 200, "(method return=Int32 args=[Int32] (block (ireturn (%s (iand (iload parm=0) (iconst %u)) (iconst %d)))))", param.opcode.c_str(), param.mask, param.shift);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iand"
+        "          (iload parm=0)"
+        "          (iconst %u))"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.mask,
+        param.shift);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -970,8 +1266,19 @@ class Int32MaskThenShift : public MaskThenShiftArithmetic<int32_t> {};
 TEST_P(Int32MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    char inputTrees[200] = {0};
-    std::snprintf(inputTrees, 200, "(method return=Int32 args=[Int32] (block (ireturn (%s (iand (iload parm=0) (iconst %d)) (iconst %d)))))", param.opcode.c_str(), param.mask, param.shift);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iand"
+        "          (iload parm=0)"
+        "          (iconst %u))"
+        "        (iconst %d)))))",
+        param.opcode.c_str(),
+        param.mask,
+        param.shift);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -994,8 +1301,20 @@ class UInt16MaskThenShift : public MaskThenShiftArithmetic<uint16_t> {};
 TEST_P(UInt16MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    char inputTrees[200] = {0};
-    std::snprintf(inputTrees, 200, "(method return=Int16 args=[Int16] (block (ireturn (su2i (%s (sand (sload parm=0) (sconst %u)) (iconst %d))))))", param.opcode.c_str(), param.mask, param.shift);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int16 args=[Int16]"
+        "  (block"
+        "    (ireturn"
+        "      (su2i"
+        "        (%s"
+        "          (sand"
+        "            (sload parm=0)"
+        "            (sconst %u))"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.mask,
+        param.shift);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -1018,8 +1337,20 @@ class Int16MaskThenShift : public MaskThenShiftArithmetic<int16_t> {};
 TEST_P(Int16MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    char inputTrees[200] = {0};
-    std::snprintf(inputTrees, 200, "(method return=Int16 args=[Int16] (block (ireturn (s2i (%s (sand (sload parm=0) (sconst %d)) (iconst %d))))))", param.opcode.c_str(), param.mask, param.shift);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int16 args=[Int16]"
+        "  (block"
+        "    (ireturn"
+        "      (s2i"
+        "        (%s"
+        "          (sand"
+        "            (sload parm=0)"
+        "            (sconst %u))"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.mask,
+        param.shift);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -1042,8 +1373,20 @@ class UInt8MaskThenShift : public MaskThenShiftArithmetic<uint8_t> {};
 TEST_P(UInt8MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    char inputTrees[200] = {0};
-    std::snprintf(inputTrees, 200, "(method return=Int8 args=[Int8] (block (ireturn (bu2i (%s (band (bload parm=0) (bconst %u)) (iconst %d))))))", param.opcode.c_str(), param.mask, param.shift);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int8 args=[Int8]"
+        "  (block"
+        "    (ireturn"
+        "      (bu2i"
+        "        (%s"
+        "          (band"
+        "            (bload parm=0)"
+        "            (bconst %u))"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.mask,
+        param.shift);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -1066,8 +1409,20 @@ class Int8MaskThenShift : public MaskThenShiftArithmetic<int8_t> {};
 TEST_P(Int8MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    char inputTrees[200] = {0};
-    std::snprintf(inputTrees, 200, "(method return=Int8 args=[Int8] (block (ireturn (b2i (%s (band (bload parm=0) (bconst %d)) (iconst %d))))))", param.opcode.c_str(), param.mask, param.shift);
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int8 args=[Int8]"
+        "  (block"
+        "    (ireturn"
+        "      (b2i"
+        "        (%s"
+        "          (band"
+        "            (bload parm=0)"
+        "            (bconst %u))"
+        "          (iconst %d))))))",
+        param.opcode.c_str(),
+        param.mask,
+        param.shift);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);

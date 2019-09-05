@@ -25,7 +25,9 @@
 #include "codegen/ARM64ConditionCode.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/InstructionDelegate.hpp"
 #include "codegen/Relocation.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 uint8_t *OMR::ARM64::Instruction::generateBinaryEncoding()
    {
@@ -64,16 +66,63 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
    if (getOpCodeValue() == TR::InstOpCode::bl)
       {
-      intptrj_t destination = getAddrImmediate();
+      TR::SymbolReference *symRef = getSymbolReference();
+      TR::LabelSymbol *label = symRef->getSymbol()->getLabelSymbol();
 
-      if (!cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
+      TR::ResolvedMethodSymbol *sym = symRef->getSymbol()->getResolvedMethodSymbol();
+
+      if (cg()->comp()->isRecursiveMethodTarget(sym))
          {
-         intptrj_t distance = destination - (intptrj_t)cursor;
+         intptrj_t jitToJitStart = (intptrj_t)cg()->getCodeStart();
+         TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(jitToJitStart, (intptrj_t)cursor),
+                         "Target address is out of range");
+
+         intptrj_t distance = jitToJitStart - (intptrj_t)cursor;
          insertImmediateField(toARM64Cursor(cursor), distance);
+         }
+      else if (label != NULL)
+         {
+         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
+         TR::InstructionDelegate::encodeBranchToLabel(cg(), this, cursor);
          }
       else
          {
-         TR_ASSERT(false, "Branch destination is too far away. Not implemented yet.");
+         TR::MethodSymbol *method = symRef->getSymbol()->getMethodSymbol();
+         if (method && method->isHelper())
+            {
+            intptrj_t destination = (intptrj_t)symRef->getMethodAddress();
+
+            if (cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
+               {
+               destination = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
+
+               TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptrj_t)cursor),
+                               "Target address is out of range");
+               }
+
+            intptrj_t distance = destination - (intptrj_t)cursor;
+            insertImmediateField(toARM64Cursor(cursor), distance);
+
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
+                                           cursor,
+                                           (uint8_t *)symRef,
+                                           TR_HelperAddress, cg()),
+                                        __FILE__, __LINE__, getNode());
+            }
+         else
+            {
+            intptrj_t destination = getAddrImmediate();
+
+            if (cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
+               {
+               destination = (intptrj_t)cg()->fe()->methodTrampolineLookup(cg()->comp(), symRef, (void *)cursor);
+               TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptrj_t)cursor),
+                               "Call target address is out of range");
+               }
+
+            intptrj_t distance = destination - (intptrj_t)cursor;
+            insertImmediateField(toARM64Cursor(cursor), distance);
+            }
          }
       }
    else

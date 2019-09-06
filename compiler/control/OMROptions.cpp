@@ -603,6 +603,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dontInline=",                        "O{regex}\tlist of callee methods to not inline",
                                           TR::Options::setRegex, offsetof(OMR::Options, _dontInline), 0, "P"},
    {"dontJitIfSlotsSharedByRefAndNonRef", "O\tfail the compilation (in FSD mode) if a slot needs to be shared between an address and a nonaddress.",     SET_OPTION_BIT(TR_DontJitIfSlotsSharedByRefAndNonRef), "F"},
+   {"dontLowerCountsForAotCold",          "M\tDo not lower counts for cold aot runs", RESET_OPTION_BIT(TR_LowerCountsForAotCold), "F", NOT_IN_SUBSET },
    {"dontRestrictInlinerDuringStartup",   "O\tdo not restrict trivial inliner during startup", RESET_OPTION_BIT(TR_RestrictInlinerDuringStartup), "F", NOT_IN_SUBSET},
    {"dontRIUpgradeAOTWarmMethods",         "M\tdon't RI upgrade AOT warm methods", SET_OPTION_BIT(TR_DontRIUpgradeAOTWarmMethods), "F", NOT_IN_SUBSET},
    {"dontSuspendCompThreadsEarly",        "M\tDo not suspend compilation threads when QWeight drops under a threshold", RESET_OPTION_BIT(TR_SuspendEarly), "F", NOT_IN_SUBSET },

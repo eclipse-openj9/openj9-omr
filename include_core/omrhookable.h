@@ -96,6 +96,7 @@ typedef struct OMREventInfo4Dump {
 	struct OMRHookInfo4Dump longestHook;
 	struct OMRHookInfo4Dump lastHook;
 	volatile uintptr_t count;
+	volatile uintptr_t totalTime;
 }OMREventInfo4Dump;
 
 typedef struct J9CommonHookInterface {

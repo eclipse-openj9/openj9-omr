@@ -229,18 +229,19 @@ J9HookDispatch(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum,
 				}
 				OMRPORT_ACCESS_FROM_OMRPORT(commonInterface->portLib);
 				if (sampling) {
-					startTime = omrtime_current_time_millis();
+					startTime = omrtime_usec_clock(); 
 				}
 
 				function(hookInterface, eventNum, eventData, userData);
 
 				if (sampling) {
-					uint64_t timeDelta = omrtime_current_time_millis() - startTime;
+					uint64_t timeDelta = omrtime_hires_delta(startTime, omrtime_usec_clock(), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 
 					eventDump->lastHook.startTime = startTime;
 					eventDump->lastHook.callsite = record->callsite;
 					eventDump->lastHook.func_ptr = (void *)record->function;
 					eventDump->lastHook.duration = timeDelta;
+					VM_AtomicSupport::add((volatile uintptr_t *)&eventDump->totalTime, (uintptr_t)timeDelta);
 
 					if ((eventDump->longestHook.duration < timeDelta) ||
 						(0 == eventDump->longestHook.startTime)) {

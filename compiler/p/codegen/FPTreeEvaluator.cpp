@@ -129,13 +129,21 @@ TR::Register *OMR::Power::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Co
       {
       TR::Register *condReg = cg->allocateRegister(TR_CCR);
 
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, floatReg, floatReg);
-      TR::PPCControlFlowInstruction *cfop = (TR::PPCControlFlowInstruction *)
-                  generateControlFlowInstruction(cg, TR::InstOpCode::cfnan, node);
+      TR::LabelSymbol *nanNormalizeStartLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol *nanNormalizeEndLabel = generateLabelSymbol(cg);
 
-      cfop->addTargetRegister(target);
-      cfop->addSourceRegister(target);
-      cfop->addSourceRegister(condReg);
+      nanNormalizeStartLabel->setStartInternalControlFlow();
+      nanNormalizeEndLabel->setEndInternalControlFlow();
+
+      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      TR::addDependency(deps, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
+      TR::addDependency(deps, target, TR::RealRegister::NoReg, TR_GPR, cg);
+
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, floatReg, floatReg);
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeStartLabel);
+      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchLikely, node, nanNormalizeEndLabel, condReg);
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, target, 0x7fc0);
+      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeEndLabel, deps);
 
       cg->stopUsingRegister(condReg);
       }
@@ -284,24 +292,35 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
       {
       TR::Register *condReg = cg->allocateRegister(TR_CCR);
 
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, doubleReg, doubleReg);
-      TR::PPCControlFlowInstruction *cfop = (TR::PPCControlFlowInstruction *)
-              generateControlFlowInstruction(cg, TR::InstOpCode::cdnan, node);
+      TR::LabelSymbol *nanNormalizeStartLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol *nanNormalizeEndLabel = generateLabelSymbol(cg);
 
+      uint16_t numDeps = TR::Compiler->target.is64Bit() ? 2 : 3;
+      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, cg->trMemory());
+      TR::addDependency(deps, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
       if (TR::Compiler->target.is64Bit())
          {
-         cfop->addTargetRegister(lReg);
-         cfop->addSourceRegister(condReg);
-         cfop->addSourceRegister(lReg);
+         TR::addDependency(deps, lReg, TR::RealRegister::NoReg, TR_GPR, cg);
          }
       else
          {
-         cfop->addTargetRegister(lowReg);
-         cfop->addTargetRegister(highReg);
-         cfop->addSourceRegister(condReg);
-         cfop->addSourceRegister(lowReg);
-         cfop->addSourceRegister(highReg);
+         TR::addDependency(deps, lowReg, TR::RealRegister::NoReg, TR_GPR, cg);
+         TR::addDependency(deps, highReg, TR::RealRegister::NoReg, TR_GPR, cg);
          }
+
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, doubleReg, doubleReg);
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeStartLabel);
+      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchLikely, node, nanNormalizeEndLabel, condReg);
+      if (TR::Compiler->target.is64Bit())
+         {
+         loadConstant(cg, node, (int64_t)CONSTANT64(0x7ff8000000000000), lReg);
+         }
+      else
+         {
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, highReg, 0x7ff8);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, lowReg, 0);
+         }
+      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeEndLabel, deps);
 
       cg->stopUsingRegister(condReg);
       }

@@ -963,12 +963,6 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
       case TR::InstOpCode::lcmp:
          setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 11);
          break;
-      case TR::InstOpCode::cfnan:
-         setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 2);
-         break;
-      case TR::InstOpCode::cdnan:
-         setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 3);
-         break;
       default:
          TR_ASSERT(false,"unknown control flow instruction (estimateBinaryLength)");
       }

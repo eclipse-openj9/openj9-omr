@@ -39,7 +39,6 @@ namespace OMR { typedef OMR::RegisterPair RegisterPairConnector; }
 namespace TR { class CodeGenerator; }
 namespace TR { class RegisterPair; }
 
-#define REGPAIR_THIS static_cast<TR::RegisterPair*>(this)
 template<typename QueueKind> class TR_Queue;
 
 namespace OMR
@@ -72,6 +71,8 @@ class OMR_EXTENSIBLE RegisterPair : public TR::Register
    private:
    TR::Register *_lowOrder;
    TR::Register *_highOrder;
+
+   TR::RegisterPair *self();
    };
 
 }

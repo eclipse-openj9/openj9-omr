@@ -359,6 +359,8 @@ namespace TR { class ARM64Src1Instruction; }
 namespace TR { class ARM64Src2Instruction; }
 namespace TR { class ARM64HelperCallSnippet; }
 
+namespace TR { class LabelInstruction; }
+namespace TR { class AdminInstruction; }
 #ifdef J9_PROJECT_SPECIFIC
 namespace TR { class ARM64VirtualGuardNOPInstruction; }
 
@@ -626,6 +628,11 @@ public:
    virtual const char * getOpCodeName(TR::InstOpCode *);
    const char * getName(TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
 #endif
+#if defined(TR_TARGET_RISCV)
+   virtual const char * getOpCodeName(TR::InstOpCode *);
+   const char * getName(TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
+#endif
+
 
 #if defined(AIXPPC)
    virtual void setupDebugger(void *);
@@ -1143,6 +1150,25 @@ public:
 #endif
    void print(TR::FILE *, TR::ARM64HelperCallSnippet *);
 
+#endif
+#ifdef TR_TARGET_RISCV
+   void printPrefix(TR::FILE *, TR::Instruction *);
+
+   void print(TR::FILE *, TR::LabelInstruction *);
+   void print(TR::FILE *, TR::AdminInstruction *);
+
+   void print(TR::FILE *, TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
+   void print(TR::FILE *, TR::RegisterDependency *);
+   void print(TR::FILE *, TR::RegisterDependencyConditions *);
+   void print(TR::FILE *, TR::MemoryReference *);
+   void print(TR::FILE *, TR::UnresolvedDataSnippet *);
+
+   void printRVOOLSequences(TR::FILE *);
+   void printRVGCRegisterMap(TR::FILE *, TR::GCRegisterMap *);
+   void printInstructionComment(TR::FILE *, int32_t, TR::Instruction *);
+   void printMemoryReferenceComment(TR::FILE *, TR::MemoryReference *);
+
+   const char *getRVRegisterName(uint32_t, bool = true);
 #endif
 
    friend class TR_CFGChecker;

@@ -16,7 +16,7 @@ can get them using (the image created using [debian-riscv][1] contains them):
 ### Building
 
 ```
-git clone https://github.com/shingarov/omr -b riscv
+git clone https://github.com/eclipse/omr
 cd omr
 mkdir build
 cd build
@@ -54,6 +54,15 @@ To run selected TRIL tests:
 
     cd fvtest/compilertriltest
     ./comptest --gtest_filter=*Arithmetic*/Int32*:LogicalTest/Int32*Unary*
+
+To run *ALL* TRIL tests:
+
+    cd fvtest/compilertriltest
+    TR_Options=softFailOnAssume ./comptest
+
+*Note*: At the time of writing, some opcodes used in TRIL tests are still unimplemented, causing `TR_ASSERT()` failure. `TR_Options=songftFailOnAssume` causes this (and all others) assertion to just abort the compilation. This way, hitting such and unimplemented opcode does not terminate whole test run.
+
+
 
 ## Cross compiling
 

@@ -606,3 +606,5 @@ SETVAL(TR_S390jitResolveHandleMethod,TR_FSRH+96)
 SETVAL(TR_S390jitResolveConstantDynamic, TR_FSRH+97)
 SETVAL(TR_S390jitResolveConstantDynamicGlue, TR_FSRH+98)
 SETVAL(TR_S390numRuntimeHelpers,TR_FSRH+99)
+
+SETVAL(TR_RISCVnumRuntimeHelpers,TR_FSRH+1)

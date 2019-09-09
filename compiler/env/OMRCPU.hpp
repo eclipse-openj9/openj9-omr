@@ -56,6 +56,7 @@ enum MajorArchitecture
    arch_power,
    arch_arm,
    arch_arm64,
+   arch_riscv,
    arch_unknown
    };
 
@@ -66,7 +67,9 @@ enum MinorArchitecture
    {
    m_arch_none,
    m_arch_i386,
-   m_arch_amd64
+   m_arch_amd64,
+   m_arch_riscv32,
+   m_arch_riscv64
    };
 
 }

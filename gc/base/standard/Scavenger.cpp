@@ -1612,7 +1612,7 @@ MM_Scavenger::splitIndexableObjectScanner(MM_EnvironmentStandard *env, GC_Object
 			MM_CopyScanCacheStandard* splitCache = getFreeCache(env);
 			if (NULL != splitCache) {
 				/* set up the split copy cache and clone the object scanner into the cache */
-				omrarrayptr_t arrayPtr = (omrarrayptr_t)objectScanner->getParentObject();
+				omrarrayptr_t arrayPtr = (omrarrayptr_t)indexableScanner->getArrayObject();
 				void* arrayTop = (void*)((uintptr_t)arrayPtr + _extensions->indexableObjectModel.getSizeInBytesWithHeader(arrayPtr));
 				reinitCache(splitCache, (omrobjectptr_t)arrayPtr, arrayTop);
 				splitCache->cacheAlloc = splitCache->cacheTop;
@@ -1675,9 +1675,10 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 	}
 
 #if defined(OMR_GC_MODRON_SCAVENGER_STRICT)
-	Assert_MM_true(objectPtr == objectScanner->getParentObject());
-	if (NULL != scanCache) {
-		Assert_MM_true(objectScanner->isIndexableObject() == (scanCache->isSplitArray() && (0 < scanCache->_arraySplitIndex)));
+	if ((NULL != scanCache) && objectScanner->isIndexableObject()) {
+		GC_IndexableObjectScanner *indexableScanner = (GC_IndexableObjectScanner *)objectScanner;
+		Assert_MM_true(objectPtr == indexableScanner->getArrayObject());
+		Assert_MM_true(scanCache->isSplitArray() && (0 < scanCache->_arraySplitIndex));
 		Assert_MM_true(rememberedSetSlot == scanCache->_arraySplitRememberedSlot);
 	}
 #endif /* defined(OMR_GC_MODRON_SCAVENGER_STRICT) */
@@ -1817,8 +1818,9 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 
 #if defined(OMR_GC_MODRON_SCAVENGER_STRICT)
 	if (scanCache->isSplitArray()) {
+		GC_IndexableObjectScanner *indexableScanner = (GC_IndexableObjectScanner *)objectScanner;
 		Assert_MM_true(objectScanner->isIndexableObject());
-		Assert_MM_true(objectPtr == objectScanner->getParentObject());
+		Assert_MM_true(objectPtr == indexableScanner->getArrayObject());
 		Assert_MM_true(0 < scanCache->_arraySplitIndex);
 	} else {
 		Assert_MM_true(0 == scanCache->_arraySplitIndex);

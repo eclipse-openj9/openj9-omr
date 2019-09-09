@@ -747,6 +747,14 @@ public:
 	double tarokConcurrentMarkingCostWeight; /**< How much we weigh concurrentMarking into our GMP scan time cost calculations */
 	bool tarokAutomaticDefragmentEmptinessThreshold; /**< Whether we should use the automatically derived value for tarokDefragmentEmptinessThreshold or not */
 	bool tarokEnableCopyForwardHybrid; /**< Enable CopyForward Hybrid mode */
+
+	enum ReserveRegions {
+		RESERVE_REGIONS_NO = 0,
+		RESERVE_REGIONS_MOST_ALLOCATABLE,
+		RESERVE_REGIONS_MOST_FREE
+	};
+	ReserveRegions tarokReserveRegionsFromCollectionSet;
+
 #if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
 	bool _isConcurrentCopyForward;
 #endif
@@ -1730,6 +1738,7 @@ public:
 		, tarokConcurrentMarkingCostWeight(0.05)
 		, tarokAutomaticDefragmentEmptinessThreshold(false)
 		, tarokEnableCopyForwardHybrid(true)
+		, tarokReserveRegionsFromCollectionSet(RESERVE_REGIONS_NO)
 #if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
 		, _isConcurrentCopyForward(false)
 #endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */

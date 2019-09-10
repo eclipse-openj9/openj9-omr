@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -141,7 +141,7 @@ J9HookInitializeInterface(struct J9HookInterface **hookInterface, OMRPortLibrary
 
 	commonInterface->nextAgentID = J9HOOK_AGENTID_DEFAULT + 1;
 	commonInterface->portLib = portLib;
-	commonInterface->threshold4Trace = OMRHOOK_DEFAULT_THRESHOLD_IN_MILLISECONDS_WARNING_CALLBACK_ELAPSED_TIME;
+	commonInterface->threshold4Trace = OMRHOOK_DEFAULT_THRESHOLD_IN_MICROSECONDS_WARNING_CALLBACK_ELAPSED_TIME;
 
 	commonInterface->eventSize = (interfaceSize - sizeof(J9CommonHookInterface)) / (sizeof(U_8) + sizeof(OMREventInfo4Dump) + sizeof(J9HookRecord*));
 	return 0;

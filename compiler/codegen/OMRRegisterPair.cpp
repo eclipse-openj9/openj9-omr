@@ -43,7 +43,7 @@ void OMR::RegisterPair::unblock()
 
 bool OMR::RegisterPair::usesRegister(TR::Register* reg)
    {
-   if (REGPAIR_THIS == reg || _lowOrder == reg || _highOrder == reg )
+   if (self() == reg || _lowOrder == reg || _highOrder == reg )
       {
       return true;
       }
@@ -92,6 +92,11 @@ OMR::RegisterPair::getRegister()
 TR::RegisterPair *
 OMR::RegisterPair::getRegisterPair()
    {
-   return REGPAIR_THIS;
+   return self();
    }
 
+TR::RegisterPair *
+OMR::RegisterPair::self()
+   {
+   return static_cast<TR::RegisterPair*>(this);
+   }

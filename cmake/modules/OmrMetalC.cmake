@@ -39,7 +39,7 @@ find_program(XLC_EXECUTABLE
 )
 
 set(OMR_METALC_XLC_FLAGS "-qlongname" CACHE STRING "Options added to XLC when compiler METAL-C to HLASM")
-set(OMR_METALC_ASM_FLAGS "-mgoff -I CBC.SCCNSAM" CACHE STRING "Options added when compiling METAL-C HLASM files")
+set(OMR_METALC_ASM_FLAGS "-mgoff" "-I" "CBC.SCCNSAM" CACHE STRING "Options added when compiling METAL-C HLASM files")
 
 if(OMR_ENV_DATA64)
 	list(APPEND OMR_METALC_XLC_FLAGS "-q64")
@@ -69,7 +69,6 @@ function(omr_compile_metalc mfile ofile)
 		set(ofile "${CMAKE_CURRENT_BINARY_DIR}/${ofile}")
 	endif()
 
-	set(lfile "${ofile}.asmlist")
 	set(cfile "${ofile}.c")
 	set(sfile "${ofile}.s")
 
@@ -79,18 +78,11 @@ function(omr_compile_metalc mfile ofile)
 		COMMAND "${CMAKE_COMMAND}" -E copy "${mfile}" "${cfile}"
 		VERBATIM
 	)
-
-	add_custom_command(
-		OUTPUT "${sfile}" "${lfile}"
-		MAIN_DEPENDENCY "${cfile}"
-		COMMAND "${XLC_EXECUTABLE}" -qmetal -S ${OMR_METALC_XLC_FLAGS} -o "${sfile}" "${cfile}" > "${lfile}"
-		VERBATIM
-	)
-
 	add_custom_command(
 		OUTPUT "${ofile}"
-		MAIN_DEPENDENCY "${sfile}"
-		COMMAND "${AS_EXECUTABLE}" ${OMR_METALC_ASM_FLAGS} "${sfile}" -o "${ofile}"
+		MAIN_DEPENDENCY "${cfile}"
+		COMMAND "${XLC_EXECUTABLE}" -qmetal -S ${OMR_METALC_XLC_FLAGS} -o "${sfile}" "${cfile}"
+		COMMAND "${AS_EXECUTABLE}" ${OMR_METALC_ASM_FLAGS}  -o "${ofile}" "${sfile}"
 		VERBATIM
 	)
 endfunction(omr_compile_metalc)

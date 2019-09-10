@@ -41,9 +41,28 @@ else
     GLOBAL_ASFLAGS += -a32 -mppc
 endif
 
-GLOBAL_CFLAGS += -q mbcs -qlanglvl=extended -qarch=ppc -qinfo=pro -qalias=noansi -qxflag=LTOL:LTOL0 -qsuppress=1506-1108
-GLOBAL_CXXFLAGS+=-q mbcs -qlanglvl=extended0x -qarch=ppc -qinfo=pro -qalias=noansi -qxflag=LTOL:LTOL0 -qsuppress=1506-1108
+GLOBAL_CFLAGS += -qarch=ppc -qalias=noansi -qxflag=LTOL:LTOL0 -qsuppress=1506-1108
+GLOBAL_CXXFLAGS+=-qlanglvl=extended0x -qarch=ppc -qalias=noansi -qxflag=LTOL:LTOL0 -qsuppress=1506-1108
 GLOBAL_CPPFLAGS+=-D_XOPEN_SOURCE_EXTENDED=1 -D_ALL_SOURCE -DRS6000 -DAIXPPC -D_LARGE_FILES
+
+ifeq (,$(findstring xlclang,$(notdir $(CC))))
+  # xlc options
+  GLOBAL_CFLAGS+=-q mbcs -qlanglvl=extended -qinfo=pro
+else
+  # xlclang options
+  GLOBAL_CFLAGS+=-qlanglvl=extended0x -qxlcompatmacros
+endif
+
+ifeq (,$(findstring xlclang++,$(notdir $(CXX))))
+  # xlc++ options
+  GLOBAL_CXXFLAGS+=-q mbcs -qinfo=pro
+else
+  # xlclang++ options
+  GLOBAL_CXXFLAGS+=-qxlcompatmacros -fno-exceptions
+  ifeq (0,$(OMR_RTTI))
+    GLOBAL_CXXFLAGS+=-fno-rtti
+  endif
+endif
 
 ###
 ### Optimization

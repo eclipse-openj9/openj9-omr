@@ -263,6 +263,7 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
    while (cursorInstruction)
       {
       self()->setBinaryBufferCursor(cursorInstruction->generateBinaryEncoding());
+      self()->addToAtlas(cursorInstruction);
       cursorInstruction = cursorInstruction->getNext();
       }
    }

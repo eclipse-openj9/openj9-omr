@@ -750,6 +750,12 @@ public:
 #if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
 	bool _isConcurrentCopyForward;
 #endif
+	enum TarokRegionTailCondidateListSortOrder {
+		SORT_ORDER_NOORDER = 0,
+		SORT_ORDER_ASCENDING,
+		SORT_ORDER_DESCENDING
+	};
+	TarokRegionTailCondidateListSortOrder tarokTailCandidateListSortOrder;
 #endif /* defined (OMR_GC_VLHGC) */
 
 /* OMR_GC_VLHGC (in for all -- see 82589) */
@@ -1727,6 +1733,7 @@ public:
 #if defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD)
 		, _isConcurrentCopyForward(false)
 #endif /* defined(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD) */
+		, tarokTailCandidateListSortOrder(SORT_ORDER_NOORDER)
 #endif /* defined (OMR_GC_VLHGC) */
 		, tarokEnableExpensiveAssertions(false)
 		, sweepPoolManagerAddressOrderedList(NULL)

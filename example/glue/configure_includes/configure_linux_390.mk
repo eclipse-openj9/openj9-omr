@@ -42,8 +42,7 @@ ifeq (linux_390-64_cmprssptrs_codecov, $(SPEC))
     --enable-OMR_INTERP_COMPRESSED_OBJECT_HEADER \
     --enable-OMR_INTERP_SMALL_MONITOR_SLOT \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
-    --enable-OMR_THR_FORK_SUPPORT \
-    --enable-OMR_GC_ARRAYLETS
+    --enable-OMR_THR_FORK_SUPPORT
 endif
 
 ifeq (linux_390-64_cmprssptrs, $(SPEC))
@@ -55,8 +54,7 @@ ifeq (linux_390-64_cmprssptrs, $(SPEC))
     --enable-OMR_INTERP_COMPRESSED_OBJECT_HEADER \
     --enable-OMR_INTERP_SMALL_MONITOR_SLOT \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
-    --enable-OMR_THR_FORK_SUPPORT \
-    --enable-OMR_GC_ARRAYLETS
+    --enable-OMR_THR_FORK_SUPPORT
 endif
 
 ifeq (linux_390-64_codecov, $(SPEC))
@@ -65,8 +63,7 @@ ifeq (linux_390-64_codecov, $(SPEC))
     --enable-OMR_ARCH_S390 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
-    --enable-OMR_THR_FORK_SUPPORT \
-    --enable-OMR_GC_ARRAYLETS
+    --enable-OMR_THR_FORK_SUPPORT
 endif
 
 ifeq (linux_390-64, $(SPEC))
@@ -75,8 +72,7 @@ ifeq (linux_390-64, $(SPEC))
     --enable-OMR_ARCH_S390 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
-    --enable-OMR_THR_FORK_SUPPORT \
-    --enable-OMR_GC_ARRAYLETS
+    --enable-OMR_THR_FORK_SUPPORT
 endif
 
 ifeq (linux_390, $(SPEC))
@@ -84,8 +80,7 @@ ifeq (linux_390, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_S390 \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
-    --enable-OMR_THR_FORK_SUPPORT \
-    --enable-OMR_GC_ARRAYLETS
+    --enable-OMR_THR_FORK_SUPPORT
 endif
 
 CONFIGURE_ARGS += libprefix=lib exeext= solibext=.so arlibext=.a objext=.o

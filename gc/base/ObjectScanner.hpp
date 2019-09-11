@@ -113,6 +113,32 @@ protected:
 	}
 	
 	/**
+	 * Constructor. Without leaf optimization. Context generational nursery collection.
+	 *
+	 * For marking context with leaf optimization see below:
+	 *
+	 * @param[in] env The environment for the scanning thread
+	 * @param[in] scanPtr The first slot contained in the object to be scanned
+	 * @param[in] scanMap Bit map marking object reference slots, with least significant bit mapped to slot at scanPtr
+	 * @param[in] flags A bit mask comprised of InstanceFlags
+	 * @param[in] hotFieldsDescriptor Hot fields descriptor for languages that support hot field tracking (0 if no hot fields support)
+	 */
+	GC_ObjectScanner(MM_EnvironmentBase *env, fomrobject_t *scanPtr, uintptr_t scanMap, uintptr_t flags)
+		: MM_BaseVirtual()
+		, _parentObjectPtr(NULL)
+		, _scanMap(scanMap)
+#if defined(OMR_GC_LEAF_BITS)
+		, _leafMap(0)
+#endif /* defined(OMR_GC_LEAF_BITS) */
+		, _scanPtr(scanPtr)
+		, _slotObject(env->getOmrVM(), NULL)
+		, _flags(flags | headObjectScanner)
+		, _hotFieldsDescriptor(0)
+	{
+		_typeId = __FUNCTION__;
+	}
+	
+	/**
 	 * Set up the scanner. Subclasses should provide a non-virtual implementation
 	 * to build next slot map and call it from their constructor or just after
 	 * their constructor. This will obviate the need to make an initial call to
@@ -172,9 +198,6 @@ public:
 	 * @return true if the object to be scanned is a leaf object
 	 */
 	MMINLINE bool isLeafObject() { return (0 == _scanMap) && !hasMoreSlots(); }
-
-
-	MMINLINE uintptr_t getHotFieldsDescriptor() { return _hotFieldsDescriptor; }
 
 	/**
 	 * Return base pointer and slot bit map for next block of contiguous slots to be scanned. The
@@ -308,8 +331,6 @@ public:
 	MMINLINE void setNoMoreSlots() { _flags |= (uintptr_t)GC_ObjectScanner::noMoreSlots; }
 
 	MMINLINE bool hasMoreSlots() { return 0 == (GC_ObjectScanner::noMoreSlots & _flags); }
-
-	MMINLINE omrobjectptr_t const getParentObject() { return _parentObjectPtr; }
 
 	MMINLINE static bool isRootScan(uintptr_t flags) { return (0 != (scanRoots & flags)); }
 

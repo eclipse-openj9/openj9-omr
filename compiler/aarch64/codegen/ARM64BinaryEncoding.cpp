@@ -74,6 +74,8 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
       if (cg()->comp()->isRecursiveMethodTarget(sym))
          {
          intptrj_t jitToJitStart = (intptrj_t)cg()->getCodeStart();
+         // how many bytes to skip loading interp->jit argument
+         jitToJitStart += ((*(int32_t *)(jitToJitStart - 4)) >> 16) & 0xFFFF;
          TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(jitToJitStart, (intptrj_t)cursor),
                          "Target address is out of range");
 

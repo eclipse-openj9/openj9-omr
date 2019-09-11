@@ -4011,6 +4011,15 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       for (ListElement<TR::TreeTop> *elt = head; elt != NULL; elt = elt->getNextElement())
          {
          TR::Node *check = elt->getData()->getNode();
+
+         // A NULLCHK might have been specialized away, but will still appear in nullCheckTrees
+         // Skip such trees
+         if (!check->getOpCode().isNullCheck())
+            {
+            TR_ASSERT_FATAL(check->getOpCodeValue() == TR::treetop, "Unexpected opcode for n%dn [%p]\n", check->getGlobalIndex(), check);
+            continue;
+            }
+
          TR::Node *refNode = check->getNullCheckReference();
          const Expr *refExpr = findCanonicalExpr(refNode);
          if (refExpr == NULL)
@@ -4965,8 +4974,18 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(
    ListElement<TR::Node> *nextNode = nullCheckedReferences->getListHead();
    ListElement<TR::TreeTop> *nextTree = nullCheckTrees->getListHead();
 
-   for (; nextNode;)
+   for (; nextNode; nextNode = nextNode->getNextElement(), nextTree = nextTree->getNextElement())
       {
+      // A NULLCHK might have been specialized away, but will still appear in nullCheckTrees
+      // Skip such trees
+      TR::Node *nullChkNode = nextTree->getData()->getNode();
+
+      if (!nullChkNode->getOpCode().isNullCheck())
+         {
+         TR_ASSERT_FATAL(nullChkNode->getOpCodeValue() == TR::treetop, "Unexpected opcode for n%dn [%p]\n", nullChkNode->getGlobalIndex(), nullChkNode);
+         continue;
+         }
+
       bool isNextNodeInvariant = isExprInvariant(nextNode->getData());
       TR::Node *nodeToBeNullChkd = NULL;
       bool isDependent = false;
@@ -5047,8 +5066,6 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(
                new (_curLoop->_memRegion) RemoveNullCheck(this, prep, checkNode));
             }
          }
-      nextNode = nextNode->getNextElement();
-      nextTree = nextTree->getNextElement();
       }
    }
 

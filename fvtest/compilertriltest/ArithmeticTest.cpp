@@ -459,13 +459,15 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int16Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int16_t, int16_t>()),
     ::testing::Values(
         std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("sadd", add<int16_t>),
-        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("ssub", sub<int16_t>))));
+        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("ssub", sub<int16_t>),
+        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("smul", mul<int16_t>))));
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int8Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int8_t, int8_t>()),
     ::testing::Values(
         std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("badd", add<int8_t>),
-        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bsub", sub<int8_t>))));
+        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bsub", sub<int8_t>),
+        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bmul", mul<int8_t>))));
 
 /**
  * @brief Filter function for *div opcodes

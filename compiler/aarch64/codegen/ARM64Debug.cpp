@@ -814,7 +814,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
    {
    printPrefix(pOutFile, instr);
    TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
-   bool isCmp = false;
+   bool isAlias = false;
    if (op == TR::InstOpCode::subsimmx || op == TR::InstOpCode::subsimmw)
       {
       TR::Register *r = instr->getTargetRegister();
@@ -822,17 +822,122 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
           && toRealRegister(r)->getRegisterNumber() == TR::RealRegister::xzr)
          {
          // cmp alias
-         isCmp = true;
+         isAlias = true;
          trfprintf(pOutFile, "cmpimm%c \t", (op == TR::InstOpCode::subsimmx) ? 'x' : 'w');
+         print(pOutFile, instr->getSource1Register(), TR_WordReg);
+         trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
          }
       }
-   if (!isCmp)
+   else if (op == TR::InstOpCode::sbfmx || op == TR::InstOpCode::sbfmw)
+      {
+      uint32_t imm12 = instr->getSourceImmediate();
+      auto immr = imm12 >> 6;
+      auto imms = imm12 & 0x3f;
+      if (op == TR::InstOpCode::sbfmx)
+         {
+         if (imms == 63)
+            {
+            // asr alias
+            isAlias = true;
+            trfprintf(pOutFile, "asrx \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", immr);
+            }
+         else if ((immr == 0) && ((imms == 7) || (imms == 15) || (imms == 31)))
+            {
+            // sxtb, sxth or sxtw (signed extend byte|half word|word) alias
+            isAlias = true;
+            trfprintf(pOutFile, "sxt%cx \t", (imms == 7) ? 'b' : ((imms == 15) ? 'h' : 'w'));
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            }
+         }
+      else if ((op == TR::InstOpCode::sbfmw) && ((immr & (1 << 6)) == 0) && ((imms & (1 << 6)) == 0))
+         {
+         if (imms == 31)
+            {
+            // asr alias
+            isAlias = true;
+            trfprintf(pOutFile, "asrw \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", immr);
+            }
+         else if ((immr == 0) && ((imms == 7) || (imms == 15)))
+            {
+            // sxtb or sxth (signed extend byte|half word) alias
+            isAlias = true;
+            trfprintf(pOutFile, "sxt%cw \t", (imms == 7) ? 'b' : 'h');
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg); 
+            }
+         }
+      }
+   else if (op == TR::InstOpCode::ubfmx || op == TR::InstOpCode::ubfmw)
+      {
+      uint32_t imm12 = instr->getSourceImmediate();
+      auto immr = imm12 >> 6;
+      auto imms = imm12 & 0x3f;
+      if (op == TR::InstOpCode::ubfmx)
+         {
+         if (imms == 63)
+            {
+            // lsr alias
+            isAlias = true;
+            trfprintf(pOutFile, "lsrx \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", immr);
+            }
+         else if (imms + 1 == immr)
+            {
+            // lsl alias
+            isAlias = true;
+            trfprintf(pOutFile, "lslx \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", 63 - imms);
+            }
+         }
+      else if ((op == TR::InstOpCode::ubfmw) && ((immr & (1 << 6)) == 0) && ((imms & (1 << 6)) == 0))
+         {
+         if (imms == 31)
+            {
+            // lsr alias
+            isAlias = true;
+            trfprintf(pOutFile, "lsrw \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", immr);
+            }
+         else if (imms + 1 == immr)
+            {
+            // lsl alias
+            isAlias = true;
+            trfprintf(pOutFile, "lslw \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", 31 - imms);
+            }
+         else if ((immr == 0) && ((imms == 7) || (imms == 15)))
+            {
+            // uxtb or uxth (unsigned extend byte|half word) alias
+            isAlias = true;
+            trfprintf(pOutFile, "uxt%cx \t", (imms == 7) ? 'b' : 'h');
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            }
+         }
+      }
+
+   if (!isAlias)
       {
       trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
       print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
       }
-   print(pOutFile, instr->getSource1Register(), TR_WordReg);
-   trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
 
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());

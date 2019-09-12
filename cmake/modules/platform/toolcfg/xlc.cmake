@@ -175,17 +175,18 @@ set(SPP_FLAGS -E -P)
 
 if(OMR_OS_ZOS)
 	function(_omr_toolchain_process_exports TARGET_NAME)
-		# We only need to do something if we are dealing with a shared library
-		get_target_property(target_type ${TARGET_NAME} TYPE)
-		if(NOT target_type STREQUAL "SHARED_LIBRARY")
-			return()
-		endif()
-
+		# Any type of target which says it has exports should get the DLL, and EXPORTALL
+		# compile flags
 		target_compile_options(${TARGET_NAME}
 			PRIVATE
 				-Wc,DLL,EXPORTALL
 		)
 
+		# only shared libraries will generate an export side deck
+		get_target_property(target_type ${TARGET_NAME} TYPE)
+		if(NOT target_type STREQUAL "SHARED_LIBRARY")
+			return()
+		endif()
 		# Copy the export side deck
 		string(FIND "${CMAKE_SHARED_LIBRARY_SUFFIX}" "." dot_pos REVERSE)
 		string(SUBSTRING "${CMAKE_SHARED_LIBRARY_SUFFIX}" 0 "${dot_pos}" lib_suffix)

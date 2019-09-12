@@ -72,22 +72,6 @@ int32_t imulh(int32_t l, int32_t r) {
     return static_cast<int32_t>(x >> 32); // upper 32 bits
 }
 
-int16_t sadd(int16_t l, int16_t r) {
-    return l+r;
-}
-
-int16_t ssub(int16_t l, int16_t r) {
-    return l-r;
-}
-
-int8_t badd(int8_t l, int8_t r) {
-    return l+r;
-}
-
-int8_t bsub(int8_t l, int8_t r) {
-    return l-r;
-}
-
 class Int32Arithmetic : public TRTest::BinaryOpTest<int32_t> {};
 
 class UInt32Arithmetic : public TRTest::BinaryOpTest<uint32_t> {};
@@ -458,14 +442,14 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int64Arithmetic, ::testing::Combine(
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int16Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int16_t, int16_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("sadd", sadd),
-        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("ssub", ssub))));
+        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("sadd", add<int16_t>),
+        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("ssub", sub<int16_t>))));
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int8Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int8_t, int8_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("badd", badd),
-        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bsub", bsub))));
+        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("badd", add<int8_t>),
+        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bsub", sub<int8_t>))));
 
 /**
  * @brief Filter function for *div opcodes

@@ -897,7 +897,7 @@ OMR::Compilation::getProfilingMode()
    if (!self()->isProfilingCompilation())
       return DisabledProfiling;
 
-   if (self()->getOption(TR_EnableJProfiling) || !self()->getOption(TR_DisableJProfilingInProfilingCompilations))
+   if (self()->getOption(TR_EnableJProfiling) || self()->getOption(TR_EnableJProfilingInProfilingCompilations))
       return JProfiling;
 
    return JitProfiling;

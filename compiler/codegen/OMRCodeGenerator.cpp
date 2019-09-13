@@ -2162,7 +2162,7 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
    uint32_t boundary = self()->getJitMethodEntryAlignmentBoundary();
 
    // Align cursor to boundary as long as it meets the threshold
-   if (boundary > 1)
+   if (self()->supportsJitMethodEntryAlignment() && boundary > 1)
       {
       uint32_t offset = self()->getPreJitMethodEntrySize();
 

@@ -55,7 +55,6 @@ private:
 protected:
 	static const intptr_t _bitsPerScanMap = sizeof(uintptr_t) << 3;
 
-	omrobjectptr_t const _parentObjectPtr;	/**< Object being scanned */
 	uintptr_t _scanMap;						/**< Bit map of reference slots in object being scanned (32/64-bit window) */
 #if defined(OMR_GC_LEAF_BITS)
 	uintptr_t _leafMap;						/**< Bit map of reference slots in object that refernce leaf objects */
@@ -63,7 +62,6 @@ protected:
 	fomrobject_t *_scanPtr;					/**< Pointer to base of object slots mapped by current _scanMap */
 	GC_SlotObject _slotObject;				/**< Create own SlotObject class to provide output */
 	uintptr_t _flags;						/**< Scavenger context flags (scanRoots, scanHeap, ...) */
-	uintptr_t _hotFieldsDescriptor;			/**< Hot fields descriptor for languages that support hot field tracking */
 	
 public:
 	/**
@@ -88,35 +86,6 @@ protected:
 	 *
 	 * For marking context with leaf optimization see below:
 	 *
-	 * GC_ObjectScanner(MM_EnvironmentBase *, omrobjectptr_t, fomrobject_t *, uintptr_t, uintptr_t, uintptr_t, uintptr_t)
-	 *
-	 * @param[in] env The environment for the scanning thread
-	 * @param[in] parentObjectPtr The object to be scanned
-	 * @param[in] scanPtr The first slot contained in the object to be scanned
-	 * @param[in] scanMap Bit map marking object reference slots, with least significant bit mapped to slot at scanPtr
-	 * @param[in] flags A bit mask comprised of InstanceFlags
-	 * @param[in] hotFieldsDescriptor Hot fields descriptor for languages that support hot field tracking (0 if no hot fields support)
-	 */
-	GC_ObjectScanner(MM_EnvironmentBase *env, omrobjectptr_t parentObjectPtr, fomrobject_t *scanPtr, uintptr_t scanMap, uintptr_t flags, uintptr_t hotFieldsDescriptor = 0)
-		: MM_BaseVirtual()
-		, _parentObjectPtr(parentObjectPtr)
-		, _scanMap(scanMap)
-#if defined(OMR_GC_LEAF_BITS)
-		, _leafMap(0)
-#endif /* defined(OMR_GC_LEAF_BITS) */
-		, _scanPtr(scanPtr)
-		, _slotObject(env->getOmrVM(), NULL)
-		, _flags(flags | headObjectScanner)
-		, _hotFieldsDescriptor(hotFieldsDescriptor)
-	{
-		_typeId = __FUNCTION__;
-	}
-	
-	/**
-	 * Constructor. Without leaf optimization. Context generational nursery collection.
-	 *
-	 * For marking context with leaf optimization see below:
-	 *
 	 * @param[in] env The environment for the scanning thread
 	 * @param[in] scanPtr The first slot contained in the object to be scanned
 	 * @param[in] scanMap Bit map marking object reference slots, with least significant bit mapped to slot at scanPtr
@@ -125,7 +94,6 @@ protected:
 	 */
 	GC_ObjectScanner(MM_EnvironmentBase *env, fomrobject_t *scanPtr, uintptr_t scanMap, uintptr_t flags)
 		: MM_BaseVirtual()
-		, _parentObjectPtr(NULL)
 		, _scanMap(scanMap)
 #if defined(OMR_GC_LEAF_BITS)
 		, _leafMap(0)
@@ -133,7 +101,6 @@ protected:
 		, _scanPtr(scanPtr)
 		, _slotObject(env->getOmrVM(), NULL)
 		, _flags(flags | headObjectScanner)
-		, _hotFieldsDescriptor(0)
 	{
 		_typeId = __FUNCTION__;
 	}

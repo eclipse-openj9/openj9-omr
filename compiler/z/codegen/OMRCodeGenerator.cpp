@@ -468,8 +468,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsLoweringConstIDiv();
    self()->setSupportsTestUnderMask();
 
-   // Initialize preprologue offset to be 8 bytes for bodyInfo / methodInfo
-   self()->setPreprologueOffset(8);
+   // Initialize to be 8 bytes for bodyInfo / methodInfo
+   self()->setPreJitMethodEntrySize(8);
 
    // Support divided by power of 2 logic in ldivSimplifier
    self()->setSupportsLoweringConstLDivPower2();
@@ -2465,7 +2465,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    // Adjust the binary buffer cursor with appropriate padding.
    if (!disableAlignJITEP && !self()->comp()->compileRelocatableCode())
       {
-      int32_t alignedBase = 256 - self()->getPreprologueOffset();
+      int32_t alignedBase = 256 - self()->getPreJitMethodEntrySize();
       int32_t padBase = ( 256 + alignedBase - ((intptrj_t)temp) % 256) % 256;
 
       // Threshold determines the maximum number of bytes to align.  If the JIT EP is already close

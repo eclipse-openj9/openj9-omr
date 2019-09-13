@@ -2161,6 +2161,8 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
    {
    uint32_t boundary = self()->getJitMethodEntryAlignmentBoundary();
 
+   TR_ASSERT_FATAL(boundary > 0, "JIT method entry alignment boundary (%d) definition is violated", boundary);
+
    // Align cursor to boundary as long as it meets the threshold
    if (self()->supportsJitMethodEntryAlignment() && boundary > 1)
       {
@@ -2169,9 +2171,17 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
       uint8_t* alignedBinaryBufferCursor = _binaryBufferCursor;
       alignedBinaryBufferCursor += offset;
       alignedBinaryBufferCursor = reinterpret_cast<uint8_t*>(OMR::align(reinterpret_cast<size_t>(alignedBinaryBufferCursor), boundary));
+
+      TR_ASSERT_FATAL(OMR::aligned(reinterpret_cast<size_t>(alignedBinaryBufferCursor), boundary),
+         "alignedBinaryBufferCursor [%p] is not aligned to the specified boundary (%d)", alignedBinaryBufferCursor, boundary);
+
       alignedBinaryBufferCursor -= offset;
 
-      if (alignedBinaryBufferCursor - _binaryBufferCursor <= self()->getJitMethodEntryAlignmentThreshold())
+      uint32_t threshold = self()->getJitMethodEntryAlignmentThreshold();
+
+      TR_ASSERT_FATAL(threshold <= boundary, "JIT method entry alignment threshold (%d) definition is violated as it is larger than the boundary (%d)", threshold, boundary);
+
+      if (alignedBinaryBufferCursor - _binaryBufferCursor <= threshold)
          {
          _binaryBufferCursor = alignedBinaryBufferCursor;
          self()->setJitMethodEntryPaddingSize(_binaryBufferCursor - _binaryBufferStart);

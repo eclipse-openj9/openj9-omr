@@ -761,6 +761,12 @@ class OMR_EXTENSIBLE CodeGenerator
    uint32_t getPreJitMethodEntrySize() {return _preJitMethodEntrySize;}
    uint32_t setPreJitMethodEntrySize(uint32_t s) {return (_preJitMethodEntrySize = s);}
 
+   /** \brief
+    *     Determines the byte boundary at which to align the JIT-to-JIT method entry point. If the boundary is
+    *     specified to be \c x and the JIT-to-JIT method entry point to be \c y then <c>y & (x - 1) == 0</c>.
+    */
+   uint32_t getJitMethodEntryAlignmentBoundary();
+
    uint32_t getJitMethodEntryPaddingSize() {return _jitMethodEntryPaddingSize;}
    uint32_t setJitMethodEntryPaddingSize(uint32_t s) {return (_jitMethodEntryPaddingSize = s);}
 

@@ -1736,7 +1736,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       }
 
    /* Adjust estimate based on jitted method entry alignment requirement */
-   uintptr_t boundary = self()->comp()->getOptions()->getJitMethodEntryAlignmentBoundary(self());
+   uintptr_t boundary = self()->getJitMethodEntryAlignmentBoundary();
    if (boundary && (boundary & boundary - 1) == 0)
       estimate += boundary - 1;
 

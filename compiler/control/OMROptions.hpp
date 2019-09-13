@@ -1916,8 +1916,6 @@ public:
    bool getOptLevelDowngraded() const { return _optLevelDowngraded; }
    static char *getCompilationStrategyName() { return _compilationStrategyName; }
 
-   int32_t getJitMethodEntryAlignmentBoundary(TR::CodeGenerator *cg);
-   void setJitMethodEntryAlignmentBoundary(int32_t boundary) { _jitMethodEntryAlignmentBoundary = boundary; }
 /**   \brief Returns a threshold on the profiling method invocations to trip recompilation
  */
    int32_t getJProfilingMethodRecompThreshold() { return _jProfilingMethodRecompThreshold; }
@@ -2391,7 +2389,6 @@ protected:
 
    bool                        _isAOTCompile;
 
-   int32_t                     _jitMethodEntryAlignmentBoundary; /* Alignment boundary for JIT method entry */
    int32_t                     _jProfilingMethodRecompThreshold;
    int32_t                     _jProfilingLoopRecompThreshold;
    char *                      _blockShufflingSequence;

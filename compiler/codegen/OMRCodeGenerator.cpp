@@ -2158,7 +2158,7 @@ loop:
 uint8_t *
 OMR::CodeGenerator::alignBinaryBufferCursor()
    {
-   uintptr_t boundary = self()->comp()->getOptions()->getJitMethodEntryAlignmentBoundary(self());
+   uintptr_t boundary = self()->getJitMethodEntryAlignmentBoundary();
 
    /* Align cursor to boundary */
    if (boundary && (boundary & boundary - 1) == 0)
@@ -2176,6 +2176,11 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
    return _binaryBufferCursor;
    }
 
+uint32_t
+OMR::CodeGenerator::getJitMethodEntryAlignmentBoundary()
+   {
+   return 1;
+   }
 
 int32_t
 OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnippetStart)

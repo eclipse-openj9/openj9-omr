@@ -1684,10 +1684,9 @@ void OMR::Power::CodeGenerator::generateBinaryEncodingPrologue(
       data->cursorInstruction = data->cursorInstruction->getNext();
       }
 
-   int32_t boundary = comp->getOptions()->getJitMethodEntryAlignmentBoundary(self());
+   int32_t boundary = self()->getJitMethodEntryAlignmentBoundary();
    if (boundary && (boundary > 4) && ((boundary & (boundary - 1)) == 0))
       {
-      comp->getOptions()->setJitMethodEntryAlignmentBoundary(boundary);
       self()->setPreJitMethodEntrySize(data->estimate);
       data->estimate += (boundary - 4);
       }
@@ -3444,6 +3443,12 @@ OMR::Power::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNon
       }
 
    return result;
+   }
+
+uint32_t
+OMR::Power::CodeGenerator::getJitMethodEntryAlignmentBoundary()
+   {
+   return 128;
    }
 
 bool

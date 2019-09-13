@@ -781,6 +781,8 @@ public:
       return 7;
       }
 
+   uint32_t getJitMethodEntryAlignmentBoundary();
+
    // LL: move to .cpp
    bool arithmeticNeedsLiteralFromPool(TR::Node *node);
 

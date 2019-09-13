@@ -866,9 +866,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"iprofilerVerbose",          "O\tEnable Interpreter Profiling output messages",           SET_OPTION_BIT(TR_VerboseInterpreterProfiling), "F"},
 
    {"jitAllAtMain",          "D\tjit all loaded methods when main is called", SET_OPTION_BIT(TR_jitAllAtMain), "F" },
-
-   {"jitMethodEntryAlignmentBoundary=",      "C<nnn>\tAlignment boundary (in bytes) for JIT method entry",
-        TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jitMethodEntryAlignmentBoundary), 0, "F%d"},
    {"jProfilingLoopRecompThreshold=",      "C<nnn>\tLoop recompilation threshold for jProfiling",
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jProfilingLoopRecompThreshold), 0, "F%d"},
    {"jProfilingMethodRecompThreshold=",      "C<nnn>\tMethod invocations for jProfiling body",
@@ -2565,11 +2562,6 @@ OMR::Options::jitPreProcess()
    _minCounterFidelity = INT_MIN;
    _labelTargetNOPLimit = TR_LABEL_TARGET_NOP_LIMIT;
    _lastIpaOptTransformationIndex = INT_MAX;
-#if defined(TR_HOST_POWER)
-   _jitMethodEntryAlignmentBoundary = 128;
-#else
-   _jitMethodEntryAlignmentBoundary = 0;
-#endif
    _jProfilingMethodRecompThreshold = 4000;
    _jProfilingLoopRecompThreshold = 2000;
    _blockShufflingSequence = "S";
@@ -5404,15 +5396,4 @@ void OMR::Options::setDefaultsForDeterministicMode()
          default: break;
          }
       }
-   }
-
-
-int32_t
-OMR::Options::getJitMethodEntryAlignmentBoundary(TR::CodeGenerator *cg)
-   {
-   if (cg->supportsMethodEntryPadding())
-      {
-      return _jitMethodEntryAlignmentBoundary;
-      }
-   return 0;
    }

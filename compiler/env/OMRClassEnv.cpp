@@ -27,6 +27,12 @@
 #include "infra/Assert.hpp"
 #include "compile/Compilation.hpp"
 
+TR::ClassEnv *
+OMR::ClassEnv::self()
+   {
+   return static_cast<TR::ClassEnv *>(this);
+   }
+
 char *
 OMR::ClassEnv::classNameChars(TR::Compilation *comp, TR::SymbolReference *symRef, int32_t & len)
    {

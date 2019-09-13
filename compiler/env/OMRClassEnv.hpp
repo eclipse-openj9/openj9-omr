@@ -36,6 +36,7 @@ namespace OMR { typedef OMR::ClassEnv ClassEnvConnector; }
 #include "env/jittypes.h"
 
 struct OMR_VMThread;
+namespace TR { class ClassEnv; }
 namespace TR { class Compilation; }
 namespace TR { class SymbolReference; }
 class TR_ResolvedMethod;
@@ -47,6 +48,8 @@ namespace OMR
 class OMR_EXTENSIBLE ClassEnv
    {
 public:
+
+   TR::ClassEnv *self();
 
    // Are classes allocated on the object heap?
    //

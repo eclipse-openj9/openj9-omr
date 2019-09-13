@@ -319,6 +319,8 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
         TraceIL("  unrecognized opcode; using default creation mechanism\n", "");
         node = TR::Node::create(opcode.getOpCodeValue(), childCount);
      }
+     node->setFlags(parseFlags(tree));
+
      TraceIL("  node address %p\n", node);
      TraceIL("  node index n%dn\n", node->getGlobalIndex());
 

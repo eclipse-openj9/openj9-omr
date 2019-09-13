@@ -2455,30 +2455,9 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    uint8_t *coldCode = NULL;
    uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
 
-
    self()->setBinaryBufferStart(temp);
    self()->setBinaryBufferCursor(temp);
-
-
-   static char *disableAlignJITEP = feGetEnv("TR_DisableAlignJITEP");
-
-   // Adjust the binary buffer cursor with appropriate padding.
-   if (!disableAlignJITEP && !self()->comp()->compileRelocatableCode())
-      {
-      int32_t alignedBase = 256 - self()->getPreJitMethodEntrySize();
-      int32_t padBase = ( 256 + alignedBase - ((intptrj_t)temp) % 256) % 256;
-
-      // Threshold determines the maximum number of bytes to align.  If the JIT EP is already close
-      // to the beginning of the cache line (i.e. pad bytes is big), then we might not benefit from
-      // aligning JIT EP to the true cache boundary.  By default, we align only if padByte exceed 192.
-      static char *alignJITEPThreshold = feGetEnv("TR_AlignJITEPThreshold");
-      int32_t threshold = (alignJITEPThreshold)?atoi(alignJITEPThreshold):192;
-
-      if (padBase < threshold)
-         {
-         self()->setBinaryBufferCursor(temp + padBase);
-         }
-      }
+   self()->alignBinaryBufferCursor();
 
    while (data.cursorInstruction)
       {

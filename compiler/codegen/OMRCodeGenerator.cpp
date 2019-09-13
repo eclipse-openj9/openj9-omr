@@ -2160,17 +2160,23 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
    {
    uintptr_t boundary = self()->getJitMethodEntryAlignmentBoundary();
 
-   /* Align cursor to boundary */
+   // Align cursor to boundary as long as it meets the threshold
    if (boundary && (boundary & boundary - 1) == 0)
       {
       uintptr_t round = boundary - 1;
       uintptr_t offset = self()->getPreJitMethodEntrySize();
 
-      _binaryBufferCursor += offset;
-      _binaryBufferCursor = (uint8_t *)(((uintptr_t)_binaryBufferCursor + round) & ~round);
-      _binaryBufferCursor -= offset;
-      self()->setJitMethodEntryPaddingSize(_binaryBufferCursor - _binaryBufferStart);
-      memset(_binaryBufferStart, 0, self()->getJitMethodEntryPaddingSize());
+      uint8_t* alignedBufferCursor = _binaryBufferCursor;
+      alignedBufferCursor += offset;
+      alignedBufferCursor = (uint8_t *)(((uintptr_t)alignedBufferCursor + round) & ~round);
+      alignedBufferCursor -= offset;
+
+      if (alignedBufferCursor - _binaryBufferCursor <= self()->getJitMethodEntryAlignmentThreshold())
+         {
+         _binaryBufferCursor = alignedBufferCursor;
+         self()->setJitMethodEntryPaddingSize(_binaryBufferCursor - _binaryBufferStart);
+         memset(_binaryBufferStart, 0, self()->getJitMethodEntryPaddingSize());
+         }
       }
 
    return _binaryBufferCursor;
@@ -2180,6 +2186,12 @@ uint32_t
 OMR::CodeGenerator::getJitMethodEntryAlignmentBoundary()
    {
    return 1;
+   }
+
+uint32_t
+OMR::CodeGenerator::getJitMethodEntryAlignmentThreshold()
+   {
+   return self()->getJitMethodEntryAlignmentBoundary();
    }
 
 int32_t

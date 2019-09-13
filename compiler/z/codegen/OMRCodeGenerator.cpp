@@ -4699,6 +4699,12 @@ OMR::Z::CodeGenerator::getJitMethodEntryAlignmentBoundary()
    return 256;
    }
 
+uint32_t
+OMR::Z::CodeGenerator::getJitMethodEntryAlignmentThreshold()
+   {
+   return 192;
+   }
+
 /**
  * This function sign extended the specified number of high order bits in the register.
  */

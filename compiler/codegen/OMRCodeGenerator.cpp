@@ -109,6 +109,7 @@
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "stdarg.h"
+#include "OMR/Bytes.hpp"
 
 namespace TR { class Optimizer; }
 namespace TR { class RegisterDependencyConditions; }
@@ -2158,22 +2159,21 @@ loop:
 uint8_t *
 OMR::CodeGenerator::alignBinaryBufferCursor()
    {
-   uintptr_t boundary = self()->getJitMethodEntryAlignmentBoundary();
+   uint32_t boundary = self()->getJitMethodEntryAlignmentBoundary();
 
    // Align cursor to boundary as long as it meets the threshold
    if (boundary && (boundary & boundary - 1) == 0)
       {
-      uintptr_t round = boundary - 1;
-      uintptr_t offset = self()->getPreJitMethodEntrySize();
+      uint32_t offset = self()->getPreJitMethodEntrySize();
 
-      uint8_t* alignedBufferCursor = _binaryBufferCursor;
-      alignedBufferCursor += offset;
-      alignedBufferCursor = (uint8_t *)(((uintptr_t)alignedBufferCursor + round) & ~round);
-      alignedBufferCursor -= offset;
+      uint8_t* alignedBinaryBufferCursor = _binaryBufferCursor;
+      alignedBinaryBufferCursor += offset;
+      alignedBinaryBufferCursor = reinterpret_cast<uint8_t*>(OMR::align(reinterpret_cast<size_t>(alignedBinaryBufferCursor), boundary));
+      alignedBinaryBufferCursor -= offset;
 
-      if (alignedBufferCursor - _binaryBufferCursor <= self()->getJitMethodEntryAlignmentThreshold())
+      if (alignedBinaryBufferCursor - _binaryBufferCursor <= self()->getJitMethodEntryAlignmentThreshold())
          {
-         _binaryBufferCursor = alignedBufferCursor;
+         _binaryBufferCursor = alignedBinaryBufferCursor;
          self()->setJitMethodEntryPaddingSize(_binaryBufferCursor - _binaryBufferStart);
          memset(_binaryBufferStart, 0, self()->getJitMethodEntryPaddingSize());
          }

@@ -26,12 +26,10 @@
  * @brief shared library
  */
 
-#define _UNIX03_SOURCE
 
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <dlfcn.h>
 #include <dll.h>
 #include <stdlib.h> /* for malloc */
 
@@ -77,7 +75,11 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 
 	Trc_PRT_sl_open_shared_library_Event1(openName);
 
-	handle = dlopen(openName, RTLD_NOW);
+	/* dllload() can open a handle to the executable with its name itself (unlike NULL
+	 * on other platforms) provided the executable is itself built as a DLL (in XPLINK
+	 * mode), which anyway is required for enabling symbol resolution.
+	 */
+	handle = dllload(openName);
 
 	if ((NULL == handle) && !openExec && decorate && (0 != dirNameLength)) {
 		/* z/OS doesn't support dladdr so we can't search the dir of the portLib for the dll
@@ -86,7 +88,7 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 		openName +=  dirNameLength;
 
 		Trc_PRT_sl_open_shared_library_Event2(openName);
-		handle = dlopen(openName, RTLD_NOW);
+		handle = dllload(openName);
 	}
 
 	if (NULL == handle) {
@@ -118,13 +120,13 @@ uintptr_t
 omrsl_close_shared_library(struct OMRPortLibrary *portLibrary, uintptr_t descriptor)
 {
 	int error;
-	void *handle;
+	dllhandle *handle;
 
 	Trc_PRT_sl_close_shared_library_Entry(descriptor);
 
 	DMESSAGE(("\nClose library %x\n", *descriptor))
-	handle = (void *)descriptor;
-	error = dlclose(handle);
+	handle = (dllhandle *)descriptor;
+	error = dllfree(handle);
 
 	Trc_PRT_sl_close_shared_library_Exit(error);
 	return error;
@@ -166,12 +168,12 @@ uintptr_t
 omrsl_lookup_name(struct OMRPortLibrary *portLibrary, uintptr_t descriptor, char *name, uintptr_t *func, const char *argSignature)
 {
 	void *address;
-	void *handle;
+	dllhandle *handle;
 
 	Trc_PRT_sl_lookup_name_Entry(descriptor, name, argSignature);
 
-	handle = (void *)descriptor;
-	address = dlsym(handle, name);
+	handle = (dllhandle *)descriptor;
+	address = (void *)dllqueryfn(handle, name);
 	if (address == NULL) {
 		Trc_PRT_sl_lookup_name_Exit2(name, argSignature, handle, 1);
 		return 1;

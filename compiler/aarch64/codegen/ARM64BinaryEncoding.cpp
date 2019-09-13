@@ -346,6 +346,7 @@ uint8_t *TR::ARM64Trg1Src1ImmInstruction::generateBinaryEncoding()
    insertTargetRegister(toARM64Cursor(cursor));
    insertSource1Register(toARM64Cursor(cursor));
    insertImmediateField(toARM64Cursor(cursor));
+   insertNbit(toARM64Cursor(cursor));
    cursor += ARM64_INSTRUCTION_LENGTH;
    setBinaryLength(ARM64_INSTRUCTION_LENGTH);
    setBinaryEncoding(instructionStart);

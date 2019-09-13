@@ -2182,6 +2182,12 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
    return _binaryBufferCursor;
    }
 
+bool
+OMR::CodeGenerator::supportsJitMethodEntryAlignment()
+   {
+   return true;
+   }
+
 uint32_t
 OMR::CodeGenerator::getJitMethodEntryAlignmentBoundary()
    {

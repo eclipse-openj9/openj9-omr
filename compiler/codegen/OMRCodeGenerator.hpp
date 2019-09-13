@@ -368,7 +368,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void setNextAvailableBlockIndex(int32_t blockIndex) {}
    int32_t getNextAvailableBlockIndex() { return -1; }
 
-   bool supportsMethodEntryPadding() { return true; }
    bool mustGenerateSwitchToInterpreterPrePrologue() { return false; }
    bool buildInterpreterEntryPoint() { return false; }
    void generateCatchBlockBBStartPrologue(TR::Node *node, TR::Instruction *fenceInstruction) { return; }
@@ -760,6 +759,11 @@ class OMR_EXTENSIBLE CodeGenerator
 
    uint32_t getPreJitMethodEntrySize() {return _preJitMethodEntrySize;}
    uint32_t setPreJitMethodEntrySize(uint32_t s) {return (_preJitMethodEntrySize = s);}
+   
+   /** \brief
+    *     Determines whether the code generator supports or allows JIT-to-JIT method entry point alignment.
+    */
+   bool supportsJitMethodEntryAlignment();
 
    /** \brief
     *     Determines the byte boundary at which to align the JIT-to-JIT method entry point. If the boundary is

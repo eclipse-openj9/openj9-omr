@@ -1685,7 +1685,7 @@ void OMR::Power::CodeGenerator::generateBinaryEncodingPrologue(
       }
 
    int32_t boundary = self()->getJitMethodEntryAlignmentBoundary();
-   if (boundary && (boundary > 4) && ((boundary & (boundary - 1)) == 0))
+   if (boundary > 4)
       {
       self()->setPreJitMethodEntrySize(data->estimate);
       data->estimate += (boundary - 4);

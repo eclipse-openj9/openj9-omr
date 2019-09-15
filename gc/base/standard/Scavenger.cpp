@@ -5242,8 +5242,6 @@ MM_Scavenger::completeConcurrentCycle(MM_EnvironmentBase *env)
 
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
-#endif /* OMR_GC_MODRON_SCAVENGER */
-
 #if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 void
 MM_Scavenger::scavenger_poisonSlots(MM_EnvironmentBase *env)
@@ -5258,3 +5256,6 @@ MM_Scavenger::scavenger_healSlots(MM_EnvironmentBase *env)
 	_delegate.healSlots(env);
 }
 #endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
+
+#endif /* OMR_GC_MODRON_SCAVENGER */
+

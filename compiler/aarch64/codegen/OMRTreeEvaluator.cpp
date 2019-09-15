@@ -261,6 +261,11 @@ OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrimmx, node, tempReg, tempMR);
 
+   if (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
+      {
+      TR::TreeEvaluator::generateVFTMaskInstruction(cg, node, tempReg);
+      }
+
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
    if (needSync)
       {
@@ -699,4 +704,18 @@ OMR::ARM64::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::CodeGenerato
    child->decReferenceCount();
    node->setRegister(trgReg);
    return trgReg;
+   }
+
+TR::Instruction *
+OMR::ARM64::TreeEvaluator::generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *dstReg, TR::Register *srcReg, TR::Instruction *preced)
+   {
+   // Do nothing in OMR
+   return preced;
+   }
+
+TR::Instruction *
+OMR::ARM64::TreeEvaluator::generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *reg, TR::Instruction *preced)
+   {
+   // Do nothing in OMR
+   return preced;
    }

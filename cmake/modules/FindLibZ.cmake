@@ -38,12 +38,26 @@ find_package_handle_standard_args(LibZ
 	ZLIB_H_INCLUDE_DIR
 )
 
-if(LIBZ_FOUND)
-	set(LIBZ_INCLUDE_DIRS
-		${ZLIB_H_INCLUDE_DIR}
+if(NOT LIBZ_FOUND)
+	set(LIBZ_INCLUDE_DIRS NOTFOUND)
+	set(LIBZ_LIBRARIES NOTFOUND)
+	set(LIBZ_DEFINITIONS NOTFOUND)
+	return()
+endif()
+
+# Everything below is only set if the library is found
+
+set(LIBZ_INCLUDE_DIRS ${ZLIB_H_INCLUDE_DIR})
+set(LIBZ_LIBRARIES ${LIBZ_LIBRARY})
+set(LIBZ_DEFINITIONS "")
+
+if(NOT TARGET LibZ::z)
+	add_library(LibZ::z UNKNOWN IMPORTED)
+
+	set_target_properties(LibZ::z
+		PROPERTIES
+			IMPORTED_LOCATION "${LIBZ_LIBRARY}"
+			INTERFACE_INCLUDE_DIRECTORIES "${LIBZ_INCLUDE_DIRS}"
+			INTERFACE_COMPILE_DEFINITIONS "${LIBZ_DEFINITIONS}"
 	)
-	set(LIBZ_LIBRARIES
-		${LIBZ_LIBRARY}
-	)
-	set (LIBZ_DEFINITIONS "")
-endif(LIBZ_FOUND)
+endif()

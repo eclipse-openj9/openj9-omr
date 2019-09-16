@@ -181,6 +181,7 @@ x64/
 
 # CCLS (language server for C/C++)
 .ccls-cache/
+.ccls
 
 # config cmake file for vim autocompletion
 compile_commands.json

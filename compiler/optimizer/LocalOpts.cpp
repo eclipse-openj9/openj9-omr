@@ -8206,7 +8206,7 @@ TR_ColdBlockOutlining::reorderColdBlocks()
 
      // First, check if a predeccessor of this block is genAsmFlow, this block is not it's predeccessor' fall through, continue if yes
      TR::CFGEdgeList & predecessors = ((TR::CFGNode *)currentBlock)->getPredecessors();
-     bool foundAsmGenFlowPredBlock = false;
+
      for (auto predEdge = predecessors.begin(); predEdge != predecessors.end(); ++predEdge)
        {
        TR::Block *predBlock = (*predEdge)->getFrom()->asBlock();
@@ -8217,10 +8217,6 @@ TR_ColdBlockOutlining::reorderColdBlocks()
            currentBlock->getEntry()->getNode()->getLabel() == NULL)
           continue;
        }
-     if (foundAsmGenFlowPredBlock)
-        {
-        continue;
-        }
 
      if (!startBlock)
          startBlock = currentBlock;

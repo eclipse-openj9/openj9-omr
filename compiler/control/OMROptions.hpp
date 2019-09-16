@@ -450,7 +450,7 @@ enum TR_CompilationOptions
 
    // Option word 12
    // Available                               = 0x00000020 + 12,
-   TR_DisableZ13LoadAndMask                   = 0x00000040 + 12,
+   // Available                               = 0x00000040 + 12,
    TR_DisablePartialInlining                  = 0x00000080 + 12,
    TR_AssumeStartupPhaseUntilToldNotTo        = 0x00000100 + 12,
    // Available                               = 0x00000200 + 12,
@@ -845,7 +845,7 @@ enum TR_CompilationOptions
    TR_DisableSIMDArrayCompare                         = 0x00000020 + 26,
    TR_EnableJITHelpersoptimizedClone                  = 0x00000040 + 26,
    TR_DontAllocateScratchBTL                          = 0x00000080 + 26,
-   TR_DisableZ13LoadImmediateOnCond                   = 0x00000100 + 26,
+   // Available                                       = 0x00000100 + 26,
    // Available                                       = 0x00000200 + 26,
    TR_TrustAllInterfaceTypeInfo                       = 0x00000400 + 26,
    TR_DisableRefinedAliases                           = 0x00000800 + 26,

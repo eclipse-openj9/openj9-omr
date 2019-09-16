@@ -697,7 +697,6 @@ OMR_GC_SEGREGATED_HEAP
 OMR_GC_REALTIME
 OMR_GC_OBJECT_ALLOCATION_NOTIFY
 OMR_GC_LEAF_BITS
-OMR_GC_HYBRID_ARRAYLETS
 OMR_GC_CONCURRENT_SWEEP
 OMR_GC_CONCURRENT_SCAVENGER
 OMR_GC_DOUBLE_MAP_ARRAYLETS
@@ -721,7 +720,6 @@ OMR_GC_HEAP_CARD_TABLE
 OMR_GC_DEBUG_ASSERTS
 OMR_GC_COMBINATION_SPEC
 OMR_GC_BATCH_CLEAR_TLH
-OMR_GC_ARRAYLETS
 OMR_GC_ALLOCATION_TAX
 OMR_RTTI
 OMR_EXAMPLE
@@ -835,7 +833,6 @@ enable_OMR_OMRSIG
 enable_OMR_EXAMPLE
 enable_OMR_RTTI
 enable_OMR_GC_ALLOCATION_TAX
-enable_OMR_GC_ARRAYLETS
 enable_OMR_GC_BATCH_CLEAR_TLH
 enable_OMR_GC_COMBINATION_SPEC
 enable_OMR_GC_DEBUG_ASSERTS
@@ -859,7 +856,6 @@ enable_OMR_GC_MODRON_SCAVENGER
 enable_OMR_GC_DOUBLE_MAP_ARRAYLETS
 enable_OMR_GC_CONCURRENT_SCAVENGER
 enable_OMR_GC_CONCURRENT_SWEEP
-enable_OMR_GC_HYBRID_ARRAYLETS
 enable_OMR_GC_LEAF_BITS
 enable_OMR_GC_OBJECT_ALLOCATION_NOTIFY
 enable_OMR_GC_REALTIME
@@ -1581,8 +1577,6 @@ Optional Features:
   --enable-OMR_RTTI       Whether we are building OMR with RTTI. (Default: no)
   --disable-OMR_GC_ALLOCATION_TAX
 
-  --disable-OMR_GC_ARRAYLETS
-
   --disable-OMR_GC_BATCH_CLEAR_TLH
 
   --disable-OMR_GC_COMBINATION_SPEC
@@ -1627,8 +1621,6 @@ Optional Features:
   --enable-OMR_GC_CONCURRENT_SCAVENGER
 
   --enable-OMR_GC_CONCURRENT_SWEEP
-
-  --disable-OMR_GC_HYBRID_ARRAYLETS
 
   --enable-OMR_GC_LEAF_BITS
 
@@ -5517,27 +5509,6 @@ else
 fi
 
 
-# Check whether --enable-OMR_GC_ARRAYLETS was given.
-if test "${enable_OMR_GC_ARRAYLETS+set}" = set; then :
-  enableval=$enable_OMR_GC_ARRAYLETS; if test "x${enableval}" = xyes; then :
-  OMR_GC_ARRAYLETS=1
-
-   $as_echo "#define OMR_GC_ARRAYLETS 1" >>confdefs.h
-
-else
-  OMR_GC_ARRAYLETS=0
-
-
-fi
-else
-  OMR_GC_ARRAYLETS=1
-
-   $as_echo "#define OMR_GC_ARRAYLETS 1" >>confdefs.h
-
-
-fi
-
-
 # Check whether --enable-OMR_GC_BATCH_CLEAR_TLH was given.
 if test "${enable_OMR_GC_BATCH_CLEAR_TLH+set}" = set; then :
   enableval=$enable_OMR_GC_BATCH_CLEAR_TLH; if test "x${enableval}" = xyes; then :
@@ -6008,27 +5979,6 @@ else
 fi
 else
   OMR_GC_CONCURRENT_SWEEP=0
-
-
-fi
-
-
-# Check whether --enable-OMR_GC_HYBRID_ARRAYLETS was given.
-if test "${enable_OMR_GC_HYBRID_ARRAYLETS+set}" = set; then :
-  enableval=$enable_OMR_GC_HYBRID_ARRAYLETS; if test "x${enableval}" = xyes; then :
-  OMR_GC_HYBRID_ARRAYLETS=1
-
-   $as_echo "#define OMR_GC_HYBRID_ARRAYLETS 1" >>confdefs.h
-
-else
-  OMR_GC_HYBRID_ARRAYLETS=0
-
-
-fi
-else
-  OMR_GC_HYBRID_ARRAYLETS=1
-
-   $as_echo "#define OMR_GC_HYBRID_ARRAYLETS 1" >>confdefs.h
 
 
 fi

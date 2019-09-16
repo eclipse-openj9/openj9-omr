@@ -373,7 +373,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool buildInterpreterEntryPoint() { return false; }
    void generateCatchBlockBBStartPrologue(TR::Node *node, TR::Instruction *fenceInstruction) { return; }
    bool supportsUnneededLabelRemoval() { return true; }
-   bool allowSplitWarmAndColdBlocks() { return false; }
 
    TR_HasRandomGenerator randomizer;
 

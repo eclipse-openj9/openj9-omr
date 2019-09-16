@@ -50,16 +50,15 @@ using std::string;
 using std::stringstream;
 using std::vector;
 
-#if defined(OMR_HAVE_TR1)
+#if defined(OMR_HAVE_CXX11)
+using std::get;
+using std::make_tuple;
+using std::tuple;
+#else /* OMR_HAVE_CXX11 */
 using std::tr1::get;
 using std::tr1::make_tuple;
 using std::tr1::tuple;
-#else /* OMR_HAVE_TR1 */
-using std::get;
-using std::make_tuple;
-using std::runtime_error;
-using std::tuple;
-#endif /* OMR_HAVE_TR1 */
+#endif /* OMR_HAVE_CXX11 */
 
 struct Dwarf_Attribute_s;
 struct Dwarf_Debug_s;
@@ -139,6 +138,10 @@ typedef vector<string> str_vect;
 #define DW_FORM_udata 0x05
 #define DW_FORM_sdata 0x06
 #define DW_FORM_string 0x07
+#define DW_FORM_block  0x08
+#define DW_FORM_block1 0x09
+#define DW_FORM_block2 0x0a
+#define DW_FORM_block4 0x0b
 #define DW_FORM_flag 0x0c
 #define DW_FORM_exprloc 0x18
 

@@ -38,7 +38,7 @@ target_link_libraries(j9avl
 
 target_include_directories(j9avl
 	PUBLIC
-		$<BUILD_INTERFACE:${OMR_SOURCE_DIR}/include_core>
+		$<BUILD_INTERFACE:${omr_SOURCE_DIR}/include_core>
 		$<INSTALL_INTERFACE:${OMR_INSTALL_INC_DIR}>
 	PRIVATE
 		.

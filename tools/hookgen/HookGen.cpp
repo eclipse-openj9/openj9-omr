@@ -540,7 +540,6 @@ RCType
 HookGen::parseOptions(int argc, char *argv[])
 {
 	for (int i = 1; i < argc; i++) {
-		printf("%d: %s\n", i, argv[i]);
 		if (0 == strcmp(argv[i], "-v")) {
 			_verbose = true;
 		} else {

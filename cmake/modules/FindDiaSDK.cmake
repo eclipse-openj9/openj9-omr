@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,8 +56,25 @@ find_package_handle_standard_args(DiaSDK
 	DIA2_H_DIR
 )
 
-if(DIASDK_FOUND)
-	set(DIASDK_DEFINITIONS -DHAVE_DIA)
-	set(DIASDK_INCLUDE_DIRS ${DIA2_H_DIR})
-	set(DIASDK_LIBRARIES ${DIAGUIDS_LIBRARY})
-endif(DIASDK_FOUND)
+if(NOT DIASDK_FOUND)
+	set(DIASDK_DEFINITIONS NOTFOUND)
+	set(DIASDK_INCLUDE_DIRS NOTFOUND)
+	set(DIASDK_LIBRARIES NOTFOUND)
+	return()
+endif()
+
+# Everything below is only set if the library is found
+
+set(DIASDK_DEFINITIONS -DHAVE_DIA)
+set(DIASDK_INCLUDE_DIRS ${DIA2_H_DIR})
+set(DIASDK_LIBRARIES ${DIAGUIDS_LIBRARY})
+
+if(NOT TARGET DiaSDK::dia)
+	add_library(DiaSDK::diasdk UNKNOWN IMPORTED)
+	set_target_properties(DiaSDK::diasdk
+		PROPERTIES
+			IMPORTED_LOCATION "${DIAGUIDS_LIBRARY}"
+			INTERFACE_INCLUDE_DIRECTORIES "${DIASDK_INCLUDE_DIRS}"
+			INTERFACE_COMPILE_DEFINITIONS "${DIASDK_DEFINITIONS}"
+	)
+endif()

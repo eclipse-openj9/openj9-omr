@@ -279,7 +279,7 @@ template <typename L, typename R>
 std::vector<std::tuple<L, R>> combine(std::vector<L> l, std::vector<R> r)
    {
    auto v = std::vector<std::tuple<L, R>>();
-   v.reserve((l.end() - l.begin())*(r.end() - r.begin()));
+   v.reserve(l.size() * r.size());
    for (auto i = l.begin(); i != l.end(); ++i)
       for (auto j = r.begin(); j != r.end(); ++j)
          v.push_back(std::make_tuple(*i, *j));

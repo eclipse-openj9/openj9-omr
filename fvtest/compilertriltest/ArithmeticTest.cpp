@@ -317,6 +317,10 @@ TEST_P(UInt64Arithmetic, UsingLoadParam) {
 }
 
 TEST_P(Int16Arithmetic, UsingConst) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
@@ -346,6 +350,10 @@ TEST_P(Int16Arithmetic, UsingConst) {
 }
 
 TEST_P(Int16Arithmetic, UsingLoadParam) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
@@ -371,6 +379,10 @@ TEST_P(Int16Arithmetic, UsingLoadParam) {
 }
 
 TEST_P(Int8Arithmetic, UsingConst) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
@@ -400,6 +412,10 @@ TEST_P(Int8Arithmetic, UsingConst) {
 }
 
 TEST_P(Int8Arithmetic, UsingLoadParam) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+        
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};

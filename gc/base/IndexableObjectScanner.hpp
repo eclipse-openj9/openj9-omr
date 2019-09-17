@@ -65,7 +65,7 @@ protected:
 		, uintptr_t elementSize
 		, uintptr_t flags
 	)
-		: GC_ObjectScanner(env, arrayPtr, scanPtr, scanMap, flags | GC_ObjectScanner::indexableObject)
+		: GC_ObjectScanner(env, scanPtr, scanMap, flags | GC_ObjectScanner::indexableObject)
 		, _arrayPtr(arrayPtr)
 		, _endPtr(endPtr)
 		, _basePtr(basePtr)

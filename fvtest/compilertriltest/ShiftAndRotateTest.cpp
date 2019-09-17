@@ -1204,7 +1204,7 @@ TEST_P(Int64MaskThenShift, UsingLoadParam) {
         "      (%s"
         "        (land"
         "          (lload parm=0)"
-        "          (lconst %" PRIu64 "))"
+        "          (lconst %" PRId64 "))"
         "        (iconst %d)))))",
         param.opcode.c_str(),
         param.mask,
@@ -1274,7 +1274,7 @@ TEST_P(Int32MaskThenShift, UsingLoadParam) {
         "      (%s"
         "        (iand"
         "          (iload parm=0)"
-        "          (iconst %u))"
+        "          (iconst %d))"
         "        (iconst %d)))))",
         param.opcode.c_str(),
         param.mask,
@@ -1346,7 +1346,7 @@ TEST_P(Int16MaskThenShift, UsingLoadParam) {
         "        (%s"
         "          (sand"
         "            (sload parm=0)"
-        "            (sconst %u))"
+        "            (sconst %d))"
         "          (iconst %d))))))",
         param.opcode.c_str(),
         param.mask,
@@ -1418,7 +1418,7 @@ TEST_P(Int8MaskThenShift, UsingLoadParam) {
         "        (%s"
         "          (band"
         "            (bload parm=0)"
-        "            (bconst %u))"
+        "            (bconst %d))"
         "          (iconst %d))))))",
         param.opcode.c_str(),
         param.mask,

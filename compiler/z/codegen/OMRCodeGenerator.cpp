@@ -2463,7 +2463,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    static char *disableAlignJITEP = feGetEnv("TR_DisableAlignJITEP");
 
    // Adjust the binary buffer cursor with appropriate padding.
-   if (!disableAlignJITEP && !self()->comp()->compileRelocatableCode() && self()->allowSplitWarmAndColdBlocks())
+   if (!disableAlignJITEP && !self()->comp()->compileRelocatableCode())
       {
       int32_t alignedBase = 256 - self()->getPreprologueOffset();
       int32_t padBase = ( 256 + alignedBase - ((intptrj_t)temp) % 256) % 256;

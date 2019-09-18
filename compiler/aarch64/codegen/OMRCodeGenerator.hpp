@@ -299,6 +299,9 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     */
    bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress);
 
+   // OutOfLineCodeSection List functions
+   TR::list<TR_ARM64OutOfLineCodeSection*> &getARM64OutOfLineCodeSectionList() {return _outOfLineCodeSectionList;}
+
    private:
 
    enum // flags

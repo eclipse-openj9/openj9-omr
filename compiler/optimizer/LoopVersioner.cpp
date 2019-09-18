@@ -4285,6 +4285,13 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       else
          removedNodes.add(_curLoop->_definitelyRemovableNodes);
 
+      if (trace())
+         {
+         traceMsg(comp(), "privatizationOK: %d : removedNodes ", _curLoop->_privatizationOK);
+         removedNodes.print(comp());
+         traceMsg(comp(), "\n");
+         }
+
       LoopBodySearch search(
          comp(),
          _curLoop->_memRegion,
@@ -4295,8 +4302,13 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       for (; search.hasTreeTop(); search.advance())
          {
          TR::TreeTop *tt = search.currentTreeTop();
+         if (removedNodes.contains(tt->getNode()))
+            continue;
+
          if (comp()->isPotentialOSRPoint(tt->getNode(), NULL, true))
             {
+            if (trace())
+               traceMsg(comp(), "safeToRemoveOSRGuards false due to potential OSR point at n%dn\n", tt->getNode()->getGlobalIndex());
             safeToRemoveOSRGuards = false;
             break;
             }
@@ -4305,6 +4317,13 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             osrGuard = tt->getNode();
             seenOSRGuards = true;
             removedNodes.add(osrGuard); // Don't search the taken side.
+            if (trace())
+               traceMsg(comp(), "adding OSRGuard n%dn to the list of removedNodes\n", osrGuard->getGlobalIndex());
+            }
+         else
+            {
+            if (trace())
+               traceMsg(comp(), "osrGuardSafety traversed n%dn\n", tt->getNode()->getGlobalIndex());
             }
          }
 

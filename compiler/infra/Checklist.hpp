@@ -47,6 +47,7 @@ class Checklist
    Checklist(TR::Compilation* c);
    ~Checklist();
    bool isEmpty(){ return _v->isEmpty(); }
+   void print(TR::Compilation *c) { _v->print(c); }
    };
 
 class NodeChecklist: public Checklist

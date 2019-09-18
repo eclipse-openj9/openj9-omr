@@ -1267,7 +1267,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
             {
             (*nodeInfo)[node] = std::make_pair<int32_t, TR::Node*>(node->getReferenceCount() - 1, NULL);
             }
-         else if (entry->second.first > 1)
+         else if (entry != nodeInfo->end() && entry->second.first > 1)
             {
             entry->second.first -= 1;
             }
@@ -1281,7 +1281,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          // Record the last used RegStore for the node before split point
          if (node->getOpCode().isStoreReg())
             {
-            (*storeNodeInfo)[node->getFirstChild()] = node;
+            storeNodeInfo->insert(std::make_pair(node->getFirstChild(), node));
             }
          }
 

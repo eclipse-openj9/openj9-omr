@@ -44,6 +44,13 @@ target_include_directories(omrport_obj
 		$<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
+if (OMR_OPT_CUDA)
+	target_include_directories(omrport_obj
+		PRIVATE
+			${CUDA_INCLUDE_DIRS}
+	)
+endif()
+
 target_compile_definitions(omrport_obj
 	PUBLIC
 		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>

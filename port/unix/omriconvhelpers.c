@@ -42,11 +42,13 @@
 const char *utf8 = "UTF-8";
 #if defined(J9ZOS390)
 const char *utf16 = "01200"; /* z/OS does not accept "UTF-16" */
-#elif defined(OSX) /* defined(J9ZOS390) */
+#elif defined(AIXPPC) /* defined(J9ZOS390) */
+const char *utf16 = "UTF-16"; /* AIX does not accept UTF-16BE */
+#elif defined(OMR_ENV_LITTLE_ENDIAN) /* defined(AIXPPC) */
 const char *utf16 = "UTF-16LE";
-#else /* defined(J9ZOS390) */
-const char *utf16 = "UTF-16";
-#endif /* defined(J9ZOS390) */
+#else /* defined(OMR_ENV_LITTLE_ENDIAN) */
+const char *utf16 = "UTF-16BE";
+#endif /* defined(OMR_ENV_LITTLE_ENDIAN) */
 const char *ebcdic = "IBM-1047";
 #if defined(J9ZOS390)
 #pragma convlit(resume)

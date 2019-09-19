@@ -80,6 +80,10 @@ class Int64Arithmetic : public TRTest::BinaryOpTest<int64_t> {};
 
 class UInt64Arithmetic : public TRTest::BinaryOpTest<uint64_t> {};
 
+class Int16Arithmetic : public TRTest::BinaryOpTest<int16_t> {};
+
+class Int8Arithmetic : public TRTest::BinaryOpTest<int8_t> {};
+
 TEST_P(Int32Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
@@ -312,6 +316,130 @@ TEST_P(UInt64Arithmetic, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
 
+TEST_P(Int16Arithmetic, UsingConst) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int16"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (sconst %" OMR_PRId16 ")"
+      "        (sconst %" OMR_PRId16 ")))))",
+      param.opcode.c_str(),
+      param.lhs,
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int16_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int16Arithmetic, UsingLoadParam) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int16 args=[Int16, Int16]"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (sload parm=0)"
+      "        (sload parm=1)))))",
+      param.opcode.c_str()
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int16_t (*)(int16_t, int16_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
+}
+
+TEST_P(Int8Arithmetic, UsingConst) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int8"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (bconst %" OMR_PRId8 ")"
+      "        (bconst %" OMR_PRId8 ")))))",
+      param.opcode.c_str(),
+      param.lhs,
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int8_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int8Arithmetic, UsingLoadParam) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+        
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int8 args=[Int8, Int8]"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (bload parm=0)"
+      "        (bload parm=1)))))",
+      param.opcode.c_str()
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int8_t (*)(int8_t, int8_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
+}
+
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
     ::testing::Values(
@@ -326,6 +454,18 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int64Arithmetic, ::testing::Combine(
         std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("ladd", add),
         std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lsub", sub),
         std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lmul", mul))));
+
+INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int16Arithmetic, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<int16_t, int16_t>()),
+    ::testing::Values(
+        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("sadd", add<int16_t>),
+        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("ssub", sub<int16_t>))));
+
+INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int8Arithmetic, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<int8_t, int8_t>()),
+    ::testing::Values(
+        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("badd", add<int8_t>),
+        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bsub", sub<int8_t>))));
 
 /**
  * @brief Filter function for *div opcodes

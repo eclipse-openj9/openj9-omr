@@ -3035,7 +3035,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
-         generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
+         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, trueReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
          }
       else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
@@ -3101,7 +3101,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
-         generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
+         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, trueReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
          }
       else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {

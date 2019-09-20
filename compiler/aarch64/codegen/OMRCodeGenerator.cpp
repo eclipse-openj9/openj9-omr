@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "codegen/ARM64Instruction.hpp"
+#include "codegen/ARM64OutOfLineCodeSection.hpp"
 #include "codegen/ARM64SystemLinkage.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
@@ -265,6 +266,28 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
       self()->setBinaryBufferCursor(cursorInstruction->generateBinaryEncoding());
       self()->addToAtlas(cursorInstruction);
       cursorInstruction = cursorInstruction->getNext();
+      }
+
+   // Create exception table entries for outlined instructions.
+   //
+   if (!self()->comp()->getOption(TR_DisableOOL))
+      {
+      auto oiIterator = self()->getARM64OutOfLineCodeSectionList().begin();
+      while (oiIterator != self()->getARM64OutOfLineCodeSectionList().end())
+         {
+         uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
+         uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
+
+         TR::Block * block = (*oiIterator)->getBlock();
+         bool needsETE = (*oiIterator)->getFirstInstruction()->getNode()->getOpCode().hasSymbolReference() &&
+                         (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference() &&
+                         (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference()->canCauseGC();
+
+         if (needsETE && block && !block->getExceptionSuccessors().empty())
+            block->addExceptionRangeForSnippet(startOffset, endOffset);
+
+         ++oiIterator;
+         }
       }
    }
 

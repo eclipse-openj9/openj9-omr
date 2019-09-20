@@ -1382,6 +1382,8 @@ static std::vector<uint32_t> normalize_fnan_values()
       0xBF800000u, // -1.0
       0x7F800000u, // inf
       0xFF800000u, // -inf
+      0x7F800001u, // snan
+      0xFF800001u, // -snan
       0x7FC00000u, // nan
       0xFFC00000u, // -nan
       0x7FFFFFFFu, // nan(0x7fffff)
@@ -1399,6 +1401,8 @@ static std::vector<uint64_t> normalize_dnan_values()
       0xBFF0000000000000ull, // -1.0
       0x7FF0000000000000ull, // inf
       0xFFF0000000000000ull, // -inf
+      0x7FF0000000000001ull, // snan
+      0xFFF0000000000001ull, // -snan
       0x7FF8000000000000ull, // nan
       0xFFF8000000000000ull, // -nan
       0x7FFFFFFFFFFFFFFFull, // nan(0xfffffffff)

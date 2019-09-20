@@ -480,7 +480,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
 
 #ifdef J9_PROJECT_SPECIFIC
          TR_ResolvedMethod * method = resolvedMethodSymbol->getResolvedMethod();
-         TR_PersistentMethodInfo * methodInfo = TR_PersistentMethodInfo::get(method);
+         TR_PersistentMethodInfo * methodInfo = comp->getRecompilationInfo() ? TR_PersistentMethodInfo::get(method) : NULL;
          if (methodInfo && (methodInfo->hasRefinedAliasSets() ||
                             comp->getMethodHotness() >= veryHot ||
                             resolvedMethodSymbol->hasVeryRefinedAliasSets()) &&

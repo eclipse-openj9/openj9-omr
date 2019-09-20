@@ -318,9 +318,6 @@ public:
    static TR::Node *bconst(TR::Node *originatingByteCodeNode, int8_t val);
    static TR::Node *bconst(int8_t val);
 
-   static TR::Node *buconst(TR::Node *originatingByteCodeNode, uint8_t val);
-   static TR::Node *buconst(uint8_t val);
-
    static TR::Node *sconst(TR::Node *originatingByteCodeNode, int16_t val);
    static TR::Node *sconst(int16_t val);
 
@@ -330,14 +327,8 @@ public:
    static TR::Node *iconst(TR::Node *originatingByteCodeNode, int32_t val);
    static TR::Node *iconst(int32_t val);
 
-   static TR::Node *iuconst(TR::Node *originatingByteCodeNode, uint32_t val);
-   static TR::Node *iuconst(uint32_t val);
-
    static TR::Node *lconst(TR::Node *originatingByteCodeNode, int64_t val);
    static TR::Node *lconst(int64_t val);
-
-   static TR::Node *luconst(TR::Node *originatingByteCodeNode, uint64_t val);
-   static TR::Node *luconst(uint64_t val);
 
    static TR::Node *aconst(TR::Node *originatingByteCodeNode, uintptrj_t val);
    static TR::Node *aconst(TR::Node *originatingByteCodeNode, uintptrj_t val, uint8_t precision);

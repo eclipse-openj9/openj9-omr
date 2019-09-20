@@ -1351,21 +1351,6 @@ OMR::Node::bconst(int8_t val)
 
 
 
-TR::Node *
-OMR::Node::buconst(TR::Node *originatingByteCodeNode, uint8_t val)
-   {
-   TR::Node *r = TR::Node::create(originatingByteCodeNode, TR::buconst);
-   r->setUnsignedByte(val);
-   return r;
-   }
-
-TR::Node *
-OMR::Node::buconst(uint8_t val)
-   {
-   return TR::Node::buconst(0, val);
-   }
-
-
 
 TR::Node *
 OMR::Node::sconst(TR::Node *originatingByteCodeNode, int16_t val)
@@ -1386,7 +1371,7 @@ OMR::Node::sconst(int16_t val)
 TR::Node *
 OMR::Node::cconst(TR::Node *originatingByteCodeNode, uint16_t val)
    {
-   TR::Node *r = TR::Node::create(originatingByteCodeNode, TR::cconst);
+   TR::Node *r = TR::Node::create(originatingByteCodeNode, TR::sconst);
    r->setUnsignedShortInt(val);
    return r;
    }
@@ -1411,21 +1396,6 @@ OMR::Node::iconst(int32_t val)
    return TR::Node::iconst(0, val);
    }
 
-
-TR::Node *
-OMR::Node::iuconst(TR::Node *originatingByteCodeNode, uint32_t val)
-   {
-   return TR::Node::create(originatingByteCodeNode, TR::iuconst, 0, (int32_t)val);
-   }
-
-TR::Node *
-OMR::Node::iuconst(uint32_t val)
-   {
-   return TR::Node::iuconst(0, val);
-   }
-
-
-
 TR::Node *
 OMR::Node::lconst(TR::Node *originatingByteCodeNode, int64_t val)
    {
@@ -1438,22 +1408,6 @@ TR::Node *
 OMR::Node::lconst(int64_t val)
    {
    return TR::Node::lconst(0, val);
-   }
-
-
-
-TR::Node *
-OMR::Node::luconst(TR::Node *originatingByteCodeNode, uint64_t val)
-   {
-   TR::Node *r = TR::Node::create(originatingByteCodeNode, TR::luconst);
-   r->setUnsignedLongInt(val);
-   return r;
-   }
-
-TR::Node *
-OMR::Node::luconst(uint64_t val)
-   {
-   return TR::Node::luconst(0, val);
    }
 
 

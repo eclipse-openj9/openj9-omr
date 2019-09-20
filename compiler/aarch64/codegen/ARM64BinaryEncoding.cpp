@@ -268,10 +268,33 @@ uint8_t *TR::ARM64AdminInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    TR::InstOpCode::Mnemonic op = getOpCodeValue();
+   int32_t i;
 
-   if (op != OMR::InstOpCode::proc && op != OMR::InstOpCode::fence && op != OMR::InstOpCode::retn)
+   if (op == OMR::InstOpCode::fence)
       {
-      TR_ASSERT(false, "Unsupported opcode in AdminInstruction.");
+      TR::Node *fenceNode = getFenceNode();
+      uint32_t rtype = fenceNode->getRelocationType();
+      if (rtype == TR_AbsoluteAddress)
+         {
+         for (i = 0; i < fenceNode->getNumRelocations(); i++)
+            {
+            *(uint8_t **)(fenceNode->getRelocationDestination(i)) = instructionStart;
+            }
+         }
+      else if (rtype == TR_EntryRelative16Bit)
+         {
+         for (i = 0; i < fenceNode->getNumRelocations(); i++)
+            {
+            *(uint16_t *)(fenceNode->getRelocationDestination(i)) = (uint16_t)cg()->getCodeLength();
+            }
+         }
+      else // TR_EntryRelative32Bit
+         {
+         for (i = 0; i < fenceNode->getNumRelocations(); i++)
+            {
+            *(uint32_t *)(fenceNode->getRelocationDestination(i)) = cg()->getCodeLength();
+            }
+         }
       }
 
    setBinaryLength(0);

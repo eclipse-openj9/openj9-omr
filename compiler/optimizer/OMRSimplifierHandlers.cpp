@@ -13146,7 +13146,7 @@ TR::Node *ificmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       }
 
    if (node->getOpCodeValue() == TR::ificmpeq)
-      intCompareNarrower(node, s, TR::ifsucmpeq, TR::ifscmpeq, TR::ifbcmpeq);
+      intCompareNarrower(node, s, TR::ifscmpeq, TR::ifscmpeq, TR::ifbcmpeq);
    else
       unsignedIntCompareNarrower(node, s, TR::ifscmpeq, TR::ifbcmpeq);
 
@@ -13251,7 +13251,7 @@ TR::Node *ificmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       }
 
    if (node->getOpCodeValue() == TR::ificmpne)
-      intCompareNarrower(node, s, TR::ifsucmpne, TR::ifscmpne, TR::ifbcmpne);
+      intCompareNarrower(node, s, TR::ifscmpne, TR::ifscmpne, TR::ifbcmpne);
    else
       unsignedIntCompareNarrower(node, s, TR::ifscmpne, TR::ifbcmpne);
 
@@ -13473,7 +13473,7 @@ TR::Node *iflcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
    if (node->getOpCodeValue() == TR::iflcmpeq)
       {
-      longCompareNarrower(node, s, TR::ificmpeq, TR::ifsucmpeq, TR::ifscmpeq, TR::ifbcmpeq);
+      longCompareNarrower(node, s, TR::ificmpeq, TR::ifscmpeq, TR::ifscmpeq, TR::ifbcmpeq);
       }
 
    removeArithmeticsUnderIntegralCompare(node, s);
@@ -13511,7 +13511,7 @@ TR::Node *iflcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
    if (node->getOpCodeValue() == TR::iflcmpne)
       {
-      longCompareNarrower(node, s, TR::ificmpne, TR::ifsucmpne, TR::ifscmpne, TR::ifbcmpne);
+      longCompareNarrower(node, s, TR::ificmpne, TR::ifscmpne, TR::ifscmpne, TR::ifbcmpne);
       }
    addressCompareConversion(node, s);
    removeArithmeticsUnderIntegralCompare(node, s);

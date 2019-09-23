@@ -2604,14 +2604,7 @@ OMR::IlBuilder::Switch(const char *selectionVar,
                   uint32_t numCases,
                   JBCase **cases)
    {
-   TR::IlValue *selectorValue = Load(selectionVar);
-   TR_ASSERT_FATAL(selectorValue->getDataType() == TR::Int32, "Switch only supports selector having type Int32");
-   *defaultBuilder = createBuilderIfNeeded(*defaultBuilder);
-
-   TR::Node *defaultNode = TR::Node::createCase(0, (*defaultBuilder)->getEntry()->getEntry());
-   TR::Node *lookupNode = TR::Node::create(TR::lookup, numCases + 2, loadValue(selectorValue), defaultNode);
-
-   generateSwitchCases(lookupNode, defaultNode, defaultBuilder, numCases, cases);
+   Switch(Load(selectionVar), defaultBuilder, numCases, cases);
    }
 
 void
@@ -2626,6 +2619,35 @@ OMR::IlBuilder::Switch(const char *selectionVar,
    va_end(args);
 
    Switch(selectionVar, defaultBuilder, numCases, cases);
+   }
+
+void
+OMR::IlBuilder::Switch(TR::IlValue *selectorValue,
+                  TR::IlBuilder **defaultBuilder,
+                  uint32_t numCases,
+                  JBCase **cases)
+   {
+   TR_ASSERT_FATAL(selectorValue->getDataType() == TR::Int32, "Switch only supports selector having type Int32");
+   *defaultBuilder = createBuilderIfNeeded(*defaultBuilder);
+
+   TR::Node *defaultNode = TR::Node::createCase(0, (*defaultBuilder)->getEntry()->getEntry());
+   TR::Node *lookupNode = TR::Node::create(TR::lookup, numCases + 2, loadValue(selectorValue), defaultNode);
+
+   generateSwitchCases(lookupNode, defaultNode, defaultBuilder, numCases, cases);
+   }
+
+void
+OMR::IlBuilder::Switch(TR::IlValue *selectorValue,
+                  TR::IlBuilder **defaultBuilder,
+                  uint32_t numCases,
+                  ...)
+   {
+   va_list args;
+   va_start(args, numCases);
+   JBCase **cases = createCaseArray(numCases, args);
+   va_end(args);
+
+   Switch(selectorValue, defaultBuilder, numCases, cases);
    }
 
 void

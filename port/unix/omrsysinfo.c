@@ -97,7 +97,7 @@
 #endif /* defined(__STDC_ISO_10646__) || defined(LINUX) || defined(OSX) */
 
 /* a2e overrides nl_langinfo to return ASCII strings. We need the native EBCDIC string */
-#if defined(J9ZOS390) && defined (nl_langinfo)
+#if defined(J9ZOS390) && defined(nl_langinfo)
 #undef nl_langinfo
 #endif
 
@@ -125,7 +125,7 @@
 #include <sys/sysconfig.h>
 #include <assert.h>
 
-#if defined( OMR_ENV_DATA64 )
+#if defined(OMR_ENV_DATA64)
 #define LIBC_NAME "/usr/lib/libc.a(shr_64.o)"
 #else
 #define LIBC_NAME "/usr/lib/libc.a(shr.o)"
@@ -205,56 +205,56 @@ struct  {
 	int resource;
 	char *resourceName;
 } limitMap[] = {
-#if defined RLIMIT_AS
+#if defined(RLIMIT_AS)
 	{RLIMIT_AS, "RLIMIT_AS"},
 #endif
-#if defined RLIMIT_CORE
+#if defined(RLIMIT_CORE)
 	{RLIMIT_CORE, "RLIMIT_CORE"},
 #endif
-#if defined RLIMIT_CPU
+#if defined(RLIMIT_CPU)
 	{RLIMIT_CPU, "RLIMIT_CPU"},
 #endif
-#if defined RLIMIT_DATA
+#if defined(RLIMIT_DATA)
 	{RLIMIT_DATA, "RLIMIT_DATA"},
 #endif
-#if defined RLIMIT_FSIZE
+#if defined(RLIMIT_FSIZE)
 	{RLIMIT_FSIZE, "RLIMIT_FSIZE"},
 #endif
-#if defined RLIMIT_LOCKS
+#if defined(RLIMIT_LOCKS)
 	{RLIMIT_LOCKS, "RLIMIT_LOCKS"},
 #endif
-#if defined RLIMIT_MEMLOCK
+#if defined(RLIMIT_MEMLOCK)
 	{RLIMIT_MEMLOCK, "RLIMIT_MEMLOCK"},
 #endif
-#if defined RLIMIT_NOFILE
+#if defined(RLIMIT_NOFILE)
 	{RLIMIT_NOFILE, "RLIMIT_NOFILE"},
 #endif
-#if defined RLIMIT_THREADS
+#if defined(RLIMIT_THREADS)
 	{RLIMIT_THREADS, "RLIMIT_THREADS"},
 #endif
-#if defined RLIMIT_NPROC
+#if defined(RLIMIT_NPROC)
 	{RLIMIT_NPROC, "RLIMIT_NPROC"},
 #endif
-#if defined RLIMIT_RSS
+#if defined(RLIMIT_RSS)
 	{RLIMIT_RSS, "RLIMIT_RSS"},
 #endif
-#if defined RLIMIT_STACK
+#if defined(RLIMIT_STACK)
 	{RLIMIT_STACK, "RLIMIT_STACK"},
 #endif
-#if defined RLIMIT_MSGQUEUE
+#if defined(RLIMIT_MSGQUEUE)
 	{RLIMIT_MSGQUEUE, "RLIMIT_MSGQUEUE"}, /* since Linux 2.6.8 */
 #endif
-#if defined RLIMIT_NICE
+#if defined(RLIMIT_NICE)
 	{RLIMIT_NICE, "RLIMIT_NICE"}, /* since Linux 2.6.12*/
 #endif
-#if defined RLIMIT_RTPRIO
+#if defined(RLIMIT_RTPRIO)
 	{RLIMIT_RTPRIO, "RLIMIT_RTPRIO"}, /* since Linux 2.6.12 */
 #endif
-#if defined RLIMIT_SIGPENDING
-	{RLIMIT_SIGPENDING, "RLIMIT_SIGPENDING"} /* since linux 2.6.8 */
+#if defined(RLIMIT_SIGPENDING)
+	{RLIMIT_SIGPENDING, "RLIMIT_SIGPENDING"}, /* since linux 2.6.8 */
 #endif
-#if defined RLIMIT_MEMLIMIT
-	{RLIMIT_MEMLIMIT, "RLIMIT_MEMLIMIT"} /* likely z/OS only */
+#if defined(RLIMIT_MEMLIMIT)
+	{RLIMIT_MEMLIMIT, "RLIMIT_MEMLIMIT"}, /* likely z/OS only */
 #endif
 };
 
@@ -531,7 +531,6 @@ omrsysinfo_get_CPU_architecture(struct OMRPortLibrary *portLibrary)
 #endif
 }
 
-
 intptr_t
 omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char *infoString, uintptr_t bufSize)
 {
@@ -547,7 +546,6 @@ omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char 
 		return 0;
 	}
 }
-
 
 const char *
 omrsysinfo_get_OS_type(struct OMRPortLibrary *portLibrary)
@@ -585,7 +583,7 @@ omrsysinfo_get_OS_type(struct OMRPortLibrary *portLibrary)
 #endif
 }
 
-#if defined (OSX)
+#if defined(OSX)
 #define KERN_OSPRODUCTVERSION "kern.osproductversion"
 #define PLIST_FILE "/System/Library/CoreServices/SystemVersion.plist"
 #define PRODUCT_VERSION_ELEMENT "<key>ProductVersion</key>"
@@ -608,7 +606,7 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 {
 	if (NULL == PPG_si_osVersion) {
 		int rc = -1;
-#if defined (OSX)
+#if defined(OSX)
 		char *versionString = NULL;
 		char *allocatedFileBuffer = NULL;
 #else
@@ -617,7 +615,7 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 
 #ifdef J9ZOS390
 		rc = __osname(&sysinfo);
-#elif defined (OSX)
+#elif defined(OSX)
 		/* uname() on MacOS returns the version of the Darwin kernel, not the operating system product name.
 		 * For compatibility with the reference implementation,
 		 * we need the operating system product name.
@@ -692,7 +690,7 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 			if (NULL != buffer) {
 				portLibrary->str_printf(portLibrary, buffer, len, FORMAT_STRING, sysinfo.version, sysinfo.release);
 			}
-#elif defined (OSX)
+#elif defined(OSX)
 			len = resultSize + 1;
 			buffer = portLibrary->mem_allocate_memory(portLibrary, len, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 			if (NULL != buffer) {
@@ -718,7 +716,6 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 	}
 	return PPG_si_osVersion;
 }
-
 
 uintptr_t
 omrsysinfo_get_pid(struct OMRPortLibrary *portLibrary)
@@ -2003,7 +2000,7 @@ omrsysinfo_get_physical_memory(struct OMRPortLibrary *portLibrary)
 	}
 #endif /* defined(LINUX) */
 
-#if defined (RS6000)
+#if defined(RS6000)
 	/* physmem is not a field in the system_configuration struct */
 	/* on systems with 43K headers. However, this is not an issue as we only support AIX 5.2 and above only */
 	result = (uint64_t) _system_configuration.physmem;
@@ -2022,9 +2019,9 @@ omrsysinfo_get_physical_memory(struct OMRPortLibrary *portLibrary)
 	}
 #elif defined(OMRZTPF)
 	result = getPhysicalMemory();
-#else /* defined (RS6000) */
+#else /* defined(RS6000) */
 	result = getPhysicalMemory(portLibrary);
-#endif /* defined (RS6000) */
+#endif /* defined(RS6000) */
 	return result;
 }
 
@@ -2111,7 +2108,6 @@ omrsysinfo_shutdown(struct OMRPortLibrary *portLibrary)
 #endif /* defined(LINUX) */
 	}
 }
-
 
 int32_t
 omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
@@ -2477,7 +2473,6 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 	return rc;
 }
 
-
 static uint32_t
 getLimitSharedMemory(struct OMRPortLibrary *portLibrary, uint64_t *limit)
 {
@@ -2527,7 +2522,6 @@ errorReturn:
 	return OMRPORT_LIMIT_UNKNOWN;
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 }
-
 
 intptr_t
 omrsysinfo_get_load_average(struct OMRPortLibrary *portLibrary, struct J9PortSysInfoLoadData *loadAverageData)
@@ -2642,7 +2636,7 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 	cpuTime->numberOfCpus = Xj9GetEntitledProcessorCapacity() / 100;
 	/*Xj9GetSysCPUTime() is newly added to retrieve System CPU Time fromILE.*/
 	cpuTime->cpuTime = Xj9GetSysCPUTime();
-	status = 0;	
+	status = 0;
 #elif defined(AIXPPC) /* AIX */
 	perfstat_cpu_total_t stats;
 	const uintptr_t NS_PER_CPU_TICK = 10000000L;
@@ -2860,7 +2854,6 @@ convertWithMBTOWC(struct OMRPortLibrary *portLibrary, char *inputBuffer, char *o
 	return bytesWritten;
 }
 #endif /* J9VM_USE_MBTOWC */
-
 
 /**
  * Initializes the supplied buffer such that it can be used by the @ref omrsysinfo_env_iteraror_next() and @ref omrsysinfo_env_iterator_hasNext() APIs.
@@ -3603,7 +3596,7 @@ setPortableError(OMRPortLibrary *portLibrary, const char *funcName, int32_t port
 	}
 
 	/*Fill the buffer using str_printf*/
-	portLibrary->str_printf(portLibrary, errmsgbuff, errmsglen, "%s%s", funcName,	strerror(systemErrno));
+	portLibrary->str_printf(portLibrary, errmsgbuff, errmsglen, "%s%s", funcName, strerror(systemErrno));
 
 	/*Set the error message*/
 	portLibrary->error_set_last_error_with_message(portLibrary, portableErrno, errmsgbuff);
@@ -3710,7 +3703,7 @@ omrsysinfo_get_open_file_count(struct OMRPortLibrary *portLibrary, uint64_t *cou
 		ret = OMRPORT_ERROR_SYSINFO_GET_OPEN_FILES_NOT_SUPPORTED;
 #endif
 	}
-	
+
 	Trc_PRT_sysinfo_get_open_file_count_Exit(ret);
 	return ret;
 }
@@ -4195,7 +4188,7 @@ getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subs
 			goto _end;
 		}
 	}
-	
+
 _end:
 	if (allocateMemory) {
 		portLibrary->mem_free_memory(portLibrary, fullPath);
@@ -4544,7 +4537,6 @@ omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *lim
 	return rc;
 }
 
-
 BOOLEAN
 omrsysinfo_cgroup_is_memlimit_set(struct OMRPortLibrary *portLibrary)
 {
@@ -4570,7 +4562,7 @@ omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary)
 	return PPG_cgroupEntryList;
 #else
 	return NULL;
-#endif 
+#endif
 }
 
 /*
@@ -4580,7 +4572,7 @@ omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary)
 BOOLEAN
 omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary)
 {
-	return PPG_isRunningInContainer; 
+	return PPG_isRunningInContainer;
 }
 
 int32_t
@@ -4744,7 +4736,7 @@ _end:
 	if (0 == rc) {
 		/**
 		 * 'value' may have new line at the end (fgets add '\n' at the end)
-		 * which is not required so we could remove it 
+		 * which is not required so we could remove it
 		 */
 		size_t len = strlen(metricElement->value);
 		metricElement->units = currentElement->metricUnit;
@@ -4760,9 +4752,9 @@ _end:
 			}
 		}
 	}
-	
+
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
-	return rc;	
+	return rc;
 }
 
 void
@@ -4773,7 +4765,6 @@ omrsysinfo_cgroup_subsystem_iterator_destroy(struct OMRPortLibrary *portLibrary,
 		state->fileContent = NULL;
 	}
 }
-
 
 #if defined(OMRZTPF)
 /*
@@ -4788,7 +4779,7 @@ get_IPL_IstreamCount( void ) {
 	return (uintptr_t)numberOfIStreams;
 }
 
- /*
+/*
  *      Return the number of I-streams ("processors", as called by other
  *      systems) in an unsigned integer as detect at Process Dispatch time.
  */

@@ -1768,7 +1768,7 @@ OMR::CodeGenerator::convertMultiplyToShift(TR::Node * node)
       }
    else
       {
-      multiplier = secondChild->getInt();
+      multiplier = secondChild->get32bitIntegralValue();
       if (multiplier == 0)
          return false;  // Can't handle this case
       if (multiplier < 0)
@@ -1794,6 +1794,10 @@ OMR::CodeGenerator::convertMultiplyToShift(TR::Node * node)
 
    if (node->getOpCodeValue() == TR::imul)
       TR::Node::recreate(node, TR::ishl);
+   else if (node->getOpCodeValue() == TR::smul)
+      TR::Node::recreate(node, TR::sshl);
+   else if (node->getOpCodeValue() == TR::bmul)
+      TR::Node::recreate(node, TR::bshl);
    else
       {
       TR::Node::recreate(node, TR::lshl);

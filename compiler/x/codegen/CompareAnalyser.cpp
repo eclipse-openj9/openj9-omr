@@ -144,16 +144,37 @@ void TR_X86CompareAnalyser::integerCompareAnalyser(
       }
 
    if (realFirstChild)
-      cg()->recursivelyDecReferenceCount(realFirstChild);
+      {
+      if (!getCmpMem1Reg2())
+         {
+         cg()->recursivelyDecReferenceCount(realFirstChild);
+         }
+      else
+         {
+         cg()->decReferenceCount(realFirstChild);
+         }
+      }
    else
+      {
       cg()->decReferenceCount(firstChild);
+      }
 
    if (realSecondChild)
-      cg()->recursivelyDecReferenceCount(realSecondChild);
+      {
+      if (!getCmpReg1Mem2())
+         {
+         cg()->recursivelyDecReferenceCount(realSecondChild);
+         }
+      else
+         {
+         cg()->decReferenceCount(realSecondChild);
+         }
+      }
    else
+      {
       cg()->decReferenceCount(secondChild);
+      }
    }
-
 
 void TR_X86CompareAnalyser::integerCompareAnalyser(
    TR::Node       *root,

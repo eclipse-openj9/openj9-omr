@@ -364,7 +364,7 @@ private:
       TR_ASSERT(opvalue != TR::vconst, "use createVectorConst to create node: %s", opcode.getName());
       return true;
       }
-
+      
    static bool isNotDeprecatedUnsigned(TR::ILOpCodes opvalue)
       {
       switch (opvalue) 
@@ -388,6 +388,12 @@ private:
          case TR::ifbucmpne:
          case TR::ifsucmpeq:
          case TR::ifsucmpne:
+
+         //Constant
+         case TR::buconst:
+         case TR::iuconst:
+         case TR::luconst:
+         case TR::cconst:
             return false;
             
          default: 

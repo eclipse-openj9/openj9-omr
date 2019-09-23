@@ -369,8 +369,26 @@ private:
       {
       switch (opvalue) 
          {
-            //More cases is going to be added to this function for eclipse/omr#2657.
-            //return false;
+         //Equality compare
+         case TR::bucmpeq:
+         case TR::bucmpne:   
+         case TR::iucmpeq:
+         case TR::iucmpne:
+         case TR::lucmpeq:
+         case TR::lucmpne:
+         case TR::sucmpeq:
+         case TR::sucmpne:
+         
+         //Equality compare and branch
+         case TR::ifiucmpeq:
+         case TR::ifiucmpne:
+         case TR::iflucmpeq:
+         case TR::iflucmpne:
+         case TR::ifbucmpeq:
+         case TR::ifbucmpne:
+         case TR::ifsucmpeq:
+         case TR::ifsucmpne:
+            return false;
             
          default: 
             return true;

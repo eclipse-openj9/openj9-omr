@@ -179,7 +179,7 @@ void TR_DebuggingCounters::insertCounter(const char * name, TR::Compilation * co
 		         TR::Node::create(node, TR::iuconst, 0, 1));
 
       TR::TreeTop* incrementTree =
-         TR::TreeTop::create(comp, TR::Node::createWithSymRef(TR::iustore, 1, 1,
+         TR::TreeTop::create(comp, TR::Node::createWithSymRef(TR::istore, 1, 1,
 					          addNode, counterRef));
 
       tt->getPrevTreeTop()->insertAfter(incrementTree);

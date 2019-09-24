@@ -594,6 +594,13 @@ typedef struct U_128 {
 #define OMR_STR(x) OMR_STR_(x)
 #define OMR_GET_CALLSITE() __FILE__ ":" OMR_STR(__LINE__)
 
+/* Shift value to convert between pointers and bytes */
+#if defined(OMR_ENV_DATA64)
+#define OMR_LOG_POINTER_SIZE 3
+#else /* defined(OMR_ENV_DATA64) */
+#define OMR_LOG_POINTER_SIZE 2
+#endif /* defined(OMR_ENV_DATA64) */
+
 /* Legacy defines - remove once code cleanup is complete */
 #define J9VM_ENV_DIRECT_FUNCTION_POINTERS
 #define J9VM_OPT_REMOVE_CONSTANT_POOL_SPLITTING

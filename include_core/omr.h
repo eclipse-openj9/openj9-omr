@@ -158,12 +158,18 @@ typedef struct OMR_VM {
 
 #if defined(OMR_GC_COMPRESSED_POINTERS)
 #if defined(OMR_GC_FULL_POINTERS)
+/* Mixed mode - necessarily 64-bit */
 #define OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM) (0 != (omrVM)->_compressObjectReferences)
+#define OMRVM_REFERENCE_SHIFT(omrVM) (OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM) ? 2 : 3)
 #else /* OMR_GC_FULL_POINTERS */
+/* Compressed only - necessarily 64-bit */
 #define OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM) TRUE
+#define OMRVM_REFERENCE_SHIFT(omrVM) 2
 #endif /* OMR_GC_FULL_POINTERS */
 #else /* OMR_GC_COMPRESSED_POINTERS */
+/* Full only - could be 32 or 64-bit */
 #define OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM) FALSE
+#define OMRVM_REFERENCE_SHIFT(omrVM) OMR_LOG_POINTER_SIZE
 #endif /* OMR_GC_COMPRESSED_POINTERS */
 
 typedef struct OMR_VMThread {
@@ -212,12 +218,18 @@ typedef struct OMR_VMThread {
 
 #if defined(OMR_GC_COMPRESSED_POINTERS)
 #if defined(OMR_GC_FULL_POINTERS)
+/* Mixed mode - necessarily 64-bit */
 #define OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread) (0 != (omrVMThread)->_compressObjectReferences)
+#define OMRVMTHREAD_REFERENCE_SHIFT(omrVMThread) (OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread) ? 2 : 3)
 #else /* OMR_GC_FULL_POINTERS */
+/* Compressed only - necessarily 64-bit */
 #define OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread) TRUE
+#define OMRVMTHREAD_REFERENCE_SHIFT(omrVMThread) 2
 #endif /* OMR_GC_FULL_POINTERS */
 #else /* OMR_GC_COMPRESSED_POINTERS */
+/* Full only - could be 32 or 64-bit */
 #define OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread) FALSE
+#define OMRVMTHREAD_REFERENCE_SHIFT(omrVMThread) OMR_LOG_POINTER_SIZE
 #endif /* OMR_GC_COMPRESSED_POINTERS */
 
 /**

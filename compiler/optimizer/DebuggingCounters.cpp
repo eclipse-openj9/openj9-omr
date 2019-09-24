@@ -172,7 +172,7 @@ void TR_DebuggingCounters::insertCounter(const char * name, TR::Compilation * co
       // Treetops for counterRef = counterRef + 1;
 
       TR::Node * node = tt->getNode();
-      TR::Node* loadNode = TR::Node::createWithSymRef(node, TR::iuload, 0, counterRef);
+      TR::Node* loadNode = TR::Node::createWithSymRef(node, TR::iload, 0, counterRef);
 
       TR::Node* addNode =
          TR::Node::create(TR::iuadd, 2, loadNode,

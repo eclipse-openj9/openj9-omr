@@ -310,6 +310,10 @@ MergeVisitor::visitEnum(EnumUDT *type) const
 {
 	/* Merge by adding the fields/subtypes of '_other' into 'type'. */
 	EnumUDT *other = (EnumUDT *)_other;
+	/* This type may be derived from only a forward declaration; if so, update the size now. */
+	if (0 == type->_sizeOf) {
+		type->_sizeOf = other->_sizeOf;
+	}
 	_ir->mergeEnums(&type->_enumMembers, &other->_enumMembers);
 	return DDR_RC_OK;
 }

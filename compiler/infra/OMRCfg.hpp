@@ -331,8 +331,9 @@ class CFG
    //
    void getBranchCountersFromProfilingData(TR::Node *node, TR::Block *block, int32_t *taken, int32_t *notTaken) { return; }
 
-protected:
+   TR::Region& getInternalRegion();
 
+protected:
    TR::Compilation *_compilation;
    TR::ResolvedMethodSymbol *_method;
 

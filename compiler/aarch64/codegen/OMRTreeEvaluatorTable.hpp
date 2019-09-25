@@ -219,7 +219,7 @@
     TR::TreeEvaluator::s2lEvaluator, // TR::s2l		// convert short integer to long integer with sign extension
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::s2fEvaluator ,	// TR::s2f		// convert short integer to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::s2dEvaluator ,	// TR::s2d		// convert short integer to double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::s2bEvaluator ,	// TR::s2b		// convert short integer to byte
+    TR::TreeEvaluator::l2iEvaluator , // TR::s2b		// convert short integer to byte
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::s2aEvaluator ,	// TR::s2a		// convert short integer to address
     TR::TreeEvaluator::su2iEvaluator, // TR::su2i		// zero extend short to int
     TR::TreeEvaluator::su2lEvaluator, // TR::su2l		// zero extend char to long

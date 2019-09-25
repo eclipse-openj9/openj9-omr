@@ -217,9 +217,6 @@ class OMR_EXTENSIBLE Instruction
    TR_BitVector *getLiveMonitors() { return _liveMonitors; }
    TR_BitVector *setLiveMonitors(TR_BitVector *v) { return (_liveMonitors = v); }
 
-   int32_t getRegisterSaveDescription() { return _registerSaveDescription; }
-   int32_t setRegisterSaveDescription(int32_t v) { return (_registerSaveDescription = v); }
-
    bool    requiresAtomicPatching();
 
    int32_t getMaxPatchableInstructionLength() { return 0; }
@@ -278,7 +275,6 @@ class OMR_EXTENSIBLE Instruction
    protected:
    TR_BitVector *_liveLocals;
    TR_BitVector *_liveMonitors;
-   int32_t _registerSaveDescription;
 
    union TR_GCInfo
       {

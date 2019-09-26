@@ -190,3 +190,7 @@ if(OMR_THR_TRACING)
 		omrthread_reset_tracing
 	)
 endif()
+
+# also apply the exports to j9thrstatic
+get_target_property(thread_exports j9thr_obj EXPORTED_SYMBOLS)
+omr_add_exports(j9thrstatic ${thread_exports})

@@ -398,7 +398,6 @@ omr_add_exports(omrport_obj
 	omrport_init_library
 	omrport_isCompatible
 	omrport_startup_library
-
 )
 
 target_enable_ddr(omrport_obj)
@@ -407,13 +406,19 @@ ddr_add_headers(omrport_obj
 )
 ddr_set_add_targets(omrddr omrport_obj)
 
-add_library(omrport STATIC
-	$<TARGET_OBJECTS:omrport_obj>
-)
+
 
 ###
 ### omrport static lib
 ###
+
+add_library(omrport STATIC
+	$<TARGET_OBJECTS:omrport_obj>
+)
+
+# Duplicate the export list onto the static library version
+get_target_property(port_exports omrport_obj EXPORTED_SYMBOLS)
+omr_add_exports(omrport ${port_exports})
 
 target_link_libraries(omrport
 	PUBLIC

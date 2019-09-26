@@ -134,8 +134,6 @@ if(OMR_ENHANCED_WARNINGS)
 	target_compile_options(j9thr_obj PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
 endif()
 
-include(exports.cmake)
-
 target_enable_ddr(j9thr_obj)
 ddr_add_headers(j9thr_obj
 	${omr_SOURCE_DIR}/include_core/omrthread.h
@@ -148,6 +146,8 @@ ddr_set_add_targets(omrddr j9thr_obj)
 add_library(j9thrstatic STATIC
 	$<TARGET_OBJECTS:j9thr_obj>
 )
+
+include(exports.cmake)
 
 target_include_directories(j9thrstatic
 	INTERFACE

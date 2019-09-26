@@ -374,6 +374,39 @@ private:
       return true;
       }
 
+   static bool isNotDeprecatedUnsigned(TR::ILOpCodes opvalue)
+      {
+      switch (opvalue) 
+         {
+         //Multiply
+         case TR::iumul: 
+
+         //Ternary
+         case TR::buternary: 
+         case TR::iuternary: 
+         case TR::luternary: 
+         case TR::suternary: 
+
+         //Shift
+         case TR::iushl: 
+         case TR::lushl:
+
+         //Shift Logical 
+         case TR::ishfl: 
+         case TR::lshfl: 
+         case TR::iushfl: 
+         case TR::lushfl:
+         case TR::bshfl: 
+         case TR::sshfl:  
+         case TR::bushfl:
+         case TR::sushfl:
+            return false;
+            
+         default: 
+            return true;
+         }
+      }
+
 
 /**
  * Public functions

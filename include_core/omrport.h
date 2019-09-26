@@ -1062,10 +1062,6 @@ typedef struct J9MmapHandle {
 	OMRMemCategory *category;
 } J9MmapHandle;
 
-#if defined(OMR_OPT_CUDA)
-#include "omrcuda.h"
-#endif /* OMR_OPT_CUDA */
-
 #if !defined(OMR_OS_WINDOWS)
 #if defined(OSX)
 #define _XOPEN_SOURCE

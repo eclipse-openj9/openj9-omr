@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -401,6 +401,28 @@ private:
          case TR::iuconst:
          case TR::luconst:
          case TR::cconst:
+
+         //Call and Return
+         case TR::iucall:
+         case TR::iucalli:
+         case TR::iureturn: 
+         case TR::lucall: 
+         case TR::lucalli: 
+         case TR::lureturn: 
+
+         //Add and Subtract
+         case TR::aiuadd: 
+         case TR::aluadd: 
+         case TR::buadd: 
+         case TR::busub: 
+         case TR::cadd:
+         case TR::csub: 
+         case TR::iuadd: 
+         case TR::iuneg: 
+         case TR::iusub: 
+         case TR::luadd: 
+         case TR::luneg: 
+         case TR::lusub:
             return false;
             
          default: 

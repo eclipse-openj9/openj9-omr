@@ -109,6 +109,7 @@ namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class SymbolReferenceTable; }
 namespace TR { class TreeTop; }
+namespace TR { class TypeLayout; }
 typedef TR::SparseBitVector SharedSparseBitVector;
 
 #if _AIX
@@ -1051,6 +1052,18 @@ public:
    TR::Region &aliasRegion();
    void invalidateAliasRegion();
 
+   /** \brief
+    *	    Requests the layout of a type. The layout here means how the fields 
+    *     are laid out in an object of the given type.
+    * 
+    *  \param clazz
+    *     Class of the type whose layout is requested.
+    * 
+    *  \return
+    *     Returns a TypeLayout object pointer.
+    */
+   const TR::TypeLayout* typeLayout(TR_OpaqueClassBlock * clazz);
+
 private:
    void resetVisitCounts(vcount_t, TR::ResolvedMethodSymbol *);
    int16_t restoreInlineDepthUntil(int32_t stopIndex, TR_ByteCodeInfo &currentInfo);
@@ -1261,6 +1274,11 @@ private:
    int32_t _gpuPtxCount;
 
    BitVectorPool _bitVectorPool; //MUST be declared after _trMemory
+
+   typedef TR::typed_allocator<std::pair<TR_OpaqueClassBlock* const, const TR::TypeLayout *>, TR::Region &> LayoutAllocator;
+   typedef std::less<TR_OpaqueClassBlock*> LayoutComparator;
+   typedef std::map<TR_OpaqueClassBlock *, const TR::TypeLayout *, LayoutComparator, LayoutAllocator> TypeLayoutMap;
+   TypeLayoutMap _typeLayoutMap;
 
    /*
     * This must be last

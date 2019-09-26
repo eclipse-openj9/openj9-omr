@@ -162,6 +162,11 @@ ddr_set_add_targets(omrddr omrutil_obj)
 add_library(omrutil STATIC
 	$<TARGET_OBJECTS:omrutil_obj>
 )
+
+# Duplicate the export list onto the static library version
+get_target_property(util_exports omrutil_obj EXPORTED_SYMBOLS)
+omr_add_exports(omrutil ${util_exports})
+
 # Add in the interface include dirs from omrutil_obj to omrutil
 target_include_directories(omrutil PUBLIC $<TARGET_PROPERTY:omrutil_obj,INTERFACE_INCLUDE_DIRECTORIES>)
 

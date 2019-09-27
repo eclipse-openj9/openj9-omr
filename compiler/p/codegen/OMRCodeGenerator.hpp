@@ -395,6 +395,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
       return  ((size < (lineSize<<1)) && (size > (lineSize >> 2)));
       }
 
+   uint32_t getJitMethodEntryAlignmentBoundary();
+
    using OMR::CodeGenerator::getSupportsConstantOffsetInAddressing;
    bool getSupportsConstantOffsetInAddressing(int64_t value) { return (value>=LOWER_IMMED) && (value<=UPPER_IMMED);}
 

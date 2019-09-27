@@ -109,6 +109,7 @@
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "stdarg.h"
+#include "OMR/Bytes.hpp"
 
 namespace TR { class Optimizer; }
 namespace TR { class RegisterDependencyConditions; }
@@ -2158,24 +2159,56 @@ loop:
 uint8_t *
 OMR::CodeGenerator::alignBinaryBufferCursor()
    {
-   uintptr_t boundary = self()->comp()->getOptions()->getJitMethodEntryAlignmentBoundary(self());
+   uint32_t boundary = self()->getJitMethodEntryAlignmentBoundary();
 
-   /* Align cursor to boundary */
-   if (boundary && (boundary & boundary - 1) == 0)
+   TR_ASSERT_FATAL(boundary > 0, "JIT method entry alignment boundary (%d) definition is violated", boundary);
+
+   // Align cursor to boundary as long as it meets the threshold
+   if (self()->supportsJitMethodEntryAlignment() && boundary > 1)
       {
-      uintptr_t round = boundary - 1;
-      uintptr_t offset = self()->getPreJitMethodEntrySize();
+      uint32_t offset = self()->getPreJitMethodEntrySize();
 
-      _binaryBufferCursor += offset;
-      _binaryBufferCursor = (uint8_t *)(((uintptr_t)_binaryBufferCursor + round) & ~round);
-      _binaryBufferCursor -= offset;
-      self()->setJitMethodEntryPaddingSize(_binaryBufferCursor - _binaryBufferStart);
-      memset(_binaryBufferStart, 0, self()->getJitMethodEntryPaddingSize());
+      uint8_t* alignedBinaryBufferCursor = _binaryBufferCursor;
+      alignedBinaryBufferCursor += offset;
+      alignedBinaryBufferCursor = reinterpret_cast<uint8_t*>(OMR::align(reinterpret_cast<size_t>(alignedBinaryBufferCursor), boundary));
+
+      TR_ASSERT_FATAL(OMR::aligned(reinterpret_cast<size_t>(alignedBinaryBufferCursor), boundary),
+         "alignedBinaryBufferCursor [%p] is not aligned to the specified boundary (%d)", alignedBinaryBufferCursor, boundary);
+
+      alignedBinaryBufferCursor -= offset;
+
+      uint32_t threshold = self()->getJitMethodEntryAlignmentThreshold();
+
+      TR_ASSERT_FATAL(threshold <= boundary, "JIT method entry alignment threshold (%d) definition is violated as it is larger than the boundary (%d)", threshold, boundary);
+
+      if (alignedBinaryBufferCursor - _binaryBufferCursor <= threshold)
+         {
+         _binaryBufferCursor = alignedBinaryBufferCursor;
+         self()->setJitMethodEntryPaddingSize(_binaryBufferCursor - _binaryBufferStart);
+         memset(_binaryBufferStart, 0, self()->getJitMethodEntryPaddingSize());
+         }
       }
 
    return _binaryBufferCursor;
    }
 
+bool
+OMR::CodeGenerator::supportsJitMethodEntryAlignment()
+   {
+   return true;
+   }
+
+uint32_t
+OMR::CodeGenerator::getJitMethodEntryAlignmentBoundary()
+   {
+   return 1;
+   }
+
+uint32_t
+OMR::CodeGenerator::getJitMethodEntryAlignmentThreshold()
+   {
+   return self()->getJitMethodEntryAlignmentBoundary();
+   }
 
 int32_t
 OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnippetStart)

@@ -1735,10 +1735,10 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
          gcMapCursor->setGCMap(self()->getStackAtlas()->getParameterMap()->clone(self()->trMemory()));
       }
 
-   /* Adjust estimate based on jitted method entry alignment requirement */
-   uintptr_t boundary = self()->comp()->getOptions()->getJitMethodEntryAlignmentBoundary(self());
-   if (boundary && (boundary & boundary - 1) == 0)
-      estimate += boundary - 1;
+   if (self()->supportsJitMethodEntryAlignment())
+      {
+      estimate += (self()->getJitMethodEntryAlignmentBoundary() - 1);
+      }
 
    if (self()->comp()->getOption(TR_TraceVFPSubstitution))
       traceMsg(self()->comp(), "\n<instructions\n"

@@ -441,9 +441,6 @@ public:
    virtual bool getSupportsBitPermute();
    int32_t getEstimatedExtentOfLitLoop()  {return _extentOfLitPool;}
 
-   int32_t getPreprologueOffset()               { return _preprologueOffset; }
-   int32_t setPreprologueOffset(int32_t offset) { return _preprologueOffset = offset; }
-
    bool supportsBranchPreload()          {return _cgFlags.testAny(S390CG_enableBranchPreload);}
    void setEnableBranchPreload()          {_cgFlags.set(S390CG_enableBranchPreload);}
    void setDisableBranchPreload()          {_cgFlags.reset(S390CG_enableBranchPreload);}
@@ -784,6 +781,10 @@ public:
       return 7;
       }
 
+   uint32_t getJitMethodEntryAlignmentBoundary();
+
+   uint32_t getJitMethodEntryAlignmentThreshold();
+
    // LL: move to .cpp
    bool arithmeticNeedsLiteralFromPool(TR::Node *node);
 
@@ -852,10 +853,6 @@ private:
 #endif
 
    bool  TR_LiteralPoolOnDemandOnRun;
-
-
-   /** Saves the preprologue offset to allow JIT entry point alignment padding. */
-   int32_t _preprologueOffset;
 
    TR_BackingStore* _localF2ISpill;
 

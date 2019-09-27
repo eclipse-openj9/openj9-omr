@@ -392,6 +392,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableIVTT",                        "O\tdisable IV Type transformation",                 TR::Options::disableOptimization, IVTypeTransformation, 0, "P"},
    {"disableJavaEightStartupHeuristics", "M\t", SET_OPTION_BIT(TR_DisableJava8StartupHeuristics), "F", NOT_IN_SUBSET },
    {"disableJProfiling",                  "O\tdisable JProfiling", RESET_OPTION_BIT(TR_EnableJProfiling), "F"},
+   {"disableJProfilingInProfilingCompilations", "O\tDisable use of jprofiling instrumentation in profiling compilations", SET_OPTION_BIT(TR_DisableJProfilingInProfilingCompilations), "F"},
    {"disableJProfilingThread",            "O\tdisable separate thread for JProfiling", SET_OPTION_BIT(TR_DisableJProfilerThread), "F", NOT_IN_SUBSET},
    {"disableKnownObjectTable",            "O\tdisable support for including heap object info in symbol references", SET_OPTION_BIT(TR_DisableKnownObjectTable), "F"},
    {"disableLastITableCache",             "C\tdisable using class lastITable cache for interface dispatches",  SET_OPTION_BIT(TR_DisableLastITableCache), "F"},
@@ -689,7 +690,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableJITServerFollowRemoteCompileWithLocalCompile", "O\tenable JITServer to perform local compilations for its remotely compiled methods", SET_OPTION_BIT(TR_JITServerFollowRemoteCompileWithLocalCompile), "F"},
    {"enableJITServerHeuristics",          "O\tenable JITServer heuristics", SET_OPTION_BIT(TR_EnableJITServerHeuristics), "F"},
    {"enableJProfiling",                   "O\tenable JProfiling", SET_OPTION_BIT(TR_EnableJProfiling), "F"},
-   {"enableJProfilingInProfilingCompilations","O\tuse jprofiling instrumentation in profiling compilations", SET_OPTION_BIT(TR_EnableJProfilingInProfilingCompilations), "F"},
+   {"enableJProfilingInProfilingCompilations", "O\tEnable the use of jprofiling instrumentation in profiling compilations", RESET_OPTION_BIT(TR_DisableJProfilingInProfilingCompilations), "F"},
    {"enableJVMPILineNumbers",            "M\tenable output of line numbers via JVMPI",       SET_OPTION_BIT(TR_EnableJVMPILineNumbers), "F"},
    {"enableLabelTargetNOPs",             "O\tenable inserting NOPs before label targets", SET_OPTION_BIT(TR_EnableLabelTargetNOPs),  "F"},
    {"enableLargeCodePages",              "C\tenable large code pages",  SET_OPTION_BIT(TR_EnableLargeCodePages), "F"},
@@ -2604,6 +2605,8 @@ OMR::Options::jitPreProcess()
           ((TR::Compiler->target.cpu.isX86() && TR::Compiler->target.isLinux()) && TR::Compiler->target.numberOfProcessors() >= 4))
           self()->setOption(TR_TurnOffSelectiveNoOptServerIfNoStartupHint);
 
+      if(TR::Compiler->target.cpu.isX86() && TR::Compiler->target.is32Bit())
+         self()->setOption(TR_DisableJProfilingInProfilingCompilations);
       self()->setOption(TR_DisableHeapAllocOOL);
       if (!(TR::Compiler->target.cpu.isZ() && TR::Compiler->target.isLinux()))
          self()->setOption(TR_UseIdleTime);

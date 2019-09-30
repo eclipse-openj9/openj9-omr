@@ -2343,3 +2343,34 @@ TEST(PortSysinfoTest, sysinfo_cgroup_get_memlimit)
 	reportTestExit(OMRPORTLIB, testName);
 	return;
 }
+
+/**
+ * Test GetProcessorDescription.
+ */
+TEST(PortSysinfoTest, GetProcessorDescription)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	OMRProcessorDesc desc;
+
+	ASSERT_NE(omrsysinfo_get_processor_description(&desc), -1);
+
+#if defined(J9X86) || defined(J9HAMMER)
+	ASSERT_GE(desc.processor, OMR_PROCESSOR_X86_UNKNOWN);
+	ASSERT_GE(desc.physicalProcessor, OMR_PROCESSOR_X86_UNKNOWN);
+#elif defined(AIXPPC) || defined(LINUXPPC)
+	ASSERT_GE(desc.processor, OMR_PROCESSOR_PPC_UNKNOWN);
+	ASSERT_LT(desc.processor, OMR_PROCESSOR_X86_UNKNOWN);
+	ASSERT_GE(desc.physicalProcessor, OMR_PROCESSOR_PPC_UNKNOWN);
+	ASSERT_LT(desc.physicalProcessor, OMR_PROCESSOR_X86_UNKNOWN);
+#elif defined(S390) || defined(J9ZOS390)
+	ASSERT_GE(desc.processor, OMR_PROCESSOR_S390_UNKNOWN);
+	ASSERT_LT(desc.processor, OMR_PROCESSOR_PPC_UNKNOWN);
+	ASSERT_GE(desc.physicalProcessor, OMR_PROCESSOR_S390_UNKNOWN);
+	ASSERT_LT(desc.physicalProcessor, OMR_PROCESSOR_PPC_UNKNOWN);
+#endif
+	
+	for (int i = 0; i < OMRPORT_SYSINFO_FEATURES_SIZE * 32; i++) {
+		BOOLEAN feature = omrsysinfo_processor_has_feature(&desc, i);
+		ASSERT_TRUE(feature == TRUE || feature == FALSE);
+	}
+}

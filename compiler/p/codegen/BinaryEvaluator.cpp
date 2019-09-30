@@ -2353,989 +2353,661 @@ TR::Register *OMR::Power::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeG
    return trgReg;
    }
 
-// also handles bshl
-TR::Register *OMR::Power::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+static bool isPower9Extswsli(TR::CodeGenerator *cg, TR::Node *node)
    {
-   TR::Register *trgReg         = cg->allocateRegister();
-   TR::Node     *secondChild    = node->getSecondChild();
-   TR::Node     *firstChild     = node->getFirstChild();
-   TR::Register *src1Reg        = cg->evaluate(firstChild);
-   TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
-   bool isByte = (node->getOpCodeValue() == TR::bshl);
+   static bool disableExtswsli = feGetEnv("TR_DisableExtswsli");
+   if (disableExtswsli || TR::Compiler->target.cpu.id() < TR_PPCp9)
+      return false;
 
-   if (secondOp == TR::iconst || secondOp == TR::iuconst)
+   TR::Node *lhs = node->getFirstChild();
+
+   // The LHS must only be referenced on this node.
+   if (lhs->getReferenceCount() != 1 || lhs->getRegister())
+      return false;
+
+   // The LHS must be an i2l node.
+   if (lhs->getOpCodeValue() != TR::i2l)
+      return false;
+
+   return performTransformation(cg->comp(), "O^O EXTSWSLI: combining shift n%dn and i2l n%dn into extswsli\n", node->getGlobalIndex(), lhs->getGlobalIndex());
+   }
+
+static bool isZeroExtendThenShiftLeftCandidate(TR::CodeGenerator *cg, TR::Node *node)
+   {
+   static bool disableMaskAndShiftMerging = feGetEnv("TR_DisableMaskAndShiftMerging");
+   if (disableMaskAndShiftMerging)
+      return false;
+
+   TR::Node *lhs = node->getFirstChild();
+
+   // The LHS must only be referenced on this node.
+   if (lhs->getReferenceCount() != 1 || lhs->getRegister())
+      return false;
+
+   // The LHS must be a zero-extension or a sign-extension of a non-negative value.
+   if (!(lhs->getOpCode().isZeroExtension() || (lhs->getOpCode().isSignExtension() && lhs->getFirstChild()->isNonNegative())))
+      return false;
+
+   return performTransformation(cg->comp(), "O^O MASK/SHIFT MERGING: combining shift n%dn and zero-extending conversion n%dn into one operation\n", node->getGlobalIndex(), lhs->getGlobalIndex());
+   }
+
+static uint64_t getExtensionMask(TR::ILOpCode op)
+   {
+   switch (op.getOpCodeValue())
       {
-      int32_t  shiftAmount = secondChild->getInt() & 0x1f;
-      generateShiftLeftImmediate(cg, node, trgReg, src1Reg, shiftAmount);
+      case TR::bu2s:
+      case TR::b2s:
+      case TR::bu2i:
+      case TR::b2i:
+      case TR::bu2l:
+      case TR::b2l:
+         return 0xff;
+      case TR::su2i:
+      case TR::s2i:
+      case TR::su2l:
+      case TR::s2l:
+         return 0xffff;
+      case TR::iu2l:
+      case TR::i2l:
+         return 0xffffffff;
+      default:
+         TR_ASSERT_FATAL(false, "Bad conversion opcode %s", op.getName());
+      }
+   }
+
+static TR::Register *integerShiftLeft(TR::Node *node, uint32_t operandSize, TR::CodeGenerator *cg)
+   {
+   uint32_t operandBits = operandSize * 8;
+   uint64_t operandMask = operandBits == 64 ? 0xffffffffffffffffULL : ((1ULL << operandBits) - 1);
+
+   TR::Register *trg = cg->allocateRegister();
+
+   if (node->getSecondChild()->getOpCode().isLoadConst())
+      {
+      int32_t rhs = node->getSecondChild()->getInt() & (operandBits > 32 ? 0x3f : 0x1f);
+
+      // If the value being shifted was just zero-extended (or sign-extended and it is guaranteed to
+      // be non-negative), it's possible to perform both operations together with a single rldic or
+      // rlwinm instruction. Similarly, if the value being shifted was just sign-extended from an
+      // integer to a long, a POWER 9 extswsli instruction can be used to perform both operations.
+      if (isZeroExtendThenShiftLeftCandidate(cg, node))
+         {
+         TR::Register *lhs = cg->evaluate(node->getFirstChild()->getFirstChild());
+         uint64_t mask = getExtensionMask(node->getFirstChild()->getOpCode()) << rhs;
+
+         if (mask == 0)
+            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trg, 0);
+         else if (operandSize > 4)
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldic, node, trg, lhs, rhs, mask);
+         else
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trg, lhs, rhs, mask);
+
+         cg->decReferenceCount(node->getFirstChild()->getFirstChild());
+         }
+      else if (isPower9Extswsli(cg, node))
+         {
+         TR::Register *lhs = cg->evaluate(node->getFirstChild()->getFirstChild());
+
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::extswsli, node, trg, lhs, rhs);
+
+         cg->decReferenceCount(node->getFirstChild()->getFirstChild());
+         }
+      else
+         {
+         TR::Register *lhs = cg->evaluate(node->getFirstChild());
+         uint64_t mask = operandMask << rhs;
+
+         if (mask == 0)
+            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trg, 0);
+         else if (operandSize > 4)
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldic, node, trg, lhs, rhs, mask);
+         else
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trg, lhs, rhs, mask);
+         }
       }
    else
       {
-      TR::Register *src2Reg = cg->evaluate(secondChild);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, trgReg, src1Reg, src2Reg);
+      TR::Register *lhs = cg->evaluate(node->getFirstChild());
+      TR::Register *rhs = cg->evaluate(node->getSecondChild());
+
+      if (operandSize > 4)
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::sld, node, trg, lhs, rhs);
+      else
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, trg, lhs, rhs);
       }
 
-   if (isByte)
-      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trgReg, trgReg, 0, (uint32_t)0x000000FF);
+   node->setRegister(trg);
+   cg->decReferenceCount(node->getFirstChild());
+   cg->decReferenceCount(node->getSecondChild());
 
-   node->setRegister(trgReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-   return trgReg;
+   return trg;
+   }
+
+static TR::Register *lshl32Evaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Register *trgLow = cg->allocateRegister();
+   TR::Register *trgHigh = cg->allocateRegister();
+   TR::Register *trg = cg->allocateRegisterPair(trgLow, trgHigh);
+
+   if (node->getSecondChild()->getOpCode().isLoadConst())
+      {
+      TR::Register *lhs = cg->evaluate(node->getFirstChild());
+      TR::Register *lhsLow = lhs->getLowOrder();
+      TR::Register *lhsHigh = lhs->getHighOrder();
+      int32_t rhs = node->getSecondChild()->getInt() & 0x3f;
+
+      if (rhs == 0)
+         {
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgLow, lhsLow);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgHigh, lhsHigh);
+         }
+      else if (rhs < 32)
+         {
+         TR::Register *tmp = cg->allocateRegister();
+
+         generateShiftLeftImmediate(cg, node, trgLow, lhsLow, rhs);
+         generateShiftLeftImmediate(cg, node, trgHigh, lhsHigh, rhs);
+         generateShiftRightLogicalImmediate(cg, node, tmp, lhsLow, 32 - rhs);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgHigh, trgHigh, tmp);
+
+         cg->stopUsingRegister(tmp);
+         }
+      else if (rhs == 32)
+         {
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgLow, 0);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgHigh, lhsLow);
+         }
+      else // (rhs > 32)
+         {
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgLow, 0);
+         generateShiftLeftImmediate(cg, node, trgHigh, lhsLow, rhs - 32);
+         }
+      }
+   else
+      {
+      TR::Node *lhsNode = node->getFirstChild();
+      TR::Register *rhs = cg->evaluate(node->getSecondChild());
+
+      // Perform 64-bit left shift using 32-bit instructions as described in Chapter 2 of Hacker's
+      // Delight, 2nd Edition.
+
+      if (lhsNode->getOpCode().isLoadConst() && lhsNode->getLongIntLow() == 0)
+         {
+         TR::Register *lhsHigh = cg->allocateRegister();
+         loadConstant(cg, node, lhsNode->getLongIntHigh(), lhsHigh);
+
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgLow, 0);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, trgHigh, lhsHigh, rhs);
+
+         cg->stopUsingRegister(lhsHigh);
+         }
+      else if (lhsNode->getOpCode().isLoadConst() && lhsNode->getLongIntHigh() == 0)
+         {
+         TR::Register *lhsLow = cg->allocateRegister();
+         loadConstant(cg, node, lhsNode->getLongIntLow(), lhsLow);
+
+         TR::Register *tmp = cg->allocateRegister();
+
+         // y_0 = x_0 << n
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, trgLow, lhsLow, rhs);
+
+         // y_1 = (x_0 >>> (32 - n)) | (x_0 << (n - 32))
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, trgHigh, rhs, 32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trgHigh, lhsLow, trgHigh);
+
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, tmp, rhs, -32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, tmp, lhsLow, tmp);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgHigh, trgHigh, tmp);
+
+         cg->stopUsingRegister(tmp);
+         cg->stopUsingRegister(lhsLow);
+         }
+      else
+         {
+         TR::Register *lhs = cg->evaluate(lhsNode);
+         TR::Register *lhsLow = lhs->getLowOrder();
+         TR::Register *lhsHigh = lhs->getHighOrder();
+
+         TR::Register *tmp = cg->allocateRegister();
+
+         // y_0 = x_0 << n
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, trgLow, lhsLow, rhs);
+
+         // y_1 = (x_1 << n) | (x_0 >>> (32 - n)) | (x_0 << (n - 32))
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, trgHigh, lhsHigh, rhs);
+
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, tmp, rhs, 32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, tmp, lhsLow, tmp);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgHigh, trgHigh, tmp);
+
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, tmp, rhs, -32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, tmp, lhsLow, tmp);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgHigh, trgHigh, tmp);
+
+         cg->stopUsingRegister(tmp);
+         }
+      }
+
+   node->setRegister(trg);
+   cg->decReferenceCount(node->getFirstChild());
+   cg->decReferenceCount(node->getSecondChild());
+
+   return trg;
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::bshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return integerShiftLeft(node, 1, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::sshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return integerShiftLeft(node, 2, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return integerShiftLeft(node, 4, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *trgReg;
-   TR::Node     *secondChild = node->getSecondChild();
-   TR::Node     *firstChild  = node->getFirstChild();
-   TR::Register *srcReg, *srcLowReg, *srcHighReg;
-   TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
+   if (TR::Compiler->target.is64Bit())
+      return integerShiftLeft(node, 8, cg);
+   else
+      return lshl32Evaluator(node, cg);
+   }
 
-   if ((secondOp == TR::iconst  || secondOp == TR::lconst ||
-        secondOp == TR::iuconst || secondOp == TR::luconst) &&
-       secondChild->getRegister() == NULL)
+static bool isMaskThenShiftRightCandidate(TR::CodeGenerator *cg, TR::Node *node, uint32_t operandBits, uint64_t shiftAmount, bool isUnsigned)
+   {
+   static bool disableMaskAndShiftMerging = feGetEnv("TR_DisableMaskAndShiftMerging");
+   if (disableMaskAndShiftMerging)
+      return false;
+
+   TR::Node *lhs = node->getFirstChild();
+
+   // The LHS must only be referenced on this node.
+   if (lhs->getReferenceCount() != 1 || lhs->getRegister())
+      return false;
+
+   // The LHS must be a bitwise AND with a constant mask.
+   if (!lhs->getOpCode().isAnd() || !lhs->getSecondChild()->getOpCode().isLoadConst())
+      return false;
+
+   uint64_t mask = lhs->getSecondChild()->get64bitIntegralValueAsUnsigned();
+   uint64_t shiftMask = mask >> shiftAmount;
+
+   // The constant mask must have only one group of contiguous bits set in order to be encoded in an
+   // rlwinm or rldicl instruction.
+   if (!contiguousBits(shiftMask))
+      return false;
+
+   // If the operation is signed, then the mask must clear the sign bit. If the sign bit is not
+   // cleared, then a rotate and mask instruction would not correctly bring in the sign bit when
+   // shifting.
+   if (!isUnsigned && (mask & (1LL << (operandBits - 1))) != 0)
+      return false;
+
+   // When using an rldicl instruction (for 64-bit operands), the mask must be entirely confined to
+   // the low-order bits of the result (*after shifting*) to be encoded.
+   if (operandBits > 32 && shiftMask != 0 && ((shiftMask) & 1) == 0)
+      return false;
+
+   return performTransformation(cg->comp(), "O^O MASK/SHIFT MERGING: combining shift n%dn and mask n%dn into one operation\n", node->getGlobalIndex(), lhs->getGlobalIndex());
+   }
+
+static TR::Register *integerShiftRight(TR::Node *node, uint32_t operandSize, bool isUnsigned, TR::CodeGenerator *cg)
+   {
+   uint32_t operandBits = operandSize * 8;
+   uint64_t operandMask = operandBits == 64 ? 0xffffffffffffffffULL : ((1ULL << operandBits) - 1);
+
+   TR::Register *trg = cg->allocateRegister();
+
+   if (node->getSecondChild()->getOpCode().isLoadConst())
       {
-      int32_t shiftAmount;
-      if (secondOp == TR::iconst || secondOp == TR::iuconst)
-         shiftAmount = secondChild->getInt()&0x3f;
-      else
-         shiftAmount = secondChild->getLongInt()&0x3f;
+      int32_t rhs = node->getSecondChild()->getInt() & (operandBits > 32 ? 0x3f : 0x1f);
 
-      if (TR::Compiler->target.is64Bit())
+      // We can generally generate better code for logical shifts than arithmetic shifts through
+      // clever use of rlwinm/rldicl. If the sign bit is guaranteed not to be set, then arithmetic
+      // and logical shifts are equivalent, so use logical shifts for efficiency.
+      if (node->getFirstChild()->isNonNegative())
+         isUnsigned = true;
+
+      // For expressions of the form (x & mask) >> shift, we can sometimes perform the mask and
+      // shift operations together using the rlwinm or rldicl instructions.
+      if (isMaskThenShiftRightCandidate(cg, node, operandBits, rhs, isUnsigned))
          {
-         trgReg = cg->allocateRegister();
-         if (firstChild->getOpCodeValue() == TR::i2l &&
-             firstChild->getReferenceCount() == 1 &&
-             firstChild->getRegister() == NULL)
+         TR::Register *lhs = cg->evaluate(node->getFirstChild()->getFirstChild());
+         uint64_t mask = (operandMask & node->getFirstChild()->getSecondChild()->get64bitIntegralValueAsUnsigned()) >> rhs;
+
+         if (mask == 0)
+            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trg, 0);
+         else if (operandSize > 4)
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, trg, lhs, (64 - rhs), mask);
+         else
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trg, lhs, (32 - rhs), mask);
+
+         cg->decReferenceCount(node->getFirstChild()->getFirstChild());
+         cg->decReferenceCount(node->getFirstChild()->getSecondChild());
+         }
+      else if (isUnsigned)
+         {
+         TR::Register *lhs = cg->evaluate(node->getFirstChild());
+         uint64_t mask = operandMask >> rhs;
+
+         if (mask == 0)
+            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trg, 0);
+         else if (operandSize > 4)
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, trg, lhs, (64 - rhs), mask);
+         else
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trg, lhs, (32 - rhs), mask);
+         }
+      else
+         {
+         TR::Register *lhs = cg->evaluate(node->getFirstChild());
+
+         // Since we don't have instructions for performing byte/halfword shifts, we have to use the
+         // instructions for word-sized shifts. This requires that the lhs be sign-extended to
+         // ensure the bits shifted in from the left are correct.
+         if (operandSize != 4 && operandSize != 8)
+            generateSignExtendInstruction(node, lhs, lhs, cg, operandSize);
+
+         if (operandSize > 4)
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sradi, node, trg, lhs, rhs);
+         else
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trg, lhs, rhs);
+         }
+      }
+   else if (isUnsigned)
+      {
+      TR::Register *lhs = cg->evaluate(node->getFirstChild());
+      TR::Register *rhs = cg->evaluate(node->getSecondChild());
+
+      // Since we don't have instructions for performing byte/halfword shifts, we have to use the
+      // instructions for word-sized shifts. This requires that the lhs be zero-extended to ensure
+      // the bits shifted in from the left are correct.
+      if (operandSize != 4 && operandSize != 8)
+         generateZeroExtendInstruction(node, lhs, lhs, operandBits, cg);
+
+      if (operandSize > 4)
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srd, node, trg, lhs, rhs);
+      else
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trg, lhs, rhs);
+      }
+   else
+      {
+      TR::Register *lhs = cg->evaluate(node->getFirstChild());
+      TR::Register *rhs = cg->evaluate(node->getSecondChild());
+
+      // Since we don't have instructions for performing byte/halfword shifts, we have to use the
+      // instructions for word-sized shifts. This requires that the lhs be sign-extended to ensure
+      // the bits shifted in from the left are correct.
+      if (operandSize != 4 && operandSize != 8)
+         generateSignExtendInstruction(node, lhs, lhs, cg, operandSize);
+
+      if (operandSize > 4)
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srad, node, trg, lhs, rhs);
+      else
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::sraw, node, trg, lhs, rhs);
+      }
+
+   node->setRegister(trg);
+   cg->decReferenceCount(node->getFirstChild());
+   cg->decReferenceCount(node->getSecondChild());
+
+   return trg;
+   }
+
+static TR::Register *lshr32Evaluator(TR::Node *node, bool isUnsigned, TR::CodeGenerator *cg)
+   {
+   TR::Register *trgLow = cg->allocateRegister();
+   TR::Register *trgHigh = cg->allocateRegister();
+   TR::Register *trg = cg->allocateRegisterPair(trgLow, trgHigh);
+
+   if (node->getSecondChild()->getOpCode().isLoadConst())
+      {
+      TR::Register *lhs = cg->evaluate(node->getFirstChild());
+      TR::Register *lhsLow = lhs->getLowOrder();
+      TR::Register *lhsHigh = lhs->getHighOrder();
+      int32_t rhs = node->getSecondChild()->getInt() & 0x3f;
+
+      if (rhs == 0)
+         {
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgLow, lhsLow);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgHigh, lhsHigh);
+         }
+      else if (rhs < 32)
+         {
+         TR::Register *tmp = cg->allocateRegister();
+
+         generateShiftRightLogicalImmediate(cg, node, trgLow, lhsLow, rhs);
+         generateShiftLeftImmediate(cg, node, tmp, lhsHigh, 32 - rhs);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgLow, trgLow, tmp);
+
+         if (isUnsigned)
+            generateShiftRightLogicalImmediate(cg, node, trgHigh, lhsHigh, rhs);
+         else
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgHigh, lhsHigh, rhs);
+
+         cg->stopUsingRegister(tmp);
+         }
+      else if (rhs == 32)
+         {
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgLow, lhsHigh);
+
+         if (isUnsigned)
+            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgHigh, 0);
+         else
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgHigh, lhsHigh, 31);
+         }
+      else // (rhs > 32)
+         {
+         if (isUnsigned)
             {
-            if (firstChild->getFirstChild()->isNonNegative())
-               {
-               srcReg = cg->evaluate(firstChild->getFirstChild());
-               generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldic, node, trgReg, srcReg, shiftAmount, ((CONSTANT64(1)<<(32+shiftAmount)) - CONSTANT64(1))^((CONSTANT64(1)<<shiftAmount) - CONSTANT64(1)));
-               cg->decReferenceCount(firstChild->getFirstChild());
-               }
-            else if (TR::Compiler->target.cpu.id() >= TR_PPCp9)
-               {
-               srcReg = cg->evaluate(firstChild->getFirstChild());
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::extswsli, node, trgReg, srcReg, shiftAmount);
-               cg->decReferenceCount(firstChild->getFirstChild());
-               }
-            else
-               {
-               srcReg = cg->evaluate(firstChild);
-               generateShiftLeftImmediateLong(cg, node, trgReg, srcReg, shiftAmount);
-               }
+            generateShiftRightLogicalImmediate(cg, node, trgLow, lhsHigh, rhs - 32);
+            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgHigh, 0);
             }
          else
             {
-            srcReg = cg->evaluate(firstChild);
-            generateShiftLeftImmediateLong(cg, node, trgReg, srcReg, shiftAmount);
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgLow, lhsHigh, rhs - 32);
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgHigh, lhsHigh, 31);
             }
          }
-      else // 32 bit target
+      }
+   else if (isUnsigned)
+      {
+      TR::Node *lhsNode = node->getFirstChild();
+      TR::Register *rhs = cg->evaluate(node->getSecondChild());
+
+      // Perform 64-bit unsigned right shift using 32-bit instructions as described in Chapter 2 of
+      // Hacker's Delight, 2nd Edition.
+
+      if (lhsNode->getOpCode().isLoadConst() && lhsNode->getLongIntHigh() == 0)
          {
-         srcReg = cg->evaluate(firstChild);
-         srcLowReg = srcReg->getLowOrder();
-         srcHighReg = srcReg->getHighOrder();
-         if (shiftAmount != 0)
-            trgReg = cg->allocateRegisterPair(cg->allocateRegister(),
-                        cg->allocateRegister());
-         if (shiftAmount == 0)
-            {
-            trgReg = srcReg;
-            }
-         else if (shiftAmount < 32)
-            {
-            TR::Register *temp1Reg = cg->allocateRegister();
-            TR::Register *temp2Reg = cg->allocateRegister();
-            generateShiftLeftImmediate(cg, node, temp1Reg, srcHighReg, shiftAmount);
-            generateShiftLeftImmediate(cg, node, trgReg->getLowOrder(), srcLowReg, shiftAmount);
-            generateShiftRightLogicalImmediate(cg, node, temp2Reg, srcLowReg, 32-shiftAmount);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getHighOrder(), temp1Reg, temp2Reg);
-            cg->stopUsingRegister(temp1Reg);
-            cg->stopUsingRegister(temp2Reg);
-            }
-         else  // shiftAmount > 32
-            {
-            generateShiftLeftImmediate(cg, node, trgReg->getHighOrder(), srcLowReg, shiftAmount-32);
-            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg->getLowOrder(), 0);
-            }
+         TR::Register *lhsLow = cg->allocateRegister();
+         loadConstant(cg, node, lhsNode->getLongIntLow(), lhsLow);
+
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trgLow, lhsLow, rhs);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgHigh, 0);
+
+         cg->stopUsingRegister(lhsLow);
+         }
+      else if (lhsNode->getOpCode().isLoadConst() && lhsNode->getLongIntLow() == 0)
+         {
+         TR::Register *lhsHigh = cg->allocateRegister();
+         loadConstant(cg, node, lhsNode->getLongIntHigh(), lhsHigh);
+
+         TR::Register *tmp = cg->allocateRegister();
+
+         // y_0 = (x_1 << (32 - n)) | (x_1 >>> (n - 32))
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, trgLow, rhs, 32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, trgLow, lhsHigh, trgLow);
+
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, tmp, rhs, -32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, tmp, lhsHigh, tmp);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgLow, trgLow, tmp);
+
+         // y_1 = x_1 >>> n
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trgHigh, lhsHigh, rhs);
+
+         cg->stopUsingRegister(tmp);
+         cg->stopUsingRegister(lhsHigh);
+         }
+      else
+         {
+         TR::Register *lhs = cg->evaluate(lhsNode);
+         TR::Register *lhsLow = lhs->getLowOrder();
+         TR::Register *lhsHigh = lhs->getHighOrder();
+
+         TR::Register *tmp = cg->allocateRegister();
+
+         // y_0 = (x_0 >>> n) | (x_1 << (32 - n)) | (x_1 >>> (n - 32))
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trgLow, lhsLow, rhs);
+
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, tmp, rhs, 32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, tmp, lhsHigh, tmp);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgLow, trgLow, tmp);
+
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, tmp, rhs, -32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, tmp, lhsHigh, tmp);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgLow, trgLow, tmp);
+
+         // y_1 = x_1 >>> n
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trgHigh, lhsHigh, rhs);
+
+         cg->stopUsingRegister(tmp);
          }
       }
    else
       {
-      srcReg = cg->evaluate(firstChild);
-      if (TR::Compiler->target.is64Bit())
-         {
-         TR::Register *src2Reg = cg->evaluate(secondChild);
+      TR::Node *lhsNode = node->getFirstChild();
+      TR::Register *rhs = cg->evaluate(node->getSecondChild());
 
-         trgReg = cg->allocateRegister();
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::sld, node, trgReg, srcReg, src2Reg);
+      // Perform 64-bit signed right shift using 32-bit instructions as described in Chapter 2 of
+      // Hacker's Delight, 2nd Edition.
+      if (lhsNode->getOpCode().isLoadConst() && lhsNode->getLongIntHigh() == 0)
+         {
+         TR::Register *lhsLow = cg->allocateRegister();
+         loadConstant(cg, node, lhsNode->getLongIntLow(), lhsLow);
+
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trgLow, lhsLow, rhs);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgHigh, 0);
+
+         cg->stopUsingRegister(lhsLow);
          }
-      else // 32 bit target
+      else if (lhsNode->getOpCode().isLoadConst() && lhsNode->getLongIntHigh() == -1 && lhsNode->getLongIntLow() < 0)
          {
-         srcLowReg = srcReg->getLowOrder();
-         srcHighReg = srcReg->getHighOrder();
-         trgReg = cg->allocateRegisterPair(cg->allocateRegister(),
-                     cg->allocateRegister());
+         TR::Register *lhsLow = cg->allocateRegister();
+         loadConstant(cg, node, lhsNode->getLongIntLow(), lhsLow);
 
-         TR::Register *temp1Reg = cg->allocateRegister();
-         TR::Register *temp2Reg = cg->allocateRegister();
-         TR::Register *temp3Reg = cg->allocateRegister();
-         TR::Register *shiftAmountReg = cg->evaluate(secondChild);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::sraw, node, trgLow, lhsLow, rhs);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgHigh, -1);
 
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node,temp1Reg, srcHighReg, shiftAmountReg);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node,trgReg->getLowOrder(), srcLowReg, shiftAmountReg);
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, temp2Reg, shiftAmountReg, 32);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node,temp3Reg, srcLowReg, temp2Reg);
-         cg->stopUsingRegister(temp2Reg);
-
-         TR::Register *temp4Reg = cg->allocateRegister();
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, temp4Reg, shiftAmountReg, -32);
-
-         TR::Register *temp5Reg = cg->allocateRegister();
-         TR::Register *temp6Reg = cg->allocateRegister();
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, temp5Reg, srcLowReg, temp4Reg);
-         cg->stopUsingRegister(temp4Reg);
-
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, temp6Reg, temp3Reg, temp5Reg);
-         cg->stopUsingRegister(temp3Reg);
-         cg->stopUsingRegister(temp5Reg);
-
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getHighOrder(), temp1Reg, temp6Reg);
-         cg->stopUsingRegister(temp1Reg);
-         cg->stopUsingRegister(temp6Reg);
+         cg->stopUsingRegister(lhsLow);
          }
-      }
-   node->setRegister(trgReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return trgReg;
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::ishflEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register  *trgReg         = cg->allocateRegister();
-   TR::Node      *secondChild    = node->getSecondChild();
-   TR::Node      *firstChild     = node->getFirstChild();
-   TR::Register  *src1Reg        = cg->evaluate(firstChild);
-   TR::ILOpCodes secondOp        = secondChild->getOpCodeValue();
-
-   // Const shift amount, we know which shift to use (left or right)
-   if (secondOp == TR::iconst || secondOp == TR::iuconst ||
-      ((secondOp == TR::b2i) && ((secondChild->getFirstChild()->getOpCodeValue()) == TR::bconst)) ||
-      ((secondOp == TR::s2i) && ((secondChild->getFirstChild()->getOpCodeValue()) == TR::sconst)) )
-      {
-      int32_t  shiftAmount = secondChild->getInt();
-
-      if (secondOp == TR::b2i)
-         shiftAmount = secondChild->getFirstChild()->getByte();
-
-      if (secondOp == TR::s2i)
-         shiftAmount = secondChild->getFirstChild()->getShortInt();
-
-      if (shiftAmount > 0)
-        generateShiftLeftImmediate(cg, node, trgReg, src1Reg, shiftAmount);
-      else
-        generateShiftRightLogicalImmediate(cg, node, trgReg, src1Reg, -shiftAmount);
-      }
-   else
-      {
-      TR::Register *temp1Reg       = cg->allocateRegister(); // Shift left result
-      TR::Register *temp2Reg       = cg->allocateRegister(); // Negate result
-      TR::Register *temp3Reg       = cg->allocateRegister(); // Shift right result
-
-      TR::Register *src2Reg = cg->evaluate(secondChild);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, temp1Reg, src1Reg, src2Reg);
-
-      // Negate (res in temp2Reg)
-      generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, temp2Reg, src2Reg);
-
-      // Shift Right (res in temp3Reg)
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, temp3Reg, src1Reg, temp2Reg);
-
-      // OR (res in trg4Reg)
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg, temp1Reg, temp3Reg);
-
-      // Clean up
-      cg->stopUsingRegister(temp1Reg);
-      cg->stopUsingRegister(temp2Reg);
-      cg->stopUsingRegister(temp3Reg);
-      }
-
-   node->setRegister(trgReg);
-
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-   return trgReg;
-   }
-
-
-void ClearForNegativeShiftAmount(TR::Node *node, TR::CodeGenerator *cg, TR::Register  *trgReg, TR::Register *shiftAmountReg);
-TR::Register * ShiftRightLong32Bit (TR::Node *node, TR::CodeGenerator *cg, TR::Register *srcReg, TR::Register *shiftAmountReg)
-   {
-   TR::Register *trgReg;
-   TR::Node     *secondChild    = node->getSecondChild();
-   TR::Node     *firstChild     = node->getFirstChild();
-
-   int32_t     srcLowValue;
-   int32_t     srcHighValue;
-   bool        constShift = (firstChild->getOpCodeValue() == TR::lconst);
-
-   trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-
-   if (constShift)
-      {
-      srcLowValue = firstChild->getLongIntLow();
-      srcHighValue = firstChild->getLongIntHigh();
-      }
-   if (constShift && srcHighValue == 0)
-      {
-      TR::Register *tempReg = cg->allocateRegister();
-      loadConstant(cg, node, srcLowValue, tempReg);
-      generateTrg1ImmInstruction(cg, TR::InstOpCode::li,  node, trgReg->getHighOrder(), 0);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::srw,  node, trgReg->getLowOrder(), tempReg, shiftAmountReg);
-      cg->stopUsingRegister(tempReg);
-      }
-   else
-      {
-      TR::Register *srcLowReg;
-      TR::Register *srcHighReg;
-      bool         killSrcHigh = false;
-
-      if (constShift && srcLowValue==0)
+      else if (lhsNode->getOpCode().isLoadConst() && lhsNode->getLongIntLow() == 0)
          {
-         srcHighReg = cg->allocateRegister();
-         loadConstant(cg, node, srcHighValue,srcHighReg);
-         killSrcHigh = true;
+         TR::Register *lhsHigh = cg->allocateRegister();
+         loadConstant(cg, node, lhsNode->getLongIntHigh(), lhsHigh);
+
+         TR::Register *tmp1 = cg->allocateRegister();
+         TR::Register *tmp2 = cg->allocateRegister();
+
+         // y_0 = (x_1 << (32 - n)) | ((x_1 >> (n - 32)) & (32 - n) >> 31)
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, tmp1, rhs, 32);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgLow, tmp1, 31);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, tmp2, rhs, -32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::sraw, node, tmp2, lhsHigh, tmp2);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::AND, node, trgLow, trgLow, tmp2);
+
+         // y_1 = x_1 >> n
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::sraw, node, trgHigh, lhsHigh, rhs);
+
+         cg->stopUsingRegister(tmp1);
+         cg->stopUsingRegister(tmp2);
+         cg->stopUsingRegister(lhsHigh);
          }
       else
          {
-         srcLowReg  = srcReg->getLowOrder();
-         srcHighReg = srcReg->getHighOrder();
+         TR::Register *lhs = cg->evaluate(lhsNode);
+         TR::Register *lhsLow = lhs->getLowOrder();
+         TR::Register *lhsHigh = lhs->getHighOrder();
+
+         TR::Register *tmp1 = cg->allocateRegister();
+         TR::Register *tmp2 = cg->allocateRegister();
+
+         // y_0 = (x_0 >>> n) | (x_1 << (32 - n)) | ((x_1 >> (n - 32)) & ((32 - n) >> 31))
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trgLow, lhsLow, rhs);
+
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, tmp1, rhs, 32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, tmp2, lhsHigh, tmp1);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgLow, trgLow, tmp2);
+
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, tmp2, rhs, -32);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::sraw, node, tmp2, lhsHigh, tmp2);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, tmp1, tmp1, 31);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::AND, node, tmp1, tmp1, tmp2);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgLow, trgLow, tmp1);
+
+         // y_1 = x_1 >> n
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::sraw, node, trgHigh, lhsHigh, rhs);
+
+         cg->stopUsingRegister(tmp1);
+         cg->stopUsingRegister(tmp2);
          }
-      TR::Register *temp1Reg       = NULL;
-      TR::Register *temp2Reg       = cg->allocateRegister();
-      TR::Register *temp3Reg       = cg->allocateRegister();
-      TR::Register *temp4Reg       = cg->allocateRegister();
-      TR::Register *temp5Reg       = cg->allocateRegister();
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trgReg->getHighOrder(), srcHighReg, shiftAmountReg );
-      if (!(constShift && srcLowValue==0))
-         {
-         temp1Reg = cg->allocateRegister();
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, temp1Reg, srcLowReg, shiftAmountReg );
-         }
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, temp2Reg, shiftAmountReg, 32);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, temp3Reg, srcHighReg, temp2Reg);
-      cg->stopUsingRegister(temp2Reg);
-
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, temp4Reg, shiftAmountReg, -32);
-
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, temp5Reg, srcHighReg, temp4Reg);
-      cg->stopUsingRegister(temp4Reg);
-
-      if (killSrcHigh)
-         cg->stopUsingRegister(srcHighReg);
-
-      if (constShift && srcLowValue==0)
-         {
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getLowOrder(), temp3Reg, temp5Reg);
-         }
-      else
-         {
-         TR::Register *temp6Reg       = cg->allocateRegister();
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, temp6Reg, temp3Reg, temp5Reg);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getLowOrder(), temp1Reg, temp6Reg);
-         cg->stopUsingRegister(temp1Reg);
-         cg->stopUsingRegister(temp6Reg);
-         }
-
-      cg->stopUsingRegister(temp3Reg);
-      cg->stopUsingRegister(temp5Reg);
-
-      // Clear trgReg to 0 if the shift amount is negative
-      ClearForNegativeShiftAmount (node,cg, trgReg, shiftAmountReg);
       }
-   return trgReg;
+
+   node->setRegister(trg);
+   cg->decReferenceCount(node->getFirstChild());
+   cg->decReferenceCount(node->getSecondChild());
+
+   return trg;
    }
 
-TR::Register * ShiftRightLongImm32Bit (TR::Node *node, TR::CodeGenerator *cg, TR::Register *srcReg, int32_t shiftAmount)
+TR::Register *OMR::Power::TreeEvaluator::bshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *srcLowReg, *srcHighReg, *trgReg;
-
-   srcLowReg   = srcReg->getLowOrder();
-   srcHighReg  = srcReg->getHighOrder();
-
-   // shiftAmount is not 0
-   trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-
-   if (shiftAmount > 32)
-      {
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgReg->getHighOrder(), srcHighReg, 31);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgReg->getLowOrder(), srcHighReg, shiftAmount-32);
-      }
-   else if (shiftAmount == 32)
-      {
-      generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg->getLowOrder(), srcHighReg);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgReg->getHighOrder(), srcHighReg, 31);
-      }
-   else // (shiftAmount < 32)
-      {
-      TR::Register *temp1Reg = cg->allocateRegister();
-      TR::Register *temp2Reg = cg->allocateRegister();
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgReg->getHighOrder(), srcHighReg, shiftAmount);
-      generateShiftRightLogicalImmediate(cg, node, temp1Reg, srcLowReg, shiftAmount);
-      generateShiftLeftImmediate(cg, node, temp2Reg, srcHighReg, 32-shiftAmount);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getLowOrder(), temp1Reg, temp2Reg);
-      cg->stopUsingRegister(temp1Reg);
-      cg->stopUsingRegister(temp2Reg);
+   return integerShiftRight(node, 1, false, cg);
    }
 
-   return trgReg;
-   }
-
-void ClearForNegativeShiftAmount(TR::Node *node, TR::CodeGenerator *cg, TR::Register  *trgReg, TR::Register *shiftAmountReg){
-   TR::Register  *tmp1Reg = cg->allocateRegister();
-   TR::Register  *tmp2Reg = cg->allocateRegister();
-
-   // Get either all 1's or all 0s into tmp2, all 1's for pozitive shft amounts, all 0s for negative
-   generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Reg, shiftAmountReg, 26, 0x1);
-   generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, tmp2Reg, tmp1Reg);
-
-   // Clear out trgReg (low order 32 and high order 32) for negative shift amounts
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::andc, node, trgReg->getLowOrder(), trgReg->getLowOrder(), tmp2Reg);
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::andc, node, trgReg->getHighOrder(), trgReg->getHighOrder(), tmp2Reg);
-
-   cg->stopUsingRegister(tmp1Reg);
-   cg->stopUsingRegister(tmp2Reg);
-
-}
-
-TR::Register * ShiftLeftLong32Bit (TR::Node *node, TR::CodeGenerator *cg, TR::Register  *srcReg, TR::Register *shiftAmountReg){
-   TR::Register  *srcLowReg, *srcHighReg, *trgReg;
-
-   srcLowReg  = srcReg->getLowOrder();
-   srcHighReg = srcReg->getHighOrder();
-   trgReg     = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-
-   TR::Register *tmp1Reg = cg->allocateRegister();
-   TR::Register *tmp2Reg = cg->allocateRegister();
-   TR::Register *tmp3Reg = cg->allocateRegister();
-
-   // srcHigh << shftAmt
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node,tmp1Reg, srcHighReg, shiftAmountReg);
-   // srcLow  << shftAmt
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node,trgReg->getLowOrder(), srcLowReg, shiftAmountReg);
-
-   // srcLow >> (32 -shftAmt)
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, tmp2Reg, shiftAmountReg, 32);
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node,tmp3Reg, srcLowReg, tmp2Reg);
-
-   // srcLow << (shftAmt - 32)
-   TR::Register *temp4Reg = cg->allocateRegister();
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, temp4Reg, shiftAmountReg, -32);
-   TR::Register *temp5Reg = cg->allocateRegister();
-   TR::Register *temp6Reg = cg->allocateRegister();
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, temp5Reg, srcLowReg, temp4Reg);
-   cg->stopUsingRegister(temp4Reg);
-
-   // [srcLow << (32 -shftAmt)] | [srcLow << (shftAmt - 32)
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, temp6Reg, tmp3Reg, temp5Reg);
-   cg->stopUsingRegister(tmp3Reg);
-   cg->stopUsingRegister(temp5Reg);
-
-   // { [srcLow << (32 -shftAmt)] | [srcLow << (shftAmt - 32)} | [srcHigh << shftAmt]
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getHighOrder(), tmp1Reg, temp6Reg);
-   cg->stopUsingRegister(temp6Reg);
-
-   // Clear trgReg to 0 if the shift amount is negative
-   ClearForNegativeShiftAmount (node,cg, trgReg, shiftAmountReg);
-
-   cg->stopUsingRegister(tmp1Reg);
-   cg->stopUsingRegister(tmp2Reg);
-
-   return trgReg;
-}
-TR::Register *OMR::Power::TreeEvaluator::lshflEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::Power::TreeEvaluator::bushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *temp1Reg;
-   TR::Register *temp2Reg;
-   TR::Register *temp3Reg;
-   TR::Register *trgReg;
+   return integerShiftRight(node, 1, true, cg);
+   }
 
-
-   bool         is64BitTgt   = TR::Compiler->target.is64Bit();
-   TR::Node      *secondChild = node->getSecondChild();
-   TR::Node      *firstChild  = node->getFirstChild();
-   TR::ILOpCodes secondOp     = secondChild->getOpCodeValue();
-   TR::Register  *srcReg, *srcLowReg, *srcHighReg;
-
-   srcReg = cg->evaluate(firstChild);
-
-   // Second Op Constant
-   if ((secondOp == TR::iconst  || secondOp == TR::lconst ||
-        secondOp == TR::iuconst || secondOp == TR::luconst) &&
-        secondChild->getRegister() == NULL)
-      {
-      int32_t shiftAmount;
-      if (secondOp == TR::iconst || secondOp == TR::iuconst)
-         shiftAmount = secondChild->getInt();
-      else
-         shiftAmount = secondChild->getLongInt();
-
-      // 64 Bit, second op constant
-      if (is64BitTgt)
-         {
-         trgReg   = cg->allocateRegister();
-
-         // Shift left or right
-         if (shiftAmount > 0)
-           generateShiftLeftImmediateLong(cg, node, trgReg, srcReg, shiftAmount);
-         else
-           generateShiftRightLogicalImmediateLong(cg, node, trgReg, srcReg, -shiftAmount);
-         }
-
-      // 32 Bit, second op constant
-      else
-         {
-         srcReg = cg->evaluate(firstChild);
-         srcLowReg = srcReg->getLowOrder();
-         srcHighReg = srcReg->getHighOrder();
-
-         // Shift amount 0, no shift
-         if (shiftAmount == 0)
-            trgReg = srcReg;
-
-         // Shift amount pozitive, shift right
-         else if (shiftAmount < 0)
-            {
-            trgReg = ShiftRightLongImm32Bit(node, cg, srcReg, -shiftAmount);
-            }
-
-         // Shift amount pozitive, shift left
-         else if (shiftAmount < 32)
-            {
-            trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-            TR::Register *temp1Reg = cg->allocateRegister();
-            TR::Register *temp2Reg = cg->allocateRegister();
-            generateShiftLeftImmediate(cg, node, temp1Reg, srcHighReg, shiftAmount);
-            generateShiftLeftImmediate(cg, node, trgReg->getLowOrder(), srcLowReg, shiftAmount);
-            generateShiftRightLogicalImmediate(cg, node, temp2Reg, srcLowReg, 32-shiftAmount);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getHighOrder(), temp1Reg, temp2Reg);
-            cg->stopUsingRegister(temp1Reg);
-            cg->stopUsingRegister(temp2Reg);
-            }
-         // shiftAmount > 32, shift left
-         else
-            {
-            trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-            generateShiftLeftImmediate(cg, node, trgReg->getHighOrder(), srcLowReg, shiftAmount-32);
-            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg->getLowOrder(), 0);
-            }
-         }
-      }
-
-   // Second Op Not Constant
-   else
+TR::Register *OMR::Power::TreeEvaluator::sshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-      // 64bit target
-      if (TR::Compiler->target.is64Bit()) {
-         TR::Register *shiftAmountReg = cg->evaluate(secondChild);
-
-         temp1Reg = cg->allocateRegister();
-         temp2Reg = cg->allocateRegister();
-         temp3Reg = cg->allocateRegister();
-
-         // 1. Shift Left (res in temp1Reg)
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::sld, node, temp1Reg, srcReg, shiftAmountReg);
-
-         // 2. Negate (res in temp2Reg)
-         generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, temp2Reg, srcReg);
-
-         // 3. Shift Right (res in temp3Reg)
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::srd, node, temp3Reg, srcReg, temp2Reg);
-
-         // 4. OR (res in trgReg)
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg, temp1Reg, temp3Reg);
-
-         // Clean up
-         cg->stopUsingRegister(temp1Reg);
-         cg->stopUsingRegister(temp2Reg);
-         cg->stopUsingRegister(temp3Reg);
-      }
-
-      // 32 bit target
-      else {
-         // 1. Shift Left, result in temp1Reg (Lo,Hi)
-         TR::Register *shiftAmountReg = cg->evaluate(secondChild);
-         temp1Reg = ShiftLeftLong32Bit(node,cg, srcReg, shiftAmountReg);
-
-         // 2. Negate, result in temp2Reg
-         temp2Reg = cg->allocateRegister();
-         generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, temp2Reg, shiftAmountReg);
-
-         // 3. Shift Right, result on temp3Reg
-         temp3Reg = ShiftRightLong32Bit(node,cg, srcReg, temp2Reg);
-
-         // 4. OR (res in trgReg)
-         trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getLowOrder(), temp1Reg->getLowOrder(), temp3Reg->getLowOrder());
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getHighOrder(), temp1Reg->getHighOrder(), temp3Reg->getHighOrder());
-
-         // Clean Up
-         cg->stopUsingRegister(shiftAmountReg);
-         cg->stopUsingRegister(temp1Reg);
-         cg->stopUsingRegister(temp2Reg);
-         cg->stopUsingRegister(temp3Reg);
-      }
+   return integerShiftRight(node, 2, false, cg);
    }
 
-   node->setRegister(trgReg);
-
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return trgReg;
+TR::Register *OMR::Power::TreeEvaluator::sushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return integerShiftRight(node, 2, true, cg);
    }
 
-// Also handles TR::bshr, TR::sshr
 TR::Register *OMR::Power::TreeEvaluator::ishrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *trgReg         = cg->allocateRegister();
-   TR::Node     *secondChild    = node->getSecondChild();
-   TR::Node     *firstChild     = node->getFirstChild();
-   TR::Register *src1Reg;
+   return integerShiftRight(node, 4, false, cg);
+   }
 
-   if (secondChild->getOpCode().isLoadConst())
-      {
-      int32_t shiftAmount = secondChild->get64bitIntegralValue() & 0x1f;
-
-      if (firstChild->getOpCode().isAnd() &&
-          firstChild->getSecondChild()->getOpCode().isLoadConst() &&
-          contiguousBits(firstChild->getSecondChild()->getInt()) &&
-          firstChild->getSecondChild()->getInt() & 0x80000000 == 0 &&
-          firstChild->getReferenceCount() == 1 &&
-          firstChild->getRegister() == NULL)
-         {
-         uint32_t mask = (firstChild->getSecondChild()->getInt() >> shiftAmount) & 0xFFFFFFFF;
-         if (mask == 0)// can't be encoded into rlwinm
-            {
-            cg->evaluate(firstChild->getFirstChild());
-            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, 0);
-            }
-         else
-            {
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trgReg, cg->evaluate(firstChild->getFirstChild()), 32 - shiftAmount, mask);
-            }
-         cg->decReferenceCount(firstChild->getFirstChild());
-         cg->decReferenceCount(firstChild->getSecondChild());
-         }
-      else
-         {
-         src1Reg = cg->evaluate(firstChild);
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgReg, src1Reg, shiftAmount);
-         }
-      }
-   else
-      {
-      src1Reg = cg->evaluate(firstChild);
-      TR::Register *src2Reg = cg->evaluate(secondChild);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::sraw, node, trgReg, src1Reg, src2Reg);
-      }
-   node->setRegister(trgReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-   return trgReg;
+TR::Register *OMR::Power::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return integerShiftRight(node, 4, true, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *trgReg;
-   TR::Node     *secondChild    = node->getSecondChild();
-   TR::Node     *firstChild     = node->getFirstChild();
-   TR::Register *src1Reg;
-   TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
-
-   if (secondOp == TR::iconst || secondOp == TR::iuconst)
-      {
-      TR::Register *srcLowReg, *srcHighReg;
-      int32_t shiftAmount = secondChild->getInt()&0x3f;
-      src1Reg = cg->evaluate(firstChild);
-
-      if (TR::Compiler->target.is64Bit())
-         {
-         trgReg = cg->allocateRegister();
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sradi, node, trgReg, src1Reg, shiftAmount);
-         }
-      else // 32 bit target
-         {
-         srcLowReg = src1Reg->getLowOrder();
-         srcHighReg = src1Reg->getHighOrder();
-         if (shiftAmount != 0)
-            trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-
-         if (shiftAmount == 0)
-            {
-            trgReg = src1Reg;
-            }
-         else if (shiftAmount > 32)
-            {
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgReg->getHighOrder(), srcHighReg, 31);
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgReg->getLowOrder(), srcHighReg, shiftAmount-32);
-            }
-         else if (shiftAmount == 32)
-            {
-            generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg->getLowOrder(), srcHighReg);
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgReg->getHighOrder(), srcHighReg, 31);
-            }
-         else // (shiftAmount < 32)
-            {
-            TR::Register *temp1Reg         = cg->allocateRegister();
-            TR::Register *temp2Reg         = cg->allocateRegister();
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, trgReg->getHighOrder(), srcHighReg, shiftAmount);
-            generateShiftRightLogicalImmediate(cg, node, temp1Reg, srcLowReg, shiftAmount);
-            generateShiftLeftImmediate(cg, node, temp2Reg, srcHighReg, 32-shiftAmount);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getLowOrder(), temp1Reg, temp2Reg);
-            cg->stopUsingRegister(temp1Reg);
-            cg->stopUsingRegister(temp2Reg);
-            }
-         }
-      }
-   else // no constant shift amount
-      if (TR::Compiler->target.is64Bit())
-         {
-         trgReg = cg->allocateRegister();
-         TR::Register *src2Reg = cg->evaluate(secondChild);
-         src1Reg = cg->evaluate(firstChild);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::srad, node, trgReg, src1Reg, src2Reg);
-         }
-      else // 32 bit target
-         {
-         int32_t srcLowValue;
-         int32_t srcHighValue;
-         bool    constShift = (firstChild->getOpCodeValue() == TR::lconst);
-
-         trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-
-         if (constShift)
-            {
-            srcLowValue = firstChild->getLongIntLow();
-            srcHighValue = firstChild->getLongIntHigh();
-            }
-         TR::Register *shiftAmountReg = cg->evaluate(secondChild);
-
-         // Didn't figure out an easy way for case: high==-1 && low>=0 where shiftamount may be 0
-         if (constShift && (srcHighValue == 0 || (srcHighValue==-1 && srcLowValue<0)))
-            {
-            TR::Register *tempReg = cg->allocateRegister();
-
-            loadConstant(cg, node, srcLowValue, tempReg);
-            generateTrg1ImmInstruction(cg, TR::InstOpCode::li,  node, trgReg->getHighOrder(), srcHighValue);
-            if (srcHighValue == 0)
-               {
-               generateTrg1Src2Instruction(cg, TR::InstOpCode::srw,  node, trgReg->getLowOrder(), tempReg, shiftAmountReg);
-               }
-            else
-               {
-               generateTrg1Src2Instruction(cg, TR::InstOpCode::sraw,  node, trgReg->getLowOrder(), tempReg, shiftAmountReg);
-               }
-
-            cg->stopUsingRegister(tempReg);
-            }
-      else
-         {
-         TR::Register *srcLowReg;
-         TR::Register *srcHighReg;
-         bool         killSrcHigh = false;
-
-         if (constShift && srcLowValue==0)
-            {
-            srcHighReg = cg->allocateRegister();
-            loadConstant(cg, node, srcHighValue,srcHighReg);
-            killSrcHigh = true;
-            }
-         else
-            {
-            src1Reg = cg->evaluate(firstChild);
-            srcLowReg  = src1Reg->getLowOrder();
-            srcHighReg = src1Reg->getHighOrder();
-            }
-         TR::Register *temp1Reg = NULL;
-         TR::Register *temp2Reg = cg->allocateRegister();
-         TR::Register *temp3Reg = cg->allocateRegister();
-         TR::Register *temp4Reg = cg->allocateRegister();
-         TR::Register *temp5Reg = cg->allocateRegister();
-         TR::Register *temp6Reg = cg->allocateRegister();
-         TR::Register *temp7Reg = cg->allocateRegister();
-         TR::Register *temp8Reg = cg->allocateRegister();
-         TR::Register *temp9Reg = cg->allocateRegister();
-         TR::Register *temp10Reg = cg->allocateRegister();
-         TR::Register *temp11Reg = cg->allocateRegister();
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::sraw, node, trgReg->getHighOrder(), srcHighReg, shiftAmountReg );
-         if (!(constShift && srcLowValue==0))
-            {
-            temp1Reg = cg->allocateRegister();
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, temp1Reg, srcLowReg, shiftAmountReg );
-            }
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, temp2Reg, shiftAmountReg, 32);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, temp3Reg, srcHighReg, temp2Reg);
-         cg->stopUsingRegister(temp2Reg);
-
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, temp4Reg, shiftAmountReg, -32);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, temp5Reg, srcHighReg, temp4Reg);
-         cg->stopUsingRegister(temp4Reg);
-
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, temp6Reg, temp3Reg, temp5Reg);
-         cg->stopUsingRegister(temp3Reg);
-         cg->stopUsingRegister(temp5Reg);
-
-         if (!(constShift && srcLowValue==0))
-            {
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, temp7Reg, temp1Reg, temp6Reg);
-            cg->stopUsingRegister(temp1Reg);
-            }
-
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, temp8Reg, shiftAmountReg, 26, 0x80000000);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::AND, node, temp9Reg, srcHighReg, temp8Reg);
-         if (killSrcHigh)
-            cg->stopUsingRegister(srcHighReg);
-         cg->stopUsingRegister(temp8Reg);
-
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, temp10Reg, shiftAmountReg, 0, 0x1f);
-
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::sraw, node,  temp11Reg, temp9Reg, temp10Reg);
-         cg->stopUsingRegister(temp9Reg);
-         cg->stopUsingRegister(temp10Reg);
-
-         if (constShift && srcLowValue==0)
-            {
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node,  trgReg->getLowOrder(), temp6Reg, temp11Reg);
-            }
-         else
-            {
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node,  trgReg->getLowOrder(), temp7Reg, temp11Reg);
-            }
-         cg->stopUsingRegister(temp6Reg);
-         cg->stopUsingRegister(temp7Reg);
-         cg->stopUsingRegister(temp11Reg);
-         }
-      }
-
-   node->setRegister(trgReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-   return trgReg;
-   }
-
-// Also handles TR::bushr
-TR::Register *OMR::Power::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *trgReg         = cg->allocateRegister();
-   TR::Node     *secondChild    = node->getSecondChild();
-   TR::Node     *firstChild     = node->getFirstChild();
-   TR::Register *src1Reg;
-   bool isByte = (node->getOpCodeValue() == TR::bushr);
-   if (secondChild->getOpCode().isLoadConst())
-      {
-      int32_t shiftAmount = secondChild->get64bitIntegralValue();
-      if (isByte && (shiftAmount > 7))
-         {
-         cg->evaluate(firstChild);
-         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, 0);
-         }
-      else if (firstChild->getOpCode().isAnd() &&
-                firstChild->getSecondChild()->getOpCode().isLoadConst() &&
-                contiguousBits(firstChild->getSecondChild()->getInt()) &&
-                firstChild->getReferenceCount() == 1 &&
-                firstChild->getRegister() == NULL)
-         {
-         uint32_t mask = ((uint32_t) firstChild->getSecondChild()->getInt() >> shiftAmount) & 0xFFFFFFFF;
-         if (mask == 0)// can't be encoded into rlwinm
-            {
-            cg->evaluate(firstChild->getFirstChild());
-            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, 0);
-            }
-         else
-            {
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trgReg, cg->evaluate(firstChild->getFirstChild()), 32 - shiftAmount, mask);
-            }
-         cg->decReferenceCount(firstChild->getFirstChild());
-         cg->decReferenceCount(firstChild->getSecondChild());
-         }
-      else if(isByte)
-         {
-         uint32_t mask = (1 << (8 - shiftAmount)) - 1;
-         src1Reg = cg->evaluate(firstChild);
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trgReg, src1Reg, 32 - shiftAmount, mask);
-         }
-      else
-         {
-         src1Reg = cg->evaluate(firstChild);
-         generateShiftRightLogicalImmediate(cg, node, trgReg, src1Reg, shiftAmount & 0x1f);
-         }
-      }
+   if (TR::Compiler->target.is64Bit())
+      return integerShiftRight(node, 8, false, cg);
    else
-      {
-      src1Reg = cg->evaluate(firstChild);
-      TR::Register *src2Reg = cg->evaluate(secondChild);
-      if(isByte)
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, src1Reg, src1Reg, 0, (uint32_t)0x000000FF);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trgReg, src1Reg, src2Reg);
-      }
-   node->setRegister(trgReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-   return trgReg;
+      return lshr32Evaluator(node, false, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *trgReg;
-   TR::Node     *secondChild    = node->getSecondChild();
-   TR::Node     *firstChild     = node->getFirstChild();
-   TR::Register *srcReg;
-   TR::ILOpCodes secondOp            = secondChild->getOpCodeValue();
-
-   if (secondOp == TR::iconst || secondOp == TR::iuconst)
-      {
-      int32_t shiftAmount = secondChild->getInt()&0x3f;
-      srcReg = cg->evaluate(firstChild);
-      if (TR::Compiler->target.is64Bit())
-         {
-         trgReg = cg->allocateRegister();
-         generateShiftRightLogicalImmediateLong(cg, node, trgReg, srcReg, shiftAmount);
-         }
-      else
-         {
-         TR::Register *srcLowReg, *srcHighReg;
-         srcLowReg = srcReg->getLowOrder();
-         srcHighReg = srcReg->getHighOrder();
-
-         if (shiftAmount != 0)
-            trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-
-         if (shiftAmount == 0)
-            {
-            trgReg = srcReg;
-            }
-         else if (shiftAmount > 32)
-            {
-            generateShiftRightLogicalImmediate(cg, node, trgReg->getLowOrder(), srcHighReg, shiftAmount-32);
-            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg->getHighOrder(), 0);
-            }
-         else if (shiftAmount == 32)
-            {
-            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg->getHighOrder(), 0);
-            generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg->getLowOrder(), srcHighReg);
-            }
-         else // (shiftAmount < 32)
-            {
-            TR::Register *temp1Reg         = cg->allocateRegister();
-            TR::Register *temp2Reg         = cg->allocateRegister();
-            generateShiftRightLogicalImmediate(cg, node, trgReg->getHighOrder(), srcHighReg, shiftAmount);
-            generateShiftRightLogicalImmediate(cg, node, temp1Reg, srcLowReg, shiftAmount);
-            generateShiftLeftImmediate(cg, node, temp2Reg, srcHighReg, 32-shiftAmount);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getLowOrder(), temp1Reg, temp2Reg);
-            cg->stopUsingRegister(temp1Reg);
-            cg->stopUsingRegister(temp2Reg);
-            }
-         }
-      }
-   else  // no constant shift amount
-      {
-      TR::Register *shiftAmountReg = cg->evaluate(secondChild);
-      if (TR::Compiler->target.is64Bit())
-         {
-         trgReg = cg->allocateRegister();
-         srcReg = cg->evaluate(firstChild);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::srd, node, trgReg, srcReg, shiftAmountReg);
-         }
-      else
-         {
-         int32_t srcLowValue;
-         int32_t srcHighValue;
-         bool    constShift = (firstChild->getOpCodeValue() == TR::lconst);
-
-         trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-
-         if (constShift)
-            {
-            srcLowValue = firstChild->getLongIntLow();
-            srcHighValue = firstChild->getLongIntHigh();
-            }
-         if (constShift && srcHighValue == 0)
-            {
-            TR::Register *tempReg = cg->allocateRegister();
-            loadConstant(cg, node, srcLowValue, tempReg);
-            generateTrg1ImmInstruction(cg, TR::InstOpCode::li,  node, trgReg->getHighOrder(), 0);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::srw,  node, trgReg->getLowOrder(), tempReg, shiftAmountReg);
-            cg->stopUsingRegister(tempReg);
-            }
-         else
-            {
-            TR::Register *srcLowReg;
-            TR::Register *srcHighReg;
-            bool         killSrcHigh = false;
-            if (constShift && srcLowValue==0)
-               {
-               srcHighReg = cg->allocateRegister();
-               loadConstant(cg, node, srcHighValue,srcHighReg);
-               killSrcHigh = true;
-               }
-            else
-               {
-               srcReg = cg->evaluate(firstChild);
-               srcLowReg  = srcReg->getLowOrder();
-               srcHighReg = srcReg->getHighOrder();
-               }
-            TR::Register *temp1Reg       = NULL;
-            TR::Register *temp2Reg       = cg->allocateRegister();
-            TR::Register *temp3Reg       = cg->allocateRegister();
-            TR::Register *temp4Reg       = cg->allocateRegister();
-            TR::Register *temp5Reg       = cg->allocateRegister();
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, trgReg->getHighOrder(), srcHighReg, shiftAmountReg );
-            if (!(constShift && srcLowValue==0))
-               {
-               temp1Reg = cg->allocateRegister();
-               generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, temp1Reg, srcLowReg, shiftAmountReg );
-               }
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, temp2Reg, shiftAmountReg, 32);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::slw, node, temp3Reg, srcHighReg, temp2Reg);
-            cg->stopUsingRegister(temp2Reg);
-
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, temp4Reg, shiftAmountReg, -32);
-
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, temp5Reg, srcHighReg, temp4Reg);
-            cg->stopUsingRegister(temp4Reg);
-
-            if (killSrcHigh)
-               cg->stopUsingRegister(srcHighReg);
-
-            if (constShift && srcLowValue==0)
-               {
-               generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getLowOrder(), temp3Reg, temp5Reg);
-               }
-            else
-               {
-               TR::Register *temp6Reg       = cg->allocateRegister();
-               generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, temp6Reg, temp3Reg, temp5Reg);
-               generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, trgReg->getLowOrder(), temp1Reg, temp6Reg);
-               cg->stopUsingRegister(temp1Reg);
-               cg->stopUsingRegister(temp6Reg);
-               }
-
-            cg->stopUsingRegister(temp3Reg);
-            cg->stopUsingRegister(temp5Reg);
-            }
-         }
-      }
-
-   node->setRegister(trgReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return trgReg;
+   if (TR::Compiler->target.is64Bit())
+      return integerShiftRight(node, 8, true, cg);
+   else
+      return lshr32Evaluator(node, true, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGenerator *cg)

@@ -391,4 +391,11 @@ void generateSignExtendInstruction(
                    TR::Node *node,
                    TR::Register *trgReg,
                    TR::Register *srcReg,
+                   TR::CodeGenerator *cg,
+                   int32_t operandSize);
+
+void generateSignExtendInstruction(
+                   TR::Node *node,
+                   TR::Register *trgReg,
+                   TR::Register *srcReg,
                    TR::CodeGenerator *cg);

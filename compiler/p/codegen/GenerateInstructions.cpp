@@ -692,9 +692,9 @@ void generateZeroExtendInstruction(TR::Node *node,
 void generateSignExtendInstruction(TR::Node *node,
                                    TR::Register *trgReg,
                                    TR::Register *srcReg,
-                                   TR::CodeGenerator *cg)
+                                   TR::CodeGenerator *cg,
+                                   int32_t operandSize)
    {
-   int32_t operandSize = node->getOpCode().getSize();
    TR::InstOpCode::Mnemonic signExtendOp = TR::InstOpCode::bad;
    switch (operandSize)
       {
@@ -712,4 +712,12 @@ void generateSignExtendInstruction(TR::Node *node,
          break;
       }
    generateTrg1Src1Instruction(cg, signExtendOp, node, trgReg, srcReg);
+   }
+
+void generateSignExtendInstruction(TR::Node *node,
+                                   TR::Register *trgReg,
+                                   TR::Register *srcReg,
+                                   TR::CodeGenerator *cg)
+   {
+   generateSignExtendInstruction(node, trgReg, srcReg, cg, node->getOpCode().getSize());
    }

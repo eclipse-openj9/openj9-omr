@@ -106,25 +106,6 @@ All Eclipse OMR project materials are made available under the Eclipse Public
 License 2.0 and the Apache 2.0 license. You can choose which license you wish
 to follow.  Please see our LICENSE file for more details.
 
-
-What's being worked on?
-======================
-
-There are some active contribution projects underway right now:
-
-* Documentation: code comments are great, but we need more overview documentation
-  so we're writing that
-* FAQ: Frequently Asked Questions from real people's questions (request: ask
-  questions!)
-* [Beginner issues][beg]: relatively simple but useful work items meant for
-  people new to the project.
-* `diag`: more diagnostic support for language runtimes to aid developers and users
-* `hcagent`: the core code for the IBM Health Center agent for interfacing to a runtime
-* `gc`: adding generational and other GC policies
-
-[beg]: https://github.com/eclipse/omr/issues?q=is%3Aopen+is%3Aissue+label%3Abeginner
-
-
 How Do I Interact With the Community?
 =====================================
 
@@ -138,6 +119,14 @@ We operate under the [Eclipse Code of Conduct][coc] to promote fairness, opennes
   discussions amongst committers.  Questions are welcome here as well.
 * Ask a question or start a discussion via a [GitHub issue](https://github.com/eclipse/omr/issues).
 
+Contributing
+============
+
+If you would like to contribute to OMR, check out the [contributing guide][contrib] for more information.
+We also have curated a set of [beginner issues][beg] for newcommers to tackle.
+
+[contrib]: CONTRIBUTING.md
+[beg]: https://github.com/eclipse/omr/issues?q=is%3Aopen+is%3Aissue+label%3Abeginner
 
 How Do I Use it?
 ================
@@ -149,6 +138,7 @@ look at a 'standalone' build, which hooks Eclipse OMR up to the its testing syst
 only.
 
 ### Basic configuration and compile
+
 To build standalone Eclipse OMR, run the following commands from the root of the
 source tree. For more detailed instructions please read [BuildingWithCMake.md](doc/BuildingWithCMake.md).
 

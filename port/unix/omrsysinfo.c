@@ -60,6 +60,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <sys/types.h>
+#include "omrport.h"
 #if defined(J9OS_I5)
 #include "Xj9I5OSInterface.H"
 #endif
@@ -71,21 +72,28 @@
 #include <nl_types.h>
 #include <langinfo.h>
 
+
 #if defined(J9ZOS390)
 #include "omrsimap.h"
-#include "omrsysinfo_helpers.h"
 #endif /* defined(J9ZOS390) */
 
-#if defined(LINUXPPC)
+#if defined(LINUXPPC) || (defined(S390) && defined(LINUX) && !defined(J9ZTPF))
 #include "auxv.h"
 #include <strings.h>
-#endif /* defined(LINUXPPC) */
+#endif /* defined(LINUXPPC) || (defined(S390) && defined(LINUX) && !defined(J9ZTPF)) */
+
+#if (defined(S390))
+#include "omrportpriv.h"
+#include "omrportpg.h"
+#endif /* defined(S390) */
 
 #if defined(AIXPPC)
 #include <fcntl.h>
 #include <sys/procfs.h>
 #include <sys/systemcfg.h>
 #endif /* defined(AIXPPC) */
+
+#include "omrsysinfo_helpers.h"
 
 /* Start copy from omrfiletext.c */
 /* __STDC_ISO_10646__ indicates that the platform wchar_t encoding is Unicode */
@@ -186,6 +194,58 @@ static uintptr_t copyEnvToBuffer(struct OMRPortLibrary *portLibrary, void *args)
 static uintptr_t copyEnvToBufferSignalHandler(struct OMRPortLibrary *portLib, uint32_t gpType, void *gpInfo, void *unUsed);
 
 static void setPortableError(OMRPortLibrary *portLibrary, const char *funcName, int32_t portlibErrno, int systemErrno);
+
+#if (defined(LINUXPPC) || defined(AIXPPC))
+static OMRProcessorArchitecture mapPPCProcessor(const char *processorName);
+#endif /* (defined(LINUXPPC) || defined(AIXPPC)) */
+
+#if (defined(AIXPPC) || defined(S390) || defined(J9ZOS390))
+static void setFeature(OMRProcessorDesc *desc, uint32_t feature);
+#endif /* defined(AIXPPC) || defined(S390) || defined(J9ZOS390) */
+
+#if defined(LINUXPPC)
+static intptr_t getLinuxPPCDescription(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
+
+#if !defined(AT_HWCAP2)
+#define AT_HWCAP2 26 /* needed until glibc 2.17 */
+#endif /* !defined(AT_HWCAP2) */
+
+#endif /* defined(LINUXPPC) */
+
+#if defined(AIXPPC)
+static intptr_t getAIXPPCDescription(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
+#endif /* defined(AIXPPC) */
+
+#if !defined(__power_8)
+#define POWER_8 0x10000 /* Power 8 class CPU */
+#define __power_8() (_system_configuration.implementation == POWER_8)
+#if !defined(J9OS_I5_V6R1)
+#define PPI8_1 0x4B
+#define PPI8_2 0x4D
+#define __phy_proc_imp_8() (_system_configuration.phys_implementation == PPI8_1 || _system_configuration.phys_implementation == PPI8_2)
+#endif /* !defined(J9OS_I5_V6R1) */
+#endif /* !defined(__power_8) */
+
+#if !defined(__power_9)
+#define POWER_9 0x20000 /* Power 9 class CPU */
+#define __power_9() (_system_configuration.implementation == POWER_9)
+#endif /* !defined(__power_9) */
+
+#if !defined(J9OS_I5_V7R2) && !defined(J9OS_I5_V6R1)
+/* both i 7.1 and i 7.2 do not support this function */
+#if !defined(SC_TM_VER)
+#define SC_TM_VER 59
+#endif  /* !defined(SC_TM_VER) */
+
+#if !defined(__power_tm)
+#define __power_tm() ((long)getsystemcfg(SC_TM_VER) > 0) /* taken from AIX 7.1 sys/systemcfg.h */
+#endif  /* !defined(__power_tm) */
+#endif /* !defined(J9OS_I5_V7R2) && !defined(J9OS_I5_V6R1) */
+
+#if (defined(S390) || defined(J9ZOS390) || defined(J9ZTPF))
+static BOOLEAN testSTFLE(struct OMRPortLibrary *portLibrary, uint64_t stfleBit);
+static intptr_t getS390Description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
+#endif /* defined(S390) || defined(J9ZOS390) || defined(J9ZTPF) */
 
 static const char getgroupsErrorMsgPrefix[] = "getgroups : ";
 
@@ -531,6 +591,804 @@ omrsysinfo_get_CPU_architecture(struct OMRPortLibrary *portLibrary)
 #endif
 }
 
+intptr_t
+omrsysinfo_get_processor_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc)
+{
+	intptr_t rc = -1;
+	Trc_PRT_sysinfo_get_processor_description_Entered(desc);
+
+	if (NULL != desc) {
+		memset(desc, 0, sizeof(OMRProcessorDesc));
+
+#if (defined(J9X86) || defined(J9HAMMER))
+		rc = getX86Description(portLibrary, desc);
+#elif defined(LINUXPPC)
+		rc = getLinuxPPCDescription(portLibrary, desc);
+#elif defined(AIXPPC)
+		rc = getAIXPPCDescription(portLibrary, desc);
+#elif (defined(S390) || defined(J9ZOS390))
+		rc = getS390Description(portLibrary, desc);
+#endif
+	}
+
+	Trc_PRT_sysinfo_get_processor_description_Exit(rc);
+	return rc;
+}
+
+BOOLEAN
+omrsysinfo_processor_has_feature(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature)
+{
+	BOOLEAN rc = FALSE;
+	Trc_PRT_sysinfo_processor_has_feature_Entered(desc, feature);
+
+#if defined(J9OS_I5)
+#if defined(J9OS_I5_V5R4)
+	if ((OMRPORT_PPC_FEATURE_HAS_VSX == feature) || (OMRPORT_PPC_FEATURE_HAS_ALTIVEC == feature) || (OMRPORT_PPC_FEATURE_HTM == feature)) {
+		Trc_PRT_sysinfo_processor_has_feature_Exit((UDATA)rc);
+		return rc;
+	}
+#elif defined(J9OS_I5_V6R1) || defined(J9OS_I5_V7R2)
+	if (OMRPORT_PPC_FEATURE_HTM == feature) {
+		Trc_PRT_sysinfo_processor_has_feature_Exit((UDATA)rc);
+		return rc;
+	}
+#endif
+#endif
+
+	if ((NULL != desc) && (feature < (OMRPORT_SYSINFO_FEATURES_SIZE * 32))) {
+		uint32_t featureIndex = feature / 32;
+		uint32_t featureShift = feature % 32;
+
+		rc = OMR_ARE_ALL_BITS_SET(desc->features[featureIndex], 1 << featureShift);
+	}
+
+	Trc_PRT_sysinfo_processor_has_feature_Exit((uintptr_t)rc);
+	return rc;
+}
+
+#if (defined(AIXPPC) || defined(S390) || defined(J9ZOS390))
+/**
+ * @internal
+ * Helper to set appropriate feature field in a OMRProcessorDesc struct.
+ *
+ * @param[in] desc pointer to the struct that contains the CPU type and features.
+ * @param[in] feature to set
+ *
+ */
+static void
+setFeature(OMRProcessorDesc *desc, uint32_t feature)
+{
+	if ((NULL != desc) && (feature < (OMRPORT_SYSINFO_FEATURES_SIZE * 32))) {
+		uint32_t featureIndex = feature / 32;
+		uint32_t featureShift = feature % 32;
+
+		desc->features[featureIndex] = (desc->features[featureIndex] | (1 << (featureShift)));
+	}
+}
+#endif /* defined(AIXPPC) || defined(S390) || defined(J9ZOS390) */
+
+#if defined(LINUXPPC)
+/**
+ * @internal
+ * Populates OMRProcessorDesc *desc on Linux PPC
+ *
+ * @param[in] desc pointer to the struct that will contain the CPU type and features.
+ *
+ * @return 0 on success, -1 on failure
+ */
+static intptr_t
+getLinuxPPCDescription(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc)
+{
+	char* platform = NULL;
+	char* base_platform = NULL;
+
+	/* initialize auxv prior to querying the auxv */
+	if (prefetch_auxv() != 0) {
+		goto _error;
+	}
+
+	/* Linux PPC processor */
+	platform = (char *) query_auxv(AT_PLATFORM);
+	if ((NULL == platform) || (((char *) -1) == platform)) {
+		goto _error;
+	}
+	desc->processor = mapPPCProcessor(platform);
+
+	/* Linux PPC physical processor */
+	base_platform = (char *) query_auxv(AT_BASE_PLATFORM);
+	if ((NULL == base_platform) || (((char *) -1) == base_platform)) {
+		/* AT_PLATFORM is known from call above.  Default BASE to unknown */
+		desc->physicalProcessor = OMR_PROCESSOR_PPC_UNKNOWN;
+	} else {
+		desc->physicalProcessor = mapPPCProcessor(base_platform);
+	}
+
+	/* Linux PPC features:
+	 * Can't error check these calls as both 0 & -1 are valid
+	 * bit fields that could be returned by this query.
+	 */
+	desc->features[0] = query_auxv(AT_HWCAP);
+	desc->features[1] = query_auxv(AT_HWCAP2);
+
+	return 0;
+
+_error:
+	desc->processor = OMR_PROCESSOR_PPC_UNKNOWN;
+	desc->physicalProcessor = OMR_PROCESSOR_PPC_UNKNOWN;
+	desc->features[0] = 0;
+	desc->features[1] = 0;
+	return -1;
+
+}
+
+/**
+ * @internal
+ * Maps a PPC processor string to the OMRProcessorArchitecture enum.
+ *
+ * @param[in] processorName
+ *
+ * @return An OMRProcessorArchitecture OMR_PROCESSOR_PPC_* found otherwise OMR_PROCESSOR_PPC_UNKNOWN.
+ */
+static OMRProcessorArchitecture
+mapPPCProcessor(const char *processorName)
+{
+	OMRProcessorArchitecture rc = OMR_PROCESSOR_PPC_UNKNOWN;
+
+	if (0 == strncasecmp(processorName, "ppc403", 6)) {
+		rc = OMR_PROCESSOR_PPC_PWR403;
+	} else if (0 == strncasecmp(processorName, "ppc405", 6)) {
+		rc = OMR_PROCESSOR_PPC_PWR405;
+	} else if (0 == strncasecmp(processorName, "ppc440gp", 8)) {
+		rc = OMR_PROCESSOR_PPC_PWR440;
+	} else if (0 == strncasecmp(processorName, "ppc601", 6)) {
+		rc = OMR_PROCESSOR_PPC_PWR601;
+	} else if (0 == strncasecmp(processorName, "ppc603", 6)) {
+		rc = OMR_PROCESSOR_PPC_PWR603;
+	} else if (0 == strncasecmp(processorName, "ppc604", 6)) {
+		rc = OMR_PROCESSOR_PPC_PWR604;
+	} else if (0 == strncasecmp(processorName, "ppc7400", 7)) {
+		rc = OMR_PROCESSOR_PPC_PWR603;
+	} else if (0 == strncasecmp(processorName, "ppc750", 6)) {
+		rc = OMR_PROCESSOR_PPC_7XX;
+	} else if (0 == strncasecmp(processorName, "rs64", 4)) {
+		rc = OMR_PROCESSOR_PPC_PULSAR;
+	} else if (0 == strncasecmp(processorName, "ppc970", 6)) {
+		rc = OMR_PROCESSOR_PPC_GP;
+	} else if (0 == strncasecmp(processorName, "power3", 6)) {
+		rc = OMR_PROCESSOR_PPC_PWR630;
+	} else if (0 == strncasecmp(processorName, "power4", 6)) {
+		rc = OMR_PROCESSOR_PPC_GP;
+	} else if (0 == strncasecmp(processorName, "power5", 6)) {
+		rc = OMR_PROCESSOR_PPC_GR;
+	} else if (0 == strncasecmp(processorName, "power6", 6)) {
+		rc = OMR_PROCESSOR_PPC_P6;
+	} else if (0 == strncasecmp(processorName, "power7", 6)) {
+		rc = OMR_PROCESSOR_PPC_P7;
+	} else if (0 == strncasecmp(processorName, "power8", 6)) {
+		rc = OMR_PROCESSOR_PPC_P8;
+	} else if (0 == strncasecmp(processorName, "power9", 6)) {
+		rc = OMR_PROCESSOR_PPC_P9;
+	}
+
+	return rc;
+}
+#endif /* defined(LINUXPPC) */
+
+#if defined(AIXPPC)
+/**
+ * @internal
+ * Populates OMRProcessorDesc *desc on AIX
+ *
+ * @param[in] desc pointer to the struct that will contain the CPU type and features.
+ *
+ * @return 0 on success, -1 on failure
+ */
+static intptr_t
+getAIXPPCDescription(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc)
+{
+	/* AIX processor */
+	if (__power_rs1() || __power_rsc()) {
+		desc->processor = OMR_PROCESSOR_PPC_RIOS1;
+	} else if (__power_rs2()) {
+		desc->processor = OMR_PROCESSOR_PPC_RIOS2;
+	} else if (__power_601()) {
+		desc->processor = OMR_PROCESSOR_PPC_PWR601;
+	} else if (__power_603()) {
+		desc->processor = OMR_PROCESSOR_PPC_PWR603;
+	} else if (__power_604()) {
+		desc->processor = OMR_PROCESSOR_PPC_PWR604;
+	} else if (__power_620()) {
+		desc->processor = OMR_PROCESSOR_PPC_PWR620;
+	} else if (__power_630()) {
+		desc->processor = OMR_PROCESSOR_PPC_PWR630;
+	} else if (__power_A35()) {
+		desc->processor = OMR_PROCESSOR_PPC_NSTAR;
+	} else if (__power_RS64II()) {
+		desc->processor = OMR_PROCESSOR_PPC_NSTAR;
+	} else if (__power_RS64III()) {
+		desc->processor = OMR_PROCESSOR_PPC_PULSAR;
+	} else if (__power_4()) {
+		desc->processor = OMR_PROCESSOR_PPC_GP;
+	} else if (__power_5()) {
+		desc->processor = OMR_PROCESSOR_PPC_GR;
+	} else if (__power_6()) {
+		desc->processor = OMR_PROCESSOR_PPC_P6;
+	} else if (__power_7()) {
+		desc->processor = OMR_PROCESSOR_PPC_P7;
+	} else if (__power_8()) {
+		desc->processor = OMR_PROCESSOR_PPC_P8;
+	} else if (__power_9()) {
+		desc->processor = OMR_PROCESSOR_PPC_P9;
+	} else {
+		desc->processor = OMR_PROCESSOR_PPC_UNKNOWN;
+	}
+#if !defined(J9OS_I5_V6R1)
+	/* AIX physical processor */
+	if (__phy_proc_imp_4()) {
+		desc->physicalProcessor = OMR_PROCESSOR_PPC_GP;
+	} else if (__phy_proc_imp_5()) {
+		desc->physicalProcessor = OMR_PROCESSOR_PPC_GR;
+	} else if (__phy_proc_imp_6()) {
+		desc->physicalProcessor = OMR_PROCESSOR_PPC_P6;
+	} else if (__phy_proc_imp_7()) {
+		desc->physicalProcessor = OMR_PROCESSOR_PPC_P7;
+	} else if (__phy_proc_imp_8()) {
+		desc->physicalProcessor = OMR_PROCESSOR_PPC_P8;
+	} else {
+		desc->physicalProcessor = desc->processor;
+	}
+#else
+		desc->physicalProcessor = desc->processor;
+#endif /* !defined(J9OS_I5_V6R1) */
+	/* AIX Features */
+	if (__power_64()) {
+		setFeature(desc, OMRPORT_PPC_FEATURE_64);
+	}
+	if (__power_vmx()) {
+		setFeature(desc, OMRPORT_PPC_FEATURE_HAS_ALTIVEC);
+	}
+	if (__power_dfp()) {
+		setFeature(desc, OMRPORT_PPC_FEATURE_HAS_DFP);
+	}
+	if (__power_vsx()) {
+		setFeature(desc, OMRPORT_PPC_FEATURE_HAS_VSX);
+	}
+#if !defined(J9OS_I5_V6R1)
+	if (__phy_proc_imp_6()) {
+		setFeature(desc, OMRPORT_PPC_FEATURE_ARCH_2_05);
+	}
+	if (__phy_proc_imp_4()) {
+		setFeature(desc, OMRPORT_PPC_FEATURE_POWER4);
+	}
+#endif /* !defined(J9OS_I5_V6R1) */
+#if !defined(J9OS_I5_V7R2) && !defined(J9OS_I5_V6R1)
+	if (__power_tm()) {
+		setFeature(desc, OMRPORT_PPC_FEATURE_HTM);
+	}
+#endif /* !defined(J9OS_I5_V7R2) && !defined(J9OS_I5_V6R1) */
+
+	return 0;
+}
+
+#endif /* defined(AIXPPC) */
+
+#if (defined(S390) || defined(J9ZOS390))
+
+#define LAST_DOUBLE_WORD	2
+
+/**
+ * @internal
+ * Check if a specific bit is set from STFLE instruction on z/OS and zLinux.
+ * STORE FACILITY LIST EXTENDED stores a variable number of doublewords containing facility bits.
+ *  see z/Architecture Principles of Operation 4-69
+ *
+ * @param[in] stfleBit bit to check
+ *
+ * @return TRUE if bit is 1, FALSE otherwise.
+ */
+static BOOLEAN
+testSTFLE(struct OMRPortLibrary *portLibrary, uint64_t stfleBit)
+{
+	BOOLEAN rc = FALSE;
+
+	OMRSTFLEFacilities *mem = &(PPG_stfleCache.facilities);
+	uintptr_t *stfleRead = &(PPG_stfleCache.lastDoubleWord);
+
+	/* If it is the first time, read stfle and cache it */
+	if (0 == *stfleRead) {
+		*stfleRead = getstfle(LAST_DOUBLE_WORD, (uint64_t*)mem);
+	}
+
+	if (stfleBit < 64 && *stfleRead >= 0) {
+		rc = (0 != (mem->dw1 & (((uint64_t)1) << (63 - stfleBit))));
+	} else if (stfleBit < 128 && *stfleRead >= 1) {
+		rc = (0 != (mem->dw2 & (((uint64_t)1) << (127 - stfleBit))));
+	} else if (stfleBit < 192 && *stfleRead >= 2) {
+		rc = (0 != (mem->dw3 & (((uint64_t)1) << (191 - stfleBit))));
+	}
+
+	return rc;
+}
+
+#ifdef J9ZOS390
+#ifdef _LP64
+typedef struct pcb_t
+{
+	char pcbeye[8];					/* pcbeye = "CEEPCB" */
+	char dummy[336];				/* Ignore the rest to get to flag6 field */
+	unsigned char ceepcb_flags6;
+} pcb_t;
+typedef struct ceecaa_t
+{
+	char dummy[912];				/* pcb is at offset 912 in 64bit */
+	pcb_t *pcb_addr;
+} ceecaa_t;
+#else
+typedef struct pcb_t
+{
+	char pcbeye[8];					/* pcbeye = "CEEPCB" */
+	char dummy[76];					/* Ignore the rest to get to flag6 field */
+	unsigned char ceepcb_flags6;
+} pcb_t;
+typedef struct ceecaa_t
+{
+	char dummy[756];				/* pcb is at offset 756 in 32bit */
+	pcb_t *pcb_addr;
+} ceecaa_t;
+#endif /* ifdef _LP64 */
+
+/** @internal
+ *  Check if z/OS supports the Vector Extension Facility (SIMD) by checking whether both the OS and LE support vector
+ *  registers. We use the CVTVEF (0x80) bit in the CVT structure for the OS check and bit 0x08 of CEEPCB_FLAG6 field in
+ *  the PCB for the LE check.
+ *
+ *  @return TRUE if VEF is supported; FALSE otherwise.
+ */
+static BOOLEAN
+getS390zOS_supportsVectorExtensionFacility(void)
+{
+	/* FLCCVT is an ADDRESS off the PSA structure
+	 * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead300/PSA-map.htm */
+	uint8_t* CVT = (uint8_t*)(*(uint32_t*)0x10);
+
+	/* CVTFLAG5 is a BITSTRING off the CVT structure containing the CVTVEF (0x80) bit
+	 * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead100/CVT-map.htm */
+	uint8_t CVTFLAG5 = *(CVT + 0x0F4);
+
+	ceecaa_t* CAA = (ceecaa_t *)_gtca();
+
+	if (OMR_ARE_ALL_BITS_SET(CVTFLAG5, 0x80)) {
+		if (NULL != CAA) {
+			return OMR_ARE_ALL_BITS_SET(CAA->pcb_addr->ceepcb_flags6, 0x08);
+		}
+	}
+
+	return FALSE;
+}
+
+/** @internal
+ *  Check if z/OS supports the Transactional Execution Facility (TX). We use the CVTTX (0x08) and CVTTXC (0x04) bits in
+ *  the CVT structure for the OS check.
+ *
+ *  @return TRUE if TX is supported; FALSE otherwise.
+ */
+static BOOLEAN
+getS390zOS_supportsTransactionalExecutionFacility(void)
+{
+	/* FLCCVT is an ADDRESS off the PSA structure
+	 * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead300/PSA-map.htm */
+	uint8_t* CVT = (uint8_t*)(*(uint32_t*)0x10);
+
+	/* CVTFLAG4 is a BITSTRING off the CVT structure containing the CVTTX (0x08), CVTTXC (0x04), and CVTRI (0x02) bits
+	 * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead100/CVT-map.htm */
+	uint8_t CVTFLAG4 = *(CVT + 0x17B);
+
+	/* Note we check for both constrained and non-constrained transaction support */
+	return OMR_ARE_ALL_BITS_SET(CVTFLAG4, 0x0C);
+}
+
+/** @internal
+ *  Check if z/OS supports the Runtime Instrumentation Facility (RI). We use the CVTRI (0x02) bit in the CVT structure
+ *  for the OS check.
+ *
+ *  @return TRUE if RI is supported; FALSE otherwise.
+ */
+static BOOLEAN
+getS390zOS_supportsRuntimeInstrumentationFacility(void)
+{
+	/* FLCCVT is an ADDRESS off the PSA structure
+	 * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead300/PSA-map.htm */
+	uint8_t* CVT = (uint8_t*)(*(uint32_t*)0x10);
+
+	/* CVTFLAG4 is a BITSTRING off the CVT structure containing the CVTTX (0x08), CVTTXC (0x04), and CVTRI (0x02) bits
+	 * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead100/CVT-map.htm */
+	uint8_t CVTFLAG4 = *(CVT + 0x17B);
+
+	return OMR_ARE_ALL_BITS_SET(CVTFLAG4, 0x02);
+}
+
+/** @internal
+ *  Check if z/OS supports the Guarded Storage Facility (GS). We use the CVTGSF (0x01) bit in the CVT structure
+ *  for the OS check.
+ *
+ *  @return TRUE if GS is supported; FALSE otherwise.
+ */
+static BOOLEAN
+getS390zOS_supportsGuardedStorageFacility(void)
+{
+	/* FLCCVT is an ADDRESS off the PSA structure
+	 * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead300/PSA-map.htm */
+	uint8_t* CVT = (uint8_t*)(*(uint32_t*)0x10);
+
+	/* CVTFLAG3 is a BITSTRING off the CVT structure containing the CVTGSF (0x01) bit
+	 * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead100/CVT-map.htm */
+	uint8_t CVTFLAG3 = *(CVT + 0x17A);
+
+	return OMR_ARE_ALL_BITS_SET(CVTFLAG3, 0x01);
+}
+#endif /* ifdef J9ZOS390 */
+
+/**
+ * @internal
+ * Populates OMRProcessorDesc *desc on z/OS and zLinux
+ *
+ * @param[in] desc pointer to the struct that will contain the CPU type and features.
+ *
+ * @return 0 on success, -1 on failure
+ */
+static intptr_t
+getS390Description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc)
+{
+/* Check hardware and OS (z/OS only) support for GS (guarded storage), RI (runtime instrumentation) and TE (transactional memory) */
+#if defined(J9ZOS390)
+#define S390_STFLE_BIT (0x80000000 >> 7)
+	/* s390 feature detection requires the store-facility-list-extended (STFLE) instruction which was introduced in z9
+	 * Location 200 is architected such that bit 7 is ON if STFLE instruction is installed */
+	if (OMR_ARE_NO_BITS_SET(*(int*) 200, S390_STFLE_BIT)) {
+		return -1;
+	}
+#elif defined(J9ZTPF)  /* defined(J9ZOS390) */
+	/*
+	 * z/TPF requires OS support for some of the Hardware Capabilities.
+	 * Setting the auxvFeatures capabilities flag directly to mimic the query_auxv call in Linux.
+	 */
+	unsigned long auxvFeatures = OMRPORT_HWCAP_S390_HIGH_GPRS|OMRPORT_S390_FEATURE_ESAN3|OMRPORT_HWCAP_S390_ZARCH|
+			OMRPORT_HWCAP_S390_STFLE|OMRPORT_HWCAP_S390_MSA|OMRPORT_HWCAP_S390_DFP|
+			OMRPORT_HWCAP_S390_LDISP|OMRPORT_HWCAP_S390_EIMM|OMRPORT_HWCAP_S390_ETF3EH;
+
+#elif defined(LINUX) /* defined(J9ZTPF) */
+	/* Some s390 features require OS support on Linux, querying auxv for AT_HWCAP bit-mask of processor capabilities. */
+	unsigned long auxvFeatures = query_auxv(AT_HWCAP);
+#endif /* defined(LINUX) */
+
+#if (defined(S390) && defined(LINUX))
+	/* OS Support of HPAGE on Linux on Z */
+	if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_HPAGE)){
+		setFeature(desc, OMRPORT_S390_FEATURE_HPAGE);
+	}
+#endif /* defined(S390) && defined(LINUX) */
+
+	/* Miscellaneous facility detection */
+
+	if (testSTFLE(portLibrary, 0)) {
+#if (defined(S390) && defined(LINUX))
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_ESAN3))
+#endif /* defined(S390) && defined(LINUX)*/
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_ESAN3);
+		}
+	}
+
+	if (testSTFLE(portLibrary, 2)) {
+#if (defined(S390) && defined(LINUX))
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_ZARCH))
+#endif /* defined(S390) && defined(LINUX)*/
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_ZARCH);
+		}
+	}
+
+	if (testSTFLE(portLibrary, 7)) {
+#if (defined(S390) && defined(LINUX))
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_STFLE))
+#endif /* defined(S390) && defined(LINUX)*/
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_STFLE);
+		}
+	}
+
+	if (testSTFLE(portLibrary, 17)) {
+#if (defined(S390) && defined(LINUX))
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_MSA))
+#endif /* defined(S390) && defined(LINUX)*/
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_MSA);
+		}
+	}
+
+	if (testSTFLE(portLibrary, 42) && testSTFLE(portLibrary, 44)) {
+#if (defined(S390) && defined(LINUX))
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_DFP))
+#endif /* defined(S390) && defined(LINUX) */
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_DFP);
+		}
+	}
+
+	if (testSTFLE(portLibrary, 32)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_COMPARE_AND_SWAP_AND_STORE);
+	}
+
+	if (testSTFLE(portLibrary, 33)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_COMPARE_AND_SWAP_AND_STORE2);
+	}
+
+	if (testSTFLE(portLibrary, 35)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_EXECUTE_EXTENSIONS);
+	}
+
+	if (testSTFLE(portLibrary, 41)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_FPE);
+	}
+
+	if (testSTFLE(portLibrary, 49)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_MISCELLANEOUS_INSTRUCTION_EXTENSION);
+	}
+
+	if (testSTFLE(portLibrary, 76)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_MSA_EXTENSION3);
+	}
+
+	if (testSTFLE(portLibrary, 77)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_MSA_EXTENSION4);
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_MSA_EXTENSION_5)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_MSA_EXTENSION_5);
+	}
+
+	/* Assume an unknown processor ID unless we determine otherwise */
+	desc->processor = OMR_PROCESSOR_S390_UNKNOWN;
+
+	/* z990 facility and processor detection */
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_LONG_DISPLACEMENT)) {
+#if (defined(S390) && defined(LINUX))
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_LDISP))
+#endif /* defined(S390) && defined(LINUX) */
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_LONG_DISPLACEMENT);
+
+			desc->processor = OMR_PROCESSOR_S390_GP6;
+		}
+	}
+
+	/* z9 facility and processor detection */
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_EXTENDED_IMMEDIATE)) {
+#if (defined(S390) && defined(LINUX))
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_EIMM))
+#endif /* defined(S390) && defined(LINUX) */
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_EXTENDED_IMMEDIATE);
+		}
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_EXTENDED_TRANSLATION_3)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_EXTENDED_TRANSLATION_3);
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_ETF3_ENHANCEMENT)) {
+#if (defined(S390) && defined(LINUX))
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_ETF3EH))
+#endif /* defined(S390) && defined(LINUX) */
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_ETF3_ENHANCEMENT);
+		}
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_EXTENDED_IMMEDIATE) &&
+		 testSTFLE(portLibrary, OMRPORT_S390_FEATURE_EXTENDED_TRANSLATION_3) &&
+		 testSTFLE(portLibrary, OMRPORT_S390_FEATURE_ETF3_ENHANCEMENT)) {
+		desc->processor = OMR_PROCESSOR_S390_GP7;
+	}
+
+	/* z10 facility and processor detection */
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_GENERAL_INSTRUCTIONS_EXTENSIONS)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_GENERAL_INSTRUCTIONS_EXTENSIONS);
+
+		desc->processor = OMR_PROCESSOR_S390_GP8;
+	}
+
+	/* z196 facility and processor detection */
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_HIGH_WORD)) {
+#if (defined(S390) && defined(LINUX))
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_HIGH_GPRS))
+#endif /* defined(S390) && defined(LINUX)*/
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_HIGH_WORD);
+		}
+
+		desc->processor = OMR_PROCESSOR_S390_GP9;
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_LOAD_STORE_ON_CONDITION_1)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_LOAD_STORE_ON_CONDITION_1);
+
+		desc->processor = OMR_PROCESSOR_S390_GP9;
+	}
+
+	/* zEC12 facility and processor detection */
+
+	/* TE/TX hardware support */
+	if (testSTFLE(portLibrary, 50) && testSTFLE(portLibrary, 73)) {
+#if defined(J9ZOS390)
+		if (getS390zOS_supportsTransactionalExecutionFacility())
+#elif defined(LINUX) /* LINUX S390 */
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_TE))
+#endif /* defined(J9ZOS390) */
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_TE);
+		}
+	}
+
+	/* RI hardware support */
+	if (testSTFLE(portLibrary, 64)) {
+#if defined(J9ZOS390)
+		if (getS390zOS_supportsRuntimeInstrumentationFacility())
+#endif /* defined(J9ZOS390) */
+		{
+#if !defined(J9ZTPF)
+			setFeature(desc, OMRPORT_S390_FEATURE_RI);
+#endif /* !defined(J9ZTPF) */
+		}
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_MISCELLANEOUS_INSTRUCTION_EXTENSION)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_MISCELLANEOUS_INSTRUCTION_EXTENSION);
+
+		desc->processor = OMR_PROCESSOR_S390_GP10;
+	}
+
+	/* z13 facility and processor detection */
+
+	if (testSTFLE(portLibrary, 129)) {
+#if defined(J9ZOS390)
+		/* Vector facility requires hardware and OS support */
+		if (getS390zOS_supportsVectorExtensionFacility())
+#elif defined(LINUX) /* LINUX S390 */
+		/* Vector facility requires hardware and OS support */
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_VXRS))
+#endif
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_VECTOR_FACILITY);
+			desc->processor = OMR_PROCESSOR_S390_GP11;
+		}
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_LOAD_STORE_ON_CONDITION_2)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_LOAD_STORE_ON_CONDITION_2);
+
+		desc->processor = OMR_PROCESSOR_S390_GP11;
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_LOAD_AND_ZERO_RIGHTMOST_BYTE)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_LOAD_AND_ZERO_RIGHTMOST_BYTE);
+
+		desc->processor = OMR_PROCESSOR_S390_GP11;
+	}
+
+	/* z14 facility and processor detection */
+
+	/* GS hardware support */
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_GUARDED_STORAGE)) {
+#if defined(J9ZOS390)
+		if (getS390zOS_supportsGuardedStorageFacility())
+#elif defined(LINUX) /* defined(J9ZOS390) */
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_GS))
+#endif /* defined(LINUX) */
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_GUARDED_STORAGE);
+
+			desc->processor = OMR_PROCESSOR_S390_GP12;
+		}
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_MISCELLANEOUS_INSTRUCTION_EXTENSION_2)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_MISCELLANEOUS_INSTRUCTION_EXTENSION_2);
+
+		desc->processor = OMR_PROCESSOR_S390_GP12;
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_SEMAPHORE_ASSIST)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_SEMAPHORE_ASSIST);
+
+		desc->processor = OMR_PROCESSOR_S390_GP12;
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_VECTOR_PACKED_DECIMAL)) {
+#if defined(J9ZOS390)
+		/* Vector packed decimal requires hardware and OS support (for OS, checking for VEF is sufficient) */
+		if (getS390zOS_supportsVectorExtensionFacility())
+#elif (defined(S390) && defined(LINUX)) /* defined(J9ZOS390) */
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_VXRS_BCD))
+#endif /* defined(S390) && defined(LINUX) */
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_VECTOR_PACKED_DECIMAL);
+
+			desc->processor = OMR_PROCESSOR_S390_GP12;
+		}
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_VECTOR_FACILITY_ENHANCEMENT_1)) {
+#if defined(J9ZOS390)
+		/* Vector facility enhancement 1 requires hardware and OS support (for OS, checking for VEF is sufficient) */
+		if (getS390zOS_supportsVectorExtensionFacility())
+#elif (defined(S390) && defined(LINUX)) /* defined(J9ZOS390) */
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_VXRS_EXT))
+#endif /* defined(S390) && defined(LINUX) */
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_VECTOR_FACILITY_ENHANCEMENT_1);
+
+			desc->processor = OMR_PROCESSOR_S390_GP12;
+		}
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_MSA_EXTENSION_8)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_MSA_EXTENSION_8);
+
+		desc->processor = OMR_PROCESSOR_S390_GP12;
+	}
+	
+    /* z15 facility and processor detection */
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_MISCELLANEOUS_INSTRUCTION_EXTENSION_3)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_MISCELLANEOUS_INSTRUCTION_EXTENSION_3);
+
+		desc->processor = OMR_PROCESSOR_S390_GP13;
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_VECTOR_FACILITY_ENHANCEMENT_2)) {
+#if defined(J9ZOS390)
+		if (getS390zOS_supportsVectorExtensionFacility())
+#elif defined(LINUX) && !defined(J9ZTPF) /* defined(J9ZOS390) */
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_VXRS))
+#endif /* defined(LINUX) && !defined(J9ZTPF) */
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_VECTOR_FACILITY_ENHANCEMENT_2);
+
+			desc->processor = OMR_PROCESSOR_S390_GP13;
+		}
+	}
+
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY)) {
+#if defined(J9ZOS390)
+		if (getS390zOS_supportsVectorExtensionFacility())
+#elif defined(LINUX) && !defined(J9ZTPF) /* defined(J9ZOS390) */
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMRPORT_HWCAP_S390_VXRS))
+#endif /* defined(LINUX) && !defined(J9ZTPF) */
+		{
+			setFeature(desc, OMRPORT_S390_FEATURE_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY);
+
+			desc->processor = OMR_PROCESSOR_S390_GP13;
+		}
+	}
+
+	/* Set Side Effect Facility without setting GP12. This is because
+	 * this GP12-only STFLE bit can also be enabled on zEC12 (GP10)
+	 */
+	if (testSTFLE(portLibrary, OMRPORT_S390_FEATURE_SIDE_EFFECT_ACCESS)) {
+		setFeature(desc, OMRPORT_S390_FEATURE_SIDE_EFFECT_ACCESS);
+	}
+
+	desc->physicalProcessor = desc->processor;
+
+	return 0;
+}
+
+#endif /* defined(S390) || defined(J9ZOS390) */
 intptr_t
 omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char *infoString, uintptr_t bufSize)
 {
@@ -2109,6 +2967,9 @@ omrsysinfo_shutdown(struct OMRPortLibrary *portLibrary)
 			cgroupEntryListMonitor = NULL;
 		}
 #endif /* defined(LINUX) */
+#if (defined(S390) || defined(J9ZOS390))
+		PPG_stfleCache.lastDoubleWord = -1;
+#endif
 	}
 }
 
@@ -2138,6 +2999,11 @@ omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
 	isRunningInContainer(portLibrary, &PPG_isRunningInContainer);
 #endif /* defined(LINUX) */
 	return 0;
+
+#if (defined(S390) || defined(J9ZOS390))
+	PPG_stfleCache.lastDoubleWord = -1;
+#endif
+
 }
 
 intptr_t

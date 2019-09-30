@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -155,7 +155,7 @@ public:
 	MMINLINE MM_MemorySubSpace *getMemorySubSpaceList() { return _memorySubSpaceList; }
 
 	void systemGarbageCollect(MM_EnvironmentBase *env, uint32_t gcCode);
-	void localGarbageCollect(MM_EnvironmentBase *env);
+	void localGarbageCollect(MM_EnvironmentBase *env, uint32_t gcCode = J9MMCONSTANT_IMPLICIT_GC_DEFAULT);
 	
 	void reset(MM_EnvironmentBase *env);
 	void rebuildFreeList(MM_EnvironmentBase *env);

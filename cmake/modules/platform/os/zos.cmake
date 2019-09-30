@@ -46,6 +46,10 @@ target_link_libraries(omr_ascii INTERFACE j9a2e)
 add_library(omr_ebcdic INTERFACE)
 target_compile_definitions(omr_ebcdic INTERFACE -DOMR_EBCDIC)
 
+install(TARGETS omr_ascii omr_ebcdic
+	EXPORT OmrTargets
+)
+
 macro(omr_os_global_setup)
 
 	# TODO: Move this out and after platform config.

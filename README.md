@@ -79,11 +79,6 @@ featured languages to enrich the options available to programmers.
 It is our community's fervent goal to be one of active contribution, improvement,
 and continual consumption.
 
-We will be operating under the [Eclipse Code of Conduct][coc]
-to promote fairness, openness, and inclusion.
-
-[coc]: https://eclipse.org/org/documents/Community_Code_of_Conduct.php
-
 Who is using Eclipse OMR?
 =========================
 
@@ -133,13 +128,14 @@ There are some active contribution projects underway right now:
 How Do I Interact With the Community?
 =====================================
 
+We operate under the [Eclipse Code of Conduct][coc] to promote fairness, openness, and inclusion.
+
+[coc]: https://eclipse.org/org/documents/Community_Code_of_Conduct.php
+
+* Join the Eclipse OMR community [Slack workspace](https://join.slack.com/t/eclipse-omr/shared_invite/enQtMzg2ODIwODc4MTAyLWFiMzZkNmNhODc5OTM0MjgwZDdjNzg5YTg5NzM0ZmEzNTIyMGViMjk1YjYwNzczYjYwODc4YTM5MDk0NjIxMjg).  You can join channels that interest you, ask questions, and receive answers from subject matter experts.
 * Join the Eclipse OMR developer community [mailing list](https://accounts.eclipse.org/mailing-list/omr-dev).
-The community typically uses this list for project announcements and administrative
-discussions amongst committers.  Questions are welcome here as well.
-
-* Join the Eclipse OMR community [Slack workspace](https://join.slack.com/t/eclipse-omr/shared_invite/enQtMzg2ODIwODc4MTAyLWFiMzZkNmNhODc5OTM0MjgwZDdjNzg5YTg5NzM0ZmEzNTIyMGViMjk1YjYwNzczYjYwODc4YTM5MDk0NjIxMjg).  You can join channels
-that interest you, ask questions, and receive answers from subject matter experts.
-
+  The community primarily uses this list for project announcements and administrative
+  discussions amongst committers.  Questions are welcome here as well.
 * Ask a question or start a discussion via a [GitHub issue](https://github.com/eclipse/omr/issues).
 
 

@@ -1434,6 +1434,10 @@ class NormalizeNanTest : public TRTest::JitTest, public ::testing::WithParamInte
 class FloatNormalizeNan : public NormalizeNanTest<uint32_t> {};
 
 TEST_P(FloatNormalizeNan, UsingLoadIndirect) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
     char *inputTrees =
         "(method return=Int32 args=[Address]"
         "  (block"
@@ -1455,6 +1459,10 @@ TEST_P(FloatNormalizeNan, UsingLoadIndirect) {
 }
 
 TEST_P(FloatNormalizeNan, UsingLoadParam) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
     char *inputTrees =
         "(method return=Int32 args=[Int32]"
         "  (block"
@@ -1477,6 +1485,10 @@ TEST_P(FloatNormalizeNan, UsingLoadParam) {
 }
 
 TEST_P(FloatNormalizeNan, UsingLoadConst) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
     uint32_t value = GetParam();
 
     char inputTrees[300] = {0};
@@ -1505,6 +1517,10 @@ INSTANTIATE_TEST_CASE_P(TypeConversionTest, FloatNormalizeNan, ::testing::Values
 class DoubleNormalizeNan : public NormalizeNanTest<uint64_t> {};
 
 TEST_P(DoubleNormalizeNan, UsingLoadIndirect) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
     char *inputTrees =
         "(method return=Int64 args=[Address]"
         "  (block"
@@ -1526,6 +1542,10 @@ TEST_P(DoubleNormalizeNan, UsingLoadIndirect) {
 }
 
 TEST_P(DoubleNormalizeNan, UsingLoadParam) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
     char *inputTrees =
         "(method return=Int64 args=[Int64]"
         "  (block"
@@ -1548,6 +1568,10 @@ TEST_P(DoubleNormalizeNan, UsingLoadParam) {
 }
 
 TEST_P(DoubleNormalizeNan, UsingLoadConst) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
     uint64_t value = GetParam();
 
     char inputTrees[300] = {0};

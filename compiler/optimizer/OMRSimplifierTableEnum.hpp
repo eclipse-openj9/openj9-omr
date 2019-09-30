@@ -785,7 +785,6 @@
 
    dftSimplifier,           // TR::dlog
 
-   dftSimplifier,           // TR::imulover
    dftSimplifier,           // TR::dfloor
    dftSimplifier,           // TR::ffloor
    dftSimplifier,           // TR::dceil

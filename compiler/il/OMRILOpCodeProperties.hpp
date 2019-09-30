@@ -11548,22 +11548,6 @@
    },
 
    {
-   /* .opcode               = */ TR::imulover,
-   /* .name                 = */ "imulover",
-   /* .properties1          = */ 0,
-   /* .properties2          = */ 0,
-   /* .properties3          = */ 0,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int32,
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer,
-   /* .childProperties      = */ ILChildProp::Unspecified,
-   /* .swapChildrenOpCode   = */ TR::BadILOp,
-   /* .reverseBranchOpCode  = */ TR::BadILOp,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
    /* .opcode               = */ TR::dfloor,
    /* .name                 = */ "dfloor",
    /* .properties1          = */ 0,

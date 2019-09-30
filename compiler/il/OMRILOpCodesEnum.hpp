@@ -824,8 +824,6 @@
 
    dlog,       // log of double, returning double
 
-   imulover,   // (int) overflow predicate of int multiplication
-
    dfloor,     // floor of double, returning double
    ffloor,     // floor of float, returning float
    dceil,      // ceil of double, returning double

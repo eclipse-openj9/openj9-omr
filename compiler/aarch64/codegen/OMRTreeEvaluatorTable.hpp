@@ -734,7 +734,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::datanEvaluator ,	// TR::datan		// arctan of double; returning double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::datan2Evaluator ,	// TR::datan2		// arctan2 of double; returning double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dlogEvaluator ,	// TR::dlog		// log of double; returning double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::imuloverEvaluator ,	// TR::imulover		// (int) overflow predicate of int multiplication
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dfloorEvaluator ,	// TR::dfloor		// floor of double; returning double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ffloorEvaluator ,	// TR::ffloor		// floor of float; returning float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dceilEvaluator ,	// TR::dceil		// ceil of double; returning double

@@ -108,14 +108,8 @@ if(OMR_OS_ZOS)
 			INTERFACE
 				-DOMR_EBCDIC
 		)
-		install(TARGETS omr_ebcdic
-			EXPORT OmrTargets
-		)
 	else()
 		target_link_libraries(omr_base INTERFACE omr_ascii)
-		install(TARGETS omr_ascii
-			EXPORT OmrTargets
-		)
 	endif()
 endif()
 

@@ -55,9 +55,6 @@
 #include "p/codegen/PPCInstruction.hpp"
 #include "runtime/Runtime.hpp"
 
-extern TR::Register *inlineIntegerRotateLeft(TR::Node *node, TR::CodeGenerator *cg);
-extern TR::Register *inlineLongRotateLeft(TR::Node *node, TR::CodeGenerator *cg);
-
 static TR::Register *ldiv64Evaluator(TR::Node *node, TR::CodeGenerator *cg);
 static TR::Register *lrem64Evaluator(TR::Node *node, TR::CodeGenerator *cg);
 
@@ -3012,12 +3009,54 @@ TR::Register *OMR::Power::TreeEvaluator::lushrEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Power::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return inlineIntegerRotateLeft(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *srcRegister = cg->evaluate(firstChild);
+   TR::Register *targetRegister = cg->allocateRegister();
+
+   if (secondChild->getOpCode().isLoadConst())
+      {
+      int32_t shiftAmount = secondChild->getInt() & 0x1f;
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, targetRegister, srcRegister, shiftAmount, 0xffffffff);
+      }
+   else
+      {
+      TR::Register *shiftAmountReg = cg->evaluate(secondChild);
+      generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::rlwnm, node, targetRegister, srcRegister, shiftAmountReg, 0xffffffff);
+      }
+
+   node->setRegister(targetRegister);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return targetRegister;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lrolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return inlineLongRotateLeft(node, cg);
+   TR_ASSERT_FATAL(TR::Compiler->target.is64Bit(), "lrol is not currently supported on ppc32");
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *srcRegister = cg->evaluate(firstChild);
+   TR::Register *targetRegister = cg->allocateRegister();
+
+   if (secondChild->getOpCode().isLoadConst())
+      {
+      int32_t shiftAmount = secondChild->getInt() & 0x3f;
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, targetRegister, srcRegister, shiftAmount, CONSTANT64(0xffffffffffffffff));
+      }
+   else
+      {
+      TR::Register *shiftAmountReg = cg->evaluate(secondChild);
+      generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::rldcl, node, targetRegister, srcRegister, shiftAmountReg, CONSTANT64(0xffffffffffffffff));
+      }
+
+   node->setRegister(targetRegister);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return targetRegister;
    }
 
 void simplifyANDRegImm(TR::Node * node, TR::Register *trgReg, TR::Register *srcReg, int64_t value, TR::CodeGenerator * cg, TR::Node *constNode=NULL)

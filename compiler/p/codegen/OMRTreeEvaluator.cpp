@@ -5036,60 +5036,6 @@ static TR::Register *inlineLongHighestOneBit(TR::Node *node, TR::CodeGenerator *
       }
    }
 
-TR::Register *inlineIntegerRotateLeft(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(node->getNumChildren()==2, "Wrong number of children in inlineIntegerRotateLeft");
-
-   TR::Node        *firstChild  = node->getFirstChild();
-   TR::Node        *secondChild  = node->getSecondChild();
-   TR::Register    *srcRegister = cg->evaluate(firstChild);
-   TR::Register    *targetRegister = cg->allocateRegister();
-
-   if (secondChild->getOpCodeValue() == TR::iconst || secondChild->getOpCodeValue() == TR::iuconst)
-      {
-      int32_t value = secondChild->getInt() & 0x1f;
-      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, targetRegister, srcRegister, value, 0xffffffff);
-      }
-   else
-      {
-      TR::Register    *shiftAmountReg = cg->evaluate(secondChild);
-      generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::rlwnm, node, targetRegister, srcRegister, shiftAmountReg, 0xffffffff);
-      }
-
-   node->setRegister(targetRegister);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return targetRegister;
-   }
-
-TR::Register *inlineLongRotateLeft(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(node->getNumChildren()==2, "Wrong number of children in inlineLongRotateLeft");
-
-   TR::Node        *firstChild  = node->getFirstChild();
-   TR::Node        *secondChild  = node->getSecondChild();
-   TR::Register    *srcRegister = cg->evaluate(firstChild);
-   TR::Register    *targetRegister = cg->allocateRegister();
-
-   if (secondChild->getOpCodeValue() == TR::iconst || secondChild->getOpCodeValue() == TR::iuconst)
-      {
-      int32_t value = secondChild->getInt() & 0x3f;
-      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, targetRegister, srcRegister, value, CONSTANT64(0xffffffffffffffff));
-      }
-   else
-      {
-      TR::Register    *shiftAmountReg = cg->evaluate(secondChild);
-      generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::rldcl, node, targetRegister, srcRegister, shiftAmountReg, CONSTANT64(0xffffffffffffffff));
-      }
-
-   node->setRegister(targetRegister);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return targetRegister;
-   }
-
 TR::Register *OMR::Power::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT( node->getNumChildren() == 4, "TR::Prefetch should contain 4 child nodes");

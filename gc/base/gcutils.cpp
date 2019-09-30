@@ -257,6 +257,8 @@ getSystemGCReasonAsString(uint32_t gcCode)
 	case J9MMCONSTANT_EXPLICIT_GC_IDLE_GC:
 		return "vm idle";
 #endif
+	case J9MMCONSTANT_IMPLICIT_GC_COMPLETE_CONCURRENT:
+		return "complete concurrent cycle";
 	default:
 		return "unknown";
 	}

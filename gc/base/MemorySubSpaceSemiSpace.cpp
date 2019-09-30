@@ -210,6 +210,11 @@ MM_MemorySubSpaceSemiSpace::systemGarbageCollect(MM_EnvironmentBase *env, uint32
 		reportSystemGCStart(env, gcCode);
 
 		_collector->garbageCollect(env, this, NULL, gcCode, NULL, NULL, NULL);
+
+		/* Handle abort from local collect */
+		if (_extensions->isScavengerBackOutFlagRaised()) {
+			_parent->getCollector()->garbageCollect(env, this, NULL, gcCode, NULL, NULL, NULL);
+		}
 		
 		reportSystemGCEnd(env);
 		env->releaseExclusiveVMAccessForGC();

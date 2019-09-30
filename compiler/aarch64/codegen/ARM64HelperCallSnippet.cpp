@@ -40,16 +40,8 @@ TR::ARM64HelperCallSnippet::emitSnippetBody()
       TR_ASSERT(constantIsSignedImm28(distance), "Trampoline too far away.");
       }
 
-   if (_restartLabel == NULL)
-      {
-      // b distance
-      *(int32_t *)cursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::b) | ((distance >> 2) & 0x3ffffff); // imm26
-      }
-   else
-      {
-      // bl distance
-      *(int32_t *)cursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::bl) | ((distance >> 2) & 0x3ffffff); // imm26
-      }
+   *(int32_t *)cursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::bl) | ((distance >> 2) & 0x3ffffff); // imm26
+
    cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
                                cursor,
                                (uint8_t *)getDestination(),
@@ -95,8 +87,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64HelperCallSnippet * snippet)
       }
 
    printPrefix(pOutFile, NULL, bufferPos, 4);
-   trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT "\t\t; %s%s",
-      (restartLabel != NULL) ? "bl" : "b", target, getName(snippet->getDestination()), info);
+   trfprintf(pOutFile, "bl \t" POINTER_PRINTF_FORMAT "\t\t; %s%s",
+      target, getName(snippet->getDestination()), info);
 
    if (restartLabel != NULL)
       {

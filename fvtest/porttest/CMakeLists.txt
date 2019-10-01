@@ -59,6 +59,7 @@ add_executable(omrporttest
 	omrsignalExtendedTest.cpp
 	omrsignalTest.cpp
 	omrslTest.cpp
+	omrsockTest.cpp
 	omrstrTest.cpp
 	omrtimeTest.cpp
 	omrttyExtendedTest.cpp

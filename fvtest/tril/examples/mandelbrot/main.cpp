@@ -30,7 +30,12 @@ typedef void (MandelbrotFunction) (int32_t, int32_t, int32_t*);
 
 int main(int argc, char const * const * const argv) {
     assert(argc == 2);
-    assert(initializeJit());
+
+   bool initialized = initializeJit();
+   if (!initialized) {
+        fprintf(stderr, "FAIL: could not initialize JIT\n");
+        exit(-1);
+    }
 
     // parse the input Tril file
     FILE* inputFile = fopen(argv[1], "r");
@@ -43,7 +48,13 @@ int main(int argc, char const * const * const argv) {
 
     // assume that the file contians a single method and compile it
     Tril::DefaultCompiler mandelbrotCompiler(trees);
-    assert(mandelbrotCompiler.compile() == 0);
+
+    int32_t rc = mandelbrotCompiler.compile();
+    if (rc != 0) {
+      fprintf(stderr,"FAIL: compilation error %d\n", rc);
+      exit(-2);
+    }
+
     auto mandelbrot = mandelbrotCompiler.getEntryPoint<MandelbrotFunction*>();
 
     const auto size = 80;                   // number of rows/columns in the output table

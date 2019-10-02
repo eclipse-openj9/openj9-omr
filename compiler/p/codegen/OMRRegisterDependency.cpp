@@ -977,7 +977,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
          }
       }
 
-   // Assign all virtual regs that depend on a specfic real reg that is not free
+   // Assign all virtual regs that depend on a specific real reg that is not free
    for (i = 0; i < numberOfRegisters; i++)
       {
       virtReg          = _dependencies[i].getRegister();

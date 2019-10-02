@@ -113,7 +113,7 @@ MemToMemVarLenMacroOp::generateLoop()
    //
    // But first, load up the branch address into raReg for two reasons:
    // 1) to avoid the AGI on the indirection and (more importantly)
-   // 2) to ensure that no wierd spilling happens if the code decides it needs
+   // 2) to ensure that no weird spilling happens if the code decides it needs
    //    to allocate a register at this point for the literal pool base address.
    intptrj_t helper = 0;
 

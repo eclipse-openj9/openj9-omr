@@ -1631,7 +1631,7 @@ withDevice(OMRPortLibrary *portLibrary, uint32_t deviceId, Operation &operation)
 
 	int current = 0;
 	J9CudaFunctionTable *functions = getFunctions(portLibrary);
-	cudaError_t result = cudaErrorNoDevice;
+	cudaError_t result = validateDeviceId(portLibrary, deviceId);
 
 	/*
 	 * If any of the (required) functions is not available, then GetDevice will
@@ -1639,7 +1639,7 @@ withDevice(OMRPortLibrary *portLibrary, uint32_t deviceId, Operation &operation)
 	 * is not NULL, then we need not check again that a required function is
 	 * available (neither here nor within the Operation type).
 	 */
-	if (NULL != functions->GetDevice) {
+	if ((cudaSuccess == result) && (NULL != functions->GetDevice)) {
 		result = functions->GetDevice(&current);
 
 		if (cudaSuccess != result) {
@@ -2029,10 +2029,10 @@ omrcuda_deviceGetAttribute(OMRPortLibrary *portLibrary, uint32_t deviceId, J9Cud
 	Trc_PRT_cuda_deviceGetAttribute_entry(deviceId, attribute);
 
 	J9CudaFunctionTable *functions = getFunctions(portLibrary);
-	cudaError_t result = cudaErrorNoDevice;
+	cudaError_t result = validateDeviceId(portLibrary, deviceId);
 	cudaDeviceAttr deviceAttribute = cudaDevAttrWarpSize;
 
-	if (NULL != functions->DeviceGetAttribute) {
+	if ((cudaSuccess == result) && (NULL != functions->DeviceGetAttribute)) {
 		switch (attribute) {
 		default:
 			result = cudaErrorInvalidValue;
@@ -2558,10 +2558,14 @@ omrcuda_deviceGetName(OMRPortLibrary *portLibrary, uint32_t deviceId, uint32_t n
 	Trc_PRT_cuda_deviceGetName_entry(deviceId);
 
 	J9CudaFunctionTable *functions = getFunctions(portLibrary);
-	cudaError_t result = getDeviceName(functions, deviceId, nameSize, nameOut);
+	cudaError_t result = validateDeviceId(portLibrary, deviceId);
 
 	if (cudaSuccess == result) {
-		Trc_PRT_cuda_deviceGetName_result(nameOut);
+		result = getDeviceName(functions, deviceId, nameSize, nameOut);
+
+		if (cudaSuccess == result) {
+			Trc_PRT_cuda_deviceGetName_result(nameOut);
+		}
 	}
 
 	Trc_PRT_cuda_deviceGetName_exit(result);

@@ -99,6 +99,7 @@ Who is using Eclipse OMR?
 
 What's the licence?
 ===================
+
 [![License](https://img.shields.io/badge/License-EPL%202.0-green.svg)](https://opensource.org/licenses/EPL-2.0)
 [![License](https://img.shields.io/badge/License-APL%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -146,7 +147,7 @@ source tree. For more detailed instructions please read [BuildingWithCMake.md](d
     mkdir build
     cd build
     
-    #generate the build system using cmake
+    # Generate the build system using cmake
     cmake ..
 
     # Build (you can optionally compile in parallel by adding -j<N> to the make command)
@@ -157,6 +158,7 @@ source tree. For more detailed instructions please read [BuildingWithCMake.md](d
     ctest [-V]
 
 ### Building Eclipse OMR on Windows using Visual Studio
+
 The following instructions below demonstrate the steps to build Eclipse OMR on Windows
 using Visual Studios. In the example Visual Studio 11 2012 Win64 is being used.
 You can easily switch this to the version of Visual Studio you would like to use.
@@ -174,7 +176,6 @@ You can easily switch this to the version of Visual Studio you would like to use
     # Run tests (note that no contribution should cause new test failures in "make test")
     ctest
 
-
 Where can I learn more?
 ===============================
 
@@ -183,23 +184,16 @@ Presentations about Eclipse OMR
 
 * Mark Stoodley's talk at the JVM Languages Summit in August, 2015:
   [A VM is a VM is a VM: The Secret Path to High Performance Multi-Language Runtimes](https://www.youtube.com/watch?v=kOnyJurioyw)
-
 * Daryl Maier's slides from Java One in October, 2015:
   [Beyond the Coffee Cup: Leveraging Java Runtime Technologies for the Polyglot](http://www.slideshare.net/0xdaryl/javaone-2015-con7547-beyond-the-coffee-cup-leveraging-java-runtime-technologies-for-polyglot?related=1)
-
 * Charlie Gracie's slides from Java One in October, 2015:
   [What's in an Object? Java Garbage Collection for the Polyglot](http://www.slideshare.net/charliegracie1/javaone-whats-in-an-object)
-
 * Angela Lin, Robert Young, Craig Lehmann and Xiaoli Liang CASCON Workshop in November, 2015
   [Building Your Own Runtime](https://ibm.box.com/s/7xdg25we2ezmdjjbqdys30d7dl1iyo49)
-  * Note: these slides have been modified since the original presentation to use the Eclipse OMR project name
-
 * Charlie Gracie's talk from FOSDEM in February, 2016:
   [Ruby and OMR: Experiments in utilizing OMR technologies in MRI](http://bofh.nikhef.nl/events/FOSDEM/2016/h2213/ruby-and-omr.mp4)
-
 * Charlie Gracie's slides from jFokus in February, 2016
   [A JVMs Journey into Polyglot Runtimes](https://t.co/efCKf6aCB4)
-
 * Mark Stoodley's slides from EclipseCON in March, 2016
   [Eclipse OMR: a modern toolkit for building language runtimes](http://www.slideshare.net/MarkStoodley/omr-a-modern-toolkit-for-building-language-runtimes)
 

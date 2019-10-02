@@ -176,11 +176,11 @@ enum ProfilingMode
  * transformations to be selectively disabled during debugging in order to
  * isolate a buggy optimization. But this description fails to capture the
  * important effect that performTransformation has on the maintainability of
- * Testarossa’s code base.
+ * Testarossa's code base.
  *
  * Calls to performTransformation can (and should) be placed around any part of
- * the code that is optional; in an optimizer, that’s a lot of code. Tons of
- * Testarossa code is there only to improve performance–not for correctness–and
+ * the code that is optional; in an optimizer, that's a lot of code. Tons of
+ * Testarossa code is there only to improve performance-not for correctness-and
  * can therefore be guarded by performTransformation.
  *
  * A call in a hypothetical dead code elimination might look like this:
@@ -211,10 +211,10 @@ enum ProfilingMode
  * Most importantly, it identifies exactly the code that should be skipped if
  * someone wanted to prevent this opt from occurring in certain cases. Even if
  * you know nothing about an optimization, you can locate its
- * performTransformation call(s) and add an additional clause to this “if”
+ * performTransformation call(s) and add an additional clause to this "if"
  * statement, secure in the knowledge that skipping this code will not leave
  * the optimization in some undefined state. The author of the optimization
- * has identified this code as “skippable”, so you can be fairly certain that
+ * has identified this code as "skippable", so you can be fairly certain that
  * skipping it will do just what you want.
  *
  * If you are developing code that has optional parts, it is strongly

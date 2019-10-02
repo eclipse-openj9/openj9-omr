@@ -6164,7 +6164,7 @@ class S390EInstruction : public TR::Instruction
       }
 
    /**
-    * Following constructor is for PFPO instructino, where FPR0/FPR2 and GPR1 are target registers;
+    * Following constructor is for PFPO instruction, where FPR0/FPR2 and GPR1 are target registers;
     * FPR4/FPR6 and GPR0 are source registers;
     * they are implied by the opcode, purpose of adding these is to notify RA the reg use/def dependencies
     */

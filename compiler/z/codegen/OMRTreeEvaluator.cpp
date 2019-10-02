@@ -10349,7 +10349,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
          dependencies->addPostCondition(raReg, cg->getReturnAddressRegister());
 
          // At first, load up the branch address into raReg, because
-         // to ensure that no wierd spilling happens if the code decides it needs
+         // to ensure that no weird spilling happens if the code decides it needs
          // to allocate a register at this point for the literal pool base address.
          intptrj_t helper = (intptrj_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayTranslateAndTestHelper, false, false, false)->getMethodAddress();
 
@@ -12172,7 +12172,7 @@ OMR::Z::TreeEvaluator::long2StringEvaluator(TR::Node * node, TR::CodeGenerator *
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, labelDigit1);
 
    // At first, load up the branch address into raReg, because
-   // to ensure that no wierd spilling happens if the code decides it needs
+   // to ensure that no weird spilling happens if the code decides it needs
    // to allocate a register at this point for the literal pool base address.
    intptrj_t helper = (intptrj_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390long2StringHelper,false,false,false)->getMethodAddress();
    genLoadAddressConstant(cg, node, helper, raReg);

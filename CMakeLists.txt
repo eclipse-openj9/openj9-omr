@@ -68,22 +68,15 @@ set(OMR_INSTALL_DATA_DIR ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME} CACHE PATH "In
 ###
 
 if (OMR_ENV_DATA64)
-	find_package(Threads QUIET)
+	find_package(Threads)
 	if(Threads_FOUND)
 		# Threads mush be found before we can look for CUDA.
 		# FindCuda will error out if Threads is missing, even though CUDA itself is optional.
-		find_package(CUDA QUIET)
-		if (CUDA_FOUND)
-			message(STATUS "OMR: CUDA enabled")
-		else()
-			message(STATUS "OMR: CUDA disabled (not found)")
-		endif()
+		find_package(CUDA)
 	else()
-		message(STATUS "OMR: CUDA disabled (threads not found)")
 		set(CUDA_FOUND OFF CACHE BOOL "CUDA is disabled (threads not found)")
 	endif()
 else()
-	message(STATUS "OMR: CUDA disabled (unsupported platform)")
 	set(CUDA_FOUND OFF CACHE BOOL "CUDA is disabled")
 endif()
 

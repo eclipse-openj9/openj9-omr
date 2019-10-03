@@ -320,6 +320,8 @@ TEST_P(Int16Arithmetic, UsingConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
         << "smul/sdiv not yet implemented on x86 (see Issue #4408)";
@@ -356,6 +358,8 @@ TEST_P(Int16Arithmetic, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
         << "smul/sdiv not yet implemented on x86 (see Issue #4408)";
@@ -388,6 +392,8 @@ TEST_P(Int8Arithmetic, UsingConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
         << "bmul/bdiv not yet implemented on x86 (see Issue #4408)";
@@ -424,10 +430,10 @@ TEST_P(Int8Arithmetic, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
-
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
     SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
         << "bmul/bdiv not yet implemented on x86 (see Issue #4408)";
-        
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};

@@ -33,6 +33,10 @@
 #include "ilgen.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 
+#if defined(AIXPPC)
+#include "p/codegen/PPCTableOfConstants.hpp"
+#endif
+
 #include <algorithm>
 
 int32_t Tril::SimpleCompiler::compile() {
@@ -85,6 +89,22 @@ int32_t Tril::SimpleCompiler::compileWithVerifier(TR::IlVerifier* verifier) {
        FunctionDescriptor* fd = new FunctionDescriptor();
        fd->environment = 0;
        fd->func = entry_point;
+
+       entry_point = (uint8_t*) fd;
+#elif defined(AIXPPC)
+       struct FunctionDescriptor
+          {
+          void* func;
+          void* toc;
+          void* environment;
+          };
+
+       FunctionDescriptor* fd = new FunctionDescriptor();
+       fd->func = entry_point;
+       // TODO: There should really be a better way to get this. Usually, we would use
+       // cg->getTOCBase(), but the code generator has already been destroyed by now...
+       fd->toc = toPPCTableOfConstants(TR_PersistentMemory::getNonThreadSafePersistentInfo()->getPersistentTOC())->getTOCBase();
+       fd->environment = NULL;
 
        entry_point = (uint8_t*) fd;
 #endif

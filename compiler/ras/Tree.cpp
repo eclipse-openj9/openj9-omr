@@ -2865,6 +2865,7 @@ int32_t childTypes[] =
    TR::Address,                    // TR::checkcast
    TR::Address,                    // TR::checkcastAndNULLCHK
    TR::Address,                    // TR::New
+   TR::NoType | (TR::Address<<8),  // TR::newvalue
    TR::Int32,                     // TR::newarray
    TR::Int32 | (TR::Address<<16),  // TR::anewarray
    TR::Address,                    // TR::variableNew

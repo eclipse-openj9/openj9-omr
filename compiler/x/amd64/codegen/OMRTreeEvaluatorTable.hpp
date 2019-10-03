@@ -596,6 +596,7 @@
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::checkcast (J9)
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::checkcastAndNULLCHK (J9)
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::New (J9)
+   TR::TreeEvaluator::badILOpEvaluator,                                // TR::newvalue  (should be lowered before evaluation)
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::newarray (J9)
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::anewarray (J9)
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::variableNew (J9)

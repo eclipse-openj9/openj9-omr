@@ -1298,14 +1298,12 @@ OpCodesTest::invokeDisabledOpCodesTests()
 void
 OpCodesTest::UnsupportedOpCodesTests()
    {
-   //bdiv, bmul, brem
+   //bdiv, brem
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bdiv, "bDiv", _argTypesBinaryByte, TR::Int8);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bmul, "bMul", _argTypesBinaryByte, TR::Int8);
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::brem, "bRem", _argTypesBinaryByte, TR::Int8);
 
-   //sdiv, smul, srem
+   //sdiv, srem
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::sdiv, "sDiv", _argTypesBinaryShort, TR::Int16);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::smul, "sMul", _argTypesBinaryShort, TR::Int16);
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::srem, "sRem", _argTypesBinaryShort, TR::Int16);
 
    //bucmplt, bucmple, bucmpgt, bucmpge

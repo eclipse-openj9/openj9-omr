@@ -77,11 +77,12 @@ class MethodCompiler {
          */
         template <typename T>
         T getEntryPoint() {
-#if !defined(J9ZOS390)
+#if !defined(J9ZOS390) && !defined(AIXPPC)
             static_assert( std::is_pointer<T>::value &&
                            std::is_function<typename std::remove_pointer<T>::type>::value,
                           "Attempted to get entry point using a non-function-pointer type.");
 #endif
+
             return reinterpret_cast<T>(_entry_point);
         }
 

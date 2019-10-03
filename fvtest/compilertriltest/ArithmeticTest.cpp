@@ -25,7 +25,7 @@
 
 #include <cmath>
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) || defined(AIXPPC)
 namespace std
 {
    using ::isnan;

@@ -690,10 +690,11 @@ struct _RTL_CRITICAL_SECTION;
 # elif GTEST_ENV_HAS_STD_TUPLE_
 #  include <tuple>
 
-#if defined(J9ZOS390)
-// On z/OS tuple is defined in the ::std::tr1 namespace as it is an extension
-// class since xlc does not support the full C++11 standard. As such we expose
-// the tuple class in the ::std namespace such that code below will work.
+#if defined(J9ZOS390) || defined(AIXPPC)
+// On z/OS and AIX, tuple is defined in the ::std::tr1 namespace as it is an
+// extension class since xlc does not support the full C++11 standard. As such,
+// we expose the tuple class in the ::std namespace such that code below will
+// work.
 namespace std
 {
 using ::std::tr1::get;

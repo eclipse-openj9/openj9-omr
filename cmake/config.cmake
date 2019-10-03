@@ -33,7 +33,7 @@ set(OMR_EXAMPLE ON CACHE BOOL "Enable the Example application")
 ###
 
 set(OMR_TOOLS ON CACHE BOOL "Enable the native build tools")
-set(OMR_DDR ON CACHE BOOL "Enable DDR")
+set(OMR_DDR OFF CACHE BOOL "Enable DDR")
 set(OMR_RAS_TDF_TRACE ON CACHE BOOL "Enable trace engine")
 set(OMR_FVTEST ON CACHE BOOL "Enable the FV Testing.")
 

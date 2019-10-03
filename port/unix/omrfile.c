@@ -161,6 +161,8 @@ static int32_t
 findError(int32_t errorCode)
 {
 	switch (errorCode) {
+	case 0:
+		return OMRPORT_ERROR_FILE_EOF;
 	case EACCES:
 			/* FALLTHROUGH */
 	case EPERM:
@@ -482,7 +484,7 @@ omrfile_read(struct OMRPortLibrary *portLibrary, intptr_t inFD, void *buf, intpt
 #error FD_BIAS must be 0
 #endif
 	{
-		/* CMVC 178203 - Restart system calls interrupted by EINTR */
+		/* in case of EINTR try again */
 		do {
 			result = read(fd - FD_BIAS, buf, nbytes);
 		} while ((-1 == result) && (EINTR == errno));
@@ -491,8 +493,14 @@ omrfile_read(struct OMRPortLibrary *portLibrary, intptr_t inFD, void *buf, intpt
 	if ((0 == result) || (-1 == result)) {
 		if (-1 == result) {
 			portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
+		} else {
+			/*
+			 *  number of bytes read is zero and no error occur - should be EOF
+			 *  use error code 0 in findError()
+			 */
+			portLibrary->error_set_last_error(portLibrary, 0, findError(0));
+			result = -1;
 		}
-		result = -1;
 	}
 
 	Trc_PRT_file_read_Exit(result);

@@ -206,7 +206,7 @@ TEST_P(Int64ShiftAndRotate, UsingConst) {
         "  (block"
         "    (lreturn"
         "      (%s"
-        "        (lconst %" PRId64 ")"
+        "        (lconst %" OMR_PRId64 ")"
         "        (iconst %d)))))",
         param.opcode.c_str(),
         param.lhs,
@@ -257,7 +257,7 @@ TEST_P(Int64ShiftAndRotate, UsingLhsConst) {
         "  (block"
         "    (lreturn"
         "      (%s"
-        "        (lconst %" PRId64 ")"
+        "        (lconst %" OMR_PRId64 ")"
         "        (iload parm=0)))))",
         param.opcode.c_str(),
         param.lhs);
@@ -670,7 +670,7 @@ TEST_P(UInt64ShiftAndRotate, UsingConst) {
         "  (block"
         "    (lreturn"
         "      (%s"
-        "        (lconst %" PRIu64 ")"
+        "        (lconst %" OMR_PRIu64 ")"
         "        (iconst %d)))))",
         param.opcode.c_str(),
         param.lhs,
@@ -721,7 +721,7 @@ TEST_P(UInt64ShiftAndRotate, UsingLhsConst) {
         "  (block"
         "    (lreturn"
         "      (%s"
-        "        (lconst %" PRIu64 ")"
+        "        (lconst %" OMR_PRIu64 ")"
         "        (iload parm=0)))))",
         param.opcode.c_str(),
         param.lhs);
@@ -1196,7 +1196,7 @@ TEST_P(UInt64MaskThenShift, UsingLoadParam) {
         "      (%s"
         "        (land"
         "          (lload parm=0)"
-        "          (lconst %" PRIu64 "))"
+        "          (lconst %" OMR_PRIu64 "))"
         "        (iconst %d)))))",
         param.opcode.c_str(),
         param.mask,
@@ -1231,7 +1231,7 @@ TEST_P(Int64MaskThenShift, UsingLoadParam) {
         "      (%s"
         "        (land"
         "          (lload parm=0)"
-        "          (lconst %" PRId64 "))"
+        "          (lconst %" OMR_PRId64 "))"
         "        (iconst %d)))))",
         param.opcode.c_str(),
         param.mask,

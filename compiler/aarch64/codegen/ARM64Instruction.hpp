@@ -31,6 +31,7 @@
 #include "codegen/Instruction.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RegisterDependency.hpp"
+#include "codegen/UnresolvedDataSnippet.hpp"
 #include "il/symbol/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 
@@ -233,6 +234,8 @@ class ARM64ImmSymInstruction : public TR::Instruction
     */
    TR::Snippet *setCallSnippet(TR::Snippet *s) { return (_snippet = s); }
 
+   virtual TR::Snippet *getSnippetForGC() {return _snippet;}
+
    /**
     * @brief Sets immediate field in binary encoding
     * @param[in] instruction : instruction cursor
@@ -338,6 +341,8 @@ class ARM64LabelInstruction : public TR::Instruction
       {
       return (_symbol = sym);
       }
+
+   virtual TR::Snippet *getSnippetForGC() {return getLabelSymbol()->getSnippet();}
 
    /**
     * @brief Sets immediate field in binary encoding
@@ -2204,6 +2209,8 @@ class ARM64Trg1MemInstruction : public ARM64Trg1Instruction
       return (_memoryReference = mr);
       }
 
+   virtual TR::Snippet *getSnippetForGC() {return getMemoryReference()->getUnresolvedSnippet();}
+
    /**
     * @brief Gets base register of memory reference
     * @return base register
@@ -2412,6 +2419,8 @@ class ARM64MemSrc1Instruction : public ARM64MemInstruction
     * @return source register
     */
    TR::Register *setSource1Register(TR::Register *sr) {return (_source1Register = sr);}
+
+   virtual TR::Snippet *getSnippetForGC() {return getMemoryReference()->getUnresolvedSnippet();}
 
    /**
     * @brief Sets source register in binary encoding

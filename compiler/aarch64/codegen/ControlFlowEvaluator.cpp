@@ -513,11 +513,13 @@ evaluateNULLCHKWithPossibleResolve(TR::Node *node, bool needsResolve, TR::CodeGe
 
    // Only explicit test needed for now.
    TR::LabelSymbol *snippetLabel = generateLabelSymbol(cg);
-   cg->addSnippet(new (cg->trHeapMemory()) TR::ARM64HelperCallSnippet(cg, node, snippetLabel, node->getSymbolReference(), NULL));
+   TR::Snippet *snippet = new (cg->trHeapMemory()) TR::ARM64HelperCallSnippet(cg, node, snippetLabel, node->getSymbolReference(), NULL);
+   cg->addSnippet(snippet);
    TR::Register *referenceReg = cg->evaluate(reference);
    TR::InstOpCode::Mnemonic compareOp = useCompressedPointers ? TR::InstOpCode::cbzw : TR::InstOpCode::cbzx;
    TR::Instruction *cbzInstruction = generateCompareBranchInstruction(cg, compareOp, node, referenceReg, snippetLabel, NULL);
    cbzInstruction->setNeedsGCMap(0xffffffff);
+   snippet->gcMap().setGCRegisterMask(0xffffffff);
 
    /*
     * If the first child is a load with a ref count of 1, just decrement the reference count on the child.

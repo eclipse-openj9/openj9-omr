@@ -6027,26 +6027,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::cdnan,
-   /* .name        = */ "cdnan",
-   /* .description =    "canonise double NaN to 0x7ff80..0 (in gprs)", */
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ UNKNOWN_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::cfnan,
-   /* .name        = */ "cfnan",
-   /* .description =    "canonise float NaN to 0x7fc00..0 (in gprs)", */
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ UNKNOWN_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::d2i,
    /* .name        = */ "d2i",
    /* .description =    "converts from double to integer", */

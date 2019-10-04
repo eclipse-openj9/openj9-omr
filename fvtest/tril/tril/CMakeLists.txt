@@ -61,6 +61,14 @@ target_link_libraries(tril PUBLIC
 	${CMAKE_DL_LIBS}
 )
 
+#TODO  system thread library should be linked in a more generic way.
+if(NOT OMR_HOST_OS STREQUAL "win")
+	if(NOT OMR_HOST_OS STREQUAL "zos")
+		target_link_libraries(tril PUBLIC pthread)
+	endif()
+endif()
+
+
 add_executable(tril_dumper compiler.cpp)
 target_link_libraries(tril_dumper tril)
 

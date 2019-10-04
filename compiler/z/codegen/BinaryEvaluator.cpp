@@ -1194,7 +1194,7 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
    TR::Node * secondChild = node->getSecondChild();
    TR::Node * firstChild = node->getFirstChild();
    TR::Register * srcReg = NULL;
-   TR::Register * trgReg = cg->allocateRegister();
+   TR::Register * trgReg = NULL;
    TR::Register * src2Reg = NULL;
    TR::MemoryReference * tempMR = NULL;
 
@@ -1205,11 +1205,12 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
       if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
          {
          // Generate RISBG for lshl + i2l sequence
-         if (node->getOpCodeValue() == TR::lshl)
+         if (node->getOpCodeValue() == TR::lshl || node->getOpCodeValue() == TR::lushl)
             {
             if (firstChild->getOpCodeValue() == TR::i2l && firstChild->isSingleRefUnevaluated() && (firstChild->isNonNegative() || firstChild->getFirstChild()->isNonNegative()))
                {
                srcReg = cg->evaluate(firstChild->getFirstChild());
+               trgReg = cg->allocateRegister();
                auto mnemonic = TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
 
                generateRIEInstruction(cg, mnemonic, node, trgReg, srcReg, (int8_t)(32-value), (int8_t)((63-value)|0x80), (int8_t)value);
@@ -1222,10 +1223,35 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
 
                return trgReg;
                }
+            else if (firstChild->getOpCodeValue() == TR::land)
+               {
+               if (trgReg = TR::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(firstChild, cg, value, node->getOpCodeValue() == TR::lshl))
+                  {
+                  node->setRegister(trgReg);
+                  cg->decReferenceCount(firstChild);
+                  cg->decReferenceCount(secondChild);
+                  return trgReg;
+                  }
+               }
+            }
+         else if (node->getOpCodeValue() == TR::lshr || node->getOpCodeValue() == TR::lushr)
+            {
+            // Generate RISBGN for (lshr + land) and (lushr + land) sequences
+            if (firstChild->getOpCodeValue() == TR::land)
+               {
+               if (trgReg = TR::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(firstChild, cg, -value, node->getOpCodeValue() == TR::lshr))
+                  {
+                  node->setRegister(trgReg);
+                  cg->decReferenceCount(firstChild);
+                  cg->decReferenceCount(secondChild);
+                  return trgReg;
+                  }
+               }
             }
          }
 
       srcReg = cg->evaluate(firstChild);
+      trgReg = cg->allocateRegister();
       if ((value & 0x3f) == 0)
          {
          generateRRInstruction(cg, TR::InstOpCode::LGR, node, trgReg, srcReg);
@@ -1239,6 +1265,7 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
    else
       {
       srcReg = cg->evaluate(firstChild);
+      trgReg = cg->allocateRegister();
       TR::Register * src2Reg;
       // Mask by 63 is redundant since SRLG will only use 6 bits anyway
       bool skippedAnd = false;
@@ -1773,7 +1800,7 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
    }
 
 TR::Register *
-OMR::Z::TreeEvaluator::tryToReplaceLongAndWithRotateInstruction(TR::Node * node, TR::CodeGenerator * cg)
+OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * node, TR::CodeGenerator * cg, int32_t shiftAmount, bool isSignedShift)
    {
    if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
       {
@@ -1781,11 +1808,24 @@ OMR::Z::TreeEvaluator::tryToReplaceLongAndWithRotateInstruction(TR::Node * node,
       TR::Node * secondChild = node->getSecondChild();
       TR::Compilation *comp = cg->comp();
 
-      // Given the right case, transform land into RISBG as it may be better than discrete pair of ands
+      // Given the right cases, transform land into RISBG as it may be better than discrete pair of ands
       if (node->getOpCodeValue() == TR::land && secondChild->getOpCode().isLoadConst())
          {
          uint64_t longConstValue = secondChild->getLongInt();
 
+         // RISBG instructions perform unsigned rotation, so if we are selecting the sign bit via the logical AND we cannot
+         // perform a signed shift because we must preserve the sign bit. In general we cannot handle this case because we are
+         // not certain our input will be non-negative, hence we must conservatively disallow the optimization in such a case.
+
+         if (longConstValue >= 0x8000000000000000LL && shiftAmount != 0 && isSignedShift)
+            {
+            return NULL;
+            }
+         // The Shift amount operand in RISBG only holds 6 bits so the optimization will not work on shift amounts >63 or < 63.
+         if (shiftAmount > 63 || shiftAmount < -63)
+            {
+            return NULL;
+            }
          int32_t tZeros = trailingZeroes(longConstValue);
          int32_t lZeros = leadingZeroes(longConstValue);
          int32_t tOnes  = trailingZeroes(~longConstValue);
@@ -1848,10 +1888,19 @@ OMR::Z::TreeEvaluator::tryToReplaceLongAndWithRotateInstruction(TR::Node * node,
             //    half and bottom half of the register), then it's better to use RISBG.
             //    This is because there are no NI** instructions allowing us to specify bits in
             //    the top half and bottom half of the register to zero out.
-
+               
             if (firstChild->getReferenceCount() > 1 || lZeros > 31 || tZeros > 31
                 || (lZeros > 0 && tZeros > 0))
                {
+               // If the shift amount is NOT zero, then we must account for the shifted range
+               // [1] If the resultant shifted msb in a right shift is shifted "too far" to the right, then we are basically zeroing the register. This optimization will not be used.
+               // [2] Same case if the resultant lsb of a left shift is shifted out of range.
+               // Eg[1]: 000...0011 >> 3. msb = 62, lsb = 63. If we right shift, then msb and lsb will both be > 63 (out of range)
+               // Eg[2]: 11100...00 << 10. msb = 0, lsb = 2. If we left shift, then msb and lsb will both be < 0 (out of range)
+               if ((shiftAmount < 0 && msBit - shiftAmount > 63) || (shiftAmount > 0 && lsBit - shiftAmount < 0))
+                  {
+                  return NULL;
+                  }
                doTransformation = true;
                }
             }
@@ -1871,35 +1920,75 @@ OMR::Z::TreeEvaluator::tryToReplaceLongAndWithRotateInstruction(TR::Node * node,
             //    Example value: 11111000011111. The NI** instructions can only operate on
             //    the top half or bottom half of a register at a time. So such a case
             //    will require two NI** instructions. Hence we are better off using a single RISBG
+            //
+            // "shiftAmount == 0"
+            //    For cases where we have zeros surrounded by one, if the shift value is not zero
+            //    then the optimization will not work.
 
-            if (firstChild->getReferenceCount()> 1 || (lOnes < 32 && tOnes < 32))
+            if ((firstChild->getReferenceCount()> 1 || (lOnes < 32 && tOnes < 32)) && shiftAmount == 0)
                {
+               // Similar to above, if the shift amount is NOT zero, then we must account for the shifted range
+               if ((shiftAmount < 0 && msBit - shiftAmount > 63) || (shiftAmount > 0 && lsBit - shiftAmount < 0))
+                  {
+                  return NULL;
+                  }
                doTransformation = true;
                }
             }
 
          if (doTransformation && performTransformation(comp, "O^O Use RISBG instead of 2 ANDs for %p.\n", node))
             {
-            TR::Register * targetReg = NULL;
+            TR::Register * targetReg = cg->allocateRegister();
             TR::Register * sourceReg = cg->evaluate(firstChild);
 
-            if (!cg->canClobberNodesRegister(firstChild))
+            // if possible then use the instruction that doesn't set the CC as it's faster
+            TR::InstOpCode::Mnemonic opCode = TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+
+            // If the shift amount is zero, this instruction sets the rotation factor to 0 and sets the zero bit(0x80).
+            // So it's effectively zeroing out every bit except the inclusive range of lsBit to msBit.
+            // The bits in that range are preserved as is.
+            //
+            // If the shift amount is NOT zero, then we must account for the shifted range
+            // [1] If the shifted lsb of a left shift is still in range, but the msb is out of range, then we can still "capture" the shifted bits by upperbounding the msb.
+            // [2] Similar case if the msb of a right shift is still in range but the lsb is out of range.
+            //
+            // Eg[1]: 00...0111 >> 2. msb = 61, lsb = 63. If we right shift, we get 000...0001, so we can still preserve the last bit.
+            // Eg[2]: 1110...00 << 2. msb = 0, lsb = 2. If we left left, we can still preserve the first bit.
+
+            int32_t rangeStart = msBit;
+            int32_t rangeEnd = lsBit;
+
+            if (shiftAmount < 0)
                {
-               targetReg = cg->allocateClobberableRegister(sourceReg);
+               rangeStart = msBit - shiftAmount;
+               if (lsBit - shiftAmount > 63)
+                  {
+                  rangeEnd = 63;
+                  }
+               else
+                  {
+                  rangeEnd = lsBit - shiftAmount;
+                  }
                }
-            else
+            else if (shiftAmount > 0)
+               {                  
+               rangeEnd = lsBit - shiftAmount;
+               if (msBit - shiftAmount < 0)
+                  {
+                  rangeStart = 0;
+                  }
+               else
+                  {
+                  rangeStart = msBit - shiftAmount;
+                  }
+               }
+            if (shiftAmount < 0)
                {
-               targetReg = sourceReg;
+               shiftAmount = 64 + shiftAmount;
                }
-
-               // if possible then use the instruction that doesn't set the CC as it's faster
-               TR::InstOpCode::Mnemonic opCode = TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
-
-               // this instruction sets the rotation factor to 0 and sets the zero bit(0x80).
-               // So it's effectively zeroing out every bit except the inclusive range of lsBit to msBit
-               // The bits in that range are preserved as is
-               generateRIEInstruction(cg, opCode, node, targetReg, sourceReg, msBit, 0x80 + lsBit, 0);
-
+            generateRIEInstruction(cg, opCode, node, targetReg, sourceReg, rangeStart, 0x80 + rangeEnd, shiftAmount);
+            cg->decReferenceCount(firstChild);
+            cg->decReferenceCount(secondChild);
             return targetReg;
             }
          }
@@ -3346,13 +3435,18 @@ OMR::Z::TreeEvaluator::landEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
 
-   if ((targetRegister = genericRotateAndInsertHelper(node, cg)) ||
-      (targetRegister = TR::TreeEvaluator::tryToReplaceLongAndWithRotateInstruction(node, cg)))
+   if ((targetRegister = genericRotateAndInsertHelper(node, cg)))
       {
       node->setRegister(targetRegister);
 
       cg->decReferenceCount(firstChild);
       cg->decReferenceCount(secondChild);
+      return targetRegister;
+      }
+   if ((targetRegister = TR::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(node, cg, 0, false)))
+      {
+      //children dereferenced in tryToReplaceShiftLandWithRotateInstruction
+      node->setRegister(targetRegister);
       return targetRegister;
       }
 

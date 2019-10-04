@@ -1018,13 +1018,26 @@ std::vector<T> test_masks();
 static uint64_t mask64Values[] =
     {
     0x0000000000000000,
-    0xffffffffffffffff,
+    0x0000000000000001,
+    0x0000000000000002,
+    0x000000000000003e,
+    0x000000000000ffff,
+    0x00000000ffffffff,
+    0x00000003c0000000,
+    0x0000003f00000000,
+    0x00007fffffffffff,
+    0x4000000000000000,
+    0x4000000000000001,
+    0x7000000000000000,
+    0x7c00000000000000,
     0x7fffffffffffffff,
     0x8000000000000000,
-    0x0000003f00000000,
+    0x8000000000000002,
+    0xf0f0f0f0f0f0f0f0,
+    0xffff000000000000,
     0xffffffff00000000,
-    0x00000000ffffffff,
-    0xffff00000000ffff
+    0xffffffffffff0000,
+    0xffffffffffffffff
     };
 
 template <>
@@ -1132,6 +1145,20 @@ T mask_then_shift_right(T value, T mask, int32_t shift)
     }
 
 template <typename T>
+T mask_then_shift_left(T value, T mask, int32_t shift)
+    {
+    if (sizeof(T) <= sizeof(int32_t))
+        {
+        shift &= (shift & (8 * sizeof(int32_t) - 1));
+        }
+    else
+        {
+        shift &= (8 * sizeof(int64_t) - 1);
+        }
+    return (value & mask) << shift;
+    }
+
+template <typename T>
 struct MaskThenShiftParamStruct {
     T value;
     T mask;
@@ -1223,7 +1250,9 @@ TEST_P(Int64MaskThenShift, UsingLoadParam) {
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int64MaskThenShift, ::testing::Combine(
     ::testing::ValuesIn(static_cast< std::vector<std::tuple<std::tuple<int64_t, int64_t>, int32_t>> (*) (void)>(test_mask_then_shift_values)()),
-    ::testing::Values(std::make_tuple<const char*, int64_t (*) (int64_t, int64_t, int32_t)>("lshr", static_cast<int64_t (*) (int64_t, int64_t, int32_t)>(mask_then_shift_right))
+    ::testing::Values(
+        std::make_tuple<const char*, int64_t (*) (int64_t, int64_t, int32_t)>("lshr", static_cast<int64_t (*) (int64_t, int64_t, int32_t)>(mask_then_shift_right)),
+        std::make_tuple<const char*, int64_t (*) (int64_t, int64_t, int32_t)>("lshl", static_cast<int64_t (*) (int64_t, int64_t, int32_t)>(mask_then_shift_left))
     )));
 
 class UInt32MaskThenShift : public MaskThenShiftArithmetic<uint32_t> {};

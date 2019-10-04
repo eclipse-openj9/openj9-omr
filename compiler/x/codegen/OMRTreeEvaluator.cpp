@@ -3213,7 +3213,7 @@ TR::Register *OMR::X86::TreeEvaluator::fenceEvaluator(TR::Node *node, TR::CodeGe
       }
    else
       {
-      assert(0);
+      TR::trap();
       }
    return NULL;
    }

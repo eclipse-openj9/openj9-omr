@@ -22,14 +22,20 @@
 #include "default_compiler.hpp"
 #include "Jit.hpp"
 
-#include <assert.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
 
 typedef int32_t (IncOrDecFunction)(int32_t*);
 
 int main(int argc, char const * const * const argv) {
     assert(argc == 2);
-    assert(initializeJit());
+
+   bool initialized = initializeJit();
+   if (!initialized) {
+        fprintf(stderr, "FAIL: could not initialize JIT\n");
+        exit(-1);
+    }
 
     // parse the input Tril file
     FILE* inputFile = fopen(argv[1], "r");
@@ -42,7 +48,13 @@ int main(int argc, char const * const * const argv) {
 
     // assume that the file contians a single method and compile it
     Tril::DefaultCompiler incordecCompiler(trees);
-    assert(incordecCompiler.compile() == 0);
+
+    int32_t result = incordecCompiler.compile();
+    if (result != 0) {
+       printf("Failed to compile\n");
+       exit(-2);
+    }
+
     auto incordec = incordecCompiler.getEntryPoint<IncOrDecFunction*>();
 
     int32_t value = 1;

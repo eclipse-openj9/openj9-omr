@@ -2657,7 +2657,31 @@ OMR::IlBuilder::TableSwitch(const char *selectionVar,
                   uint32_t numCases,
                   JBCase **cases)
    {
-   TR::IlValue *selectorValue = Load(selectionVar);
+   TableSwitch(Load(selectionVar), defaultBuilder, generateBoundsCheck, numCases, cases);
+   }
+
+void
+OMR::IlBuilder::TableSwitch(const char *selectionVar,
+                  TR::IlBuilder **defaultBuilder,
+                  bool generateBoundsCheck,
+                  uint32_t numCases,
+                  ...)
+   {
+   va_list args;
+   va_start(args, numCases);
+   JBCase **cases = createCaseArray(numCases, args);
+   va_end(args);
+
+   TableSwitch(selectionVar, defaultBuilder, generateBoundsCheck, numCases, cases);
+   }
+
+void
+OMR::IlBuilder::TableSwitch(TR::IlValue * selectorValue,
+               TR::IlBuilder **defaultBuilder,
+               bool generateBoundsCheck,
+               uint32_t numCases,
+               JBCase** cases)
+   {
    TR_ASSERT_FATAL(selectorValue->getDataType() == TR::Int32, "TableSwitch only supports selector having type Int32");
    TR_ASSERT_FATAL(numCases > 0, "TableSwitch requires at least 1 case");
    int32_t low = cases[0]->_value;
@@ -2678,18 +2702,18 @@ OMR::IlBuilder::TableSwitch(const char *selectionVar,
    }
 
 void
-OMR::IlBuilder::TableSwitch(const char *selectionVar,
-                  TR::IlBuilder **defaultBuilder,
-                  bool generateBoundsCheck,
-                  uint32_t numCases,
-                  ...)
+OMR::IlBuilder::TableSwitch(TR::IlValue * selectorValue,
+               TR::IlBuilder **defaultBuilder,
+               bool generateBoundsCheck,
+               uint32_t numCases,
+               ...)
    {
    va_list args;
    va_start(args, numCases);
    JBCase **cases = createCaseArray(numCases, args);
    va_end(args);
 
-   TableSwitch(selectionVar, defaultBuilder, generateBoundsCheck, numCases, cases);
+   TableSwitch(selectorValue, defaultBuilder, generateBoundsCheck, numCases, cases);
    }
 
 TR::IlBuilder::JBCase *

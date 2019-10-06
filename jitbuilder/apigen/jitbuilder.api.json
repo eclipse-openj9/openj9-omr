@@ -1474,6 +1474,17 @@
                     {"name":"cases","type":"JBCase","attributes":["array","can_be_vararg"],"array-len":"numCases"}
                     ]
                 },
+                { "name": "Switch"
+                    , "overloadsuffix": "ValWithArgArray"
+                    , "flags": []
+                    , "return": "none"
+                    , "parms": [
+                        {"name":"selectorValue","type":"IlValue"},
+                        {"name":"defaultBuilder","type":"IlBuilder","attributes":["in_out"]},
+                        {"name":"numCases","type":"int32"},
+                        {"name":"cases","type":"JBCase","attributes":["array","can_be_vararg"],"array-len":"numCases"}
+                        ]
+                },
                 { "name": "TableSwitch"
                 , "overloadsuffix": "WithArgArray"
                 , "flags": []
@@ -1485,6 +1496,17 @@
                     {"name":"numCases","type":"int32"},
                     {"name":"cases","type":"JBCase","attributes":["array","can_be_vararg"],"array-len":"numCases"}
                     ]
+                },
+                { "name": "TableSwitch"
+                    , "overloadsuffix": "ValWithArgArray"
+                    , "flags": []
+                    , "return": "none"
+                    , "parms": [
+                        {"name":"selectorValue","type":"IlValue"},
+                        {"name":"defaultBuilder","type":"IlBuilder","attributes":["in_out"]},
+                        {"name":"numCases","type":"int32"},
+                        {"name":"cases","type":"JBCase","attributes":["array","can_be_vararg"],"array-len":"numCases"}
+                        ]
                 },
                 { "name": "MakeCase"
                 , "overloadsuffix": ""

@@ -23,7 +23,7 @@
 #pragma csect(STATIC,"TRCGBase#S")
 #pragma csect(TEST,"TRCGBase#T")
 
-#include "codegen/OMRCodeGenerator.hpp"
+#include "codegen/CodeGenerator.hpp"
 
 #include <limits.h>
 #include <stdarg.h>

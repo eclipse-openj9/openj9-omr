@@ -46,7 +46,7 @@
 #include "ilgen/IlGenRequest.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
 #include "optimizer/Optimization_inlines.hpp"
-#include "optimizer/OMRValuePropagation.hpp"
+#include "optimizer/ValuePropagation.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/PersistentCHTable.hpp"

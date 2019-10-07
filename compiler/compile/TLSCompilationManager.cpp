@@ -21,7 +21,7 @@
 
 #include "compile/TLSCompilationManager.hpp"
 #include "infra/ThreadLocal.h"
-#include "compile/OMRCompilation.hpp"
+#include "compile/Compilation.hpp"
 
 TR::TLSCompilationManager::TLSCompilationManager(TR::Compilation &comp)
    {

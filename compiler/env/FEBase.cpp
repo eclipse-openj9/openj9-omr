@@ -35,7 +35,7 @@
 #include "env/jittypes.h"
 #include "compile/CompilationException.hpp"
 #include "il/ILOps.hpp"
-#include "il/OMRILOps.hpp"
+#include "il/ILOps.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 

@@ -24,7 +24,7 @@
  * before actual code generation should go in this file.
  */
 
-#include "codegen/OMRCodeGenerator.hpp" // IWYU pragma: keep
+#include "codegen/CodeGenerator.hpp" // IWYU pragma: keep
 
 #include <stddef.h>
 #include <stdint.h>

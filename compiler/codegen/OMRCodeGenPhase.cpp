@@ -29,7 +29,7 @@
 #pragma csect(TEST,"OMRCGPhase#T")
 
 
-#include "codegen/OMRCodeGenPhase.hpp"
+#include "codegen/CodeGenPhase.hpp"
 
 #include <stdarg.h>
 #include <stddef.h>

@@ -958,7 +958,12 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
    //
 
    TR_OpaqueMethodBlock *method = fe()->getMethodFromName(className, methodName, methodSignature);
-   TR_ASSERT(method, "methodSymRefFromName: method must exist: %s.%s%s", className, methodName, methodSignature);
+
+   // It is possible for getMethodFromName to return NULL in relocatable compilations
+   if (!method && comp()->compileRelocatableCode())
+      comp()->failCompilation<TR::CompilationException>("Failed to get method %s.%s%s from name", className, methodName, methodSignature);
+
+   TR_ASSERT_FATAL(method, "methodSymRefFromName: method must exist: %s.%s%s", className, methodName, methodSignature);
    TR_ASSERT(kind != TR::MethodSymbol::Virtual, "methodSymRefFromName doesn't support virtual methods"); // Until we're able to look up vtable index
 
    // Note: we use cpIndex=-1 here so we don't end up getting back the original symref (which will not have the signature we want)

@@ -61,6 +61,7 @@
 #cmakedefine OMR_GC_MODRON_STANDARD
 #cmakedefine OMR_GC_NON_ZERO_TLH
 #cmakedefine OMR_GC_OBJECT_ALLOCATION_NOTIFY
+#cmakedefine OMR_GC_SCAN_OBJECT_GLUE
 #cmakedefine OMR_GC_SEGREGATED_HEAP
 #cmakedefine OMR_GC_THREAD_LOCAL_HEAP
 #cmakedefine OMR_GC_VLHGC

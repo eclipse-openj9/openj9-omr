@@ -520,7 +520,7 @@ OMR::ARM64::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::CodeGenerator *
             resultReg = sym->isLocalObject() ? cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
             if (mref->hasDelayedOffset())
                {
-               TR_UNIMPLEMENTED();
+               generateTrg1MemInstruction(cg, TR::InstOpCode::addimmx, node, resultReg, mref);
                }
             else
                {

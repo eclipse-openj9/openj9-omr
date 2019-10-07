@@ -3021,9 +3021,9 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
 	 }
       else
 	 {
-         if (cg->comp()->compileRelocatableCode())
+         if (cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation())
             {
-            loadAddressConstant(cg, node, address, addrRegister);
+            loadAddressConstant(cg, node, address, addrRegister, NULL, false, -1, true);
             generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, 0, 4, cg));
             }
          else
@@ -3322,7 +3322,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
 	 }
       else
 	 {
-         loadAddressConstant(cg, node, address, addrRegister);
+         loadAddressConstant(cg, node, address, addrRegister, NULL, false, -1, cg->comp()->isOutOfProcessCompilation());
 	 }
       }
    else

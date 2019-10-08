@@ -77,7 +77,8 @@ extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg,
                                     TR::Register    *targetRegister,
                                     TR::Instruction *cursor=NULL,
                                     bool            isPicSite=false,
-                                    int16_t         typeAddress = -1);
+                                    int16_t         typeAddress = -1,
+                                    bool            isRelocatable = false);
 
 extern TR::Instruction *loadActualConstant(TR::CodeGenerator *cg,
                                     TR::Node        *node,

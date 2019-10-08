@@ -122,9 +122,10 @@ loadAddressConstant(
       TR::Register *trgReg,
       TR::Instruction *cursor,
       bool isPicSite,
-      int16_t typeAddress)
+      int16_t typeAddress,
+      bool isRelocatable)
    {
-   if (cg->comp()->compileRelocatableCode())
+   if (cg->comp()->compileRelocatableCode() || isRelocatable)
       return cg->loadAddressConstantFixed(node, value, trgReg, cursor, NULL, typeAddress);
 
    return loadActualConstant(cg, node, value, trgReg, cursor, isPicSite);

@@ -215,7 +215,6 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *node, TR::SymbolReference
    {
    TR::Symbol *symbol = symRef->getSymbol();
 
-
    if (symbol->isStatic())
       {
       self()->accessStaticItem(node, symRef, false, cg);
@@ -1575,62 +1574,59 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       {
       TR::Node *topNode = cg->getCurrentEvaluationTreeTop()->getNode();
       TR::UnresolvedDataSnippet *snippet = NULL;
-      int32_t  tocIndex = symbol->getStaticSymbol()->getTOCIndex();
+      int32_t tocIndex = symbol->getStaticSymbol()->getTOCIndex();
+ 
+      /* don't want to trash node prematurely by the code for handling other symbols */
+      TR::Node *nodeForSymbol = node;
+      if (!nodeForSymbol)
+         nodeForSymbol = cg->getCurrentEvaluationTreeTop()->getNode();
 
-      if (cg->comp()->compileRelocatableCode())
+      if (symbol->isDebugCounter() && cg->comp()->compileRelocatableCode())
          {
-         /* don't want to trash node prematurely by the code for handling other symbols */
-         TR::Node *nodeForSymbol = node;
-         if (!nodeForSymbol)
-            nodeForSymbol = cg->getCurrentEvaluationTreeTop()->getNode();
-
-         if (symbol->isDebugCounter())
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_DebugCounter);
-            return;
-            }
-         if (symbol->isCountForRecompile())
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, true, nodeForSymbol, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
-            return;
-            }
-         else if (symbol->isRecompilationCounter())
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_BodyInfoAddressLoad);
-            return;
-            }
-         else if (symbol->isCompiledMethod())
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_RamMethodSequence);
-            return;
-            }
-         else if (symbol->isStartPC())
-            {
-            // use inSnippet, as the relocation mechanism is already set up there
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstantInSnippet(cg, nodeForSymbol, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
-            return;
-            }
-         else if (isStaticField && !ref->isUnresolved())
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_DataAddress);
-            return;
-            }
-         else if (isClass && !ref->isUnresolved() && comp->getOption(TR_UseSymbolValidationManager))
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, true, nodeForSymbol, (intptrj_t)ref, reg, NULL, false, TR_ClassAddress);
-            return;
-            }
-         else
-            {
-            TR_ASSERT_FATAL(!comp->getOption(TR_UseSymbolValidationManager) || ref->isUnresolved(), "SVM relocation unhandled");
-            }
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_DebugCounter);
+         return;
+         }
+      if (symbol->isCountForRecompile() && (cg->needRelocationsForPersistentInfoData() || cg->needRelocationsForStatics()))
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
+         return;
+         }
+      else if (symbol->isRecompilationCounter() && (cg->needRelocationsForBodyInfoData() || cg->needRelocationsForStatics()))
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_BodyInfoAddressLoad);
+         return;
+         }
+      else if (symbol->isCompiledMethod() && (cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation()))
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_RamMethodSequence);
+         return;
+         }
+      else if (symbol->isStartPC() && (cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation()))
+         {
+         // use inSnippet, as the relocation mechanism is already set up there
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstantInSnippet(cg, nodeForSymbol, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
+         return;
+         }
+      else if (isStaticField && !ref->isUnresolved() && cg->needRelocationsForStatics())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_DataAddress);
+         return;
+         }
+      else if (isClass && !ref->isUnresolved() && comp->getOption(TR_UseSymbolValidationManager) && cg->needClassAndMethodPointerRelocations())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, (intptrj_t)ref, reg, NULL, false, TR_ClassAddress);
+         return;
+         }
+      else
+         {
+         TR_ASSERT_FATAL(!comp->getOption(TR_UseSymbolValidationManager) || ref->isUnresolved(), "SVM relocation unhandled");
          }
 
       // TODO: find a better default uninitialized value --- 0x80000000
@@ -1677,56 +1673,54 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       }
    else
       {
-      if (ref->isUnresolved() || comp->compileRelocatableCode())
-         {
-         /* don't want to trash node prematurely by the code for handling other symbols */
-         TR::Node *nodeForSymbol = node;
-         if (!nodeForSymbol)
-            nodeForSymbol = cg->getCurrentEvaluationTreeTop()->getNode();
+      // don't want to trash node prematurely by the code for handling other symbols */
+      TR::Node *nodeForSymbol = node;
+      if (!nodeForSymbol)
+         nodeForSymbol = cg->getCurrentEvaluationTreeTop()->getNode();
+      bool refIsUnresolved = ref->isUnresolved();
 
-         if (symbol->isDebugCounter())
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, comp->compileRelocatableCode(), nodeForSymbol, 1, reg, NULL, false, TR_DebugCounter);
-            return;
-            }
-         else if (symbol->isCountForRecompile())
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, comp->compileRelocatableCode(), nodeForSymbol, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
-            return;
-            }
-         else if (symbol->isRecompilationCounter())
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, comp->compileRelocatableCode(), nodeForSymbol, 0, reg, NULL, false, TR_BodyInfoAddressLoad);
-            return;
-            }
-         else if (symbol->isCompiledMethod())
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, comp->compileRelocatableCode(), nodeForSymbol, 0, reg, NULL, false, TR_RamMethodSequence);
-            return;
-            }
-         else if (symbol->isStartPC())
-            {
-            // use inSnippet, as the relocation mechanism is already set up there
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstantInSnippet(cg, nodeForSymbol, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
-            return;
-            }
-         else if (isStaticField && !ref->isUnresolved())
-            {
-            TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, comp->compileRelocatableCode(), nodeForSymbol, 1, reg, NULL, false, TR_DataAddress);
-            return;
-            }
-         else if (ref->isUnresolved() || useUnresSnippetToAvoidRelo)
-            {
-            self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false));
-            cg->addSnippet(self()->getUnresolvedSnippet());
-            return;
-            }
+      if ((refIsUnresolved || comp->compileRelocatableCode()) && symbol->isDebugCounter())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, comp->compileRelocatableCode(), nodeForSymbol, 1, reg, NULL, false, TR_DebugCounter);
+         return;
+         }
+      else if ((refIsUnresolved || cg->needRelocationsForPersistentInfoData() || cg->needRelocationsForStatics()) && symbol->isCountForRecompile())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, cg->needRelocationsForPersistentInfoData() || cg->needRelocationsForStatics(), nodeForSymbol, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
+         return;
+         }
+      else if ((refIsUnresolved || cg->needRelocationsForBodyInfoData() || cg->needRelocationsForStatics()) && symbol->isRecompilationCounter())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, cg->needRelocationsForBodyInfoData() || cg->needRelocationsForStatics(), nodeForSymbol, 0, reg, NULL, false, TR_BodyInfoAddressLoad);
+         return;
+         }
+      else if (symbol->isCompiledMethod() && (ref->isUnresolved() || comp->compileRelocatableCode() || comp->isOutOfProcessCompilation()))
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, comp->compileRelocatableCode() || comp->isOutOfProcessCompilation(), nodeForSymbol, 0, reg, NULL, false, TR_RamMethodSequence);
+         return;
+         }
+      else if (symbol->isStartPC() && (ref->isUnresolved() || comp->compileRelocatableCode() || comp->isOutOfProcessCompilation()))
+         {
+         // use inSnippet, as the relocation mechanism is already set up there
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstantInSnippet(cg, nodeForSymbol, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
+         return;
+         }
+      else if (isStaticField && !refIsUnresolved && cg->needRelocationsForStatics())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_DataAddress);
+         return;
+         }
+      else if (refIsUnresolved || useUnresSnippetToAvoidRelo && (comp->compileRelocatableCode() || comp->isOutOfProcessCompilation()))
+         {
+         self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false));
+         cg->addSnippet(self()->getUnresolvedSnippet());
+         return;
          }
 
       TR::Instruction                 *rel1;
@@ -1750,7 +1744,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, reg, cg->hiValue(addr)&0x0000ffff);
       self()->addToOffset(node, LO_VALUE(addr), cg);
 
-      if (comp->compileRelocatableCode())
+      if (cg->needClassAndMethodPointerRelocations())
          {
          TR_ASSERT_FATAL(
             symbol->isClassObject(),
@@ -1767,7 +1761,6 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          }
       }
    }
-
 
 void
 OMR::Power::MemoryReference::setOffsetRequiresWordAlignment(

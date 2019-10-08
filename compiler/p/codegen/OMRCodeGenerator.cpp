@@ -3258,7 +3258,7 @@ OMR::Power::CodeGenerator::addMetaDataFor64BitFixedLoadLabelAddressIntoReg(
       TR::Instruction **q)
    {
 
-   if (!self()->comp()->compileRelocatableCode())
+   if (!self()->comp()->compileRelocatableCode() && !self()->comp()->isOutOfProcessCompilation())
       {
       self()->addRelocation(new (self()->trHeapMemory()) TR::PPCPairedLabelAbsoluteRelocation(q[0], q[1], q[2], q[3], label));
       }

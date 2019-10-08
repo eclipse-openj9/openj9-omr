@@ -561,6 +561,17 @@ OMR::CodeGenPhase::performInsertDebugCountersPhase(TR::CodeGenerator * cg, TR::C
    cg->insertDebugCounters();
    }
 
+void
+OMR::CodeGenPhase::performExpandInstructionsPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
+   {
+   TR::Compilation * comp = cg->comp();
+   phase->reportPhase(ExpandInstructionsPhase);
+
+   cg->expandInstructions();
+
+   if (comp->getOption(TR_TraceCG))
+      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Instruction Expansion Instructions", false, true);
+   }
 
 const char *
 OMR::CodeGenPhase::getName()
@@ -608,6 +619,8 @@ OMR::CodeGenPhase::getName(PhaseValue phase)
 	 return "InsertDebugCountersPhase";
       case CleanUpFlagsPhase:
 	 return "CleanUpFlagsPhase";
+      case ExpandInstructionsPhase:
+         return "ExpandInstructionsPhase";
       default:
          TR_ASSERT(false, "TR::CodeGenPhase %d doesn't have a corresponding name.", phase);
          return NULL;

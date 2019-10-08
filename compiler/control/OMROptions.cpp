@@ -539,7 +539,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableTLE",                         "O\tdisable transactional lock elision", SET_OPTION_BIT(TR_DisableTLE), "F"},
    {"disableTlhPrefetch",                 "O\tdisable software prefetch on allocation", SET_OPTION_BIT(TR_DisableTLHPrefetch), "F"},
    {"disableTM",                          "O\tdisable transactional memory support", SET_OPTION_BIT(TR_DisableTM), "F"},
-   {"disableTOC",                         "O\tdisable use of the Table of Contents (TOC) on relevant architectures", SET_OPTION_BIT(TR_DisableTOC), "F"},
+   {"disableTOC",                         "O\tdisable use of the Table of Constants (TOC) on relevant architectures", SET_OPTION_BIT(TR_DisableTOC), "F"},
    {"disableTraceRegDeps",                "O\tdisable printing of register dependancies for each instruction in trace file",              SET_OPTION_BIT(TR_DisableTraceRegDeps), "F"},
    {"disableTraps",                       "C\tdisable trap instructions",                       SET_OPTION_BIT(TR_DisableTraps), "F"},
    {"disableTreeCleansing",               "O\tdisable tree cleansing",                         TR::Options::disableOptimization, treesCleansing, 0, "P"},

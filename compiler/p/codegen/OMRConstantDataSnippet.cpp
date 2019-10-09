@@ -440,7 +440,7 @@ OMR::ConstantDataSnippet::emitAddressConstant(
          {
          iloc3 = requestors[i+2]->getBinaryEncoding();
          iloc4 = requestors[i+3]->getBinaryEncoding();
-         if (!cg()->comp()->compileRelocatableCode())
+         if (!cg()->comp()->compileRelocatableCode() && !cg()->comp()->isOutOfProcessCompilation())
             {
             *(int32_t *)iloc4 |= LO_VALUE(addr) & 0x0000ffff;
             addr = cg()->hiValue(addr);

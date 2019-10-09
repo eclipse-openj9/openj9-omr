@@ -1816,13 +1816,19 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
          // RISBG instructions perform unsigned rotation, so if we are selecting the sign bit via the logical AND we cannot
          // perform a signed shift because we must preserve the sign bit. In general we cannot handle this case because we are
          // not certain our input will be non-negative, hence we must conservatively disallow the optimization in such a case.
-
          if (longConstValue >= 0x8000000000000000LL && shiftAmount != 0 && isSignedShift)
             {
             return NULL;
             }
          // The Shift amount operand in RISBG only holds 6 bits so the optimization will not work on shift amounts >63 or < 63.
          if (shiftAmount > 63 || shiftAmount < -63)
+            {
+            return NULL;
+            }
+         // If the node entered is a common node, then there is no guarantee that the child of the common node will still be alive.
+         // And when we try to access the value in that node, we might receive values from a node that might've been killed already.
+         // Thus, the optimization will not work.
+         if (node->getRegister() != NULL)
             {
             return NULL;
             }

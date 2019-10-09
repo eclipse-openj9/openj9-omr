@@ -821,9 +821,16 @@ public:
    const char *getHotnessName();
 
    template<typename Exception>
-   void failCompilation(const char *reason)
+   void failCompilation(const char *format, ...)
       {
-      OMR::Compilation::reportFailure(reason);
+      char buffer[512];
+
+      va_list args;
+      va_start(args, format);
+      vsnprintf (buffer, sizeof(buffer), format, args);
+      va_end(args);
+
+      OMR::Compilation::reportFailure(buffer);
       throw Exception();
       }
 

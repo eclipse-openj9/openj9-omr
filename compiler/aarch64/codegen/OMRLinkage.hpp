@@ -56,7 +56,7 @@ namespace TR {
 class ARM64MemoryArgument
    {
    public:
-   // @@ TR_ALLOC(TR_Memory::ARM64MemoryArgument)
+   TR_ALLOC(TR_Memory::ARM64MemoryArgument)
 
    TR::Register *argRegister;
    TR::MemoryReference *argMemory;

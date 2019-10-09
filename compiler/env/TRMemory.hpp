@@ -292,6 +292,10 @@ public:
       ARMConstant,
       ARMConstantDataSnippet,
 
+      // ARM64 types
+      ARM64Relocation,
+      ARM64MemoryArgument,
+
       BlockCloner,
       BlockFrequencyInfo,
       ByteCodeIterator,

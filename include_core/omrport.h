@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -701,6 +701,7 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_ARCH_HAMMER    "amd64"
 #define OMRPORT_ARCH_ARM       "arm"
 #define OMRPORT_ARCH_AARCH64   "aarch64"
+#define OMRPORT_ARCH_RISCV     "riscv"
 
 #define OMRPORT_TTY_IN  0
 #define OMRPORT_TTY_OUT  1
@@ -1217,6 +1218,9 @@ typedef enum OMRProcessorArchitecture {
 	OMR_PROCESSOR_X86_AMDK6,
 	OMR_PROCESSOR_X86_AMDATHLONDURON,
 	OMR_PROCESSOR_X86_AMDOPTERON,
+
+	OMR_PROCESOR_RISCV32_UNKNOWN,
+	OMR_PROCESOR_RISCV64_UNKNOWN,
 
 	OMR_PROCESSOR_DUMMY = 0x40000000 /* force wide enums */
 

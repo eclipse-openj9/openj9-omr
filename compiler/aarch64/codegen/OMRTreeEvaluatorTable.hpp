@@ -278,12 +278,12 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpgeuEvaluator ,	// TR::dcmpgeu		// double compare if greater than or equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpgtuEvaluator ,	// TR::dcmpgtu		// double compare if greater than or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpleuEvaluator ,	// TR::dcmpleu		// double compare if less than or equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::acmpeqEvaluator ,	// TR::acmpeq		// address compare if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::acmpneEvaluator ,	// TR::acmpne		// address compare if not equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::acmpltEvaluator ,	// TR::acmplt		// address compare if less than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::acmpgeEvaluator ,	// TR::acmpge		// address compare if greater than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::acmpgtEvaluator ,	// TR::acmpgt		// address compare if greater than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::acmpleEvaluator ,	// TR::acmple		// address compare if less than or equal
+    TR::TreeEvaluator::lcmpeqEvaluator , // TR::acmpeq		// address compare if equal
+    TR::TreeEvaluator::lcmpneEvaluator , // TR::acmpne		// address compare if not equal
+    TR::TreeEvaluator::lucmpltEvaluator , // TR::acmplt		// address compare if less than
+    TR::TreeEvaluator::lucmpgeEvaluator , // TR::acmpge		// address compare if greater than or equal
+    TR::TreeEvaluator::lucmpgtEvaluator , // TR::acmpgt		// address compare if greater than
+    TR::TreeEvaluator::lucmpleEvaluator , // TR::acmple		// address compare if less than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bcmpeqEvaluator ,	// TR::bcmpeq		// byte compare if equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bcmpneEvaluator ,	// TR::bcmpne		// byte compare if not equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bcmpltEvaluator ,	// TR::bcmplt		// byte compare if less than

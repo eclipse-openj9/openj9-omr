@@ -380,13 +380,14 @@ OMR::ARM64::TreeEvaluator::iucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *c
    return icmpHelper(node, TR::CC_HI, false, cg);
    }
 
-// also handles lucmpeq
+// also handles lucmpeq, acmpeq
 TR::Register *
 OMR::ARM64::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_EQ, true, cg);
    }
 
+// also handles lucmpne, acmpne
 TR::Register *
 OMR::ARM64::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -417,24 +418,28 @@ OMR::ARM64::TreeEvaluator::lcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg
    return icmpHelper(node, TR::CC_LE, true, cg);
    }
 
+// also handles acmplt
 TR::Register *
 OMR::ARM64::TreeEvaluator::lucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_CC, true, cg);
    }
 
+// also handles acmpge
 TR::Register *
 OMR::ARM64::TreeEvaluator::lucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_CS, true, cg);
    }
 
+// also handles acmpgt
 TR::Register *
 OMR::ARM64::TreeEvaluator::lucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_HI, true, cg);
    }
 
+// also handles acmple
 TR::Register *
 OMR::ARM64::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

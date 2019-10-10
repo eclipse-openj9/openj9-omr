@@ -325,7 +325,7 @@ void armCodeCacheParameters(int32_t *trampolineSize, void **callBacks, int32_t *
 #undef BRANCH_FORWARD_LIMIT
 #undef BRANCH_BACKWARD_LIMIT
 
-#endif /* TR_TARGET_ARM64 */
+#endif /* TR_TARGET_ARM */
 
 #if defined(TR_TARGET_ARM64)
 
@@ -349,15 +349,13 @@ void arm64CreateHelperTrampolines(void *trampPtr, int32_t numHelpers)
 
    for (int32_t i=1; i<numHelpers; i++)
       {
-      // LDR  PC, [PC, #-4]
-      // DCD  helperAddr
-      //
-      *buffer = 0xe51ff004;
+      *((int32_t *)buffer) = 0x58000050; //LDR R16 PC+8
       buffer += 1;
-      *buffer = (intptrj_t)runtimeHelperValue((TR_RuntimeHelper)i);
+      *buffer = 0xD61F0200; //BR R16
       buffer += 1;
+      *((intptrj_t *)buffer) = (intptrj_t)runtimeHelperValue((TR_RuntimeHelper)i);
+      buffer += 2;
       }
-
    }
 
 void arm64CodeCacheParameters(int32_t *trampolineSize, void **callBacks, int32_t *numHelpers, int32_t* CCPreLoadedCodeSize)

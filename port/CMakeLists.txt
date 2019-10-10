@@ -169,7 +169,6 @@ list(APPEND OBJECTS
 	omrmemcategories.c
 	omrport.c
 	omrmmap.c
-	omrsock.c
 	j9nls.c
 	j9nlshelpers.c
 	omrosbacktrace.c

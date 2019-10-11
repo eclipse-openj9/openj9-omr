@@ -6686,12 +6686,12 @@ inlineTrailingZerosQuadWordAtATime(
    cursor = generateS390LabelInstruction (cg, TR::InstOpCode::LABEL, node, LabelProcessNext8Bytes);                                                            iComment("====== core loop ======");
    LabelProcessNext8Bytes->setStartInternalControlFlow();
 
-   cursor = generateRXInstruction        (cg, TR::InstOpCode::getLoadOpCode(), node, rInput, generateS390MemoryReference(rInputByteArray, rOffset, 0, cg));  iComment("next double-word");
-   cursor = generateRIEInstruction       (cg, is64 ? TR::InstOpCode::CGIJ : TR::InstOpCode::CIJ, node, rInput, (int8_t) 0x0, cFlowRegionEnd, TR::InstOpCode::COND_BNE);     iComment("byte is non-zero?");
-   cursor = generateRXInstruction        (cg, TR::InstOpCode::getLoadOpCode(), node, rInput, generateS390MemoryReference(rInputByteArray, rOffset, 8, cg));  iComment("next double-word");
-   cursor = generateRIEInstruction       (cg, is64 ? TR::InstOpCode::CGIJ : TR::InstOpCode::CIJ, node, rInput, (int8_t) 0x0, cFlowRegionEnd, TR::InstOpCode::COND_BNE);     iComment("byte is non-zero?");
-   cursor = generateRXInstruction        (cg, TR::InstOpCode::LAY, node, rOffset, generateS390MemoryReference(rOffset, -16, cg));
-   cursor = generateS390BranchInstruction(cg, is64 ?TR::InstOpCode::BRCTG : TR::InstOpCode::BRCT, node, rBranchCounter, LabelProcessNext8Bytes);
+   cursor = generateRXInstruction                  (cg, TR::InstOpCode::getLoadOpCode(), node, rInput, generateS390MemoryReference(rInputByteArray, rOffset, 0, cg));  iComment("next double-word");
+   cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, rInput, 0x0, TR::InstOpCode::COND_BNE, cFlowRegionEnd);     iComment("byte is non-zero?");
+   cursor = generateRXInstruction                  (cg, TR::InstOpCode::getLoadOpCode(), node, rInput, generateS390MemoryReference(rInputByteArray, rOffset, 8, cg));  iComment("next double-word");
+   cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, rInput, 0x0, TR::InstOpCode::COND_BNE, cFlowRegionEnd);     iComment("byte is non-zero?");
+   cursor = generateRXInstruction                  (cg, TR::InstOpCode::LAY, node, rOffset, generateS390MemoryReference(rOffset, -16, cg));
+   cursor = generateS390BranchInstruction          (cg, is64 ?TR::InstOpCode::BRCTG : TR::InstOpCode::BRCT, node, rBranchCounter, LabelProcessNext8Bytes);
 
    // doneLabel : we get here in 3 cases: i. if no trailing non-zeros were found ii. if trailing non-zero was found in core-loop iii. if trailing non-zero was found in residue processing
    cursor = generateS390LabelInstruction (cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, regDeps);

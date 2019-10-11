@@ -3030,7 +3030,6 @@ int32_t childTypes[] =
 
    TR::Double,                     // TR::dlog
 
-   TR::Int32,                     // TR::imulover
    TR::Double,                     // TR::dfloor
    TR::Float,                      // TR::ffloor
    TR::Double,                     // TR::dceil

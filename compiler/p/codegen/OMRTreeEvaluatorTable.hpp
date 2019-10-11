@@ -744,7 +744,6 @@
    TR::TreeEvaluator::libmFuncEvaluator,                // TR::datan
    TR::TreeEvaluator::libmFuncEvaluator,                // TR::datan2
    TR::TreeEvaluator::libmFuncEvaluator,                // TR::dlog
-   TR::TreeEvaluator::muloverEvaluator,                 // TR::imulover
    TR::TreeEvaluator::dfloorEvaluator,                  // TR::dfloor
    TR::TreeEvaluator::dfloorEvaluator,                  // TR::ffloor
    TR::TreeEvaluator::dfloorEvaluator,                  // TR::dceil

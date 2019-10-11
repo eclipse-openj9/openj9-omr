@@ -929,7 +929,6 @@ const ValuePropagationPtr constraintHandlers[] =
 
    constrainChildren,        // TR::dlog
 
-   constrainChildren,        // TR::imulover
    constrainChildren,        // TR::dfloor
    constrainChildren,        // TR::ffloor
    constrainChildren,        // TR::dceil

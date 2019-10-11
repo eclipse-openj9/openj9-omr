@@ -738,7 +738,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::datan
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::datan2
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dlog
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::imulover
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dfloor
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::ffloor
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dceil

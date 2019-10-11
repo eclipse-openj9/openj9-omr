@@ -796,7 +796,6 @@
    TR::TreeEvaluator::libmFuncEvaluator,    // TR::dlog
 
 
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::imulover
    TR::TreeEvaluator::dfloorEvaluator,      // TR::dfloor
    TR::TreeEvaluator::ffloorEvaluator,      // TR::ffloor
    TR::TreeEvaluator::dceilEvaluator,       // TR::dceil

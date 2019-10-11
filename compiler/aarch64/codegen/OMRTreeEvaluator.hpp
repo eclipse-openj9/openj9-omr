@@ -761,7 +761,6 @@ public:
 	static TR::Register *datanEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *datan2Evaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dlogEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *imuloverEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dfloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ffloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dceilEvaluator(TR::Node *node, TR::CodeGenerator *cg);

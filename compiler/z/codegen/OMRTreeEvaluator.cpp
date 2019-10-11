@@ -6687,9 +6687,9 @@ inlineTrailingZerosQuadWordAtATime(
    LabelProcessNext8Bytes->setStartInternalControlFlow();
 
    cursor = generateRXInstruction                  (cg, TR::InstOpCode::getLoadOpCode(), node, rInput, generateS390MemoryReference(rInputByteArray, rOffset, 0, cg));  iComment("next double-word");
-   cursor = generateS390CompareAndBranchInstruction(cg, is64 ? TR::InstOpCode::CG : TR::InstOpCode::C, node, rInput, static_cast<int32_t>(0x0), TR::InstOpCode::COND_BNE, cFlowRegionEnd);     iComment("byte is non-zero?");
+   cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, rInput, 0x0, TR::InstOpCode::COND_BNE, cFlowRegionEnd);     iComment("byte is non-zero?");
    cursor = generateRXInstruction                  (cg, TR::InstOpCode::getLoadOpCode(), node, rInput, generateS390MemoryReference(rInputByteArray, rOffset, 8, cg));  iComment("next double-word");
-   cursor = generateS390CompareAndBranchInstruction(cg, is64 ? TR::InstOpCode::CG : TR::InstOpCode::C, node, rInput, static_cast<int32_t>(0x0), TR::InstOpCode::COND_BNE, cFlowRegionEnd);     iComment("byte is non-zero?");
+   cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, rInput, 0x0, TR::InstOpCode::COND_BNE, cFlowRegionEnd);     iComment("byte is non-zero?");
    cursor = generateRXInstruction                  (cg, TR::InstOpCode::LAY, node, rOffset, generateS390MemoryReference(rOffset, -16, cg));
    cursor = generateS390BranchInstruction          (cg, is64 ?TR::InstOpCode::BRCTG : TR::InstOpCode::BRCT, node, rBranchCounter, LabelProcessNext8Bytes);
 

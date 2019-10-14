@@ -603,3 +603,14 @@ TR::Register *TR::ARMSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    TR_UNIMPLEMENTED();
    return NULL;
    }
+
+intptrj_t TR::ARMSystemLinkage::entryPointFromCompiledMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+
+intptrj_t TR::ARMSystemLinkage::entryPointFromInterpretedMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+

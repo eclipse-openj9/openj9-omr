@@ -151,6 +151,34 @@ class SystemLinkage : public TR::Linkage
    virtual TR::RealRegister *getAlternateStackPointerRealRegister() {return getRealRegister(_alternateStackPointerRegister);}
    virtual void initParamOffset(TR::ResolvedMethodSymbol * method, int32_t stackIndex, List<TR::ParameterSymbol> *parameterList=0);
 
+   /**
+    * @brief Provides the entry point in a method to use when that method is invoked
+    *        from a method compiled with the same linkage.
+    *
+    * @details
+    *    When asked on the method currently being compiled, this API will return 0 if
+    *    asked before code memory has been allocated.
+    *
+    *    The compiled method entry point may be the same as the interpreter entry point.
+    *
+    * @return The entry point for compiled methods to use; 0 if the entry point is unknown
+    */
+   virtual intptrj_t entryPointFromCompiledMethod();
+
+   /**
+    * @brief Provides the entry point in a method to use when that method is invoked
+    *        from an interpreter using the same linkage.
+    *
+    * @details
+    *    When asked on the method currently being compiled, this API will return 0 if
+    *    asked before code memory has been allocated.
+    *
+    *    The compiled method entry point may be the same as the interpreter entry point.
+    *
+    * @return The entry point for interpreted methods to use; 0 if the entry point is unknown
+    */
+   virtual intptrj_t entryPointFromInterpretedMethod();
+
    protected:
 
    int32_t _StackFrameSize;

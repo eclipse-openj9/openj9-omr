@@ -143,11 +143,16 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          break;
 
       case TR_DataAddress:
-         AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
-         cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode()->getSymbolReference(),
-                                  getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
-                                                                                (TR_ExternalRelocationTargetKind) reloType, cg()),
-                                  __FILE__,__LINE__, getNode());
+         {
+         if (cg()->needRelocationsForStatics())
+            {
+            AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode()->getSymbolReference(),
+                                     getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
+                                                                                   (TR_ExternalRelocationTargetKind) reloType, cg()),
+                                     __FILE__,__LINE__, getNode());
+            }
+         }
          break;
 
       case TR_ArrayCopyHelper:

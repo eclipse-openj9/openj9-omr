@@ -1322,8 +1322,8 @@ int32_t *TR::SwitchAnalyzer::setupFrequencies(TR::Node *node)
    {
    if (!_haveProfilingInfo) return 0;
 
-   int8_t *targetCounts = (int8_t*)   trMemory()->allocateStackMemory(_cfg->getNextNodeNumber() * sizeof(int8_t));
-   memset (targetCounts, 0, sizeof(int8_t) * _cfg->getNextNodeNumber());
+   int32_t *targetCounts = (int32_t*)   trMemory()->allocateStackMemory(_cfg->getNextNodeNumber() * sizeof(int32_t));
+   memset (targetCounts, 0, sizeof(int32_t) * _cfg->getNextNodeNumber());
    int32_t *frequencies = (int32_t *) trMemory()->allocateStackMemory(node->getCaseIndexUpperBound() * sizeof(int32_t));
    memset  (frequencies, 0, sizeof(int32_t) * node->getCaseIndexUpperBound());
 
@@ -1343,7 +1343,7 @@ int32_t *TR::SwitchAnalyzer::setupFrequencies(TR::Node *node)
       TR::Node *caseNode = node->getChild(i);
       TR::Block *targetBlock = caseNode->getBranchDestination()->getNode()->getBlock();
       int32_t targetCount = targetCounts[targetBlock->getNumber()];
-      TR_ASSERT(targetCount != 0, "unreachle successor of switch statement");
+      TR_ASSERT_FATAL(targetCount > 0, "Successor block_%d of switch statement has non-sense successsor count", targetBlock->getNumber());
       int32_t frequency = targetBlock->getFrequency() / targetCount;
       frequencies[i] = frequency;
 

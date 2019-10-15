@@ -566,11 +566,9 @@ PPCOpCodesTest::UnsupportedOpCodesTests()
    addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::lu2f, "lu2f", _argTypesUnaryLong, TR::Float);
    addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::lu2d, "lu2d", _argTypesUnaryLong, TR::Double);
 
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bmul, "bMul", _argTypesBinaryByte, TR::Int8);
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bdiv, "bDiv", _argTypesBinaryByte, TR::Int8);
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::brem, "bRem", _argTypesBinaryByte, TR::Int8);
 
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::smul, "sMul", _argTypesBinaryShort, TR::Int16);
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::sdiv, "sDiv", _argTypesBinaryShort, TR::Int16);
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::srem, "sRem", _argTypesBinaryShort, TR::Int16);
 

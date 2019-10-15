@@ -321,6 +321,9 @@ TEST_P(Int16Arithmetic, UsingConst) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
+    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
+        << "smul/sdiv not yet implemented on x86 (see Issue #4408)";
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
@@ -354,6 +357,9 @@ TEST_P(Int16Arithmetic, UsingLoadParam) {
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
+    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
+        << "smul/sdiv not yet implemented on x86 (see Issue #4408)";
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
@@ -382,6 +388,9 @@ TEST_P(Int8Arithmetic, UsingConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+
+    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
+        << "bmul/bdiv not yet implemented on x86 (see Issue #4408)";
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -415,6 +424,9 @@ TEST_P(Int8Arithmetic, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+
+    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
+        << "bmul/bdiv not yet implemented on x86 (see Issue #4408)";
         
     auto param = TRTest::to_struct(GetParam());
 
@@ -459,13 +471,15 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int16Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int16_t, int16_t>()),
     ::testing::Values(
         std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("sadd", add<int16_t>),
-        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("ssub", sub<int16_t>))));
+        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("ssub", sub<int16_t>),
+        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("smul", mul<int16_t>))));
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int8Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int8_t, int8_t>()),
     ::testing::Values(
         std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("badd", add<int8_t>),
-        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bsub", sub<int8_t>))));
+        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bsub", sub<int8_t>),
+        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bmul", mul<int8_t>))));
 
 /**
  * @brief Filter function for *div opcodes

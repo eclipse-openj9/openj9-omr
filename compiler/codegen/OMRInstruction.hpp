@@ -136,6 +136,14 @@ class OMR_EXTENSIBLE Instruction
     */
    virtual uint8_t *generateBinaryEncoding() = 0;
 
+   /**
+    * @brief Expand this instruction prior to binary encoding.
+    *
+    * @returns the last instruction in the expansion or this instruction if no expansion was
+    *          performed.
+    */
+   virtual TR::Instruction *expandInstruction() { return self(); }
+
    /*
     * Assign the specified register kind(s) on this instruction to real registers.
     */

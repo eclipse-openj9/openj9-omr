@@ -541,7 +541,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // Capabilities
    //
    bool supports32bitAiadd() {return true;}
-   bool supportsMergingGuards() {return false;}
 
    // --------------------------------------------------------------------------
    // Z only
@@ -1152,6 +1151,7 @@ class OMR_EXTENSIBLE CodeGenerator
    void apply64BitLoadLabelRelativeRelocation(TR::Instruction *, TR::LabelSymbol *);
    void apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
    void apply32BitLabelTableRelocation(int32_t * cursor, TR::LabelSymbol *);
+   bool supportsMergingGuards();
 
 
    bool needClassAndMethodPointerRelocations() { return false; }

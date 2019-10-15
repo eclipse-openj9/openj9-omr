@@ -366,8 +366,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    virtual bool getSupportsBitPermute();
 
-   bool supportsMergingGuards();
-
    bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
 
    bool hasTMEvaluator()                       {return true;}
@@ -768,8 +766,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    flags32_t _flags;
 
    public:
-
-   bool allowGuardMerging() { return false; }
 
    bool enableBetterSpillPlacements()
       {

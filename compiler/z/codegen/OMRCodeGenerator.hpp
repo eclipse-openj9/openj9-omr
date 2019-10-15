@@ -284,8 +284,6 @@ public:
    void RemoveMemRefFromStack(TR::MemoryReference * mr);
    void StopUsingEscapedMemRefsRegisters(int32_t topOfMemRefStackBeforeEvaluation);
 
-   bool supportsMergingGuards();
-
    bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
 
    bool supportsDirectJNICallsForAOT() { return true;}

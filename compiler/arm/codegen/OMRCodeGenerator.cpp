@@ -501,6 +501,9 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
       self()->setBinaryBufferCursor(cursorInstruction->generateBinaryEncoding());
       cursorInstruction = cursorInstruction->getNext();
       }
+
+   self()->getLinkage()->performPostBinaryEncoding();
+
    }
 
 bool OMR::ARM::CodeGenerator::hasDataSnippets()

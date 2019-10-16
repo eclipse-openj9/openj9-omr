@@ -289,6 +289,8 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
          ++oiIterator;
          }
       }
+
+   self()->getLinkage()->performPostBinaryEncoding();
    }
 
 TR::Linkage *OMR::ARM64::CodeGenerator::createLinkage(TR_LinkageConventions lc)

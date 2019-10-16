@@ -119,37 +119,6 @@ ResolvedMethod::computeSignatureChars()
    _signatureChars[s++] = 0;
    }
 
-void
-ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSym)
-   {
-   ListAppender<TR::ParameterSymbol> la(&methodSym->getParameterList());
-   TR::ParameterSymbol *parmSymbol;
-   int32_t slot = 0;
-   int32_t ordinal = 0;
-
-   uint32_t parmSlots = numberOfParameterSlots();
-   for (int32_t parmIndex = 0; parmIndex < parmSlots; ++parmIndex)
-      {
-      TR::IlType *type = _parmTypes[parmIndex];
-      TR::DataType dt = type->getPrimitiveType();
-      int32_t size = methodSym->convertTypeToSize(dt);
-
-      parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, slot, type->getPrimitiveType());
-      parmSymbol->setOrdinal(ordinal++);
-
-      char *s = type->getSignatureName();
-      uint32_t len = strlen(s);
-      parmSymbol->setTypeSignature(s, len);
-
-      la.add(parmSymbol);
-
-      ++slot;
-      }
-
-   int32_t lastInterpreterSlot = slot + numberOfTemps();
-   methodSym->setTempIndex(lastInterpreterSlot, methodSym->comp()->fe());
-   methodSym->setFirstJitTempIndex(methodSym->getTempIndex());
-   }
 
 char *
 ResolvedMethod::localName(uint32_t slot,
@@ -192,4 +161,11 @@ ResolvedMethod::returnType()
    {
    return _returnType->getPrimitiveType();
    }
+
+char *
+ResolvedMethod::getParameterTypeSignature(int32_t parmIndex)
+   {
+   return _parmTypes[parmIndex]->getSignatureName();
+   }
+
 } // namespace TestCompiler

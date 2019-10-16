@@ -281,7 +281,21 @@ public:
                                                                       bool resetVisitCount,
                                                                       TR_PrexArgInfo  *argInfo);
 
-   // Make up a parameter list for the corresponding TR::ResolvedMethodSymbol
+   /**
+    * @brief Retrieve the type signature name for the given parameter index.
+    *
+    * @param[in] parmIndex : The parameter index
+    *
+    * @return The char * type signature name.
+    */
+   virtual char *getParameterTypeSignature(int32_t parmIndex);
+
+   /**
+    * @brief Create TR::ParameterSymbols from the signature of a method, and add them
+    *        to the ParameterList on the ResolvedMethodSymbol.
+    *
+    * @param[in] methodSym : the ResolvedMethodSymbol to create the parameter list for
+    */
    virtual void makeParameterList(TR::ResolvedMethodSymbol *);
 
    virtual TR::ResolvedMethodSymbol *findOrCreateJittedMethodSymbol(TR::Compilation *comp);

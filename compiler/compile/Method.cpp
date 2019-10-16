@@ -351,10 +351,11 @@ OMR::Method::isBigDecimalConvertersMethod(TR::Compilation * comp)
    return false;
    }
 
-TR::Method *TR_ResolvedMethod::convertToMethod()                          { TR_UNIMPLEMENTED(); return 0; }
+TR::Method * TR_ResolvedMethod::convertToMethod()                          { TR_UNIMPLEMENTED(); return 0; }
 uint32_t     TR_ResolvedMethod::numberOfParameters()                       { TR_UNIMPLEMENTED(); return 0; }
 uint32_t     TR_ResolvedMethod::numberOfExplicitParameters()               { TR_UNIMPLEMENTED(); return 0; }
 TR::DataType TR_ResolvedMethod::parmType(uint32_t)                         { TR_UNIMPLEMENTED(); return TR::NoType; }
+char *       TR_ResolvedMethod::getParameterTypeSignature(int32_t parmIndex) { TR_UNIMPLEMENTED(); return 0; }
 TR::ILOpCodes TR_ResolvedMethod::directCallOpCode()                        { TR_UNIMPLEMENTED(); return TR::BadILOp; }
 TR::ILOpCodes TR_ResolvedMethod::indirectCallOpCode()                      { TR_UNIMPLEMENTED(); return TR::BadILOp; }
 TR::DataType TR_ResolvedMethod::returnType()                               { TR_UNIMPLEMENTED(); return TR::NoType; }
@@ -569,107 +570,35 @@ TR_ResolvedMethod::_genMethodILForPeeking(TR::ResolvedMethodSymbol *, TR::Compil
    return 0;
    }
 
-
 TR::ResolvedMethodSymbol* TR_ResolvedMethod::findOrCreateJittedMethodSymbol(TR::Compilation *comp)
    {
    return comp->createJittedMethodSymbol(this);
    }
 
-// This version is suitable for Java
 void TR_ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSym)
    {
-   if (methodSym->getTempIndex() != -1)
-      return;
-
-   const char *className    = classNameChars();
-   const int   classNameLen = classNameLength();
-   const char *sig          = signatureChars();
-   const int   sigLen       = signatureLength();
-   const char *sigEnd       = sig + sigLen;
-
    ListAppender<TR::ParameterSymbol> la(&methodSym->getParameterList());
    TR::ParameterSymbol *parmSymbol;
-   int32_t slot;
+   int32_t slot = 0;
    int32_t ordinal = 0;
-   if (methodSym->isStatic())
-      {
-      slot = 0;
-      }
-   else
-      {
-      TR::KnownObjectTable::Index knownObjectIndex = methodSym->getKnownObjectIndexForParm(0);
-      parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, 0, TR::Address, knownObjectIndex);
-      parmSymbol->setOrdinal(ordinal++);
-
-      int32_t len = classNameLen; // len is passed by reference and changes during the call
-      char * s = classNameToSignature(className, len, methodSym->comp(), heapAlloc);
-
-      la.add(parmSymbol);
-      parmSymbol->setTypeSignature(s, len);
-
-      slot = 1;
-      }
-
-   const char *s = sig;
-   TR_ASSERT(*s == '(', "Bad signature for method: <%s>", s);
-   ++s;
 
    uint32_t parmSlots = numberOfParameterSlots();
-   for (int32_t parmIndex = 0; slot < parmSlots; ++parmIndex)
+   for (int32_t parmIndex = 0; parmIndex < parmSlots; ++parmIndex)
       {
-      TR::DataType type = parmType(parmIndex);
-      int32_t size = methodSym->convertTypeToSize(type);
-      if (size < 4) type = TR::Int32;
-
-      const char *end = s;
-
-      // Walk past array dims, if any
-      while (*end == '[')
-         {
-         ++end;
-         }
-
-      // Walk to the end of the class name, if this is a class name
-      if (*end == 'L')
-         {
-         // Assume the form is L<classname>; where <classname> is
-         // at least 1 char and therefore skip the first 2 chars
-         end += 2;
-         end = (char *)memchr(end, ';', sigEnd - end);
-         TR_ASSERT(end != NULL, "Unexpected NULL, expecting to find a parm of the form L<classname>;");
-         }
-
-      // The static_cast<int>(...) is added as a work around for an XLC bug that results in the
-      // pointer subtraction below getting converted into a 32-bit signed integer subtraction
-      int len = static_cast<int>(end - s) + 1;
-
-      parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, slot, type);
+      parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, slot, parmType(parmIndex));
       parmSymbol->setOrdinal(ordinal++);
+
+      char *s = getParameterTypeSignature(parmIndex);
+      uint32_t len = strlen(s);
       parmSymbol->setTypeSignature(s, len);
 
-      s += len;
-
       la.add(parmSymbol);
-      if (type == TR::Int64 || type == TR::Double)
-         {
-         slot += 2;
-         }
-      else
-         {
-         ++slot;
-         }
+
+      ++slot;
       }
 
-   int32_t lastInterpreterSlot = parmSlots + numberOfTemps();
-
-   if ((methodSym->isSynchronised() || methodSym->getResolvedMethod()->isNonEmptyObjectConstructor()) &&
-       methodSym->comp()->getOption(TR_MimicInterpreterFrameShape))
-      {
-      ++lastInterpreterSlot;
-      }
-
+   int32_t lastInterpreterSlot = slot + numberOfTemps();
    methodSym->setTempIndex(lastInterpreterSlot, methodSym->comp()->fe());
-
    methodSym->setFirstJitTempIndex(methodSym->getTempIndex());
    }
 

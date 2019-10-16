@@ -307,6 +307,17 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    // We need to provide an implementation to avoid an unimplemented assert. See issue #4446.
    int32_t arrayTranslateAndTestMinimumNumberOfIterations() { return 8; }
 
+   /**
+    * @return Retrieves the cached returnTypeInfo instruction
+    */
+   TR::ARM64ImmInstruction *getReturnTypeInfoInstruction() { return _returnTypeInfoInstruction; }
+
+   /**
+    * @brief Caches the returnTypeInfo instruction
+    * @param[in] rtii : the returnTypeInfo instruction
+    */
+   void setReturnTypeInfoInstruction(TR::ARM64ImmInstruction *rtii) { _returnTypeInfoInstruction = rtii; }
+
    private:
 
    enum // flags

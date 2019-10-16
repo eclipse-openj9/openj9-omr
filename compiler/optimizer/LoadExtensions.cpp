@@ -62,7 +62,13 @@ TR_LoadExtensions::TR_LoadExtensions(TR::OptimizationManager *manager)
 
 int32_t TR_LoadExtensions::perform()
    {
-   if (comp()->getOptLevel() >= hot && !optimizer()->cantBuildGlobalsUseDefInfo())
+   static bool enableGRALoadExtensions = feGetEnv("TR_EnableGRALoadExtensions") != NULL;
+
+   // Make sure the UseDefInfo is set to NULL when GRA Load Extensions are disable.
+   if (!enableGRALoadExtensions)
+      optimizer()->setUseDefInfo(NULL);
+
+   if (comp()->getOptLevel() >= hot && !optimizer()->cantBuildGlobalsUseDefInfo() && enableGRALoadExtensions)
       {
       if (!comp()->getFlowGraph()->getStructure())
          {

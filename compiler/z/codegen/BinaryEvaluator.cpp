@@ -48,14 +48,14 @@
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
 #include "ras/Debug.hpp"
@@ -1055,7 +1055,7 @@ iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
    // Note:  D and DR require that R1=0 before executing the division
    // TODO(#3685): Remove this Java-ism from OMR and push it into OpenJ9
    bool needCheck = (!node->isSimpleDivCheck()            &&
-                     !node->getOpCode().isUnsigned() && 
+                     !node->getOpCode().isUnsigned() &&
                      !firstChild->isNonNegative()         &&
                      !secondChild->isNonNegative());
 
@@ -2447,7 +2447,7 @@ OMR::Z::TreeEvaluator::lmulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * targetRegister = cg->allocateRegister();
    TR::Register * sourceRegister = firstRegister;
    TR::Compilation *comp = cg->comp();
-      
+
    TR::RegisterDependencyConditions * dependencies =
       new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
    TR::RegisterPair * targetRegisterPair = cg->allocateConsecutiveRegisterPair(sourceRegister, targetRegister);

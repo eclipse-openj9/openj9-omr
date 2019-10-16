@@ -24,8 +24,8 @@
 
 #include "ilgen/VirtualMachineRegister.hpp"
 #include "compile/Compilation.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
 #include "ilgen/IlBuilder.hpp"
 #include "ilgen/MethodBuilder.hpp"
 #include "ilgen/TypeDictionary.hpp"
@@ -146,13 +146,13 @@ OMR::VirtualMachineOperandStack::MakeCopy()
    new (copy) TR::VirtualMachineOperandStack(static_cast<TR::VirtualMachineOperandStack *>(this));
 
    return copy;
-   } 
+   }
 
 void
 OMR::VirtualMachineOperandStack::Push(TR::IlBuilder *b, TR::IlValue *value)
    {
    checkSize();
-   _stack[++_stackTop] = value; 
+   _stack[++_stackTop] = value;
    }
 
 TR::IlValue *
@@ -165,7 +165,7 @@ OMR::VirtualMachineOperandStack::Top()
 TR::IlValue *
 OMR::VirtualMachineOperandStack::Pop(TR::IlBuilder *b)
    {
-   TR_ASSERT_FATAL(_stackTop >= 0, "stack underflow"); 
+   TR_ASSERT_FATAL(_stackTop >= 0, "stack underflow");
    return _stack[_stackTop--];
    }
 
@@ -180,7 +180,7 @@ void
 OMR::VirtualMachineOperandStack::Drop(TR::IlBuilder *b, int32_t depth)
    {
    TR_ASSERT_FATAL(_stackTop >= depth-1, "stack underflow");
-   _stackTop-=depth; 
+   _stackTop-=depth;
    }
 
 void

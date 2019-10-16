@@ -19,13 +19,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "il/symbol/OMRRegisterMappedSymbol.hpp"
-
 #include <stdint.h>
 #include "codegen/FrontEnd.hpp"
 #include "env/TRMemory.hpp"
+#include "il/RegisterMappedSymbol.hpp"
 #include "il/Symbol.hpp"
-#include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Flags.hpp"

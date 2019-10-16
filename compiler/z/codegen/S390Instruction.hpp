@@ -39,7 +39,7 @@
 #include "control/Options_inlines.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
-#include "il/symbol/LabelSymbol.hpp"
+#include "il/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Flags.hpp"
 #include "ras/Debug.hpp"

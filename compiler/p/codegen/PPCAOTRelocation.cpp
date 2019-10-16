@@ -32,7 +32,7 @@
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
-#include "il/symbol/LabelSymbol.hpp"
+#include "il/LabelSymbol.hpp"
 #include "runtime/Runtime.hpp"
 
 void TR::PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)

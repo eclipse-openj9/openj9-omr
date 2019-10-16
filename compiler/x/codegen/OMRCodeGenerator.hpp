@@ -39,9 +39,11 @@ namespace OMR { typedef OMR::X86::CodeGenerator CodeGeneratorConnector; }
 #include "codegen/ScratchRegisterManager.hpp"
 #include "compile/Compilation.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/TRlist.hpp"
 #include "infra/Assert.hpp"
@@ -54,8 +56,6 @@ namespace OMR { typedef OMR::X86::CodeGenerator CodeGeneratorConnector; }
 #endif
 
 #include "codegen/Instruction.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/GCStackAtlas.hpp"

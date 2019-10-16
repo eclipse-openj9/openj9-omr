@@ -40,9 +40,9 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
 #include "infra/List.hpp"
@@ -715,7 +715,7 @@ static void insertMaskField(uint32_t *instruction, TR::InstOpCode::Mnemonic op, 
       return;
       }
 
-   TR_ASSERT(lmask, "A mask of 0 cannot be encoded");   
+   TR_ASSERT(lmask, "A mask of 0 cannot be encoded");
 
    if (opCode.isDoubleWord())
       {

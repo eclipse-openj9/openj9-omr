@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,29 +19,34 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_RESOLVEDMETHODSYMBOL_INCL
-#define TR_RESOLVEDMETHODSYMBOL_INCL
+#ifndef TR_REGISTERMAPPEDSYMBOL_INCL
+#define TR_REGISTERMAPPEDSYMBOL_INCL
 
-#include "il/symbol/OMRResolvedMethodSymbol.hpp"
-
-class TR_ResolvedMethod;
-namespace TR { class Compilation; }
+#include <stdint.h>
+#include "il/DataTypes.hpp"
+#include "il/OMRRegisterMappedSymbol.hpp"
 
 namespace TR
 {
 
-class OMR_EXTENSIBLE ResolvedMethodSymbol : public OMR::ResolvedMethodSymbolConnector
+class OMR_EXTENSIBLE RegisterMappedSymbol : public OMR::RegisterMappedSymbolConnector
    {
 
 protected:
 
-   ResolvedMethodSymbol(TR_ResolvedMethod * m, TR::Compilation * c) :
-      OMR::ResolvedMethodSymbolConnector(m, c) {}
+   RegisterMappedSymbol(int32_t o = 0) :
+      OMR::RegisterMappedSymbolConnector() { }
+
+   RegisterMappedSymbol(TR::DataType d) :
+      OMR::RegisterMappedSymbolConnector(d) { }
+
+   RegisterMappedSymbol(TR::DataType d, uint32_t s) :
+      OMR::RegisterMappedSymbolConnector(d, s) { }
 
 private:
 
    // When adding another class to the heirarchy, add it as a friend here
-   friend class OMR::ResolvedMethodSymbol;
+   friend class OMR::RegisterMappedSymbol;
 
    };
 

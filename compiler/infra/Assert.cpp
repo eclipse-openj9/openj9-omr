@@ -32,7 +32,7 @@
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
 #include "env/CompilerEnv.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "infra/Annotations.hpp"
 #include "ras/Debug.hpp"
 #include "stdarg.h"

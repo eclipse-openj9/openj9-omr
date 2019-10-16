@@ -31,15 +31,15 @@
 #include "env/IO.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
+#include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/Block.hpp"
-#include "il/symbol/LabelSymbol.hpp"
 #include "infra/Bit.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/Cfg.hpp"
@@ -607,10 +607,10 @@ TR::Node *reduceExpTwoAndGreaterToMultiplication(int32_t exponentValue, TR::Node
 
    TR::Node *resultNode = NULL;
 
-   // There are two algorithms here -- they are equivalent in the number 
-   // of multiply operations however the second is better for platforms 
-   // that have a destructive multiply instruction as less clobber evaluates 
-   // will be required. The second has the advantage that more parallel 
+   // There are two algorithms here -- they are equivalent in the number
+   // of multiply operations however the second is better for platforms
+   // that have a destructive multiply instruction as less clobber evaluates
+   // will be required. The second has the advantage that more parallel
    // multiply operations are created
    if (s->comp()->cg()->multiplyIsDestructive())
       {

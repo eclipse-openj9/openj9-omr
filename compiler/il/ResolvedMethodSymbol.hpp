@@ -19,31 +19,29 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_METHODSYMBOL_INCL
-#define TR_METHODSYMBOL_INCL
+#ifndef TR_RESOLVEDMETHODSYMBOL_INCL
+#define TR_RESOLVEDMETHODSYMBOL_INCL
 
-#include "il/symbol/OMRMethodSymbol.hpp"
+#include "il/OMRResolvedMethodSymbol.hpp"
 
-#include <stddef.h>
-#include "codegen/LinkageConventionsEnum.hpp"
-
-namespace TR { class Method; }
+class TR_ResolvedMethod;
+namespace TR { class Compilation; }
 
 namespace TR
 {
 
-class OMR_EXTENSIBLE MethodSymbol : public OMR::MethodSymbolConnector
+class OMR_EXTENSIBLE ResolvedMethodSymbol : public OMR::ResolvedMethodSymbolConnector
    {
 
 protected:
 
-   MethodSymbol(TR_LinkageConventions lc = TR_Private, TR::Method *m = NULL) :
-      OMR::MethodSymbolConnector(lc, m) { }
+   ResolvedMethodSymbol(TR_ResolvedMethod * m, TR::Compilation * c) :
+      OMR::ResolvedMethodSymbolConnector(m, c) {}
 
 private:
 
    // When adding another class to the heirarchy, add it as a friend here
-   friend class OMR::MethodSymbol;
+   friend class OMR::ResolvedMethodSymbol;
 
    };
 

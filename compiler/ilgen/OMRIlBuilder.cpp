@@ -32,6 +32,7 @@
 #include "control/Recompilation.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/FrontEnd.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/ILOps.hpp"
@@ -39,7 +40,6 @@
 #include "il/Node_inlines.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/IlInjector.hpp"
@@ -1105,7 +1105,7 @@ OMR::IlBuilder::widenIntegerTo32BitsUnsigned(TR::IlValue *v)
 TR::Node*
 OMR::IlBuilder::binaryOpNodeFromNodes(TR::ILOpCodes op,
                                  TR::Node *leftNode,
-                                 TR::Node *rightNode) 
+                                 TR::Node *rightNode)
    {
    TR::DataType leftType = leftNode->getDataType();
    TR::DataType rightType = rightNode->getDataType();
@@ -1121,19 +1121,19 @@ OMR::IlBuilder::binaryOpNodeFromNodes(TR::ILOpCodes op,
       leftNode = rightNode;
       rightNode = save;
       }
-   
+
    return TR::Node::create(op, 2, leftNode, rightNode);
    }
 
 TR::IlValue *
 OMR::IlBuilder::binaryOpFromNodes(TR::ILOpCodes op,
                              TR::Node *leftNode,
-                             TR::Node *rightNode) 
+                             TR::Node *rightNode)
    {
    TR::Node *result = binaryOpNodeFromNodes(op, leftNode, rightNode);
    TR::IlValue *returnValue = newValue(result->getDataType(), result);
    return returnValue;
-   } 
+   }
 
 TR::IlValue *
 OMR::IlBuilder::binaryOpFromOpMap(OpCodeMapper mapOp,
@@ -1220,7 +1220,7 @@ OMR::IlBuilder::Return()
 
 void
 OMR::IlBuilder::Return(TR::IlValue *value)
-   { 
+   {
    TR::IlBuilder *returnBuilder = _methodBuilder->returnBuilder();
    if (returnBuilder != NULL)
       {
@@ -1316,10 +1316,10 @@ OMR::IlBuilder::Add(TR::IlValue *left, TR::IlValue *right)
 /*
  * blockThrowsException:
  * ....
- * goto blockAfterExceptionHandler 
+ * goto blockAfterExceptionHandler
  * Handler:
  * ....
- * goto blockAfterExceptionHandler 
+ * goto blockAfterExceptionHandler
  * blockAfterExceptionHandler:
  */
 void
@@ -1332,7 +1332,7 @@ OMR::IlBuilder::appendExceptionHandler(TR::Block *blockThrowsException, TR::IlBu
    genTreeTop(gotoNode);
    _currentBlock = NULL;
    _currentBlockNumber = -1;
- 
+
    //append handler, add exception edge and merge edge
    *handler = createBuilderIfNeeded(*handler);
    TR_ASSERT_FATAL(*handler != NULL, "exception handler cannot be NULL\n");
@@ -1378,7 +1378,7 @@ OMR::IlBuilder::genOperationWithOverflowCHK(TR::ILOpCodes op, TR::Node *leftNode
     *    store
     *       => operation
     * BB2:
-    *    goto BB3 
+    *    goto BB3
     * Handler:
     *    ...
     * BB3:
@@ -1397,7 +1397,7 @@ OMR::IlBuilder::genOperationWithOverflowCHK(TR::ILOpCodes op, TR::Node *leftNode
 
 // This function takes 4 arguments and generate the addValue.
 // This function is called by AddWithOverflow and AddWithUnsignedOverflow.
-TR::ILOpCodes 
+TR::ILOpCodes
 OMR::IlBuilder::getOpCode(TR::IlValue *leftValue, TR::IlValue *rightValue)
    {
    TR::ILOpCodes op;
@@ -1407,11 +1407,11 @@ OMR::IlBuilder::getOpCode(TR::IlValue *leftValue, TR::IlValue *rightValue)
                 "the right child type must be either TR::Int32 (on 32-bit ISA) or TR::Int64 (on 64-bit ISA) when the left child of Add is TR::Address\n");
       op = TR::Compiler->target.is32Bit() ? TR::aiadd : TR::aladd;
       }
-   else 
+   else
       {
       op = addOpCode(leftValue->getDataType());
       }
-   return op; 
+   return op;
    }
 
 TR::IlValue *
@@ -1587,7 +1587,7 @@ OMR::IlBuilder::Xor(TR::IlValue *left, TR::IlValue *right)
 TR::Node*
 OMR::IlBuilder::shiftOpNodeFromNodes(TR::ILOpCodes op,
                                 TR::Node *leftNode,
-                                TR::Node *rightNode) 
+                                TR::Node *rightNode)
    {
    TR::DataType leftType = leftNode->getDataType();
    TR::DataType rightType = rightNode->getDataType();
@@ -1599,12 +1599,12 @@ OMR::IlBuilder::shiftOpNodeFromNodes(TR::ILOpCodes op,
 TR::IlValue *
 OMR::IlBuilder::shiftOpFromNodes(TR::ILOpCodes op,
                             TR::Node *leftNode,
-                            TR::Node *rightNode) 
+                            TR::Node *rightNode)
    {
    TR::Node *result = shiftOpNodeFromNodes(op, leftNode, rightNode);
    TR::IlValue *returnValue = newValue(result->getDataType(), result);
    return returnValue;
-   } 
+   }
 
 TR::IlValue *
 OMR::IlBuilder::shiftOpFromOpMap(OpCodeMapper mapOp,
@@ -1650,7 +1650,7 @@ OMR::IlBuilder::UnsignedShiftR(TR::IlValue *v, TR::IlValue *amount)
 
 /*
  * @brief IfAnd service for constructing short circuit AND conditional nests (like the && operator)
- * @param allTrueBuilder builder containing operations to execute if all conditional tests evaluate 
+ * @param allTrueBuilder builder containing operations to execute if all conditional tests evaluate
  *        to true (automatically allocated if pointed-to pointer is null)
  * @param anyFalseBuilder builder containing operations to execute if any conditional test is false
  *        (automatically allocated if pointed-to pointer is null)
@@ -1703,7 +1703,7 @@ OMR::IlBuilder::IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBu
 /**
  * @brief Overload taking a varargs instead of an array of JBCondition pointers
  *
- * @param allTrueBuilder builder containing operations to execute if all conditional tests 
+ * @param allTrueBuilder builder containing operations to execute if all conditional tests
  *        evaluate to true (automatically allocated if pointed-to pointer is null)
  * @param anyFalseBuilder builder containing operations to execute if any conditional test
  *        is false (automatically allocated if pointed-to pointer is null)
@@ -1800,7 +1800,7 @@ OMR::IlBuilder::IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBui
 /**
  * @brief Overload taking a varargs instead of an array of JBCondition pointers
  *
- * @param anyTrueBuilder builder containing operations to execute if any conditional test 
+ * @param anyTrueBuilder builder containing operations to execute if any conditional test
  *        evaluates to true (automatically allocated if pointed-to pointer is null)
  * @param allFalseBuilder builder containing operations to execute if all conditional
  *        tests are false (automatically allocated if pointed-to pointer is null)
@@ -1936,7 +1936,7 @@ OMR::IlBuilder::UnsignedGreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right)
    return returnValue;
    }
 
-TR::IlValue** 
+TR::IlValue**
 OMR::IlBuilder::processCallArgs(TR::Compilation *comp, int numArgs, va_list args)
    {
    TR::IlValue ** argValues = (TR::IlValue **) comp->trMemory()->allocateHeapMemory(numArgs * sizeof(TR::IlValue *));
@@ -1948,9 +1948,9 @@ OMR::IlBuilder::processCallArgs(TR::Compilation *comp, int numArgs, va_list args
    }
 
 /*
- * \param numArgs 
- *    Number of actual arguments for the method  plus 1 
- * \param ... 
+ * \param numArgs
+ *    Number of actual arguments for the method  plus 1
+ * \param ...
  *    The list is a computed address followed by the actual arguments
  */
 TR::IlValue *
@@ -1971,8 +1971,8 @@ OMR::IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, ...)
    }
 
 /*
- * \param numArgs 
- *    Number of actual arguments for the method  plus 1 
+ * \param numArgs
+ *    Number of actual arguments for the method  plus 1
  * \param argValues
  *    the computed address followed by the actual arguments
  */
@@ -2135,13 +2135,13 @@ OMR::IlBuilder::genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::
 
 
 /** \brief
- *     The service is used to atomically increase memory location \p baseAddress by amount of \p value. 
+ *     The service is used to atomically increase memory location \p baseAddress by amount of \p value.
  *
  *  \param value
  *     The amount to increase for the memory location.
  *
  *  \note
- *     This service currently only supports Int32/Int64. 
+ *     This service currently only supports Int32/Int64.
  *
  *  \return
  *     The old value at the location \p baseAddress.
@@ -2163,7 +2163,7 @@ OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
    callNode->setAndIncChild(1, loadValue(value));
 
    TR::IlValue *returnValue = newValue(callNode->getDataType(), callNode);
-   return returnValue; 
+   return returnValue;
    }
 
 
@@ -2173,7 +2173,7 @@ OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
  *  At the end of transaction path, service will automatically generate transaction end instruction.
  *
  * \verbatim
- *   
+ *
  *    +---------------------------------+
  *    |<block_$tstart>                  |
  *    |==============                   |
@@ -2186,8 +2186,8 @@ OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
  *    +---------------------------------+                         |                                  |
  *                       |                                        |                                  |
  *                       v                                        V                                  V
- *    +-----------------------------------------+   +-------------------------------+    +-------------------------+     
- *    |<block_$transaction>                     |   |<block_$persistentFailure>     |    |<block_$transientFailure>|      
+ *    +-----------------------------------------+   +-------------------------------+    +-------------------------+
+ *    |<block_$transaction>                     |   |<block_$persistentFailure>     |    |<block_$transientFailure>|
  *    |====================                     |   |===========================    |    |=========================|
  *    |     add (For illustration, we take add  |   |AtomicAdd (For illustration, we|    |   ...                   |
  *    |     ... as an example. User could       |   |...       take atomicAdd as an |    |   ...                   |
@@ -2201,21 +2201,21 @@ OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
  *                      |                                          |                                 |
  *                      |------------------------------------------+---------------------------------+
  *                      |
- *                      v             
- *              +----------------+     
- *              | block_$merge   |     
- *              | ============== |   
+ *                      v
+ *              +----------------+
+ *              | block_$merge   |
+ *              | ============== |
  *              |      ...       |
- *              +----------------+   
+ *              +----------------+
  *
- * \endverbatim 
+ * \endverbatim
  *
  * \structure & \param value
  *     tstart
  *       |
  *       ----persistentFailure // This is a permanent failure, try atomic way to do it instead
  *       |
- *       ----transientFailure // Temporary failure, user can retry 
+ *       ----transientFailure // Temporary failure, user can retry
  *       |
  *       ----transaction // Success, use general(non-atomic) way to do it
  *                |
@@ -2229,20 +2229,20 @@ OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
  *      If user's platform doesn't support TM, go to persistentFailure path directly/
  *      In this case, current IlBuilder walks around transientFailureBuilder and transactionBuilder
  *      and goes to persistentFailureBuilder.
- *      
+ *
  *      _currentBuilder
  *          |
  *          ->Goto()
- *              |   transientFailureBuilder 
+ *              |   transientFailureBuilder
  *              |   transactionBuilder
  *              |-->persistentFailurie
  */
 void
 OMR::IlBuilder::Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuilder **transientFailureBuilder, TR::IlBuilder **transactionBuilder)
-   {   
-   //This assertion is to rule out platforms which don't have tstart evaluator yet. 
-   TR_ASSERT_FATAL(comp()->cg()->hasTMEvaluator(), "this platform doesn't support tstart or tfinish evaluator yet");   
-    
+   {
+   //This assertion is to rule out platforms which don't have tstart evaluator yet.
+   TR_ASSERT_FATAL(comp()->cg()->hasTMEvaluator(), "this platform doesn't support tstart or tfinish evaluator yet");
+
    TraceIL("IlBuilder[ %p ]::transactionBegin %p, %p, %p, %p)\n", this, *persistentFailureBuilder, *transientFailureBuilder, *transactionBuilder);
 
    appendBlock();
@@ -2271,12 +2271,12 @@ OMR::IlBuilder::Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuil
    TR::Node *transientFailureNode = TR::Node::create(TR::branch, 0, (*transientFailureBuilder)->getEntry()->getEntry());
    TR::Node *transactionNode = TR::Node::create(TR::branch, 0, (*transactionBuilder)->getEntry()->getEntry());
 
-   TR::Node *tStartNode = TR::Node::create(TR::tstart, 3, persistentFailureNode, transientFailureNode, transactionNode);   
+   TR::Node *tStartNode = TR::Node::create(TR::tstart, 3, persistentFailureNode, transientFailureNode, transactionNode);
    tStartNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateTransactionEntrySymbolRef(comp()->getMethodSymbol()));
-   
+
    genTreeTop(tStartNode);
 
-   //connecting the block having tstart with persistentFailure's and transaction's blocks 
+   //connecting the block having tstart with persistentFailure's and transaction's blocks
    cfg()->addEdge(_currentBlock, (*persistentFailureBuilder)->getEntry());
    cfg()->addEdge(_currentBlock, (*transientFailureBuilder)->getEntry());
    cfg()->addEdge(_currentBlock, (*transactionBuilder)->getEntry());
@@ -2289,7 +2289,7 @@ OMR::IlBuilder::Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuil
    gotoBlock(mergeBlock);
 
    AppendBuilder(*transactionBuilder);
-    
+
    //ending the transaction at the end of transactionBuilder
    appendBlock();
    TR::Node *tEndNode=TR::Node::create(TR::tfinish,0);
@@ -2298,7 +2298,7 @@ OMR::IlBuilder::Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuil
 
    //Three IlBuilders above merged here
    appendBlock(mergeBlock);
-   }  
+   }
 
 
 /**

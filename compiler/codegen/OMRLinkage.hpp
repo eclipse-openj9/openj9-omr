@@ -32,7 +32,7 @@ namespace OMR { typedef OMR::Linkage LinkageConnector; }
 #endif
 
 #include "infra/List.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
+#include "il/ParameterSymbol.hpp"
 
 #include <stddef.h>
 #include <stdint.h>

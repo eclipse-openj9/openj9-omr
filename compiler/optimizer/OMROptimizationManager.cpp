@@ -34,7 +34,7 @@
 #include "env/TRMemory.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "infra/Cfg.hpp"
 #include "infra/Flags.hpp"
 #include "infra/List.hpp"

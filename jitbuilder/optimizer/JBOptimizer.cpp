@@ -28,7 +28,7 @@
 #include "compile/Method.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 
 #include "optimizer/Optimization.hpp"
 #include "optimizer/OptimizationManager.hpp"

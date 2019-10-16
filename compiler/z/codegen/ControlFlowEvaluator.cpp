@@ -50,20 +50,20 @@
 #endif
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
 #include "infra/BitVector.hpp"
@@ -387,7 +387,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
          generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CR, node, lhsReg, rhsReg, bc, cFlowRegionEnd, false);
 
          generateRRInstruction(cg, TR::InstOpCode::LR, node, lhsReg, rhsReg);
-         
+
          TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
 
          deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
@@ -433,7 +433,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
          generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CGR, node, lhsReg, rhsReg, bc, cFlowRegionEnd, false);
 
          generateRRInstruction(cg, TR::InstOpCode::LGR, node, lhsReg, rhsReg);
-         
+
          TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
 
          deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);

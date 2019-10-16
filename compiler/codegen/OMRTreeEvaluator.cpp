@@ -36,15 +36,15 @@
 #include "il/Block.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/RegisterMappedSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/RegisterMappedSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
 #include "infra/List.hpp"
@@ -393,7 +393,7 @@ bool OMR::TreeEvaluator::instanceOfOrCheckCastNeedSuperTest(TR::Node * node, TR:
    return false;
    }
 
-TR_GlobalRegisterNumber 
+TR_GlobalRegisterNumber
 OMR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(TR::Node *node, TR::CodeGenerator *cg)
    {
     //No need for register pairs in 64-bit mode

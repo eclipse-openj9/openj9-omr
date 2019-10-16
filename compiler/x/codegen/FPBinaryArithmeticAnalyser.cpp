@@ -38,7 +38,7 @@
 #include "il/ILOps.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"
 

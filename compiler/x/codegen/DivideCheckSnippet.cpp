@@ -26,7 +26,7 @@
 #include "codegen/Machine.hpp"
 #include "codegen/RealRegister.hpp"
 #include "il/ILOps.hpp"
-#include "il/symbol/LabelSymbol.hpp"
+#include "il/LabelSymbol.hpp"
 #include "ras/Debug.hpp"
 #include "codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"

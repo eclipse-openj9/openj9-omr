@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,8 +22,8 @@
 #include "compile/Method.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
+#include "il/ParameterSymbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/IlInjector.hpp"
 #include "ilgen/IlBuilder.hpp"

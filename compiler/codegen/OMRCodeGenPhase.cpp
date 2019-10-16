@@ -54,7 +54,7 @@
 #include "env/TRMemory.hpp"
 #include "il/Block.hpp"
 #include "il/Node.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/ILWalk.hpp"

@@ -41,8 +41,8 @@
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
-#include "il/symbol/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
 #include "p/codegen/PPCOpsDefines.hpp"
@@ -1322,16 +1322,16 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
             {
 
             /* Used with: dcmpgt, dcmplt, fcmpgt and fcmplt*/
-            /* Determine relationship between the two inputs, translate correct return value into GT bit of the Target Condition Register, clear the LT field of the target condition register and finally 
+            /* Determine relationship between the two inputs, translate correct return value into GT bit of the Target Condition Register, clear the LT field of the target condition register and finally
             set the result. */
 
             int64_t imm = (TR::RealRegister::CRCC_LT <<  TR::RealRegister::pos_RT | TR::RealRegister::CRCC_LT <<  TR::RealRegister::pos_RA | TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RB);
 
             cg()->traceRAInstruction(cursor = generateTrg1Src2Instruction(cg(), TR::InstOpCode::fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cursor));
-            
+
             if (getOpCode2Value() != TR::InstOpCode::bgt)
                cg()->traceRAInstruction(cursor = generateTrg1Src2ImmInstruction(cg(), TR::InstOpCode::cror, currentNode, getTargetRegister(0), getTargetRegister(0), getTargetRegister(0), getSourceImmediate(2), cursor));
-            
+
             cg()->traceRAInstruction(cursor = generateTrg1Src2ImmInstruction(cg(), TR::InstOpCode::crxor, currentNode, getTargetRegister(0), getTargetRegister(0), getTargetRegister(0), imm, cursor));
             cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction(cg(), TR::InstOpCode::setb, currentNode, getTargetRegister(1), getTargetRegister(0), cursor));
 

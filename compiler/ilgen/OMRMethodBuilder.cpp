@@ -28,12 +28,12 @@
 #include "env/Region.hpp"
 #include "env/SystemSegmentProvider.hpp"
 #include "env/TRMemory.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
@@ -128,7 +128,7 @@ OMR::MethodBuilder::MethodBuilder(TR::TypeDictionary *types, TR::VirtualMachineS
    _definingLine[0] = '\0';
    }
 
-// used when inlining: 
+// used when inlining:
 OMR::MethodBuilder::MethodBuilder(TR::MethodBuilder *callerMB, TR::VirtualMachineState *vmState)
    : TR::IlBuilder(asMethodBuilder(), callerMB->typeDictionary()),
    _methodName("NoName"),
@@ -385,7 +385,7 @@ OMR::MethodBuilder::defineSymbol(const char *name, TR::SymbolReference *symRef)
 
    _symbols.insert(std::make_pair(name, symRef));
    _symbolNameFromSlot.insert(std::make_pair(symRef->getCPIndex(), name));
-   
+
    TR::IlType *type = typeDictionary()->PrimitiveType(symRef->getSymbol()->getDataType());
    _symbolTypes.insert(std::make_pair(name, type));
 
@@ -437,7 +437,7 @@ OMR::MethodBuilder::lookupSymbol(const char *name)
    else
       {
       symRef = symRefTab()->createTemporary(_methodSymbol, primitiveType);
-      const char *adjustedName = adjustNameForInlinedSite(name); 
+      const char *adjustedName = adjustNameForInlinedSite(name);
       symRef->getSymbol()->getAutoSymbol()->setName(adjustedName);
       _symbolNameFromSlot.insert(std::make_pair(symRef->getCPIndex(), name));
 

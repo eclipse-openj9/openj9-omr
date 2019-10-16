@@ -20,12 +20,14 @@
  *******************************************************************************/
 
 #include "env/CompilerEnv.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/RegisterMappedSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/RegisterMappedSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "codegen/ARMInstruction.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
@@ -38,8 +40,6 @@
 #include "codegen/CallSnippet.hpp"
 #endif
 #include "codegen/StackCheckFailureSnippet.hpp"
-#include "il/Node.hpp"
-#include "il/Node_inlines.hpp"
 
 struct UnsupportedParameterType : public virtual TR::CompilationException
    {

@@ -1969,6 +1969,8 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       }
 #endif
 
+   self()->getLinkage()->performPostBinaryEncoding();
+
    if (self()->comp()->getOption(TR_TraceCG))
       {
       traceMsg(self()->comp(), "</encode>\n");

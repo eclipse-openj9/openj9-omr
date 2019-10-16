@@ -2570,6 +2570,9 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             }
          }
       }
+
+   self()->getLinkage()->performPostBinaryEncoding();
+
    }
 
 /**

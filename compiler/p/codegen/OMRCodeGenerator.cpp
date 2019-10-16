@@ -1810,6 +1810,8 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
 
          toPPCImmInstruction(data.preProcInstruction)->setSourceImmediate(*(uint32_t *)(data.preProcInstruction->getBinaryEncoding()));
          }
+
+      self()->getLinkage()->performPostBinaryEncoding();
       }
 
    // We late-processing TOC entries here: obviously cannot deal with snippet labels.

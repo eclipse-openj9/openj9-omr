@@ -128,6 +128,13 @@ class OMR_EXTENSIBLE Linkage
 
    virtual TR_RegisterKinds argumentRegisterKind(TR::Node *argumentNode);
 
+   /**
+    * @brief Perform operations required by this linkage once the code generator
+    *    binary encoding phase has completed.  Linkage implementors should override
+    *    this function as necessary.
+    */
+   virtual void performPostBinaryEncoding() { }
+
 protected:
 
    TR::CodeGenerator *_cg;

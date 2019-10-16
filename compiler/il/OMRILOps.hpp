@@ -866,13 +866,6 @@ public:
       return TR::BadILOp;
       }
 
-//TODO (#2657): remove this function as unsigned shfit opcodes have been deprecated
-   static TR::ILOpCodes unsignedShiftLeftOpCode(TR::DataType type)
-      {
-      TR_ASSERT(false, "no ushl opcode for datatype %s",type.toString());
-      return TR::BadILOp;
-      }
-
    static TR::ILOpCodes shiftRightOpCode(TR::DataType type)
       {
       switch(type)

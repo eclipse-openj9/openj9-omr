@@ -885,3 +885,15 @@ TR::X86SystemLinkage::layoutTypeOnStack(
       }
    return typeAlign;
    }
+
+
+intptrj_t TR::X86SystemLinkage::entryPointFromCompiledMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+
+intptrj_t TR::X86SystemLinkage::entryPointFromInterpretedMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+

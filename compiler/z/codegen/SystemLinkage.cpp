@@ -355,3 +355,13 @@ bool TR::SystemLinkage::hasToBeOnStack(TR::ParameterSymbol * parm)
    {
    return parm->getAssignedGlobalRegisterIndex() >=  0 &&  parm->isParmHasToBeOnStack();
    }
+
+intptrj_t TR::SystemLinkage::entryPointFromCompiledMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+
+intptrj_t TR::SystemLinkage::entryPointFromInterpretedMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }

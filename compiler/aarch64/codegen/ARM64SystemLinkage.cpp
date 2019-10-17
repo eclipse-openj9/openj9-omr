@@ -847,3 +847,15 @@ TR::Register *TR::ARM64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    TR_UNIMPLEMENTED();
    return NULL;
    }
+
+
+intptrj_t TR::ARM64SystemLinkage::entryPointFromCompiledMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+
+intptrj_t TR::ARM64SystemLinkage::entryPointFromInterpretedMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+

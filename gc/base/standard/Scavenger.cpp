@@ -282,7 +282,7 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavenger) {
-		if (!_masterGCThread.initialize(this, true, true)) {
+		if (!_masterGCThread.initialize(this, true, true, true)) {
 			return false;
 		}
 	}
@@ -5128,7 +5128,6 @@ MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 			} else {
 				/* Ran out of free space in allocate/survivor, or system/global GC */
 				getConcurrentPhaseStats()->_terminationRequestType = MM_ConcurrentPhaseStatsBase::terminationRequest_ByGC;
-				_concurrentState = concurrent_state_complete;
 			}
 			_shouldYield = false;
 		} else {

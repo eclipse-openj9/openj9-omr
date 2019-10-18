@@ -166,6 +166,7 @@ if(OMR_THR_YIELD_ALG)
 endif()
 #TODO set to disabled. Stuff fails to compile when its on
 set(OMR_THR_TRACING OFF CACHE BOOL "TODO: Document")
+set(OMR_THR_MCS_LOCKS OFF CACHE BOOL "Enable the usage of the MCS lock in the OMR thread monitor.")
 
 #TODO this should maybe be a OMRTHREAD_LIB string variable?
 set(OMRTHREAD_WIN32_DEFAULT OFF)

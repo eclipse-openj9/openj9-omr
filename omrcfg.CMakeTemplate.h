@@ -248,4 +248,10 @@
 #cmakedefine OMR_USE_OSX_SEMAPHORES
 #cmakedefine OMR_USE_ZOS_SEMAPHORES
 
+/**
+ * This flag enables the usage of the MCS (queue-based) lock instead of the default
+ * TATAS (Test & Test & Set) lock in the OMR thread monitor.
+ */
+#cmakedefine OMR_THR_MCS_LOCKS
+
 #endif /* !defined(OMRCFG_H_) */

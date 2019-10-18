@@ -36,6 +36,7 @@
 #include "codegen/TreeEvaluator.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/StaticSymbol.hpp"
 
 OMR::ARM64::CodeGenerator::CodeGenerator() :
       OMR::CodeGenerator(),
@@ -218,15 +219,9 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
    TR::Compilation *comp = self()->comp();
    int32_t estimate = 0;
    TR::Instruction *cursorInstruction = self()->getFirstInstruction();
+   TR::Instruction *i2jEntryInstruction = cursorInstruction;
 
    self()->getLinkage()->createPrologue(cursorInstruction);
-
-   TR::Instruction *prologueCursor = self()->getFirstInstruction();
-   for (TR::Instruction *gcMapCursor = prologueCursor; NULL!= gcMapCursor; gcMapCursor = gcMapCursor->getNext())
-      {
-      if (gcMapCursor->needsGCMap())
-         gcMapCursor->setGCMap(self()->getStackAtlas()->getParameterMap()->clone(self()->trMemory()));
-      }
 
    bool skipOneReturn = false;
    while (cursorInstruction)
@@ -265,6 +260,13 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
       {
       self()->setBinaryBufferCursor(cursorInstruction->generateBinaryEncoding());
       self()->addToAtlas(cursorInstruction);
+
+      if (cursorInstruction == i2jEntryInstruction)
+         {
+         self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart());
+         self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
+         }
+
       cursorInstruction = cursorInstruction->getNext();
       }
 

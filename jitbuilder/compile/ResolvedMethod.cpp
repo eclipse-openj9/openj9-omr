@@ -1,17 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2014, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
- * distribution and is available at http://eclipse.org/legal/epl-2.0
- * or the Apache License, Version 2.0 which accompanies this distribution
- * and is available at https://www.apache.org/licenses/LICENSE-2.0.
+ * distribution and is available at https://www.eclipse.org/legal/epl-2.0/
+ * or the Apache License, Version 2.0 which accompanies this distribution and
+ * is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * This Source Code may also be made available under the following Secondary
- * Licenses when the conditions for such availability set forth in the
- * Eclipse Public License, v. 2.0 are satisfied: GNU General Public License,
- * version 2 with the GNU Classpath Exception [1] and GNU General Public
- * License, version 2 with the OpenJDK Assembly Exception [2].
+ * This Source Code may also be made available under the following
+ * Secondary Licenses when the conditions for such availability set
+ * forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
+ * General Public License, version 2 with the GNU Classpath
+ * Exception [1] and GNU General Public License, version 2 with the
+ * OpenJDK Assembly Exception [2].
  *
  * [1] https://www.gnu.org/software/classpath/license.html
  * [2] http://openjdk.java.net/legal/assembly-exception.html
@@ -19,9 +20,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "compile/Method.hpp"
 #include "compile/Compilation.hpp"
-#include "compile/SymbolReferenceTable.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "il/ParameterSymbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "ilgen/TypeDictionary.hpp"
@@ -30,16 +30,13 @@
 #include "ilgen/MethodBuilder.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 
-namespace TestCompiler
-{
-
 // needs major overhaul
-ResolvedMethod::ResolvedMethod(TR_OpaqueMethodBlock *method)
+JitBuilder::ResolvedMethod::ResolvedMethod(TR_OpaqueMethodBlock *method)
    {
    // trouble! trouble! where do we get TypeDictionary from now?
    _ilInjector = reinterpret_cast<TR::IlInjector *>(method);
 
-   TR::ResolvedMethod * resolvedMethod = _ilInjector->resolvedMethod();
+   TR::ResolvedMethod * resolvedMethod = (TR::ResolvedMethod *)_ilInjector->methodSymbol()->getResolvedMethod();
    _fileName = resolvedMethod->classNameChars();
    _name = resolvedMethod->nameChars();
    _numParms = resolvedMethod->getNumArgs();
@@ -47,11 +44,12 @@ ResolvedMethod::ResolvedMethod(TR_OpaqueMethodBlock *method)
    _lineNumber = resolvedMethod->getLineNumber();
    _returnType = resolvedMethod->returnIlType();
    _signature = resolvedMethod->getSignature();
+   _externalName = 0;
    _entryPoint = resolvedMethod->getEntryPoint();
    strncpy(_signatureChars, resolvedMethod->signatureChars(), 62); // TODO: introduce concept of robustness
    }
 
-ResolvedMethod::ResolvedMethod(TR::MethodBuilder *m)
+JitBuilder::ResolvedMethod::ResolvedMethod(TR::MethodBuilder *m)
    : _fileName(m->getDefiningFile()),
      _lineNumber(m->getDefiningLine()),
      _name((char *)m->GetMethodName()), // sad cast
@@ -60,13 +58,14 @@ ResolvedMethod::ResolvedMethod(TR::MethodBuilder *m)
      _returnType(m->getReturnType()),
      _entryPoint(0),
      _signature(0),
+     _externalName(0),
      _ilInjector(static_cast<TR::IlInjector *>(m))
    {
    computeSignatureChars();
    }
 
 const char *
-ResolvedMethod::signature(TR_Memory * trMemory, TR_AllocationKind allocKind)
+JitBuilder::ResolvedMethod::signature(TR_Memory * trMemory, TR_AllocationKind allocKind)
    {
    if( !_signature )
       {
@@ -82,15 +81,35 @@ ResolvedMethod::signature(TR_Memory * trMemory, TR_AllocationKind allocKind)
       return _signature;
    }
 
+const char *
+JitBuilder::ResolvedMethod::externalName(TR_Memory *trMemory, TR_AllocationKind allocKind)
+   {
+   if( !_externalName)
+      {
+      // For C++, need to mangle name
+      //char * s = (char *)trMemory->allocateMemory(1 + strlen(_name) + 1, allocKind);
+      //sprintf(s, "_Z%d%si", (int32_t)strlen(_name), _name);
+
+
+      // functions must be defined as extern "C"
+      _externalName = _name;
+
+      //if ( allocKind == heapAlloc)
+      //  _externalName = s;
+      }
+
+   return _externalName;
+   }
+
 TR::DataType
-ResolvedMethod::parmType(uint32_t slot)
+JitBuilder::ResolvedMethod::parmType(uint32_t slot)
    {
    TR_ASSERT((slot < _numParms), "Invalid slot provided for Parameter Type");
    return _parmTypes[slot]->getPrimitiveType();
    }
 
 void
-ResolvedMethod::computeSignatureChars()
+JitBuilder::ResolvedMethod::computeSignatureChars()
    {
    char *name=NULL;
    uint32_t len=3;
@@ -121,7 +140,7 @@ ResolvedMethod::computeSignatureChars()
 
 
 char *
-ResolvedMethod::localName(uint32_t slot,
+JitBuilder::ResolvedMethod::localName(uint32_t slot,
                           uint32_t bcIndex,
                           int32_t &nameLength,
                           TR_Memory *trMemory)
@@ -147,7 +166,7 @@ ResolvedMethod::localName(uint32_t slot,
    }
 
 TR::IlInjector *
-ResolvedMethod::getInjector (TR::IlGeneratorMethodDetails * details,
+JitBuilder::ResolvedMethod::getInjector (TR::IlGeneratorMethodDetails * details,
    TR::ResolvedMethodSymbol *methodSymbol,
    TR::FrontEnd *fe,
    TR::SymbolReferenceTable *symRefTab)
@@ -157,15 +176,14 @@ ResolvedMethod::getInjector (TR::IlGeneratorMethodDetails * details,
    }
 
 TR::DataType
-ResolvedMethod::returnType()
+JitBuilder::ResolvedMethod::returnType()
    {
    return _returnType->getPrimitiveType();
    }
 
 char *
-ResolvedMethod::getParameterTypeSignature(int32_t parmIndex)
+JitBuilder::ResolvedMethod::getParameterTypeSignature(int32_t parmIndex)
    {
    return _parmTypes[parmIndex]->getSignatureName();
    }
 
-} // namespace TestCompiler

@@ -22,7 +22,7 @@
 include(OmrCompilerSupport)
 
 set(COMPILERTEST_FILES
-	compile/Method.cpp
+	compile/ResolvedMethod.cpp
 	control/TestJit.cpp
 	env/FrontEnd.cpp
 	ilgen/IlInjector.cpp
@@ -46,7 +46,7 @@ elseif(OMR_ARCH_POWER)
 		${omr_SOURCE_DIR}/compiler/p/env/OMRDebugEnv.cpp
 	)
 elseif(OMR_ARCH_S390)
-	list(APPEND COMPILERTEST_FILES 
+	list(APPEND COMPILERTEST_FILES
 		z/codegen/Evaluator.cpp
 		z/codegen/TestCodeGenerator.cpp
 		${omr_SOURCE_DIR}/compiler/z/env/OMRCPU.cpp

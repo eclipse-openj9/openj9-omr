@@ -29,7 +29,6 @@
 #include "compile/ResolvedMethod.hpp"
 #include "compile/Compilation.hpp"
 #include "env/FEBase_t.hpp"
-#include "compile/Method.hpp"
 #include "env/Processors.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"

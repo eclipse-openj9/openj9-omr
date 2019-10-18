@@ -23,6 +23,7 @@
 #include "omrcfg.h"
 #include "compiler_util.hpp"
 
+#include "compile/ResolvedMethod.hpp"
 #include "il/Block.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
@@ -191,33 +192,33 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
      }
      else if (opcode.isLoadIndirect() || opcode.isStoreIndirect()) {
          TraceIL("  is indirect store/load with ");
-         // If not specified, offset will default to zero. 
-         int32_t offset = 0; 
+         // If not specified, offset will default to zero.
+         int32_t offset = 0;
          if (tree->getArgByName("offset")) {
             offset = tree->getArgByName("offset")->getValue()->get<int32_t>();
-         } else { 
+         } else {
             TraceIL(" (default) ");
          }
          TraceIL("offset %d ", offset);
 
          const auto name = tree->getName();
          auto compilation = TR::comp();
-         TR::DataType type;  
-         if (opcode.isVector()) { 
+         TR::DataType type;
+         if (opcode.isVector()) {
             // Vector types in TR IL are "typeless", insofar as they are
             // supposed to infer the vector type depending on the children.
             // Loads determine their data type based on the symref. However,
             // given that we are creating a symref here, we need a hint as to
-            // what type of symref to create. So, vloadi and vstorei will take 
+            // what type of symref to create. So, vloadi and vstorei will take
             // an extra argument "type" to annotate the type desired.
-            if (tree->getArgByName("type") != NULL) { 
+            if (tree->getArgByName("type") != NULL) {
                auto nameoftype = tree->getArgByName("type")->getValue()->getString();
-               type = getTRDataTypes(nameoftype); 
+               type = getTRDataTypes(nameoftype);
                TraceIL(" of vector type %s\n", nameoftype);
-            } else { 
+            } else {
                return NULL;
-            } 
-         } else { 
+            }
+         } else {
             TraceIL("\n");
             type = opcode.getType();
          }
@@ -251,7 +252,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
          node = TR::Node::create(opcode.getOpCodeValue(), childCount);
          node->setBranchDestination(targetEntry);
      }
-     else if (opcode.isCall()) { 
+     else if (opcode.isCall()) {
         auto compilation = TR::comp();
 
         const auto addressArg = tree->getArgByName("address");
@@ -270,21 +271,21 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
 #endif /* OMR_ENV_DATA64 */
         const auto targetAddress = reinterpret_cast<void*>(addressArg->getValue()->get<uintptr_t>());
 
-        /* To generate a call, will create a ResolvedMethodSymbol, but we need to know the 
-         * signature. The return type is intuitable from the call node, but the arguments 
-         * must be provided explicitly, hence the args list, that mimics the args list of 
-         * (method ...) 
+        /* To generate a call, will create a ResolvedMethodSymbol, but we need to know the
+         * signature. The return type is intuitable from the call node, but the arguments
+         * must be provided explicitly, hence the args list, that mimics the args list of
+         * (method ...)
          */
-        const auto argList = parseArgTypes(tree); 
+        const auto argList = parseArgTypes(tree);
 
         auto argIlTypes = std::vector<TR::IlType*>(argList.size());
-        auto output = argIlTypes.begin(); 
+        auto output = argIlTypes.begin();
         for (auto iter = argList.begin(); iter != argList.end(); iter++, output++) {
-           *output = _types.PrimitiveType(*iter); 
+           *output = _types.PrimitiveType(*iter);
         }
 
         auto returnIlType = _types.PrimitiveType(opcode.getType());
-         
+
         TR::ResolvedMethod* method = new (compilation->trHeapMemory()) TR::ResolvedMethod("file",
                                                                                           "line",
                                                                                           "name",
@@ -295,24 +296,24 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
                                                                                           0);
 
         TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, method);
-        
+
         /* Default linkage is always system, unless overridden */
-        TR_LinkageConventions linkageConvention = TR_System; 
+        TR_LinkageConventions linkageConvention = TR_System;
 
         /* Calls can have a customized linkage */
         const auto* linkageArg= tree->getArgByName("linkage");
-        if (linkageArg != NULL) { 
+        if (linkageArg != NULL) {
            const auto* linkageString = linkageArg->getValue()->getString();
-           linkageConvention = convertStringToLinkage(linkageString); 
+           linkageConvention = convertStringToLinkage(linkageString);
            if (linkageConvention == TR_None) {
               TraceIL("  failed to find customized linkage %s, aborting parsing\n", linkageString);
-              return NULL; 
+              return NULL;
            }
            TraceIL("  customizing linakge of call to %s (linkageConvention=%d)\n", linkageString, linkageConvention);
         }
 
         /* Set linkage explicitly */
-        methodSymRef->getSymbol()->castToMethodSymbol()->setLinkage(linkageConvention);     
+        methodSymRef->getSymbol()->castToMethodSymbol()->setLinkage(linkageConvention);
         node  = TR::Node::createWithSymRef(opcode.getOpCodeValue(), childCount, methodSymRef);
      }
      else {
@@ -336,8 +337,8 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
      int i = 0;
      while (t) {
          auto child = toTRNode(t);
-         if (child == NULL) 
-            return NULL; 
+         if (child == NULL)
+            return NULL;
          TraceIL("Setting n%dn (%p) as child %d of n%dn (%p)\n", child->getGlobalIndex(), child, i, node->getGlobalIndex(), node);
          node->setAndIncChild(i, child);
          t = t->next;
@@ -425,7 +426,7 @@ bool Tril::TRLangBuilder::injectIL() {
        const ASTNode* t = block->getChildren();
        while (t) {
            auto node = toTRNode(t);
-           if (node == NULL) 
+           if (node == NULL)
               return false;
            const auto tt = genTreeTop(node);
            TraceIL("Created TreeTop %p for node n%dn (%p)\n", tt, node->getGlobalIndex(), node);

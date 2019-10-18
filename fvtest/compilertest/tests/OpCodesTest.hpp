@@ -23,13 +23,12 @@
 
 #include <cmath>
 #include <stdint.h>
-#include "compile/ResolvedMethod.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/CompilationTypes.hpp"
-#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "env/jittypes.h"
 #include "gtest/gtest.h"
 #include "il/DataTypes.hpp"
@@ -51,8 +50,6 @@ namespace std
    using ::isnan;
 }
 #endif
-
-namespace TR { class ResolvedMethod; }
 
 #define OMR_CT_EXPECT_EQ(compilee, a, b) if (compilee != NULL) EXPECT_EQ(a, b)
 #define OMR_CT_EXPECT_DOUBLE_EQ(compilee, a, b) if (compilee != NULL) EXPECT_DOUBLE_EQ(a, b)
@@ -198,8 +195,8 @@ class OpCodesTest : public TestDriver
    //Unsupported OpCodes are tested in this function
    virtual void UnsupportedOpCodesTests();
 
-   template <typename functiontype> 
-   int32_t  
+   template <typename functiontype>
+   int32_t
    compileOpCodeMethod(functiontype& resultpointer,
          int32_t opCodeArgsNum,
          TR::ILOpCodes opCode,
@@ -256,7 +253,7 @@ class OpCodesTest : public TestDriver
       }
    else
       {
-      switch (opCodeArgsNum) 
+      switch (opCodeArgsNum)
          {
          case 1:
             opCodeInjector = &opCodeUnaryInjector;
@@ -270,7 +267,7 @@ class OpCodesTest : public TestDriver
          }
       }
 
-   TR_ASSERT(opCodeInjector, "Didn't select an injector!"); 
+   TR_ASSERT(opCodeInjector, "Didn't select an injector!");
 
    TR::IlType **argIlTypes = new TR::IlType*[opCodeArgsNum];
    for (uint32_t a=0;a < opCodeArgsNum;a++)
@@ -339,16 +336,16 @@ class OpCodesTest : public TestDriver
    TR::ResolvedMethod opCodeCompilee(__FILE__, LINETOSTR(__LINE__), resolvedMethodName, opCodeArgsNum, argIlTypes, types.PrimitiveType(returnType), 0, opCodeInjector);
    TR::IlGeneratorMethodDetails opCodeDetails(&opCodeCompilee);
    uint8_t *startPC= compileMethod(opCodeDetails, warm, returnCode);
-   EXPECT_TRUE(COMPILATION_SUCCEEDED == returnCode || 
-               COMPILATION_IL_GEN_FAILURE == returnCode || 
-               COMPILATION_REQUESTED == returnCode) 
+   EXPECT_TRUE(COMPILATION_SUCCEEDED == returnCode ||
+               COMPILATION_IL_GEN_FAILURE == returnCode ||
+               COMPILATION_REQUESTED == returnCode)
       << "compileOpCodeMethod: Compiling method " << resolvedMethodName << " failed unexpectedly";
    resultpointer = reinterpret_cast<functiontype>(startPC);
    return returnCode;
    }
 
    template <typename functiontype>
-   int32_t 
+   int32_t
    compileDirectCallOpCodeMethod(functiontype& resultpointer,
          int32_t opCodeArgsNum,
          TR::ILOpCodes opCodeCompilee,
@@ -398,14 +395,14 @@ class OpCodesTest : public TestDriver
          default:
             TR_ASSERT(0, "compilee dataType should be int32, int64, double, float or address");
          }
-      EXPECT_TRUE(COMPILATION_SUCCEEDED == returnCode || COMPILATION_REQUESTED == returnCode) 
+      EXPECT_TRUE(COMPILATION_SUCCEEDED == returnCode || COMPILATION_REQUESTED == returnCode)
          << "Compiling callee method " << compileeResolvedMethodName << " failed unexpectedly";
 
       CallIlInjector callIlInjector(&types, this, opCode);
       TR::ResolvedMethod callCompilee(__FILE__, LINETOSTR(__LINE__), testResolvedMethodName, opCodeArgsNum, argIlTypes, types.PrimitiveType(returnType), 0, &callIlInjector);
       TR::IlGeneratorMethodDetails callDetails(&callCompilee);
       uint8_t *startPC = compileMethod(callDetails, warm, returnCode);
-      EXPECT_TRUE(COMPILATION_SUCCEEDED == returnCode || COMPILATION_REQUESTED == returnCode) 
+      EXPECT_TRUE(COMPILATION_SUCCEEDED == returnCode || COMPILATION_REQUESTED == returnCode)
          << "Compiling test method " << testResolvedMethodName << " failed unexpectedly";
       resultpointer = reinterpret_cast<functiontype>(startPC);
       return returnCode;;

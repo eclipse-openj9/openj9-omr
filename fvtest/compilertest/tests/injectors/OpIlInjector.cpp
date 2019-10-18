@@ -22,7 +22,6 @@
 #include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
 #include "env/FrontEnd.hpp"
-#include "compile/Method.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "tests/injectors/OpIlInjector.hpp"
 

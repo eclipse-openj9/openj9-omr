@@ -81,6 +81,7 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
          intptrj_t distance = jitToJitStart - (intptrj_t)cursor;
          insertImmediateField(toARM64Cursor(cursor), distance);
+         setAddrImmediate(jitToJitStart);
          }
       else if (label != NULL)
          {
@@ -104,6 +105,7 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
             intptrj_t distance = destination - (intptrj_t)cursor;
             insertImmediateField(toARM64Cursor(cursor), distance);
+            setAddrImmediate(destination);
 
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
                                            cursor,

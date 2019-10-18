@@ -438,6 +438,99 @@ public:
 #endif /* defined(OMR_ENV_DATA64) */
 	}
 
+#if defined(OMR_ENV_DATA64)
+	/**
+	 * Store the unsigned 64-bit value at the memory location as an atomic operation, and
+	 * return the old 64-bit value stored at the memory location.
+	 *
+	 * @param address The memory location to be updated
+	 * @param newValue The new value to be stored at memory address
+	 *
+	 * @return the value at memory location <b>address</b> BEFORE the store was attempted
+	 */
+	VMINLINE static uint64_t
+	lockExchangeU64(volatile uint64_t *address, uint64_t newValue)
+	{
+#if defined(ATOMIC_SUPPORT_STUB)
+		return 0;
+#elif defined(J9ZOS390) /* defined(ATOMIC_SUPPORT_STUB) */
+		/* On zLinux, the fetch-and-store operation generates the same s390x assembly as the
+		 * compare-and-swap operation. On zOS, the XLC equivalent of the fetch-and-store
+		 * operation (__fetch_and_swap) does not compile. So, the lockExchange function is
+		 * supported using the atomic set function on zOS, which is a wrapper for the
+		 * lockCompareExchange function.
+		 */
+		return setU64(address, newValue);
+#else /* defined(ATOMIC_SUPPORT_STUB) */
+		readWriteBarrier();
+#if defined(__GNUC__)
+		return (uint64_t)__sync_lock_test_and_set(address, newValue);
+#elif defined(__xlC__) /* defined(__GNUC__) */
+		return (uint64_t)__fetch_and_swaplp((volatile long*)address, (long)newValue);
+#elif defined(_MSC_VER) /* defined(__GNUC__) */
+		return (uint64_t)_InterlockedExchange64((volatile __int64 *)address, (__int64)newValue);
+#else /* defined(__GNUC__) */
+#error "lockExchangeU64(): unsupported platform!"
+#endif /* defined(__GNUC__) */
+#endif /* defined(ATOMIC_SUPPORT_STUB) */
+	}
+#else /* defined(OMR_ENV_DATA64) */
+	/**
+	 * Store the unsigned 32-bit value at the memory location as an atomic operation, and
+	 * return the old 32-bit value stored at the memory location.
+	 *
+	 * @param address The memory location to be updated
+	 * @param newValue The new value to be stored at memory address
+	 *
+	 * @return the value at memory location <b>address</b> BEFORE the store was attempted
+	 */
+	VMINLINE static uint32_t
+	lockExchangeU32(volatile uint32_t *address, uint32_t newValue)
+	{
+#if defined(ATOMIC_SUPPORT_STUB)
+		return 0;
+#elif defined(J9ZOS390) /* defined(ATOMIC_SUPPORT_STUB) */
+		/* On zLinux, the fetch-and-store operation generates the same s390x assembly as the
+		 * compare-and-swap operation. On zOS, the XLC equivalent of the fetch-and-store
+		 * operation (__fetch_and_swap) does not compile. So, the lockExchange function is
+		 * supported using the atomic set function on zOS, which is a wrapper for the
+		 * lockCompareExchange function.
+		 */
+		return (uint32_t)set((volatile uintptr_t *)address, (uintptr_t)newValue);
+#else /* defined(ATOMIC_SUPPORT_STUB) */
+		readWriteBarrier();
+#if defined(__GNUC__)
+		return (uint32_t)__sync_lock_test_and_set(address, newValue);
+#elif defined(__xlC__) /* defined(__GNUC__) */
+		return (uint32_t)__fetch_and_swap((volatile int*)address, (int)newValue);
+#elif defined(_MSC_VER) /* defined(__GNUC__) */
+		return (uint32_t)_InterlockedExchange((volatile long *)address, (long)newValue);
+#else /* defined(__GNUC__) */
+#error "lockExchangeU32(): unsupported platform!"
+#endif /* defined(__GNUC__) */
+#endif /* defined(ATOMIC_SUPPORT_STUB) */
+	}
+#endif /* defined(OMR_ENV_DATA64) */
+
+	/**
+	 * Store the value at the memory location as an atomic operation, and return the old
+	 * value stored at the memory location.
+	 *
+	 * @param address The memory location to be updated
+	 * @param newValue The new value to be stored at memory address
+	 *
+	 * @return the value at memory location <b>address</b> BEFORE the store was attempted
+	 */
+	VMINLINE static uintptr_t
+	lockExchange(volatile uintptr_t * address, uintptr_t newValue)
+	{
+#if defined(OMR_ENV_DATA64)
+		return (uintptr_t)lockExchangeU64((volatile uint64_t *)address, (uint64_t)newValue);
+#else /* defined(OMR_ENV_DATA64) */
+		return (uintptr_t)lockExchangeU32((volatile uint32_t *)address, (uint32_t)newValue);
+#endif /* defined(OMR_ENV_DATA64) */
+	}
+
 	/**
 	 * Add a number to the value at a specific memory location as an atomic operation.
 	 * Adds the value <b>addend</b> to the value stored at memory location pointed

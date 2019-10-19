@@ -50,7 +50,6 @@ namespace OMR { typedef OMR::Z::Linkage LinkageConnector; }
 
 class TR_FrontEnd;
 namespace TR { class S390JNICallDataSnippet; }
-namespace TR { class S390PrivateLinkage; }
 namespace TR { class AutomaticSymbol; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
@@ -178,18 +177,6 @@ enum TR_S390LinkageConventions
  */
 #define TR_FirstSpecialLinkageIndex  0x10
 
-namespace TR {
-
-/**
- * Pseudo-safe downcast function, since all linkages must be S390 linkages
- */
-inline TR::S390PrivateLinkage *
-toS390PrivateLinkage(TR::Linkage * l)
-   {
-   return (TR::S390PrivateLinkage *) l;
-   }
-
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //  TR::S390Linkage Definition
@@ -370,7 +357,7 @@ enum TR_DispatchType
    virtual bool isAggregateReturnedInRegistersCall(TR::Node *callNode) { return false; }
    virtual bool isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth)   { return false; }
    virtual bool isAggregateReturnedInRegistersAndMemoryCall(TR::Node *callNode) { return false; }
-   
+
    int32_t  isForceSaveIncomingParameters() { return _properties & ForceSaveIncomingParameters; }
    int32_t  isLongDoubleReturnedOnStorage() { return _properties & LongDoubleReturnedOnStorage; }
    int32_t  isLongDoublePassedOnStorage() { return _properties & LongDoublePassedOnStorage; }

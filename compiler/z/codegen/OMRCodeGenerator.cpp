@@ -134,12 +134,10 @@
 #if J9_PROJECT_SPECIFIC
 #include "z/codegen/S390Recompilation.hpp"
 #include "z/codegen/S390Register.hpp"
-#include "z/codegen/J9S390PrivateLinkage.hpp"
 #endif
 
 class TR_IGNode;
 namespace TR { class DebugCounterBase; }
-namespace TR { class S390PrivateLinkage; }
 namespace TR { class SimpleRegex; }
 
 #define OPT_DETAILS "O^O CODE GENERATION: "
@@ -810,7 +808,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
    }
 
 TR::Linkage * OMR::Z::CodeGenerator::getS390Linkage() {return (self()->getLinkage());}
-TR::S390PrivateLinkage * OMR::Z::CodeGenerator::getS390PrivateLinkage() {return TR::toS390PrivateLinkage(self()->getLinkage());}
 
 TR::RealRegister * OMR::Z::CodeGenerator::getStackPointerRealRegister(TR::Symbol *symbol)
    {

@@ -773,4 +773,4 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sbitpermuteEvaluator ,	// TR::sbitpermute
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ibitpermuteEvaluator ,	// TR::ibitpermute
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lbitpermuteEvaluator ,	// TR::lbitpermute
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::PrefetchEvaluator, 		// TR::Prefetch
+    TR::TreeEvaluator::PrefetchEvaluator,		// TR::Prefetch

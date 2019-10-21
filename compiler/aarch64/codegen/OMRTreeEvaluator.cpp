@@ -839,6 +839,26 @@ OMR::ARM64::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::CodeGenerato
    return trgReg;
    }
 
+TR::Register *
+OMR::ARM64::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR_ASSERT(node->getNumChildren() == 4, "TR::Prefetch should contain 4 child nodes");
+
+   TR::Compilation *comp = cg->comp();
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getChild(1);
+   TR::Node *sizeChild = node->getChild(2);
+   TR::Node *typeChild = node->getChild(3);
+
+   // Do nothing for now
+
+   cg->recursivelyDecReferenceCount(firstChild);
+   cg->recursivelyDecReferenceCount(secondChild);
+   cg->recursivelyDecReferenceCount(sizeChild);
+   cg->recursivelyDecReferenceCount(typeChild);
+   return NULL;
+   }
+
 TR::Instruction *
 OMR::ARM64::TreeEvaluator::generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *dstReg, TR::Register *srcReg, TR::Instruction *preced)
    {

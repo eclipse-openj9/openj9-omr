@@ -160,7 +160,6 @@
    dmul,     // multiply 2 doubles
    bmul,     // multiply 2 bytes
    smul,     // multiply 2 short integers
-   iumul,    // multiply 2 unsigned integers
    idiv,     // divide 2 integers                (child1 / child2)
    ldiv,     // divide 2 long integers           (child1 / child2)
    fdiv,     // divide 2 floats                  (child1 / child2)

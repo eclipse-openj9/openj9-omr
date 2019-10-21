@@ -2367,7 +2367,6 @@ int32_t childTypes[] =
    TR::Double,                     // TR::dmul
    TR::Int8,                      // TR::bmul
    TR::Int16,                     // TR::smul
-   TR::Int32,                     // TR::iumul
    TR::Int32,                     // TR::idiv
    TR::Int64,                     // TR::ldiv
    TR::Float,                      // TR::fdiv

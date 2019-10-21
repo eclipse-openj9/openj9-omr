@@ -78,7 +78,6 @@ TR::Node *constrainIfcmplt(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIfcmpne(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIiload(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainImul(OMR::ValuePropagation *vp, TR::Node *node);
-TR::Node *constrainIumul(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIneg(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIabs(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainInstanceOf(OMR::ValuePropagation *vp, TR::Node *node);
@@ -260,7 +259,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::dmul
    constrainChildren,        // TR::bmul
    constrainChildren,        // TR::smul
-   constrainIumul,           // TR::iumul
    constrainIdiv,            // TR::idiv
    constrainLdiv,            // TR::ldiv
    constrainChildren,        // TR::fdiv

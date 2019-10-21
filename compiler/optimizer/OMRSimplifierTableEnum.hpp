@@ -120,7 +120,6 @@
    dmulSimplifier,          // TR::dmul
    bmulSimplifier,          // TR::bmul
    smulSimplifier,          // TR::smul
-   imulSimplifier,          // TR::iumul
    idivSimplifier,          // TR::idiv
    ldivSimplifier,          // TR::ldiv
    fdivSimplifier,          // TR::fdiv

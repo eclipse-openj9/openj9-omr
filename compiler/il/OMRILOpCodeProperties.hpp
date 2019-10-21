@@ -1593,22 +1593,6 @@
    },
 
    {
-   /* .opcode               = */ TR::iumul,
-   /* .name                 = */ "iumul",
-   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,
-   /* .properties3          = */ ILProp3::LikeUse,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int32,
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned,
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32),
-   /* .swapChildrenOpCode   = */ TR::iumul,
-   /* .reverseBranchOpCode  = */ TR::BadILOp,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
    /* .opcode               = */ TR::idiv,
    /* .name                 = */ "idiv",
    /* .properties1          = */ ILProp1::Div,

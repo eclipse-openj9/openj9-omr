@@ -466,7 +466,11 @@ public:
 #if defined(__GNUC__)
 		return (uint64_t)__sync_lock_test_and_set(address, newValue);
 #elif defined(__xlC__) /* defined(__GNUC__) */
-		return (uint64_t)__fetch_and_swaplp((volatile unsigned long*)address, (unsigned long)newValue);
+#if ((__xlC__ > 0x0d01) || ((__xlC__ == 0x0d01) && (__xlC_ver__ >= 0x00000300))) /* XLC >= 13.1.3 */
+		return (uint64_t)__fetch_and_swaplp((volatile unsigned long *)address, (unsigned long)newValue);
+#else /* ((__xlC__ > 0x0d01) || ((__xlC__ == 0x0d01) && (__xlC_ver__ >= 0x00000300))) */
+		return (uint64_t)__fetch_and_swaplp((volatile long *)address, (long)newValue);
+#endif /* ((__xlC__ > 0x0d01) || ((__xlC__ == 0x0d01) && (__xlC_ver__ >= 0x00000300))) */
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
 		return (uint64_t)_InterlockedExchange64((volatile __int64 *)address, (__int64)newValue);
 #else /* defined(__GNUC__) */
@@ -502,7 +506,11 @@ public:
 #if defined(__GNUC__)
 		return (uint32_t)__sync_lock_test_and_set(address, newValue);
 #elif defined(__xlC__) /* defined(__GNUC__) */
+#if ((__xlC__ > 0x0d01) || ((__xlC__ == 0x0d01) && (__xlC_ver__ >= 0x00000300))) /* XLC >= 13.1.3 */
 		return (uint32_t)__fetch_and_swap((volatile unsigned int *)address, (unsigned int)newValue);
+#else /* ((__xlC__ > 0x0d01) || ((__xlC__ == 0x0d01) && (__xlC_ver__ >= 0x00000300))) */
+		return (uint32_t)__fetch_and_swap((volatile int *)address, (int)newValue);
+#endif /* ((__xlC__ > 0x0d01) || ((__xlC__ == 0x0d01) && (__xlC_ver__ >= 0x00000300))) */
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
 		return (uint32_t)_InterlockedExchange((volatile long *)address, (long)newValue);
 #else /* defined(__GNUC__) */

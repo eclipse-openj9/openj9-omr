@@ -429,6 +429,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableMergeNew",                    "O\tdisable merge new",                              SET_OPTION_BIT(TR_DisableMergeNew), "F"},
    {"disableMergeStackMaps",              "O\tdisable stack map merging",                      SET_OPTION_BIT(TR_DisableMergeStackMaps), "P"},
    {"disableMetadataReclamation",         "I\tdisable J9JITExceptionTable reclamation", SET_OPTION_BIT(TR_DisableMetadataReclamation), "F", NOT_IN_SUBSET},
+   {"disableMethodHandleInlineWithoutPeeking", "O\tInline method handle thunks using peeking in inliner ", SET_OPTION_BIT(TR_DisableMHInlineWithoutPeeking), "F" },
    {"disableMethodHandleInvokeOpts",      "O\tdo not perform any special optimizations on calls to MethodHandle.invoke",   SET_OPTION_BIT(TR_DisableMethodHandleInvokeOpts), "F", NOT_IN_SUBSET},
    {"disableMethodHandleThunks",          "D\tdo not produce jitted bodies to accelerate JSR292 MethodHandle invocation",   SET_OPTION_BIT(TR_DisableMethodHandleThunks), "F", NOT_IN_SUBSET},
    {"disableMethodIsCold",                "O\tdo not use heuristics to determine whether whole methods are cold based on how many times they have been interpreted",   SET_OPTION_BIT(TR_DisableMethodIsCold), "F"},

@@ -26,6 +26,7 @@
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/InstructionDelegate.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/Relocation.hpp"
 #include "runtime/CodeCacheManager.hpp"
 
@@ -73,9 +74,10 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
       if (cg()->comp()->isRecursiveMethodTarget(sym))
          {
-         intptrj_t jitToJitStart = (intptrj_t)cg()->getCodeStart();
-         // how many bytes to skip loading interp->jit argument
-         jitToJitStart += ((*(int32_t *)(jitToJitStart - 4)) >> 16) & 0xFFFF;
+         intptrj_t jitToJitStart = cg()->getLinkage()->entryPointFromCompiledMethod();
+
+         TR_ASSERT_FATAL(jitToJitStart, "Unknown compiled method entry point.  Entry point should be available by now.");
+
          TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(jitToJitStart, (intptrj_t)cursor),
                          "Target address is out of range");
 

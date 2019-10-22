@@ -26,7 +26,6 @@
 /* Statics. */
 static die_map createdDies;
 static die_map builtInDies;
-static std::set<string> filesAdded;
 /* This vector contains the typeID of the nested class and parent class for populating nested classes. */
 static vector<pair<int, Dwarf_Die> > nestedClassesToPopulate;
 /* This vector contains the typeID of the type reference and type attribute to populate. */
@@ -86,7 +85,7 @@ dwarf_finish(Dwarf_Debug dbg, Dwarf_Error *error)
 	}
 
 	_lastDie = NULL;
-	Dwarf_CU_Context::_fileList.clear();
+	Dwarf_CU_Context::_fileId.clear();
 	Dwarf_CU_Context::_currentCU = NULL;
 	Dwarf_CU_Context::_firstCU = NULL;
 	Dwarf_Die_s::refMap.clear();
@@ -814,11 +813,9 @@ parseSymbolTable(const char *line, Dwarf_Error *error)
 			fileName = strip(data.substr(index+fileNameIndex), '\n');
 
 			/* Verify that the file has not been parsed through before. */
-			if (filesAdded.end() == filesAdded.find(fileName)) {
+			if (Dwarf_CU_Context::_fileId.end() == Dwarf_CU_Context::_fileId.find(fileName)) {
 				/* Add the file to the list of files */
-				Dwarf_CU_Context::_fileList.push_back(fileName);
-
-				filesAdded.insert(fileName);
+				Dwarf_CU_Context::_fileId.insert(make_pair(fileName, Dwarf_CU_Context::_fileId.size()));
 
 				/* Create one compilation unit context per file. */
 				Dwarf_CU_Context *newCU = new Dwarf_CU_Context;
@@ -854,7 +851,7 @@ parseSymbolTable(const char *line, Dwarf_Error *error)
 					name->_form = DW_FORM_string;
 					name->_sdata = 0;
 					name->_udata = 0;
-					name->_stringdata = strdup(Dwarf_CU_Context::_fileList.back().c_str());
+					name->_stringdata = strdup(fileName.c_str());
 					name->_refdata = 0;
 					name->_ref = NULL;
 
@@ -1113,7 +1110,7 @@ parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 		declFile->_nextAttr = offset;
 		declFile->_sdata = 0;
 		/* The declaration file number starts at 1. */
-		declFile->_udata = Dwarf_CU_Context::_fileList.size();
+		declFile->_udata = Dwarf_CU_Context::_fileId.size();
 		declFile->_refdata = 0;
 		declFile->_ref = NULL;
 
@@ -1458,9 +1455,9 @@ parseTypeDef(const string data,
 		declFile->_sdata = 0;
 		declFile->_refdata = 0;
 		declFile->_ref = NULL;
-		if (!Dwarf_CU_Context::_fileList.empty()) {
+		if (!Dwarf_CU_Context::_fileId.empty()) {
 			/* The declaration file number starts at 1. */
-			declFile->_udata = Dwarf_CU_Context::_fileList.size();
+			declFile->_udata = Dwarf_CU_Context::_fileId.size();
 		} else {
 			/* If there is no declaring file then delete the attributes for the declFile and declLine. */
 			name->_nextAttr = NULL;
@@ -1806,7 +1803,7 @@ setDieAttributes(const string dieName,
 				break;
 			case DW_AT_decl_file:
 				/* The declaration file number starts at 1. */
-				tmp->_udata = Dwarf_CU_Context::_fileList.size();
+				tmp->_udata = Dwarf_CU_Context::_fileId.size();
 				break;
 			}
 			tmp = tmp->_nextAttr;
@@ -1844,7 +1841,7 @@ setDieAttributes(const string dieName,
 			declFile->_form = DW_FORM_udata;
 			declFile->_sdata = 0;
 			/* The declaration file number starts at 1. */
-			declFile->_udata = Dwarf_CU_Context::_fileList.size();
+			declFile->_udata = Dwarf_CU_Context::_fileId.size();
 			declFile->_refdata = 0;
 			declFile->_ref = NULL;
 

@@ -1274,17 +1274,6 @@ OMR::CodeGenerator::removeUnusedLocals()
    self()->comp()->getMethodSymbol()->removeUnusedLocals();
    }
 
-
-void
-OMR::CodeGenerator::expandInstructions()
-   {
-   for (TR::Instruction *instr = self()->getFirstInstruction(); instr; instr = instr->getNext())
-      {
-      instr = instr->expandInstruction();
-      }
-   }
-
-
 bool OMR::CodeGenerator::areAssignableGPRsScarce()
    {
    int32_t threshold = 13;

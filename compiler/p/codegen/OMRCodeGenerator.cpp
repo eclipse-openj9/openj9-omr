@@ -1663,6 +1663,15 @@ OMR::Power::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    return linkage;
    }
 
+void
+OMR::Power::CodeGenerator::expandInstructions()
+   {
+   for (TR::Instruction *instr = self()->getFirstInstruction(); instr; instr = instr->getNext())
+      {
+      instr = instr->expandInstruction();
+      }
+   }
+
 void OMR::Power::CodeGenerator::generateBinaryEncodingPrologue(
       TR_PPCBinaryEncodingData *data)
    {

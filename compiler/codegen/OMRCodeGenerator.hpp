@@ -428,7 +428,7 @@ class OMR_EXTENSIBLE CodeGenerator
    void spillLiveReferencesToTemps(TR::TreeTop *insertionTree, std::list<TR::SymbolReference*, TR::typed_allocator<TR::SymbolReference*, TR::Allocator> >::iterator firstAvailableSpillTemp);
    void needSpillTemp(TR_LiveReference * cursor, TR::Node*parent, TR::TreeTop *treeTop);
 
-   void expandInstructions();
+   void expandInstructions() {}
 
    friend void OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator*, TR::CodeGenPhase *);
    friend void OMR::CodeGenPhase::performCleanUpFlagsPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase);

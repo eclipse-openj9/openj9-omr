@@ -424,9 +424,10 @@ lockReleased:
 omrthread_mcs_node_t
 omrthread_mcs_node_allocate(omrthread_t self)
 {
-	/* Unimplemented. */
-	Assert_THR_true(FALSE);
-	return NULL;
+	/* An instance of J9Pool is used per thread to manage memory for a thread's
+	 * MCS nodes.
+	 */
+	return (omrthread_mcs_node_t)pool_newElement(self->mcsNodes->pool);
 }
 
 /**

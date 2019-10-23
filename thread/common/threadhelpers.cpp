@@ -357,9 +357,61 @@ omrthread_mcs_trylock(omrthread_t self, omrthread_monitor_t monitor, omrthread_m
 omrthread_t
 omrthread_mcs_unlock(omrthread_t self, omrthread_monitor_t monitor)
 {
-	/* Unimplemented. */
-	Assert_THR_true(FALSE);
-	return NULL;
+	omrthread_t nextThread = NULL;
+
+	omrthread_mcs_node_t mcsNode = self->mcsNodes->stackHead;
+	omrthread_mcs_node_t prevMcsNode = mcsNode;
+	while (mcsNode->monitor != monitor) {
+		mcsNode = mcsNode->stackNext;
+		if (mcsNode->monitor != monitor) {
+			prevMcsNode = mcsNode;
+		}
+	}
+
+#if defined(THREAD_ASSERTS)
+	ASSERT(mcsNode != NULL);
+	ASSERT(mcsNode->monitor == monitor);
+	ASSERT(mcsNode->thread == self);
+#endif /* defined(THREAD_ASSERTS) */
+
+	/* Get the successor of the mcsNode. */
+	if (NULL == mcsNode->queueNext) {
+		/* If no successor exists, then the mcsNode is at the tail of the MCS lock queue.
+		 * Release the lock by replacing the mcsNode at the tail of the queue with NULL.
+		 */
+		uintptr_t newState = 0;
+		if ((uintptr_t)mcsNode == VM_AtomicSupport::lockCompareExchange((volatile uintptr_t *)&monitor->queueTail, (uintptr_t)mcsNode, newState)) {
+			monitor->spinlockState = J9THREAD_MONITOR_SPINLOCK_UNOWNED;
+			goto lockReleased;
+		}
+
+		/* Another thread is recording a successor in mcsNode->queueNext. Wait for the thread
+		 * to record the successor.
+		 */
+		while (NULL == mcsNode->queueNext) {
+			VM_AtomicSupport::yieldCPU();
+		}
+	}
+
+	/* monitor->spinlockState is maintained for compatibility with the existing omrthread API. */
+	monitor->spinlockState = J9THREAD_MONITOR_SPINLOCK_UNOWNED;
+
+	/* Allow the successor to acquire the lock. */
+	mcsNode->queueNext->blocked = OMRTHREAD_MCS_THREAD_ACQUIRE;
+
+	nextThread = mcsNode->queueNext->thread;
+lockReleased:
+	/* Pop the mcsNode from the thread's MCS node stack. */
+	if (mcsNode == self->mcsNodes->stackHead) {
+		self->mcsNodes->stackHead = mcsNode->stackNext;
+	} else {
+		prevMcsNode->stackNext = mcsNode->stackNext;
+	}
+
+	/* Return the MCS node to the thread's MCS node pool since it is no longer used. */
+	omrthread_mcs_node_free(self, mcsNode);
+
+	return nextThread;
 }
 
 /**

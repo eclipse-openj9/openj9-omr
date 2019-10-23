@@ -306,9 +306,44 @@ exit:
 intptr_t
 omrthread_mcs_trylock(omrthread_t self, omrthread_monitor_t monitor, omrthread_mcs_node_t mcsNode)
 {
-	/* Unimplemented. */
-	Assert_THR_true(FALSE);
-	return -1;
+#if defined(THREAD_ASSERTS)
+	ASSERT(mcsNode != NULL);
+#endif /* defined(THREAD_ASSERTS) */
+
+	intptr_t result = -1;
+	uintptr_t oldState = 0;
+
+	/* Initialize the MCS node. */
+	mcsNode->queueNext = NULL;
+	mcsNode->blocked = OMRTHREAD_MCS_THREAD_BLOCKED;
+	mcsNode->monitor = NULL;
+	mcsNode->thread = self;
+
+	/* If monitor->queueTail is NULL (no-one is waiting to acquire the lock), then it is
+	 * swapped with the mcsNode, and the lock is acquired. */
+	if (oldState == VM_AtomicSupport::lockCompareExchange(
+			(volatile uintptr_t *)&monitor->queueTail,
+			(uintptr_t)oldState,
+			(uintptr_t)mcsNode)
+	) {
+		/* monitor->spinlockState is maintained for compatibility with the existing omrthread API. */
+		monitor->spinlockState = J9THREAD_MONITOR_SPINLOCK_OWNED;
+
+		mcsNode->monitor = monitor;
+		mcsNode->blocked = OMRTHREAD_MCS_THREAD_ACQUIRE;
+
+		if (NULL == self->mcsNodes->stackHead) {
+			self->mcsNodes->stackHead = mcsNode;
+			mcsNode->stackNext = NULL;
+		} else {
+			omrthread_mcs_node_t oldMCSNode = self->mcsNodes->stackHead;
+			self->mcsNodes->stackHead = mcsNode;
+			mcsNode->stackNext = oldMCSNode;
+		}
+		result = 0;
+	}
+
+	return result;
 }
 
 /**

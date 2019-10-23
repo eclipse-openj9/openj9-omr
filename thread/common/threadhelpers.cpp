@@ -441,8 +441,17 @@ omrthread_mcs_node_allocate(omrthread_t self)
 void
 omrthread_mcs_node_free(omrthread_t self, omrthread_mcs_node_t mcsNode)
 {
-	/* Unimplemented. */
-	Assert_THR_true(FALSE);
+#if defined(THREAD_ASSERTS)
+	ASSERT(mcsNode != NULL);
+#endif /* defined(THREAD_ASSERTS) */
+
+	/* Clear the fields of the mcsNode. */
+	mcsNode->stackNext = NULL;
+	mcsNode->queueNext = NULL;
+	mcsNode->thread = NULL;
+	mcsNode->blocked = OMRTHREAD_MCS_THREAD_BLOCKED;
+
+	pool_removeElement(self->mcsNodes->pool, mcsNode);
 }
 #endif /* defined(OMR_THR_MCS_LOCKS) */
 

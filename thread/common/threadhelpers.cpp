@@ -212,9 +212,86 @@ omrthread_spinlock_swapState(omrthread_monitor_t monitor, uintptr_t newState)
 intptr_t
 omrthread_mcs_lock(omrthread_t self, omrthread_monitor_t monitor, omrthread_mcs_node_t mcsNode, BOOLEAN retry)
 {
-	/* Unimplemented. */
-	Assert_THR_true(FALSE);
-	return -1;
+#if defined(THREAD_ASSERTS)
+	ASSERT(mcsNode != NULL);
+#endif /* defined(THREAD_ASSERTS) */
+
+	intptr_t result = -1;
+	omrthread_mcs_node_t predecessor = NULL;
+
+	if (!retry) {
+		/* Initialize the MCS node. */
+		mcsNode->queueNext = NULL;
+		mcsNode->monitor = NULL;
+		mcsNode->thread = self;
+		mcsNode->blocked = OMRTHREAD_MCS_THREAD_BLOCKED;
+
+		/* Install the mcsNode at the tail of the MCS lock queue (monitor->queueTail). */
+		predecessor = (omrthread_mcs_node_t)VM_AtomicSupport::set(
+				(volatile uintptr_t *)&monitor->queueTail,
+				(uintptr_t)mcsNode);
+	}
+
+	if ((NULL != predecessor) || retry) {
+		/* If a predecessor MCS node exists, then the current thread blocks (waits) until it receives
+		 * a notification from the thread that owns the predecessor MCS node.
+		 */
+		if (!retry) {
+			/* Enqueue the mcsNode next to the predecessor node in the MCS lock queue. */
+			predecessor->queueNext = mcsNode;
+			VM_AtomicSupport::writeBarrier();
+		}
+
+		/* Three-tier busy-wait loop checks if the mcsNode->blocked value is reset by the thread
+		 * that owns the predecessor node. A similar three-tier busy-wait loop is also used in
+		 * omrthread_spinlock_acquire, where the loop has a compare-and-swap operation.
+		 * TODO: Optimize the MCS lock's three-tier busy-wait loop to account for the absent
+		 * compare-and-swap operation; this corresponds to an increase in spin parameters.
+		 */
+		for (uintptr_t spinCount3 = monitor->spinCount3; spinCount3 > 0; spinCount3--) {
+			for (uintptr_t spinCount2 = monitor->spinCount2; spinCount2 > 0; spinCount2--) {
+				/* Check if the thread can acquire the lock. */
+				if (OMRTHREAD_MCS_THREAD_ACQUIRE == mcsNode->blocked) {
+					goto lockAcquired;
+				}
+				/* Stop spinning if adaptive spin heuristic disables spinning. */
+				if (OMR_ARE_ALL_BITS_SET(monitor->flags, J9THREAD_MONITOR_DISABLE_SPINNING)) {
+					goto exit;
+				}
+				VM_AtomicSupport::yieldCPU();
+				/* Begin tight loop. */
+				for (uintptr_t spinCount1 = monitor->spinCount1; spinCount1 > 0; spinCount1--) {
+					VM_AtomicSupport::nop();
+				} /* End tight loop. */
+			}
+#if defined(OMR_THR_YIELD_ALG)
+			omrthread_yield_new(spinCount3);
+#else /* OMR_THR_YIELD_ALG */
+			omrthread_yield();
+#endif /* OMR_THR_YIELD_ALG */
+		}
+	} else {
+		/* The lock can be acquired since no predecessor MCS node exists. */
+		mcsNode->blocked = OMRTHREAD_MCS_THREAD_ACQUIRE;
+lockAcquired:
+		/* monitor->spinlockState is maintained for compatibility with the existing omrthread API. */
+		monitor->spinlockState = J9THREAD_MONITOR_SPINLOCK_OWNED;
+		result = 0;
+
+		mcsNode->monitor = monitor;
+
+		if (NULL == self->mcsNodes->stackHead) {
+			self->mcsNodes->stackHead = mcsNode;
+			mcsNode->stackNext = NULL;
+		} else {
+			omrthread_mcs_node_t oldMCSNode = self->mcsNodes->stackHead;
+			self->mcsNodes->stackHead = mcsNode;
+			mcsNode->stackNext = oldMCSNode;
+		}
+	}
+
+exit:
+	return result;
 }
 
 /**

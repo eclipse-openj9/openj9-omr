@@ -693,7 +693,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableJProfilingInProfilingCompilations", "O\tEnable the use of jprofiling instrumentation in profiling compilations", RESET_OPTION_BIT(TR_DisableJProfilingInProfilingCompilations), "F"},
    {"enableJVMPILineNumbers",            "M\tenable output of line numbers via JVMPI",       SET_OPTION_BIT(TR_EnableJVMPILineNumbers), "F"},
    {"enableLabelTargetNOPs",             "O\tenable inserting NOPs before label targets", SET_OPTION_BIT(TR_EnableLabelTargetNOPs),  "F"},
-   {"enableLargeCodePages",              "C\tenable large code pages",  SET_OPTION_BIT(TR_EnableLargeCodePages), "F"},
    {"enableLastRetrialLogging",          "O\tenable fullTrace logging for last compilation attempt. Needs to have a log defined on the command line", SET_OPTION_BIT(TR_EnableLastCompilationRetrialLogging), "F"},
    {"enableLocalVPSkipLowFreqBlock",     "O\tSkip processing of low frequency blocks in localVP", SET_OPTION_BIT(TR_EnableLocalVPSkipLowFreqBlock), "F" },
    {"enableLoopEntryAlignment",            "O\tenable loop Entry alignment",                          SET_OPTION_BIT(TR_EnableLoopEntryAlignment), "F"},
@@ -3679,11 +3678,6 @@ OMR::Options::jitPostProcess()
 
    if (_hotMaxStaticPICSlots < 0)
       _hotMaxStaticPICSlots = -_hotMaxStaticPICSlots * _maxStaticPICSlots;
-
-   if (self()->getOption(TR_EnableLargePages))
-      {
-      self()->setOption(TR_EnableLargeCodePages);
-      }
 
 #if defined(TR_TARGET_64BIT) && defined(J9ZOS390)
    // We allocate code cache memory on z/OS by asking the port library for typically small (~2MB) code cache chunks.

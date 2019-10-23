@@ -20,7 +20,7 @@
  *******************************************************************************/
 
 #include <stdint.h>
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "env/TRMemory.hpp"
 #include "il/RegisterMappedSymbol.hpp"
 #include "il/Symbol.hpp"

@@ -777,10 +777,15 @@ OMR::ARM64::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeGenerator *c
       child->decReferenceCount();
       }
 
-   if (node->getLabel() != NULL)
+   TR::LabelSymbol *labelSym = node->getLabel();
+   if (!labelSym)
       {
-      node->getLabel()->setInstruction(generateLabelInstruction(cg, TR::InstOpCode::label, node, node->getLabel(), deps));
+      labelSym = generateLabelSymbol(cg);
+      node->setLabel(labelSym);
       }
+   TR::Instruction *labelInst = generateLabelInstruction(cg, TR::InstOpCode::label, node, labelSym, deps);
+   labelSym->setInstruction(labelInst);
+   block->setFirstInstruction(labelInst);
 
    TR::Node *fenceNode = TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._startPC);
    TR::Instruction *fence = generateAdminInstruction(cg, TR::InstOpCode::fence, node, fenceNode);

@@ -575,7 +575,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::luRegStoreEvaluator ,	// TR::luRegStore	// Store long integer global register
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iuternaryEvaluator ,	// TR::iuternary		// second or the third child.  Analogous to the "condition ? a : b" operations in C/Java.
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::luternaryEvaluator ,	// TR::luternary  
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::buternaryEvaluator ,	// TR::buternary  
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::suternaryEvaluator ,	// TR::suternary  
     TR::TreeEvaluator::cconstEvaluator, // TR::cconst		// load unicode constant (16-bit unsigned)
     TR::TreeEvaluator::cloadEvaluator, // TR::cload		// load short unsigned integer

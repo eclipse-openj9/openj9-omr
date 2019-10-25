@@ -379,7 +379,6 @@ private:
       switch (opvalue) 
          {
          //Ternary
-         case TR::buternary: 
          case TR::iuternary: 
          case TR::luternary: 
          case TR::suternary: 

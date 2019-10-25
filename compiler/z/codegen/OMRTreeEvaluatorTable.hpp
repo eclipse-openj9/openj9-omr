@@ -613,7 +613,6 @@
    TR::TreeEvaluator::lRegStoreEvaluator,   // TR::luRegStore
    TR::TreeEvaluator::ternaryEvaluator,     // TR::iuternary
    TR::TreeEvaluator::ternaryEvaluator,     // TR::luternary
-   TR::TreeEvaluator::ternaryEvaluator,     // TR::buternary
    TR::TreeEvaluator::ternaryEvaluator,     // TR::suternary
    TR::TreeEvaluator::cconstEvaluator,      // TR::cconst
    TR::TreeEvaluator::sloadEvaluator,       // TR::cload

@@ -578,7 +578,6 @@
    TR::TreeEvaluator::lRegStoreEvaluator,                              // TR::luRegStore
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::iuternary
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::luternary
-   TR::TreeEvaluator::iternaryEvaluator,                               // TR::buternary
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::suternary
    TR::TreeEvaluator::cconstEvaluator,                                 // TR::cconst
    TR::TreeEvaluator::sloadEvaluator,                                  // TR::cload

@@ -2847,7 +2847,6 @@ int32_t childTypes[] =
    TR::Int64,                     // TR::luRegStore
    TR::Int32 | (TR::Int32<<8),    // TR::iuternary
    TR::Int64 | (TR::Int32<<8),    // TR::luternary
-   TR::Int8  | (TR::Int32<<8),    // TR::buternary
    TR::Int16 | (TR::Int32<<8),    // TR::suternary
    TR::Int16,                     // TR::cconst
    TR::Int16,                     // TR::cload

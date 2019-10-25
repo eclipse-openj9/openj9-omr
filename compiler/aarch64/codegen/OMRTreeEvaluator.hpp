@@ -602,7 +602,6 @@ public:
 	static TR::Register *luRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iuternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *luternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *buternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *suternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);

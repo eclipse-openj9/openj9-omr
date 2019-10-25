@@ -582,7 +582,6 @@
    TR::TreeEvaluator::gprRegStoreEvaluator,             // TR::luRegStore
    TR::TreeEvaluator::iternaryEvaluator,                // TR::iuternary
    TR::TreeEvaluator::iternaryEvaluator,                // TR::luternary
-   TR::TreeEvaluator::iternaryEvaluator,                // TR::buternary
    TR::TreeEvaluator::iternaryEvaluator,                // TR::suternary
    TR::TreeEvaluator::iconstEvaluator,                  // TR::cconst
    TR::TreeEvaluator::cloadEvaluator,                   // TR::cload

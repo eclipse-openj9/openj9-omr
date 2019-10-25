@@ -635,7 +635,6 @@
    luRegLoad, // Load unsigned long integer global register
    iuRegStore,// Store unsigned integer global register
    luRegStore,// Store long integer global register
-   iuternary,  // second or the third child.  Analogous to the "condition ? a : b" operations in C/Java.
    luternary,  //
    suternary,  //
    cconst,   // load unicode constant (16-bit unsigned)

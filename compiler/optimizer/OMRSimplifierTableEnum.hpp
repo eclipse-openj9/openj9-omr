@@ -597,7 +597,6 @@
    dftSimplifier,           // TR::luRegLoad
    dftSimplifier,           // TR::iuRegStore
    dftSimplifier,           // TR::luRegStore
-   ternarySimplifier,       // TR::iuternary
    ternarySimplifier,       // TR::luternary
    ternarySimplifier,       // TR::suternary
    constSimplifier,         // TR::cconst

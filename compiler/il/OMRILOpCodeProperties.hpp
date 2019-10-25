@@ -8858,22 +8858,6 @@
    },
 
    {
-   /* .opcode               = */ TR::suternary,
-   /* .name                 = */ "suternary",
-   /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Ternary,
-   /* .properties3          = */ 0,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int16,
-   /* .typeProperties       = */ ILTypeProp::Size_2 | ILTypeProp::Unsigned,
-   /* .childProperties      = */ THREE_CHILD(TR::Int32, TR::Int16, TR::Int16),
-   /* .swapChildrenOpCode   = */ TR::BadILOp,
-   /* .reverseBranchOpCode  = */ TR::BadILOp,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
    /* .opcode               = */ TR::cconst,
    /* .name                 = */ "cconst",
    /* .properties1          = */ ILProp1::LoadConst,

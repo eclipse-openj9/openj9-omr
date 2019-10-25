@@ -378,9 +378,6 @@ private:
       {
       switch (opvalue) 
          {
-         //Ternary
-         case TR::suternary: 
-
          //Shift
          case TR::iushl: 
          case TR::lushl:

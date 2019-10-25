@@ -789,7 +789,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::iumulh
    constrainChildren,        // TR::lmulh
    constrainChildren,        // TR::lumulh
-//   constrainChildren,        // TR::cmul
 //   constrainChildren,        // TR::cdiv
 //   constrainChildren,        // TR::crem
 

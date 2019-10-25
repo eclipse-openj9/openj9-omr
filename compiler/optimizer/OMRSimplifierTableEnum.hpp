@@ -646,7 +646,6 @@
    dftSimplifier,           // TR::iumulh
    lmulhSimplifier,         // TR::lmulh
    lmulhSimplifier,         // TR::lumulh
-//   cmulSimplifier,          // TR::cmul
 //   cdivSimplifier,          // TR::cdiv
 //   cremSimplifier,          // TR::crem
 

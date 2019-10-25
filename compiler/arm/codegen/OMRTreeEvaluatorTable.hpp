@@ -763,7 +763,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::iumulh
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::lmulh
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::lumulh
-//   TR::TreeEvaluator::cmulEvaluator,      // TR::cmul
 //   TR::TreeEvaluator::cdivEvaluator,      // TR::cdiv
 //   TR::TreeEvaluator::cremEvaluator,      // TR::crem
 //   TR::TreeEvaluator::cshlEvaluator,      // TR::cshl

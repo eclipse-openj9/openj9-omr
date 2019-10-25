@@ -79,7 +79,7 @@ int32_t TR_LoadExtensions::perform()
 
       optimizer()->setUseDefInfo(NULL);
 
-      TR_UseDefInfo* useDefInfo = new (comp()->allocator()) TR_UseDefInfo(comp(), comp()->getFlowGraph(), optimizer(), false, false, false, true, true);
+      TR_UseDefInfo* useDefInfo = optimizer()->createUseDefInfo(comp(), false, false, false, true, true);
 
       if (useDefInfo->infoIsValid())
          {

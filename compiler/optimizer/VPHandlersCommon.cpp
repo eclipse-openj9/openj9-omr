@@ -40,7 +40,7 @@
 #include "infra/Assert.hpp"
 #include "infra/List.hpp"
 #include "optimizer/VPConstraint.hpp"
-#include "optimizer/OMRValuePropagation.hpp"
+#include "optimizer/ValuePropagation.hpp"
 #include "runtime/Runtime.hpp"
 #include "optimizer/TransformUtil.hpp"
 

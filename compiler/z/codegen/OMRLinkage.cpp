@@ -26,7 +26,7 @@
 // See also S390Linkage2.cpp which contains more S390 Linkage
 // implementations (primarily System Linkage and derived classes).
 
-#include "codegen/OMRLinkage.hpp"
+#include "codegen/Linkage.hpp"
 
 #include <stddef.h>
 #include <stdint.h>

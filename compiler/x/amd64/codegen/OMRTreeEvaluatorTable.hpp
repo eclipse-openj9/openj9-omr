@@ -576,7 +576,6 @@
    TR::TreeEvaluator::integerRegLoadEvaluator,                         // TR::luRegLoad <- (Uses iRegLoad intentionally)
    TR::TreeEvaluator::iRegStoreEvaluator,                              // TR::iuRegStore
    TR::TreeEvaluator::lRegStoreEvaluator,                              // TR::luRegStore
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::luternary
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::suternary
    TR::TreeEvaluator::cconstEvaluator,                                 // TR::cconst
    TR::TreeEvaluator::sloadEvaluator,                                  // TR::cload

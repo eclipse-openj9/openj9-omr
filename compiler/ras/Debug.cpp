@@ -4234,8 +4234,49 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_ARMrevertToInterpreterGlue:                   return "_revertToInterpreterGlue";
          }
       }
+#elif defined (TR_TARGET_ARM64)
+   else if (TR::Compiler->target.cpu.isARM64() && !inDebugExtension())
+      {
+      switch (index)
+         {
+         case TR_ARM64interpreterUnresolvedStaticGlue:             return "_interpreterUnresolvedStaticGlue";
+         case TR_ARM64interpreterUnresolvedSpecialGlue:            return "_interpreterUnresolvedSpecialGlue";
+         case TR_ARM64interpreterUnresolvedDirectVirtualGlue:      return "_interpreterUnresolvedDirectVirtualGlue";
+         case TR_ARM64interpreterUnresolvedClassGlue:              return "_interpreterUnresolvedClassGlue";
+         case TR_ARM64interpreterUnresolvedClassGlue2:             return "_interpreterUnresolvedClassGlue2";
+         case TR_ARM64interpreterUnresolvedStringGlue:             return "_interpreterUnresolvedStringGlue";
+         case TR_ARM64interpreterUnresolvedConstantDynamicGlue:    return "_interpreterUnresolvedConstantDynamicGlue";
+         case TR_ARM64interpreterUnresolvedStaticDataGlue:         return "_interpreterUnresolvedStaticDataGlue";
+         case TR_ARM64interpreterUnresolvedInstanceDataGlue:       return "_interpreterUnresolvedInstanceDataGlue";
+         case TR_ARM64interpreterUnresolvedStaticDataStoreGlue:    return "_interpreterUnresolvedStaticDataStoreGlue";
+         case TR_ARM64interpreterUnresolvedInstanceDataStoreGlue:  return "_interpreterUnresolvedInstanceDataStoreGlue";
+         case TR_ARM64virtualUnresolvedHelper:                     return "_virtualUnresolvedHelper";
+         case TR_ARM64interfaceCallHelper:                         return "_interfaceCallHelper";
+         case TR_ARM64icallVMprJavaSendVirtual0:                   return "icallVMprJavaSendVirtual0";
+         case TR_ARM64icallVMprJavaSendVirtual1:                   return "icallVMprJavaSendVirtual1";
+         case TR_ARM64icallVMprJavaSendVirtualJ:                   return "icallVMprJavaSendVirtualJ";
+         case TR_ARM64icallVMprJavaSendVirtualF:                   return "icallVMprJavaSendVirtualF";
+         case TR_ARM64icallVMprJavaSendVirtualD:                   return "icallVMprJavaSendVirtualD";
+         case TR_ARM64interpreterVoidStaticGlue:                   return "_interpreterVoidStaticGlue";
+         case TR_ARM64interpreterSyncVoidStaticGlue:               return "_interpreterSyncVoidStaticGlue";
+         case TR_ARM64interpreterIntStaticGlue:                    return "_interpreterIntStaticGlue";
+         case TR_ARM64interpreterSyncIntStaticGlue:                return "_interpreterSyncIntStaticGlue";
+         case TR_ARM64interpreterLongStaticGlue:                   return "_interpreterLongStaticGlue";
+         case TR_ARM64interpreterSyncLongStaticGlue:               return "_interpreterSyncLongStaticGlue";
+         case TR_ARM64interpreterFloatStaticGlue:                  return "_interpreterFloatStaticGlue";
+         case TR_ARM64interpreterSyncFloatStaticGlue:              return "_interpreterSyncFloatStaticGlue";
+         case TR_ARM64interpreterDoubleStaticGlue:                 return "_interpreterDoubleStaticGlue";
+         case TR_ARM64interpreterSyncDoubleStaticGlue:             return "_interpreterSyncDoubleStaticGlue";
+         case TR_ARM64nativeStaticHelper:                          return "_nativeStaticHelper";
+         case TR_ARM64interfaceDispatch:                           return "_interfaceDispatch";
+         case TR_ARM64countingRecompileMethod:                     return "_countingRecompileMethod";
+         case TR_ARM64revertToInterpreterGlue:                     return "_revertToInterpreterGlue";
+         case TR_ARM64doubleRemainder:                             return "doubleRemainder";
+         case TR_ARM64floatRemainder:                              return "floatRemainder";
+         }
+      }
 #endif
-#endif
+#endif // J9_PROJECT_SPECIFIC
 
    if (inDebugExtension())
       return "platform specific - not implemented";

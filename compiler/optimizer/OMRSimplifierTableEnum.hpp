@@ -645,7 +645,6 @@
 //   cdivSimplifier,          // TR::cdiv
 //   cremSimplifier,          // TR::crem
 
-//   cshlSimplifier,          // TR::cshl
 //   cushrSimplifier,         // TR::cushr
 
    ibits2fSimplifier,       // TR::ibits2f

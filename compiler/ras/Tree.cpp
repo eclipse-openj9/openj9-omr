@@ -2892,7 +2892,6 @@ int32_t childTypes[] =
    TR::Int64,                     // TR::lumulh
    // TR::Int16,                     // TR::cdiv
    // TR::Int16,                     // TR::crem
-   // TR::Int16,                     // TR::cshl
    // TR::Int16 | (TR::Int32<<16),   // TR::cushr
 
    TR::Int32,                     // TR::ibits2f

@@ -761,7 +761,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::lumulh
 //   TR::TreeEvaluator::cdivEvaluator,      // TR::cdiv
 //   TR::TreeEvaluator::cremEvaluator,      // TR::crem
-//   TR::TreeEvaluator::cshlEvaluator,      // TR::cshl
 //   TR::TreeEvaluator::cushrEvaluator,     // TR::cushr
 
    TR::TreeEvaluator::ibits2fEvaluator,     // TR::ibits2f

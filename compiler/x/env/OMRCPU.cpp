@@ -109,6 +109,12 @@ OMR::X86::CPU::getX86ProcessorFeatureFlags8()
    }
 
 bool
+OMR::X86::CPU::getSupportsHardwareSQRT()
+   {
+   return true;
+   }
+
+bool
 OMR::X86::CPU::testOSForSSESupport()
    {
    return false;

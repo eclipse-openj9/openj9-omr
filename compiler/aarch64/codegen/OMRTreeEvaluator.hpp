@@ -586,7 +586,6 @@ public:
 	static TR::Register *busubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iunegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lunegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iushlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lushlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *f2iuEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *f2luEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -583,7 +583,6 @@
    bsubSimplifier,          // TR::busub
    inegSimplifier,          // TR::iuneg
    lnegSimplifier,          // TR::luneg
-   ishlSimplifier,          // TR::iushl
    lshlSimplifier,          // TR::lushl
    f2iSimplifier,           // TR::f2iu
    f2lSimplifier,           // TR::f2iu

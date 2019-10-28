@@ -566,7 +566,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,                 // TR::busub
    TR::TreeEvaluator::inegEvaluator,                    // TR::iuneg
    TR::TreeEvaluator::lnegEvaluator,                    // TR::luneg
-   TR::TreeEvaluator::ishlEvaluator,                    // TR::iushl
    TR::TreeEvaluator::lshlEvaluator,                    // TR::lushl
    TR::TreeEvaluator::d2iuEvaluator,                    // TR::f2iu
    TR::TreeEvaluator::unImpOpEvaluator,                 // TR::f2lu

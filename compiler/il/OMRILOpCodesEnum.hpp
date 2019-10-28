@@ -621,7 +621,6 @@
    busub,    // subtract 2 unsigned bytes          (child1 - child2)
    iuneg,    // negate an unsigned integer
    luneg,    // negate a unsigned long integer
-   iushl,    // shift unsigned integer left       (child1 << child2)
    lushl,    // shift unsigned long integer left  (child1 << child2)
    f2iu,     // convert float to unsigned integer
    f2lu,     // convert float to unsigned long integer

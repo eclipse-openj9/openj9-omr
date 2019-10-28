@@ -294,6 +294,7 @@ OMR::Compilation::Compilation(
    _gpuPtxCount(0),
    _bitVectorPool(self()),
    _typeLayoutMap((LayoutComparator()), LayoutAllocator(self()->region())),
+   _target(TR::Compiler->target),
    _tlsManager(*self())
    {
 

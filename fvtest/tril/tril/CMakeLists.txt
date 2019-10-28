@@ -28,15 +28,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-
-# There is no unistd.h on Windows, so if win_flex.exe is in use,
-# the --wincompat option must be added.
-if(OMR_HOST_OS STREQUAL "win")
-	list(APPEND TRIL_FLEX_FLAGS
-		"--wincompat"
-	)
-endif()
-
 set(TRIL_BACKEND_LIB      testcompiler)
 
 add_library(tril STATIC

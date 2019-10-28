@@ -562,7 +562,6 @@
    TR::TreeEvaluator::bsubEvaluator,                                   // TR::busub
    TR::TreeEvaluator::integerNegEvaluator,                             // TR::iuneg
    TR::TreeEvaluator::integerPairNegEvaluator,                         // TR::luneg
-   TR::TreeEvaluator::integerPairShlEvaluator,                         // TR::lushl
    TR::TreeEvaluator::f2iEvaluator,                                    // TR::f2iu
    TR::TreeEvaluator::f2lEvaluator,                                    // TR::f2lu
    TR::TreeEvaluator::f2bEvaluator,                                    // TR::f2bu

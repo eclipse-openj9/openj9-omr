@@ -678,7 +678,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::busub
    TR::TreeEvaluator::inegEvaluator,        // TR::iuneg
    TR::TreeEvaluator::lnegEvaluator,        // TR::luneg
-   TR::TreeEvaluator::lshlEvaluator,        // TR::lushl
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
    TR::TreeEvaluator::f2iEvaluator,         // TR::f2iu
    TR::TreeEvaluator::f2lEvaluator,         // TR::f2lu

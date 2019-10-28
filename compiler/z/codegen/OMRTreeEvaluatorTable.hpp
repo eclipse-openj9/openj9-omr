@@ -597,7 +597,6 @@
    TR::TreeEvaluator::bsubEvaluator,        // TR::busub
    TR::TreeEvaluator::inegEvaluator,        // TR::iuneg
    TR::TreeEvaluator::lnegEvaluator,        // TR::luneg
-   TR::TreeEvaluator::lshlEvaluator,        // TR::lushl
    TR::TreeEvaluator::f2iEvaluator,         // TR::f2iu
    TR::TreeEvaluator::f2lEvaluator,         // TR::f2lu
    TR::TreeEvaluator::f2iEvaluator,         // TR::f2bu

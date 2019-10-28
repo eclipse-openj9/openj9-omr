@@ -2831,7 +2831,6 @@ int32_t childTypes[] =
    TR::Int8,                      // TR::busub
    TR::Int32,                     // TR::iuneg
    TR::Int64,                     // TR::luneg
-   TR::Int64 | (TR::Int32<<16),   // TR::lushl
    TR::Float,                      // TR::f2iu
    TR::Float,                      // TR::f2lu
    TR::Float,                      // TR::f2bu

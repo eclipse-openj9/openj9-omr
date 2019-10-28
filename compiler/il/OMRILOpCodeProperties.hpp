@@ -8634,22 +8634,6 @@
    },
 
    {
-   /* .opcode               = */ TR::lushl,
-   /* .name                 = */ "lushl",
-   /* .properties1          = */ ILProp1::LeftShift,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,
-   /* .properties3          = */ ILProp3::LikeUse,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int64,
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned,
-   /* .childProperties      = */ TWO_CHILD(TR::Int64, TR::Int32),
-   /* .swapChildrenOpCode   = */ TR::BadILOp,
-   /* .reverseBranchOpCode  = */ TR::BadILOp,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
    /* .opcode               = */ TR::f2iu,
    /* .name                 = */ "f2iu",
    /* .properties1          = */ ILProp1::Conversion,

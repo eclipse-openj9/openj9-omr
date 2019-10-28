@@ -710,7 +710,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::fnint
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dnint
    TR::TreeEvaluator::fpSqrtEvaluator,                                 // TR::fsqrt
-   TR::TreeEvaluator::fpSqrtEvaluator,                                 // TR::dsqrt
+   TR::TreeEvaluator::dsqrtEvaluator,                                  // TR::dsqrt
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::getstack
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dealloca
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::ishfl

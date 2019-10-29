@@ -791,9 +791,6 @@
    getstack, // returns current value of SP
    dealloca, // resets value of SP
 
-   bushfl,   // unsigned byte shift logical
-   sushfl,   // unsigned short shift logical
-
    idoz,     // difference or zero
 
    dcos,       // cos of double, returning double

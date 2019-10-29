@@ -378,10 +378,8 @@ private:
       {
       switch (opvalue) 
          {
-         //Shift Logical  
-         case TR::bushfl:
-         case TR::sushfl:
-            return false;
+            //More cases is going to be added to this function for eclipse/omr#2657.
+            //return false;
             
          default: 
             return true;

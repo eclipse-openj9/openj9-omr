@@ -379,8 +379,6 @@ private:
       switch (opvalue) 
          {
          //Shift Logical 
-         case TR::ishfl: 
-         case TR::lshfl: 
          case TR::iushfl: 
          case TR::lushfl:
          case TR::bshfl: 

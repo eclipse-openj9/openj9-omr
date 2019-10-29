@@ -734,8 +734,6 @@ public:
 	static TR::Register *dsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *getstackEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *deallocaEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ishflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lshflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bshflEvaluator(TR::Node *node, TR::CodeGenerator *cg);

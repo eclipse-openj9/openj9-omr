@@ -892,8 +892,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::dealloca
 
 
-   constrainChildren,        // TR::ishfl
-   constrainChildren,        // TR::lshfl
    constrainChildren,        // TR::iushfl
    constrainChildren,        // TR::lushfl
    constrainChildren,        // TR::bshfl

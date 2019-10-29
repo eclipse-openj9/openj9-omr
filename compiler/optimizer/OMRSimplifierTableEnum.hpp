@@ -750,8 +750,6 @@
    dftSimplifier,           // TR::getstack
    dftSimplifier,           // TR::dealloca
 
-   dftSimplifier,           // TR::bshfl
-   dftSimplifier,           // TR::sshfl
    dftSimplifier,           // TR::bushfl
    dftSimplifier,           // TR::sushfl
 

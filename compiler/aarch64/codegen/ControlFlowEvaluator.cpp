@@ -31,6 +31,8 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 
+static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg);
+
 TR::Register *
 genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rnum, TR_RegisterKinds rk, TR_ReturnInfo i,  TR::CodeGenerator *cg)
    {
@@ -94,11 +96,36 @@ TR::Register *OMR::ARM64::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeG
 
 static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool is64bit, TR::CodeGenerator *cg)
    {
+   if (virtualGuardHelper(node, cg))
+      return NULL;
+
+   TR::Compilation *comp = cg->comp();
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
    TR::Node *thirdChild = NULL;
    TR::Register *src1Reg = cg->evaluate(firstChild);
    bool useRegCompare = true;
+
+#ifdef J9_PROJECT_SPECIFIC
+if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == TR::aconst &&
+   (secondChild->isClassPointerConstant() || secondChild->isMethodPointerConstant()))
+   {
+   if (node->isProfiledGuard())
+      {
+      TR_VirtualGuard *virtualGuard = comp->findVirtualGuardInfo(node);
+      TR_AOTGuardSite *site = comp->addAOTNOPSite();
+      site->setType(TR_ProfiledGuard);
+      site->setGuard(virtualGuard);
+      site->setNode(node);
+      site->setAconstNode(secondChild);
+      }
+   else
+      {
+      TR_ASSERT(!(node->isNopableInlineGuard()),"Should not evaluate class or method pointer constants underneath NOPable guards as they are runtime assumptions handled by virtualGuardHelper");
+      cg->evaluate(secondChild);
+      }
+   }
+#endif
 
    if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
       {
@@ -678,4 +705,74 @@ TR::Register *
 OMR::ARM64::TreeEvaluator::lminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonMinMaxEvaluator(node, true, TR::CC_LT, cg);
+   }
+
+static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+#ifdef J9_PROJECT_SPECIFIC
+   if (!cg->willGenerateNOPForVirtualGuard(node))
+      {
+      return false;
+      }
+
+   TR::Compilation *comp = cg->comp();
+   TR_VirtualGuard *virtualGuard = comp->findVirtualGuardInfo(node);
+
+   TR_VirtualGuardSite *site = NULL;
+
+   if (cg->comp()->compileRelocatableCode())
+      {
+      site = (TR_VirtualGuardSite *)comp->addAOTNOPSite();
+      TR_AOTGuardSite *aotSite = (TR_AOTGuardSite *)site;
+      aotSite->setType(virtualGuard->getKind());
+      aotSite->setNode(node);
+
+      switch (virtualGuard->getKind())
+         {
+         case TR_DirectMethodGuard:
+         case TR_NonoverriddenGuard:
+         case TR_InterfaceGuard:
+         case TR_MethodEnterExitGuard:
+         case TR_HCRGuard:
+         case TR_AbstractGuard:
+            aotSite->setGuard(virtualGuard);
+            break;
+
+         case TR_ProfiledGuard:
+            break;
+
+         default:
+            TR_ASSERT(0, "got AOT guard in node but virtual guard not one of known guards supported for AOT. Guard: %d", virtualGuard->getKind());
+            break;
+         }
+      }
+   else if (!node->isSideEffectGuard())
+      {
+      site = virtualGuard->addNOPSite();
+      }
+   else
+      site = comp->addSideEffectNOPSite();
+
+   TR::RegisterDependencyConditions *deps;
+   if (node->getNumChildren() == 3)
+      {
+      TR::Node *third = node->getChild(2);
+      cg->evaluate(third);
+      deps = generateRegisterDependencyConditions(cg, third, 0);
+      }
+   else
+      deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
+
+   if(virtualGuard->shouldGenerateChildrenCode())
+      cg->evaluateChildrenWithMultipleRefCount(node);
+
+   TR::LabelSymbol *label = node->getBranchDestination()->getNode()->getLabel();
+   generateVirtualGuardNOPInstruction(cg, node, site, deps, label);
+   cg->recursivelyDecReferenceCount(node->getFirstChild());
+   cg->recursivelyDecReferenceCount(node->getSecondChild());
+
+   return true;
+#else
+   return false;
+#endif
    }

@@ -128,7 +128,6 @@ public:
    static TR::Register *dmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *smulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *cmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *idivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ldivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);

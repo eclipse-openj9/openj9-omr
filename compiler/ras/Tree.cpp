@@ -2367,7 +2367,6 @@ int32_t childTypes[] =
    TR::Double,                     // TR::dmul
    TR::Int8,                      // TR::bmul
    TR::Int16,                     // TR::smul
-   TR::Int32,                     // TR::iumul
    TR::Int32,                     // TR::idiv
    TR::Int64,                     // TR::ldiv
    TR::Float,                      // TR::fdiv
@@ -2846,10 +2845,6 @@ int32_t childTypes[] =
    TR::Int64,                     // TR::luRegLoad
    TR::Int32,                     // TR::iuRegStore
    TR::Int64,                     // TR::luRegStore
-   TR::Int32 | (TR::Int32<<8),    // TR::iuternary
-   TR::Int64 | (TR::Int32<<8),    // TR::luternary
-   TR::Int8  | (TR::Int32<<8),    // TR::buternary
-   TR::Int16 | (TR::Int32<<8),    // TR::suternary
    TR::Int16,                     // TR::cconst
    TR::Int16,                     // TR::cload
    TR::Int16 | (TR::Address<<8),   // TR::cloadi
@@ -2895,7 +2890,6 @@ int32_t childTypes[] =
    TR::Int32,                     // TR::iumulh
    TR::Int64,                     // TR::lmulh
    TR::Int64,                     // TR::lumulh
-   // TR::Int16,                     // TR::cmul
    // TR::Int16,                     // TR::cdiv
    // TR::Int16,                     // TR::crem
    // TR::Int16,                     // TR::cshl

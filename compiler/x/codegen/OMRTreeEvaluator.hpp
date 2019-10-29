@@ -105,7 +105,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *csubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *cmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ddivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *cdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);

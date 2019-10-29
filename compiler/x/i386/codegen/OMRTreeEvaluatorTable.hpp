@@ -122,7 +122,6 @@
    TR::TreeEvaluator::dmulEvaluator,                                   // TR::dmul
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::bmul
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::smul
-   TR::TreeEvaluator::integerMulEvaluator,                             // TR::iumul
    TR::TreeEvaluator::integerDivOrRemEvaluator,                        // TR::idiv
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::ldiv
    TR::TreeEvaluator::fdivEvaluator,                                   // TR::fdiv
@@ -577,10 +576,6 @@
    TR::TreeEvaluator::lRegLoadEvaluator,                               // TR::luRegLoad (OBSOLETE?)
    TR::TreeEvaluator::iRegStoreEvaluator,                              // TR::iuRegStore (OBSOLETE?)
    TR::TreeEvaluator::lRegStoreEvaluator,                              // TR::luRegStore (OBSOLETE?)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::iuternary
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::luternary
-   TR::TreeEvaluator::iternaryEvaluator,                               // TR::buternary (zPDT, WCode)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::suternary
    TR::TreeEvaluator::cconstEvaluator,                                 // TR::cconst
    TR::TreeEvaluator::sloadEvaluator,                                  // TR::cload
    TR::TreeEvaluator::sloadEvaluator,                                  // TR::cloadi

@@ -160,7 +160,6 @@
    dmul,     // multiply 2 doubles
    bmul,     // multiply 2 bytes
    smul,     // multiply 2 short integers
-   iumul,    // multiply 2 unsigned integers
    idiv,     // divide 2 integers                (child1 / child2)
    ldiv,     // divide 2 long integers           (child1 / child2)
    fdiv,     // divide 2 floats                  (child1 / child2)
@@ -636,10 +635,6 @@
    luRegLoad, // Load unsigned long integer global register
    iuRegStore,// Store unsigned integer global register
    luRegStore,// Store long integer global register
-   iuternary,  // second or the third child.  Analogous to the "condition ? a : b" operations in C/Java.
-   luternary,  //
-   buternary,  //
-   suternary,  //
    cconst,   // load unicode constant (16-bit unsigned)
    cload,    // load short unsigned integer
    cloadi,   // load indirect unsigned short integer

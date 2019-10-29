@@ -129,7 +129,6 @@
    TR::TreeEvaluator::dmulEvaluator,        // TR::dmul
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::bmul
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::smul
-   TR::TreeEvaluator::imulEvaluator,        // TR::iumul
    TR::TreeEvaluator::idivEvaluator,        // TR::idiv
    TR::TreeEvaluator::ldivEvaluator,        // TR::ldiv
    TR::TreeEvaluator::fdivEvaluator,        // TR::fdiv
@@ -698,10 +697,6 @@
    TR::TreeEvaluator::lRegLoadEvaluator,    // TR::luRegLoad
    TR::TreeEvaluator::iRegStoreEvaluator,   // TR::iuRegStore
    TR::TreeEvaluator::lRegStoreEvaluator,   // TR::luRegStore
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::iuternary
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::luternary
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::buternary
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::suternary
    TR::TreeEvaluator::cconstEvaluator,      // TR::cconst
    TR::TreeEvaluator::cloadEvaluator,       // TR::cload
    TR::TreeEvaluator::cloadEvaluator,       // TR::cloadi
@@ -764,7 +759,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::iumulh
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::lmulh
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::lumulh
-//   TR::TreeEvaluator::cmulEvaluator,      // TR::cmul
 //   TR::TreeEvaluator::cdivEvaluator,      // TR::cdiv
 //   TR::TreeEvaluator::cremEvaluator,      // TR::crem
 //   TR::TreeEvaluator::cshlEvaluator,      // TR::cshl

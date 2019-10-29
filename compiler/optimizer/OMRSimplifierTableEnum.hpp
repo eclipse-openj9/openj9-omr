@@ -120,7 +120,6 @@
    dmulSimplifier,          // TR::dmul
    bmulSimplifier,          // TR::bmul
    smulSimplifier,          // TR::smul
-   imulSimplifier,          // TR::iumul
    idivSimplifier,          // TR::idiv
    ldivSimplifier,          // TR::ldiv
    fdivSimplifier,          // TR::fdiv
@@ -598,10 +597,6 @@
    dftSimplifier,           // TR::luRegLoad
    dftSimplifier,           // TR::iuRegStore
    dftSimplifier,           // TR::luRegStore
-   ternarySimplifier,       // TR::iuternary
-   ternarySimplifier,       // TR::luternary
-   ternarySimplifier,       // TR::buternary
-   ternarySimplifier,       // TR::suternary
    constSimplifier,         // TR::cconst
    directLoadSimplifier,    // TR::cload
    indirectLoadSimplifier,  // TR::cloadi
@@ -647,7 +642,6 @@
    dftSimplifier,           // TR::iumulh
    lmulhSimplifier,         // TR::lmulh
    lmulhSimplifier,         // TR::lumulh
-//   cmulSimplifier,          // TR::cmul
 //   cdivSimplifier,          // TR::cdiv
 //   cremSimplifier,          // TR::crem
 

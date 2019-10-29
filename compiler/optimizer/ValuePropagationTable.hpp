@@ -78,7 +78,6 @@ TR::Node *constrainIfcmplt(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIfcmpne(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIiload(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainImul(OMR::ValuePropagation *vp, TR::Node *node);
-TR::Node *constrainIumul(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIneg(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIabs(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainInstanceOf(OMR::ValuePropagation *vp, TR::Node *node);
@@ -260,7 +259,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::dmul
    constrainChildren,        // TR::bmul
    constrainChildren,        // TR::smul
-   constrainIumul,           // TR::iumul
    constrainIdiv,            // TR::idiv
    constrainLdiv,            // TR::ldiv
    constrainChildren,        // TR::fdiv
@@ -742,10 +740,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::luRegLoad
    constrainChildren,        // TR::iuRegStore
    constrainChildren,        // TR::luRegStore
-   constrainChildrenFirstToLast,        // TR::iuternary
-   constrainChildrenFirstToLast,        // TR::luternary
-   constrainChildrenFirstToLast,        // TR::buternary
-   constrainChildrenFirstToLast,        // TR::suternary
    constrainShortConst,      // TR::cconst
    constrainIntLoad,         // TR::cload
    constrainIntLoad,         // TR::cloadi
@@ -791,7 +785,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::iumulh
    constrainChildren,        // TR::lmulh
    constrainChildren,        // TR::lumulh
-//   constrainChildren,        // TR::cmul
 //   constrainChildren,        // TR::cdiv
 //   constrainChildren,        // TR::crem
 

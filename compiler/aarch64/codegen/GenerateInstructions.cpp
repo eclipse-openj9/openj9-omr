@@ -473,3 +473,13 @@ TR::ARM64ExceptionInstruction *generateExceptionInstruction(TR::CodeGenerator *c
       return new (cg->trHeapMemory()) TR::ARM64ExceptionInstruction(op, node, imm, preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64ExceptionInstruction(op, node, imm, cg);
    }
+
+#ifdef J9_PROJECT_SPECIFIC
+TR::Instruction *generateVirtualGuardNOPInstruction(TR::CodeGenerator *cg,  TR::Node *n, TR_VirtualGuardSite *site,
+   TR::RegisterDependencyConditions *cond, TR::LabelSymbol *sym, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64VirtualGuardNOPInstruction(n, site, cond, sym, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64VirtualGuardNOPInstruction(n, site, cond, sym, cg);
+   }
+#endif

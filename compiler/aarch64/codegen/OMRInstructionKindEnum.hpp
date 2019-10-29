@@ -32,6 +32,7 @@
    IsLabel,
       IsConditionalBranch,
       IsCompareBranch,
+      IsVirtualGuardNOP,
    IsRegBranch,
    IsAdmin,
    IsTrg1,

@@ -791,8 +791,6 @@
    getstack, // returns current value of SP
    dealloca, // resets value of SP
 
-   iushfl,   // unsigned int shift logical
-   lushfl,   // unsigned long shift logical
    bshfl,    // byte shift logical
    sshfl,    // short shift logical
    bushfl,   // unsigned byte shift logical

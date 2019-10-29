@@ -863,8 +863,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,         // TR::getstack
    TR::TreeEvaluator::unImpOpEvaluator,         // TR::dealloca
 
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::iushfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::lushfl
    TR::TreeEvaluator::unImpOpEvaluator,         // TR::bshfl
    TR::TreeEvaluator::unImpOpEvaluator,         // TR::sshfl
    TR::TreeEvaluator::unImpOpEvaluator,         // TR::bushfl

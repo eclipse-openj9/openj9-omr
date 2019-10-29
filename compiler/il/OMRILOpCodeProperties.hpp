@@ -11132,38 +11132,6 @@
    },
 
    {
-   /* .opcode               = */ TR::iushfl,
-   /* .name                 = */ "iushfl",
-   /* .properties1          = */ ILProp1::ShiftLogical,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,
-   /* .properties3          = */ ILProp3::LikeUse,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int32,
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned,
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32),
-   /* .swapChildrenOpCode   = */ TR::BadILOp,
-   /* .reverseBranchOpCode  = */ TR::BadILOp,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
-   /* .opcode               = */ TR::lushfl,
-   /* .name                 = */ "lushfl",
-   /* .properties1          = */ ILProp1::ShiftLogical,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,
-   /* .properties3          = */ ILProp3::LikeUse,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int64,
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned,
-   /* .childProperties      = */ TWO_CHILD(TR::Int64, TR::Int32),
-   /* .swapChildrenOpCode   = */ TR::BadILOp,
-   /* .reverseBranchOpCode  = */ TR::BadILOp,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
    /* .opcode               = */ TR::bshfl,
    /* .name                 = */ "bshfl",
    /* .properties1          = */ ILProp1::ShiftLogical,

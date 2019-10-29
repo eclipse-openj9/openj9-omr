@@ -708,8 +708,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dsqrtEvaluator ,	// TR::dsqrt		// square root of double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::getstackEvaluator ,	// TR::getstack		// returns current value of SP
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::deallocaEvaluator ,	// TR::dealloca		// resets value of SP
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iushflEvaluator ,	// TR::iushfl		// unsigned int shift logical
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lushflEvaluator ,	// TR::lushfl		// unsigned long shift logical
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bshflEvaluator ,	// TR::bshfl		// byte shift logical
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sshflEvaluator ,	// TR::sshfl		// short shift logical
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bushflEvaluator ,	// TR::bushfl		// unsigned byte shift logical

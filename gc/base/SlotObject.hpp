@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,6 +38,9 @@ private:
 	volatile fomrobject_t* _slot;		/**< stored slot address (volatile, because in concurrent GC the mutator can change the value in _slot) */
 #if defined (OMR_GC_COMPRESSED_POINTERS)
 	uintptr_t _compressedPointersShift; /**< the number of bits to shift by when converting between the compressed pointers heap and real heap */
+#if defined (OMR_GC_FULL_POINTERS)
+	bool _compressObjectReferences;
+#endif /* OMR_GC_FULL_POINTERS */
 #endif /* OMR_GC_COMPRESSED_POINTERS */
 
 protected:
@@ -48,24 +51,44 @@ private:
 	MMINLINE omrobjectptr_t
 	convertPointerFromToken(fomrobject_t token)
 	{
+		uintptr_t value = (uintptr_t)token;
 #if defined (OMR_GC_COMPRESSED_POINTERS)
-		return (omrobjectptr_t)((uintptr_t)token << _compressedPointersShift);
-#else
-		return (omrobjectptr_t)token;
-#endif
+		if (compressObjectReferences()) {
+			value <<= _compressedPointersShift;
+		}
+#endif /* OMR_GC_COMPRESSED_POINTERS */
+		return (omrobjectptr_t)value;
 	}
 	/* Inlined version of converting a pointer to a compressed token */
 	MMINLINE fomrobject_t
 	convertTokenFromPointer(omrobjectptr_t pointer)
 	{
+		uintptr_t value = (uintptr_t)pointer;
 #if defined (OMR_GC_COMPRESSED_POINTERS)
-		return (fomrobject_t)((uintptr_t)pointer >> _compressedPointersShift);
-#else
-		return (fomrobject_t)pointer;
-#endif
+		if (compressObjectReferences()) {
+			value >>= _compressedPointersShift;
+		}
+#endif /* OMR_GC_COMPRESSED_POINTERS */
+		return (fomrobject_t)value;
 	}
 
 public:
+	/**
+	 * Return back true if object references are compressed
+	 * @return true, if object references are compressed
+	 */
+	MMINLINE bool compressObjectReferences() {
+#if defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_GC_FULL_POINTERS)
+		return _compressObjectReferences;
+#else /* defined(OMR_GC_FULL_POINTERS) */
+		return true;
+#endif /* defined(OMR_GC_FULL_POINTERS) */
+#else /* defined(OMR_GC_COMPRESSED_POINTERS) */
+		return false;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
+	}
+
 	/**
 	 * Read reference from slot
 	 * @return address of object slot reference to.
@@ -107,13 +130,14 @@ public:
 		/* Caller should ensure oldReference != newReference */
 		fomrobject_t compressedOld = convertTokenFromPointer(oldReference);
 		fomrobject_t compressedNew = convertTokenFromPointer(newReference);
-		
-#if defined (OMR_GC_COMPRESSED_POINTERS)
-		bool swapResult = ((uint32_t)(uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchangeU32((uint32_t *)_slot, (uint32_t)(uintptr_t)compressedOld, (uint32_t)(uintptr_t)compressedNew));
-#else
-		bool swapResult = ((uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchange((uintptr_t *)_slot, (uintptr_t)compressedOld, (uintptr_t)compressedNew));
-#endif /* OMR_GC_COMPRESSED_POINTERS */
-		
+		bool swapResult = false;
+
+		if (compressObjectReferences()) {
+			swapResult = ((uint32_t)(uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchangeU32((uint32_t *)_slot, (uint32_t)(uintptr_t)compressedOld, (uint32_t)(uintptr_t)compressedNew));
+		} else {
+			swapResult = ((uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchange((uintptr_t *)_slot, (uintptr_t)compressedOld, (uintptr_t)compressedNew));
+		}
+
 		return swapResult;
 	}
 
@@ -131,6 +155,9 @@ public:
 	: _slot(slot)
 #if defined (OMR_GC_COMPRESSED_POINTERS)
 	, _compressedPointersShift(omrVM->_compressedPointersShift)
+#if defined (OMR_GC_FULL_POINTERS)
+	, _compressObjectReferences(OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM))
+#endif /* OMR_GC_FULL_POINTERS */
 #endif /* OMR_GC_COMPRESSED_POINTERS */
 	{}
 
@@ -138,6 +165,9 @@ public:
 	: _slot(slot)
 #if defined (OMR_GC_COMPRESSED_POINTERS)
 	, _compressedPointersShift(((OMR_VM *)omrVM)->_compressedPointersShift)
+#if defined (OMR_GC_FULL_POINTERS)
+	, _compressObjectReferences(OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM))
+#endif /* OMR_GC_FULL_POINTERS */
 #endif /* OMR_GC_COMPRESSED_POINTERS */
 	{}
 };

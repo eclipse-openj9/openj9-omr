@@ -35,6 +35,7 @@
 #include "il/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 
+class TR_VirtualGuardSite;
 namespace TR { class SymbolReference; }
 
 #define ARM64_INSTRUCTION_LENGTH 4
@@ -2805,6 +2806,45 @@ class ARM64ExceptionInstruction : public ARM64ImmInstruction
       }
 
    };
+
+#ifdef J9_PROJECT_SPECIFIC
+class ARM64VirtualGuardNOPInstruction : public TR::ARM64LabelInstruction
+   {
+   private:
+   TR_VirtualGuardSite *_site;
+
+   public:
+   ARM64VirtualGuardNOPInstruction(TR::Node                       *node,
+                                 TR_VirtualGuardSite              *site,
+                                 TR::RegisterDependencyConditions *cond,
+                                 TR::LabelSymbol                  *sym,
+                                 TR::CodeGenerator                *cg)
+      : TR::ARM64LabelInstruction(TR::InstOpCode::vgdnop, node, sym, cond, cg),
+        _site(site)
+      {
+      }
+
+   ARM64VirtualGuardNOPInstruction(TR::Node                       *node,
+                                 TR_VirtualGuardSite              *site,
+                                 TR::RegisterDependencyConditions *cond,
+                                 TR::LabelSymbol                  *sym,
+                                 TR::Instruction                  *precedingInstruction,
+                                 TR::CodeGenerator                *cg)
+      : TR::ARM64LabelInstruction(TR::InstOpCode::vgdnop, node, sym, cond, precedingInstruction, cg),
+        _site(site)
+      {
+      }
+
+   virtual Kind getKind() { return IsVirtualGuardNOP; }
+
+   void setSite(TR_VirtualGuardSite *site) { _site = site; }
+   TR_VirtualGuardSite * getSite() { return _site; }
+
+   virtual uint8_t *generateBinaryEncoding();
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual bool     isVirtualGuardNOPInstruction() {return true;}
+   };
+#endif
 
 } // TR
 

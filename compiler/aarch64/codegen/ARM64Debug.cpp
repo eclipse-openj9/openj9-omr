@@ -542,6 +542,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsCompareBranch:
          print(pOutFile, (TR::ARM64CompareBranchInstruction *)instr);
          break;
+#ifdef J9_PROJECT_SPECIFIC
+      case OMR::Instruction::IsVirtualGuardNOP:
+         print(pOutFile, (TR::ARM64VirtualGuardNOPInstruction *)instr);
+         break;
+#endif
       case OMR::Instruction::IsRegBranch:
          print(pOutFile, (TR::ARM64RegBranchInstruction *)instr);
          break;
@@ -680,6 +685,20 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64LabelInstruction *instr)
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }
+
+#ifdef J9_PROJECT_SPECIFIC
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64VirtualGuardNOPInstruction * instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s Site:" POINTER_PRINTF_FORMAT ", ", getOpCodeName(&instr->getOpCode()), instr->getSite());
+   print(pOutFile, instr->getLabelSymbol());
+   printInstructionComment(pOutFile, 1, instr);
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
+   trfflush(pOutFile);
+   }
+#endif
 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ConditionalBranchInstruction *instr)

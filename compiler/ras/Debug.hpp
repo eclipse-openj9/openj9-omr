@@ -357,6 +357,8 @@ namespace TR { class ARM64Src2Instruction; }
 namespace TR { class ARM64HelperCallSnippet; }
 
 #ifdef J9_PROJECT_SPECIFIC
+namespace TR { class ARM64VirtualGuardNOPInstruction; }
+
 namespace TR { class ARM64InterfaceCallSnippet; }
 namespace TR { class ARM64StackCheckFailureSnippet; }
 namespace TR { class ARM64ForceRecompilationSnippet; }
@@ -1105,7 +1107,9 @@ public:
    void print(TR::FILE *, TR::ARM64MemSrc1Instruction *);
    void print(TR::FILE *, TR::ARM64Src1Instruction *);
    void print(TR::FILE *, TR::ARM64Src2Instruction *);
-
+#ifdef J9_PROJECT_SPECIFIC
+   void print(TR::FILE *, TR::ARM64VirtualGuardNOPInstruction *);
+#endif
    void print(TR::FILE *, TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
    void print(TR::FILE *, TR::RegisterDependency *);
    void print(TR::FILE *, TR::RegisterDependencyConditions *);

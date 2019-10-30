@@ -66,6 +66,8 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
 
    self()->getLinkage()->initARM64RealRegisterLinkage();
 
+   self()->setSupportsVirtualGuardNOPing();
+
    _numberBytesReadInaccessible = 0;
    _numberBytesWriteInaccessible = 0;
 

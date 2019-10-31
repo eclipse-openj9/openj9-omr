@@ -2624,7 +2624,7 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
    TR::SymbolReference *methodSymRef = getNode()->getOpCode().hasSymbolReference()?getNode()->getSymbolReference():NULL;
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (comp->fej9()->helpersNeedRelocation())
+   if (cg()->needRelocationsForHelpers())
       {
       if (getNode()->getOpCode().hasSymbolReference() &&
           methodSymRef &&

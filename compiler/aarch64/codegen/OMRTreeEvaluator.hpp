@@ -661,7 +661,7 @@ public:
 	static TR::Register *dbgFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *NULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ResolveCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ResolveAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *resolveAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *DIVCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *OverflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *UnsignedOverflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -761,7 +761,6 @@ public:
 	static TR::Register *datanEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *datan2Evaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dlogEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *imuloverEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dfloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ffloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dceilEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -801,6 +800,9 @@ public:
 	static TR::Register *ibitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lbitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+	static TR::Instruction *generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *dstReg, TR::Register *srcReg, TR::Instruction *preced=NULL);
+	static TR::Instruction *generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *reg, TR::Instruction *preced=NULL);
    };
 
 }

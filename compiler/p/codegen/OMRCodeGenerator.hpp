@@ -178,6 +178,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
    void doBinaryEncoding();
    void doPeephole();
+   void expandInstructions();
    virtual TR_RegisterPressureSummary *calculateRegisterPressure();
    void deleteInst(TR::Instruction* old);
    TR::Instruction *generateNop(TR::Node *n, TR::Instruction *preced = 0, TR_NOPKind nopKind=TR_NOPStandard);
@@ -394,6 +395,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
       uint32_t lineSize = 64;
       return  ((size < (lineSize<<1)) && (size > (lineSize >> 2)));
       }
+
+   uint32_t getJitMethodEntryAlignmentBoundary();
 
    using OMR::CodeGenerator::getSupportsConstantOffsetInAddressing;
    bool getSupportsConstantOffsetInAddressing(int64_t value) { return (value>=LOWER_IMMED) && (value<=UPPER_IMMED);}

@@ -175,15 +175,23 @@ set(SPP_FLAGS -E -P)
 
 if(OMR_OS_ZOS)
 	function(_omr_toolchain_process_exports TARGET_NAME)
-		# We only need to do something if we are dealing with a shared library
+		# Any type of target which says it has exports should get the DLL, and EXPORTALL
+		# compile flags
+		target_compile_options(${TARGET_NAME}
+			PRIVATE
+				-Wc,DLL,EXPORTALL
+		)
+
+		# only shared libraries will generate an export side deck
 		get_target_property(target_type ${TARGET_NAME} TYPE)
 		if(NOT target_type STREQUAL "SHARED_LIBRARY")
 			return()
 		endif()
-
-		target_compile_options(${TARGET_NAME}
-			PRIVATE
-				-Wc,DLL,EXPORTALL
+		add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+			COMMAND "${CMAKE_COMMAND}"
+			"-DLIBRARY_FILE_NAME=$<TARGET_FILE_NAME:${TARGET_NAME}>"
+			"-DLIBRARY_FOLDER=$<TARGET_FILE_DIR:${TARGET_NAME}>"
+			-P "${omr_SOURCE_DIR}/cmake/modules/platform/toolcfg/zos_rename_exports.cmake"
 		)
 	endfunction()
 else()

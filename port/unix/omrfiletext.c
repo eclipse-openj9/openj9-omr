@@ -84,8 +84,11 @@ omrfile_write_text(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *
 #endif
 
 #if defined(J9ZOS390) || defined(OMRZTPF)
-	/* z/OS and z/TPF always needs to translate to EBCDIC */
+#if !defined(OMR_EBCDIC)
+	/* z/OS and z/TPF always needs to translate to EBCDIC, unless we are already using EBCDIC as the native encoding, */
+	/* in which case no translation is required. */
 	requiresTranslation = 1;
+#endif /* !defined(OMR_EBCDIC) */
 #else
 	/* we can short circuit if the string is all ASCII */
 	for (i = 0; i < nbytes; i++) {

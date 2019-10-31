@@ -38,12 +38,12 @@
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Node.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/IGNode.hpp"
@@ -303,7 +303,7 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
 
    // Build the register save description
    //
-   map->setRegisterSaveDescription(instr->getRegisterSaveDescription());
+   map->setRegisterSaveDescription(0);
 
    // Build the register map
    //

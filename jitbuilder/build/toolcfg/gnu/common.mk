@@ -71,7 +71,7 @@ endif
 # This is the script that's used to generate TRBuildName.cpp
 GENERATE_VERSION_SCRIPT?=$(JIT_SCRIPT_DIR)/generateVersion.pl
 
-# This is the script to preprocess ARM assembly files¬
+# This is the script to preprocess ARM assembly files
 ARMASM_SCRIPT?=$(JIT_SCRIPT_DIR)/armasm2gas.sed
 
 # This is the command to check Z assembly files

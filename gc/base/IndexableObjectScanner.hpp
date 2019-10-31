@@ -31,6 +31,7 @@ class GC_IndexableObjectScanner : public GC_ObjectScanner
 private:
 
 protected:
+	omrobjectptr_t _arrayPtr; /**< pointer to array */
 	fomrobject_t *_endPtr; /**< pointer to end of last array element in scan segment */
 	fomrobject_t *_basePtr; /**< pointer to base array element */
 	fomrobject_t *_limitPtr; /**< pointer to end of last array element */
@@ -64,13 +65,8 @@ protected:
 		, uintptr_t elementSize
 		, uintptr_t flags
 	)
-		: GC_ObjectScanner(
-			env
-			, arrayPtr
-			, scanPtr
-			, scanMap
-			, flags | GC_ObjectScanner::indexableObject
-		)
+		: GC_ObjectScanner(env, scanPtr, scanMap, flags | GC_ObjectScanner::indexableObject)
+		, _arrayPtr(arrayPtr)
 		, _endPtr(endPtr)
 		, _basePtr(basePtr)
 		, _limitPtr(limitPtr)
@@ -106,6 +102,11 @@ public:
 	 * must be called if this scanner cannot be split to hive off the tail
 	 */
 	MMINLINE void scanToLimit() { _endPtr = _limitPtr; }
+
+	/**
+	* Return pointer to array object
+	*/
+	MMINLINE omrobjectptr_t const getArrayObject() { return _arrayPtr; }
 
 	/**
 	 * Split this instance and set split scan/end pointers to indicate split scan range.

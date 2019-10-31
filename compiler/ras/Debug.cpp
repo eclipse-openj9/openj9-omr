@@ -63,23 +63,23 @@
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/RegisterMappedSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/RegisterMappedSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
@@ -2907,6 +2907,10 @@ TR_Debug::getName(TR::Snippet *snippet)
    if (TR::Compiler->target.cpu.isARM())
       return getNamea(snippet);
 #endif
+#if defined(TR_TARGET_ARM64)
+   if (TR::Compiler->target.cpu.isARM64())
+      return getNamea64(snippet);
+#endif
    return "<unknown snippet>"; // TODO: Return a more informative name
    }
 
@@ -2938,6 +2942,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Snippet * snippet)
    if (TR::Compiler->target.cpu.isZ())
       {
       printz(pOutFile, (TR::Snippet *)snippet);
+      return;
+      }
+#endif
+#if defined(TR_TARGET_ARM64)
+   if (TR::Compiler->target.cpu.isARM64())
+      {
+      printa64(pOutFile, snippet);
       return;
       }
 #endif
@@ -4998,22 +5009,11 @@ void TR_Debug::setupDebugger(void *startaddr, void *endaddr, bool before)
                printf("\n methodStartAddress = %p",startaddr);
                printf("\n methodEndAddress = %p\n",endaddr);
                fprintf(cf, "break *%p\n",startaddr);
-
-               // Insert breakpoints requested by codegen
-               //
-               for (auto bpIterator = _comp->cg()->getBreakPointList().begin();
-                    bpIterator != _comp->cg()->getBreakPointList().end();
-                    ++bpIterator)
-                  {
-                  fprintf(cf, "break *%p\n",*bpIterator);
-                  }
-
                fprintf(cf, "disassemble %p %p\n",startaddr,endaddr);
                }
 
             fprintf(cf, "finish\n");
             fprintf(cf, "shell rm %s\n",cfname);
-            fprintf(cf, "");
             fclose(cf);
 
             Argv[1] = "-x";
@@ -5079,15 +5079,6 @@ void TR_Debug::setupDebugger(void *startaddr, void *endaddr, bool before)
                {
                printf("\n methodStartAddress = %p",startaddr);
                printf("\n methodEndAddress = %p\n",endaddr);
-
-               // Insert breakpoints requested by codegen
-               //
-               for (auto bpIterator = _comp->cg()->getBreakPointList().begin();
-                    bpIterator != _comp->cg()->getBreakPointList().end(); ++bpIterator)
-                  {
-                  fprintf(cf, "stopi at 0x%p\n",*bpIterator);
-                  }
-
                fprintf(cf, "stopi at 0x%p\n" ,startaddr);
                }
 

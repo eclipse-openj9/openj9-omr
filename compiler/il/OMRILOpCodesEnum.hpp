@@ -656,6 +656,7 @@
    checkcast,// checkcast
    checkcastAndNULLCHK,// checkcast and NULL check the underlying object reference
    New,      // new - child is class
+   newvalue, //allocate and initialize - children provide field values
    newarray, // new array of primitives
    anewarray,// new array of objects
    variableNew,// new - child is class, type not known at compile time
@@ -823,8 +824,6 @@
    datan2,     // arctan2 of double, returning double
 
    dlog,       // log of double, returning double
-
-   imulover,   // (int) overflow predicate of int multiplication
 
    dfloor,     // floor of double, returning double
    ffloor,     // floor of float, returning float

@@ -27,9 +27,9 @@
 #include "codegen/Linkage.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/TreeEvaluator.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
 #include "infra/Bit.hpp"
 
 /**
@@ -572,47 +572,229 @@ OMR::ARM64::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return trgReg;
    }
 
+/**
+ * Helper template function that find rotate count and ones count for value.
+ * @param[in] value : immediate value element
+ * @param[in] elementSize : element size
+ * @param[out] rotateCount : right rotate count
+ * @param[out] onesCount : number of consective ones in value
+ * @return true if value has contiguous ones (as elementSize-bit integer)
+ */
+template<typename T, typename U> inline
+bool findLogicImmediateBitPattern(T value, int elementSize, int32_t &rotateCount, int32_t &onesCount)
+   {
+   U signExtendedValue = value;
+   const size_t size = sizeof(U) * 8;
+   // if elementSize is 2 or 4, ones in value are always contiguous.
+   if (elementSize > 4)
+      {
+      if (elementSize < size)
+         {
+         signExtendedValue = (((U)value) << (size - elementSize)) >> (size - elementSize);
+         }
+      if (!contiguousBits(signExtendedValue))
+         {
+         return false;
+         }
+      }
+
+   int32_t tz = trailingZeroes(value);
+   onesCount = populationCount(value);
+   // if value has trailing zeroes, right rorate count is elementSize - (trailing zeroes count).
+   // if not, right rotate count is leading ones of value (viewed as elementSize-bit integer),
+   // which is obtained by subtracting trailing ones count from total ones count.
+   rotateCount = (tz != 0) ? (elementSize - tz) : (onesCount - trailingZeroes(~value));
+
+   return true;
+   }
+
+/**
+ * Helper function for encoding immediate value of logic instructions.
+ * @param[in] value : immediate value to encode
+ * @param[in] is64Bit : true if 64bit instruction
+ * @param[out] n : N bit
+ * @param[out] immEncoded : immr and imms encoded in 12bit field
+ * @return true if value can be encoded as immediate operand
+ */
+static inline bool
+logicImmediateHelper(uint64_t value, bool is64Bit, bool &n, uint32_t &immEncoded)
+   {
+   uint64_t mask = ~(uint64_t)0;
+   int elementSize = is64Bit ? 64 : 32;
+   // leading ones in imms
+   uint32_t imms = 1 << 7;
+
+   if (!is64Bit)
+      {
+      mask >>= elementSize;
+      imms >>= 1;
+      }
+   // all zeroes or all ones are not allowed
+   if ((value == 0) || (value == mask))
+      {
+      return false;
+      }
+
+   do
+      {
+      uint32_t highBits = value >> (elementSize /2);
+      uint32_t lowBits = value & (mask >> (elementSize / 2));
+      if (highBits != lowBits)
+         {
+         // found element size
+         break;
+         }
+      imms = imms | (imms >> 1);
+      value = lowBits;
+      mask >>= elementSize / 2;
+      elementSize /= 2;
+
+      } while (elementSize > 2);
+
+   int32_t rotateCount;
+   int32_t onesCount;
+   if (is64Bit)
+      {
+      if (!findLogicImmediateBitPattern<uint64_t, int64_t>(value, elementSize, rotateCount, onesCount))
+         {
+         return false;
+         }
+      }
+   else
+      {
+      if (!findLogicImmediateBitPattern<uint32_t, int32_t>((uint32_t)value, elementSize, rotateCount, onesCount))
+         {
+         return false;
+         }
+      }
+   TR_ASSERT((onesCount > 0) && (onesCount < elementSize), "Failed to encode imms.");
+   TR_ASSERT((rotateCount >= 0) && (rotateCount < elementSize), "Failed to encode immr.");
+
+   imms |= onesCount - 1;
+   imms &= (1 << 6) - 1;
+   immEncoded = (rotateCount << 6) | imms;
+   n = elementSize == 64;
+
+   return true;
+   }
+
+/**
+ * Helper function that handles logic binary operations.
+ * @param[in] node : calling node
+ * @param[in] regOp : the target AArch64 instruction opcode
+ * @param[in] regOpImm : the matching AArch64 immediate instruction opcode
+ * regOpImm == regOp indicates that the passed opcode has no immediate form.
+ * @param[in] is64Bit : true if regOp and regOpImm are 64bit opcode.
+ * @param[in] cg : codegenerator
+ * @return target register
+ */
+static inline TR::Register *
+logicBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstOpCode::Mnemonic regOpImm, bool is64Bit, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *src2Reg = NULL;
+   TR::Register *trgReg = NULL;
+   int64_t value = 0;
+
+   if (1 == firstChild->getReferenceCount())
+      {
+      trgReg = src1Reg;
+      }
+   else if (1 == secondChild->getReferenceCount() && secondChild->getRegister() != NULL)
+      {
+      trgReg = secondChild->getRegister();
+      }
+   else
+      {
+      trgReg = cg->allocateRegister();
+      }
+
+   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+      {
+      if (is64Bit)
+         {
+         value = secondChild->getLongInt();
+         }
+      else
+         {
+         value = secondChild->getInt();
+         }
+      bool N;
+      uint32_t immEncoded;
+      if (logicImmediateHelper(is64Bit ? value : (uint32_t)value, is64Bit, N, immEncoded))
+         {
+         generateLogicalImmInstruction(cg, regOpImm, node, trgReg, src1Reg, N, immEncoded);
+         }
+      else
+         {
+         src2Reg = cg->allocateRegister();
+         if(is64Bit)
+            {
+            loadConstant64(cg, node, value, src2Reg);
+            }
+         else
+            {
+            loadConstant32(cg, node, value, src2Reg);
+            }
+         generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
+         cg->stopUsingRegister(src2Reg);
+         }
+      }
+   else
+      {
+      src2Reg = cg->evaluate(secondChild);
+      generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
+      }
+
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::iandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// boolean and of 2 integers
-	return genericBinaryEvaluator(node, TR::InstOpCode::andw, TR::InstOpCode::andimmw, false, cg);
-	}
+   {
+   // boolean and of 2 integers
+   return logicBinaryEvaluator(node, TR::InstOpCode::andw, TR::InstOpCode::andimmw, false, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// boolean and of 2 integers
-	return genericBinaryEvaluator(node, TR::InstOpCode::andx, TR::InstOpCode::andimmx, true, cg);
-	}
+   {
+   // boolean and of 2 integers
+   return logicBinaryEvaluator(node, TR::InstOpCode::andx, TR::InstOpCode::andimmx, true, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::iorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// boolean or of 2 integers
-	return genericBinaryEvaluator(node, TR::InstOpCode::orrw, TR::InstOpCode::orrimmw, false, cg);
-	}
+   {
+   // boolean or of 2 integers
+   return logicBinaryEvaluator(node, TR::InstOpCode::orrw, TR::InstOpCode::orrimmw, false, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// boolean or of 2 integers
-	return genericBinaryEvaluator(node, TR::InstOpCode::orrx, TR::InstOpCode::orrimmx, true, cg);
-	}
+   {
+   // boolean or of 2 integers
+   return logicBinaryEvaluator(node, TR::InstOpCode::orrx, TR::InstOpCode::orrimmx, true, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ixorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// boolean xor of 2 integers
-	return genericBinaryEvaluator(node, TR::InstOpCode::eorw, TR::InstOpCode::eorimmw, false, cg);
-	}
+   {
+   // boolean xor of 2 integers
+   return logicBinaryEvaluator(node, TR::InstOpCode::eorw, TR::InstOpCode::eorimmw, false, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// boolean xor of 2 integers
-	return genericBinaryEvaluator(node, TR::InstOpCode::eorx, TR::InstOpCode::eorimmx, true, cg);
-	}
+   {
+   // boolean xor of 2 integers
+   return logicBinaryEvaluator(node, TR::InstOpCode::eorx, TR::InstOpCode::eorimmx, true, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::aladdEvaluator(TR::Node *node, TR::CodeGenerator *cg)

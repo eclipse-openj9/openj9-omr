@@ -33,7 +33,7 @@ set(OMR_EXAMPLE ON CACHE BOOL "Enable the Example application")
 ###
 
 set(OMR_TOOLS ON CACHE BOOL "Enable the native build tools")
-set(OMR_DDR ON CACHE BOOL "Enable DDR")
+set(OMR_DDR OFF CACHE BOOL "Enable DDR")
 set(OMR_RAS_TDF_TRACE ON CACHE BOOL "Enable trace engine")
 set(OMR_FVTEST ON CACHE BOOL "Enable the FV Testing.")
 
@@ -117,7 +117,6 @@ set(OMR_CORE_GLUE_TARGET "NOTFOUND" CACHE STRING "The core glue target, must be 
 set(OMR_GC_ALLOCATION_TAX ON CACHE BOOL "TODO: Document")
 set(OMR_GC_API OFF CACHE BOOL "Enable a high-level GC API")
 set(OMR_GC_API_TEST OFF CACHE BOOL "Enable testing for the OMR GC API")
-set(OMR_GC_ARRAYLETS ON CACHE INTERNAL "Enable Arraylets in OMR. Deprecated: flag is always on in OMR")
 set(OMR_GC_BATCH_CLEAR_TLH ON CACHE BOOL "TODO: Document")
 set(OMR_GC_COMBINATION_SPEC ON CACHE BOOL "TODO: Document")
 set(OMR_GC_DEBUG_ASSERTS ON CACHE BOOL "TODO: Document")
@@ -139,10 +138,10 @@ set(OMR_GC_MODRON_SCAVENGER OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_DOUBLE_MAP_ARRAYLETS OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_CONCURRENT_SCAVENGER OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_CONCURRENT_SWEEP OFF CACHE BOOL "TODO: Document")
-set(OMR_GC_HYBRID_ARRAYLETS ON CACHE INTERNAL "Enable Hybrid Arraylets in OMR. Requires OMR_GC_ARRAYLETS. Deprecated: flag is always on in OMR")
 set(OMR_GC_IDLE_HEAP_MANAGER OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_OBJECT_ALLOCATION_NOTIFY OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_REALTIME OFF CACHE BOOL "TODO: Document")
+set(OMR_GC_SCAN_OBJECT_GLUE OFF CACHE BOOL "Implement ScanObject in glue code, not OMR core")
 set(OMR_GC_SEGREGATED_HEAP OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_VLHGC OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD OFF CACHE BOOL "Enable VLHGC concurrent copy forward")
@@ -167,6 +166,7 @@ if(OMR_THR_YIELD_ALG)
 endif()
 #TODO set to disabled. Stuff fails to compile when its on
 set(OMR_THR_TRACING OFF CACHE BOOL "TODO: Document")
+set(OMR_THR_MCS_LOCKS OFF CACHE BOOL "Enable the usage of the MCS lock in the OMR thread monitor.")
 
 #TODO this should maybe be a OMRTHREAD_LIB string variable?
 set(OMRTHREAD_WIN32_DEFAULT OFF)
@@ -201,7 +201,6 @@ set(OMR_NOTIFY_POLICY_CONTROL OFF CACHE BOOL "TODO: Document")
 
 set(OMR_ENV_GCC OFF CACHE BOOL "TODO: Document")
 
-
-set(OMR_OPT_CUDA OFF CACHE BOOL "TODO: Document")
+set(OMR_OPT_CUDA ${CUDA_FOUND} CACHE BOOL "Enable CUDA support in OMR")
 
 set(OMR_SANITIZE OFF CACHE STRING "Sanitizer selection. Only has an effect on GNU or Clang")

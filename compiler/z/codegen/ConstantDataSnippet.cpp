@@ -47,15 +47,15 @@
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Link.hpp"
 #include "infra/List.hpp"
@@ -143,11 +143,16 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          break;
 
       case TR_DataAddress:
-         AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
-         cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode()->getSymbolReference(),
-                                  getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
-                                                                                (TR_ExternalRelocationTargetKind) reloType, cg()),
-                                  __FILE__,__LINE__, getNode());
+         {
+         if (cg()->needRelocationsForStatics())
+            {
+            AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode()->getSymbolReference(),
+                                     getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
+                                                                                   (TR_ExternalRelocationTargetKind) reloType, cg()),
+                                     __FILE__,__LINE__, getNode());
+            }
+         }
          break;
 
       case TR_ArrayCopyHelper:
@@ -540,10 +545,13 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
          }
 
       AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
-      cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
+      if (cg()->needClassAndMethodPointerRelocations())
+         {
+         cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
                callNode  ? (uint8_t *)(intptr_t)callNode->getInlinedSiteIndex() : (uint8_t *)-1,
                      (TR_ExternalRelocationTargetKind) reloType, cg()),
                      __FILE__, __LINE__, callNode);
+         }
 
       cursor += TR::Compiler->om.sizeofReferenceAddress();
 
@@ -601,10 +609,13 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
          TR_ASSERT(0,"JNI relocation not supported.");
          }
 
-      cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
+      if (cg()->needClassAndMethodPointerRelocations())
+         {
+         cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
                callNode  ? (uint8_t *)(intptr_t)callNode->getInlinedSiteIndex() : (uint8_t *)-1,
                      (TR_ExternalRelocationTargetKind) reloType, cg()),
                      __FILE__, __LINE__, callNode);
+         }
 
       cursor += TR::Compiler->om.sizeofReferenceAddress();
 #endif

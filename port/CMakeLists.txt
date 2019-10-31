@@ -44,6 +44,13 @@ target_include_directories(omrport_obj
 		$<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
+if (OMR_OPT_CUDA)
+	target_include_directories(omrport_obj
+		PRIVATE
+			${CUDA_INCLUDE_DIRS}
+	)
+endif()
+
 target_compile_definitions(omrport_obj
 	PUBLIC
 		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
@@ -322,6 +329,16 @@ if(OMR_HOST_OS STREQUAL "linux")
 		target_include_directories(omrport_obj PRIVATE linuxs390)
 	endif()
 
+	if(OMR_ARCH_RISCV)
+		if(OMR_ENV_DATA64)
+			list(APPEND VPATH linuxriscv64)
+			target_include_directories(omrport_obj PRIVATE linuxriscv64)
+		else()
+			list(APPEND VPATH linuxriscv32)
+			target_include_directories(omrport_obj PRIVATE linuxriscv32)
+		endif()
+	endif()
+
 	list(APPEND VPATH linux)
 	target_include_directories(omrport_obj PRIVATE linux)
 endif()
@@ -381,7 +398,6 @@ omr_add_exports(omrport_obj
 	omrport_init_library
 	omrport_isCompatible
 	omrport_startup_library
-
 )
 
 target_enable_ddr(omrport_obj)
@@ -390,13 +406,19 @@ ddr_add_headers(omrport_obj
 )
 ddr_set_add_targets(omrddr omrport_obj)
 
-add_library(omrport STATIC
-	$<TARGET_OBJECTS:omrport_obj>
-)
+
 
 ###
 ### omrport static lib
 ###
+
+add_library(omrport STATIC
+	$<TARGET_OBJECTS:omrport_obj>
+)
+
+# Duplicate the export list onto the static library version
+get_target_property(port_exports omrport_obj EXPORTED_SYMBOLS)
+omr_add_exports(omrport ${port_exports})
 
 target_link_libraries(omrport
 	PUBLIC

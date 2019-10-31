@@ -25,7 +25,10 @@
 #include "codegen/ARM64ConditionCode.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/InstructionDelegate.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/Relocation.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 uint8_t *OMR::ARM64::Instruction::generateBinaryEncoding()
    {
@@ -64,16 +67,68 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
    if (getOpCodeValue() == TR::InstOpCode::bl)
       {
-      intptrj_t destination = getAddrImmediate();
+      TR::SymbolReference *symRef = getSymbolReference();
+      TR::LabelSymbol *label = symRef->getSymbol()->getLabelSymbol();
 
-      if (!cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
+      TR::ResolvedMethodSymbol *sym = symRef->getSymbol()->getResolvedMethodSymbol();
+
+      if (cg()->comp()->isRecursiveMethodTarget(sym))
          {
-         intptrj_t distance = destination - (intptrj_t)cursor;
+         intptrj_t jitToJitStart = cg()->getLinkage()->entryPointFromCompiledMethod();
+
+         TR_ASSERT_FATAL(jitToJitStart, "Unknown compiled method entry point.  Entry point should be available by now.");
+
+         TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(jitToJitStart, (intptrj_t)cursor),
+                         "Target address is out of range");
+
+         intptrj_t distance = jitToJitStart - (intptrj_t)cursor;
          insertImmediateField(toARM64Cursor(cursor), distance);
+         setAddrImmediate(jitToJitStart);
+         }
+      else if (label != NULL)
+         {
+         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
+         TR::InstructionDelegate::encodeBranchToLabel(cg(), this, cursor);
          }
       else
          {
-         TR_ASSERT(false, "Branch destination is too far away. Not implemented yet.");
+         TR::MethodSymbol *method = symRef->getSymbol()->getMethodSymbol();
+         if (method && method->isHelper())
+            {
+            intptrj_t destination = (intptrj_t)symRef->getMethodAddress();
+
+            if (cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
+               {
+               destination = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
+
+               TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptrj_t)cursor),
+                               "Target address is out of range");
+               }
+
+            intptrj_t distance = destination - (intptrj_t)cursor;
+            insertImmediateField(toARM64Cursor(cursor), distance);
+            setAddrImmediate(destination);
+
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
+                                           cursor,
+                                           (uint8_t *)symRef,
+                                           TR_HelperAddress, cg()),
+                                        __FILE__, __LINE__, getNode());
+            }
+         else
+            {
+            intptrj_t destination = getAddrImmediate();
+
+            if (cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
+               {
+               destination = (intptrj_t)cg()->fe()->methodTrampolineLookup(cg()->comp(), symRef, (void *)cursor);
+               TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptrj_t)cursor),
+                               "Call target address is out of range");
+               }
+
+            intptrj_t distance = destination - (intptrj_t)cursor;
+            insertImmediateField(toARM64Cursor(cursor), distance);
+            }
          }
       }
    else
@@ -217,10 +272,33 @@ uint8_t *TR::ARM64AdminInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    TR::InstOpCode::Mnemonic op = getOpCodeValue();
+   int32_t i;
 
-   if (op != OMR::InstOpCode::proc && op != OMR::InstOpCode::fence && op != OMR::InstOpCode::retn)
+   if (op == OMR::InstOpCode::fence)
       {
-      TR_ASSERT(false, "Unsupported opcode in AdminInstruction.");
+      TR::Node *fenceNode = getFenceNode();
+      uint32_t rtype = fenceNode->getRelocationType();
+      if (rtype == TR_AbsoluteAddress)
+         {
+         for (i = 0; i < fenceNode->getNumRelocations(); i++)
+            {
+            *(uint8_t **)(fenceNode->getRelocationDestination(i)) = instructionStart;
+            }
+         }
+      else if (rtype == TR_EntryRelative16Bit)
+         {
+         for (i = 0; i < fenceNode->getNumRelocations(); i++)
+            {
+            *(uint16_t *)(fenceNode->getRelocationDestination(i)) = (uint16_t)cg()->getCodeLength();
+            }
+         }
+      else // TR_EntryRelative32Bit
+         {
+         for (i = 0; i < fenceNode->getNumRelocations(); i++)
+            {
+            *(uint32_t *)(fenceNode->getRelocationDestination(i)) = cg()->getCodeLength();
+            }
+         }
       }
 
    setBinaryLength(0);
@@ -295,6 +373,7 @@ uint8_t *TR::ARM64Trg1Src1ImmInstruction::generateBinaryEncoding()
    insertTargetRegister(toARM64Cursor(cursor));
    insertSource1Register(toARM64Cursor(cursor));
    insertImmediateField(toARM64Cursor(cursor));
+   insertNbit(toARM64Cursor(cursor));
    cursor += ARM64_INSTRUCTION_LENGTH;
    setBinaryLength(ARM64_INSTRUCTION_LENGTH);
    setBinaryEncoding(instructionStart);

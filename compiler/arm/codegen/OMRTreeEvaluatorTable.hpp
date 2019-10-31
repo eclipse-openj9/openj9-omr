@@ -723,6 +723,7 @@
    TR::TreeEvaluator::checkcastEvaluator,     // TR::checkcast
    TR::TreeEvaluator::checkcastAndNULLCHKEvaluator,     // TR::checkcastAndNULLCHK
    TR::TreeEvaluator::newObjectEvaluator,   // TR::New
+   TR::TreeEvaluator::unImpOpEvaluator,    // TR::newvalue (should be lowered before evaluation)
    TR::TreeEvaluator::newArrayEvaluator,    // TR::newarray
    TR::TreeEvaluator::anewArrayEvaluator,   // TR::anewarray
    TR::TreeEvaluator::newObjectEvaluator,   // TR::variableNew
@@ -732,6 +733,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::checkcast
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::checkcastAndNULLCHK
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::New
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::newvalue (should be lowered before evaluation)
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::newarray
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::anewarray
    TR::TreeEvaluator::unImpOpEvaluator,     // TR::variableNew
@@ -898,7 +900,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,         // TR::dlog
 
 
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::imulover
    TR::TreeEvaluator::unImpOpEvaluator,          // TR::dfloor
    TR::TreeEvaluator::unImpOpEvaluator,          // TR::ffloor
    TR::TreeEvaluator::unImpOpEvaluator,         // TR::dceil

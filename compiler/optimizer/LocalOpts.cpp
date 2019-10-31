@@ -57,17 +57,17 @@
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/NodePool.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "ilgen/IlGenRequest.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
 #include "infra/Array.hpp"
@@ -6486,8 +6486,8 @@ void TR_BlockSplitter::dumpBlockMapper(TR_LinkHeadAndTail<BlockMapper>* bMap)
          else
             traceMsg(comp(), " %d", itr->_from->getNumber());
          }
-      }
       traceMsg(comp(), "\n");
+      }
    }
 
 bool TR_BlockSplitter::containCycle(TR::Block *blk, TR_LinkHeadAndTail<BlockMapper>* bMap)
@@ -8206,7 +8206,7 @@ TR_ColdBlockOutlining::reorderColdBlocks()
 
      // First, check if a predeccessor of this block is genAsmFlow, this block is not it's predeccessor' fall through, continue if yes
      TR::CFGEdgeList & predecessors = ((TR::CFGNode *)currentBlock)->getPredecessors();
-     bool foundAsmGenFlowPredBlock = false;
+
      for (auto predEdge = predecessors.begin(); predEdge != predecessors.end(); ++predEdge)
        {
        TR::Block *predBlock = (*predEdge)->getFrom()->asBlock();
@@ -8217,10 +8217,6 @@ TR_ColdBlockOutlining::reorderColdBlocks()
            currentBlock->getEntry()->getNode()->getLabel() == NULL)
           continue;
        }
-     if (foundAsmGenFlowPredBlock)
-        {
-        continue;
-        }
 
      if (!startBlock)
          startBlock = currentBlock;

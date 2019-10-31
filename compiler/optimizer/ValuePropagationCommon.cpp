@@ -49,16 +49,16 @@
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
@@ -3567,13 +3567,22 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
    if (method->getRecognizedMethod() == TR::java_lang_J9VMInternals_primitiveClone)
       objNode = callNode->getLastChild();
 
+   TR_OpaqueClassBlock *j9arrayClass = cloneInfo->_clazz;
+   TR_OpaqueClassBlock *j9class = comp()->fe()->getComponentClassFromArrayClass(j9arrayClass);
+   bool isPrimitiveClass = TR::Compiler->cls.isPrimitiveClass(comp(), j9class);
+
+   if ((isPrimitiveClass && !cg()->getSupportsPrimitiveArrayCopy())
+       || (!isPrimitiveClass && !cg()->getSupportsReferenceArrayCopy()))
+      {
+      if (trace())
+         traceMsg(comp(), "\nNot transforming array clone call [%p] because %s array copy is not supported\n",
+                  callNode, isPrimitiveClass ? "primitive" : "reference");
+
+      return;
+      }
+
    if (!performTransformation(comp(), "%sInlining array clone call [%p] as new array and arraycopy\n", OPT_DETAILS, callNode))
       return;
-
-   TR_OpaqueClassBlock *j9arrayClass = cloneInfo->_clazz;
-   bool isFixedClass = cloneInfo->_isFixed;
-
-   TR_OpaqueClassBlock *j9class = comp()->fe()->getComponentClassFromArrayClass(j9arrayClass);
 
    TR::DebugCounter::prependDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "inlineClone.location/array/(%s)", comp()->signature()), callTree);
    int32_t classNameLength;
@@ -3594,7 +3603,7 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
 
    callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::treetop, 1, lenNode)));
 
-   if (TR::Compiler->cls.isPrimitiveClass(comp(), j9class))
+   if (isPrimitiveClass)
       {
       TR::Node *typeConst = TR::Node::iconst(callNode, comp()->fe()->getNewArrayTypeFromClass(j9arrayClass));
       static char *disableSkipZeroInitInVP = feGetEnv("TR_disableSkipZeroInitInVP");
@@ -3613,6 +3622,7 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
    else
       {
       TR::Node *classNode;
+      bool isFixedClass = cloneInfo->_isFixed;
       if (isFixedClass)
          {
          classNode = TR::Node::createWithSymRef(callNode, TR::loadaddr, 0, comp()->getSymRefTab()->findOrCreateClassSymbol(callNode->getSymbolReference()->getOwningMethodSymbol(comp()), 0, j9class));
@@ -3642,7 +3652,7 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
       TR::Node::create(callNode, TR::aladd, 2, newArray, TR::Node::lconst(newArray, TR::Compiler->om.contiguousArrayHeaderSizeInBytes())) :
       TR::Node::create(callNode, TR::aiadd, 2, newArray, TR::Node::iconst(newArray, TR::Compiler->om.contiguousArrayHeaderSizeInBytes()));
    TR::Node *arraycopy = NULL;
-   if (TR::Compiler->cls.isPrimitiveClass(comp(), j9class))
+   if (isPrimitiveClass)
       arraycopy = TR::Node::createArraycopy(srcStart, destStart, lengthInBytes);
    else
       arraycopy = TR::Node::createArraycopy(objNode, newArray, srcStart, destStart, lengthInBytes);
@@ -3651,7 +3661,7 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
    arraycopy->getByteCodeInfo().setDoNotProfile(1);
    arraycopy->setNoArrayStoreCheckArrayCopy(true);
    arraycopy->setForwardArrayCopy(true);
-   if (TR::Compiler->cls.isPrimitiveClass(comp(), j9class))
+   if (isPrimitiveClass)
       {
       switch (elementSize)
          {

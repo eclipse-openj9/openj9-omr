@@ -70,22 +70,22 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/NodePool.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/RegisterMappedSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/RegisterMappedSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
@@ -109,6 +109,7 @@
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "stdarg.h"
+#include "OMR/Bytes.hpp"
 
 namespace TR { class Optimizer; }
 namespace TR { class RegisterDependencyConditions; }
@@ -219,7 +220,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _relocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
      _externalRelocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
      _staticRelocationList(_compilation->allocator()),
-     _breakPointList(getTypedAllocator<uint8_t*>(TR::comp()->allocator())),
      _preJitMethodEntrySize(0),
      _jitMethodEntryPaddingSize(0),
      _lastInstructionBeforeCurrentEvaluationTreeTop(NULL),
@@ -1274,7 +1274,6 @@ OMR::CodeGenerator::removeUnusedLocals()
    self()->comp()->getMethodSymbol()->removeUnusedLocals();
    }
 
-
 bool OMR::CodeGenerator::areAssignableGPRsScarce()
    {
    int32_t threshold = 13;
@@ -1769,7 +1768,7 @@ OMR::CodeGenerator::convertMultiplyToShift(TR::Node * node)
       }
    else
       {
-      multiplier = secondChild->getInt();
+      multiplier = secondChild->get32bitIntegralValue();
       if (multiplier == 0)
          return false;  // Can't handle this case
       if (multiplier < 0)
@@ -1795,6 +1794,10 @@ OMR::CodeGenerator::convertMultiplyToShift(TR::Node * node)
 
    if (node->getOpCodeValue() == TR::imul)
       TR::Node::recreate(node, TR::ishl);
+   else if (node->getOpCodeValue() == TR::smul)
+      TR::Node::recreate(node, TR::sshl);
+   else if (node->getOpCodeValue() == TR::bmul)
+      TR::Node::recreate(node, TR::bshl);
    else
       {
       TR::Node::recreate(node, TR::lshl);
@@ -2159,24 +2162,56 @@ loop:
 uint8_t *
 OMR::CodeGenerator::alignBinaryBufferCursor()
    {
-   uintptr_t boundary = self()->comp()->getOptions()->getJitMethodEntryAlignmentBoundary(self());
+   uint32_t boundary = self()->getJitMethodEntryAlignmentBoundary();
 
-   /* Align cursor to boundary */
-   if (boundary && (boundary & boundary - 1) == 0)
+   TR_ASSERT_FATAL(boundary > 0, "JIT method entry alignment boundary (%d) definition is violated", boundary);
+
+   // Align cursor to boundary as long as it meets the threshold
+   if (self()->supportsJitMethodEntryAlignment() && boundary > 1)
       {
-      uintptr_t round = boundary - 1;
-      uintptr_t offset = self()->getPreJitMethodEntrySize();
+      uint32_t offset = self()->getPreJitMethodEntrySize();
 
-      _binaryBufferCursor += offset;
-      _binaryBufferCursor = (uint8_t *)(((uintptr_t)_binaryBufferCursor + round) & ~round);
-      _binaryBufferCursor -= offset;
-      self()->setJitMethodEntryPaddingSize(_binaryBufferCursor - _binaryBufferStart);
-      memset(_binaryBufferStart, 0, self()->getJitMethodEntryPaddingSize());
+      uint8_t* alignedBinaryBufferCursor = _binaryBufferCursor;
+      alignedBinaryBufferCursor += offset;
+      alignedBinaryBufferCursor = reinterpret_cast<uint8_t*>(OMR::align(reinterpret_cast<size_t>(alignedBinaryBufferCursor), boundary));
+
+      TR_ASSERT_FATAL(OMR::aligned(reinterpret_cast<size_t>(alignedBinaryBufferCursor), boundary),
+         "alignedBinaryBufferCursor [%p] is not aligned to the specified boundary (%d)", alignedBinaryBufferCursor, boundary);
+
+      alignedBinaryBufferCursor -= offset;
+
+      uint32_t threshold = self()->getJitMethodEntryAlignmentThreshold();
+
+      TR_ASSERT_FATAL(threshold <= boundary, "JIT method entry alignment threshold (%d) definition is violated as it is larger than the boundary (%d)", threshold, boundary);
+
+      if (alignedBinaryBufferCursor - _binaryBufferCursor <= threshold)
+         {
+         _binaryBufferCursor = alignedBinaryBufferCursor;
+         self()->setJitMethodEntryPaddingSize(_binaryBufferCursor - _binaryBufferStart);
+         memset(_binaryBufferStart, 0, self()->getJitMethodEntryPaddingSize());
+         }
       }
 
    return _binaryBufferCursor;
    }
 
+bool
+OMR::CodeGenerator::supportsJitMethodEntryAlignment()
+   {
+   return true;
+   }
+
+uint32_t
+OMR::CodeGenerator::getJitMethodEntryAlignmentBoundary()
+   {
+   return 1;
+   }
+
+uint32_t
+OMR::CodeGenerator::getJitMethodEntryAlignmentThreshold()
+   {
+   return self()->getJitMethodEntryAlignmentBoundary();
+   }
 
 int32_t
 OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnippetStart)

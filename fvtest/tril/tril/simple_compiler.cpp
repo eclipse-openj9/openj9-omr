@@ -26,7 +26,7 @@
 #include "il/ILOpCodes.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/CompilationTypes.hpp"
-#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "control/CompileMethod.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
@@ -49,7 +49,7 @@ int32_t Tril::SimpleCompiler::compileWithVerifier(TR::IlVerifier* verifier) {
     // into a list of `TR::IlType`
     auto argTypes = methodInfo.getArgTypes();
     auto argIlTypes = std::vector<TR::IlType*>(argTypes.size());
-    auto it_argIlTypes = argIlTypes.begin(); 
+    auto it_argIlTypes = argIlTypes.begin();
     for (auto it = argTypes.begin(); it != argTypes.end(); it++) {
           *it_argIlTypes++ = types.PrimitiveType(*it);
     }
@@ -63,8 +63,8 @@ int32_t Tril::SimpleCompiler::compileWithVerifier(TR::IlVerifier* verifier) {
                                       &ilgenerator);
     TR::IlGeneratorMethodDetails methodDetails(&resolvedMethod);
 
-    // If a verifier is provided, set one up. 
-    if (NULL != verifier) 
+    // If a verifier is provided, set one up.
+    if (NULL != verifier)
        {
        methodDetails.setIlVerifier(verifier);
        }

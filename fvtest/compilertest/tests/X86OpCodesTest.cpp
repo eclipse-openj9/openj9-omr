@@ -22,7 +22,6 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
-#include "compile/Method.hpp"
 #include "env/jittypes.h"
 #include "gtest/gtest.h"
 
@@ -1491,7 +1490,7 @@ X86OpCodesTest::invokeUnaryTests()
       {
       OMR_CT_EXPECT_EQ(_fAbs, abs(floatDataArray[i]), _fAbs(floatDataArray[i]));
       sprintf(resolvedMethodName, "fAbsConst%d", i + 1);
-      compileOpCodeMethod(fUnaryCons, 
+      compileOpCodeMethod(fUnaryCons,
             _numberOfUnaryArgs, TR::fabs, resolvedMethodName, _argTypesUnaryFloat, TR::Float, rc, 2, 1, &floatDataArray[i]);
       OMR_CT_EXPECT_EQ(fUnaryCons, abs(floatDataArray[i]), fUnaryCons(FLOAT_PLACEHOLDER_1));
       }
@@ -1502,7 +1501,7 @@ X86OpCodesTest::invokeUnaryTests()
       {
       OMR_CT_EXPECT_EQ(_dAbs, abs(doubleDataArray[i]), _dAbs(doubleDataArray[i]));
       sprintf(resolvedMethodName, "dAbsConst%d", i + 1);
-      compileOpCodeMethod(dUnaryCons, 
+      compileOpCodeMethod(dUnaryCons,
             _numberOfUnaryArgs, TR::dabs, resolvedMethodName, _argTypesUnaryDouble, TR::Double, rc, 2, 1, &doubleDataArray[i]);
       OMR_CT_EXPECT_EQ(dUnaryCons, abs(doubleDataArray[i]), dUnaryCons(DOUBLE_PLACEHOLDER_1));
       }
@@ -1520,7 +1519,7 @@ X86OpCodesTest::invokeUnaryTests()
       result.f = _fSqrt(floatDataArray[i]);
       OMR_CT_EXPECT_EQ(_fSqrt, gold.ui32, result.ui32);
       sprintf(resolvedMethodName, "fSqrtConst%d", i + 1);
-      compileOpCodeMethod(fUnaryCons, 
+      compileOpCodeMethod(fUnaryCons,
             _numberOfUnaryArgs, TR::fsqrt, resolvedMethodName, _argTypesUnaryFloat, TR::Float, rc, 2, 1, &floatDataArray[i]);
       gold.f = sqrt(floatDataArray[i]);
       result.f = fUnaryCons(FLOAT_PLACEHOLDER_1);
@@ -1540,7 +1539,7 @@ X86OpCodesTest::invokeUnaryTests()
       result.d = _dSqrt(doubleDataArray[i]);
       OMR_CT_EXPECT_EQ(_dSqrt, gold.ui64, result.ui64);
       sprintf(resolvedMethodName, "dSqrtConst%d", i + 1);
-      compileOpCodeMethod(dUnaryCons, 
+      compileOpCodeMethod(dUnaryCons,
             _numberOfUnaryArgs, TR::dsqrt, resolvedMethodName, _argTypesUnaryDouble, TR::Double, rc, 2, 1, &doubleDataArray[i]);
       gold.d = sqrt(doubleDataArray[i]);
       result.d = dUnaryCons(DOUBLE_PLACEHOLDER_1);

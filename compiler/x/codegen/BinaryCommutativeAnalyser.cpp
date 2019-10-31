@@ -1894,7 +1894,7 @@ void TR_X86BinaryCommutativeAnalyser::longMultiplyAnalyser(TR::Node *root)
       }
    else if (getCopyRegs())
       {
-      // Ah:Al=Al*Bl notation means that Ah:Al contains the result of the MUL instructon between Al and Bl
+      // Ah:Al=Al*Bl notation means that Ah:Al contains the result of the MUL instruction between Al and Bl
       //
       // both high zero: compute                               Ah:Al=Al*Bl            (clobber Ah,Al)
       // Ah zero:        compute Bh=Bh*Al,                     Ah:Al=Al*Bl, Ah=Ah+Bh  (clobber Ah,Al,Bh)

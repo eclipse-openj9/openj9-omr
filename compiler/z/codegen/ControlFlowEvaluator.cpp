@@ -50,20 +50,20 @@
 #endif
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
 #include "infra/BitVector.hpp"
@@ -387,7 +387,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
          generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CR, node, lhsReg, rhsReg, bc, cFlowRegionEnd, false);
 
          generateRRInstruction(cg, TR::InstOpCode::LR, node, lhsReg, rhsReg);
-         
+
          TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
 
          deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
@@ -433,7 +433,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
          generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CGR, node, lhsReg, rhsReg, bc, cFlowRegionEnd, false);
 
          generateRRInstruction(cg, TR::InstOpCode::LGR, node, lhsReg, rhsReg);
-         
+
          TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
 
          deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
@@ -1774,14 +1774,14 @@ OMR::Z::TreeEvaluator::tableEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       case AddressTable32bit:
          {
          if(!node->chkCannotOverflow())
-           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, numBranchTableEntries, TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
+           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int32_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
          generateRSInstruction(cg, TR::InstOpCode::SLL, node, selectorReg, 2);
          }
          break;
       case AddressTable64bitIntLookup:
          {
          if(!node->chkCannotOverflow())
-           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, numBranchTableEntries, TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);
+           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int32_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);
 
          generateRSInstruction(cg, TR::InstOpCode::SLLG, node, selectorReg, selectorReg, 3);
          }
@@ -1790,7 +1790,7 @@ OMR::Z::TreeEvaluator::tableEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       case AddressTable64bitLongLookup:
          {
          if(!node->chkCannotOverflow())
-           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CLG, node, selectorReg, numBranchTableEntries, TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);
+           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CLG, node, selectorReg, static_cast<int64_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);
          generateRSInstruction(cg, TR::InstOpCode::SLLG, node, selectorReg, selectorReg, 3);
          generateRRInstruction(cg, TR::InstOpCode::LGFR, node, selectorReg, selectorReg);
          }
@@ -1798,21 +1798,21 @@ OMR::Z::TreeEvaluator::tableEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       case RelativeTable32bit:
          {
          if(!node->chkCannotOverflow())
-           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, numBranchTableEntries, TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
+           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int32_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
          generateRSInstruction(cg, TR::InstOpCode::SLL, node, selectorReg, 2);
          }
          break;
       case RelativeTable64bitIntLookup:
          {
          if(!node->chkCannotOverflow())
-           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node,selectorReg, numBranchTableEntries, TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
+           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, selectorReg, static_cast<int32_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);       //make sure the case selector is within range of our case constants
          generateRSInstruction(cg, TR::InstOpCode::SLL, node, selectorReg, 2);
          }
          break;
       case RelativeTable64bitLongLookup:
          {
          if(!node->chkCannotOverflow())
-           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CLG, node, selectorReg, numBranchTableEntries, TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);
+           generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CLG, node, selectorReg, static_cast<int64_t>(numBranchTableEntries), TR::InstOpCode::COND_BNL, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), false, false);
          generateRSInstruction(cg, TR::InstOpCode::SLLG, node, selectorReg, selectorReg, 2);
          }
          break;
@@ -3035,7 +3035,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
-         generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
+         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, trueReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
          }
       else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {
@@ -3101,7 +3101,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
-         generateRRFInstruction(cg, mnemonic, node, trueReg, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
+         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, trueReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
          }
       else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
          {

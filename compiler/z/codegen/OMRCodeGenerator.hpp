@@ -63,11 +63,12 @@ namespace OMR { typedef OMR::Z::CodeGenerator CodeGeneratorConnector; }
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
@@ -79,7 +80,6 @@ namespace OMR { typedef OMR::Z::CodeGenerator CodeGeneratorConnector; }
 #include "env/IO.hpp"
 
 
-#include "il/symbol/LabelSymbol.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
 #include "codegen/BackingStore.hpp"
 #include "codegen/Relocation.hpp"
@@ -441,9 +441,6 @@ public:
    virtual bool getSupportsBitPermute();
    int32_t getEstimatedExtentOfLitLoop()  {return _extentOfLitPool;}
 
-   int32_t getPreprologueOffset()               { return _preprologueOffset; }
-   int32_t setPreprologueOffset(int32_t offset) { return _preprologueOffset = offset; }
-
    bool supportsBranchPreload()          {return _cgFlags.testAny(S390CG_enableBranchPreload);}
    void setEnableBranchPreload()          {_cgFlags.set(S390CG_enableBranchPreload);}
    void setDisableBranchPreload()          {_cgFlags.reset(S390CG_enableBranchPreload);}
@@ -784,6 +781,10 @@ public:
       return 7;
       }
 
+   uint32_t getJitMethodEntryAlignmentBoundary();
+
+   uint32_t getJitMethodEntryAlignmentThreshold();
+
    // LL: move to .cpp
    bool arithmeticNeedsLiteralFromPool(TR::Node *node);
 
@@ -852,10 +853,6 @@ private:
 #endif
 
    bool  TR_LiteralPoolOnDemandOnRun;
-
-
-   /** Saves the preprologue offset to allow JIT entry point alignment padding. */
-   int32_t _preprologueOffset;
 
    TR_BackingStore* _localF2ISpill;
 

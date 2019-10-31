@@ -278,14 +278,8 @@ void TR::ARM64MemSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssig
    sourceVirtual->unblock();
 
    mref->blockRegisters();
-   TR::RealRegister *assignedRegister = sourceVirtual->getAssignedRealRegister();
-   if (assignedRegister == NULL)
-      {
-      assignedRegister = machine->assignOneRegister(this, sourceVirtual);
-      }
+   setSource1Register(machine->assignOneRegister(this, sourceVirtual));
    mref->unblockRegisters();
-
-   setSource1Register(assignedRegister);
 
    if (getDependencyConditions())
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());

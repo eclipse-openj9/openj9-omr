@@ -56,22 +56,23 @@
 #include "env/PersistentInfo.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
+#include "env/TypeLayout.hpp"
 #include "env/defines.h"
 #include "env/jittypes.h"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/NodePool.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "ilgen/IlGenRequest.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
 #include "infra/Array.hpp"
@@ -292,6 +293,7 @@ OMR::Compilation::Compilation(
    _gpuKernelLineNumberList(m),
    _gpuPtxCount(0),
    _bitVectorPool(self()),
+   _typeLayoutMap((LayoutComparator()), LayoutAllocator(self()->region())),
    _tlsManager(*self())
    {
 
@@ -897,7 +899,7 @@ OMR::Compilation::getProfilingMode()
    if (!self()->isProfilingCompilation())
       return DisabledProfiling;
 
-   if (self()->getOption(TR_EnableJProfiling) || self()->getOption(TR_EnableJProfilingInProfilingCompilations))
+   if (self()->getOption(TR_EnableJProfiling) || !self()->getOption(TR_DisableJProfilingInProfilingCompilations))
       return JProfiling;
 
    return JitProfiling;
@@ -1841,7 +1843,9 @@ void OMR::Compilation::reportFailure(const char *reason)
    {
    traceMsg(self(), "Compilation Failed Because: %s\n", reason);
    if (self()->getOption(TR_PrintErrorInfoOnCompFailure))
+      {
       fprintf(stderr, "Compilation Failed Because: %s\n", reason);
+      }
    }
 
 void OMR::Compilation::AddCopyPropagationRematerializationCandidate(TR::SymbolReference * sr)
@@ -2747,4 +2751,20 @@ bool OMR::Compilation::isRecursiveMethodTarget(TR::Symbol *targetSymbol)
       }
 
    return isRecursive;
+   }
+
+const TR::TypeLayout* OMR::Compilation::typeLayout(TR_OpaqueClassBlock * clazz)
+   {
+   TR::Region& region = self()->region();
+   auto it = _typeLayoutMap.find(clazz); 
+   if (it != _typeLayoutMap.end())
+      {
+      return it->second;
+      }
+   else
+      {
+      const TR::TypeLayout* layout = TR::Compiler->cls.enumerateFields(region, clazz, self());
+      _typeLayoutMap.insert(std::make_pair(clazz, layout)); 
+      return layout; 
+      }
    }

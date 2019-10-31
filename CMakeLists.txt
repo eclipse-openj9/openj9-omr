@@ -64,6 +64,23 @@ set(OMR_INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Installation dir
 set(OMR_INSTALL_DATA_DIR ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME} CACHE PATH "Installation directory for data files")
 
 ###
+### CUDA Support
+###
+
+if (OMR_ENV_DATA64)
+	find_package(Threads)
+	if(Threads_FOUND)
+		# Threads mush be found before we can look for CUDA.
+		# FindCuda will error out if Threads is missing, even though CUDA itself is optional.
+		find_package(CUDA)
+	else()
+		set(CUDA_FOUND OFF CACHE BOOL "CUDA is disabled (threads not found)")
+	endif()
+else()
+	set(CUDA_FOUND OFF CACHE BOOL "CUDA is disabled")
+endif()
+
+###
 ### Versions and stuff
 ###
 
@@ -91,14 +108,8 @@ if(OMR_OS_ZOS)
 			INTERFACE
 				-DOMR_EBCDIC
 		)
-		install(TARGETS omr_ebcdic
-			EXPORT OmrTargets
-		)
 	else()
 		target_link_libraries(omr_base INTERFACE omr_ascii)
-		install(TARGETS omr_ascii
-			EXPORT OmrTargets
-		)
 	endif()
 endif()
 

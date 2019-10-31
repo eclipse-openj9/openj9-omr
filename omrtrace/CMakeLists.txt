@@ -40,6 +40,12 @@ if(OMR_ENHANCED_WARNINGS)
 	target_compile_options(omrtrace PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
 endif()
 
+# Avoid a problem verifying strncpys inlined to operate on array fields used
+# to implement variable length structs
+if (OMR_STRNCPY_FORTIFY_OPTIONS)
+	target_compile_options(omrtrace PRIVATE ${OMR_STRNCPY_FORTIFY_OPTIONS})
+endif()
+
 target_link_libraries(omrtrace
 	PUBLIC
 		omr_base

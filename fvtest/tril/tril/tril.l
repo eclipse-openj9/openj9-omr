@@ -24,7 +24,9 @@
     #include "ast.h"
     #include "tril.parser.h"
     #include <stdio.h>
+    int yyerror(char *s, ...);
 %}
+
 
 %%
 

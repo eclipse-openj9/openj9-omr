@@ -27,7 +27,7 @@
 #include "il/ILOpCodes.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/CompilationTypes.hpp"
-#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "control/CompileMethod.hpp"
 #include "env/jittypes.h"
 #include "gtest/gtest.h"

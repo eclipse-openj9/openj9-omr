@@ -70,17 +70,17 @@
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
 #include "infra/BitVector.hpp"
@@ -1735,10 +1735,10 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
          gcMapCursor->setGCMap(self()->getStackAtlas()->getParameterMap()->clone(self()->trMemory()));
       }
 
-   /* Adjust estimate based on jitted method entry alignment requirement */
-   uintptr_t boundary = self()->comp()->getOptions()->getJitMethodEntryAlignmentBoundary(self());
-   if (boundary && (boundary & boundary - 1) == 0)
-      estimate += boundary - 1;
+   if (self()->supportsJitMethodEntryAlignment())
+      {
+      estimate += (self()->getJitMethodEntryAlignmentBoundary() - 1);
+      }
 
    if (self()->comp()->getOption(TR_TraceVFPSubstitution))
       traceMsg(self()->comp(), "\n<instructions\n"
@@ -1968,6 +1968,8 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
          }
       }
 #endif
+
+   self()->getLinkage()->performPostBinaryEncoding();
 
    if (self()->comp()->getOption(TR_TraceCG))
       {

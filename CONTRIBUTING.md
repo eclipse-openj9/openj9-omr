@@ -168,14 +168,17 @@ Following these guidelines will help us to merge your pull requests smoothly:
    in style however, so if the file you are editing seems to have a diffferent
    style, defer to the style of the file as you found it.
 
-6. Follow the commit guidelines found below.
+6. Only use C++ language features supported by our compilers. A list of supported
+   features can be found [here](doc/SupportedC++Features.md).
 
-7. We encourage you to open a pull request early, and mark it as "Work In Progress"
+7. Follow the commit guidelines found below.
+
+8. We encourage you to open a pull request early, and mark it as "Work In Progress"
    (prefix the PR title with WIP). This allows feedback to start early, and helps
    create a better end product. Committers will wait until after you've removed
    the WIP prefix to merge your changes.
 
-8. If you are contributing a change to the compiler technology that involves modifications
+9. If you are contributing a change to the compiler technology that involves modifications
    to the Testarossa IL (including, but not limited to, adding a new IL opcode, changing
    the properties of an opcode, or adding a new datatype) or, in the opinion of a committer,
    a fundamental element of compiler infrastructure, a committer will request that this

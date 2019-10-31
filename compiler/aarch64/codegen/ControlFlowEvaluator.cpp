@@ -53,11 +53,16 @@ OMR::ARM64::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::CodeGenerator *c
    return genericReturnEvaluator(node, cg->getProperties().getIntegerReturnRegister(), TR_GPR, TR_IntReturn, cg);
    }
 
-// also handles areturn
 TR::Register *
 OMR::ARM64::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return genericReturnEvaluator(node, cg->getProperties().getLongReturnRegister(), TR_GPR, TR_LongReturn, cg);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::areturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return genericReturnEvaluator(node, cg->getProperties().getLongReturnRegister(), TR_GPR, TR_ObjectReturn, cg);
    }
 
 // void return
@@ -375,13 +380,14 @@ OMR::ARM64::TreeEvaluator::iucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *c
    return icmpHelper(node, TR::CC_HI, false, cg);
    }
 
-// also handles lucmpeq
+// also handles lucmpeq, acmpeq
 TR::Register *
 OMR::ARM64::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_EQ, true, cg);
    }
 
+// also handles lucmpne, acmpne
 TR::Register *
 OMR::ARM64::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -412,24 +418,28 @@ OMR::ARM64::TreeEvaluator::lcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg
    return icmpHelper(node, TR::CC_LE, true, cg);
    }
 
+// also handles acmplt
 TR::Register *
 OMR::ARM64::TreeEvaluator::lucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_CC, true, cg);
    }
 
+// also handles acmpge
 TR::Register *
 OMR::ARM64::TreeEvaluator::lucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_CS, true, cg);
    }
 
+// also handles acmpgt
 TR::Register *
 OMR::ARM64::TreeEvaluator::lucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_HI, true, cg);
    }
 
+// also handles acmple
 TR::Register *
 OMR::ARM64::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -508,11 +518,13 @@ evaluateNULLCHKWithPossibleResolve(TR::Node *node, bool needsResolve, TR::CodeGe
 
    // Only explicit test needed for now.
    TR::LabelSymbol *snippetLabel = generateLabelSymbol(cg);
-   cg->addSnippet(new (cg->trHeapMemory()) TR::ARM64HelperCallSnippet(cg, node, snippetLabel, node->getSymbolReference(), NULL));
+   TR::Snippet *snippet = new (cg->trHeapMemory()) TR::ARM64HelperCallSnippet(cg, node, snippetLabel, node->getSymbolReference(), NULL);
+   cg->addSnippet(snippet);
    TR::Register *referenceReg = cg->evaluate(reference);
    TR::InstOpCode::Mnemonic compareOp = useCompressedPointers ? TR::InstOpCode::cbzw : TR::InstOpCode::cbzx;
    TR::Instruction *cbzInstruction = generateCompareBranchInstruction(cg, compareOp, node, referenceReg, snippetLabel, NULL);
    cbzInstruction->setNeedsGCMap(0xffffffff);
+   snippet->gcMap().setGCRegisterMask(0xffffffff);
 
    /*
     * If the first child is a load with a ref count of 1, just decrement the reference count on the child.
@@ -569,11 +581,10 @@ OMR::ARM64::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::CodeGenerator *c
 	}
 
 TR::Register *
-OMR::ARM64::TreeEvaluator::ResolveAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ResolveAndNULLCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+OMR::ARM64::TreeEvaluator::resolveAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return evaluateNULLCHKWithPossibleResolve(node, true, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::DIVCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)

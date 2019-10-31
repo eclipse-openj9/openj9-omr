@@ -37,13 +37,13 @@
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Bit.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/Cfg.hpp"
@@ -4656,7 +4656,13 @@ static bool checkAndReplaceRotation(TR::Node *node,TR::Block *block, TR::Simplif
 
    //traceMsg(TR::comp(), "Spot 2.5 correctLeftShiftAmount = %d mulConst = %d shiftConst = %d sizeof(T)*8 = %d\n",correctLeftShiftAmount,mulConst,shiftConst,sizeof(T)*8);
 
-   if ( (1 << correctLeftShiftAmount) != mulConst )      // Only a rotate if the const values add up to the size of the node type.  ie for ints, this better add up to 32
+   // We can only convert to a rotate if the calculated shift value (based on
+   // operand size) matches the constant from the multiply, specifically the
+   // constant must be 2^correctLeftShiftAmount.
+   // NB The following calculation of expectedMulConst goes to great lengths to
+   // avoid undefined behaviour that caused errors in earlier versions.
+   T expectedMulConst = correctLeftShiftAmount < static_cast<T>(sizeof(T) * 8) ? 1ULL << correctLeftShiftAmount : 0;
+   if (expectedMulConst != mulConst)
       return false;
 
    if (!performTransformation(s->comp(), "%sReduced or/xor/add in node [" POINTER_PRINTF_FORMAT "] to rol\n", s->optDetailString(), node))

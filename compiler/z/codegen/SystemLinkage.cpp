@@ -45,20 +45,20 @@
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/List.hpp"
@@ -354,4 +354,14 @@ void TR::SystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t & s
 bool TR::SystemLinkage::hasToBeOnStack(TR::ParameterSymbol * parm)
    {
    return parm->getAssignedGlobalRegisterIndex() >=  0 &&  parm->isParmHasToBeOnStack();
+   }
+
+intptrj_t TR::SystemLinkage::entryPointFromCompiledMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+
+intptrj_t TR::SystemLinkage::entryPointFromInterpretedMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
    }

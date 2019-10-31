@@ -59,20 +59,20 @@
 #include "env/Processors.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
 #include "infra/Annotations.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
@@ -88,14 +88,6 @@
 
 class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;
-
-extern TR::Register *computeCC_compareUnsigned(TR::Node *node,
-                                               TR::Register *trgReg,
-                                               TR::Register *src1Reg,
-                                               TR::Register *src2Reg,
-                                               bool is64BitCompare,
-                                               bool needsZeroExtension,
-                                               TR::CodeGenerator *cg);
 
 #define MAX_PPC_ARRAYCOPY_INLINE 256
 
@@ -4186,15 +4178,11 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
    residueLoopStartLabel = generateLabelSymbol(cg);
 
    condReg =  cg->allocateRegister(TR_CCR);
-
-   TR::Register *condRegToBeUsed = condReg;
-   if (!condReg2)
-      condReg2 =  cg->allocateRegister(TR_CCR);
-   condRegToBeUsed = condReg2;
+   condReg2 =  cg->allocateRegister(TR_CCR);
 
    mid2Label = generateLabelSymbol(cg);
-   generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condRegToBeUsed, byteLenRemainingRegister, byteLen);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, mid2Label, condRegToBeUsed);
+   generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condReg2, byteLenRemainingRegister, byteLen);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, mid2Label, condReg2);
 
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src1AddrReg, src1AddrReg, -1*byteLen);
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src2AddrReg, src2AddrReg, -1*byteLen);
@@ -4215,143 +4203,92 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *src1Reg = cg->allocateRegister(TR_GPR);
    TR::Register *src2Reg = cg->allocateRegister(TR_GPR);
 
-   if (byteLenRemainingRegister)
+   if (byteLen == 4)
       {
-      if (byteLen == 4)
-         {
-         generateTrg1MemInstruction (cg, TR::InstOpCode::lwzu, node, src1Reg, new (cg->trHeapMemory()) TR::MemoryReference (src1AddrReg, 4, 4, cg));
-         generateTrg1MemInstruction (cg, TR::InstOpCode::lwzu, node, src2Reg, new (cg->trHeapMemory()) TR::MemoryReference (src2AddrReg, 4, 4, cg));
-         }
-      else
-         {
-         generateTrg1MemInstruction (cg, TR::InstOpCode::ldu, node, src1Reg, new (cg->trHeapMemory()) TR::MemoryReference (src1AddrReg, 8, 8, cg));
-         generateTrg1MemInstruction (cg, TR::InstOpCode::ldu, node, src2Reg, new (cg->trHeapMemory()) TR::MemoryReference (src2AddrReg, 8, 8, cg));
-         }
+      generateTrg1MemInstruction (cg, TR::InstOpCode::lwzu, node, src1Reg, new (cg->trHeapMemory()) TR::MemoryReference (src1AddrReg, 4, 4, cg));
+      generateTrg1MemInstruction (cg, TR::InstOpCode::lwzu, node, src2Reg, new (cg->trHeapMemory()) TR::MemoryReference (src2AddrReg, 4, 4, cg));
       }
    else
       {
-      switch (byteLen)
-         {
-         case 1:
-            loadArrayCmpSources(node, TR::InstOpCode::lbz, 1, byteLen, src1Reg, src2Reg, src1AddrReg, src2AddrReg, cg);
-            break;
-         case 2:
-            loadArrayCmpSources(node, TR::InstOpCode::lhz, 2, byteLen, src1Reg, src2Reg, src1AddrReg, src2AddrReg, cg);
-            break;
-         case 3:
-         case 4:
-            loadArrayCmpSources(node, TR::InstOpCode::lwz, 4, byteLen, src1Reg, src2Reg, src1AddrReg, src2AddrReg, cg);
-            break;
-         case 5:
-         case 6:
-         case 7:
-         case 8:
-            loadArrayCmpSources(node, TR::InstOpCode::ld, 8, byteLen, src1Reg, src2Reg, src1AddrReg, src2AddrReg, cg);
-            break;
-         default:
-            TR_ASSERT(0,"length %d not supported as an inline arraycmp\n",byteLen);
-         }
+      generateTrg1MemInstruction (cg, TR::InstOpCode::ldu, node, src1Reg, new (cg->trHeapMemory()) TR::MemoryReference (src1AddrReg, 8, 8, cg));
+      generateTrg1MemInstruction (cg, TR::InstOpCode::ldu, node, src2Reg, new (cg->trHeapMemory()) TR::MemoryReference (src2AddrReg, 8, 8, cg));
       }
 
    TR::Register *ccReg =  cg->allocateRegister(TR_GPR);
 
-   if (!byteLenRemainingRegister)
-      ccReg = computeCC_compareUnsigned(node,
-                                        ccReg,
-                                        src1Reg,
-                                        src2Reg,
-                                        (byteLen > 4) ? true : false,
-                                        false /* needsZeroExtenstion */,
-                                        cg);
-    else
-       {
-       generateTrg1Src2Instruction(cg, (byteLen == 8) ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4, node, condReg, src1Reg, src2Reg);
-       generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, residueStartLabel, condReg);
+   generateTrg1Src2Instruction(cg, (byteLen == 8) ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4, node, condReg, src1Reg, src2Reg);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, residueStartLabel, condReg);
 
-       generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, loopStartLabel, condReg);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, loopStartLabel, condReg);
 
-       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src1AddrReg, src1AddrReg, byteLen);
-       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src2AddrReg, src2AddrReg, byteLen);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src1AddrReg, src1AddrReg, byteLen);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src2AddrReg, src2AddrReg, byteLen);
 
-       generateLabelInstruction(cg, TR::InstOpCode::label, node, residueStartLabel);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, residueStartLabel);
 
-       generateTrg1Instruction(cg, TR::InstOpCode::mfctr, node, byteLenRemainingRegister);
+   generateTrg1Instruction(cg, TR::InstOpCode::mfctr, node, byteLenRemainingRegister);
 
-       TR::Register *condRegToBeUsed = condReg;
-       if (!condReg2)
-          condReg2 =  cg->allocateRegister(TR_CCR);
-       condRegToBeUsed = condReg2;
+   generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condReg2, byteLenRemainingRegister, 0);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, byteLenRemainingRegister, byteLenRemainingRegister, tempReg);
+   generateShiftLeftImmediate(cg, node, byteLenRemainingRegister, byteLenRemainingRegister, (byteLen == 8) ? 3 : 2);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, midLabel, condReg2);
 
-       generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condRegToBeUsed, byteLenRemainingRegister, 0);
-       generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, byteLenRemainingRegister, byteLenRemainingRegister, tempReg);
-       generateShiftLeftImmediate(cg, node, byteLenRemainingRegister, byteLenRemainingRegister, (byteLen == 8) ? 3 : 2);
-       generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, midLabel, condRegToBeUsed);
+   generateTrg1Src2Instruction(cg, (byteLen == 8) ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4, node, condReg2, byteLenRemainingRegister, byteLenRegister);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, midLabel);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, byteLenRemainingRegister, byteLenRemainingRegister, byteLenRegister);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, mid2Label);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, resultLabel, condReg2);
 
-       generateTrg1Src2Instruction(cg, (byteLen == 8) ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4, node, condRegToBeUsed, byteLenRemainingRegister, byteLenRegister);
-       generateLabelInstruction(cg, TR::InstOpCode::label, node, midLabel);
-       generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, byteLenRemainingRegister, byteLenRemainingRegister, byteLenRegister);
-       generateLabelInstruction(cg, TR::InstOpCode::label, node, mid2Label);
-       generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, resultLabel, condRegToBeUsed);
+   generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, byteLenRemainingRegister);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src1AddrReg, src1AddrReg, -1);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src2AddrReg, src2AddrReg, -1);
 
-      generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, byteLenRemainingRegister);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src1AddrReg, src1AddrReg, -1);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src2AddrReg, src2AddrReg, -1);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, residueLoopStartLabel);
 
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, residueLoopStartLabel);
+   generateTrg1MemInstruction (cg, TR::InstOpCode::lbzu, node, src1Reg, new (cg->trHeapMemory()) TR::MemoryReference (src1AddrReg, 1, 1, cg));
+   generateTrg1MemInstruction (cg, TR::InstOpCode::lbzu, node, src2Reg, new (cg->trHeapMemory()) TR::MemoryReference (src2AddrReg, 1, 1, cg));
 
-      generateTrg1MemInstruction (cg, TR::InstOpCode::lbzu, node, src1Reg, new (cg->trHeapMemory()) TR::MemoryReference (src1AddrReg, 1, 1, cg));
-      generateTrg1MemInstruction (cg, TR::InstOpCode::lbzu, node, src2Reg, new (cg->trHeapMemory()) TR::MemoryReference (src2AddrReg, 1, 1, cg));
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, src1Reg, src2Reg);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, cntrLabel, condReg);
 
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, src1Reg, src2Reg);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, cntrLabel, condReg);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, residueLoopStartLabel, condReg);
 
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, residueLoopStartLabel, condReg);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, cntrLabel);
 
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, cntrLabel);
+   generateTrg1Instruction(cg, TR::InstOpCode::mfctr, node, byteLenRemainingRegister);
 
-      generateTrg1Instruction(cg, TR::InstOpCode::mfctr, node, byteLenRemainingRegister);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, resultLabel);
 
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, resultLabel);
-
-      if (node->isArrayCmpLen())
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, ccReg, byteLenRemainingRegister, byteLenRegister);
-      else
-         {
-	 TR::Register *condRegToBeUsed = condReg;
-	 if (!condReg2)
-            condReg2 =  cg->allocateRegister(TR_CCR);
-         condRegToBeUsed = condReg2;
-
-         generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condRegToBeUsed, byteLenRemainingRegister, 0);
-         generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, result2Label, condRegToBeUsed);
-         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, ccReg, 0);
-         generateLabelInstruction(cg, TR::InstOpCode::b, node, residueEndLabel);
-         generateLabelInstruction(cg, TR::InstOpCode::label, node, result2Label);
-         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, ccReg, 1);
-         generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, residueEndLabel, condReg);
-         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, ccReg, 2);
-         }
-
-      int32_t numRegs = 9;
-      if (condReg2)
-         numRegs++;
-
-      TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numRegs, numRegs, cg->trMemory());
-      TR::addDependency(dependencies, src1Reg, TR::RealRegister::NoReg, TR_GPR, cg);
-      TR::addDependency(dependencies, src2Reg, TR::RealRegister::NoReg, TR_GPR, cg);
-      TR::addDependency(dependencies, src1AddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      TR::addDependency(dependencies, src2AddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      TR::addDependency(dependencies, byteLenRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-      TR::addDependency(dependencies, byteLenRemainingRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-      TR::addDependency(dependencies, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      TR::addDependency(dependencies, ccReg, TR::RealRegister::NoReg, TR_GPR, cg);
-      TR::addDependency(dependencies, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
-      if (condReg2)
-         TR::addDependency(dependencies, condReg2, TR::RealRegister::NoReg, TR_CCR, cg);
-
-      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, residueEndLabel, dependencies);
-      residueEndLabel->setEndInternalControlFlow();
+   if (node->isArrayCmpLen())
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, ccReg, byteLenRemainingRegister, byteLenRegister);
+   else
+      {
+      generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condReg2, byteLenRemainingRegister, 0);
+      generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, result2Label, condReg2);
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, ccReg, 0);
+      generateLabelInstruction(cg, TR::InstOpCode::b, node, residueEndLabel);
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, result2Label);
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, ccReg, 1);
+      generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, residueEndLabel, condReg);
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, ccReg, 2);
       }
+
+   int32_t numRegs = 10;
+
+   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numRegs, numRegs, cg->trMemory());
+   TR::addDependency(dependencies, src1Reg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(dependencies, src2Reg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(dependencies, src1AddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(dependencies, src2AddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(dependencies, byteLenRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(dependencies, byteLenRemainingRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(dependencies, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(dependencies, ccReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::addDependency(dependencies, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
+   TR::addDependency(dependencies, condReg2, TR::RealRegister::NoReg, TR_CCR, cg);
+
+   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, residueEndLabel, dependencies);
+   residueEndLabel->setEndInternalControlFlow();
 
    node->setRegister(ccReg);
 
@@ -5097,60 +5034,6 @@ static TR::Register *inlineLongHighestOneBit(TR::Node *node, TR::CodeGenerator *
 
       return targetRegister;
       }
-   }
-
-TR::Register *inlineIntegerRotateLeft(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(node->getNumChildren()==2, "Wrong number of children in inlineIntegerRotateLeft");
-
-   TR::Node        *firstChild  = node->getFirstChild();
-   TR::Node        *secondChild  = node->getSecondChild();
-   TR::Register    *srcRegister = cg->evaluate(firstChild);
-   TR::Register    *targetRegister = cg->allocateRegister();
-
-   if (secondChild->getOpCodeValue() == TR::iconst || secondChild->getOpCodeValue() == TR::iuconst)
-      {
-      int32_t value = secondChild->getInt() & 0x1f;
-      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, targetRegister, srcRegister, value, 0xffffffff);
-      }
-   else
-      {
-      TR::Register    *shiftAmountReg = cg->evaluate(secondChild);
-      generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::rlwnm, node, targetRegister, srcRegister, shiftAmountReg, 0xffffffff);
-      }
-
-   node->setRegister(targetRegister);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return targetRegister;
-   }
-
-TR::Register *inlineLongRotateLeft(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(node->getNumChildren()==2, "Wrong number of children in inlineLongRotateLeft");
-
-   TR::Node        *firstChild  = node->getFirstChild();
-   TR::Node        *secondChild  = node->getSecondChild();
-   TR::Register    *srcRegister = cg->evaluate(firstChild);
-   TR::Register    *targetRegister = cg->allocateRegister();
-
-   if (secondChild->getOpCodeValue() == TR::iconst || secondChild->getOpCodeValue() == TR::iuconst)
-      {
-      int32_t value = secondChild->getInt() & 0x3f;
-      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, targetRegister, srcRegister, value, CONSTANT64(0xffffffffffffffff));
-      }
-   else
-      {
-      TR::Register    *shiftAmountReg = cg->evaluate(secondChild);
-      generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::rldcl, node, targetRegister, srcRegister, shiftAmountReg, CONSTANT64(0xffffffffffffffff));
-      }
-
-   node->setRegister(targetRegister);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return targetRegister;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg)

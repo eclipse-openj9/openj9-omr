@@ -866,13 +866,6 @@ public:
       return TR::BadILOp;
       }
 
-//TODO (#2657): remove this function as unsigned shfit opcodes have been deprecated
-   static TR::ILOpCodes unsignedShiftLeftOpCode(TR::DataType type)
-      {
-      TR_ASSERT(false, "no ushl opcode for datatype %s",type.toString());
-      return TR::BadILOp;
-      }
-
    static TR::ILOpCodes shiftRightOpCode(TR::DataType type)
       {
       switch(type)
@@ -1483,7 +1476,7 @@ template <> inline TR::ILOpCodes OMR::ILOpCode::getSubOpCode<  double>() { retur
 
 template <> inline TR::ILOpCodes OMR::ILOpCode::getMulOpCode<  int8_t>() { return TR::bmul; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getMulOpCode< int16_t>() { return TR::smul; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getMulOpCode<uint32_t>() { return TR::iumul; }
+template <> inline TR::ILOpCodes OMR::ILOpCode::getMulOpCode<uint32_t>() { return TR::imul; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getMulOpCode< int32_t>() { return TR::imul; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getMulOpCode<uint64_t>() { return TR::lmul; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getMulOpCode< int64_t>() { return TR::lmul; }

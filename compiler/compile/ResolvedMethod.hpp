@@ -25,7 +25,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/RecognizedMethods.hpp"
-#include "compile/Method.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
@@ -34,6 +33,7 @@
 #include "runtime/Runtime.hpp"
 
 class TR_FrontEnd;
+class TR_MethodParameterIterator;
 class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;
 class TR_PrexArgInfo;
@@ -43,6 +43,7 @@ namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class IlGeneratorMethodDetails; }
 namespace TR { class LabelSymbol; }
+namespace TR { class Method; }
 namespace TR { class Node; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReferenceTable; }
@@ -50,7 +51,7 @@ namespace TR { class SymbolReferenceTable; }
 class TR_ResolvedMethod
    {
 public:
-   TR::RecognizedMethod getRecognizedMethod() { return convertToMethod()->getRecognizedMethod(); }
+   TR::RecognizedMethod getRecognizedMethod();
    virtual TR::Method *convertToMethod();
 
    virtual uint32_t numberOfParameters();
@@ -165,11 +166,7 @@ public:
    bool isDAAPackedDecimalIntrinsicMethod();
 
    virtual void setMethodHandleLocation(uintptrj_t *location);
-   virtual uintptrj_t *getMethodHandleLocation()
-      {
-      TR_ASSERT(convertToMethod()->isArchetypeSpecimen(), "All methods associated with a MethodHandle must be archetype specimens");
-      return NULL;
-      }
+   virtual uintptrj_t *getMethodHandleLocation();
 
    virtual const char *newInstancePrototypeSignature(TR_Memory *, TR_AllocationKind = heapAlloc);
 
@@ -231,10 +228,9 @@ public:
    virtual TR_OpaqueMethodBlock *getPersistentIdentifier();
    virtual uint8_t *allocateException(uint32_t, TR::Compilation*);
 
-   TR_MethodParameterIterator* getParameterIterator(TR::Compilation& comp)
-         { return convertToMethod()->getParameterIterator(comp, this); }
+   TR_MethodParameterIterator* getParameterIterator(TR::Compilation& comp);
 
-   bool isJ9() { return convertToMethod()->isJ9(); }
+   bool isJ9();
 
    virtual TR::IlGeneratorMethodDetails *getIlGeneratorMethodDetails();
 
@@ -281,7 +277,21 @@ public:
                                                                       bool resetVisitCount,
                                                                       TR_PrexArgInfo  *argInfo);
 
-   // Make up a parameter list for the corresponding TR::ResolvedMethodSymbol
+   /**
+    * @brief Retrieve the type signature name for the given parameter index.
+    *
+    * @param[in] parmIndex : The parameter index
+    *
+    * @return The char * type signature name.
+    */
+   virtual char *getParameterTypeSignature(int32_t parmIndex);
+
+   /**
+    * @brief Create TR::ParameterSymbols from the signature of a method, and add them
+    *        to the ParameterList on the ResolvedMethodSymbol.
+    *
+    * @param[in] methodSym : the ResolvedMethodSymbol to create the parameter list for
+    */
    virtual void makeParameterList(TR::ResolvedMethodSymbol *);
 
    virtual TR::ResolvedMethodSymbol *findOrCreateJittedMethodSymbol(TR::Compilation *comp);

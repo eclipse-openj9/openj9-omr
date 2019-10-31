@@ -45,22 +45,22 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/NodePool.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/RegisterMappedSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/RegisterMappedSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/Cfg.hpp"
@@ -2651,10 +2651,12 @@ bool TR_LoopVersioner::checkProfiledGuardSuitability(TR_ScratchList<TR::Block> *
          TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "interfaceGuardCheck/(%s)", comp->signature()));
          int32_t *treeTopCounts = computeCallsiteCounts(loopBlocks, comp);
          float loopCodeRatio = (float)treeTopCounts[guardNode->getInlinedSiteIndex() + 2] / (float)treeTopCounts[0];
-         traceMsg(comp, "  Loop code ratio %d / %d = %.2f\n", treeTopCounts[guardNode->getInlinedSiteIndex() + 2], treeTopCounts[0], loopCodeRatio);
+         if (trace())
+            traceMsg(comp, "  Loop code ratio %d / %d = %.2f\n", treeTopCounts[guardNode->getInlinedSiteIndex() + 2], treeTopCounts[0], loopCodeRatio);
          if (disableLoopCodeRatioCheck || loopCodeRatio < 0.25)
             {
-            traceMsg(comp, "Skipping versioning of profiled guard %p because we found more than 2 JIT'd implementors at warm or above and the loop code ratio is too low\n", guardNode);
+            if (trace())
+               traceMsg(comp, "Skipping versioning of profiled guard %p because we found more than 2 JIT'd implementors at warm or above and the loop code ratio is too low\n", guardNode);
             risky = true;
             TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "profiledVersioning/unsuitableForVersioning/interfaceGuard/(%s)/bci=%d.%d", comp->signature(), guardNode->getByteCodeInfo().getCallerIndex(), guardNode->getByteCodeInfo().getByteCodeIndex()));
             }
@@ -2698,7 +2700,8 @@ bool TR_LoopVersioner::isBranchSuitableToVersion(TR_ScratchList<TR::Block> *loop
 
           if (valueInfo)
              {
-             traceMsg(comp, "Profiled guard probability %.2f for guard %p\n", valueInfo->getTopProbability(), node);
+             if (trace())
+               traceMsg(comp, "Profiled guard probability %.2f for guard %p\n", valueInfo->getTopProbability(), node);
              if (valueInfo->getTopProbability() >= profiledGuardProbabilityThreshold)
                 {
                 suitableForVersioning = checkProfiledGuardSuitability(loopBlocks, node, comp->getInlinedCallerSymRef(node->getByteCodeInfo().getCallerIndex()), comp);
@@ -3414,6 +3417,8 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          VirtualGuardPair *virtualGuardPair = (VirtualGuardPair *) trMemory()->allocateStackMemory(sizeof(VirtualGuardPair));
          virtualGuardPair->_hotGuardBlock = nextBlock;
          virtualGuardPair->_coldGuardBlock = nextClonedBlock;
+         if (trace())
+            traceMsg(comp(), "virtualGuardPair at guard node %p hotGuardBlock %d coldGuardBlock %d\n", nextBlock->getLastRealTreeTop()->getNode(), nextBlock->getNumber(), nextClonedBlock->getNumber());
          virtualGuardPair->_isGuarded = false;
          // check if the virtual guard is in an inner loop
          //
@@ -4006,6 +4011,15 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       for (ListElement<TR::TreeTop> *elt = head; elt != NULL; elt = elt->getNextElement())
          {
          TR::Node *check = elt->getData()->getNode();
+
+         // A NULLCHK might have been specialized away, but will still appear in nullCheckTrees
+         // Skip such trees
+         if (!check->getOpCode().isNullCheck())
+            {
+            TR_ASSERT_FATAL(check->getOpCodeValue() == TR::treetop, "Unexpected opcode for n%dn [%p]\n", check->getGlobalIndex(), check);
+            continue;
+            }
+
          TR::Node *refNode = check->getNullCheckReference();
          const Expr *refExpr = findCanonicalExpr(refNode);
          if (refExpr == NULL)
@@ -4271,6 +4285,13 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       else
          removedNodes.add(_curLoop->_definitelyRemovableNodes);
 
+      if (trace())
+         {
+         traceMsg(comp(), "privatizationOK: %d : removedNodes ", _curLoop->_privatizationOK);
+         removedNodes.print(comp());
+         traceMsg(comp(), "\n");
+         }
+
       LoopBodySearch search(
          comp(),
          _curLoop->_memRegion,
@@ -4281,8 +4302,13 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       for (; search.hasTreeTop(); search.advance())
          {
          TR::TreeTop *tt = search.currentTreeTop();
+         if (removedNodes.contains(tt->getNode()))
+            continue;
+
          if (comp()->isPotentialOSRPoint(tt->getNode(), NULL, true))
             {
+            if (trace())
+               traceMsg(comp(), "safeToRemoveOSRGuards false due to potential OSR point at n%dn\n", tt->getNode()->getGlobalIndex());
             safeToRemoveOSRGuards = false;
             break;
             }
@@ -4291,6 +4317,13 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             osrGuard = tt->getNode();
             seenOSRGuards = true;
             removedNodes.add(osrGuard); // Don't search the taken side.
+            if (trace())
+               traceMsg(comp(), "adding OSRGuard n%dn to the list of removedNodes\n", osrGuard->getGlobalIndex());
+            }
+         else
+            {
+            if (trace())
+               traceMsg(comp(), "osrGuardSafety traversed n%dn\n", tt->getNode()->getGlobalIndex());
             }
          }
 
@@ -4960,8 +4993,18 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(
    ListElement<TR::Node> *nextNode = nullCheckedReferences->getListHead();
    ListElement<TR::TreeTop> *nextTree = nullCheckTrees->getListHead();
 
-   for (; nextNode;)
+   for (; nextNode; nextNode = nextNode->getNextElement(), nextTree = nextTree->getNextElement())
       {
+      // A NULLCHK might have been specialized away, but will still appear in nullCheckTrees
+      // Skip such trees
+      TR::Node *nullChkNode = nextTree->getData()->getNode();
+
+      if (!nullChkNode->getOpCode().isNullCheck())
+         {
+         TR_ASSERT_FATAL(nullChkNode->getOpCodeValue() == TR::treetop, "Unexpected opcode for n%dn [%p]\n", nullChkNode->getGlobalIndex(), nullChkNode);
+         continue;
+         }
+
       bool isNextNodeInvariant = isExprInvariant(nextNode->getData());
       TR::Node *nodeToBeNullChkd = NULL;
       bool isDependent = false;
@@ -5042,8 +5085,6 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(
                new (_curLoop->_memRegion) RemoveNullCheck(this, prep, checkNode));
             }
          }
-      nextNode = nextNode->getNextElement();
-      nextTree = nextTree->getNextElement();
       }
    }
 
@@ -8513,13 +8554,15 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
 
    if ((nodeCount/(MAX_SIZE_INCREASE_FACTOR/hotnessFactor)) > (_origNodeCount/nodeCountFactor))
       {
-      traceMsg(comp(), "Failing node count %d orig %d factor %d\n", nodeCount, _origNodeCount, nodeCountFactor);
+      if (trace())
+         traceMsg(comp(), "Failing node count %d orig %d factor %d\n", nodeCount, _origNodeCount, nodeCountFactor);
       return -2;
       }
 
    if ((comp()->getFlowGraph()->getNodes().getSize()/(MAX_SIZE_INCREASE_FACTOR/hotnessFactor)) > (_origBlockCount/blockCountFactor))
       {
-       traceMsg(comp(), "Failing block count %d orig %d factor %d\n", comp()->getFlowGraph()->getNodes().getSize(), _origBlockCount, blockCountFactor);
+      if (trace())
+         traceMsg(comp(), "Failing block count %d orig %d factor %d\n", comp()->getFlowGraph()->getNodes().getSize(), _origBlockCount, blockCountFactor);
       return -2;
       }
 

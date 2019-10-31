@@ -49,8 +49,8 @@
 #include "env/jittypes.h"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
 
 TR_Processor OMR::ARM::CodeGenerator::_processor=TR_NullProcessor;
 
@@ -501,6 +501,9 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
       self()->setBinaryBufferCursor(cursorInstruction->generateBinaryEncoding());
       cursorInstruction = cursorInstruction->getNext();
       }
+
+   self()->getLinkage()->performPostBinaryEncoding();
+
    }
 
 bool OMR::ARM::CodeGenerator::hasDataSnippets()

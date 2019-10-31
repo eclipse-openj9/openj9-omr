@@ -48,20 +48,20 @@
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/List.hpp"
@@ -81,7 +81,7 @@
 #define  GPREGINDEX(i)   (i-TR::RealRegister::FirstGPR)
 
 TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator* cg)
-   : 
+   :
       TR::SystemLinkage(cg, TR_SystemXPLink),
       _entryPointMarkerLabel(NULL),
       _stackPointerUpdateLabel(NULL),
@@ -116,7 +116,7 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator* cg)
    setRegisterFlag(TR::RealRegister::FPR13, Preserved);
    setRegisterFlag(TR::RealRegister::FPR14, Preserved);
    setRegisterFlag(TR::RealRegister::FPR15, Preserved);
-   
+
    if (cg->getSupportsVectorRegisters())
       {
       setRegisterFlag(TR::RealRegister::VRF16, Preserved);
@@ -160,7 +160,7 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator* cg)
    if (cg->getSupportsVectorRegisters())
       {
       int32_t index = 0;
-      
+
       setVectorArgumentRegister(index++, TR::RealRegister::VRF24);
       setVectorArgumentRegister(index++, TR::RealRegister::VRF25);
       setVectorArgumentRegister(index++, TR::RealRegister::VRF26);
@@ -182,7 +182,7 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator* cg)
       {
       setOffsetToFirstParm(XPLINK_STACK_FRAME_BIAS + 64);
       }
-   
+
    setOffsetToRegSaveArea(2048);
    setOffsetToLongDispSlot(0);
    setOffsetToFirstLocal(0);
@@ -218,12 +218,12 @@ TR::S390zOSSystemLinkage::createEpilogue(TR::Instruction * cursor)
 void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
    {
    TR::Delimiter delimiter (comp(), comp()->getOption(TR_TraceCG), "Prologue");
-   
+
    int32_t argSize = getOutgoingParameterBlockSize();
    setOutgoingParmAreaEndOffset(getOutgoingParmAreaBeginOffset() + argSize);
 
    TR::ResolvedMethodSymbol* bodySymbol = comp()->getJittedMethodSymbol();
-      
+
    // Calculate size of locals determined in prior call to `mapStack`. We make the size a multiple of the strictest
    // alignment symbol so that backwards mapping of auto symbols will follow the alignment.
    //
@@ -252,7 +252,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
    cg->addSnippet(_ppa2Snippet);
 
    TR::Node* node = cursor->getNode();
-      
+
    cursor = cursor->getPrev();
 
    // Emit the Entry Point Marker
@@ -265,7 +265,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
    cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00000000, cursor);
 
    cg->addRelocation(new (cg->trHeapMemory()) InstructionLabelRelative32BitRelocation(cursor, -8, _ppa1Snippet->getSnippetLabel(), 1));
-   
+
    // DSA size is the frame size aligned to 32-bytes which means it's least significant 5 bits are zero and are used to
    // represent the flags which are always 0 for OMR as we do not support leaf frames or direct calls to alloca()
    cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, stackFrameSize, cursor);
@@ -276,9 +276,9 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    cursor = spillGPRsInPrologue(node, cursor);
    cursor = spillFPRsInPrologue(node, cursor);
-   
+
    cursor = reinterpret_cast<TR::Instruction*>(saveArguments(cursor, false));
-   
+
    setLastPrologueInstruction(cursor);
    }
 
@@ -404,18 +404,18 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
 
    return returnRegister;
    }
-   
+
 TR::RealRegister::RegNum
 TR::S390zOSSystemLinkage::getENVPointerRegister()
-   { 
+   {
    return TR::RealRegister::GPR5;
    }
 
 TR::RealRegister::RegNum
 TR::S390zOSSystemLinkage::getCAAPointerRegister()
    {
-   return TR::Compiler->target.is64Bit() ? 
-      TR::RealRegister::NoReg : 
+   return TR::Compiler->target.is64Bit() ?
+      TR::RealRegister::NoReg :
       TR::RealRegister::GPR12;
    }
 
@@ -636,7 +636,7 @@ TR::S390zOSSystemLinkage::fillGPRsInEpilogue(TR::Node* node, TR::Instruction* cu
       cursor = addImmediateToRealRegister(spReg, stackFrameSize,  NULL, currentNode, cursor);
       TR_ASSERT( cursor != NULL, "xplink retore code - should not need temp register");
       }
-   
+
    return cursor;
    }
 
@@ -646,7 +646,7 @@ TR::S390zOSSystemLinkage::fillFPRsInEpilogue(TR::Node* node, TR::Instruction* cu
    TR::RealRegister* spReg = getNormalStackPointerRealRegister();
    int32_t offset = getFPRSaveAreaEndOffset();
    int16_t FPRSaveMask = getFPRSaveMask();
-   
+
    for (int32_t i = TR::Linkage::getFirstMaskedBit(FPRSaveMask); i <= TR::Linkage::getLastMaskedBit(FPRSaveMask); ++i)
       {
       if (FPRSaveMask & (1 << (i)))
@@ -745,7 +745,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
       {
       GPRSaveMask  &= ~(1 << GPREGINDEX(getCAAPointerRegister()));
       }
-   
+
    if ((frameType == TR_XPLinkStackCheckFrame)
       || ((frameType == TR_XPLinkIntermediateFrame) && needAddTempReg))
       { // GPR4 is saved but indirectly via GPR0 in stack check or medium case - so don't save GPR4 via STM
@@ -770,7 +770,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
    TR::RealRegister * gpr3Real = getRealRegister(TR::RealRegister::GPR3);
    TR::RealRegister * caaReal  = getRealRegister(getCAAPointerRegister());  // 31 bit oly
    gpr3ParmOffset = getOffsetToFirstParm() + 2 * gprSize;
-   
+
    _firstSaved = REGNUM(firstSaved + TR::RealRegister::FirstGPR);
    _lastSaved  = REGNUM(lastSaved  + TR::RealRegister::FirstGPR);
 
@@ -832,7 +832,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
 
              if (needAddTempReg) // LR R0,R4
                 cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node, gpr0Real, spReg, cursor);
-             
+
              _stackPointerUpdateLabel = generateLabelSymbol(cg());
              cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, _stackPointerUpdateLabel, cursor);
 
@@ -981,7 +981,7 @@ TR::S390zOSSystemLinkage::spillFPRsInPrologue(TR::Node* node, TR::Instruction* c
    TR::RealRegister* spReg = getNormalStackPointerRealRegister();
    int32_t offset = getFPRSaveAreaEndOffset();
    int16_t FPRSaveMask = getFPRSaveMask();
-   
+
    for (int32_t i = TR::Linkage::getFirstMaskedBit(FPRSaveMask); i <= TR::Linkage::getLastMaskedBit(FPRSaveMask); ++i)
       {
       if (FPRSaveMask & (1 << (i)))

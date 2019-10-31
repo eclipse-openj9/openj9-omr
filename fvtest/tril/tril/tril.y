@@ -25,6 +25,9 @@
     #include <stdio.h>
 
     static ASTNode* trees;
+    int yyerror(char *s, ...);
+    int yylex();
+    void set_input_file(FILE* in);
 %}
 
 %union {

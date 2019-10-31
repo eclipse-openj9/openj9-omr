@@ -566,12 +566,8 @@
    ldiv,             // long divide for 64 bit target
    irem,             // integer remainder
    lrem,             // long remainder for 64 bit target
-   cdnan,            // canonise double NaN to 0x7ff80..0 (in gprs)
-   cfnan,            // canonise float NaN to 0x7fc00..0 (in gprs)
    d2i,              // converts from double to integer
    d2l,              // converts from double to long
-   ifx,              // compare and branch complex
-   setbx,            // compare complex and set boolean
    iternary,         // ternary evaluator
 // bcdcpsgn_r,       // Decimal copySign & record
 // bcdcfn_r,         // Decimal convert from national & record

@@ -136,6 +136,14 @@ class OMR_EXTENSIBLE Instruction
     */
    virtual uint8_t *generateBinaryEncoding() = 0;
 
+   /**
+    * @brief Expand this instruction prior to binary encoding.
+    *
+    * @returns the last instruction in the expansion or this instruction if no expansion was
+    *          performed.
+    */
+   virtual TR::Instruction *expandInstruction() { return self(); }
+
    /*
     * Assign the specified register kind(s) on this instruction to real registers.
     */
@@ -217,9 +225,6 @@ class OMR_EXTENSIBLE Instruction
    TR_BitVector *getLiveMonitors() { return _liveMonitors; }
    TR_BitVector *setLiveMonitors(TR_BitVector *v) { return (_liveMonitors = v); }
 
-   int32_t getRegisterSaveDescription() { return _registerSaveDescription; }
-   int32_t setRegisterSaveDescription(int32_t v) { return (_registerSaveDescription = v); }
-
    bool    requiresAtomicPatching();
 
    int32_t getMaxPatchableInstructionLength() { return 0; }
@@ -278,7 +283,6 @@ class OMR_EXTENSIBLE Instruction
    protected:
    TR_BitVector *_liveLocals;
    TR_BitVector *_liveMonitors;
-   int32_t _registerSaveDescription;
 
    union TR_GCInfo
       {

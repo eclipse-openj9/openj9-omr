@@ -65,22 +65,22 @@
 #include "env/Processors.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
@@ -1023,11 +1023,12 @@ static void mrPeepholes(TR::CodeGenerator *cg, TR::Instruction *mrInstruction)
                for (auto stackMapIter = stackMaps.begin(); stackMapIter != stackMaps.end(); ++stackMapIter)
                   {
                   if (cg->getDebug())
-                     traceMsg(comp, "Adjusting register map %p; removing %s, adding %s due to removal of mr %p\n",
-                             *stackMapIter,
-                             cg->getDebug()->getName(mrTargetReg),
-                             cg->getDebug()->getName(mrSourceReg),
-                             mrInstruction);
+                     if (comp->getOption(TR_TraceCG))
+                        traceMsg(comp, "Adjusting register map %p; removing %s, adding %s due to removal of mr %p\n",
+                                *stackMapIter,
+                                cg->getDebug()->getName(mrTargetReg),
+                                cg->getDebug()->getName(mrSourceReg),
+                                mrInstruction);
                   (*stackMapIter)->resetRegistersBits(cg->registerBitMask(toRealRegister(mrTargetReg)->getRegisterNumber()));
                   (*stackMapIter)->setRegisterBits(cg->registerBitMask(toRealRegister(mrSourceReg)->getRegisterNumber()));
                   }
@@ -1662,6 +1663,15 @@ OMR::Power::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    return linkage;
    }
 
+void
+OMR::Power::CodeGenerator::expandInstructions()
+   {
+   for (TR::Instruction *instr = self()->getFirstInstruction(); instr; instr = instr->getNext())
+      {
+      instr = instr->expandInstruction();
+      }
+   }
+
 void OMR::Power::CodeGenerator::generateBinaryEncodingPrologue(
       TR_PPCBinaryEncodingData *data)
    {
@@ -1683,12 +1693,10 @@ void OMR::Power::CodeGenerator::generateBinaryEncodingPrologue(
       data->cursorInstruction = data->cursorInstruction->getNext();
       }
 
-   int32_t boundary = comp->getOptions()->getJitMethodEntryAlignmentBoundary(self());
-   if (boundary && (boundary > 4) && ((boundary & (boundary - 1)) == 0))
+   if (self()->supportsJitMethodEntryAlignment())
       {
-      comp->getOptions()->setJitMethodEntryAlignmentBoundary(boundary);
       self()->setPreJitMethodEntrySize(data->estimate);
-      data->estimate += (boundary - 4);
+      data->estimate += (self()->getJitMethodEntryAlignmentBoundary() - 1);
       }
 
    self()->getLinkage()->createPrologue(data->cursorInstruction);
@@ -1811,6 +1819,8 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
 
          toPPCImmInstruction(data.preProcInstruction)->setSourceImmediate(*(uint32_t *)(data.preProcInstruction->getBinaryEncoding()));
          }
+
+      self()->getLinkage()->performPostBinaryEncoding();
       }
 
    // We late-processing TOC entries here: obviously cannot deal with snippet labels.
@@ -3443,6 +3453,12 @@ OMR::Power::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNon
       }
 
    return result;
+   }
+
+uint32_t
+OMR::Power::CodeGenerator::getJitMethodEntryAlignmentBoundary()
+   {
+   return 128;
    }
 
 bool

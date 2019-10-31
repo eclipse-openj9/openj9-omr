@@ -57,6 +57,7 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
 #include "il/DataTypes.hpp"
 #include "il/IL.hpp"
 #include "il/Node.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Flags.hpp"
 #include "infra/Link.hpp"
@@ -68,7 +69,6 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
 #include "ras/DebugCounter.hpp"
 #include "ras/ILValidationStrategies.hpp"
 
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 
 
 class TR_AOTGuardSite;
@@ -109,6 +109,7 @@ namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class SymbolReferenceTable; }
 namespace TR { class TreeTop; }
+namespace TR { class TypeLayout; }
 typedef TR::SparseBitVector SharedSparseBitVector;
 
 #if _AIX
@@ -175,11 +176,11 @@ enum ProfilingMode
  * transformations to be selectively disabled during debugging in order to
  * isolate a buggy optimization. But this description fails to capture the
  * important effect that performTransformation has on the maintainability of
- * Testarossa’s code base.
+ * Testarossa's code base.
  *
  * Calls to performTransformation can (and should) be placed around any part of
- * the code that is optional; in an optimizer, that’s a lot of code. Tons of
- * Testarossa code is there only to improve performance–not for correctness–and
+ * the code that is optional; in an optimizer, that's a lot of code. Tons of
+ * Testarossa code is there only to improve performance-not for correctness-and
  * can therefore be guarded by performTransformation.
  *
  * A call in a hypothetical dead code elimination might look like this:
@@ -210,10 +211,10 @@ enum ProfilingMode
  * Most importantly, it identifies exactly the code that should be skipped if
  * someone wanted to prevent this opt from occurring in certain cases. Even if
  * you know nothing about an optimization, you can locate its
- * performTransformation call(s) and add an additional clause to this “if”
+ * performTransformation call(s) and add an additional clause to this "if"
  * statement, secure in the knowledge that skipping this code will not leave
  * the optimization in some undefined state. The author of the optimization
- * has identified this code as “skippable”, so you can be fairly certain that
+ * has identified this code as "skippable", so you can be fairly certain that
  * skipping it will do just what you want.
  *
  * If you are developing code that has optional parts, it is strongly
@@ -820,9 +821,16 @@ public:
    const char *getHotnessName();
 
    template<typename Exception>
-   void failCompilation(const char *reason)
+   void failCompilation(const char *format, ...)
       {
-      OMR::Compilation::reportFailure(reason);
+      char buffer[512];
+
+      va_list args;
+      va_start(args, format);
+      vsnprintf (buffer, sizeof(buffer), format, args);
+      va_end(args);
+
+      OMR::Compilation::reportFailure(buffer);
       throw Exception();
       }
 
@@ -1051,6 +1059,18 @@ public:
    TR::Region &aliasRegion();
    void invalidateAliasRegion();
 
+   /** \brief
+    *	    Requests the layout of a type. The layout here means how the fields 
+    *     are laid out in an object of the given type.
+    * 
+    *  \param clazz
+    *     Class of the type whose layout is requested.
+    * 
+    *  \return
+    *     Returns a TypeLayout object pointer.
+    */
+   const TR::TypeLayout* typeLayout(TR_OpaqueClassBlock * clazz);
+
 private:
    void resetVisitCounts(vcount_t, TR::ResolvedMethodSymbol *);
    int16_t restoreInlineDepthUntil(int32_t stopIndex, TR_ByteCodeInfo &currentInfo);
@@ -1261,6 +1281,11 @@ private:
    int32_t _gpuPtxCount;
 
    BitVectorPool _bitVectorPool; //MUST be declared after _trMemory
+
+   typedef TR::typed_allocator<std::pair<TR_OpaqueClassBlock* const, const TR::TypeLayout *>, TR::Region &> LayoutAllocator;
+   typedef std::less<TR_OpaqueClassBlock*> LayoutComparator;
+   typedef std::map<TR_OpaqueClassBlock *, const TR::TypeLayout *, LayoutComparator, LayoutAllocator> TypeLayoutMap;
+   TypeLayoutMap _typeLayoutMap;
 
    /*
     * This must be last

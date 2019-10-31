@@ -60,6 +60,7 @@
 #undef OMR_GC_CONCURRENT_SCAVENGER
 #undef OMR_GC_MODRON_STANDARD
 #undef OMR_GC_NON_ZERO_TLH
+#undef OMR_GC_SCAN_OBJECT_GLUE
 #undef OMR_GC_SEGREGATED_HEAP
 #undef OMR_GC_THREAD_LOCAL_HEAP
 #undef OMR_GC_DOUBLE_MAP_ARRAYLETS
@@ -136,9 +137,7 @@
 #undef OMR_ENV_DATA64
 #undef OMR_ENV_GCC
 #undef OMR_ENV_LITTLE_ENDIAN
-#define OMR_GC_ARRAYLETS
 #undef OMR_GC_COMPRESSED_POINTERS
-#define OMR_GC_HYBRID_ARRAYLETS
 #undef OMR_GC_OBJECT_MAP
 #undef OMR_GC_REALTIME
 #undef OMR_GC_TLH_PREFETCH_FTA
@@ -267,5 +266,11 @@
 #elif defined(J9ZOS390)
 #define OMR_USE_ZOS_SEMAPHORES
 #endif
+
+/**
+ * This flag enables the usage of the MCS (queue-based) lock instead of the default
+ * TATAS (Test & Test & Set) lock in the OMR thread monitor.
+ */
+#undef OMR_THR_MCS_LOCKS
 
 #endif /* !defined(OMRCFG_H_) */

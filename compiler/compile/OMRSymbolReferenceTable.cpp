@@ -48,22 +48,22 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/RegisterMappedSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/RegisterMappedSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "ilgen/IlGen.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
@@ -958,7 +958,12 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
    //
 
    TR_OpaqueMethodBlock *method = fe()->getMethodFromName(className, methodName, methodSignature);
-   TR_ASSERT(method, "methodSymRefFromName: method must exist: %s.%s%s", className, methodName, methodSignature);
+
+   // It is possible for getMethodFromName to return NULL in relocatable compilations
+   if (!method && comp()->compileRelocatableCode())
+      comp()->failCompilation<TR::CompilationException>("Failed to get method %s.%s%s from name", className, methodName, methodSignature);
+
+   TR_ASSERT_FATAL(method, "methodSymRefFromName: method must exist: %s.%s%s", className, methodName, methodSignature);
    TR_ASSERT(kind != TR::MethodSymbol::Virtual, "methodSymRefFromName doesn't support virtual methods"); // Until we're able to look up vtable index
 
    // Note: we use cpIndex=-1 here so we don't end up getting back the original symref (which will not have the signature we want)

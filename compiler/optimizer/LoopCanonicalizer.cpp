@@ -39,14 +39,14 @@
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/Cfg.hpp"
@@ -1311,14 +1311,16 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
    splitter2->setFrequency(sumPredFreq);
    if (loopBody->isCold())
       {
-      traceMsg(comp(), "Setting s2 block_%d cold because loop body is cold\n", splitter2->getNumber());
+      if (trace())
+         traceMsg(comp(), "Setting s2 block_%d cold because loop body is cold\n", splitter2->getNumber());
       splitter2->setIsCold(true);
       }
 
    splitter1->setFrequency(exitBlockFrequency);
    if (joinBlock->isCold())
       {
-      traceMsg(comp(), "Setting s1 block_%d cold because join block is cold\n", splitter1->getNumber());
+      if (trace())
+         traceMsg(comp(), "Setting s1 block_%d cold because join block is cold\n", splitter1->getNumber());
       splitter2->setIsCold(true);
       }
 

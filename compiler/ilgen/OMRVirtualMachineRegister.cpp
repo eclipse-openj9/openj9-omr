@@ -35,7 +35,7 @@ OMR::VirtualMachineRegister::VirtualMachineRegister(
    _pointerToRegisterType(pointerToRegisterType),
    _adjustByStep(adjustByStep)
    {
-   TR_ASSERT(pointerToRegisterType->isPointer(),
+   TR_ASSERT_FATAL(pointerToRegisterType->isPointer(),
          "VirtualMachineRegister for %s requires pointerToRegisterType (%s) to be a pointer",
          localName, pointerToRegisterType->getName());
 
@@ -44,14 +44,14 @@ OMR::VirtualMachineRegister::VirtualMachineRegister(
       {
       TR::IlType *baseType = _integerTypeForAdjustments->baseType();
       _integerTypeForAdjustments = b->typeDictionary()->getWord();
-      TR_ASSERT(adjustByStep == baseType->getSize(),
+      TR_ASSERT_FATAL(adjustByStep == baseType->getSize(),
             "VirtualMachineRegister for %s adjustByStep (%u) != size represented by pointerToRegisterType (%u)",
             localName, _adjustByStep, baseType->getSize());
       _isAdjustable = true;
       }
    else
       {
-      TR_ASSERT(adjustByStep == 0, "VirtualMachineRegister for %s is representing a primitive type but adjustByStep (%u) != 0", localName, _adjustByStep);
+      TR_ASSERT_FATAL(adjustByStep == 0, "VirtualMachineRegister for %s is representing a primitive type but adjustByStep (%u) != 0", localName, _adjustByStep);
       _isAdjustable = false;
       }
    Reload(b);
@@ -60,7 +60,7 @@ OMR::VirtualMachineRegister::VirtualMachineRegister(
 void
 OMR::VirtualMachineRegister::adjust(TR::IlBuilder *b, TR::IlValue *rawAmount)
    {
-   TR_ASSERT(_isAdjustable, "VirtualMachineRegister can not be adjusted as it is simulating a primitive type");
+   TR_ASSERT_FATAL(_isAdjustable, "VirtualMachineRegister can not be adjusted as it is simulating a primitive type");
    b->Store(_localName,
    b->   Add(
    b->      Load(_localName),

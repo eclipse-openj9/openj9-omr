@@ -81,22 +81,22 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
@@ -468,8 +468,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsLoweringConstIDiv();
    self()->setSupportsTestUnderMask();
 
-   // Initialize preprologue offset to be 8 bytes for bodyInfo / methodInfo
-   self()->setPreprologueOffset(8);
+   // Initialize to be 8 bytes for bodyInfo / methodInfo
+   self()->setPreJitMethodEntrySize(8);
 
    // Support divided by power of 2 logic in ldivSimplifier
    self()->setSupportsLoweringConstLDivPower2();
@@ -2455,38 +2455,13 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    uint8_t *coldCode = NULL;
    uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
 
-
    self()->setBinaryBufferStart(temp);
    self()->setBinaryBufferCursor(temp);
-
-
-   static char *disableAlignJITEP = feGetEnv("TR_DisableAlignJITEP");
-
-   // Adjust the binary buffer cursor with appropriate padding.
-   if (!disableAlignJITEP && !self()->comp()->compileRelocatableCode() && self()->allowSplitWarmAndColdBlocks())
-      {
-      int32_t alignedBase = 256 - self()->getPreprologueOffset();
-      int32_t padBase = ( 256 + alignedBase - ((intptrj_t)temp) % 256) % 256;
-
-      // Threshold determines the maximum number of bytes to align.  If the JIT EP is already close
-      // to the beginning of the cache line (i.e. pad bytes is big), then we might not benefit from
-      // aligning JIT EP to the true cache boundary.  By default, we align only if padByte exceed 192.
-      static char *alignJITEPThreshold = feGetEnv("TR_AlignJITEPThreshold");
-      int32_t threshold = (alignJITEPThreshold)?atoi(alignJITEPThreshold):192;
-
-      if (padBase < threshold)
-         {
-         self()->setBinaryBufferCursor(temp + padBase);
-         }
-      }
+   self()->alignBinaryBufferCursor();
 
    while (data.cursorInstruction)
       {
-      uint8_t * const instructionStart = self()->getBinaryBufferCursor();
-      if (data.cursorInstruction->isBreakPoint())
-         {
-         self()->addBreakPointAddress(instructionStart);
-         }
+      uint8_t* const instructionStart = self()->getBinaryBufferCursor();
 
       self()->setBinaryBufferCursor(data.cursorInstruction->generateBinaryEncoding());
 
@@ -2595,6 +2570,9 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             }
          }
       }
+
+   self()->getLinkage()->performPostBinaryEncoding();
+
    }
 
 /**
@@ -4716,6 +4694,18 @@ bool
 OMR::Z::CodeGenerator::excludeInvariantsFromGRAEnabled()
    {
    return true;
+   }
+
+uint32_t
+OMR::Z::CodeGenerator::getJitMethodEntryAlignmentBoundary()
+   {
+   return 256;
+   }
+
+uint32_t
+OMR::Z::CodeGenerator::getJitMethodEntryAlignmentThreshold()
+   {
+   return 192;
    }
 
 /**

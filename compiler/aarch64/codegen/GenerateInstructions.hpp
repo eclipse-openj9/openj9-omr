@@ -593,6 +593,28 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates logical immediate instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] s1reg : source register
+ * @param[in] N : N bit (bit 22) value
+ * @param[in] imms : immediate value
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateLogicalImmInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *s1reg,
+                   bool N,
+                   uint32_t imm,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates CMP (immediate) instruction
  * @param[in] cg : CodeGenerator
  * @param[in] node : node

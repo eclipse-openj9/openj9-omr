@@ -60,22 +60,22 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "ilgen/IlGenRequest.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
@@ -292,7 +292,7 @@ TR_InlinerBase::setSizeThreshold(uint32_t size)
 
    _methodByteCodeSizeThreshold = size;
 
-   alwaysTrace(tracer(),"Setting method size threshold (_methodByteCodeSizeThreshold) to %d\n",_methodByteCodeSizeThreshold);
+   heuristicTrace(tracer(),"Setting method size threshold (_methodByteCodeSizeThreshold) to %d\n",_methodByteCodeSizeThreshold);
    }
 
 void
@@ -1815,6 +1815,10 @@ TR_InlinerBase::addGuardForVirtual(
    if (!disableHCRGuards && comp()->getHCRMode() != TR::none && guard->_kind != TR_HCRGuard && !skipHCRGuardForCallee)
       {
       createdHCRAndVirtualGuard = true;
+      TR_OpaqueClassBlock* methodClass = calleeSymbol->getResolvedMethod()->classOfMethod();
+      TR_ASSERT(methodClass, "Class of inlined method shoun't be null");
+      if (comp()->trace(OMR::inlining))
+         traceMsg(comp(), "HCR guard method class is %p\n", methodClass);
 
       // we merge virtual guards and OSR guards for simplicity in most modes
       // when using OSR to implement HCR we keep the HCR guards distinct since they
@@ -1826,10 +1830,14 @@ TR_InlinerBase::addGuardForVirtual(
          if (guardNode)
             {
             TR_VirtualGuard *virtualGuard = comp()->findVirtualGuardInfo(guardNode);
-            if (virtualGuard)
+            if (virtualGuard &&
+                virtualGuard->getThisClass() &&
+                virtualGuard->getThisClass() == methodClass)
                {
                virtualGuard->setMergedWithHCRGuard();
                skipHCRGuardCreation = true;
+               if (comp()->trace(OMR::inlining))
+                  traceMsg(comp(), "Merge HCR guard with virtual guard %p n%dn\n", guardNode, guardNode->getGlobalIndex());
                }
             }
          }
@@ -1847,7 +1855,7 @@ TR_InlinerBase::addGuardForVirtual(
          hcrTreeTop = hcrBlock->append(TR::TreeTop::create(comp(),
                                        createVirtualGuard(callNode, calleeSymbol, block4->getEntry(),
                                           calleeSymbol->getFirstTreeTop()->getNode()->getInlinedSiteIndex(),
-                                          thisClass, tif.favourVftCompare(), hcrGuard)));
+                                          methodClass, tif.favourVftCompare(), hcrGuard)));
          hcrBlock->setDoNotProfile();
          block1->getExit()->join(hcrBlock->getEntry());
          hcrBlock->getExit()->join(block2->getEntry());

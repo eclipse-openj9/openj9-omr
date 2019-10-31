@@ -665,6 +665,7 @@ OMRTHREAD_LIB_UNIX
 OMRTHREAD_LIB_ZOS
 OMRTHREAD_LIB_WIN32
 OMRTHREAD_LIB_AIX
+OMR_THR_MCS_LOCKS
 OMRPORT_OMRSIG_SUPPORT
 OMR_PORT_ZOS_CEEHDLRSUPPORT
 OMR_PORT_ALLOCATE_TOP_DOWN
@@ -694,10 +695,10 @@ OMR_PORT_ASYNC_HANDLER
 OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
 OMR_GC_VLHGC
 OMR_GC_SEGREGATED_HEAP
+OMR_GC_SCAN_OBJECT_GLUE
 OMR_GC_REALTIME
 OMR_GC_OBJECT_ALLOCATION_NOTIFY
 OMR_GC_LEAF_BITS
-OMR_GC_HYBRID_ARRAYLETS
 OMR_GC_CONCURRENT_SWEEP
 OMR_GC_CONCURRENT_SCAVENGER
 OMR_GC_DOUBLE_MAP_ARRAYLETS
@@ -721,7 +722,6 @@ OMR_GC_HEAP_CARD_TABLE
 OMR_GC_DEBUG_ASSERTS
 OMR_GC_COMBINATION_SPEC
 OMR_GC_BATCH_CLEAR_TLH
-OMR_GC_ARRAYLETS
 OMR_GC_ALLOCATION_TAX
 OMR_RTTI
 OMR_EXAMPLE
@@ -835,7 +835,6 @@ enable_OMR_OMRSIG
 enable_OMR_EXAMPLE
 enable_OMR_RTTI
 enable_OMR_GC_ALLOCATION_TAX
-enable_OMR_GC_ARRAYLETS
 enable_OMR_GC_BATCH_CLEAR_TLH
 enable_OMR_GC_COMBINATION_SPEC
 enable_OMR_GC_DEBUG_ASSERTS
@@ -859,10 +858,10 @@ enable_OMR_GC_MODRON_SCAVENGER
 enable_OMR_GC_DOUBLE_MAP_ARRAYLETS
 enable_OMR_GC_CONCURRENT_SCAVENGER
 enable_OMR_GC_CONCURRENT_SWEEP
-enable_OMR_GC_HYBRID_ARRAYLETS
 enable_OMR_GC_LEAF_BITS
 enable_OMR_GC_OBJECT_ALLOCATION_NOTIFY
 enable_OMR_GC_REALTIME
+enable_OMR_GC_SCAN_OBJECT_GLUE
 enable_OMR_GC_SEGREGATED_HEAP
 enable_OMR_GC_VLHGC
 enable_OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
@@ -892,6 +891,7 @@ enable_OMR_OPT_CUDA
 enable_OMR_PORT_ALLOCATE_TOP_DOWN
 enable_OMR_PORT_ZOS_CEEHDLRSUPPORT
 enable_OMRPORT_OMRSIG_SUPPORT
+enable_OMR_THR_MCS_LOCKS
 enable_OMRTHREAD_LIB_AIX
 enable_OMRTHREAD_LIB_WIN32
 enable_OMRTHREAD_LIB_ZOS
@@ -1581,8 +1581,6 @@ Optional Features:
   --enable-OMR_RTTI       Whether we are building OMR with RTTI. (Default: no)
   --disable-OMR_GC_ALLOCATION_TAX
 
-  --disable-OMR_GC_ARRAYLETS
-
   --disable-OMR_GC_BATCH_CLEAR_TLH
 
   --disable-OMR_GC_COMBINATION_SPEC
@@ -1628,13 +1626,13 @@ Optional Features:
 
   --enable-OMR_GC_CONCURRENT_SWEEP
 
-  --disable-OMR_GC_HYBRID_ARRAYLETS
-
   --enable-OMR_GC_LEAF_BITS
 
   --enable-OMR_GC_OBJECT_ALLOCATION_NOTIFY
 
   --enable-OMR_GC_REALTIME
+
+  --enable-OMR_GC_SCAN_OBJECT_GLUE
 
   --enable-OMR_GC_SEGREGATED_HEAP
 
@@ -1685,6 +1683,8 @@ Optional Features:
   --enable-OMR_PORT_ZOS_CEEHDLRSUPPORT
 
   --enable-OMRPORT_OMRSIG_SUPPORT
+
+  --enable-OMR_THR_MCS_LOCKS
 
   --enable-OMRTHREAD_LIB_AIX
 
@@ -5517,27 +5517,6 @@ else
 fi
 
 
-# Check whether --enable-OMR_GC_ARRAYLETS was given.
-if test "${enable_OMR_GC_ARRAYLETS+set}" = set; then :
-  enableval=$enable_OMR_GC_ARRAYLETS; if test "x${enableval}" = xyes; then :
-  OMR_GC_ARRAYLETS=1
-
-   $as_echo "#define OMR_GC_ARRAYLETS 1" >>confdefs.h
-
-else
-  OMR_GC_ARRAYLETS=0
-
-
-fi
-else
-  OMR_GC_ARRAYLETS=1
-
-   $as_echo "#define OMR_GC_ARRAYLETS 1" >>confdefs.h
-
-
-fi
-
-
 # Check whether --enable-OMR_GC_BATCH_CLEAR_TLH was given.
 if test "${enable_OMR_GC_BATCH_CLEAR_TLH+set}" = set; then :
   enableval=$enable_OMR_GC_BATCH_CLEAR_TLH; if test "x${enableval}" = xyes; then :
@@ -6013,27 +5992,6 @@ else
 fi
 
 
-# Check whether --enable-OMR_GC_HYBRID_ARRAYLETS was given.
-if test "${enable_OMR_GC_HYBRID_ARRAYLETS+set}" = set; then :
-  enableval=$enable_OMR_GC_HYBRID_ARRAYLETS; if test "x${enableval}" = xyes; then :
-  OMR_GC_HYBRID_ARRAYLETS=1
-
-   $as_echo "#define OMR_GC_HYBRID_ARRAYLETS 1" >>confdefs.h
-
-else
-  OMR_GC_HYBRID_ARRAYLETS=0
-
-
-fi
-else
-  OMR_GC_HYBRID_ARRAYLETS=1
-
-   $as_echo "#define OMR_GC_HYBRID_ARRAYLETS 1" >>confdefs.h
-
-
-fi
-
-
 # Check whether --enable-OMR_GC_LEAF_BITS was given.
 if test "${enable_OMR_GC_LEAF_BITS+set}" = set; then :
   enableval=$enable_OMR_GC_LEAF_BITS; if test "x${enableval}" = xyes; then :
@@ -6086,6 +6044,25 @@ else
 fi
 else
   OMR_GC_REALTIME=0
+
+
+fi
+
+
+# Check whether --enable-OMR_GC_SCAN_OBJECT_GLUE was given.
+if test "${enable_OMR_GC_SCAN_OBJECT_GLUE+set}" = set; then :
+  enableval=$enable_OMR_GC_SCAN_OBJECT_GLUE; if test "x${enableval}" = xyes; then :
+  OMR_GC_SCAN_OBJECT_GLUE=1
+
+   $as_echo "#define OMR_GC_SCAN_OBJECT_GLUE 1" >>confdefs.h
+
+else
+  OMR_GC_SCAN_OBJECT_GLUE=0
+
+
+fi
+else
+  OMR_GC_SCAN_OBJECT_GLUE=0
 
 
 fi
@@ -7010,6 +6987,25 @@ else
 fi
 else
   OMRPORT_OMRSIG_SUPPORT=0
+
+
+fi
+
+
+# Check whether --enable-OMR_THR_MCS_LOCKS was given.
+if test "${enable_OMR_THR_MCS_LOCKS+set}" = set; then :
+  enableval=$enable_OMR_THR_MCS_LOCKS; if test "x${enableval}" = xyes; then :
+  OMR_THR_MCS_LOCKS=1
+
+   $as_echo "#define OMR_THR_MCS_LOCKS 1" >>confdefs.h
+
+else
+  OMR_THR_MCS_LOCKS=0
+
+
+fi
+else
+  OMR_THR_MCS_LOCKS=0
 
 
 fi

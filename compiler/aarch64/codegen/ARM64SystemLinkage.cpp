@@ -28,8 +28,8 @@
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "env/StackMemoryRegion.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
 
 
 TR::ARM64SystemLinkage::ARM64SystemLinkage(TR::CodeGenerator *cg)
@@ -847,3 +847,15 @@ TR::Register *TR::ARM64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    TR_UNIMPLEMENTED();
    return NULL;
    }
+
+
+intptrj_t TR::ARM64SystemLinkage::entryPointFromCompiledMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+
+intptrj_t TR::ARM64SystemLinkage::entryPointFromInterpretedMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+

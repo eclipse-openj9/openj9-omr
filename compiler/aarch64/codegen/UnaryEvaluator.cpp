@@ -116,7 +116,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::labsEvaluator(TR::Node *node, TR::CodeG
    return commonIntegerAbsEvaluator(node, cg);
    }
 
-// also handles i2b, i2s, l2b, l2s
+// also handles i2b, i2s, l2b, l2s, s2b
 TR::Register *OMR::ARM64::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *child = node->getFirstChild();

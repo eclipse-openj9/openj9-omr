@@ -41,17 +41,17 @@
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/RegisterMappedSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/RegisterMappedSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/Flags.hpp"
@@ -480,7 +480,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
 
 #ifdef J9_PROJECT_SPECIFIC
          TR_ResolvedMethod * method = resolvedMethodSymbol->getResolvedMethod();
-         TR_PersistentMethodInfo * methodInfo = TR_PersistentMethodInfo::get(method);
+         TR_PersistentMethodInfo * methodInfo = comp->getRecompilationInfo() ? TR_PersistentMethodInfo::get(method) : NULL;
          if (methodInfo && (methodInfo->hasRefinedAliasSets() ||
                             comp->getMethodHotness() >= veryHot ||
                             resolvedMethodSymbol->hasVeryRefinedAliasSets()) &&

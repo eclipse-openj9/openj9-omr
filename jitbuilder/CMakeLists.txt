@@ -27,7 +27,7 @@ find_package(PythonInterp REQUIRED)
 # JitBuilder Files
 set(JITBUILDER_OBJECTS
 	env/FrontEnd.cpp
-	compile/Method.cpp
+	compile/ResolvedMethod.cpp
 	control/Jit.cpp
 	ilgen/JBIlGeneratorMethodDetails.cpp
 	optimizer/JBOptimizer.hpp

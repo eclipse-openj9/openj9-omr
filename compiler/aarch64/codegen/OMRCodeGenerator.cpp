@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "codegen/ARM64Instruction.hpp"
+#include "codegen/ARM64OutOfLineCodeSection.hpp"
 #include "codegen/ARM64SystemLinkage.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
@@ -35,6 +36,7 @@
 #include "codegen/TreeEvaluator.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/StaticSymbol.hpp"
 
 OMR::ARM64::CodeGenerator::CodeGenerator() :
       OMR::CodeGenerator(),
@@ -119,6 +121,9 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
       self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
       self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
       }
+
+   self()->getLinkage()->setParameterLinkageRegisterIndex(self()->comp()->getJittedMethodSymbol());
+
    }
 
 void
@@ -214,15 +219,9 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
    TR::Compilation *comp = self()->comp();
    int32_t estimate = 0;
    TR::Instruction *cursorInstruction = self()->getFirstInstruction();
+   TR::Instruction *i2jEntryInstruction = cursorInstruction;
 
    self()->getLinkage()->createPrologue(cursorInstruction);
-
-   TR::Instruction *prologueCursor = self()->getFirstInstruction();
-   for (TR::Instruction *gcMapCursor = prologueCursor; NULL!= gcMapCursor; gcMapCursor = gcMapCursor->getNext())
-      {
-      if (gcMapCursor->needsGCMap())
-         gcMapCursor->setGCMap(self()->getStackAtlas()->getParameterMap()->clone(self()->trMemory()));
-      }
 
    bool skipOneReturn = false;
    while (cursorInstruction)
@@ -260,8 +259,40 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
    while (cursorInstruction)
       {
       self()->setBinaryBufferCursor(cursorInstruction->generateBinaryEncoding());
+      self()->addToAtlas(cursorInstruction);
+
+      if (cursorInstruction == i2jEntryInstruction)
+         {
+         self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart());
+         self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
+         }
+
       cursorInstruction = cursorInstruction->getNext();
       }
+
+   // Create exception table entries for outlined instructions.
+   //
+   if (!self()->comp()->getOption(TR_DisableOOL))
+      {
+      auto oiIterator = self()->getARM64OutOfLineCodeSectionList().begin();
+      while (oiIterator != self()->getARM64OutOfLineCodeSectionList().end())
+         {
+         uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
+         uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
+
+         TR::Block * block = (*oiIterator)->getBlock();
+         bool needsETE = (*oiIterator)->getFirstInstruction()->getNode()->getOpCode().hasSymbolReference() &&
+                         (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference() &&
+                         (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference()->canCauseGC();
+
+         if (needsETE && block && !block->getExceptionSuccessors().empty())
+            block->addExceptionRangeForSnippet(startOffset, endOffset);
+
+         ++oiIterator;
+         }
+      }
+
+   self()->getLinkage()->performPostBinaryEncoding();
    }
 
 TR::Linkage *OMR::ARM64::CodeGenerator::createLinkage(TR_LinkageConventions lc)

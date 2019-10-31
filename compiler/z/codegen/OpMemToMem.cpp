@@ -38,11 +38,11 @@
 #include "il/AliasSetInterface.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/List.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
@@ -113,7 +113,7 @@ MemToMemVarLenMacroOp::generateLoop()
    //
    // But first, load up the branch address into raReg for two reasons:
    // 1) to avoid the AGI on the indirection and (more importantly)
-   // 2) to ensure that no wierd spilling happens if the code decides it needs
+   // 2) to ensure that no weird spilling happens if the code decides it needs
    //    to allocate a register at this point for the literal pool base address.
    intptrj_t helper = 0;
 

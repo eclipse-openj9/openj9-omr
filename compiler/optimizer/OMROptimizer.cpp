@@ -51,11 +51,11 @@
 #include "il/Node.hpp"
 #include "il/NodePool.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/Cfg.hpp"
@@ -175,7 +175,9 @@ const OptimizationStrategy expensiveObjectAllocationOpts[] =
 
 const OptimizationStrategy eachEscapeAnalysisPassOpts[] =
    {
+   { preEscapeAnalysis,           IfOSR     },
    { escapeAnalysis                         },
+   { postEscapeAnalysis,          IfOSR     },
    { eachEscapeAnalysisPassGroup, IfEnabled }, // if another pass requested
    { endGroup                               }
    };
@@ -285,7 +287,9 @@ const OptimizationStrategy partialRedundancyEliminationOpts[] =
    { localReordering,             IfEnabled }, // PRE may create temp stores that can be moved closer to uses
    { globalValuePropagation,      IfEnabledAndMoreThanOneBlockMarkLastRun  }, // GVP (after PRE)
 #ifdef J9_PROJECT_SPECIFIC
+   { preEscapeAnalysis,           IfOSR     },
    { escapeAnalysis,              IfEAOpportunitiesMarkLastRun }, // to stack-allocate after loopversioner and localCSE
+   { postEscapeAnalysis,          IfOSR     },
 #endif
    { basicBlockOrdering,          IfLoops }, // early ordering with no extension
    { globalCopyPropagation,       IfLoops }, // for Loop Versioner

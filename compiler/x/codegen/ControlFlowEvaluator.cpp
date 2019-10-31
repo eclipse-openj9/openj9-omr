@@ -57,14 +57,14 @@
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
 #include "infra/List.hpp"
@@ -2239,7 +2239,7 @@ TR::Register *OMR::X86::TreeEvaluator::sucmpeqEvaluator(TR::Node *node, TR::Code
    if (cg->enableRegisterInterferences())
       cg->getLiveRegisters(TR_GPR)->setByteRegisterAssociation(targetRegister);
 
-   generateRegInstruction(SETNE1Reg, node, targetRegister, cg);
+   generateRegInstruction(node->getOpCodeValue() == TR::sucmpeq ? SETE1Reg : SETNE1Reg, node, targetRegister, cg);
    generateRegRegInstruction(MOVZXReg4Reg1, node, targetRegister, targetRegister, cg);
    return targetRegister;
    }

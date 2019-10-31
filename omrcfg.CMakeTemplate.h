@@ -61,6 +61,7 @@
 #cmakedefine OMR_GC_MODRON_STANDARD
 #cmakedefine OMR_GC_NON_ZERO_TLH
 #cmakedefine OMR_GC_OBJECT_ALLOCATION_NOTIFY
+#cmakedefine OMR_GC_SCAN_OBJECT_GLUE
 #cmakedefine OMR_GC_SEGREGATED_HEAP
 #cmakedefine OMR_GC_THREAD_LOCAL_HEAP
 #cmakedefine OMR_GC_VLHGC
@@ -134,12 +135,16 @@
  */
 #cmakedefine OMR_ARCH_S390
 
+/**
+ * This spec targets RISC-V processors.
+ */
+#cmakedefine OMR_ARCH_RISCV
+
+
 #cmakedefine OMR_ENV_DATA64
 #cmakedefine OMR_ENV_GCC
 #cmakedefine OMR_ENV_LITTLE_ENDIAN
-#define OMR_GC_ARRAYLETS
 #cmakedefine OMR_GC_COMPRESSED_POINTERS
-#define OMR_GC_HYBRID_ARRAYLETS
 #cmakedefine OMR_GC_OBJECT_MAP
 #cmakedefine OMR_GC_REALTIME
 #cmakedefine OMR_GC_TLH_PREFETCH_FTA
@@ -242,5 +247,11 @@
 #cmakedefine OMR_USE_POSIX_SEMAPHORES
 #cmakedefine OMR_USE_OSX_SEMAPHORES
 #cmakedefine OMR_USE_ZOS_SEMAPHORES
+
+/**
+ * This flag enables the usage of the MCS (queue-based) lock instead of the default
+ * TATAS (Test & Test & Set) lock in the OMR thread monitor.
+ */
+#cmakedefine OMR_THR_MCS_LOCKS
 
 #endif /* !defined(OMRCFG_H_) */

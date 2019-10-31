@@ -113,8 +113,8 @@ endif()
 
 set_target_properties(omrporttest sltestlib PROPERTIES FOLDER fvtest)
 
-add_test(NAME porttest COMMAND omrporttest)
+add_test(NAME porttest COMMAND omrporttest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml)
 
 if(OMR_OPT_CUDA)
-	add_test(NAME cuda_porttest COMMAND omrporttest --gtest_filter="Cuda*" -earlyExit)
+	add_test(NAME cuda_porttest COMMAND omrporttest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml --gtest_filter="Cuda*" -earlyExit)
 endif()

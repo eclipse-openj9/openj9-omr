@@ -69,22 +69,22 @@
 #include "env/TRMemory.hpp"
 #include "env/defines.h"
 #include "env/jittypes.h"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
@@ -6686,12 +6686,12 @@ inlineTrailingZerosQuadWordAtATime(
    cursor = generateS390LabelInstruction (cg, TR::InstOpCode::LABEL, node, LabelProcessNext8Bytes);                                                            iComment("====== core loop ======");
    LabelProcessNext8Bytes->setStartInternalControlFlow();
 
-   cursor = generateRXInstruction        (cg, TR::InstOpCode::getLoadOpCode(), node, rInput, generateS390MemoryReference(rInputByteArray, rOffset, 0, cg));  iComment("next double-word");
-   cursor = generateRIEInstruction       (cg, is64 ? TR::InstOpCode::CGIJ : TR::InstOpCode::CIJ, node, rInput, (int8_t) 0x0, cFlowRegionEnd, TR::InstOpCode::COND_BNE);     iComment("byte is non-zero?");
-   cursor = generateRXInstruction        (cg, TR::InstOpCode::getLoadOpCode(), node, rInput, generateS390MemoryReference(rInputByteArray, rOffset, 8, cg));  iComment("next double-word");
-   cursor = generateRIEInstruction       (cg, is64 ? TR::InstOpCode::CGIJ : TR::InstOpCode::CIJ, node, rInput, (int8_t) 0x0, cFlowRegionEnd, TR::InstOpCode::COND_BNE);     iComment("byte is non-zero?");
-   cursor = generateRXInstruction        (cg, TR::InstOpCode::LAY, node, rOffset, generateS390MemoryReference(rOffset, -16, cg));
-   cursor = generateS390BranchInstruction(cg, is64 ?TR::InstOpCode::BRCTG : TR::InstOpCode::BRCT, node, rBranchCounter, LabelProcessNext8Bytes);
+   cursor = generateRXInstruction                  (cg, TR::InstOpCode::getLoadOpCode(), node, rInput, generateS390MemoryReference(rInputByteArray, rOffset, 0, cg));  iComment("next double-word");
+   cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, rInput, 0x0, TR::InstOpCode::COND_BNE, cFlowRegionEnd);     iComment("byte is non-zero?");
+   cursor = generateRXInstruction                  (cg, TR::InstOpCode::getLoadOpCode(), node, rInput, generateS390MemoryReference(rInputByteArray, rOffset, 8, cg));  iComment("next double-word");
+   cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, rInput, 0x0, TR::InstOpCode::COND_BNE, cFlowRegionEnd);     iComment("byte is non-zero?");
+   cursor = generateRXInstruction                  (cg, TR::InstOpCode::LAY, node, rOffset, generateS390MemoryReference(rOffset, -16, cg));
+   cursor = generateS390BranchInstruction          (cg, is64 ?TR::InstOpCode::BRCTG : TR::InstOpCode::BRCT, node, rBranchCounter, LabelProcessNext8Bytes);
 
    // doneLabel : we get here in 3 cases: i. if no trailing non-zeros were found ii. if trailing non-zero was found in core-loop iii. if trailing non-zero was found in residue processing
    cursor = generateS390LabelInstruction (cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, regDeps);
@@ -9856,11 +9856,6 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       //keeping proper track of block indexes by codegen, can comment out following
       //cg->setCurrentBlockIndex(node->getBlock()->getNumber());
       node->getLabel()->setInstruction(labelInstr);
-
-      if (comp->getOption(TR_BreakBBStart))
-         {
-         firstInstr->setBreakPoint(true);
-         }
       }
 
 
@@ -10354,7 +10349,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
          dependencies->addPostCondition(raReg, cg->getReturnAddressRegister());
 
          // At first, load up the branch address into raReg, because
-         // to ensure that no wierd spilling happens if the code decides it needs
+         // to ensure that no weird spilling happens if the code decides it needs
          // to allocate a register at this point for the literal pool base address.
          intptrj_t helper = (intptrj_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayTranslateAndTestHelper, false, false, false)->getMethodAddress();
 
@@ -12177,7 +12172,7 @@ OMR::Z::TreeEvaluator::long2StringEvaluator(TR::Node * node, TR::CodeGenerator *
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, labelDigit1);
 
    // At first, load up the branch address into raReg, because
-   // to ensure that no wierd spilling happens if the code decides it needs
+   // to ensure that no weird spilling happens if the code decides it needs
    // to allocate a register at this point for the literal pool base address.
    intptrj_t helper = (intptrj_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390long2StringHelper,false,false,false)->getMethodAddress();
    genLoadAddressConstant(cg, node, helper, raReg);
@@ -15359,7 +15354,7 @@ inlineStringHashCode(TR::Node* node, TR::CodeGenerator* cg, bool isCompressed)
    generateRREInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, registerHash, registerHash);
 
    // Branch to labelSerial if registerCount < stringSize
-   generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalOpCode(), node, registerCount, stringSize, TR::InstOpCode::COND_MASK4, labelSerial, false, false);
+   generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalOpCode(), node, registerCount, static_cast<int32_t>(stringSize), TR::InstOpCode::COND_MASK4, labelSerial, false, false);
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, labelVector);
 

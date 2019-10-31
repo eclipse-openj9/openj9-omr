@@ -47,6 +47,7 @@ MM_MasterGCThread::MM_MasterGCThread(MM_EnvironmentBase *env)
 	, _collector(NULL)
 	, _runAsImplicit(false)
 	, _acquireVMAccessDuringConcurrent(false)
+	, _concurrentResumable(false)
 {
 	_typeId = __FUNCTION__;
 }
@@ -79,7 +80,7 @@ MM_MasterGCThread::master_thread_proc(void *info)
 
 
 bool
-MM_MasterGCThread::initialize(MM_Collector *collector, bool runAsImplicit, bool acquireVMAccessDuringConcurrent)
+MM_MasterGCThread::initialize(MM_Collector *collector, bool runAsImplicit, bool acquireVMAccessDuringConcurrent, bool concurrentResumable)
 {
 	bool success = true;
 	if(omrthread_monitor_init_with_name(&_collectorControlMutex, 0, "MM_MasterGCThread::_collectorControlMutex")) {
@@ -89,6 +90,7 @@ MM_MasterGCThread::initialize(MM_Collector *collector, bool runAsImplicit, bool 
 	_collector = collector;
 	_runAsImplicit = runAsImplicit;
 	_acquireVMAccessDuringConcurrent = acquireVMAccessDuringConcurrent;
+	_concurrentResumable = concurrentResumable;
 
 	return success;
 }
@@ -218,8 +220,7 @@ MM_MasterGCThread::handleConcurrent(MM_EnvironmentBase *env)
 			env->releaseVMAccess();
 			omrthread_monitor_enter(_collectorControlMutex);
 		}
-	} while (_collector->getConcurrentPhaseStats()->isTerminationRequestExternal() && _collector->isConcurrentWorkAvailable(env));
-
+	} while (_concurrentResumable && _collector->isConcurrentWorkAvailable(env));
 	if (STATE_RUNNING_CONCURRENT == _masterThreadState) {
 		_masterThreadState = STATE_WAITING;
 	}

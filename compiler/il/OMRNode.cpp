@@ -45,25 +45,25 @@
 #include "env/VMEnv.hpp"
 #include "env/defines.h"
 #include "il/AliasSetInterface.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
 #include "il/IL.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/NodeExtension.hpp"
 #include "il/NodePool.hpp"
 #include "il/NodeUtils.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
+#include "il/StaticSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"
 #include "ilgen/IlGen.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
@@ -536,6 +536,7 @@ OMR::Node::recreateWithSymRef(TR::Node *originalNode, TR::ILOpCodes op, TR::Symb
 TR::Node *
 OMR::Node::recreateAndCopyValidPropertiesImpl(TR::Node *originalNode, TR::ILOpCodes op, TR::SymbolReference *newSymRef)
    {
+   TR_ASSERT_FATAL(TR::Node::isNotDeprecatedUnsigned(op), "Trying to use a deprecated unsigned opcode: #%d \n", op);
    TR_ASSERT(originalNode != NULL, "trying to recreate node from a NULL originalNode.");
    if (originalNode->getOpCodeValue() == op)
       {
@@ -599,6 +600,7 @@ OMR::Node::recreateAndCopyValidPropertiesImpl(TR::Node *originalNode, TR::ILOpCo
 TR::Node *
 OMR::Node::createInternal(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *originalNode)
    {
+   TR_ASSERT_FATAL(TR::Node::isNotDeprecatedUnsigned(op), "The unsigned opcode is deprecated: %d \n", op);
    if (!originalNode)
       return new (TR::comp()->getNodePool()) TR::Node(originatingByteCodeNode, op, numChildren);
    else
@@ -2076,7 +2078,9 @@ OMR::Node::isDualHigh()
       TR::ILOpCodes pairOpValue = self()->getChild(2)->getOpCodeValue();
       if (((self()->getOpCodeValue() == TR::lumulh) && (pairOpValue == TR::lmul))
           || ((self()->getOpCodeValue() == TR::luaddh) && (pairOpValue == TR::luadd))
-          || ((self()->getOpCodeValue() == TR::lusubh) && (pairOpValue == TR::lusub)))
+          || ((self()->getOpCodeValue() == TR::lusubh) && (pairOpValue == TR::lusub))
+          || ((self()->getOpCodeValue() == TR::luaddh) && (pairOpValue == TR::ladd))
+          || ((self()->getOpCodeValue() == TR::lusubh) && (pairOpValue == TR::lsub)))
          return true;
       }
    return false;
@@ -2108,7 +2112,9 @@ OMR::Node::isTernaryHigh()
       TR::ILOpCodes pairOpValue = self()->getChild(2)->getFirstChild()->getOpCodeValue();
       if ((ccOpValue == TR::computeCC) &&
           (((self()->getOpCodeValue() == TR::luaddc) && (pairOpValue == TR::luadd))
-           || ((self()->getOpCodeValue() == TR::lusubb) && (pairOpValue == TR::lusub))))
+           || ((self()->getOpCodeValue() == TR::lusubb) && (pairOpValue == TR::lusub))
+           || ((self()->getOpCodeValue() == TR::luaddc) && (pairOpValue == TR::ladd))
+           || ((self()->getOpCodeValue() == TR::lusubb) && (pairOpValue == TR::lsub))))
          return true;
       }
    return false;
@@ -8155,13 +8161,15 @@ OMR::Node::printCanSkipZeroInitialization()
 bool
 OMR::Node::isAdjunct()
    {
-   return (self()->getOpCodeValue() == TR::lmul || self()->getOpCodeValue() == TR::luadd || self()->getOpCodeValue() == TR::lusub) && _flags.testAny(adjunct);
+   return (self()->getOpCodeValue() == TR::lmul || self()->getOpCodeValue() == TR::luadd || self()->getOpCodeValue() == TR::lusub 
+   || self()->getOpCodeValue() == TR::ladd || self()->getOpCodeValue() == TR::lsub) && _flags.testAny(adjunct);
    }
 
 void
 OMR::Node::setIsAdjunct(bool v)
    {
-   TR_ASSERT(self()->getOpCodeValue() == TR::lmul || self()->getOpCodeValue() == TR::luadd || self()->getOpCodeValue() == TR::lusub, "Opcode must be lmul, lusub, or luadd");
+   TR_ASSERT(self()->getOpCodeValue() == TR::lmul || self()->getOpCodeValue() == TR::luadd || self()->getOpCodeValue() == TR::lusub
+   || self()->getOpCodeValue() == TR::ladd || self()->getOpCodeValue() == TR::lsub, "Opcode must be lmul, luadd, lusub, ladd or lsub");
    _flags.set(adjunct, v);
    }
 

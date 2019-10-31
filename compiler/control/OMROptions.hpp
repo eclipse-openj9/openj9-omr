@@ -410,8 +410,8 @@ enum TR_CompilationOptions
    // Available                           = 0x00200000 + 10,
    TR_ConservativeCompilation             = 0x00400000 + 10,
    // Available                           = 0x00800000 + 10,
-   TR_EnableLargeCodePages                = 0x01000000 + 10,
-   TR_EnableLargePages                    = 0x02000000 + 10,
+   // Available                           = 0x01000000 + 10,
+   // Available                           = 0x02000000 + 10,
    TR_DisableNewX86VolatileSupport        = 0x04000000 + 10,
    // Available                           = 0x08000000 + 10,
    // Available                           = 0x10000000 + 10,
@@ -967,7 +967,7 @@ enum TR_CompilationOptions
    TR_DisableHardwareProfilerReducedWarm              = 0x00002000 + 30,
    TR_RestrictStaticFieldFolding                      = 0x00004000 + 30,
    TR_TraceILValidator                                = 0x00008000 + 30,
-   TR_EnableJProfilingInProfilingCompilations         = 0x00010000 + 30,
+   TR_DisableJProfilingInProfilingCompilations        = 0x00010000 + 30,
    TR_EnableJProfiling                                = 0x00020000 + 30,
    TR_DisableForcedEXInlining                         = 0x00040000 + 30,
    TR_EnableOnsiteCacheForSuperClassTest              = 0x00080000 + 30,
@@ -1916,8 +1916,6 @@ public:
    bool getOptLevelDowngraded() const { return _optLevelDowngraded; }
    static char *getCompilationStrategyName() { return _compilationStrategyName; }
 
-   int32_t getJitMethodEntryAlignmentBoundary(TR::CodeGenerator *cg);
-   void setJitMethodEntryAlignmentBoundary(int32_t boundary) { _jitMethodEntryAlignmentBoundary = boundary; }
 /**   \brief Returns a threshold on the profiling method invocations to trip recompilation
  */
    int32_t getJProfilingMethodRecompThreshold() { return _jProfilingMethodRecompThreshold; }
@@ -2391,7 +2389,6 @@ protected:
 
    bool                        _isAOTCompile;
 
-   int32_t                     _jitMethodEntryAlignmentBoundary; /* Alignment boundary for JIT method entry */
    int32_t                     _jProfilingMethodRecompThreshold;
    int32_t                     _jProfilingLoopRecompThreshold;
    char *                      _blockShufflingSequence;

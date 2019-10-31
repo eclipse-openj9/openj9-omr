@@ -152,7 +152,16 @@ class RuntimeAssumption
       return ( ((uintptr_t)(_nextAssumptionForSameJittedBody) & MARK_FOR_DELETE ) == MARK_FOR_DELETE); 
       }
 
-   virtual void     reclaim() {}
+   /** \brief
+    *     Reclaims any persistent memory allocated by the runtime assumption.
+    *
+    *  \note
+    *     This function should be called when we attempt to reclaim the runtime assumption right before deallocation.
+    *     Calling this function too early can result in potentially accessing already deallocated memory, as the
+    *     runtime assumption may still be examined/processed even after calling `compensate` and all the way up until
+    *     the runtime assumption is deallocated.
+    */
+   virtual void reclaim() {}
 
    public:
    TR_PERSISTENT_ALLOC_THROW(TR_Memory::Assumption);

@@ -25,6 +25,7 @@
 #include "ras/Debug.hpp"
 
 #include "codegen/ARM64ConditionCode.hpp"
+#include "codegen/ARM64HelperCallSnippet.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GCRegisterMap.hpp"
@@ -35,8 +36,17 @@
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
+#include "codegen/Snippet.hpp"
 #include "env/IO.hpp"
 #include "il/Block.hpp"
+#include "runtime/CodeCacheManager.hpp"
+
+#ifdef J9_PROJECT_SPECIFIC
+#include "aarch64/codegen/CallSnippet.hpp"
+#include "aarch64/codegen/StackCheckFailureSnippet.hpp"
+
+namespace TR { class ARM64ForceRecompilationSnippet; }
+#endif
 
 static const char *ARM64ConditionNames[] =
    {
@@ -662,7 +672,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64LabelInstruction *instr)
       print(pOutFile, label);
       if (snippet)
          {
-         TR_UNIMPLEMENTED();
+         trfprintf(pOutFile, " (%s)", getName(snippet));
          }
       }
    printInstructionComment(pOutFile, 1, instr);
@@ -675,9 +685,16 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ConditionalBranchInstruction *instr)
    {
    printPrefix(pOutFile, instr);
+
+   TR::LabelSymbol *label = instr->getLabelSymbol();
+   TR::Snippet *snippet = label ? label->getSnippet() : NULL;
    TR_ASSERT(instr->getOpCodeValue() == TR::InstOpCode::b_cond, "Unsupported instruction for conditional branch");
    trfprintf(pOutFile, "b.%s \t", ARM64ConditionNames[instr->getConditionCode()]);
-   print(pOutFile, instr->getLabelSymbol());
+   print(pOutFile, label);
+   if (snippet)
+      {
+      trfprintf(pOutFile, " (%s)", getName(snippet));
+      }
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
@@ -687,9 +704,16 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CompareBranchInstruction *instr)
    {
    printPrefix(pOutFile, instr);
+
+   TR::LabelSymbol *label = instr->getLabelSymbol();
+   TR::Snippet *snippet = label ? label->getSnippet() : NULL;
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
-   print(pOutFile, instr->getLabelSymbol());
+   print(pOutFile, label);
+   if (snippet)
+      {
+      trfprintf(pOutFile, " (%s)", getName(snippet));
+      }
    trfflush(_comp->getOutFile());
    }
 
@@ -790,7 +814,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
    {
    printPrefix(pOutFile, instr);
    TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
-   bool isCmp = false;
+   bool isAlias = false;
    if (op == TR::InstOpCode::subsimmx || op == TR::InstOpCode::subsimmw)
       {
       TR::Register *r = instr->getTargetRegister();
@@ -798,17 +822,122 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
           && toRealRegister(r)->getRegisterNumber() == TR::RealRegister::xzr)
          {
          // cmp alias
-         isCmp = true;
+         isAlias = true;
          trfprintf(pOutFile, "cmpimm%c \t", (op == TR::InstOpCode::subsimmx) ? 'x' : 'w');
+         print(pOutFile, instr->getSource1Register(), TR_WordReg);
+         trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
          }
       }
-   if (!isCmp)
+   else if (op == TR::InstOpCode::sbfmx || op == TR::InstOpCode::sbfmw)
+      {
+      uint32_t imm12 = instr->getSourceImmediate();
+      auto immr = imm12 >> 6;
+      auto imms = imm12 & 0x3f;
+      if (op == TR::InstOpCode::sbfmx)
+         {
+         if (imms == 63)
+            {
+            // asr alias
+            isAlias = true;
+            trfprintf(pOutFile, "asrx \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", immr);
+            }
+         else if ((immr == 0) && ((imms == 7) || (imms == 15) || (imms == 31)))
+            {
+            // sxtb, sxth or sxtw (signed extend byte|half word|word) alias
+            isAlias = true;
+            trfprintf(pOutFile, "sxt%cx \t", (imms == 7) ? 'b' : ((imms == 15) ? 'h' : 'w'));
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            }
+         }
+      else if ((op == TR::InstOpCode::sbfmw) && ((immr & (1 << 6)) == 0) && ((imms & (1 << 6)) == 0))
+         {
+         if (imms == 31)
+            {
+            // asr alias
+            isAlias = true;
+            trfprintf(pOutFile, "asrw \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", immr);
+            }
+         else if ((immr == 0) && ((imms == 7) || (imms == 15)))
+            {
+            // sxtb or sxth (signed extend byte|half word) alias
+            isAlias = true;
+            trfprintf(pOutFile, "sxt%cw \t", (imms == 7) ? 'b' : 'h');
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg); 
+            }
+         }
+      }
+   else if (op == TR::InstOpCode::ubfmx || op == TR::InstOpCode::ubfmw)
+      {
+      uint32_t imm12 = instr->getSourceImmediate();
+      auto immr = imm12 >> 6;
+      auto imms = imm12 & 0x3f;
+      if (op == TR::InstOpCode::ubfmx)
+         {
+         if (imms == 63)
+            {
+            // lsr alias
+            isAlias = true;
+            trfprintf(pOutFile, "lsrx \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", immr);
+            }
+         else if (imms + 1 == immr)
+            {
+            // lsl alias
+            isAlias = true;
+            trfprintf(pOutFile, "lslx \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", 63 - imms);
+            }
+         }
+      else if ((op == TR::InstOpCode::ubfmw) && ((immr & (1 << 6)) == 0) && ((imms & (1 << 6)) == 0))
+         {
+         if (imms == 31)
+            {
+            // lsr alias
+            isAlias = true;
+            trfprintf(pOutFile, "lsrw \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", immr);
+            }
+         else if (imms + 1 == immr)
+            {
+            // lsl alias
+            isAlias = true;
+            trfprintf(pOutFile, "lslw \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d", 31 - imms);
+            }
+         else if ((immr == 0) && ((imms == 7) || (imms == 15)))
+            {
+            // uxtb or uxth (unsigned extend byte|half word) alias
+            isAlias = true;
+            trfprintf(pOutFile, "uxt%cx \t", (imms == 7) ? 'b' : 'h');
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            }
+         }
+      }
+
+   if (!isAlias)
       {
       trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
       print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
       }
-   print(pOutFile, instr->getSource1Register(), TR_WordReg);
-   trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
 
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
@@ -1133,4 +1262,109 @@ TR_Debug::getARM64RegisterName(uint32_t regNum, bool is64bit)
 void TR_Debug::printARM64OOLSequences(TR::FILE *pOutFile)
    {
    TR_UNIMPLEMENTED();
+   }
+
+const char *
+TR_Debug::getNamea64(TR::Snippet * snippet)
+   {
+   switch (snippet->getKind())
+      {
+      case TR::Snippet::IsCall:
+         return "Call Snippet";
+         break;
+      case TR::Snippet::IsUnresolvedCall:
+         return "Unresolved Call Snippet";
+         break;
+      case TR::Snippet::IsVirtualUnresolved:
+         return "Unresolved Virtual Call Snippet";
+         break;
+      case TR::Snippet::IsInterfaceCall:
+         return "Interface Call Snippet";
+         break;
+      case TR::Snippet::IsStackCheckFailure:
+         return "Stack Check Failure Snippet";
+         break;
+      case TR::Snippet::IsUnresolvedData:
+         return "Unresolved Data Snippet";
+         break;
+      case TR::Snippet::IsRecompilation:
+         return "Recompilation Snippet";
+         break;
+      case TR::Snippet::IsHelperCall:
+         return "Helper Call Snippet";
+         break;
+      case TR::Snippet::IsMonitorEnter:
+         return "MonitorEnter Inc Counter";
+         break;
+      case TR::Snippet::IsMonitorExit:
+         return "MonitorExit Dec Counter";
+         break;
+      default:
+         return "<unknown snippet>";
+      }
+   }
+
+void
+TR_Debug::printa64(TR::FILE *pOutFile, TR::Snippet * snippet)
+   {
+   if (pOutFile == NULL)
+      return;
+   switch (snippet->getKind())
+      {
+#ifdef J9_PROJECT_SPECIFIC
+      case TR::Snippet::IsCall:
+         print(pOutFile, (TR::ARM64CallSnippet *)snippet);
+         break;
+      case TR::Snippet::IsUnresolvedCall:
+         print(pOutFile, (TR::ARM64UnresolvedCallSnippet *)snippet);
+         break;
+      case TR::Snippet::IsVirtualUnresolved:
+         print(pOutFile, (TR::ARM64VirtualUnresolvedSnippet *)snippet);
+         break;
+      case TR::Snippet::IsInterfaceCall:
+         print(pOutFile, (TR::ARM64InterfaceCallSnippet *)snippet);
+         break;
+      case TR::Snippet::IsStackCheckFailure:
+         print(pOutFile, (TR::ARM64StackCheckFailureSnippet *)snippet);
+         break;
+      case TR::Snippet::IsForceRecompilation:
+         print(pOutFile, (TR::ARM64ForceRecompilationSnippet *)snippet);
+         break;
+      case TR::Snippet::IsRecompilation:
+         TR_UNIMPLEMENTED();
+         break;
+#endif
+      case TR::Snippet::IsHelperCall:
+         print(pOutFile, (TR::ARM64HelperCallSnippet *)snippet);
+         break;
+      case TR::Snippet::IsUnresolvedData:
+         print(pOutFile, (TR::UnresolvedDataSnippet *)snippet);
+         break;
+
+
+      case TR::Snippet::IsMonitorExit:
+      case TR::Snippet::IsMonitorEnter:
+         snippet->print(pOutFile, this);
+         break;
+      default:
+         TR_ASSERT( 0, "unexpected snippet kind");
+      }
+   }
+
+// This function assumes that if a trampoline is required then it must be to a helper function.
+// Use this API only for inquiring about branches to helpers.
+bool
+TR_Debug::isBranchToTrampoline(TR::SymbolReference *symRef, uint8_t *cursor, int32_t &distance)
+   {
+   uintptrj_t target = (uintptrj_t)symRef->getMethodAddress();
+   bool requiresTrampoline = false;
+
+   if (_cg->directCallRequiresTrampoline(target, (intptrj_t)cursor))
+      {
+      target = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
+      requiresTrampoline = true;
+      }
+
+   distance = (int32_t)(target - (intptrj_t)cursor);
+   return requiresTrampoline;
    }

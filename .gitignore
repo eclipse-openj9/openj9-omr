@@ -179,6 +179,13 @@ x64/
 # CLion
 .idea/
 
+# CCLS (language server for C/C++)
+.ccls-cache/
+.ccls
+
+# config cmake file for vim autocompletion
+compile_commands.json
+
 # Test Output
 core
 core.*
@@ -197,3 +204,6 @@ VerboseGC_*.xml*
 *.swp
 tags
 *~
+
+# test results
+*-results.xml

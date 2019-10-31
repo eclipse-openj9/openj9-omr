@@ -33,13 +33,13 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/TRMemory.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/List.hpp"
@@ -885,3 +885,15 @@ TR::X86SystemLinkage::layoutTypeOnStack(
       }
    return typeAlign;
    }
+
+
+intptrj_t TR::X86SystemLinkage::entryPointFromCompiledMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+
+intptrj_t TR::X86SystemLinkage::entryPointFromInterpretedMethod()
+   {
+   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   }
+

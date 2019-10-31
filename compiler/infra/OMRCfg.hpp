@@ -176,32 +176,12 @@ class CFG
    void addEdge(TR::CFGEdge *e);
 
    /**
-    * @deprecated
-    * Please specify where edges are to be allocated during CFG initialization.
-    * E.g.,
-    *     OMR::CFG(c, m, TR::Region &region)
-    * and use the following method to add edges to that region.
-    *     addEdge(TR::CFGNode *f, TR::CFGNode *t);
-    */
-   TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind heapAlloc);
-
-   /**
     * Create and store edge from CFGNode f to CFGNode t
     * @param f   CFGNode from
     * @param t   CFGNode to
     * @return    Pointer to newly created edge
     */
    TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t);
-
-   /**
-    * @deprecated
-    * Please specify where edges are to be allocated during CFG initialization.
-    * E.g.,
-    *     OMR::CFG(c, m, TR::Region &region)
-    * and use the following method to add edges to that region.
-    *     addExceptionEdgeEdge(TR::CFGNode *f, TR::CFGNode *t);
-    */
-   void addExceptionEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind heapAlloc);
 
    /**
     * Create and store exception edge from CFGNode f to CFGNode t 
@@ -351,8 +331,9 @@ class CFG
    //
    void getBranchCountersFromProfilingData(TR::Node *node, TR::Block *block, int32_t *taken, int32_t *notTaken) { return; }
 
-protected:
+   TR::Region& getInternalRegion();
 
+protected:
    TR::Compilation *_compilation;
    TR::ResolvedMethodSymbol *_method;
 

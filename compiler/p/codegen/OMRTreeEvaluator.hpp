@@ -151,11 +151,8 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *dabsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lshlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *ishflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *lshflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bshlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sshlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *cshlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ishrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lshrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bshrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -512,7 +509,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *getstackEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *deallocaEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *idozEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *muloverEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dfloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *libmFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *maxEvaluator(TR::Node *node, TR::CodeGenerator *cg);

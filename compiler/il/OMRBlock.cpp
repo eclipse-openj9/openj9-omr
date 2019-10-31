@@ -38,21 +38,21 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
+#include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/Block_inlines.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/RegisterMappedSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/RegisterMappedSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
@@ -86,43 +86,62 @@ TR::Block *
 OMR::Block::asBlock() { return self(); }
 
 OMR::Block::Block(TR_Memory * m) :
-   TR::CFGNode(m),
-   _pEntry(NULL),
-   _pExit(NULL),
-   _pStructureOf(NULL),
-   _liveLocals(NULL),
-   _globalRegisters(0),
-   _catchBlockExtension(NULL),
-   _firstInstruction(NULL),
-   _lastInstruction(NULL),
-   _blockSize(-1),
-   _debugCounters(NULL),
-   _flags(0),
-   _moreflags(0)
+   TR::CFGNode(m)
    {
+   self()->init(NULL, NULL);
+   self()->setFrequency(-1);
+   self()->setUnrollFactor(0);
+   }
+
+OMR::Block::Block(TR::CFG &cfg) :
+   TR::CFGNode(cfg.getInternalRegion())
+   {
+   self()->init(NULL, NULL);
    self()->setFrequency(-1);
    self()->setUnrollFactor(0);
    }
 
 OMR::Block::Block(TR::TreeTop *entry, TR::TreeTop *exit, TR_Memory * m) :
-   TR::CFGNode(m),
-   _pEntry(entry),
-   _pExit(exit),
-   _pStructureOf(NULL),
-   _liveLocals(NULL),
-   _globalRegisters(0),
-   _catchBlockExtension(NULL),
-   _firstInstruction(NULL),
-   _lastInstruction(NULL),
-   _blockSize(-1),
-   _debugCounters(NULL),
-   _flags(0),
-   _moreflags(0)
+   TR::CFGNode(m)
    {
+   self()->init(entry, exit);
    self()->setFrequency(-1);
    self()->setUnrollFactor(0);
    if (entry && entry->getNode()) entry->getNode()->setBlock(self());
    if (exit && exit->getNode())   exit->getNode()->setBlock(self());
+   }
+
+OMR::Block::Block(TR::TreeTop *entry, TR::TreeTop *exit, TR::CFG &cfg) :
+   TR::CFGNode(cfg.getInternalRegion())
+   {
+   self()->init(entry, exit);
+   self()->setFrequency(-1);
+   self()->setUnrollFactor(0);
+   if (entry && entry->getNode()) entry->getNode()->setBlock(self());
+   if (exit && exit->getNode())   exit->getNode()->setBlock(self());
+   }
+
+void
+OMR::Block::init(TR::TreeTop *entry, TR::TreeTop *exit)
+   {
+   _pEntry = entry;
+   _pExit = exit;
+   _pStructureOf = NULL;
+   _liveLocals = NULL;
+   _globalRegisters = 0;
+   _catchBlockExtension = NULL;
+   _firstInstruction = NULL;
+   _lastInstruction = NULL;
+   _blockSize = -1;
+   _debugCounters = NULL;
+   _flags = 0;
+   _moreflags = 0;
+   }
+
+TR::Block*
+OMR::Block::createBlock(TR::TreeTop *entry, TR::TreeTop *exit, TR::CFG &cfg)
+   {
+   return new (cfg.getInternalRegion()) TR::Block(entry, exit, cfg);
    }
 
 /// Copy constructor
@@ -1267,7 +1286,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
             {
             (*nodeInfo)[node] = std::make_pair<int32_t, TR::Node*>(node->getReferenceCount() - 1, NULL);
             }
-         else if (entry->second.first > 1)
+         else if (entry != nodeInfo->end() && entry->second.first > 1)
             {
             entry->second.first -= 1;
             }
@@ -1281,7 +1300,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          // Record the last used RegStore for the node before split point
          if (node->getOpCode().isStoreReg())
             {
-            (*storeNodeInfo)[node->getFirstChild()] = node;
+            storeNodeInfo->insert(std::make_pair(node->getFirstChild(), node));
             }
          }
 

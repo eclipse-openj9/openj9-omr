@@ -368,12 +368,10 @@ class OMR_EXTENSIBLE CodeGenerator
    void setNextAvailableBlockIndex(int32_t blockIndex) {}
    int32_t getNextAvailableBlockIndex() { return -1; }
 
-   bool supportsMethodEntryPadding() { return true; }
    bool mustGenerateSwitchToInterpreterPrePrologue() { return false; }
    bool buildInterpreterEntryPoint() { return false; }
    void generateCatchBlockBBStartPrologue(TR::Node *node, TR::Instruction *fenceInstruction) { return; }
    bool supportsUnneededLabelRemoval() { return true; }
-   bool allowSplitWarmAndColdBlocks() { return false; }
 
    TR_HasRandomGenerator randomizer;
 
@@ -429,6 +427,8 @@ class OMR_EXTENSIBLE CodeGenerator
    void processReference(TR::Node*reference, TR::Node*parent, TR::TreeTop *treeTop);
    void spillLiveReferencesToTemps(TR::TreeTop *insertionTree, std::list<TR::SymbolReference*, TR::typed_allocator<TR::SymbolReference*, TR::Allocator> >::iterator firstAvailableSpillTemp);
    void needSpillTemp(TR_LiveReference * cursor, TR::Node*parent, TR::TreeTop *treeTop);
+
+   void expandInstructions() {}
 
    friend void OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator*, TR::CodeGenPhase *);
    friend void OMR::CodeGenPhase::performCleanUpFlagsPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase);
@@ -546,9 +546,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
    // Z only
    //
-
-   TR::list<uint8_t*>& getBreakPointList() {return _breakPointList;}
-   void addBreakPointAddress(uint8_t *b) {_breakPointList.push_front(b);}
 
    bool AddArtificiallyInflatedNodeToStack(TR::Node* n);
 
@@ -764,6 +761,28 @@ class OMR_EXTENSIBLE CodeGenerator
 
    uint32_t getPreJitMethodEntrySize() {return _preJitMethodEntrySize;}
    uint32_t setPreJitMethodEntrySize(uint32_t s) {return (_preJitMethodEntrySize = s);}
+   
+   /** \brief
+    *     Determines whether the code generator supports or allows JIT-to-JIT method entry point alignment.
+    */
+   bool supportsJitMethodEntryAlignment();
+
+   /** \brief
+    *     Determines the byte boundary at which to align the JIT-to-JIT method entry point. If the boundary is
+    *     specified to be \c x and the JIT-to-JIT method entry point to be \c y then <c>y & (x - 1) == 0</c>.
+    */
+   uint32_t getJitMethodEntryAlignmentBoundary();
+   
+   /** \brief
+    *     Determines the byte threshold at which the JIT-to-JIT method entry point boundary alignment will not be
+    *     performed. If the JIT-to-JIT method entry point is already close to the boundary then it may not make sense
+    *     to perform the boundary alignment as much code cache can be wasted. This threshold can be used to avoid such
+    *     situations.
+    *
+    *  \note
+    *     This value must be less than or equal to the boundary returned via \see getJitMethodEntryAlignmentBoundary.
+    */
+   uint32_t getJitMethodEntryAlignmentThreshold();
 
    uint32_t getJitMethodEntryPaddingSize() {return _jitMethodEntryPaddingSize;}
    uint32_t setJitMethodEntryPaddingSize(uint32_t s) {return (_jitMethodEntryPaddingSize = s);}
@@ -1859,7 +1878,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::list<TR::Relocation *> _relocationList;
    TR::list<TR::Relocation *> _externalRelocationList;
    TR::list<TR::StaticRelocation> _staticRelocationList;
-   TR::list<uint8_t*> _breakPointList;
 
    TR::list<TR::SymbolReference*> _variableSizeSymRefPendingFreeList;
    TR::list<TR::SymbolReference*> _variableSizeSymRefFreeList;

@@ -28,7 +28,7 @@
 #include "compile/Method.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 
 #include "optimizer/Optimization.hpp"
 #include "optimizer/OptimizationManager.hpp"
@@ -135,6 +135,7 @@ static const OptimizationStrategy JBwarmStrategyOpts[] =
    { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                },
    { OMR::cheapTacticalGlobalRegisterAllocatorGroup                                },
    { OMR::globalDeadStoreGroup,                                                    },
+   { OMR::redundantGotoElimination,                  OMR::IfEnabled                }, // if global register allocator created new block
    { OMR::rematerialization                                                        },
    { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // remove dead anchors created by check/store removal
    { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // remove dead RegStores produced by previous deadTrees pass

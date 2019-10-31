@@ -43,7 +43,7 @@ namespace OMR { typedef OMR::X86::Linkage LinkageConnector; }
 #include "codegen/RegisterConstants.hpp"
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
-#include "il/symbol/ParameterSymbol.hpp"
+#include "il/ParameterSymbol.hpp"
 #include "infra/Annotations.hpp"
 #include "infra/Assert.hpp"
 #include "x/codegen/X86Ops.hpp"

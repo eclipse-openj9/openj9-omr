@@ -56,7 +56,7 @@ ifdef OMRGLUE
   CONFIG_INCL_DIR ?= $(firstword $(OMRGLUE))/configure_includes
 endif
 
-# If CONFIG_INCL_DIR is defined, we include platform specfic makefiles
+# If CONFIG_INCL_DIR is defined, we include platform specific makefiles
 # from that directory. These makefiles are expected to add extra configure
 # arguments to the variable CONFIGURE_ARGS.
 ifdef CONFIG_INCL_DIR

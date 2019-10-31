@@ -21,6 +21,7 @@
 
 #include "OpCodeTest.hpp"
 #include "default_compiler.hpp"
+#include "omrformatconsts.h"
 
 #include <cmath>
 
@@ -1372,3 +1373,226 @@ INSTANTIATE_TEST_CASE_P(TypeConversionTest, DoubleToFloat, ::testing::Combine(
     ::testing::Values(
         std::make_tuple<const char*, float(*)(double)>("d2f", d2f)
     )));
+
+static std::vector<uint32_t> normalize_fnan_values()
+   {
+   uint32_t inputArray[] = {
+      0,
+      0x3F800000u, // 1.0
+      0xBF800000u, // -1.0
+      0x7F800000u, // inf
+      0xFF800000u, // -inf
+      0x7F800001u, // snan
+      0xFF800001u, // -snan
+      0x7FC00000u, // nan
+      0xFFC00000u, // -nan
+      0x7FFFFFFFu, // nan(0x7fffff)
+      0xFFFFFFFFu  // -nan(0x7fffff)
+   };
+
+   return std::vector<uint32_t>(inputArray, inputArray + sizeof(inputArray) / sizeof(uint32_t));
+   }
+
+static std::vector<uint64_t> normalize_dnan_values()
+   {
+   uint64_t inputArray[] = {
+      0,
+      0x3FF0000000000000ull, // 1.0
+      0xBFF0000000000000ull, // -1.0
+      0x7FF0000000000000ull, // inf
+      0xFFF0000000000000ull, // -inf
+      0x7FF0000000000001ull, // snan
+      0xFFF0000000000001ull, // -snan
+      0x7FF8000000000000ull, // nan
+      0xFFF8000000000000ull, // -nan
+      0x7FFFFFFFFFFFFFFFull, // nan(0xfffffffff)
+      0xFFFFFFFFFFFFFFFFull  // -nan(0xfffffffff)
+   };
+
+   return std::vector<uint64_t>(inputArray, inputArray + sizeof(inputArray) / sizeof(uint64_t));
+   }
+
+uint32_t normalize_fnan(uint32_t x) {
+    if ((x & 0x7f800000u) == 0x7f800000u && (x & 0x007fffffu) != 0u) {
+        return 0x7fc00000u;
+    } else {
+        return x;
+    }
+}
+
+uint64_t normalize_dnan(uint64_t x) {
+    if ((x & 0x7ff0000000000000ull) == 0x7ff0000000000000ull && (x & 0x000fffffffffffff) != 0u) {
+        return 0x7ff8000000000000ull;
+    } else {
+        return x;
+    }
+}
+
+template <typename T>
+class NormalizeNanTest : public TRTest::JitTest, public ::testing::WithParamInterface<T> {};
+
+class FloatNormalizeNan : public NormalizeNanTest<uint32_t> {};
+
+TEST_P(FloatNormalizeNan, UsingLoadIndirect) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
+    char *inputTrees =
+        "(method return=Int32 args=[Address]"
+        "  (block"
+        "    (ireturn"
+        "      (fbits2i flags=[15]" // FLAG: mustNormalizeNanValues
+        "        (floadi (aload parm=0))))))";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    uint32_t value = GetParam();
+
+    auto entry_point = compiler.getEntryPoint<uint32_t (*)(uint32_t*)>();
+    ASSERT_EQ(normalize_fnan(value), entry_point(&value));
+}
+
+TEST_P(FloatNormalizeNan, UsingLoadParam) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
+    char *inputTrees =
+        "(method return=Int32 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (fbits2i flags=[15]" // FLAG: mustNormalizeNanValues
+        "        (ibits2f"
+        "          (iload parm=0))))))";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    uint32_t value = GetParam();
+
+    auto entry_point = compiler.getEntryPoint<uint32_t (*)(uint32_t)>();
+    ASSERT_EQ(normalize_fnan(value), entry_point(value));
+}
+
+TEST_P(FloatNormalizeNan, UsingLoadConst) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
+    uint32_t value = GetParam();
+
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32 args=[Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (fbits2i flags=[15]" // FLAG: mustNormalizeNanValues
+        "        (ibits2f"
+        "          (iconst %u))))))",
+        value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint32_t (*)()>();
+    ASSERT_EQ(normalize_fnan(value), entry_point());
+}
+
+INSTANTIATE_TEST_CASE_P(TypeConversionTest, FloatNormalizeNan, ::testing::ValuesIn(normalize_fnan_values()));
+
+class DoubleNormalizeNan : public NormalizeNanTest<uint64_t> {};
+
+TEST_P(DoubleNormalizeNan, UsingLoadIndirect) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
+    char *inputTrees =
+        "(method return=Int64 args=[Address]"
+        "  (block"
+        "    (lreturn"
+        "      (dbits2l flags=[15]" // FLAG: mustNormalizeNanValues
+        "        (dloadi (aload parm=0))))))";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    uint64_t value = GetParam();
+
+    auto entry_point = compiler.getEntryPoint<uint64_t (*)(uint64_t*)>();
+    ASSERT_EQ(normalize_dnan(value), entry_point(&value));
+}
+
+TEST_P(DoubleNormalizeNan, UsingLoadParam) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
+    char *inputTrees =
+        "(method return=Int64 args=[Int64]"
+        "  (block"
+        "    (lreturn"
+        "      (dbits2l flags=[15]" // FLAG: mustNormalizeNanValues
+        "        (lbits2d"
+        "          (lload parm=0))))))";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    uint64_t value = GetParam();
+
+    auto entry_point = compiler.getEntryPoint<uint64_t (*)(uint64_t)>();
+    ASSERT_EQ(normalize_dnan(value), entry_point(value));
+}
+
+TEST_P(DoubleNormalizeNan, UsingLoadConst) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+
+    uint64_t value = GetParam();
+
+    char inputTrees[300] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64 args=[Int64]"
+        "  (block"
+        "    (lreturn"
+        "      (dbits2l flags=[15]" // FLAG: mustNormalizeNanValues
+        "        (lbits2d"
+        "          (lconst %" OMR_PRIu64 "))))))",
+        value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint64_t (*)()>();
+    ASSERT_EQ(normalize_dnan(value), entry_point());
+}
+
+INSTANTIATE_TEST_CASE_P(TypeConversionTest, DoubleNormalizeNan, ::testing::ValuesIn(normalize_dnan_values()));

@@ -392,6 +392,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableIVTT",                        "O\tdisable IV Type transformation",                 TR::Options::disableOptimization, IVTypeTransformation, 0, "P"},
    {"disableJavaEightStartupHeuristics", "M\t", SET_OPTION_BIT(TR_DisableJava8StartupHeuristics), "F", NOT_IN_SUBSET },
    {"disableJProfiling",                  "O\tdisable JProfiling", RESET_OPTION_BIT(TR_EnableJProfiling), "F"},
+   {"disableJProfilingInProfilingCompilations", "O\tDisable use of jprofiling instrumentation in profiling compilations", SET_OPTION_BIT(TR_DisableJProfilingInProfilingCompilations), "F"},
    {"disableJProfilingThread",            "O\tdisable separate thread for JProfiling", SET_OPTION_BIT(TR_DisableJProfilerThread), "F", NOT_IN_SUBSET},
    {"disableKnownObjectTable",            "O\tdisable support for including heap object info in symbol references", SET_OPTION_BIT(TR_DisableKnownObjectTable), "F"},
    {"disableLastITableCache",             "C\tdisable using class lastITable cache for interface dispatches",  SET_OPTION_BIT(TR_DisableLastITableCache), "F"},
@@ -603,6 +604,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dontInline=",                        "O{regex}\tlist of callee methods to not inline",
                                           TR::Options::setRegex, offsetof(OMR::Options, _dontInline), 0, "P"},
    {"dontJitIfSlotsSharedByRefAndNonRef", "O\tfail the compilation (in FSD mode) if a slot needs to be shared between an address and a nonaddress.",     SET_OPTION_BIT(TR_DontJitIfSlotsSharedByRefAndNonRef), "F"},
+   {"dontLowerCountsForAotCold",          "M\tDo not lower counts for cold aot runs", RESET_OPTION_BIT(TR_LowerCountsForAotCold), "F", NOT_IN_SUBSET },
    {"dontRestrictInlinerDuringStartup",   "O\tdo not restrict trivial inliner during startup", RESET_OPTION_BIT(TR_RestrictInlinerDuringStartup), "F", NOT_IN_SUBSET},
    {"dontRIUpgradeAOTWarmMethods",         "M\tdon't RI upgrade AOT warm methods", SET_OPTION_BIT(TR_DontRIUpgradeAOTWarmMethods), "F", NOT_IN_SUBSET},
    {"dontSuspendCompThreadsEarly",        "M\tDo not suspend compilation threads when QWeight drops under a threshold", RESET_OPTION_BIT(TR_SuspendEarly), "F", NOT_IN_SUBSET },
@@ -688,10 +690,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableJITServerFollowRemoteCompileWithLocalCompile", "O\tenable JITServer to perform local compilations for its remotely compiled methods", SET_OPTION_BIT(TR_JITServerFollowRemoteCompileWithLocalCompile), "F"},
    {"enableJITServerHeuristics",          "O\tenable JITServer heuristics", SET_OPTION_BIT(TR_EnableJITServerHeuristics), "F"},
    {"enableJProfiling",                   "O\tenable JProfiling", SET_OPTION_BIT(TR_EnableJProfiling), "F"},
-   {"enableJProfilingInProfilingCompilations","O\tuse jprofiling instrumentation in profiling compilations", SET_OPTION_BIT(TR_EnableJProfilingInProfilingCompilations), "F"},
+   {"enableJProfilingInProfilingCompilations", "O\tEnable the use of jprofiling instrumentation in profiling compilations", RESET_OPTION_BIT(TR_DisableJProfilingInProfilingCompilations), "F"},
    {"enableJVMPILineNumbers",            "M\tenable output of line numbers via JVMPI",       SET_OPTION_BIT(TR_EnableJVMPILineNumbers), "F"},
    {"enableLabelTargetNOPs",             "O\tenable inserting NOPs before label targets", SET_OPTION_BIT(TR_EnableLabelTargetNOPs),  "F"},
-   {"enableLargeCodePages",              "C\tenable large code pages",  SET_OPTION_BIT(TR_EnableLargeCodePages), "F"},
    {"enableLastRetrialLogging",          "O\tenable fullTrace logging for last compilation attempt. Needs to have a log defined on the command line", SET_OPTION_BIT(TR_EnableLastCompilationRetrialLogging), "F"},
    {"enableLocalVPSkipLowFreqBlock",     "O\tSkip processing of low frequency blocks in localVP", SET_OPTION_BIT(TR_EnableLocalVPSkipLowFreqBlock), "F" },
    {"enableLoopEntryAlignment",            "O\tenable loop Entry alignment",                          SET_OPTION_BIT(TR_EnableLoopEntryAlignment), "F"},
@@ -865,9 +866,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"iprofilerVerbose",          "O\tEnable Interpreter Profiling output messages",           SET_OPTION_BIT(TR_VerboseInterpreterProfiling), "F"},
 
    {"jitAllAtMain",          "D\tjit all loaded methods when main is called", SET_OPTION_BIT(TR_jitAllAtMain), "F" },
-
-   {"jitMethodEntryAlignmentBoundary=",      "C<nnn>\tAlignment boundary (in bytes) for JIT method entry",
-        TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jitMethodEntryAlignmentBoundary), 0, "F%d"},
    {"jProfilingLoopRecompThreshold=",      "C<nnn>\tLoop recompilation threshold for jProfiling",
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jProfilingLoopRecompThreshold), 0, "F%d"},
    {"jProfilingMethodRecompThreshold=",      "C<nnn>\tMethod invocations for jProfiling body",
@@ -2445,6 +2443,12 @@ OMR::Options::jitPreProcess()
    // All projects
    //
 
+   // Disable decimal format peephole due to multiple bugs.
+   // Can be re-enabled with -Xjit:!disableDecimalFormatPeephole
+   // The optimisation will be completely removed once issue
+   // #4236 is complete
+   self()->setOption(TR_DisableDecimalFormatPeephole);
+
    self()->setOption(TR_RestrictStaticFieldFolding);
 
    if (TR::Compiler->target.cpu.isPower())
@@ -2558,11 +2562,6 @@ OMR::Options::jitPreProcess()
    _minCounterFidelity = INT_MIN;
    _labelTargetNOPLimit = TR_LABEL_TARGET_NOP_LIMIT;
    _lastIpaOptTransformationIndex = INT_MAX;
-#if defined(TR_HOST_POWER)
-   _jitMethodEntryAlignmentBoundary = 128;
-#else
-   _jitMethodEntryAlignmentBoundary = 0;
-#endif
    _jProfilingMethodRecompThreshold = 4000;
    _jProfilingLoopRecompThreshold = 2000;
    _blockShufflingSequence = "S";
@@ -2597,6 +2596,8 @@ OMR::Options::jitPreProcess()
           ((TR::Compiler->target.cpu.isX86() && TR::Compiler->target.isLinux()) && TR::Compiler->target.numberOfProcessors() >= 4))
           self()->setOption(TR_TurnOffSelectiveNoOptServerIfNoStartupHint);
 
+      if(TR::Compiler->target.cpu.isX86() && TR::Compiler->target.is32Bit())
+         self()->setOption(TR_DisableJProfilingInProfilingCompilations);
       self()->setOption(TR_DisableHeapAllocOOL);
       if (!(TR::Compiler->target.cpu.isZ() && TR::Compiler->target.isLinux()))
          self()->setOption(TR_UseIdleTime);
@@ -2621,6 +2622,11 @@ OMR::Options::jitPreProcess()
          {
          _disabledOptimizations[prefetchInsertion] = true;
          }
+
+#if defined(TR_HOST_ARM64)
+      // Prefetch is not supported on ARM64 yet
+      _disabledOptimizations[prefetchInsertion] = true;
+#endif
 
       self()->setOption(TR_DisableThunkTupleJ2I); // JSR292:TODO: Figure out how to do this without confusing startPCIfAlreadyCompiled
 
@@ -3672,11 +3678,6 @@ OMR::Options::jitPostProcess()
 
    if (_hotMaxStaticPICSlots < 0)
       _hotMaxStaticPICSlots = -_hotMaxStaticPICSlots * _maxStaticPICSlots;
-
-   if (self()->getOption(TR_EnableLargePages))
-      {
-      self()->setOption(TR_EnableLargeCodePages);
-      }
 
 #if defined(TR_TARGET_64BIT) && defined(J9ZOS390)
    // We allocate code cache memory on z/OS by asking the port library for typically small (~2MB) code cache chunks.
@@ -5397,15 +5398,4 @@ void OMR::Options::setDefaultsForDeterministicMode()
          default: break;
          }
       }
-   }
-
-
-int32_t
-OMR::Options::getJitMethodEntryAlignmentBoundary(TR::CodeGenerator *cg)
-   {
-   if (cg->supportsMethodEntryPadding())
-      {
-      return _jitMethodEntryAlignmentBoundary;
-      }
-   return 0;
    }

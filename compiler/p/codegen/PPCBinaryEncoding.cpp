@@ -40,9 +40,9 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
+#include "il/LabelSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
 #include "infra/List.hpp"
@@ -715,7 +715,7 @@ static void insertMaskField(uint32_t *instruction, TR::InstOpCode::Mnemonic op, 
       return;
       }
 
-   TR_ASSERT(lmask, "A mask of 0 cannot be encoded");   
+   TR_ASSERT(lmask, "A mask of 0 cannot be encoded");
 
    if (opCode.isDoubleWord())
       {
@@ -925,7 +925,6 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
       case TR::InstOpCode::setbool:
       case TR::InstOpCode::idiv:
       case TR::InstOpCode::ldiv:
-      case TR::InstOpCode::ifx:
       case TR::InstOpCode::iternary:
          if (useRegPairForResult())
             {
@@ -951,7 +950,6 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
       case TR::InstOpCode::irem:
       case TR::InstOpCode::lrem:
       case TR::InstOpCode::d2i:
-      case TR::InstOpCode::setbx:
          setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 6);
          break;
       case TR::InstOpCode::d2l:
@@ -962,12 +960,6 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
          break;
       case TR::InstOpCode::lcmp:
          setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 11);
-         break;
-      case TR::InstOpCode::cfnan:
-         setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 2);
-         break;
-      case TR::InstOpCode::cdnan:
-         setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 3);
          break;
       default:
          TR_ASSERT(false,"unknown control flow instruction (estimateBinaryLength)");

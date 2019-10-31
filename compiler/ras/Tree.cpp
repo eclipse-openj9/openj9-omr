@@ -43,15 +43,15 @@
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
+#include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/RegisterMappedSymbol.hpp"
+#include "il/ResolvedMethodSymbol.hpp"
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/MethodSymbol.hpp"
-#include "il/symbol/RegisterMappedSymbol.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/Cfg.hpp"
@@ -2865,6 +2865,7 @@ int32_t childTypes[] =
    TR::Address,                    // TR::checkcast
    TR::Address,                    // TR::checkcastAndNULLCHK
    TR::Address,                    // TR::New
+   TR::NoType | (TR::Address<<8),  // TR::newvalue
    TR::Int32,                     // TR::newarray
    TR::Int32 | (TR::Address<<16),  // TR::anewarray
    TR::Address,                    // TR::variableNew
@@ -3029,7 +3030,6 @@ int32_t childTypes[] =
 
    TR::Double,                     // TR::dlog
 
-   TR::Int32,                     // TR::imulover
    TR::Double,                     // TR::dfloor
    TR::Float,                      // TR::ffloor
    TR::Double,                     // TR::dceil

@@ -115,6 +115,11 @@ static void postForkResetMonitors(omrthread_t self);
 static void postForkResetRWMutexes(omrthread_t self);
 #endif /* defined(OMR_THR_FORK_SUPPORT) */
 
+#if defined(OMR_THR_MCS_LOCKS)
+static omrthread_mcs_nodes_t allocate_mcs_nodes(omrthread_library_t lib);
+static void free_mcs_nodes(omrthread_library_t lib, omrthread_mcs_nodes_t mcsNodes);
+#endif /* defined(OMR_THR_MCS_LOCKS) */
+
 #ifdef THREAD_ASSERTS
 /**
  * Helper variable for asserts.
@@ -1227,6 +1232,14 @@ omrthread_attach_ex(omrthread_t *handle, omrthread_attr_t *attr)
 		goto cleanup2;
 	}
 
+#if defined(OMR_THR_MCS_LOCKS)
+	thread->mcsNodes = allocate_mcs_nodes(lib);
+	if (NULL == thread->mcsNodes) {
+		retVal = OMRTHREAD_ERR_CANT_ALLOC_MCS_NODES;
+		goto cleanup3;
+	}
+#endif /* defined(OMR_THR_MCS_LOCKS) */
+
 #if defined(OMR_OS_WINDOWS) && !defined(BREW)
 	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &thread->handle, 0, TRUE, DUPLICATE_SAME_ACCESS);
 #else
@@ -1280,7 +1293,10 @@ omrthread_attach_ex(omrthread_t *handle, omrthread_attr_t *attr)
 	}
 	return J9THREAD_SUCCESS;
 
-/* failure points */
+/* Failure points. */
+#if defined(OMR_THR_MCS_LOCKS)
+cleanup3:	OMROSMUTEX_DESTROY(thread->mutex);
+#endif /* defined(OMR_THR_MCS_LOCKS) */
 cleanup2:	OMROSCOND_DESTROY(thread->condition);
 cleanup1:	threadFree(thread, GLOBAL_NOT_LOCKED);
 cleanup0:	return retVal;
@@ -1820,6 +1836,7 @@ threadCreate(omrthread_t *handle, const omrthread_attr_t *attr, uintptr_t suspen
 		retVal = J9THREAD_ERR_CANT_INIT_CONDITION;
 		goto cleanup1;
 	}
+
 	if (!OMROSMUTEX_INIT(thread->mutex)) {
 		retVal = J9THREAD_ERR_CANT_INIT_MUTEX;
 		goto cleanup2;
@@ -1846,6 +1863,14 @@ threadCreate(omrthread_t *handle, const omrthread_attr_t *attr, uintptr_t suspen
 	memset(&(thread->numaAffinity), 0x0, sizeof(thread->numaAffinity));
 #endif /* OMR_PORT_NUMA_SUPPORT */
 
+#if defined(OMR_THR_MCS_LOCKS)
+	thread->mcsNodes = allocate_mcs_nodes(lib);
+	if (NULL == thread->mcsNodes) {
+		retVal = OMRTHREAD_ERR_CANT_ALLOC_MCS_NODES;
+		goto cleanup3;
+	}
+#endif /* defined(OMR_THR_MCS_LOCKS) */
+
 	retVal = osthread_create(self, &(thread->handle), tempAttr, thread_wrapper, (WRAPPER_ARG)thread);
 	if (retVal != J9THREAD_SUCCESS) {
 		goto cleanup4;
@@ -1857,9 +1882,13 @@ threadCreate(omrthread_t *handle, const omrthread_attr_t *attr, uintptr_t suspen
 	}
 	return J9THREAD_SUCCESS;
 
-	/* Cleanup points */
-cleanup4:
-	OMROSMUTEX_DESTROY(thread->mutex);
+/* Cleanup points. */
+#if defined(OMR_THR_MCS_LOCKS)
+cleanup4:	free_mcs_nodes(lib, thread->mcsNodes);
+cleanup3:	OMROSMUTEX_DESTROY(thread->mutex);
+#else /* defined(OMR_THR_MCS_LOCKS) */
+cleanup4:	OMROSMUTEX_DESTROY(thread->mutex);
+#endif /* defined(OMR_THR_MCS_LOCKS) */
 cleanup2:	OMROSCOND_DESTROY(thread->condition);
 cleanup1:	threadFree(thread, globalIsLocked);
 cleanup0:	if (handle) *handle = NULL;
@@ -2019,6 +2048,10 @@ threadDestroy(omrthread_t thread, int globalAlreadyLocked)
 	OMROSCOND_DESTROY(thread->condition);
 
 	OMROSMUTEX_DESTROY(thread->mutex);
+
+#if defined(OMR_THR_MCS_LOCKS)
+	free_mcs_nodes(thread->library, thread->mcsNodes);
+#endif /* defined(OMR_THR_MCS_LOCKS) */
 
 #ifdef OMR_THR_TRACING
 	omrthread_dump_trace(thread);
@@ -3519,6 +3552,10 @@ monitor_free(omrthread_library_t lib, omrthread_monitor_t monitor)
 		monitor->flags = J9THREAD_MONITOR_MUTEX_UNINITIALIZED;
 	}
 
+#if defined(OMR_THR_MCS_LOCKS)
+	monitor->queueTail = NULL;
+#endif /* defined(OMR_THR_MCS_LOCKS) */
+
 	lib->monitor_pool->next_free = monitor;
 }
 
@@ -3556,6 +3593,10 @@ monitor_free_nolock(omrthread_library_t lib, omrthread_t thread, omrthread_monit
 			monitor->flags = J9THREAD_MONITOR_MUTEX_UNINITIALIZED;
 		}
 	}
+
+#if defined(OMR_THR_MCS_LOCKS)
+	monitor->queueTail = NULL;
+#endif /* defined(OMR_THR_MCS_LOCKS) */
 
 	if (0 == thread->destroyed_monitor_head) {
 		thread->destroyed_monitor_tail = monitor;
@@ -3637,6 +3678,10 @@ monitor_init(omrthread_monitor_t monitor, uintptr_t flags, omrthread_library_t l
 			monitor->name = (char *)name;
 		}
 	}
+
+#if defined(OMR_THR_MCS_LOCKS)
+ 	monitor->queueTail = NULL;
+#endif /* defined(OMR_THR_MCS_LOCKS) */
 
 	return 0;
 }
@@ -5216,6 +5261,51 @@ omrthread_monitor_dump_trace(omrthread_monitor_t monitor)
 
 #endif /* OMR_THR_TRACING */
 
+#if defined(OMR_THR_MCS_LOCKS)
+/**
+ * Create and initialize an OMRThreadMCSNodes structure.
+ *
+ * @param[in] lib pointer to the OMR thread library.
+ *
+ * @return pointer to the new OMRThreadMCSNodes structure on success, or NULL on failure.
+ */
+static omrthread_mcs_nodes_t
+allocate_mcs_nodes(omrthread_library_t lib)
+{
+	omrthread_mcs_nodes_t mcsNodes = (omrthread_mcs_nodes_t)omrthread_allocate_memory(lib, sizeof(OMRThreadMCSNodes), OMRMEM_CATEGORY_THREADS);
+	if (NULL == mcsNodes) {
+		return NULL;
+	}
+
+	memset(mcsNodes, 0, sizeof(OMRThreadMCSNodes));
+
+	mcsNodes->pool = pool_new(
+			sizeof(OMRThreadMCSNode), OMRTHREAD_MIN_MCS_NODES, OMRTHREAD_MCS_NODE_ALIGNMENT, 0, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_THREADS,
+			omrthread_mallocWrapper, omrthread_freeWrapper, lib);
+
+	if (NULL == mcsNodes->pool) {
+		omrthread_free_memory(lib, mcsNodes);
+		return NULL;
+	}
+
+	return mcsNodes;
+}
+
+/**
+ * Free the memory associated to an OMRThreadMCSNodes structure.
+ *
+ * @param[in] lib pointer to the OMR thread library.
+ * @param[in] mcsNodes pointer to the OMRThreadMCSNodes structure.
+ *
+ * @return void.
+ */
+static void
+free_mcs_nodes(omrthread_library_t lib, omrthread_mcs_nodes_t mcsNodes)
+{
+	pool_kill(mcsNodes->pool);
+	omrthread_free_memory(lib, mcsNodes);
+}
+#endif /* defined(OMR_THR_MCS_LOCKS) */
 
 #if (defined(OMR_THR_TRACING))
 /**

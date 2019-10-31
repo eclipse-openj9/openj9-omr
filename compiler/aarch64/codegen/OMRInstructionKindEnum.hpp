@@ -46,6 +46,7 @@
             IsTrg1Src2Extended,
             IsTrg1Src3,
       IsTrg1Mem,
+         IsTrg1MemSrc1,
    IsMem,
       IsMemSrc1,
    IsSrc1,

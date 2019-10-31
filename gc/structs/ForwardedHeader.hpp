@@ -411,7 +411,11 @@ public:
 	{
 		ForwardedHeaderAssert(isReverseForwardedPointer());
 		MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(_objectPtr);
-		return (omrobjectptr_t) freeHeader->getNext();
+#if defined(OMR_GC_COMPRESSED_POINTERS)
+		return (omrobjectptr_t) freeHeader->getNext(true);
+#else /* OMR_GC_COMPRESSED_POINTERS */
+		return (omrobjectptr_t) freeHeader->getNext(false);
+#endif /* OMR_GC_COMPRESSED_POINTERS */
 	}
 
 	/**

@@ -317,14 +317,15 @@ MMINLINE bool
 MM_MemoryPoolBumpPointer::internalRecycleHeapChunk(void *addrBase, void *addrTop, MM_HeapLinkedFreeHeader *next)
 {
 	/* Determine if the heap chunk belongs in the free list */
+	bool const compressed = compressObjectReferences();
 	uintptr_t freeEntrySize = ((uintptr_t)addrTop) - ((uintptr_t)addrBase);
 	Assert_MM_true((uintptr_t)addrTop >= (uintptr_t)addrBase);
 
-	MM_HeapLinkedFreeHeader *freeEntry = MM_HeapLinkedFreeHeader::fillWithHoles(addrBase, freeEntrySize);
+	MM_HeapLinkedFreeHeader *freeEntry = MM_HeapLinkedFreeHeader::fillWithHoles(addrBase, freeEntrySize, compressed);
 	if ((NULL != freeEntry) && (freeEntrySize >= _minimumFreeEntrySize)) {
 		Assert_MM_true(freeEntry == addrBase);
 		Assert_MM_true((NULL == next) || (freeEntry < next));
-		freeEntry->setNext(next);
+		freeEntry->setNext(next, compressed);
 		return true;
 	} else {
 		return false;
@@ -379,11 +380,13 @@ bool
 MM_MemoryPoolBumpPointer::createFreeEntry(MM_EnvironmentBase* env, void* addrBase, void* addrTop,
 													  MM_HeapLinkedFreeHeader* previousFreeEntry, MM_HeapLinkedFreeHeader* nextFreeEntry)
 {
+	bool const compressed = compressObjectReferences();
+
 	if (internalRecycleHeapChunk(addrBase, addrTop, nextFreeEntry)) {
 
 		/* The range is big enough for the free list, so link the previous to it */
 		if (previousFreeEntry) {
-			previousFreeEntry->setNext((MM_HeapLinkedFreeHeader*)addrBase);
+			previousFreeEntry->setNext((MM_HeapLinkedFreeHeader*)addrBase, compressed);
 		}
 
 		if ((uintptr_t) addrBase > (uintptr_t) getLastFreeEntry()) {
@@ -394,7 +397,7 @@ MM_MemoryPoolBumpPointer::createFreeEntry(MM_EnvironmentBase* env, void* addrBas
 
 	/* The range was not big enough for the free list, so link previous to next */
 	if (previousFreeEntry) {
-		previousFreeEntry->setNext(nextFreeEntry);
+		previousFreeEntry->setNext(nextFreeEntry, compressed);
 	}
 	return false;
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -136,6 +136,16 @@ TR::Instruction *generateITYPE( TR::InstOpCode::Mnemonic op,
                                 uint32_t          imm,
                                 TR::CodeGenerator *cg,
                                 TR::Instruction   *previous = NULL);
+
+TR::Instruction *generateITYPE( TR::InstOpCode::Mnemonic op,
+                                TR::Node          *n,
+                                TR::Register      *treg,
+                                TR::Register      *sreg,
+                                uint32_t          imm,
+                                TR::RegisterDependencyConditions *cond,
+                                TR::CodeGenerator *cg,
+                                TR::Instruction   *previous = NULL);
+
 
 TR::Instruction *generateLOAD(  TR::InstOpCode::Mnemonic op,
                                 TR::Node          *n,

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -105,17 +105,31 @@ class RVSystemLinkage : public TR::Linkage
          TR::Node *callNode,
          TR::RegisterDependencyConditions *dependencies);
 
+
+   /**
+    * @brief Builds dispatch to method (either direct or indirect)
+    * @param[in] node : caller node
+    */
+   virtual TR::Register *buildDispatch(TR::Node *callNode);
+
    /**
     * @brief Builds direct dispatch to method
     * @param[in] node : caller node
     */
-   virtual TR::Register *buildDirectDispatch(TR::Node *callNode);
+   virtual TR::Register *buildDirectDispatch(TR::Node *callNode)
+      {
+      return buildDispatch(callNode);
+      }
 
    /**
     * @brief Builds indirect dispatch to method
     * @param[in] node : caller node
     */
-   virtual TR::Register *buildIndirectDispatch(TR::Node *callNode);
+   virtual TR::Register *buildIndirectDispatch(TR::Node *callNode)
+      {
+      return buildDispatch(callNode);
+      }
+
    };
 
 }

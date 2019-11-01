@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -398,6 +398,22 @@ OMR::RV::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *c
 
    return linkage->buildDirectDispatch(node);
    }
+
+// handles calli, icalli, lcalli, fcalli, dcalli, acalli
+TR::Register *
+OMR::RV::TreeEvaluator::indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::SymbolReference *symRef = node->getSymbolReference();
+   TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
+
+   // FIXME: How comes here we get private linkage?
+   // TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
+   TR::Linkage *linkage = cg->getLinkage(TR_System);
+
+   return linkage->buildIndirectDispatch(node);
+   }
+
+
 
 TR::Register *
 OMR::RV::TreeEvaluator::treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg)

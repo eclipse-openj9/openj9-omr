@@ -595,14 +595,14 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::arraylengthEvaluator ,	// TR::arraylength	// number of elements in an array
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::contigarraylengthEvaluator ,	// TR::contigarraylength	// number of elements in a contiguous array
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::discontigarraylengthEvaluator ,	// TR::discontigarraylength	// number of elements in a discontiguous array
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::icalliEvaluator ,	// TR::icalli		// indirect call returning integer (child1 is addr of function)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::iucalliEvaluator ,	// TR::iucalli		// indirect call returning unsigned integer (child1 is addr of function)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::lcalliEvaluator ,	// TR::lcalli		// indirect call returning long integer (child1 is addr of function)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::lucalliEvaluator ,	// TR::lucalli		// indirect call returning unsigned long integer (child1 is addr of function)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fcalliEvaluator ,	// TR::fcalli		// indirect call returning float (child1 is addr of function)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dcalliEvaluator ,	// TR::dcalli		// indirect call returning double (child1 is addr of function)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::acalliEvaluator ,	// TR::acalli		// indirect call returning reference
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::calliEvaluator ,	// TR::calli		// indirect call returning void (child1 is addr of function)
+    TR::TreeEvaluator::indirectCallEvaluator ,     // TR::icalli		// indirect call returning integer (child1 is addr of function)
+    TR::TreeEvaluator::indirectCallEvaluator ,     // TR::iucalli		// indirect call returning unsigned integer (child1 is addr of function)
+    TR::TreeEvaluator::indirectCallEvaluator ,     // TR::lcalli		// indirect call returning long integer (child1 is addr of function)
+    TR::TreeEvaluator::indirectCallEvaluator ,     // TR::lucalli		// indirect call returning unsigned long integer (child1 is addr of function)
+    TR::TreeEvaluator::indirectCallEvaluator ,     // TR::fcalli		// indirect call returning float (child1 is addr of function)
+    TR::TreeEvaluator::indirectCallEvaluator ,     // TR::dcalli		// indirect call returning double (child1 is addr of function)
+    TR::TreeEvaluator::indirectCallEvaluator ,     // TR::acalli		// indirect call returning reference
+    TR::TreeEvaluator::indirectCallEvaluator ,     // TR::calli		// indirect call returning void (child1 is addr of function)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fenceEvaluator ,	// TR::fence		// barrier to optimization
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::luaddhEvaluator ,	// TR::luaddh		// add 2 unsigned long integers (the high parts of prior luadd) as high part of 128bit addition.
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::caddEvaluator ,	// TR::cadd		// add 2 unsigned short integers

@@ -2867,7 +2867,7 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
             TR::DebugCounter::incStaticDebugCounter(self()->comp(), "nopInst/-1/unknown");
          }
       }
-   // End -- Static debug coutners to track nop generation
+   // End -- Static debug counters to track nop generation
    TR_ASSERT(cursor == desiredReturnValue, "Must produce the correct amount of padding");
    return cursor;
    }

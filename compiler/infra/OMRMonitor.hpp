@@ -58,7 +58,7 @@ class Monitor
    char const *getName();
    bool init(char *name);
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) || defined(AIXPPC)
    // xlc cannot handle private delete operator
    public:
 #else

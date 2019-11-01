@@ -60,7 +60,7 @@ if(NOT OMR_HOST_OS STREQUAL "win")
 endif()
 #target_link_libraries(omrGtest INTERFACE omrGtestGlue)
 
-if(OMR_HOST_OS STREQUAL "zos")
+if(OMR_HOST_OS STREQUAL "zos" OR OMR_HOST_OS STREQUAL "aix")
 	list(APPEND OMR_GTEST_DEFINITIONS
 		-DGTEST_ENV_HAS_STD_TUPLE_
 		-D__IBMCPP_TR1__

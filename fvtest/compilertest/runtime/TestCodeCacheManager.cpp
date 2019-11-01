@@ -79,7 +79,7 @@ TestCompiler::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
               codeCacheSizeToAllocate,
               PROT_READ | PROT_WRITE | PROT_EXEC,
               MAP_ANONYMOUS | MAP_PRIVATE,
-              0,
+              -1,
               0));
 #endif /* OMR_OS_WINDOWS */
    TR::CodeCacheMemorySegment *memSegment = (TR::CodeCacheMemorySegment *) ((size_t)memorySlab + codeCacheSizeToAllocate - sizeof(TR::CodeCacheMemorySegment));

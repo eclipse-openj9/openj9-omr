@@ -36,7 +36,7 @@ pipeline {
                     
                     dir('build') {
                         echo 'Configure...'
-                        sh '''cmake -Wdev -DCMAKE_XL_CreateExportList="/usr/vac/bin/CreateExportList -X64" -DOMR_JIT=OFF -DOMR_JITBUILDER=OFF -DOMR_TEST_COMPILER=OFF -DOMR_DDR=OFF -C../cmake/caches/Travis.cmake ..''' 
+                        sh '''cmake -Wdev -DCMAKE_XL_CreateExportList="/usr/vac/bin/CreateExportList -X64" -DOMR_DDR=OFF -C../cmake/caches/Travis.cmake ..'''
                        
                         echo 'Compile...'
                         sh '''make -j8'''

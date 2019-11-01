@@ -99,13 +99,19 @@ dwarf_init(int fd,
 	Dwarf_Handler errhand,
 	Dwarf_Ptr errarg,
 	Dwarf_Debug *dbg,
-	Dwarf_Error *error)
+	Dwarf_Error *error
+#if defined(J9OS_I5)
+	, const char * filename
+#endif
+	)
 {
 	/* Initialize CU values */
 	int ret = DW_DLV_OK;
 	FILE *fp = NULL;
 	char buffer[50000];
+#ifndef J9OS_I5
 	char filepath[100] = {'\0'};
+#endif
 	Dwarf_CU_Context::_firstCU = NULL;
 	Dwarf_CU_Context::_currentCU = NULL;
 	refNumber = 1;
@@ -114,13 +120,19 @@ dwarf_init(int fd,
 	ret = populateBuiltInTypeDies(error);
 	populateAttributeReferences();
 
+#ifndef J9OS_I5
 	/* Get the path of the file descriptor. */
 	sprintf(filepath, "/proc/%d/fd/%d", getpid(), fd);
 
+#endif
 	/* Call dump to get the symbol table. */
 	if (DW_DLV_OK == ret) {
 		stringstream ss;
+#ifndef J9OS_I5 
 		ss << "dump -tvXany " << filepath << " 2>&1";
+#else
+		ss << "dump -tvXany " << filename << " 2>&1";
+#endif
 		fp = popen(ss.str().c_str(), "r");
 		if (NULL == fp) {
 			ret = DW_DLV_ERROR;

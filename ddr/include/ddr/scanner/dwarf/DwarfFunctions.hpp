@@ -317,7 +317,11 @@ int dwarf_init(int fd,
 	Dwarf_Handler errhand,
 	Dwarf_Ptr errarg,
 	Dwarf_Debug *dbg,
-	Dwarf_Error *error);
+	Dwarf_Error *error
+#if defined(J9OS_I5)
+	,const char * filename
+#endif
+	);
 
 int dwarf_dieoffset(Dwarf_Die die, Dwarf_Off *dieOffset, Dwarf_Error *error);
 

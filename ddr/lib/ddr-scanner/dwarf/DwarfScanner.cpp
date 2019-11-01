@@ -1563,7 +1563,13 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *f
 		Dwarf_Handler errhand = 0;
 		Dwarf_Ptr errarg = NULL;
 		intptr_t native_fd = omrfile_convert_omrfile_fd_to_native_fd(fd);
-		res = dwarf_init((int)native_fd, access, errhand, errarg, &_debug, &error);
+		res = dwarf_init((int)native_fd, access, errhand, errarg, &_debug, &error
+#if defined (J9OS_I5)
+//On IBM i , we do not have /proc file system.
+			,filepath
+#endif
+		);
+
 		if (DW_DLV_OK != res) {
 			ERRMSG("Failed to initialize libDwarf scanning %s: %s\nExiting...\n", filepath, dwarf_errmsg(error));
 			if (NULL != error) {

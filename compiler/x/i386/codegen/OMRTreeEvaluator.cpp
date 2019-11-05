@@ -1516,7 +1516,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairDivEvaluator(TR::Node *n
    TR::RegisterDependencyConditions  *dependencies = generateRegisterDependencyConditions((uint8_t)0, 2, cg);
    dependencies->addPostCondition(lowRegister, TR::RealRegister::eax, cg);
    dependencies->addPostCondition(highRegister, TR::RealRegister::edx, cg);
-   J9::IA32PrivateLinkage *linkage = static_cast<J9::IA32PrivateLinkage>(cg->getLinkage(TR_Private));
+   J9::IA32PrivateLinkage *linkage = static_cast<J9::IA32PrivateLinkage *>(cg->getLinkage(TR_Private));
    TR::IA32LinkageUtils::pushLongArg(secondChild, cg);
    TR::IA32LinkageUtils::pushLongArg(firstChild, cg);
    TR::X86ImmSymInstruction  *instr =
@@ -1630,7 +1630,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairRemEvaluator(TR::Node *n
    dependencies->addPostCondition(firstRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
    dependencies->addPostCondition(secondRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
 
-   J9::IA32PrivateLinkage *linkage = static_cast<J9::IA32PrivateLinkage>(cg->getLinkage(TR_Private));
+   J9::IA32PrivateLinkage *linkage = static_cast<J9::IA32PrivateLinkage *>(cg->getLinkage(TR_Private));
    TR::IA32LinkageUtils::pushLongArg(secondChild, cg);
    TR::IA32LinkageUtils::pushLongArg(firstChild, cg);
    TR::X86ImmSymInstruction  *instr =

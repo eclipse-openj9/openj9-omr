@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corp. and others
+ * Copyright (c) 2015, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -73,8 +73,9 @@ public:
 
 	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir,
 			vector<string> *debugFiles, const char *blacklistPath);
-
+	static const char * getScanFileName() { return scanFileName; }
 private:
+	static const char * scanFileName;
 	Dwarf_Signed _fileNameCount;
 	char **_fileNamesTable;
 	unordered_map<string, int> _anonymousEnumNames;

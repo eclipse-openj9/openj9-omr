@@ -53,26 +53,6 @@ class IA32SystemLinkage : public TR::X86SystemLinkage
    virtual uint32_t getAlignment(TR::DataType);
    };
 
-#if 0
-class IA32SystemLinkage : public TR::IA32PrivateLinkage
-   {
-   public:
-
-   IA32SystemLinkage(TR::CodeGenerator *cg);
-
-   virtual TR::Register *buildDirectDispatch(TR::Node *callNode, bool spillFPRegs);
-   virtual TR::Register *buildIndirectDispatch(TR::Node *callNode);
-   virtual TR::Register *buildAlloca(TR::Node *callNode);
-   virtual TR::Register *pushStructArg(TR::Node* child);
-   virtual void notifyHasalloca(){}
-
-   protected:
-
-   TR::Register *buildDispatch(TR::Node *callNode);
-
-   };
-#endif
-
 }
 
 #endif

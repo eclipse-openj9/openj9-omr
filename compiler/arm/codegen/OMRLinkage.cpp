@@ -22,9 +22,6 @@
 #include "arm/codegen/Linkage.hpp"
 
 #include "arm/codegen/ARMInstruction.hpp"
-#ifdef J9_PROJECT_SPECIFIC
-#include "arm/codegen/ARMPrivateLinkage.hpp"
-#endif
 #include "arm/codegen/ARMSystemLinkage.hpp"
 #ifdef J9_PROJECT_SPECIFIC
 #include "codegen/CallSnippet.hpp"

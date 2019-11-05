@@ -22,7 +22,6 @@
 #include <stdint.h>
 #include "arm/codegen/ARMInstruction.hpp"
 #ifdef J9_PROJECT_SPECIFC
-#include "arm/codegen/ARMPrivateLinkage.hpp"
 #include "arm/codegen/ARMRecompilation.hpp"
 #endif
 #include "arm/codegen/ARMSystemLinkage.hpp"

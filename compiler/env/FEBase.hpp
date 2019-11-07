@@ -22,7 +22,7 @@
 #ifndef FEBASE_HPP_JniLXw
 #define FEBASE_HPP_JniLXw
 
-#include "codegen/FrontEnd.hpp"
+#include "compiler/env/FrontEnd.hpp"
 
 #include "compile/CompilationTypes.hpp"
 #include "env/JitConfig.hpp"

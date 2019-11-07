@@ -20,7 +20,7 @@
  *******************************************************************************/
 
 #include "env/KnownObjectTable.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/VMAccessCriticalSection.hpp"
 #endif

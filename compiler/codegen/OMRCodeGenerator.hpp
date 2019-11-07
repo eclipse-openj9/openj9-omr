@@ -36,7 +36,7 @@ namespace OMR { typedef OMR::CodeGenerator CodeGeneratorConnector; }
 #include <stdint.h>
 #include <map>
 #include "codegen/CodeGenPhase.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "codegen/RegisterConstants.hpp"

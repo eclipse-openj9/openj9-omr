@@ -23,7 +23,7 @@
 #define TESTFE_INCL
 
 #include <vector>
-#include "codegen/FrontEnd.hpp"
+#include "compiler/env/FrontEnd.hpp"
 #include "env/FEBase.hpp"
 #include "env/jittypes.h"
 #include "runtime/TestJitConfig.hpp"

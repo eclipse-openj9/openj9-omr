@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGeneratorUtils.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Machine.hpp"

@@ -84,6 +84,10 @@ static void loadRelocatableConstant(TR::Node *node,
          {
          loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_DataAddress);
          }
+      else if (isClass && !ref->isUnresolved())
+         {
+         loadAddressConstant(cg, GCRnode, (intptr_t)ref, reg, NULL, false, TR_ClassAddress);
+         }
       else
          {
          cg->addSnippet(mr->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, node->getOpCode().isStore(), false)));

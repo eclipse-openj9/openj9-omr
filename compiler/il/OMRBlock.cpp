@@ -1446,10 +1446,10 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
          // For all the nodes in the nodeTable for which we can not find replacement yet, create replacement node using available registers.
          if (!iter->second.second)
             {
-            TR::SymbolReference *ref = value->getOpCode().isLoadReg() ? value->getRegLoadStoreSymbolReference() : createSymRefForNode(comp, methodSymbol, value, self()->getExit());
             std::pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber> regInfo = findAvailableRegister(comp, iter->first, unavailableRegisters);
             if (regInfo.first > -1)
                {
+               TR::SymbolReference *ref = value->getOpCode().isLoadReg() ? value->getRegLoadStoreSymbolReference() : createSymRefForNode(comp, methodSymbol, value, self()->getExit());
                TR::Node *regLoad = TR::Node::create(value, comp->il.opCodeForRegisterLoad(value->getDataType()));
                TR::Node *regStore = TR::Node::create(value, comp->il.opCodeForRegisterStore(value->getDataType()), 1, value);
                self()->getExit()->insertBefore(TR::TreeTop::create(comp, regStore));
@@ -1470,13 +1470,39 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
                iter->second.second = regLoad;
                }
             // If we can not find a register, store it into temp slot.
-            if (!iter->second.second)
+            else
                {
-               iter->second.second = TR::Node::createWithSymRef(value, comp->il.opCodeForDirectLoad(value->getDataType()), 0, ref);
+               TR::DataType originalValDataType = value->getDataType();
+               TR::DataType convertedValDataType = comp->fe()->dataTypeForLoadOrStore(originalValDataType);
+               TR::Node *convertedValueNode  = value;
+               // In case for a given node, if the data type of stack load/store is not same as node's data type,
+               // then we need to convert the node to the type which can be stored onto the stack. 
+               // Also we need to make sure that replacement node is a node that is converted back to original type of the node.
+               if (convertedValDataType != originalValDataType)
+                  {
+                  TR::ILOpCodes convertOpCode = TR::ILOpCode::getProperConversion(originalValDataType, convertedValDataType, false);
+                  convertedValueNode = TR::Node::create(convertOpCode, 1, value);
+                  }
+               TR::SymbolReference *storedValueSymRef = createSymRefForNode(comp, methodSymbol, convertedValueNode, self()->getExit());
+               self()->getExit()->insertBefore(TR::TreeTop::create(comp,
+                                                                     TR::Node::createWithSymRef(value,
+                                                                        comp->il.opCodeForDirectStore(convertedValDataType),
+                                                                        1,
+                                                                        convertedValueNode,
+                                                                        storedValueSymRef)));
+               TR::Node *replacementNode = TR::Node::createLoad(value, storedValueSymRef);
+               if (convertedValDataType != originalValDataType)
+                  {
+                  TR::ILOpCodes convertOpCode = TR::ILOpCode::getProperConversion(convertedValDataType, originalValDataType, false);
+                  replacementNode = TR::Node::create(convertOpCode, 1, replacementNode);
+                  }
+               iter->second.second = replacementNode;
                }
             }
+         
+         // Now as we have created a node to replace all the references of value node after split point, add all nodes which are not stored into the temp slot to the list for entry and exit dependency 
+         // which will be used to create GlRegDeps for exit node of the original block and entry node of new block.
          TR::Node *replacement = iter->second.second;
-         // Now we know where the value will be stored handle the two cases in step 3 based on the opcode type
          if (replacement->getOpCode().isLoadReg())
             {
             depCount++;
@@ -1492,15 +1518,6 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
                exitDeps.add(passthrough);
                }
             entryDeps.add(replacement);
-            }
-         else if (!(replacement->getOpCode().isLoadConst() || replacement->getOpCodeValue() == TR::loadaddr))
-            {
-            self()->getExit()->insertBefore(TR::TreeTop::create(comp,
-                                                                  TR::Node::createWithSymRef(iter->first,
-                                                                     comp->il.opCodeForDirectStore(value->getDataType()), 
-                                                                     1,
-                                                                     value, 
-                                                                     iter->second.second->getSymbolReference())));
             }
          }
       if (depCount > 0)

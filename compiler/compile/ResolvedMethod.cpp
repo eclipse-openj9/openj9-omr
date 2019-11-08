@@ -79,10 +79,7 @@ bool TR_ResolvedMethod::isDAAMarshallingWrapperMethod()
 bool TR_ResolvedMethod::isDAAPackedDecimalWrapperMethod()
    {
 #ifdef J9_PROJECT_SPECIFIC
-   if (// Byte array utility methods
-       getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUtils_trailingZeros          ||
-
-       // DAA Packed Decimal arithmetic methods
+   if (// DAA Packed Decimal arithmetic methods
        getRecognizedMethod() == TR::com_ibm_dataaccess_PackedDecimal_addPackedDecimal        ||
        getRecognizedMethod() == TR::com_ibm_dataaccess_PackedDecimal_subtractPackedDecimal   ||
        getRecognizedMethod() == TR::com_ibm_dataaccess_PackedDecimal_multiplyPackedDecimal   ||
@@ -233,10 +230,7 @@ bool TR_ResolvedMethod::isDAAMarshallingIntrinsicMethod()
 bool TR_ResolvedMethod::isDAAPackedDecimalIntrinsicMethod()
    {
 #ifdef J9_PROJECT_SPECIFIC
-   if (// Byte array utility methods
-       getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUtils_trailingZerosQuadWordAtATime_   ||
-
-       // DAA Packed Decimal arithmetic methods
+   if (// DAA Packed Decimal arithmetic methods
        getRecognizedMethod() == TR::com_ibm_dataaccess_PackedDecimal_addPackedDecimal_        ||
        getRecognizedMethod() == TR::com_ibm_dataaccess_PackedDecimal_subtractPackedDecimal_   ||
        getRecognizedMethod() == TR::com_ibm_dataaccess_PackedDecimal_multiplyPackedDecimal_   ||

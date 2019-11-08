@@ -486,11 +486,13 @@ static const char *opCodeToNameMap[] =
    "fmaxd",
    "fmins",
    "fmind",
+   "nop",
    "proc",
    "fence",
    "return",
    "dd",
-   "label"
+   "label",
+   "vgdnop"
    };
 
 const char *

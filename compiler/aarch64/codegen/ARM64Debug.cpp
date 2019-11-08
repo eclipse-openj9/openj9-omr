@@ -592,6 +592,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsMemSrc1:
          print(pOutFile, (TR::ARM64MemSrc1Instruction *)instr);
          break;
+      case OMR::Instruction::IsTrg1MemSrc1:
+         print(pOutFile, (TR::ARM64Trg1MemSrc1Instruction *)instr);
+         break;
       case OMR::Instruction::IsSrc1:
          print(pOutFile, (TR::ARM64Src1Instruction *)instr);
          break;
@@ -1093,6 +1096,20 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64MemSrc1Instruction *instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getMemoryReference());
+
+   printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1MemSrc1Instruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getMemoryReference());
 

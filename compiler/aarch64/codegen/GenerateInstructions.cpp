@@ -232,6 +232,14 @@ TR::Instruction *generateMemSrc1Instruction(TR::CodeGenerator *cg, TR::InstOpCod
    return new (cg->trHeapMemory()) TR::ARM64MemSrc1Instruction(op, node, mr, sreg, cg);
    }
 
+TR::Instruction *generateTrg1MemSrc1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::MemoryReference *mr, TR::Register *sreg, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1MemSrc1Instruction(op, node, treg, mr, sreg, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1MemSrc1Instruction(op, node, treg, mr, sreg, cg);
+   }
+
 TR::Instruction *generateSrc1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *s1reg, TR::Instruction *preced)
    {

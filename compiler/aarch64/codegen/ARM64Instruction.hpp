@@ -2483,6 +2483,137 @@ class ARM64MemSrc1Instruction : public ARM64MemInstruction
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
+// for "store exclusive" instructions such as stxrx/stxrw
+class ARM64Trg1MemSrc1Instruction : public ARM64Trg1MemInstruction
+   {
+   TR::Register *_source1Register;
+
+   public:
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] mr : memory reference
+    * @param[in] sreg : source register
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1MemSrc1Instruction(TR::InstOpCode::Mnemonic op,
+                               TR::Node *node,
+                               TR::Register *treg,
+                               TR::MemoryReference *mr,
+                               TR::Register *sreg, TR::CodeGenerator *cg)
+      : ARM64Trg1MemInstruction(op, node, treg, mr, cg), _source1Register(sreg)
+      {
+      useRegister(sreg);
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] mr : memory reference
+    * @param[in] sreg : source register
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1MemSrc1Instruction(TR::InstOpCode::Mnemonic op,
+                               TR::Node *node,
+                               TR::Register *treg,
+                               TR::MemoryReference *mr,
+                               TR::Register *sreg,
+                               TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64Trg1MemInstruction(op, node, treg, mr, precedingInstruction, cg), _source1Register(sreg)
+      {
+      useRegister(sreg);
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsTrg1MemSrc1; }
+
+   /**
+    * @brief Gets source register
+    * @return source register
+    */
+   TR::Register *getSource1Register() {return _source1Register;}
+   /**
+    * @brief Sets source register
+    * @param[in] sr : source register
+    * @return source register
+    */
+   TR::Register *setSource1Register(TR::Register *sr) {return (_source1Register = sr);}
+
+   virtual TR::Snippet *getSnippetForGC() {return getMemoryReference()->getUnresolvedSnippet();}
+
+   /**
+    * @brief Sets target register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertTargetRegister(uint32_t *instruction)
+      {
+      TR::RealRegister *target = toRealRegister(getTargetRegister());
+      target->setRegisterFieldRS(instruction);
+      }
+
+   /**
+    * @brief Sets source register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertSource1Register(uint32_t *instruction)
+      {
+      TR::RealRegister *source1 = toRealRegister(_source1Register);
+      source1->setRegisterFieldRT(instruction);
+      }
+
+   /**
+    * @brief Answers whether this instruction references the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction references the virtual register
+    */
+   virtual bool refsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction uses the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction uses the virtual register
+    */
+   virtual bool usesRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction defines the virtual register
+    */
+   virtual bool defsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given real register
+    * @param[in] reg : real register
+    * @return true when the instruction defines the real register
+    */
+   virtual bool defsRealRegister(TR::Register *reg);
+   /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+
+   /**
+    * @brief Estimates binary length
+    * @param[in] currentEstimate : current estimated length
+    * @return estimated binary length
+    */
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   };
+
 class ARM64Src1Instruction : public TR::Instruction
    {
    TR::Register *_source1Register;

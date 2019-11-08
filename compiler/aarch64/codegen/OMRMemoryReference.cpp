@@ -715,6 +715,13 @@ static bool isImm12OffsetInstruction(uint32_t enc)
    return ((enc & 0x3b200000) == 0x39000000);
    }
 
+/* load/store exclusive */
+static bool isExclusiveMemAccessInstruction(TR::InstOpCode::Mnemonic op)
+   {
+   return (op == TR::InstOpCode::ldxrx || op == TR::InstOpCode::ldxrw ||
+           op == TR::InstOpCode::stxrx || op == TR::InstOpCode::stxrw);
+   }
+
 
 uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *currentInstruction, uint8_t *cursor, TR::CodeGenerator *cg)
    {
@@ -801,9 +808,14 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                   TR_ASSERT(false, "Offset is too large for specified instruction.");
                   }
                }
+            else if (isExclusiveMemAccessInstruction(op.getMnemonic()))
+               {
+               TR_ASSERT(displacement == 0, "Offset must be zero for specified instruction.");
+               cursor += ARM64_INSTRUCTION_LENGTH;
+               }
             else
                {
-               /* Register pair, literal, exclusive instructions to be supported */
+               /* Register pair, literal instructions to be supported */
                TR_UNIMPLEMENTED();
                }
             }
@@ -882,9 +894,13 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
                   TR_ASSERT(false, "Offset is too large for specified instruction.");
                   }
                }
+            else if (isExclusiveMemAccessInstruction(op.getMnemonic()))
+               {
+               return ARM64_INSTRUCTION_LENGTH;
+               }
             else
                {
-               /* Register pair, literal, exclusive instructions to be supported */
+               /* Register pair, literal instructions to be supported */
                TR_UNIMPLEMENTED();
                }
             }

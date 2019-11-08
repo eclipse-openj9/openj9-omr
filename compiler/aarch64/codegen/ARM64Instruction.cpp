@@ -328,6 +328,60 @@ void TR::ARM64Trg1MemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssig
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
    }
 
+// TR::ARM64Trg1MemSrc1Instruction:: member functions
+
+bool TR::ARM64Trg1MemSrc1Instruction::refsRegister(TR::Register *reg)
+   {
+   return (reg == getTargetRegister() || getMemoryReference()->refsRegister(reg) || reg == getSource1Register());
+   }
+
+bool TR::ARM64Trg1MemSrc1Instruction::usesRegister(TR::Register *reg)
+   {
+   return (getMemoryReference()->refsRegister(reg) || reg == getSource1Register());
+   }
+
+bool TR::ARM64Trg1MemSrc1Instruction::defsRegister(TR::Register *reg)
+   {
+   return (reg == getTargetRegister());
+   }
+
+bool TR::ARM64Trg1MemSrc1Instruction::defsRealRegister(TR::Register *reg)
+   {
+   return (reg == getTargetRegister()->getAssignedRegister());
+   }
+
+void TR::ARM64Trg1MemSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   TR::Machine *machine = cg()->machine();
+   TR::MemoryReference *mref = getMemoryReference();
+   TR::Register *sourceVirtual = getSource1Register();
+   TR::Register *targetVirtual = getTargetRegister();
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
+
+   mref->blockRegisters();
+   sourceVirtual->block();
+   setTargetRegister(machine->assignOneRegister(this, targetVirtual));
+   sourceVirtual->unblock();
+   mref->unblockRegisters();
+
+   mref->blockRegisters();
+   targetVirtual->block();
+   setSource1Register(machine->assignOneRegister(this, sourceVirtual));
+   targetVirtual->unblock();
+   mref->unblockRegisters();
+
+   sourceVirtual->block();
+   targetVirtual->block();
+   mref->assignRegisters(this, cg());
+   targetVirtual->unblock();
+   sourceVirtual->unblock();
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
+   }
+
 // TR::ARM64Src1Instruction:: member functions
 
 bool TR::ARM64Src1Instruction::refsRegister(TR::Register *reg)

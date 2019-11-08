@@ -675,7 +675,6 @@ TR_S390PostRAPeephole::duplicateNILHReduction()
    return false;
    }
 
-
 bool
 TR_S390PostRAPeephole::clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *targetReg)
    {
@@ -762,7 +761,6 @@ TR_S390PostRAPeephole::seekRegInFutureMemRef(int32_t maxWindowSize, TR::Register
    TR::Instruction * current = _cursor->getNext();
    int32_t windowSize=0;
 
-
    while ((current != NULL) &&
          !current->matchesTargetRegister(targetReg) &&
          !isBarrierToPeepHoleLookback(current) &&
@@ -805,7 +803,6 @@ TR_S390PostRAPeephole::removeMergedNullCHK()
       if (_cg->randomizer.randomBoolean() && performTransformation(comp(),"O^O Random Codegen  - Disable removeMergedNullCHK on 0x%p.\n",_cursor))
          return false;
       }
-
 
    int32_t windowSize=0;
    const int32_t maxWindowSize=8;
@@ -1347,13 +1344,12 @@ TR_S390PostRAPeephole::ConditionalBranchReduction(TR::InstOpCode::Mnemonic branc
    return false;
    }
 
-
 /**
  * Catch the pattern where an CLR/BRC can be converted
  *    CLR R1, R2
- *    BRC Mask, Lable
+ *    BRC Mask, Label
  * Can be replaced with
- *    CLRJ R1, R2, Lable, Mask
+ *    CLRJ R1, R2, Label, Mask
  */
 bool
 TR_S390PostRAPeephole::CompareAndBranchReduction()
@@ -1765,7 +1761,6 @@ TR_S390PostRAPeephole::trueCompEliminationForCompareAndBranch()
       return false;
       }
 
-
    btar = realInstruction(btar, true);
    bool backwardBranch = false;
    if (btar)
@@ -2176,9 +2171,6 @@ TR_S390PostRAPeephole::revertTo32BitShift()
    return reverted;
    }
 
-
-
-
 /**
  * Try to inline EX dispatched constant instruction snippet
  * into the code section to eliminate i-cache misses and improve
@@ -2256,7 +2248,6 @@ TR_S390PostRAPeephole::inlineEXtargetHelper(TR::Instruction *inst, TR::Instructi
       }
    return false;
    }
-
 
 bool
 TR_S390PostRAPeephole::inlineEXtarget()
@@ -3195,5 +3186,3 @@ bool TR_S390PostRAPeephole::forwardBranchTarget()
       }
    return false;
    }
-
-

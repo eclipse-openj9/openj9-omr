@@ -2831,8 +2831,6 @@ int32_t childTypes[] =
    TR::Int8,                      // TR::busub
    TR::Int32,                     // TR::iuneg
    TR::Int64,                     // TR::luneg
-   TR::Int32 | (TR::Int32<<16),   // TR::iushl
-   TR::Int64 | (TR::Int32<<16),   // TR::lushl
    TR::Float,                      // TR::f2iu
    TR::Float,                      // TR::f2lu
    TR::Float,                      // TR::f2bu
@@ -2892,7 +2890,6 @@ int32_t childTypes[] =
    TR::Int64,                     // TR::lumulh
    // TR::Int16,                     // TR::cdiv
    // TR::Int16,                     // TR::crem
-   // TR::Int16,                     // TR::cshl
    // TR::Int16 | (TR::Int32<<16),   // TR::cushr
 
    TR::Int32,                     // TR::ibits2f
@@ -2996,15 +2993,6 @@ int32_t childTypes[] =
 
    TR::NoType,                     // TR::getstack
    TR::Address,                    // TR::dealloca
-
-   TR::Int32,                     // TR::ishfl
-   TR::Int64,                     // TR::lshfl
-   TR::Int32,                     // TR::iushfl
-   TR::Int64,                     // TR::lushfl
-   TR::Int32,                     // TR::bshfl
-   TR::Int64,                     // TR::sshfl
-   TR::Int32,                     // TR::bushfl
-   TR::Int64,                     // TR::sushfl
 
    TR::Int32,                     // TR::idoz
 

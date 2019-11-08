@@ -583,8 +583,6 @@
    bsubSimplifier,          // TR::busub
    inegSimplifier,          // TR::iuneg
    lnegSimplifier,          // TR::luneg
-   ishlSimplifier,          // TR::iushl
-   lshlSimplifier,          // TR::lushl
    f2iSimplifier,           // TR::f2iu
    f2lSimplifier,           // TR::f2iu
    f2bSimplifier,           // TR::f2bu
@@ -645,7 +643,6 @@
 //   cdivSimplifier,          // TR::cdiv
 //   cremSimplifier,          // TR::crem
 
-//   cshlSimplifier,          // TR::cshl
 //   cushrSimplifier,         // TR::cushr
 
    ibits2fSimplifier,       // TR::ibits2f
@@ -752,15 +749,6 @@
 
    dftSimplifier,           // TR::getstack
    dftSimplifier,           // TR::dealloca
-
-   dftSimplifier,           // TR::ishfl
-   dftSimplifier,           // TR::lshfl
-   dftSimplifier,           // TR::iushfl
-   dftSimplifier,           // TR::lushfl
-   dftSimplifier,           // TR::bshfl
-   dftSimplifier,           // TR::sshfl
-   dftSimplifier,           // TR::bushfl
-   dftSimplifier,           // TR::sushfl
 
    dftSimplifier,           // TR::idoz
 

@@ -597,8 +597,6 @@
    TR::TreeEvaluator::bsubEvaluator,        // TR::busub
    TR::TreeEvaluator::inegEvaluator,        // TR::iuneg
    TR::TreeEvaluator::lnegEvaluator,        // TR::luneg
-   TR::TreeEvaluator::ishlEvaluator,        // TR::iushl
-   TR::TreeEvaluator::lshlEvaluator,        // TR::lushl
    TR::TreeEvaluator::f2iEvaluator,         // TR::f2iu
    TR::TreeEvaluator::f2lEvaluator,         // TR::f2lu
    TR::TreeEvaluator::f2iEvaluator,         // TR::f2bu
@@ -762,15 +760,6 @@
 
    TR::TreeEvaluator::unImpOpEvaluator,    // TR::getstack
    TR::TreeEvaluator::unImpOpEvaluator,    // TR::dealloca
-
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::ishfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::lshfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::iushfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::lushfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::bshfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::sshfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::bushfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::sushfl
 
    TR::TreeEvaluator::unImpOpEvaluator,         // TR::idoz
 

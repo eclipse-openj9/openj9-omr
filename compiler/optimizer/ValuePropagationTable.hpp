@@ -726,8 +726,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainSubtract,        // TR::busub
    constrainIneg,            // TR::iuneg
    constrainLneg,            // TR::luneg
-   constrainIshl,            // TR::iushl
-   constrainLshl,            // TR::lushl
    constrainChildren,        // TR::f2iu
    constrainChildren,        // TR::f2lu
    constrainChildren,        // TR::f2bu   todo
@@ -788,7 +786,6 @@ const ValuePropagationPtr constraintHandlers[] =
 //   constrainChildren,        // TR::cdiv
 //   constrainChildren,        // TR::crem
 
-   //   constrainChildren,        // TR::cshl
 //   constrainChildren,        // TR::cushr
 
    constrainChildren,        // TR::ibits2f
@@ -893,16 +890,6 @@ const ValuePropagationPtr constraintHandlers[] =
 
    constrainChildren,        // TR::getstack
    constrainChildren,        // TR::dealloca
-
-
-   constrainChildren,        // TR::ishfl
-   constrainChildren,        // TR::lshfl
-   constrainChildren,        // TR::iushfl
-   constrainChildren,        // TR::lushfl
-   constrainChildren,        // TR::bshfl
-   constrainChildren,        // TR::sshfl
-   constrainChildren,        // TR::bushfl
-   constrainChildren,        // TR::sushfl
 
    constrainChildren,        // TR::idoz
 

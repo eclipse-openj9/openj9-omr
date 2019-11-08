@@ -621,8 +621,6 @@
    busub,    // subtract 2 unsigned bytes          (child1 - child2)
    iuneg,    // negate an unsigned integer
    luneg,    // negate a unsigned long integer
-   iushl,    // shift unsigned integer left       (child1 << child2)
-   lushl,    // shift unsigned long integer left  (child1 << child2)
    f2iu,     // convert float to unsigned integer
    f2lu,     // convert float to unsigned long integer
    f2bu,     // convert float to unsigned byte
@@ -792,15 +790,6 @@
 
    getstack, // returns current value of SP
    dealloca, // resets value of SP
-
-   ishfl,    // int shift logical
-   lshfl,    // long shift logical
-   iushfl,   // unsigned int shift logical
-   lushfl,   // unsigned long shift logical
-   bshfl,    // byte shift logical
-   sshfl,    // short shift logical
-   bushfl,   // unsigned byte shift logical
-   sushfl,   // unsigned short shift logical
 
    idoz,     // difference or zero
 

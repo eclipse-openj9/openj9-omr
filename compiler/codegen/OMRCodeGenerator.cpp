@@ -337,8 +337,6 @@ void OMR::CodeGenerator::lowerTrees()
       //
       self()->lowerTreesWalk(node, tt, visitCount);
 
-      // If the tree needs to be lowered, call the VM to lower it
-      //
       self()->lowerTreeIfNeeded(node, 0, 0, tt);
 
 

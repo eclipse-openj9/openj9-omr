@@ -57,6 +57,38 @@ namespace TR { class SymbolReference; }
 namespace TR
 {
 
+class PPCAlignmentNopInstruction : public TR::Instruction
+   {
+   uint32_t _alignment;
+
+   void setAlignment(uint32_t alignment)
+      {
+      TR_ASSERT_FATAL((alignment % PPC_INSTRUCTION_LENGTH) == 0, "Alignment must be a multiple of the nop instruction length");
+      _alignment = alignment != 0 ? alignment : PPC_INSTRUCTION_LENGTH;
+      }
+
+public:
+   PPCAlignmentNopInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t alignment, TR::CodeGenerator *codeGen)
+      : TR::Instruction(op, n, codeGen)
+      {
+      setAlignment(alignment);
+      }
+
+   PPCAlignmentNopInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t alignment, TR::Instruction *precedingInstruction, TR::CodeGenerator *codeGen)
+      : TR::Instruction(op, n, precedingInstruction, codeGen)
+      {
+      setAlignment(alignment);
+      }
+
+   virtual Kind getKind() { return IsAlignmentNop; }
+
+   uint32_t getAlignment() { return _alignment; }
+
+   virtual uint8_t *generateBinaryEncoding();
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t getBinaryLengthLowerBound();
+   };
+
 class PPCImmInstruction : public TR::Instruction
    {
    uint32_t _sourceImmediate;
@@ -399,35 +431,6 @@ class PPCLabelInstruction : public TR::Instruction
 
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
-   };
-
-class PPCAlignedLabelInstruction : public PPCLabelInstruction
-   {
-   int32_t _alignment;
-   bool _flipAlignmentDecision;
-
-   public:
-
-   PPCAlignedLabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::LabelSymbol *sym, int32_t align, TR::CodeGenerator *codeGen)
-      : PPCLabelInstruction(op, n, sym, codeGen), _alignment(align), _flipAlignmentDecision(false)
-      {}
-
-   PPCAlignedLabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::LabelSymbol *sym, int32_t align,
-                                 TR::Instruction *precedingInstruction, TR::CodeGenerator *codeGen)
-      : PPCLabelInstruction(op, n, sym, precedingInstruction, codeGen), _alignment(align), _flipAlignmentDecision(false)
-      {}
-
-   virtual Kind getKind() { return IsAlignedLabel; }
-
-   int32_t getAlignment() { return  _alignment;}
-   int32_t setAlignment(int32_t a) { return  (_alignment=a);}
-
-   bool getFlipAlignmentDecision() { return  _flipAlignmentDecision;}
-   bool setFlipAlignmentDecision(bool d) { return  (_flipAlignmentDecision=d);}
-
-   virtual uint8_t *generateBinaryEncoding();
-
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 class PPCDepLabelInstruction : public PPCLabelInstruction

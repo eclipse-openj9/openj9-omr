@@ -206,6 +206,15 @@ TR::Instruction *generateInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnem
    return new (cg->trHeapMemory()) TR::Instruction(op, n, cg);
    }
 
+TR::Instruction *generateAlignmentNopInstruction(TR::CodeGenerator *cg, TR::Node * n, uint32_t alignment, TR::Instruction *preced)
+   {
+   auto op = TR::Compiler->target.cpu.id() >= TR_PPCp6 ? TR::InstOpCode::genop : TR::InstOpCode::nop;
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::PPCAlignmentNopInstruction(op, n, alignment, preced, cg);
+   return new (cg->trHeapMemory()) TR::PPCAlignmentNopInstruction(op, n, alignment, cg);
+   }
+
 TR::Instruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t imm,
                                        TR::Instruction *preced)
    {
@@ -292,14 +301,6 @@ TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg, TR::InstOpCode:
    if (preced)
       return new (cg->trHeapMemory()) TR::PPCLabelInstruction(op, n, sym, preced, cg);
    return new (cg->trHeapMemory()) TR::PPCLabelInstruction(op, n, sym, cg);
-   }
-
-TR::Instruction *generateAlignedLabelInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
-   TR::LabelSymbol *sym, int32_t alignment, TR::Instruction *preced)
-   {
-   if (preced)
-      return new (cg->trHeapMemory()) TR::PPCAlignedLabelInstruction(op, n, sym, alignment, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCAlignedLabelInstruction(op, n, sym, alignment, cg);
    }
 
 TR::Instruction *generateDepLabelInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,

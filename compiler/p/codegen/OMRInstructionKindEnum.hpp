@@ -25,6 +25,7 @@
  */
 
    IsNotExtended,
+   IsAlignmentNop,
    IsImm,
       IsSrc1,
    IsImm2,
@@ -32,7 +33,6 @@
       IsDepImm,
          IsDepImmSym,
    IsLabel,
-      IsAlignedLabel,
       IsDepLabel,
          IsVirtualGuardNOP,
       IsConditionalBranch,

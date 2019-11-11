@@ -155,7 +155,6 @@ OMR::Z::CodeGenerator::preLowerTrees()
 
    }
 
-
 void
 OMR::Z::CodeGenerator::lowerTreesWalk(TR::Node * parent, TR::TreeTop * treeTop, vcount_t visitCount)
    {
@@ -185,7 +184,6 @@ OMR::Z::CodeGenerator::lowerTreesWalk(TR::Node * parent, TR::TreeTop * treeTop, 
    self()->lowerTreesPostChildrenVisit(parent, treeTop, visitCount);
 
    }
-
 
 void
 OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, TR::TreeTop *tt)
@@ -258,8 +256,6 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
       }
    }
 
-
-
 void
 OMR::Z::CodeGenerator::lowerTreesPropagateBlockToNode(TR::Node *node)
    {
@@ -271,7 +267,6 @@ OMR::Z::CodeGenerator::lowerTreesPropagateBlockToNode(TR::Node *node)
       }
 
    }
-
 
 void
 OMR::Z::CodeGenerator::lowerTreeIfNeeded(
@@ -379,7 +374,6 @@ OMR::Z::CodeGenerator::lowerTreeIfNeeded(
          add1->recursivelyDecReferenceCount();
          }
       }
-
 
    }
 
@@ -563,7 +557,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
      comp->setOption(TR_DisableZ13LoadImmediateOnCond);
      }
 
-
    if (comp->getOption(TR_DisableSIMD))
       {
       comp->setOption(TR_DisableAutoSIMD);
@@ -593,9 +586,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->setSupportsInliningOfTypeCoersionMethods();
 
-
    self()->setPerformsChecksExplicitly();
-
 
    _numberBytesReadInaccessible = 4096;
    _numberBytesWriteInaccessible = 4096;
@@ -795,7 +786,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
 
           if ((grn = self()->machine()->getGlobalEntryPointRegisterNumber()) != -1)
              _globalRegisterBitVectors[ TR_linkageSpill ].set(grn);
-
 
          }
 
@@ -1025,7 +1015,6 @@ OMR::Z::CodeGenerator::isUsing32BitEvaluator(TR::Node *node)
    return false;
    }
 
-
 TR::Instruction *
 OMR::Z::CodeGenerator::generateNop(TR::Node *n, TR::Instruction *preced, TR_NOPKind nopKind)
    {
@@ -1115,7 +1104,6 @@ void
 OMR::Z::CodeGenerator::endInstructionSelection()
    {
    }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // OMR::Z::CodeGenerator::doInstructionSelection
@@ -1214,7 +1202,7 @@ OMR::Z::CodeGenerator::insertInstructionPrefetches()
             return;
             }
 
-         // if we encountered a call, insert after the call or after the lable that follows the call instr.
+         // if we encountered a call, insert after the call or after the label that follows the call instr.
          if (first != cursor)
             {
             cursor  = real;
@@ -1318,7 +1306,6 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
    static bool bppMax = (feGetEnv("TR_BPRP_PushMax")!=NULL);
    static bool bppLoop = (feGetEnv("TR_BPRP_Loop")!=NULL);
    bool bppMaxPath = bppMax;
-
 
    TR::Block * block = data->_callBlock;
    int32_t n = block->getNumber();
@@ -1481,7 +1468,6 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
          TR::Instruction * second = cursor->getNext();
          TR::Node * node = cursor->getNode();
 
-
          if (bppCall && (!canReachWithBPRP || bppOnly) )
             {
             TR::MemoryReference * tempMR;
@@ -1527,7 +1513,6 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
       }
 
    }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // OMR::Z::CodeGenerator::doRegisterAssignment
@@ -1627,7 +1612,6 @@ void OMR::Z::CodeGenerator::recordRegisterAssignment(TR::Register *assignedReg, 
       _previouslyAssignedTo.Add(virtualReg,(TR::RealRegister::RegNum)rar->getAssociation());
     }
   }
-
 
 TR_RegisterKinds
 OMR::Z::CodeGenerator::prepareRegistersForAssignment()
@@ -1921,7 +1905,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       }
 #endif
 
-
    // Done Local RA of GPRs, let make sure we don't have any live registers
    if (!self()->isOutOfLineColdPath())
       {
@@ -1937,7 +1920,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
          }
       }
    }
-
 
 #ifdef DEBUG
 void
@@ -2166,7 +2148,6 @@ OMR::Z::CodeGenerator::getPICsListForInterfaceSnippet(TR::S390ConstantDataSnippe
 
    }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // OMR::Z::CodeGenerator::doBinaryEncoding
 ////////////////////////////////////////////////////////////////////////////////
@@ -2390,7 +2371,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          {
          self()->setCurrentBlock(data.cursorInstruction->getNode()->getBlock());
          }
-
 
       if (data.cursorInstruction->getOpCodeValue() == TR::InstOpCode::RET)
          {
@@ -2847,7 +2827,6 @@ OMR::Z::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandidate * rc
    return true;
    }
 
-
 int32_t
 OMR::Z::CodeGenerator::getMaximumNumberOfAssignableGPRs()
    {
@@ -2861,7 +2840,6 @@ OMR::Z::CodeGenerator::getMaximumNumberOfAssignableGPRs()
    //
    int32_t maxGPRs = 0;
 
-
    maxGPRs = 12 + (self()->isLiteralPoolOnDemandOn() ? 1 : 0);
 
    //traceMsg(comp(), " getMaximumNumberOfAssignableGPRs: %d\n",  maxGPRs);
@@ -2873,7 +2851,6 @@ OMR::Z::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Block *block)
    {
    TR::Node *node = block->getLastRealTreeTop()->getNode();
    int32_t num = self()->getMaximumNumberOfGPRsAllowedAcrossEdge(node);
-
 
    return num >= 0 ?  num : 0;
    }
@@ -3412,7 +3389,6 @@ OMR::Z::CodeGenerator::ssrClobberEvaluate(TR::Node * node, TR::MemoryReference *
    }
 #endif
 
-
 bool OMR::Z::CodeGenerator::useMVCLForMemcpyWithPad(TR::Node *node, TR_MemCpyPadTypes type)
    {
    if (type == TwoByte || type == ND_TwoByte) // two byte pad needed so MVCL is no good
@@ -3521,7 +3497,6 @@ OMR::Z::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t * cursor, TR::L
       *(int16_t *) cursor = (int16_t) (((intptrj_t) label->getCodeLocation() - (((intptrj_t) cursor) - addressDifferenceDivisor)) / addressDifferenceDivisor);
    }
 
-
 void
 OMR::Z::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    {
@@ -3612,9 +3587,6 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
    else
       key.node = NULL;
 
-
-
-
    if(_constantHash.Locate(key,hi))
       {
       data = _constantHash.DataAt(hi);
@@ -3645,7 +3617,6 @@ OMR::Z::CodeGenerator::createConstantInstruction(TR::CodeGenerator * cg, TR::Nod
    _constantList.push_front(cis);
    return cis;
    }
-
 
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::CreateConstant(TR::Node * node, void * c, uint16_t size, bool writable)
@@ -3735,7 +3706,6 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets()
                }
            }
         }
-
 
    for (exp = self()->constantDataSnippetExponent(); exp > 0; exp--)
       {
@@ -3840,8 +3810,6 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
       }
    return estimatedSnippetStart;
    }
-
-
 
 void
 OMR::Z::CodeGenerator::emitDataSnippets()
@@ -3974,7 +3942,6 @@ OMR::Z::CodeGenerator::emitDataSnippets()
       }
    }
 
-
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::create64BitLiteralPoolSnippet(TR::DataType dt, int64_t value)
    {
@@ -4100,8 +4067,6 @@ OMR::Z::CodeGenerator::createLiteralPoolSnippet(TR::Node * node)
    return targetSnippet;
    }
 
-
-
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreate2ByteConstant(TR::Node * node, int16_t c, bool isWarm)
    {
@@ -4144,7 +4109,6 @@ OMR::Z::CodeGenerator::CreateWritableConstant(TR::Node * node)
       return (TR::S390WritableDataSnippet *) self()->Create4ByteConstant(node, 0, true);
       }
    }
-
 
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::getFirstConstantData()
@@ -4686,7 +4650,6 @@ bool OMR::Z::CodeGenerator::isActiveLogicalCC(TR::Node* ccNode, TR::Register* ts
    return false;
    }
 
-
 bool
 OMR::Z::CodeGenerator::excludeInvariantsFromGRAEnabled()
    {
@@ -4819,7 +4782,6 @@ bool  OMR::Z::CodeGenerator::needs64bitPrecision(TR::Node *node)
       return false;
    }
 
-
 void
 OMR::Z::CodeGenerator::setUnavailableRegistersUsage(TR_Array<TR_BitVector>  & liveOnEntryUsage, TR_Array<TR_BitVector>   & liveOnExitUsage)
    {
@@ -4875,8 +4837,6 @@ void
 OMR::Z::CodeGenerator::setUnavailableRegisters(TR::Block *b, TR_BitVector &unavailableRegisters)
    {
    }
-
-
 
 void
 OMR::Z::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters)
@@ -4994,8 +4954,6 @@ OMR::Z::CodeGenerator::genLoadAddressToRegister(TR::Register *reg, TR::MemoryRef
    return preced;
    }
 
-
-
 /**
  * Allows a platform code generator to assert that a particular node operation will use 64 bit values
  * that are not explicitly present in the node datatype.
@@ -5064,8 +5022,6 @@ bool OMR::Z::CodeGenerator::nodeRequiresATemporary(TR::Node *node)
       }
    return false;
    }
-
-
 
 bool OMR::Z::CodeGenerator::isStorageReferenceType(TR::Node *node)
    {
@@ -5190,7 +5146,6 @@ bool OMR::Z::CodeGenerator::endHintOnOperation(TR::Node *node)
       }
    }
 
-
 bool OMR::Z::CodeGenerator::nodeMayCauseException(TR::Node *node)
    {
    TR::ILOpCode op = node->getOpCode();
@@ -5225,8 +5180,6 @@ bool OMR::Z::CodeGenerator::nodeMayCauseException(TR::Node *node)
       }
    }
 
-
-
 bool
 OMR::Z::CodeGenerator::useRippleCopyOrXC(size_t size, char *lit)
    {
@@ -5251,8 +5204,6 @@ OMR::Z::CodeGenerator::useRippleCopyOrXC(size_t size, char *lit)
    return false;
    }
 
-
-
 void OMR::Z::CodeGenerator::setUsesZeroBasePtr(bool v)
    {
    _cgFlags.set(S390CG_usesZeroBasePtr, v);
@@ -5272,9 +5223,7 @@ bool OMR::Z::CodeGenerator::IsInMemoryType(TR::DataType type)
 #endif
    }
 
-
 uint32_t getRegMaskFromRange(TR::Instruction * inst);
-
 
 bool isMatchingStoreRestore(TR::Instruction *cursorLoad, TR::Instruction *cursorStore, TR::CodeGenerator *cg)
    {
@@ -5582,8 +5531,6 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
    return false;
    }
 
-
-
 // simple syntactic test for matching direct loads when the caller knows (by some mechanism, e.g. _symRefsToCheckForKills) that
 // there is no intervening kill to the load memory
 bool
@@ -5604,7 +5551,6 @@ OMR::Z::CodeGenerator::directLoadAddressMatch(TR::Node *load1, TR::Node *load2, 
    return true;
    }
 
-
 bool
 OMR::Z::CodeGenerator::isOutOf32BitPositiveRange(int64_t value, bool trace)
    {
@@ -5616,7 +5562,6 @@ OMR::Z::CodeGenerator::isOutOf32BitPositiveRange(int64_t value, bool trace)
       }
    return false;
    }
-
 
 int32_t
 OMR::Z::CodeGenerator::getMaskSize(
@@ -5631,7 +5576,6 @@ OMR::Z::CodeGenerator::getMaskSize(
    int32_t size = maskNibbles/2;
    return size;
    }
-
 
 // The search for 'conflicting' address nodes to disallow hints is to solve two different problems
 // 1) circular evaluation (asserts) : node->getRegister() == NULL && node->getOpCode().canHaveStorageReferenceHint() below
@@ -5697,7 +5641,6 @@ OMR::Z::CodeGenerator::possiblyConflictingNode(TR::Node *node)
    return possiblyConflicting;
    }
 
-
 // Z
 bool
 OMR::Z::CodeGenerator::foundConflictingNode(TR::Node *node, TR::list<TR::Node*> *conflictingAddressNodes)
@@ -5711,7 +5654,6 @@ OMR::Z::CodeGenerator::foundConflictingNode(TR::Node *node, TR::list<TR::Node*> 
       }
    return foundConflicting;
    }
-
 
 // Z
 void
@@ -5737,7 +5679,6 @@ OMR::Z::CodeGenerator::collectConflictingAddressNodes(TR::Node *parent, TR::Node
          }
       }
    }
-
 
 bool
 OMR::Z::CodeGenerator::loadOrStoreAddressesMatch(TR::Node *node1, TR::Node *node2)
@@ -5816,14 +5757,12 @@ bool OMR::Z::CodeGenerator::reliesOnAParticularSignEncoding(TR::Node *node)
    }
 #endif
 
-
 bool OMR::Z::CodeGenerator::loadAndStoreMayOverlap(TR::Node *store, size_t storeSize, TR::Node *load, size_t loadSize)
    {
    TR_ASSERT(store->getOpCode().hasSymbolReference() && store->getSymbolReference(),"store %s (%p) must have a symRef\n",store->getOpCode().getName(),store);
    TR_UseDefAliasSetInterface storeAliases = store->getSymbolReference()->getUseDefAliases();
    return self()->loadAndStoreMayOverlap(store, storeSize, load, loadSize, storeAliases);
    }
-
 
 bool
 OMR::Z::CodeGenerator::checkIfcmpxx(TR::Node *node)
@@ -5858,7 +5797,6 @@ OMR::Z::CodeGenerator::checkIfcmpxx(TR::Node *node)
       return false;
       }
    }
-
 
 // Z
 bool
@@ -5920,7 +5858,6 @@ OMR::Z::CodeGenerator::checkSimpleLoadStore(TR::Node *loadNode, TR::Node *storeN
       }
    }
 
-
 bool
 OMR::Z::CodeGenerator::checkBitWiseChild(TR::Node *node)
    {
@@ -5937,7 +5874,6 @@ OMR::Z::CodeGenerator::checkBitWiseChild(TR::Node *node)
       return false;
       }
    }
-
 
 TR_StorageDestructiveOverlapInfo
 OMR::Z::CodeGenerator::getStorageDestructiveOverlapInfo(TR::Node *src, size_t srcLength, TR::Node *dst, size_t dstLength)
@@ -5968,7 +5904,6 @@ OMR::Z::CodeGenerator::getStorageDestructiveOverlapInfo(TR::Node *src, size_t sr
    return overlapInfo;
    }
 
-
 // Z
 //
 // Recursively set the futureUseCount for add and sub nodes
@@ -5992,7 +5927,6 @@ void setIntegralAddSubFutureUseCount(TR::Node *node, vcount_t visitCount)
          setIntegralAddSubFutureUseCount(node->getChild(i), visitCount);
       }
    }
-
 
 // Z
 //
@@ -6096,7 +6030,6 @@ OMR::Z::CodeGenerator::setBranchOnCountFlag(TR::Node *node, vcount_t visitCount)
    addNode->setIsUseBranchOnCount(true);
    }
 
-
 // Z only
 bool
 OMR::Z::CodeGenerator::isCompressedClassPointerOfObjectHeader(TR::Node * node)
@@ -6107,14 +6040,12 @@ OMR::Z::CodeGenerator::isCompressedClassPointerOfObjectHeader(TR::Node * node)
             node->getSymbolReference() == self()->getSymRefTab()->findVftSymbolRef()));
    }
 
-
 size_t
 OMR::Z::CodeGenerator::findOrCreateLiteral(void *value, size_t len)
    {
    TR_ASSERT(0, "findOrCreateLiteral unimplemented\n");
    return 0;
    }
-
 
 bool
 OMR::Z::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)

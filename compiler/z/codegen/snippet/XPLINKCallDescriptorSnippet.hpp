@@ -23,12 +23,10 @@
 #define OMR_Z_SNIPPET_XPLINKCALLDESCRIPTORSNIPPET_INCL
 
 #include <stdint.h>
+#include "codegen/ConstantDataSnippet.hpp"
 
-#include "codegen/CodeGenerator.hpp"
-#include "codegen/Instruction.hpp"
-#include "codegen/Relocation.hpp"
-#include "codegen/Snippet.hpp"
-
+namespace TR { class CodeGenerator; }
+namespace TR { class Node; }
 namespace TR { class S390zOSSystemLinkage; }
 
 namespace TR {
@@ -36,7 +34,7 @@ namespace TR {
 /** \brief
  *
  *  Represents the XPLINK Call Descriptor snippet which is created only on 31-bit targets when:
- *  
+ *
  *  1. The call site is so far removed from the Entry Point Marker of the function that its offset cannot be contained
  *     in the space available in the call NOP descriptor following the call site.
  *
@@ -74,7 +72,7 @@ class XPLINKCallDescriptorSnippet : public TR::S390ConstantDataSnippet
    virtual uint8_t* emitSnippetBody();
 
    private:
-   
+
    TR::S390zOSSystemLinkage* _linkage;
    uint32_t _callDescriptorValue;
    };

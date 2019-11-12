@@ -35,20 +35,19 @@ namespace OMR { typedef OMR::ARM64::Linkage LinkageConnector; }
 
 #include <stddef.h>
 #include <stdint.h>
-#include "codegen/CodeGenerator.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
-#include "codegen/RegisterDependency.hpp"
 #include "env/TRMemory.hpp"
 
-class TR_FrontEnd;
 namespace TR { class AutomaticSymbol; }
+namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
 namespace TR { class MemoryReference; }
 namespace TR { class Node; }
 namespace TR { class ParameterSymbol; }
+namespace TR { class RegisterDependencyConditions; }
 namespace TR { class ResolvedMethodSymbol; }
 
 namespace TR {

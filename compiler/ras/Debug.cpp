@@ -3809,10 +3809,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_X86PatchSingleComparePIC_je:                      return "jitX86PatchSingleComparePIC_je";
             case TR_X86PatchMultipleComparePIC_mov:                   return "jitX86PatchMultipleComparePIC_mov";
             case TR_X86PatchMultipleComparePIC_je:                    return "jitX86PatchMultipleComparePIC_je";
-            case TR_X86OutlinedNew:                                   return "outlinedNew";
-            case TR_X86OutlinedNewArray:                              return "outlinedNewArray";
-            case TR_X86OutlinedNewNoZeroInit:                         return "outlinedNewNoZeroInit";
-            case TR_X86OutlinedNewArrayNoZeroInit:                    return "outlinedNewArrayNoZeroInit";
             case TR_X86CodeCachePrefetchHelper:                       return "per code cache TLH prefetch helper";
 
             case TR_outlinedPrologue_0preserved:         return "outlinedPrologue_0preserved";

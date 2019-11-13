@@ -103,15 +103,11 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
 
       if (secondChild->getOpCode().isLoadConst())
          {
-         bool isInteger = (parent->getOpCodeValue() == TR::imul) ? true : false;
-         int64_t value;
-         if (isInteger)
-            value = secondChild->getInt();
-         else
-            value = secondChild->getLongInt();
+         bool isInteger = (parent->getOpCodeValue() == TR::imul);
+         int64_t value = isInteger ? secondChild->getInt() : secondChild->getLongInt();
 
-         int32_t shftAmnt = -1;
-         if ((shftAmnt = TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(value)) > 0)
+         int32_t shftAmnt = TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(value);
+         if (shftAmnt > 0)
             {
             if (value > 0)
                {
@@ -134,18 +130,14 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                   parent->getSecondChild()->decReferenceCount();
                   parent->setSecond(newChild);
                   parent->getSecondChild()->incReferenceCount();
-                  isInteger ? TR::Node::recreate(parent, TR::ishl) : TR::Node::recreate(parent, TR::lshl);
+                  TR::Node::recreate(parent, isInteger ? TR::ishl : TR::lshl);
                   }
                }
             else //negative value of the multiply constant
                {
-               if (secondChild->getReferenceCount()==1)
+               if (secondChild->getReferenceCount() == 1)
                   {
-                  TR::Node * newChild;
-                  if (isInteger)
-                     newChild = TR::Node::create(parent, TR::ishl, 2);
-                  else
-                     newChild = TR::Node::create(parent, TR::lshl, 2);
+                  TR::Node * newChild = TR::Node::create(parent, isInteger ? TR::ishl : TR::lshl, 2);;
 
                   newChild->setVisitCount(parent->getVisitCount());
                   newChild->incReferenceCount();
@@ -164,11 +156,10 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                   parent->setNumChildren(1);
                   parent->setFirst(newChild);
                   }
-               else if (secondChild->getReferenceCount()>1)
+               else if (secondChild->getReferenceCount() > 1)
                   {
                   TR::Node * newChild = TR::Node::create(parent, TR::iconst, 0, shftAmnt);
-                  TR::Node * newChild2;
-                  isInteger ? newChild2 = TR::Node::create(parent, TR::ishl, 2) : newChild2 = TR::Node::create(parent, TR::lshl, 2);
+                  TR::Node * newChild2 = TR::Node::create(parent, isInteger ? TR::ishl : TR::lshl, 2);
                   newChild2->setFirst(parent->getFirstChild());
                   newChild2->setSecond(newChild);
                   newChild2->getFirstChild()->incReferenceCount();
@@ -176,7 +167,7 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                   parent->getFirstChild()->decReferenceCount();
                   parent->getSecondChild()->decReferenceCount();
                   parent->setNumChildren(1);
-                  isInteger ? TR::Node::recreate(parent, TR::ineg) : TR::Node::recreate(parent, TR::lneg);
+                  TR::Node::recreate(parent, isInteger ? TR::ineg : TR::lneg);
                   parent->setFirst(newChild2);
                   parent->getFirstChild()->incReferenceCount();
                   }

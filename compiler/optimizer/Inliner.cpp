@@ -4519,7 +4519,6 @@ TR_CallSite* TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStac
 
    }
 
-
 void TR_InlinerBase::inlineFromGraph(TR_CallStack *prevCallStack, TR_CallTarget *calltarget, TR_InnerPreexistenceInfo *innerPrexInfo)
    {
    bool trace = comp()->trace(OMR::inlining);
@@ -4594,7 +4593,7 @@ void TR_InlinerBase::inlineFromGraph(TR_CallStack *prevCallStack, TR_CallTarget 
                for (int32_t i = 0; i < site->numTargets(); i++)
                   {
                   TR_CallTarget *target = site->getTarget(i);
-                  getUtil()->computePrexInfo(target);
+                  getUtil()->computePrexInfo(target, calltarget->_prexArgInfo);
                   targetsToInline.add(target);
                   }
                }
@@ -4810,6 +4809,9 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       comp()->dumpMethodTrees("after ilGen while inlining", calleeSymbol);
       }
 
+
+   // We have the trees now, we can check if each argument is invariant and clear the prex arg for the ones that are not
+   getUtil()->clearArgInfoForNonInvariantArguments(calltarget, tracer());
 
    TR_InnerPreexistenceInfo *innerPrexInfo = getUtil()->createInnerPrexInfo(comp(), calleeSymbol, callStack, callNodeTreeTop, callNode, guard->_kind);
    if (calleeSymbol->mayHaveInlineableCall())
@@ -6291,8 +6293,8 @@ void TR_InlinerTracer::dumpPrexArgInfo(TR_PrexArgInfo* argInfo)
       if (arg && arg->getClass())
          {
          char* className = TR::Compiler->cls.classSignature(comp(), arg->getClass(), trMemory());
-         traceMsg( comp(),  "<Argument no=%d address=%p classIsFixed=%d classIsPreexistent=%d class=%p className= %s/>\n",
-         i, arg, arg->classIsFixed(), arg->classIsPreexistent(), arg->getClass(), className);
+         traceMsg( comp(),  "<Argument no=%d address=%p classIsFixed=%d classIsPreexistent=%d argIsKnownObject=%d koi=%d class=%p className= %s/>\n",
+         i, arg, arg->classIsFixed(), arg->classIsPreexistent(), arg->hasKnownObjectIndex(), arg->getKnownObjectIndex(), arg->getClass(), className);
          }
       else
          {
@@ -6372,6 +6374,80 @@ TR_PrexArgInfo *
 OMR_InlinerUtil::computePrexInfo(TR_CallTarget *target)
    {
    return NULL;
+   }
+
+/**
+ * \brief
+ *    collect arguments information for the given target and caller arg info and store into TR_CallTarget::_prexArgInfo
+ *    the default implementation does nothing
+ *
+ * \parm target
+ *    Call target whose prex info is to be computed
+ *
+ * \parm callerArgInfo
+ *    Arg info of caller to be propagated to the callee
+ */
+TR_PrexArgInfo *
+OMR_InlinerUtil::computePrexInfo(TR_CallTarget *target, TR_PrexArgInfo *callerArgInfo)
+   {
+   return NULL;
+   }
+
+/**
+ * \brief
+ *    Clear non-invariant argument arg info for target
+ *
+ * \parm target
+ *    Call target whose arg info is to be cleared for non-invariant arguments
+ *
+ * \parm tracer
+ *    Inliner tracer used for trace message
+ */
+void
+OMR_InlinerUtil::clearArgInfoForNonInvariantArguments(TR_CallTarget *target, TR_InlinerTracer* tracer)
+   {
+   if (comp()->getOption(TR_DisableInlinerArgsPropagation))
+      return;
+
+   bool tracePrex = comp()->trace(OMR::inlining) || comp()->trace(OMR::invariantArgumentPreexistence);
+   if (tracePrex)
+      traceMsg(comp(), "Clearing arg info for non invariant arguments\n");
+
+   TR::ResolvedMethodSymbol* methodSymbol = target->_calleeSymbol;
+   TR_PrexArgInfo* argInfo = target->_prexArgInfo;
+   if (!argInfo)
+      {
+      if (tracePrex)
+         traceMsg(comp(), "Prex arg info not avaiable\n");
+      return;
+      }
+
+   bool cleanedAnything = false;
+   for (TR::TreeTop * tt = methodSymbol->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
+      {
+      TR::Node* storeNode = tt->getNode()->getStoreNode();
+
+
+      if (!storeNode || !storeNode->getSymbolReference()->getSymbol()->isParm())
+         continue;
+
+      TR_ASSERT(storeNode->getSymbolReference(), "stores should have symRefs");
+      TR::ParameterSymbol*  parmSymbol = storeNode->getSymbolReference()->getSymbol()->getParmSymbol();
+      if (parmSymbol->getOrdinal() < argInfo->getNumArgs())
+         {
+         if (tracePrex)
+            traceMsg(comp(), "ARGS PROPAGATION: unsetting an arg [%i] of argInfo %p", parmSymbol->getOrdinal(), argInfo);
+         argInfo->set(parmSymbol->getOrdinal(), NULL);
+         cleanedAnything = true;
+         }
+      }
+
+   if (cleanedAnything)
+      {
+      if (tracePrex)
+         traceMsg(comp(), "ARGS PROPAGATION: argInfo %p after clear arg info for non-invariant arguments", argInfo);
+      tracer->dumpPrexArgInfo(argInfo);
+      }
    }
 
 bool

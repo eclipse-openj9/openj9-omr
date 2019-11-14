@@ -549,6 +549,8 @@ class OMR_InlinerUtil : public TR::OptimizationUtil, public OMR_InlinerHelper
       virtual void adjustCallerWeightLimit(TR::ResolvedMethodSymbol *callSymbol, int &callerWeightLimit){ return; }
       virtual void adjustMethodByteCodeSizeThreshold(TR::ResolvedMethodSymbol *callSymbol, int &methodByteCodeSizeThreshold){ return; }
       virtual TR_PrexArgInfo *computePrexInfo(TR_CallTarget *target);
+      virtual TR_PrexArgInfo *computePrexInfo(TR_CallTarget *target, TR_PrexArgInfo *callerArgInfo);
+      virtual void clearArgInfoForNonInvariantArguments(TR_CallTarget *target, TR_InlinerTracer* tracer);
       virtual void collectCalleeMethodClassInfo(TR_ResolvedMethod *calleeMethod);
       /*
        * Implemented by down stream projects to request for certain optimizations based on \parm target

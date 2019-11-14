@@ -2660,36 +2660,9 @@ OMR::Z::TreeEvaluator::imulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       }
    else
       {
-      if (!node->getOpCode().isUnsigned())
-         {
-         TR_S390BinaryCommutativeAnalyser temp(cg);
-         temp.genericAnalyser(node, TR::InstOpCode::MSR, TR::InstOpCode::MS, TR::InstOpCode::LR);
-         targetRegister = node->getRegister();
-         }
-      else //Unsigned Multiply Support
-         {
-         TR::Register * secondRegister = cg->evaluate(secondChild);
-         TR::Instruction * cursor = NULL;
-         TR::Register * trgtRegPairFirst = cg->gprClobberEvaluate(firstChild);
-         TR::Register * trgtRegPairSecond = cg->allocateRegister();
-         TR::RegisterPair * trgtRegPair = cg->allocateConsecutiveRegisterPair(trgtRegPairFirst, trgtRegPairSecond);
-
-         TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
-
-         dependencies->addPostCondition(trgtRegPair, TR::RealRegister::EvenOddPair);
-         dependencies->addPostCondition(trgtRegPair->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
-         dependencies->addPostCondition(trgtRegPair->getLowOrder(), TR::RealRegister::LegalOddOfPair);
-
-         //do multiplication
-         cursor = generateRRInstruction(cg, TR::InstOpCode::MLR, node, trgtRegPair, secondRegister);
-
-         cursor->setDependencyConditions(dependencies);
-
-         node->setRegister(trgtRegPairFirst);
-         cg->stopUsingRegister(trgtRegPairSecond);
-         cg->stopUsingRegister(trgtRegPair);
-         targetRegister = trgtRegPair->getLowOrder();
-         }
+      TR_S390BinaryCommutativeAnalyser temp(cg);
+      temp.genericAnalyser(node, TR::InstOpCode::MSR, TR::InstOpCode::MS, TR::InstOpCode::LR);
+      targetRegister = node->getRegister();
       }
 
    cg->decReferenceCount(firstChild);

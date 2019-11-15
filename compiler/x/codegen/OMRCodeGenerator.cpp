@@ -109,7 +109,7 @@ namespace TR { class RegisterDependencyConditions; }
 
 TR_X86ProcessorInfo OMR::X86::CodeGenerator::_targetProcessorInfo;
 
-void TR_X86ProcessorInfo::initialize()
+void TR_X86ProcessorInfo::initialize(TR::CodeGenerator *cg)
    {
    // For now, we only convert the feature bits into a flags32_t, for easier querying.
    // To retrieve other information, the VM functions can be called directly.
@@ -206,7 +206,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    {
 
    bool supportsSSE2 = false;
-   _targetProcessorInfo.initialize();
+   _targetProcessorInfo.initialize(self());
 
    // Pick a padding table
    //

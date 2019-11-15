@@ -223,7 +223,7 @@ private:
 
    friend class OMR::X86::CodeGenerator;
 
-   void initialize();
+   void initialize(TR::CodeGenerator *cg);
 
    /**
     * @brief testFlag Ensures that the feature being tested for exists in the mask

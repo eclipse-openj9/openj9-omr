@@ -120,10 +120,10 @@ loadAddressConstant(
       TR::Node * node,
       intptrj_t value,
       TR::Register *trgReg,
+      bool isRelocatable,
       TR::Instruction *cursor,
       bool isPicSite,
-      int16_t typeAddress,
-      bool isRelocatable)
+      int16_t typeAddress)
    {
    if (cg->comp()->compileRelocatableCode() || isRelocatable)
       return cg->loadAddressConstantFixed(node, value, trgReg, cursor, NULL, typeAddress);

@@ -353,6 +353,26 @@ uint8_t *TR::ARM64Trg1ImmInstruction::generateBinaryEncoding()
    return cursor;
    }
 
+uint8_t *TR::ARM64Trg1ImmSymInstruction::generateBinaryEncoding()
+   {
+   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t *cursor = instructionStart;
+   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+   insertTargetRegister(toARM64Cursor(cursor));
+   insertImmediateField(toARM64Cursor(cursor));
+
+   auto label = getLabelSymbol();
+   if (label != NULL)
+      {
+      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
+      }
+
+   cursor += ARM64_INSTRUCTION_LENGTH;
+   setBinaryLength(ARM64_INSTRUCTION_LENGTH);
+   setBinaryEncoding(instructionStart);
+   return cursor;
+   }
+
 uint8_t *TR::ARM64Trg1Src1Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();

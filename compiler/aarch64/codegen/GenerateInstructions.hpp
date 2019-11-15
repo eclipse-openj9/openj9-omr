@@ -271,6 +271,26 @@ TR::Instruction *generateTrg1ImmInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates imm-to-trg label instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] imm : immediate value
+ * @param[in] sym : label symbol
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTrg1ImmSymInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   uint32_t imm,
+                   TR::LabelSymbol *sym,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates src1-to-trg instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode

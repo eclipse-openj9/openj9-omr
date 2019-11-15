@@ -2931,7 +2931,6 @@ static void lookupScheme2(TR::Node *node, bool unbalanced, bool fromTableEval, T
 
 static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg)
    {
-
    TR::Instruction *rel1, *rel2;
    int32_t     total = node->getNumChildren();
    int32_t     numberOfEntries = total - 2;
@@ -2953,7 +2952,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
    intptrj_t   address = isInt64 ? ((intptrj_t) dataTable64) : ((intptrj_t)dataTable);
    TR::Register *selector = cg->evaluate(node->getFirstChild());
    TR::Register *cndRegister = cg->allocateRegister(TR_CCR);
-   TR::Register *addrRegister;
+   TR::Register *addrRegister = cg->allocateRegister();
    TR::Register *dataRegister = NULL;
    TR::LabelSymbol *toDefaultLabel = NULL;
    if (two_reg)
@@ -2966,10 +2965,6 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
 
    TR::RegisterDependencyConditions *acond, *bcond, *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
    TR::Node     *secondChild = node->getSecondChild();
-
-      {
-      addrRegister = cg->allocateRegister();
-      }
 
    TR::addDependency(conditions, addrRegister, TR::RealRegister::NoReg, TR_GPR, cg);
    if (isInt64 && TR::Compiler->target.is64Bit())
@@ -3001,34 +2996,36 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
       int32_t offset = TR_PPCTableOfConstants::allocateChunk(1, cg);
 
       if (offset != PTOC_FULL_INDEX)
-	 {
+         {
          offset *= TR::Compiler->om.sizeofReferenceAddress();
          TR_PPCTableOfConstants::setTOCSlot(offset, address);
          if (offset<LOWER_IMMED||offset>UPPER_IMMED)
-	    {
+            {
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, addrRegister, cg->getTOCBaseRegister(), cg->hiValue(offset));
             generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, LO_VALUE(offset), 8, cg));
-	    }
+            }
          else
-	    {
+            {
             generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), offset, 8, cg));
-	    }
+            }
 
          if(isInt64)
             generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, 0, 8, cg));
          else
             generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, 0, 4, cg));
-	 }
+         }
       else
-	 {
+         {
+         // the loadAddress routine here will eventually map down to TR_FixedSequence2 relo type. Might need to generate a query here that moves this JITServer
+         // check downstream.
          if (cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation())
             {
-            loadAddressConstant(cg, node, address, addrRegister, NULL, false, -1, true);
+            loadAddressConstant(cg, node, address, addrRegister, true);
             generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, 0, 4, cg));
             }
          else
             {
-            loadAddressConstant(cg, node, cg->hiValue(address)<<16, addrRegister);
+            loadAddressConstant(cg, node, cg->hiValue(address)<<16, addrRegister, false);
             nextAddress = LO_VALUE((int32_t)address);
             if (isInt64)
                {
@@ -3057,7 +3054,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
                   }
                } // is64BitInt ?
             } // isAOT?
-	 }
+         }
       }  // ...if 64BitTarget
    else  // if 32bit mode
       {
@@ -3137,21 +3134,21 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
          generateLabelInstruction(cg, TR::InstOpCode::label, node, toDefaultLabel);
 
       if (unbalanced)
-	 {
+         {
          bcond = conditions;
          if (child->getNumChildren() > 0)
-	    {
+            {
             cg->evaluate(child->getFirstChild());
             bcond = bcond->clone(cg, generateRegisterDependencyConditions(cg, child->getFirstChild(), 0));
-	    }
+            }
          generateDepConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, child->getBranchDestination()->getNode()->getLabel(), cndRegister, bcond);
-	 }
+         }
       else
-	 {
+         {
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, child->getBranchDestination()->getNode()->getLabel(), cndRegister);
-	 }
+         }
       if (ii < total-1)
-	 {
+         {
          if (isInt64)
             {
             if (TR::Compiler->target.is64Bit())
@@ -3184,7 +3181,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
                   nextAddress += 4;
                   }
                } // 64BitTarget ?
-	    } // isInt64
+            } // isInt64
          else
             {
             if (nextAddress >= 32764)
@@ -3197,8 +3194,8 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
                generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
                nextAddress += 4;
                }
-	    }
-	 }
+            }
+         }
 
       if (isInt64)
          {
@@ -3247,7 +3244,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
 
    TR::Register *selector = cg->evaluate(node->getFirstChild());
    TR::Register *cndRegister = cg->allocateRegister(TR_CCR);
-   TR::Register *addrRegister;
+   TR::Register *addrRegister = cg->allocateRegister();
    TR::Register *dataRegister = NULL;
    TR::Compilation *comp = cg->comp();
    if (two_reg)
@@ -3265,10 +3262,6 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    int32_t hiVal = node->getChild(total-1)->getCaseConstant();
    bool isUnsigned = (hiVal < loVal) ? true : false;
    TR::InstOpCode::Mnemonic cmp_opcode = isUnsigned ? TR::InstOpCode::cmpl4 : TR::InstOpCode::cmp4;
-
-      {
-      addrRegister = cg->allocateRegister();
-      }
 
    cg->machine()->setLinkRegisterKilled(true);
    TR::addDependency(conditions, addrRegister, TR::RealRegister::NoReg, TR_GPR, cg);
@@ -3307,23 +3300,25 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
       int32_t offset = TR_PPCTableOfConstants::allocateChunk(1, cg);
 
       if (offset != PTOC_FULL_INDEX)
-	 {
+         {
          offset *= 8;
          TR_PPCTableOfConstants::setTOCSlot(offset, address);
          if (offset<LOWER_IMMED||offset>UPPER_IMMED)
-	    {
+            {
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, pivotRegister, cg->getTOCBaseRegister(), cg->hiValue(offset));
             generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(pivotRegister, LO_VALUE(offset), 8, cg));
-	    }
+            }
          else
-	    {
+            {
             generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), offset, 8, cg));
-	    }
-	 }
+            }
+         }
       else
-	 {
-         loadAddressConstant(cg, node, address, addrRegister, NULL, false, -1, cg->comp()->isOutOfProcessCompilation());
-	 }
+         {
+         // the loadAddress routine here will eventually map down to TR_FixedSequence2 relo type. Might need to generate a query here that moves this JITServer
+         // check downstream.
+         loadAddressConstant(cg, node, address, addrRegister, cg->comp()->isOutOfProcessCompilation() || cg->comp()->isOutOfProcessCompilation());
+         }
       }
    else
       {

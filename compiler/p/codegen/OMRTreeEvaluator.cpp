@@ -125,7 +125,7 @@ loadAddressConstant(
       bool isPicSite,
       int16_t typeAddress)
    {
-   if (cg->comp()->compileRelocatableCode() || isRelocatable)
+   if (isRelocatable)
       return cg->loadAddressConstantFixed(node, value, trgReg, cursor, NULL, typeAddress);
 
    return loadActualConstant(cg, node, value, trgReg, cursor, isPicSite);

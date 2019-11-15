@@ -10,7 +10,7 @@ is available at https://www.apache.org/licenses/LICENSE-2.0.
 This Source Code may also be made available under the following
 Secondary Licenses when the conditions for such availability set
 forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-General Public License, version 2 with the GNU Classpath 
+General Public License, version 2 with the GNU Classpath
 Exception [1] and GNU General Public License, version 2 with the
 OpenJDK Assembly Exception [2].
 
@@ -20,4 +20,4 @@ OpenJDK Assembly Exception [2].
 SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 -->
 
-This directory contains long form prose articles that can be collated together by doxygen.  
+This directory contains long form prose articles that can be collated together by doxygen.

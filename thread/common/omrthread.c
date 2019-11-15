@@ -74,7 +74,9 @@ static intptr_t monitor_notify_original(omrthread_t self, omrthread_monitor_t mo
 
 #if defined(OMR_THR_THREE_TIER_LOCKING)
 static intptr_t init_spinCounts(omrthread_library_t lib);
+#if !defined(OMR_THR_MCS_LOCKS)
 static void unblock_spinlock_threads(omrthread_t self, omrthread_monitor_t monitor);
+#endif /* !defined(OMR_THR_MCS_LOCKS) */
 #endif /* OMR_THR_THREE_TIER_LOCKING */
 
 static intptr_t init_threadParam(char *name, uintptr_t *pDefault);
@@ -4025,7 +4027,7 @@ monitor_enter_three_tier(omrthread_t self, omrthread_monitor_t monitor, BOOLEAN 
 #endif /* defined(OMR_THR_THREE_TIER_LOCKING) */
 
 
-#if defined(OMR_THR_THREE_TIER_LOCKING)
+#if defined(OMR_THR_THREE_TIER_LOCKING) && !defined(OMR_THR_MCS_LOCKS)
 /**
  * Notify all threads blocked on the monitor's mutex, waiting
  * to be told that it's ok to try again to get the spinlock.
@@ -4061,7 +4063,7 @@ unblock_spinlock_threads(omrthread_t self, omrthread_monitor_t monitor)
 	}
 }
 
-#endif /* defined(OMR_THR_THREE_TIER_LOCKING) */
+#endif /* defined(OMR_THR_THREE_TIER_LOCKING) && !defined(OMR_THR_MCS_LOCKS) */
 
 
 

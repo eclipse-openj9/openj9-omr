@@ -160,15 +160,5 @@ public:
 #endif /* OMR_GC_FULL_POINTERS */
 #endif /* OMR_GC_COMPRESSED_POINTERS */
 	{}
-
-	GC_SlotObject(void *omrVM, volatile fomrobject_t* slot)
-	: _slot(slot)
-#if defined (OMR_GC_COMPRESSED_POINTERS)
-	, _compressedPointersShift(((OMR_VM *)omrVM)->_compressedPointersShift)
-#if defined (OMR_GC_FULL_POINTERS)
-	, _compressObjectReferences(OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM))
-#endif /* OMR_GC_FULL_POINTERS */
-#endif /* OMR_GC_COMPRESSED_POINTERS */
-	{}
 };
 #endif /* SLOTOBJECT_HPP_ */

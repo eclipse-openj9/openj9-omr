@@ -1453,8 +1453,9 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 
 #if defined(J9VM_INTERP_NATIVE_SUPPORT)
 		if (NULL != hotFieldPadBase) {
+			bool const compressed = env->compressObjectReferences();
 			/* lay down a hole (XXX:  This assumes that we are using AOL (address-ordered-list)) */
-			MM_HeapLinkedFreeHeader::fillWithHoles(hotFieldPadBase, hotFieldPadSize);
+			MM_HeapLinkedFreeHeader::fillWithHoles(hotFieldPadBase, hotFieldPadSize, compressed);
 		}
 #endif /* J9VM_INTERP_NATIVE_SUPPORT */
 
@@ -3436,6 +3437,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 {
 	GC_MemorySubSpaceRegionIteratorStandard evacuateRegionIterator(_activeSubSpace);
 	MM_HeapRegionDescriptorStandard* rootRegion = NULL;
+	bool const compressed = env->compressObjectReferences();
 
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
@@ -3472,10 +3474,10 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					valgrindFreeObject(_extensions, (uintptr_t) forwardedObject);
 					valgrindMakeMemUndefined((uintptr_t)freeHeader, (uintptr_t) sizeof(MM_HeapLinkedFreeHeader));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
-					freeHeader->setNext((MM_HeapLinkedFreeHeader*)originalObject);
+					freeHeader->setNext((MM_HeapLinkedFreeHeader*)originalObject, compressed);
 					freeHeader->setSize(evacuateObjectSizeInBytes);
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
-					omrtty_printf("{SCAV: Back out forward pointer %p[%p]@%p -> %p[%p]}\n", objectPtr, *objectPtr, forwardedObject, freeHeader->getNext(), freeHeader->getSize());
+					omrtty_printf("{SCAV: Back out forward pointer %p[%p]@%p -> %p[%p]}\n", objectPtr, *objectPtr, forwardedObject, freeHeader->getNext(env), freeHeader->getSize());
 					Assert_MM_true(objectPtr == originalObject);
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */			
 				}
@@ -3484,7 +3486,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 	}
 
 #if defined (OMR_GC_COMPRESSED_POINTERS)
-	if (env->compressObjectReferences()) {
+	if (compressed) {
 		GC_MemorySubSpaceRegionIteratorStandard evacuateRegionIterator1(_activeSubSpace);
 		while(NULL != (rootRegion = evacuateRegionIterator1.nextRegion())) {
 			if (isObjectInEvacuateMemory((omrobjectptr_t )rootRegion->getLowAddress())) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -251,13 +251,14 @@ MM_SegregatedAllocationInterface::allocateArrayletLeaf(MM_EnvironmentBase *env, 
 void
 MM_SegregatedAllocationInterface::flushCache(MM_EnvironmentBase *env)
 {
+	bool const compressed = env->compressObjectReferences();
 	/* make the current caches walkable */
 	for (uintptr_t sizeClass = 0; sizeClass < OMR_SIZECLASSES_NUM_SMALL+1; sizeClass++) {
 		if (_allocationCache[sizeClass].current < _allocationCache[sizeClass].top) {
 			MM_HeapLinkedFreeHeader *chunk = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(_allocationCache[sizeClass].current);
 			chunk->setSize((uintptr_t)_allocationCache[sizeClass].top - (uintptr_t)_allocationCache[sizeClass].current);
 			/* next pointer value is irrelevant, it just needs to be low bit tagged, to make it non-object */
-			chunk->setNext(NULL);
+			chunk->setNext(NULL, compressed);
 		}
 	}
 	memset(_allocationCache, 0, sizeof(LanguageSegregatedAllocationCache));

@@ -197,6 +197,7 @@ public:
 
 	MMINLINE MM_HeapLinkedFreeHeader *findLastFreeEntry(MM_EnvironmentBase *env, UDATA regionSize)
 	{
+		bool const compressed = compressObjectReferences();
 		MM_HeapLinkedFreeHeader *lastFreeEntry = NULL;
 		MM_HeapLinkedFreeHeader *currentFreeEntry = _heapFreeList;
 		while (NULL != currentFreeEntry) {
@@ -205,7 +206,7 @@ public:
 				break;
 			}
 			lastFreeEntry = currentFreeEntry;
-			currentFreeEntry = currentFreeEntry->getNext();
+			currentFreeEntry = currentFreeEntry->getNext(compressed);
 		}
 		return lastFreeEntry;
 	}

@@ -1241,6 +1241,16 @@ OMR::Node::createOSRFearPointHelperCall(TR::Node* originatingByteCodeNode)
    return callNode;
    }
 
+TR::Node *
+OMR::Node::createEAEscapeHelperCall(TR::Node* originatingByteCodeNode, int32_t numChildren)
+   {
+   TR::Compilation* comp = TR::comp();
+
+   TR_ASSERT(!comp->isPeekingMethod(), "Can not generate the helper call during peeking");
+
+   TR::Node* callNode = TR::Node::createWithSymRef(originatingByteCodeNode, TR::call, numChildren, TR::comp()->getSymRefTab()->findOrCreateEAEscapeHelperSymbolRef());
+   return callNode;
+   }
 
 TR::Node *
 OMR::Node::createLoad(TR::SymbolReference * symRef)
@@ -8694,6 +8704,19 @@ OMR::Node::isPotentialOSRPointHelperCall()
    if (self()->getOpCode().isCall()
        && self()->getSymbol()->isMethod()
        && c->getSymRefTab()->isNonHelper(self()->getSymbolReference(), TR::SymbolReferenceTable::potentialOSRPointHelperSymbol))
+      return true;
+
+   return false;
+   }
+
+bool
+OMR::Node::isEAEscapeHelperCall()
+   {
+   TR::Compilation *c = TR::comp();
+
+   if (self()->getOpCode().isCall()
+       && self()->getSymbol()->isMethod()
+       && c->getSymRefTab()->isNonHelper(self()->getSymbolReference(), TR::SymbolReferenceTable::eaEscapeHelperSymbol))
       return true;
 
    return false;

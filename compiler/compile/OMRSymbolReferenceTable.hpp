@@ -175,6 +175,21 @@ class SymbolReferenceTable
        *   The call is not to be codegen evaluated, it should be cleaned up before codegen.
        */
       osrFearPointHelperSymbol,
+      /** \brief
+       * 
+       * A call with this symbol marks a place where we want/need escape analysis to add heapifications for any stack allocated
+       * objects. The primary use case is to force escape of all live local objects ahead of a throw to an OSR catch block
+       * but they may also be inserted to facilitate peeking of methods under HCR or other uses. Calls to this helper should
+       * only exist while escape analysis is running
+       *
+       * \code
+       *   call <eaEscapeHelperSymbol>
+       * \endcode
+       *
+       * \note
+       *   The call is not to be codegen evaluated, it should be cleaned up by postEscapeAnalysis.
+       */
+      eaEscapeHelperSymbol,
       lowTenureAddressSymbol,    // on j9vmthread
       highTenureAddressSymbol,   // on j9vmthread
       fragmentParentSymbol,
@@ -461,6 +476,7 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateJProfileValuePlaceHolderWithNullCHKSymbolRef();
    TR::SymbolReference * findOrCreatePotentialOSRPointHelperSymbolRef();
    TR::SymbolReference * findOrCreateOSRFearPointHelperSymbolRef();
+   TR::SymbolReference * findOrCreateEAEscapeHelperSymbolRef();
    TR::SymbolReference * findOrCreateInduceOSRSymbolRef(TR_RuntimeHelper induceOSRHelper);
 
    TR::ParameterSymbol * createParameterSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType, TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN);

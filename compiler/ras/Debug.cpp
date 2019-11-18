@@ -1651,10 +1651,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<potentialOSRPointHelper>";
          case TR::SymbolReferenceTable::osrFearPointHelperSymbol:
              return "<osrFearPointHelper>";
-         case TR::SymbolReferenceTable::jProfileValueSymbol:
-             return "<jProfileValuePlaceHolder>";
-         case TR::SymbolReferenceTable::jProfileValueWithNullCHKSymbol:
-             return "<jProfileValueWithNullCHKPlaceHolder>";
+         case TR::SymbolReferenceTable::eaEscapeHelperSymbol:
+             return "<eaEscapeHelper>";
          }
       }
 
@@ -2084,6 +2082,7 @@ static const char *commonNonhelperSymbolNames[] =
    "<osrReturnAddress>",
    "<potentialOSRPointHelper>",
    "<osrFearPointHelper>",
+   "<eaEscapeHelper>",
    "<lowTenureAddress>",
    "<highTenureAddress>",
    "<fragmentParent>",

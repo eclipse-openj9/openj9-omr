@@ -298,6 +298,13 @@ public:
     *
     */
    static TR::Node *createOSRFearPointHelperCall(TR::Node* originatingByteCodeNode);
+   /**
+    * \brief
+    *    Create a call to eaEscapeHelperSymbol
+    * 
+    * \parm originatingByteCodeNode The node whose bytecode info is used to create the call
+    */
+   static TR::Node *createEAEscapeHelperCall(TR::Node *originatingByteCodeNode, int32_t numChildren);
 
    static TR::Node *createLoad(TR::SymbolReference * symRef);
    static TR::Node *createLoad(TR::Node *originatingByteCodeNode, TR::SymbolReference *);
@@ -556,6 +563,11 @@ public:
     *    Return true if the node is a call with potentialOSRPointHelperSymbol
     */
    bool                   isPotentialOSRPointHelperCall();
+   /**
+    * \brief
+    *    Return true if the node is a call with eaEscapeHelperSymbol
+    */
+   bool                   isEAEscapeHelperCall();
 
    // A common query used by the optimizer
    inline bool            isSingleRef();

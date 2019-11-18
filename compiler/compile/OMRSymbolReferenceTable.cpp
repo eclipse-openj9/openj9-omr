@@ -2034,6 +2034,19 @@ OMR::SymbolReferenceTable::findOrCreateOSRFearPointHelperSymbolRef()
    }
 
 TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateEAEscapeHelperSymbolRef()
+   {
+   if (!element(eaEscapeHelperSymbol))
+      {
+      TR::MethodSymbol* sym = TR::MethodSymbol::create(trHeapMemory(), TR_None);
+      sym->setHelper();
+      TR::SymbolReference* symRef = new (trHeapMemory()) TR::SymbolReference(self(), eaEscapeHelperSymbol, sym);
+      element(eaEscapeHelperSymbol) = symRef;
+      }
+   return element(eaEscapeHelperSymbol);
+   }
+
+TR::SymbolReference *
 OMR::SymbolReferenceTable::getOriginalUnimprovedSymRef(TR::SymbolReference *symRef)
    {
    auto entry = _originalUnimprovedSymRefs.find(symRef->getReferenceNumber());

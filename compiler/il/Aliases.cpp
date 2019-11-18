@@ -132,6 +132,13 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             return &symRefTab->aliasBuilder.defaultMethodUseAliases();
             }
 
+         // Aliases for eaEscapeHelper
+         // Ensure EA sees the method as causing an escape for all arguments passed
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::eaEscapeHelperSymbol))
+            {
+            return &symRefTab->aliasBuilder.defaultMethodUseAliases();
+            }
+
          if (!methodSymbol->isHelper())
             {
             return &symRefTab->aliasBuilder.defaultMethodUseAliases();
@@ -312,7 +319,8 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
 
          if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arraySetSymbol) ||
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::osrFearPointHelperSymbol) ||
-             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::potentialOSRPointHelperSymbol))
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::potentialOSRPointHelperSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::eaEscapeHelperSymbol))
             {
             return &symRefTab->aliasBuilder.defaultMethodDefAliases();
             }

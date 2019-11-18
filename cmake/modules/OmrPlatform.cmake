@@ -138,6 +138,16 @@ function(omr_add_exports target)
 	omr_process_exports(${target})
 endfunction()
 
+
+# omr_split_debug(<target>)
+# Moves debug info from a  target to a separate file
+function(omr_split_debug target)
+	omr_assert(FATAL_ERROR TEST TARGET ${target} MESSAGE "omr_split_debug called on invalid target '${target}'")
+	if(COMMAND _omr_toolchain_separate_debug_symbols)
+		_omr_toolchain_separate_debug_symbols("${target}")
+	endif()
+endfunction()
+
 ###
 ### Flags we aren't using
 ###

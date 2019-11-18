@@ -140,7 +140,15 @@ function(target_enable_ddr tgt)
 		"$<JOIN:$<TARGET_PROPERTY:${tgt},DDR_PREINCLUDES>,\n>"
 	)
 	if((target_type MATCHES "EXECUTABLE|SHARED_LIBRARY") AND (NOT opt_NO_DEBUG_INFO))
-		set(MAGIC_TEMPLATE "OUTPUT_FILE\n$<TARGET_FILE:${tgt}>\n${MAGIC_TEMPLATE}")
+		# OMR_SEPARATE_DEBUG_INFO has no impact on windows since it already
+		# uses separate .pdb files
+		if(OMR_SEPARATE_DEBUG_INFO AND (NOT OMR_OS_WINDOWS))
+			set(MAGIC_TEMPLATE "OUTPUT_FILE\n$<TARGET_FILE:${tgt}>.dbg\n${MAGIC_TEMPLATE}")
+			# Add rules to generate the split debug info
+			omr_split_debug("${tgt}")
+		else()
+			set(MAGIC_TEMPLATE "OUTPUT_FILE\n$<TARGET_FILE:${tgt}>\n${MAGIC_TEMPLATE}")
+		endif()
 	endif()
 
 	file(GENERATE OUTPUT "${DDR_INFO_DIR}/targets/${tgt}.txt" CONTENT "${MAGIC_TEMPLATE}\n")

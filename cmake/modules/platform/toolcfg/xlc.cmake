@@ -209,4 +209,15 @@ else()
 		)
 		set_property(TARGET ${TARGET_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-bE:${TARGET_NAME}.exp")
 	endfunction()
+
+	function(_omr_toolchain_separate_debug_symbols tgt)
+		set(exe_file "$<TARGET_FILE:${tgt}>")
+		set(dbg_file "$<TARGET_FILE:${tgt}>.dbg")
+		add_custom_command(
+			TARGET "${tgt}"
+			POST_BUILD
+			COMMAND "${CMAKE_COMMAND}" -E copy ${exe_file} ${dbg_file}
+			COMMAND "${CMAKE_STRIP}" -X32_64 -t ${dbg_file}
+		)
+	endfunction()
 endif()

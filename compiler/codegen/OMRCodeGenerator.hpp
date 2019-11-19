@@ -1156,6 +1156,7 @@ class OMR_EXTENSIBLE CodeGenerator
    bool needRelocationsForStatics() { return false; }
    bool needRelocationsForBodyInfoData() { return false; }
    bool needRelocationsForPersistentInfoData() { return false; }
+   bool needRelocationsForLookupEvaluationData();
 
    // --------------------------------------------------------------------------
    // Snippets

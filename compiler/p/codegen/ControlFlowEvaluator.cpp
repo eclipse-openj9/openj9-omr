@@ -3016,9 +3016,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
          }
       else
          {
-         // the loadAddress routine here will eventually map down to TR_FixedSequence2 relo type. Might need to generate a query here that moves this JITServer
-         // check downstream.
-         if (cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation())
+         if (cg->needRelocationsForLookupEvaluationData())
             {
             loadAddressConstant(cg, node, address, addrRegister, true);
             generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, 0, 4, cg));
@@ -3315,9 +3313,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
          }
       else
          {
-         // the loadAddress routine here will eventually map down to TR_FixedSequence2 relo type. Might need to generate a query here that moves this JITServer
-         // check downstream.
-         loadAddressConstant(cg, node, address, addrRegister, cg->comp()->isOutOfProcessCompilation() || cg->comp()->isOutOfProcessCompilation());
+         loadAddressConstant(cg, node, address, addrRegister, cg->needRelocationsForLookupEvaluationData());
          }
       }
    else

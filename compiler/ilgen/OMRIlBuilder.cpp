@@ -2599,29 +2599,6 @@ OMR::IlBuilder::IfThenElse(TR::IlBuilder **thenPath, TR::IlBuilder **elsePath, T
    }
 
 void
-OMR::IlBuilder::Switch(const char *selectionVar,
-                  TR::IlBuilder **defaultBuilder,
-                  uint32_t numCases,
-                  JBCase **cases)
-   {
-   Switch(Load(selectionVar), defaultBuilder, numCases, cases);
-   }
-
-void
-OMR::IlBuilder::Switch(const char *selectionVar,
-                  TR::IlBuilder **defaultBuilder,
-                  uint32_t numCases,
-                  ...)
-   {
-   va_list args;
-   va_start(args, numCases);
-   JBCase **cases = createCaseArray(numCases, args);
-   va_end(args);
-
-   Switch(selectionVar, defaultBuilder, numCases, cases);
-   }
-
-void
 OMR::IlBuilder::Switch(TR::IlValue *selectorValue,
                   TR::IlBuilder **defaultBuilder,
                   uint32_t numCases,
@@ -2648,31 +2625,6 @@ OMR::IlBuilder::Switch(TR::IlValue *selectorValue,
    va_end(args);
 
    Switch(selectorValue, defaultBuilder, numCases, cases);
-   }
-
-void
-OMR::IlBuilder::TableSwitch(const char *selectionVar,
-                  TR::IlBuilder **defaultBuilder,
-                  bool generateBoundsCheck,
-                  uint32_t numCases,
-                  JBCase **cases)
-   {
-   TableSwitch(Load(selectionVar), defaultBuilder, generateBoundsCheck, numCases, cases);
-   }
-
-void
-OMR::IlBuilder::TableSwitch(const char *selectionVar,
-                  TR::IlBuilder **defaultBuilder,
-                  bool generateBoundsCheck,
-                  uint32_t numCases,
-                  ...)
-   {
-   va_list args;
-   va_start(args, numCases);
-   JBCase **cases = createCaseArray(numCases, args);
-   va_end(args);
-
-   TableSwitch(selectionVar, defaultBuilder, generateBoundsCheck, numCases, cases);
    }
 
 void

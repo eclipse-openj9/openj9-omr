@@ -2392,21 +2392,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
          {
          if (cg()->hasCodeCacheSwitched())
             {
-            TR::SymbolReference *calleeSymRef = NULL;
-
-            calleeSymRef = getSymbolReference();
-
-            if (calleeSymRef != NULL)
-               {
-               if (calleeSymRef->getReferenceNumber()>=TR_S390numRuntimeHelpers)
-                  cg()->fe()->reserveTrampolineIfNecessary(comp, calleeSymRef, true);
-               }
-            else
-               {
-#ifdef DEBUG
-               printf("Missing possible re-reservation for trampolines.\n");
-#endif
-               }
+            cg()->redoTrampolineReservationIfNecessary(this, getSymbolReference());
             }
          }
 #endif

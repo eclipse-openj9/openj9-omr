@@ -761,7 +761,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    uint32_t getPreJitMethodEntrySize() {return _preJitMethodEntrySize;}
    uint32_t setPreJitMethodEntrySize(uint32_t s) {return (_preJitMethodEntrySize = s);}
-   
+
    /** \brief
     *     Determines whether the code generator supports or allows JIT-to-JIT method entry point alignment.
     */
@@ -772,7 +772,7 @@ class OMR_EXTENSIBLE CodeGenerator
     *     specified to be \c x and the JIT-to-JIT method entry point to be \c y then <c>y & (x - 1) == 0</c>.
     */
    uint32_t getJitMethodEntryAlignmentBoundary();
-   
+
    /** \brief
     *     Determines the byte threshold at which the JIT-to-JIT method entry point boundary alignment will not be
     *     performed. If the JIT-to-JIT method entry point is already close to the boundary then it may not make sense
@@ -1073,7 +1073,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::list<TR::Register*> *getSpilledRegisterList() {return _spilledRegisterList;}
    TR::list<TR::Register*> *setSpilledRegisterList(TR::list<TR::Register*> *r) {return _spilledRegisterList = r;}
-   
+
    TR_BackingStore *allocateSpill(bool containsCollectedReference, int32_t *offset, bool reuse=true);
    TR_BackingStore *allocateSpill(int32_t size, bool containsCollectedReference, int32_t *offset, bool reuse=true);
    TR_BackingStore *allocateInternalPointerSpill(TR::AutomaticSymbol *pinningArrayPointer);
@@ -1402,7 +1402,24 @@ class OMR_EXTENSIBLE CodeGenerator
       return true;
       }
 
-   // --------------------------------------------------------------------------	
+   /**
+    * @brief
+    *    Redo the trampoline reservation for a call target, if a trampoline might be
+    *    required for the target.  This is typically required if a new code cache is
+    *    allocated between the instruction selection and binary encoding phases.
+    *
+    * @details
+    *    Note that the instructionSymRef cannot simply be read from the provided instruction
+    *    because this function is shared across multiple architectures with incompatible
+    *    instruction hierarchies.
+    *
+    * @param[in] callInstr : the call instruction to which this trampoline applies
+    * @param[in] instructionSymRef : the TR::SymbolReference present on the instruction
+    *
+    */
+   void redoTrampolineReservationIfNecessary(TR::Instruction *callInstr, TR::SymbolReference *instructionSymRef);
+
+   // --------------------------------------------------------------------------
 
    bool constantAddressesCanChangeSize(TR::Node *node);
    bool profiledPointersRequireRelocation();
@@ -1892,7 +1909,7 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::list<TR::Register*> *_spilledRegisterList;
    TR::list<OMR::RegisterUsage*> *_referencedRegistersList;
    int32_t _currentPathDepth;
-   
+
 
 
    TR_Array<void *> _monitorMapping;

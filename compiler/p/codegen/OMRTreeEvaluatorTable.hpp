@@ -633,9 +633,9 @@
    TR::TreeEvaluator::tableEvaluator,                   // TR::table
    TR::TreeEvaluator::exceptionRangeFenceEvaluator,     // TR::exceptionRangeFence
    TR::TreeEvaluator::exceptionRangeFenceEvaluator,     // TR::dbgFence (J9)
-   TR::TreeEvaluator::NULLCHKEvaluator,                 // TR::NULLCHK
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::NULLCHK (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::ResolveCHK (J9)
-   TR::TreeEvaluator::resolveAndNULLCHKEvaluator,       // TR::ResolveAndNULLCHK
+   TR::TreeEvaluator::badILOpEvaluator,                    // TR::ResolveAndNULLCHK (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::DIVCHK (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::OverflowCHK
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::UnsignedOverflowCHK

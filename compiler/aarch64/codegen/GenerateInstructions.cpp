@@ -141,6 +141,14 @@ TR::Instruction *generateTrg1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCod
    return new (cg->trHeapMemory()) TR::ARM64Trg1ImmInstruction(op, node, treg, imm, cg);
    }
 
+TR::Instruction *generateTrg1ImmSymInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, uint32_t imm, TR::LabelSymbol *sym, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1ImmSymInstruction(op, node, treg, imm, sym, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1ImmSymInstruction(op, node, treg, imm, sym, cg);
+   }
+
 TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *treg, TR::Register *s1reg, TR::Instruction *preced)
    {

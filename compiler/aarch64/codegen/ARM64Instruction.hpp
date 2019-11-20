@@ -1166,6 +1166,72 @@ class ARM64Trg1ImmInstruction : public ARM64Trg1Instruction
    virtual uint8_t *generateBinaryEncoding();
    };
 
+class ARM64Trg1ImmSymInstruction : public ARM64Trg1ImmInstruction
+   {
+   TR::LabelSymbol *_symbol;
+
+   public:
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] imm : immediate value
+    * @param[in] sym : label symbol
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1ImmSymInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                            uint32_t imm, TR::LabelSymbol *sym, TR::CodeGenerator *cg)
+      : ARM64Trg1ImmInstruction(op, node, treg, imm, cg), _symbol(sym)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] imm : immediate value
+    * @param[in] sym : label symbol
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1ImmSymInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                            uint32_t imm, TR::LabelSymbol *sym,
+                            TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64Trg1ImmInstruction(op, node, treg, imm, precedingInstruction, cg), _symbol(sym)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsTrg1ImmSym; }
+
+   /**
+    *
+    * @brief Gets label symbol
+    * @return label symbol
+    */
+   TR::LabelSymbol *getLabelSymbol() {return _symbol;}
+
+   /**
+    * @brief Sets immediate field in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertImmediateField(uint32_t *instruction)
+      {
+      *instruction |= ((getSourceImmediate() & 0x7ffff) << 5);
+      }
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
 class ARM64Trg1Src1Instruction : public ARM64Trg1Instruction
    {
    TR::Register *_source1Register;

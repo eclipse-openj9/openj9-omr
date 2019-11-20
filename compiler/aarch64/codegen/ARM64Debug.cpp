@@ -564,6 +564,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsTrg1Imm:
          print(pOutFile, (TR::ARM64Trg1ImmInstruction *)instr);
          break;
+      case OMR::Instruction::IsTrg1ImmSym:
+         print(pOutFile, (TR::ARM64Trg1ImmSymInstruction *)instr);
+         break;
       case OMR::Instruction::IsTrg1Src1:
          print(pOutFile, (TR::ARM64Trg1Src1Instruction *)instr);
          break;
@@ -819,6 +822,28 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmInstruction *instr)
       {
       trfprintf(pOutFile, ", LSL #%d", shift);
       }
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmSymInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+   uint32_t imm = instr->getSourceImmediate() & 0x7FFFF;
+   TR::LabelSymbol *label = instr->getLabelSymbol();
+   TR::Snippet *snippet = label ? label->getSnippet() : NULL;
+   if (snippet)
+      {
+      print(pOutFile, label);
+      trfprintf(pOutFile, " (%s)", getName(snippet));
+      }
+   else
+      {
+      trfprintf(pOutFile, " " POINTER_PRINTF_FORMAT, instr->getBinaryEncoding() + (imm << 2));
+      }
+
    trfflush(_comp->getOutFile());
    }
 

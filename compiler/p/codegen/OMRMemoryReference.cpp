@@ -1587,25 +1587,25 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          if (symbol->isDebugCounter())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_DebugCounter);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, true, NULL, false, TR_DebugCounter);
             return;
             }
          if (symbol->isCountForRecompile())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
+            loadAddressConstant(cg, nodeForSymbol, TR_CountForRecompile, reg, true, NULL, false, TR_GlobalValue);
             return;
             }
          else if (symbol->isRecompilationCounter())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_BodyInfoAddressLoad);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, true, NULL, false, TR_BodyInfoAddressLoad);
             return;
             }
          else if (symbol->isCompiledMethod())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_RamMethodSequence);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, true, NULL, false, TR_RamMethodSequence);
             return;
             }
          else if (symbol->isStartPC())
@@ -1618,13 +1618,13 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          else if (isStaticField && !ref->isUnresolved())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_DataAddress, true);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, true, NULL, false, TR_DataAddress);
             return;
             }
          else if (isClass && !ref->isUnresolved() && comp->getOption(TR_UseSymbolValidationManager))
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, (intptrj_t)ref, reg, NULL, false, TR_ClassAddress);
+            loadAddressConstant(cg, nodeForSymbol, (intptrj_t)ref, reg, true, NULL, false, TR_ClassAddress);
             return;
             }
          else
@@ -1687,25 +1687,25 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          if (symbol->isDebugCounter())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_DebugCounter);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, comp->compileRelocatableCode(), NULL, false, TR_DebugCounter);
             return;
             }
          else if (symbol->isCountForRecompile())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
+            loadAddressConstant(cg, nodeForSymbol, TR_CountForRecompile, reg, comp->compileRelocatableCode(), NULL, false, TR_GlobalValue);
             return;
             }
          else if (symbol->isRecompilationCounter())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, 0, reg, NULL, false, TR_BodyInfoAddressLoad);
+            loadAddressConstant(cg, nodeForSymbol, 0, reg, comp->compileRelocatableCode(), NULL, false, TR_BodyInfoAddressLoad);
             return;
             }
          else if (symbol->isCompiledMethod())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, 0, reg, NULL, false, TR_RamMethodSequence);
+            loadAddressConstant(cg, nodeForSymbol, 0, reg, comp->compileRelocatableCode(), NULL, false, TR_RamMethodSequence);
             return;
             }
          else if (symbol->isStartPC())
@@ -1718,7 +1718,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          else if (isStaticField && !ref->isUnresolved())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_DataAddress);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, comp->compileRelocatableCode(), NULL, false, TR_DataAddress);
             return;
             }
          else if (ref->isUnresolved() || useUnresSnippetToAvoidRelo)

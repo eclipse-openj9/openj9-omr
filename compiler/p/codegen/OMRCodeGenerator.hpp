@@ -187,6 +187,16 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg);
 
+   /**
+    * Return the proper linkage for this call, especially for the case when the methodSymbol
+    * doesn't capture the complete information.
+    *
+    * @param[in] node, this calling node
+    * @param[in] isIndirect true if this call is an indirect call
+    * @return    appropriate linkage for this call
+    */
+   TR::Linkage *deriveCallingLinkage(TR::Node *node, bool isIndirect);
+
    bool isSnippetMatched(TR::Snippet *, int32_t, TR::SymbolReference *);
 
    bool mulDecompositionCostIsJustified(int numOfOperations, char bitPosition[], char operationType[], int64_t value);

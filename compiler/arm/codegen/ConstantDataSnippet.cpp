@@ -93,7 +93,7 @@ int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
 
 bool TR::ARMConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, TR::Instruction **q, bool remove)
    {
-   int32_t count = TR::Compiler->target.is64Bit()?4:2;
+   int32_t count = cg()->comp()->target().is64Bit()?4:2;
    ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
    TR::ARMConstant<intptrj_t>               *acursor=aiterator.getFirst();
    while (acursor != NULL)
@@ -320,7 +320,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
 	       // Register an unload assumption on the lower 32bit of the class constant.
 	       // The patching code thinks it's low bit tagging an instruction not a class pointer!!
                cg()->
-               jitAddPicToPatchOnClassUnload((void *)acursor->getConstantValue(), (void *)(codeCursor+((TR::Compiler->target.is64Bit())?4:0)) );
+               jitAddPicToPatchOnClassUnload((void *)acursor->getConstantValue(), (void *)(codeCursor+((cg()->comp()->target().is64Bit())?4:0)) );
                }
             }
 

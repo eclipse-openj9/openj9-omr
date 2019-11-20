@@ -164,7 +164,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       case TR_HelperAddress:
          AOTcgDiag1(comp, "add TR_AbsoluteHelperAddress cursor=%x\n", cursor);
-         if (TR::Compiler->target.is64Bit())
+         if (cg()->comp()->target().is64Bit())
             {
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) *((uint64_t*) cursor), TR_AbsoluteHelperAddress, cg()),
                                 __FILE__, __LINE__, getNode());
@@ -179,7 +179,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
       case TR_AbsoluteMethodAddress:
       case TR_BodyInfoAddress:
          AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
-         if (TR::Compiler->target.is64Bit())
+         if (cg()->comp()->target().is64Bit())
             {
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) *((uint64_t*) cursor),
                   (TR_ExternalRelocationTargetKind) reloType, cg()),
@@ -226,7 +226,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
             uint8_t * targetAdress2 = NULL;
             if (getNode()->getOpCodeValue() != TR::aconst)
                {
-               if (TR::Compiler->target.is64Bit())
+               if (cg()->comp()->target().is64Bit())
                   targetAdress2 = (uint8_t *) *((uint64_t*) cursor);
                else
                   targetAdress2 = (uint8_t *) *((uintptrj_t*) cursor);

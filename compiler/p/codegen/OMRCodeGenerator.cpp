@@ -134,7 +134,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    _linkageProperties = &self()->getLinkage()->getProperties();
 
    // Set up to collect items for later TOC mapping
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       {
       self()->setTrackStatics(new (self()->trHeapMemory()) TR_Array<TR::SymbolReference *>(self()->trMemory()));
       self()->setTrackItems(new (self()->trHeapMemory()) TR_Array<TR_PPCLoadLabelItem *>(self()->trMemory()));
@@ -178,7 +178,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    self()->setSupportsGlRegDeps();
    self()->setSupportsGlRegDepOnFirstBlock();
 
-   if (TR::Compiler->target.is32Bit())
+   if (self()->comp()->target().is32Bit())
       self()->setUsesRegisterPairsForLongs();
 
    self()->setPerformsChecksExplicitly();
@@ -222,7 +222,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
        }
     self()->setSupportsArrayCmp();
 
-    if (TR::Compiler->target.cpu.getPPCSupportsVSX())
+    if (self()->comp()->target().cpu.getPPCSupportsVSX())
        {
        static bool disablePPCTRTO = (feGetEnv("TR_disablePPCTRTO") != NULL);
        static bool disablePPCTRTO255 = (feGetEnv("TR_disablePPCTRTO255") != NULL);
@@ -252,14 +252,14 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
    self()->setSupportsDivCheck();
    self()->setSupportsLoweringConstIDiv();
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       self()->setSupportsLoweringConstLDiv();
    self()->setSupportsLoweringConstLDivPower2();
 
    static bool disableDCAS = (feGetEnv("TR_DisablePPCDCAS") != NULL);
 
    if (!disableDCAS &&
-       TR::Compiler->target.is64Bit() &&
+       self()->comp()->target().is64Bit() &&
        TR::Options::useCompressedPointers())
       {
       self()->setSupportsDoubleWordCAS();
@@ -271,11 +271,11 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
    // Standard allows only offset multiple of 4
    // TODO: either improves the query to be size-based or gets the offset into a register
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       self()->setSupportsAlignedAccessOnly();
 
    // TODO: distinguishing among OOO and non-OOO implementations
-   if (TR::Compiler->target.isSMP())
+   if (self()->comp()->target().isSMP())
       self()->setEnforceStoreOrder();
 
    if (TR::Compiler->vm.hasResumableTrapHandler(self()->comp()))
@@ -284,14 +284,14 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    /*
     * TODO: TM is currently not compatible with read barriers. If read barriers are required, TM is disabled until the issue is fixed.
     */
-   if (TR::Compiler->target.cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
+   if (self()->comp()->target().cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
       self()->setSupportsTM();
 
    // enable LM if hardware supports instructions and running the reduced-pause GC policy
-   if (TR::Compiler->target.cpu.getPPCSupportsLM())
+   if (self()->comp()->target().cpu.getPPCSupportsLM())
       self()->setSupportsLM();
 
-   if (TR::Compiler->target.cpu.getPPCSupportsVMX() && TR::Compiler->target.cpu.getPPCSupportsVSX())
+   if (self()->comp()->target().cpu.getPPCSupportsVMX() && self()->comp()->target().cpu.getPPCSupportsVSX())
       self()->setSupportsAutoSIMD();
 
    if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
@@ -412,13 +412,13 @@ OMR::Power::CodeGenerator::generateSwitchToInterpreterPrePrologue(
    cursor = self()->getLinkage()->flushArguments(cursor);
    cursor = generateDepImmSymInstruction(self(), TR::InstOpCode::bl, node, (uintptrj_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions(0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
 
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       {
       int32_t highBits = (int32_t)(ramMethod>>32), lowBits = (int32_t)ramMethod;
       cursor = generateImmInstruction(self(), TR::InstOpCode::dd, node,
-                  TR::Compiler->target.cpu.isBigEndian()?highBits:lowBits, TR_RamMethod, cursor);
+                  self()->comp()->target().cpu.isBigEndian()?highBits:lowBits, TR_RamMethod, cursor);
       cursor = generateImmInstruction(self(), TR::InstOpCode::dd, node,
-                  TR::Compiler->target.cpu.isBigEndian()?lowBits:highBits, cursor);
+                  self()->comp()->target().cpu.isBigEndian()?lowBits:highBits, cursor);
       }
    else
       {
@@ -428,14 +428,14 @@ OMR::Power::CodeGenerator::generateSwitchToInterpreterPrePrologue(
    if (self()->comp()->getOption(TR_EnableHCR))
       self()->comp()->getStaticHCRPICSites()->push_front(cursor);
 
-  if (TR::Compiler->target.is64Bit())
+  if (self()->comp()->target().is64Bit())
      {
      int32_t highBits = (int32_t)(helperAddr>>32), lowBits = (int32_t)helperAddr;
      cursor = generateImmInstruction(self(), TR::InstOpCode::dd, node,
-                 TR::Compiler->target.cpu.isBigEndian()?highBits:lowBits,
+                 self()->comp()->target().cpu.isBigEndian()?highBits:lowBits,
                  TR_AbsoluteHelperAddress, helperSymRef, cursor);
      cursor = generateImmInstruction(self(), TR::InstOpCode::dd, node,
-                 TR::Compiler->target.cpu.isBigEndian()?lowBits:highBits, cursor);
+                 self()->comp()->target().cpu.isBigEndian()?lowBits:highBits, cursor);
      }
   else
      {
@@ -474,7 +474,7 @@ OMR::Power::CodeGenerator::endInstructionSelection()
 void
 OMR::Power::CodeGenerator::staticTracking(TR::SymbolReference *symRef)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       {
       TR_Array<TR::SymbolReference *> *symRefArray = self()->getTrackStatics();
       int32_t idx;
@@ -491,7 +491,7 @@ OMR::Power::CodeGenerator::itemTracking(
       int32_t offset,
       TR::LabelSymbol *label)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       {
       self()->getTrackItems()->add(new (self()->trHeapMemory()) TR_PPCLoadLabelItem(offset, label));
       }
@@ -510,7 +510,7 @@ OMR::Power::CodeGenerator::mulDecompositionCostIsJustified(
 
    // Notice: the total simple operations is (2*numOfOperations-1). The following checking is a heuristic
    //         on processors we still care about.
-   switch (TR::Compiler->target.cpu.id())
+   switch (self()->comp()->target().cpu.id())
       {
       case TR_PPCpwr630: // 2S+1M FXU out-of-order
          return (numOfOperations<=4);
@@ -620,7 +620,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateNop(TR::Node *n, TR::Instruc
 
 TR::Instruction *OMR::Power::CodeGenerator::generateGroupEndingNop(TR::Node *node , TR::Instruction *preced)
    {
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp6) // handles P7, P8
+   if (self()->comp()->target().cpu.id() >= TR_PPCp6) // handles P7, P8
       {
       preced = self()->generateNop(node , preced , TR_NOPEndGroup);
       }
@@ -1108,8 +1108,8 @@ static void recordFormPeephole(TR::CodeGenerator *cg, TR::Instruction *cmpiInstr
          if (current->getOpCode().hasRecordForm())
             {
             // avoid certain record forms on POWER4/POWER5
-            if (TR::Compiler->target.cpu.id() == TR_PPCgp ||
-                TR::Compiler->target.cpu.id() == TR_PPCgr)
+            if (comp->target().cpu.id() == TR_PPCgp ||
+                comp->target().cpu.id() == TR_PPCgr)
                {
                TR::InstOpCode::Mnemonic opCode = current->getOpCodeValue();
                // addc_r, subfc_r, divw_r and divd_r are microcoded
@@ -1568,7 +1568,7 @@ void OMR::Power::CodeGenerator::doPeephole()
       {
       self()->setCurrentBlockIndex(instructionCursor->getBlockIndex());
 
-      if ((TR::Compiler->target.cpu.id() == TR_PPCp6) && instructionCursor->isTrap())
+      if ((self()->comp()->target().cpu.id() == TR_PPCp6) && instructionCursor->isTrap())
          {
 #if defined(AIXPPC)
          trapPeephole(self(),instructionCursor);
@@ -1593,13 +1593,13 @@ void OMR::Power::CodeGenerator::doPeephole()
                }
             case TR::InstOpCode::cmpi4:
                {
-               if (TR::Compiler->target.is32Bit())
+               if (self()->comp()->target().is32Bit())
                   recordFormPeephole(self(), instructionCursor);
                break;
                }
             case TR::InstOpCode::cmpi8:
                {
-               if (TR::Compiler->target.is64Bit())
+               if (self()->comp()->target().is64Bit())
                   recordFormPeephole(self(), instructionCursor);
                break;
                }
@@ -1632,7 +1632,7 @@ void OMR::Power::CodeGenerator::doPeephole()
 
 bool OMR::Power::CodeGenerator::supportsAESInstructions()
    {
-    if ( TR::Compiler->target.cpu.getPPCSupportsAES() && !self()->comp()->getOption(TR_DisableAESInHardware))
+    if ( self()->comp()->target().cpu.getPPCSupportsAES() && !self()->comp()->getOption(TR_DisableAESInHardware))
       return true;
     else
       return false;
@@ -1804,7 +1804,7 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
 
    // We late-processing TOC entries here: obviously cannot deal with snippet labels.
    // If needed, we should move this step to common code around relocation processing.
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       {
       int32_t idx;
       for (idx=0; idx<self()->getTrackItems()->size(); idx++)
@@ -1844,7 +1844,7 @@ TR::Register *OMR::Power::CodeGenerator::gprClobberEvaluate(TR::Node *node)
 
    if (!self()->canClobberNodesRegister(node))
       {
-      if (TR::Compiler->target.is32Bit() && node->getType().isInt64())
+      if (self()->comp()->target().is32Bit() && node->getType().isInt64())
          {
          TR::Register     *lowReg  = self()->allocateRegister();
          TR::Register     *highReg = self()->allocateRegister();
@@ -1919,7 +1919,7 @@ static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerato
          // byte alignment in 64bit. This means we need to add 4 to the target
          // in order to be conservatively correct for the offset calculation
          // We could improve this by only adding 4 when the target is a Interface Call Snippet
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             targetLocation+=4;
          if ((targetLocation-myLocation + (j-i-1)*4) >= 32768)
             {
@@ -1949,7 +1949,7 @@ static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerato
 
 bool OMR::Power::CodeGenerator::canTransformUnsafeSetMemory()
    {
-   return (TR::Compiler->target.is64Bit());
+   return (self()->comp()->target().is64Bit());
    }
 
 void OMR::Power::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *map)
@@ -2183,7 +2183,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR_RegisterCandi
          break;
 
       case TR::Int64:
-         if (TR::Compiler->target.is32Bit() && highRegisterNumber == 0)
+         if (self()->comp()->target().is32Bit() && highRegisterNumber == 0)
             longLow = 1;
          firstIndex = _firstGPR;
          lastIndex  = _lastFPR ;
@@ -2419,7 +2419,7 @@ int32_t OMR::Power::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::N
       }
    else if (node->getOpCode().isIf() && node->getFirstChild()->getType().isInt64())
       {
-      return ( TR::Compiler->target.is64Bit()? _numGPR : _numGPR - 4 ); // 4 GPRs are needed for long-compare arguments themselves.
+      return ( self()->comp()->target().is64Bit()? _numGPR : _numGPR - 4 ); // 4 GPRs are needed for long-compare arguments themselves.
       }
 
    return _numGPR; // pickRegister will ensure that the number of free registers isn't exceeded
@@ -2864,7 +2864,7 @@ bool OMR::Power::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumbe
 
 bool OMR::Power::CodeGenerator::supportsSinglePrecisionSQRT()
    {
-   return TR::Compiler->target.cpu.getSupportsHardwareSQRT();
+   return self()->comp()->target().cpu.getSupportsHardwareSQRT();
    }
 
 
@@ -2912,12 +2912,12 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
    {
 
    // alignment issues
-   if (TR::Compiler->target.cpu.id() < TR_PPCp8 &&
+   if (self()->comp()->target().cpu.id() < TR_PPCp8 &&
        dt != TR::Double &&
        dt != TR::Int64)
       return false;
 
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp8 &&
+   if (self()->comp()->target().cpu.id() >= TR_PPCp8 &&
        (opcode.getOpCodeValue() == TR::vadd || opcode.getOpCodeValue() == TR::vsub) &&
        dt == TR::Int64)
       return true;
@@ -2969,14 +2969,14 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
 bool
 OMR::Power::CodeGenerator::getSupportsEncodeUtf16LittleWithSurrogateTest()
    {
-   return TR::Compiler->target.cpu.getPPCSupportsVSX() &&
+   return self()->comp()->target().cpu.getPPCSupportsVSX() &&
           !self()->comp()->getOption(TR_DisableSIMDUTF16LEEncoder);
    }
 
 bool
 OMR::Power::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
    {
-   return TR::Compiler->target.cpu.getPPCSupportsVSX() &&
+   return self()->comp()->target().cpu.getPPCSupportsVSX() &&
           !self()->comp()->getOption(TR_DisableSIMDUTF16BEEncoder);
    }
 
@@ -3093,7 +3093,7 @@ OMR::Power::CodeGenerator::loadAddressConstantFixed(
    TR::Compilation *comp = self()->comp();
    bool canEmitData = self()->canEmitDataForExternallyRelocatableInstructions();
 
-   if (TR::Compiler->target.is32Bit())
+   if (self()->comp()->target().is32Bit())
       {
       return self()->loadIntConstantFixed(node, (int32_t)value, trgReg, cursor, typeAddress);
       }
@@ -3283,7 +3283,7 @@ OMR::Power::CodeGenerator::fixedLoadLabelAddressIntoReg(
       bool useADDISFor32Bit)
    {
    TR::Compilation *comp = self()->comp();
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       {
       int32_t offset = TR_PPCTableOfConstants::allocateChunk(1, self());
 
@@ -3351,7 +3351,7 @@ void TR_PPCScratchRegisterManager::addScratchRegistersToDependencyList(
 
 TR::SymbolReference & OMR::Power::CodeGenerator::getArrayCopySymbolReference()
    {
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayCopy, false, false, false);
@@ -3359,7 +3359,7 @@ TR::SymbolReference & OMR::Power::CodeGenerator::getArrayCopySymbolReference()
 
 TR::SymbolReference & OMR::Power::CodeGenerator::getWordArrayCopySymbolReference()
    {
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCwordArrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCwordArrayCopy, false, false, false);
@@ -3367,7 +3367,7 @@ TR::SymbolReference & OMR::Power::CodeGenerator::getWordArrayCopySymbolReference
 
 TR::SymbolReference & OMR::Power::CodeGenerator::getHalfWordArrayCopySymbolReference()
    {
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPChalfWordArrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPChalfWordArrayCopy, false, false, false);
@@ -3375,7 +3375,7 @@ TR::SymbolReference & OMR::Power::CodeGenerator::getHalfWordArrayCopySymbolRefer
 
 TR::SymbolReference & OMR::Power::CodeGenerator::getForwardArrayCopySymbolReference()
    {
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardArrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardArrayCopy, false, false, false);
@@ -3383,7 +3383,7 @@ TR::SymbolReference & OMR::Power::CodeGenerator::getForwardArrayCopySymbolRefere
 
 TR::SymbolReference &OMR::Power::CodeGenerator::getForwardWordArrayCopySymbolReference()
    {
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardWordArrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardWordArrayCopy, false, false, false);
@@ -3391,7 +3391,7 @@ TR::SymbolReference &OMR::Power::CodeGenerator::getForwardWordArrayCopySymbolRef
 
 TR::SymbolReference &OMR::Power::CodeGenerator::getForwardHalfWordArrayCopySymbolReference()
    {
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardHalfWordArrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardHalfWordArrayCopy, false, false, false);
@@ -3400,7 +3400,7 @@ TR::SymbolReference &OMR::Power::CodeGenerator::getForwardHalfWordArrayCopySymbo
 
 bool OMR::Power::CodeGenerator::supportsTransientPrefetch()
    {
-   return TR::Compiler->target.cpu.id() >= TR_PPCp7;
+   return TR::comp()->target().cpu.id() >= TR_PPCp7;
    }
 
 
@@ -3410,13 +3410,13 @@ bool OMR::Power::CodeGenerator::is64BitProcessor()
     * If the target is 64 bit, the CPU must also be 64 bit (even if we don't specifically know which Power CPU it is) so this can just return true.
     * If the target is not 64 bit, we need to check the CPU properties to try and find out if the CPU is 64 bit or not.
     */
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       {
       return true;
       }
    else
       {
-      return TR::Compiler->target.cpu.getPPCis64bit();
+      return self()->comp()->target().cpu.getPPCis64bit();
       }
    }
 
@@ -3437,7 +3437,7 @@ OMR::Power::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNon
       case TR::SymbolReferenceTable::atomicSwapSymbol:
          {
          // Atomic non-helpers for Power only supported on 64-bit, for now
-         result = TR::Compiler->target.is64Bit();
+         result = self()->comp()->target().is64Bit();
          break;
          }
       }
@@ -3455,7 +3455,7 @@ bool
 OMR::Power::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
    {
    return
-      !TR::Compiler->target.cpu.isTargetWithinIFormBranchRange(targetAddress, sourceAddress) ||
+      !self()->comp()->target().cpu.isTargetWithinIFormBranchRange(targetAddress, sourceAddress) ||
       self()->comp()->getOption(TR_StressTrampolines);
    }
 

@@ -102,7 +102,7 @@ int32_t TR_LoopStrider::perform()
    //if (!cg()->supportsInternalPointers())
    //   return 0;
    //
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                      true : false;
 
    static char *disableSignExtn = feGetEnv("TR_disableSelIndVar");
@@ -240,7 +240,7 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
    {
    // (64-bit)
    // for aladds
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                      true : false;
 
    TR_RegionStructure *regionStructure = loopStructure->asRegion();
@@ -1895,7 +1895,7 @@ bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariant
    static const char *onlyConstStride = feGetEnv("TR_onlyConstStride");
 
    // for aladds
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                       true : false;
 
    bool seenInductionVariableComputation = false;
@@ -2386,7 +2386,7 @@ TR::Node *TR_LoopStrider::placeInitializationTreeInLoopInvariantBlock(TR_BlockSt
       TR::SymbolReferenceTable *symRefTab)
    {
    // for aladds
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                      true : false;
    //
    // Place the initialization tree for the derived induction variable
@@ -2634,7 +2634,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
 
 TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructure *loopInvariantBlock, TR::SymbolReference *inductionVarSymRef, TR::SymbolReference *newSymbolReference, int32_t k, TR::SymbolReferenceTable *symRefTab, TR::Node *placeHolderNode, TR::Node *newLoad, TR::TreeTop *insertionTreeTop, TR::Node *constNode, bool isAddition)
    {
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                      true : false;
 
    //traceMsg(comp(), "For new sym ref %d _constNode is %x (value %d)\n", newSymbolReference->getReferenceNumber(), constNode, constNode->getInt());
@@ -2828,7 +2828,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
 int32_t TR_LoopStrider::findNewInductionVariable(TR::Node *node, TR::SymbolReference **symRef, bool hasAdditiveTerm, int32_t internalPointerParentSymbol)
    {
    // for aladds
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                      true : false;
 
 
@@ -2991,7 +2991,7 @@ void TR_LoopStrider::identifyExpressionsLinearInInductionVariables(TR_Structure 
 bool TR_LoopStrider::identifyExpressionLinearInInductionVariable(TR::Node *node, vcount_t visitCount)
    {
    // for aladds
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                      true : false;
 
    if (node->getVisitCount() == visitCount)
@@ -3195,7 +3195,7 @@ TR::Node *TR_LoopStrider::setUsesLoadUsedInLoopIncrement(TR::Node *node, int32_t
 TR::Node *TR_LoopStrider::isExpressionLinearInInductionVariable(TR::Node *node, int32_t k)
    {
    // for aladds
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                      true : false;
 
    TR::Node *returnedNode = NULL;
@@ -3379,7 +3379,7 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
 bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlock, TR::Node *parent, int32_t childNum, TR::Node *node, vcount_t visitCount)
    {
    // for aladds
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                      true : false;
 
    bool reassociatedComputation = false;
@@ -4213,7 +4213,7 @@ void TR_LoopStrider::detectLoopsForIndVarConversion(
    {
 
    // 64-bit
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                      true : false;
 
    // Stress mode: choose to replace *every* possible candidate 32-bit IV with
@@ -4562,7 +4562,7 @@ void TR_LoopStrider::morphExpressionsLinearInInductionVariable(TR_Structure *str
 bool TR_LoopStrider::morphExpressionLinearInInductionVariable(TR::Node *parent, int32_t childNum, TR::Node *node, vcount_t visitCount)
    {
    // for aladds
-   bool usingAladd = (TR::Compiler->target.is64Bit()) ?
+   bool usingAladd = (comp()->target().is64Bit()) ?
                      true : false;
 
    bool examineChildren = true;
@@ -7693,9 +7693,9 @@ void TR_IVTypeTransformer::changeIVTypeFromAddrToInt(TR_RegionStructure *natLoop
    auto baseStoreTT = TR::TreeTop::create(cm,
          TR::Node::createStore(_baseSymRef, TR::Node::createWithSymRef(TR::aload, 0, _addrSymRef)));
    _intIdxSymRef = cm->getSymRefTab()->createTemporary(cm->getMethodSymbol(),
-         TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32);
+         comp()->target().is64Bit() ? TR::Int64 : TR::Int32);
    auto intIdxStoreTT = TR::TreeTop::create(cm, TR::Node::createStore(_intIdxSymRef,
-         TR::Compiler->target.is64Bit() ? TR::Node::lconst(0) : TR::Node::iconst(0)));
+         comp()->target().is64Bit() ? TR::Node::lconst(0) : TR::Node::iconst(0)));
 
    // Just insert base address copy store in the preheader block. Note that canonicalizer is required.
    preheaderBlock->getEntry()->insertAfter(baseStoreTT);
@@ -7705,9 +7705,9 @@ void TR_IVTypeTransformer::changeIVTypeFromAddrToInt(TR_RegionStructure *natLoop
    if (!performTransformation(cm, "%s Adding int increment tree\n", optDetailString()))
       return;
    auto intIncrementTT = TR::TreeTop::create(cm, TR::Node::createStore(_intIdxSymRef,
-         TR::Node::create(TR::Compiler->target.is64Bit() ? TR::ladd : TR::iadd, 2,
+         TR::Node::create(comp()->target().is64Bit() ? TR::ladd : TR::iadd, 2,
                TR::Node::createLoad(_intIdxSymRef),
-               TR::Compiler->target.is64Bit() ? TR::Node::lconst(increment) : TR::Node::iconst(increment))));
+               comp()->target().is64Bit() ? TR::Node::lconst(increment) : TR::Node::iconst(increment))));
    astoreTT->insertAfter(intIncrementTT);
 
    // Modify the back-edge
@@ -7735,14 +7735,14 @@ void TR_IVTypeTransformer::changeIVTypeFromAddrToInt(TR_RegionStructure *natLoop
       return;
       itTT->insertAfter(TR::TreeTop::create(cm, TR::Node::create(TR::treetop, 1, intNodeForBackEdgeTest)));
       }
-   auto a2intOp = TR::ILOpCode::getProperConversion(TR::Address, TR::Compiler->target.is64Bit() ?
+   auto a2intOp = TR::ILOpCode::getProperConversion(TR::Address, comp()->target().is64Bit() ?
          TR::Int64 : TR::Int32, false);
    TR::Node *newIf;
    if (astoreNode->getSymbolReference() == firstChildSymRef) // Match if children to original backedgeIf children
       {
-      newIf = TR::Node::createif(getIntegralIfOpCode(backEdgeIfNode->getOpCodeValue(), TR::Compiler->target.is64Bit()),
+      newIf = TR::Node::createif(getIntegralIfOpCode(backEdgeIfNode->getOpCodeValue(), comp()->target().is64Bit()),
          intNodeForBackEdgeTest,
-         TR::Node::create(TR::Compiler->target.is64Bit() ? TR::lsub : TR::isub, 2,
+         TR::Node::create(comp()->target().is64Bit() ? TR::lsub : TR::isub, 2,
             TR::Node::create(a2intOp, 1, cmpChildWithEndAddr),
             TR::Node::create(a2intOp, 1,
                TR::Node::createLoad(_baseSymRef))),
@@ -7750,8 +7750,8 @@ void TR_IVTypeTransformer::changeIVTypeFromAddrToInt(TR_RegionStructure *natLoop
       }
    else
       {
-      newIf = TR::Node::createif(getIntegralIfOpCode(backEdgeIfNode->getOpCodeValue(), TR::Compiler->target.is64Bit()),
-         TR::Node::create(TR::Compiler->target.is64Bit() ? TR::lsub : TR::isub, 2,
+      newIf = TR::Node::createif(getIntegralIfOpCode(backEdgeIfNode->getOpCodeValue(), comp()->target().is64Bit()),
+         TR::Node::create(comp()->target().is64Bit() ? TR::lsub : TR::isub, 2,
             TR::Node::create(a2intOp, 1, cmpChildWithEndAddr),
             TR::Node::create(a2intOp, 1,
                TR::Node::createLoad(_baseSymRef))),
@@ -7863,7 +7863,7 @@ void TR_IVTypeTransformer::replaceAloadWithBaseIndexInSubtree(TR::Node *node)
        performTransformation(comp(), "%s Replacing n%in aload with base int-index form\n",
              optDetailString(), child->getGlobalIndex()))
       {
-      auto arrayRef = TR::Node::recreateWithoutProperties(child, TR::Compiler->target.is64Bit() ? TR::aladd : TR::aiadd, 2,
+      auto arrayRef = TR::Node::recreateWithoutProperties(child, comp()->target().is64Bit() ? TR::aladd : TR::aiadd, 2,
             TR::Node::createLoad(_baseSymRef),
             TR::Node::createLoad(_intIdxSymRef));
       }

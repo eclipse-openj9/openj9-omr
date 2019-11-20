@@ -467,9 +467,9 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
                case TR::com_ibm_dataaccess_DecimalData_setflags:
                   if (!(
 #ifdef TR_TARGET_S390
-                     TR::Compiler->target.cpu.getSupportsDecimalFloatingPointFacility() ||
+                     comp->target().cpu.getSupportsDecimalFloatingPointFacility() ||
 #endif
-                      TR::Compiler->target.cpu.supportsDecimalFloatingPoint()) ||
+                      comp->target().cpu.supportsDecimalFloatingPoint()) ||
                       comp->getOption(TR_DisableDFP))
                      return NULL;
 #endif //J9_PROJECT_SPECIFIC

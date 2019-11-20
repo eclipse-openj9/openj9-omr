@@ -96,7 +96,7 @@ TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * call
          case TR::Int32:
             if (!rightToLeft)
                {
-               offset -= TR::Compiler->target.is64Bit() ? 8 : 4;
+               offset -= cg->comp()->target().is64Bit() ? 8 : 4;
                }
             if (intArgNum < linkage->getNumIntegerArgumentRegisters())
                {
@@ -107,13 +107,13 @@ TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * call
 
             if (rightToLeft)
                {
-               offset += TR::Compiler->target.is64Bit() ? 8 : 4;
+               offset += cg->comp()->target().is64Bit() ? 8 : 4;
                }
             break;
          case TR::Address:
             if (!rightToLeft)
                {
-               offset -= TR::Compiler->target.is64Bit() ? 8 : 4;
+               offset -= cg->comp()->target().is64Bit() ? 8 : 4;
                }
             if (intArgNum < linkage->getNumIntegerArgumentRegisters())
                {
@@ -124,18 +124,18 @@ TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * call
 
             if (rightToLeft)
                {
-               offset += TR::Compiler->target.is64Bit() ? 8 : 4;
+               offset += cg->comp()->target().is64Bit() ? 8 : 4;
                }
             break;
 
          case TR::Int64:
             if (!rightToLeft)
                {
-               offset -= (TR::Compiler->target.is64Bit() ? 16 : 8);
+               offset -= (cg->comp()->target().is64Bit() ? 16 : 8);
                }
             if (intArgNum < linkage->getNumIntegerArgumentRegisters())
                {
-               if (TR::Compiler->target.is64Bit())
+               if (cg->comp()->target().is64Bit())
                   {
                   buffer = storeArgumentItem(TR::InstOpCode::STG, buffer,
                               machine->getRealRegister(linkage->getIntegerArgumentRegister(intArgNum)), offset, cg);
@@ -151,17 +151,17 @@ TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * call
                      }
                   }
                }
-            intArgNum += TR::Compiler->target.is64Bit() ? 1 : 2;
+            intArgNum += cg->comp()->target().is64Bit() ? 1 : 2;
             if (rightToLeft)
                {
-               offset += TR::Compiler->target.is64Bit() ? 16 : 8;
+               offset += cg->comp()->target().is64Bit() ? 16 : 8;
                }
             break;
 
          case TR::Float:
             if (!rightToLeft)
                {
-               offset -= TR::Compiler->target.is64Bit() ? 8 : 4;
+               offset -= cg->comp()->target().is64Bit() ? 8 : 4;
                }
             if (floatArgNum < linkage->getNumFloatArgumentRegisters())
                {
@@ -171,14 +171,14 @@ TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * call
             floatArgNum++;
             if (rightToLeft)
                {
-               offset += TR::Compiler->target.is64Bit() ? 8 : 4;
+               offset += cg->comp()->target().is64Bit() ? 8 : 4;
                }
             break;
 
          case TR::Double:
             if (!rightToLeft)
                {
-               offset -= TR::Compiler->target.is64Bit() ? 16 : 8;
+               offset -= cg->comp()->target().is64Bit() ? 16 : 8;
                }
             if (floatArgNum < linkage->getNumFloatArgumentRegisters())
                {
@@ -188,7 +188,7 @@ TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * call
             floatArgNum++;
             if (rightToLeft)
                {
-               offset += TR::Compiler->target.is64Bit() ? 16 : 8;
+               offset += cg->comp()->target().is64Bit() ? 16 : 8;
                }
             break;
          }
@@ -232,12 +232,12 @@ TR::S390CallSnippet::instructionCountForArguments(TR::Node * callNode, TR::CodeG
             if (intArgNum < linkage->getNumIntegerArgumentRegisters())
                {
                count += TR::InstOpCode::getInstructionLength(TR::InstOpCode::getLoadOpCode());
-               if ((TR::Compiler->target.is32Bit()) && intArgNum < linkage->getNumIntegerArgumentRegisters() - 1)
+               if ((cg->comp()->target().is32Bit()) && intArgNum < linkage->getNumIntegerArgumentRegisters() - 1)
                   {
                   count += TR::InstOpCode::getInstructionLength(TR::InstOpCode::getLoadOpCode());
                   }
                }
-            intArgNum += TR::Compiler->target.is64Bit() ? 1 : 2;
+            intArgNum += cg->comp()->target().is64Bit() ? 1 : 2;
             break;
          case TR::Float:
             if (floatArgNum < linkage->getNumFloatArgumentRegisters())
@@ -305,7 +305,7 @@ TR::S390CallSnippet::getHelper(TR::MethodSymbol * methodSymbol, TR::DataType typ
             break;
 
          case TR::Address:
-            if (TR::Compiler->target.is64Bit())
+            if (cg->comp()->target().is64Bit())
                {
                if (synchronised)
                   {
@@ -492,7 +492,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390CallSnippet * snippet)
                   }
                break;
             case TR::Address:
-            if (TR::Compiler->target.is64Bit())
+            if (_comp->target().is64Bit())
                {
                if (synchronised)
                   {
@@ -559,14 +559,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390CallSnippet * snippet)
 
    if (snippet->getKind() == TR::Snippet::IsUnresolvedCall)
       {
-      int lengthOfLoad = (TR::Compiler->target.is64Bit())?6:4;
+      int lengthOfLoad = (_comp->target().is64Bit())?6:4;
 
       printPrefix(pOutFile, NULL, bufferPos, 6);
       trfprintf(pOutFile, "LARL \tGPR14, *+%d <%p>\t# Start of Data Const.",
                         8 + lengthOfLoad + padbytes,
                         bufferPos + 8 + lengthOfLoad + padbytes);
       bufferPos += 6;
-      if (TR::Compiler->target.is64Bit())
+      if (_comp->target().is64Bit())
          {
          printPrefix(pOutFile, NULL, bufferPos, 6);
          trfprintf(pOutFile, "LG  \tGPR_EP, 0(,GPR14)");

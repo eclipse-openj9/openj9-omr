@@ -69,7 +69,7 @@ OMR::Power::Instruction::generateBinaryEncoding()
       cursor = self()->getOpCode().copyBinaryToBuffer(instructionStart);
       if (self()->getOpCodeValue() == TR::InstOpCode::genop)
          {
-         TR::RealRegister::RegNum nopreg = TR::Compiler->target.cpu.id() > TR_PPCp6 ? TR::RealRegister::gr2 : TR::RealRegister::gr1;
+         TR::RealRegister::RegNum nopreg = self()->cg()->comp()->target().cpu.id() > TR_PPCp6 ? TR::RealRegister::gr2 : TR::RealRegister::gr1;
          TR::RealRegister *r = self()->cg()->machine()->getRealRegister(nopreg);
          r->setRegisterFieldRS((uint32_t *) cursor);
          r->setRegisterFieldRA((uint32_t *) cursor);
@@ -428,9 +428,9 @@ TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       {
       // none-HCR: low-tag to invalidate -- BE or LE is relevant
       //
-      void *valueToHash = *(void**)(cursor - (TR::Compiler->target.is64Bit()?4:0));
-      void *addressToPatch = TR::Compiler->target.is64Bit()?
-         (TR::Compiler->target.cpu.isBigEndian()?cursor:(cursor-4)) : cursor;
+      void *valueToHash = *(void**)(cursor - (comp->target().is64Bit()?4:0));
+      void *addressToPatch = comp->target().is64Bit()?
+         (comp->target().cpu.isBigEndian()?cursor:(cursor-4)) : cursor;
       cg()->jitAddPicToPatchOnClassUnload(valueToHash, addressToPatch);
       }
 
@@ -438,7 +438,7 @@ TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       {
       // HCR: whole pointer replacement.
       //
-      void **locationToPatch = (void**)(cursor - (TR::Compiler->target.is64Bit()?4:0));
+      void **locationToPatch = (void**)(cursor - (comp->target().is64Bit()?4:0));
       cg()->jitAddPicToPatchOnClassRedefinition(*locationToPatch, locationToPatch);
       cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
       }
@@ -565,13 +565,13 @@ TR::PPCTrg1ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
    if (std::find(comp->getStaticPICSites()->begin(), comp->getStaticPICSites()->end(), this) != comp->getStaticPICSites()->end())
       {
       TR::Node *node = getNode();
-      cg()->jitAddPicToPatchOnClassUnload((void *)(TR::Compiler->target.is64Bit()?node->getLongInt():node->getInt()), (void *)cursor);
+      cg()->jitAddPicToPatchOnClassUnload((void *)(comp->target().is64Bit()?node->getLongInt():node->getInt()), (void *)cursor);
       }
 
    if (std::find(comp->getStaticMethodPICSites()->begin(), comp->getStaticMethodPICSites()->end(), this) != comp->getStaticMethodPICSites()->end())
       {
       TR::Node *node = getNode();
-      cg()->jitAddPicToPatchOnClassUnload((void *) (cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (TR::Compiler->target.is64Bit()?node->getLongInt():node->getInt()), comp->getCurrentMethod())->classOfMethod()), (void *)cursor);
+      cg()->jitAddPicToPatchOnClassUnload((void *) (cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (comp->target().is64Bit()?node->getLongInt():node->getInt()), comp->getCurrentMethod())->classOfMethod()), (void *)cursor);
       }
    }
 
@@ -588,14 +588,14 @@ uint8_t *TR::PPCTrg1ImmInstruction::generateBinaryEncoding()
        getOpCodeValue() == TR::InstOpCode::mfocrf)
       {
       *((int32_t *)cursor) |= (getSourceImmediate()<<12);
-      if ((TR::Compiler->target.cpu.id() >= TR_PPCgp) &&
+      if ((cg()->comp()->target().cpu.id() >= TR_PPCgp) &&
           ((getSourceImmediate() & (getSourceImmediate() - 1)) == 0))
          // convert to PPC AS single field form
          *((int32_t *)cursor) |= 0x00100000;
       }
    else if (getOpCodeValue() == TR::InstOpCode::mfcr)
       {
-      if ((TR::Compiler->target.cpu.id() >= TR_PPCgp) &&
+      if ((cg()->comp()->target().cpu.id() >= TR_PPCgp) &&
           ((getSourceImmediate() & (getSourceImmediate() - 1)) == 0))
          // convert to PPC AS single field form
          *((int32_t *)cursor) |= (getSourceImmediate()<<12) | 0x00100000;
@@ -965,7 +965,7 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
          setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 6);
          break;
       case TR::InstOpCode::d2l:
-         if (TR::Compiler->target.is64Bit())
+         if (cg()->comp()->target().is64Bit())
             setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 6);
        else
             setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 8);

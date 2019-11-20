@@ -213,7 +213,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
      TR::SimpleRegex * regex = comp->getOptions()->getSlipTrap();
      if (regex && TR::SimpleRegex::match(regex, comp->getCurrentMethod()))
         {
-        if (TR::Compiler->target.is64Bit())
+        if (cg->comp()->target().is64Bit())
         {
         setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getCodeLength(),"SLIPDLL64", comp);
         }

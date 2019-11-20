@@ -5148,7 +5148,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
 
 
     int32_t numRegisters = 0;
-    if (TR::Compiler->target.is32Bit())
+    if (comp()->target().is32Bit())
        {
        ListIterator<TR::Node> nodesIt(&(state->_currentlyCommonedNodes));
        TR::Node *commonedNode = NULL;

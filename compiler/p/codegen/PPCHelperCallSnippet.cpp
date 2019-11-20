@@ -107,7 +107,7 @@ uint8_t *TR::PPCHelperCallSnippet::genHelperCall(uint8_t *buffer)
       {
       helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(getDestination()->getReferenceNumber(), (void *)buffer);
 
-      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinIFormBranchRange(helperAddress, (intptrj_t)buffer),
+      TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinIFormBranchRange(helperAddress, (intptrj_t)buffer),
                       "Helper address is out of range");
       }
 

@@ -5343,7 +5343,7 @@ int64_t TR::ArraycopyTransformation::arraycopyHighFrequencySpecificLength(TR::No
    const float MIN_ARRAYCOPY_FREQ_FOR_SPECIALIZATION = 0.7f;
    if (comp()->getRecompilationInfo())
       {
-      if (TR::Compiler->target.is64Bit())
+      if (comp()->target().is64Bit())
          {
          TR_LongValueInfo *valueInfo = static_cast<TR_LongValueInfo*>(TR_ValueProfileInfoManager::getProfiledValueInfo(arrayCopyNode, comp(), LongValueInfo));
          if (valueInfo && valueInfo->getTopProbability() > MIN_ARRAYCOPY_FREQ_FOR_SPECIALIZATION)
@@ -5367,7 +5367,7 @@ int64_t TR::ArraycopyTransformation::arraycopyHighFrequencySpecificLength(TR::No
 
 TR::TreeTop* TR::ArraycopyTransformation::createPointerCompareNode(TR::Node* node, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef)
    {
-   bool is64Bit = TR::Compiler->target.is64Bit();
+   bool is64Bit = comp()->target().is64Bit();
    TR::Node* cmp;
    TR::Node* src; // = TR::Node::createLoad(node, srcRef);
    if (srcRef)
@@ -5399,7 +5399,7 @@ TR::TreeTop* TR::ArraycopyTransformation::createPointerCompareNode(TR::Node* nod
 
 TR::TreeTop* TR::ArraycopyTransformation::createRangeCompareNode(TR::Node* node, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::SymbolReference* lenRef)
    {
-   bool is64Bit = TR::Compiler->target.is64Bit();
+   bool is64Bit = comp()->target().is64Bit();
    TR::Node* cmp;
    TR::Node* src; // = TR::Node::createLoad(node, srcRef);
    if (srcRef)
@@ -5587,7 +5587,7 @@ TR::TreeTop* TR::ArraycopyTransformation::tryToSpecializeForLength(TR::TreeTop *
 
 static TR::Node *addressSizedConst(TR::Compilation *comp, TR::Node *n, intptrj_t val)
    {
-   TR::Node *node = TR::Compiler->target.is64Bit()? TR::Node::lconst(n, val) : TR::Node::iconst(n, val);
+   TR::Node *node = comp->target().is64Bit()? TR::Node::lconst(n, val) : TR::Node::iconst(n, val);
    if (node->getOpCodeValue() == TR::lconst)
       node->setLongInt(val);
    return node;

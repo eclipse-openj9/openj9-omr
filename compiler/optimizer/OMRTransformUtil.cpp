@@ -117,8 +117,8 @@ OMR::TransformUtil::scalarizeArrayCopy(
    // abort if this requirement is not met.
    // TODO: also need to check if the first two children are aload nodes
    bool cannot_use_load_store_long = false;
-   if (TR::Compiler->target.cpu.isPower())
-      if (dataType == TR::Int64 && TR::Compiler->target.is64Bit())
+   if (comp->target().cpu.isPower())
+      if (dataType == TR::Int64 && comp->target().is64Bit())
          {
          TR::Node * firstChild = node->getFirstChild();
          if (firstChild->getNumChildren() == 2)

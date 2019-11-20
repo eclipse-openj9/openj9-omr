@@ -76,7 +76,7 @@ uint32_t encodeHelperBranch(bool isBranchAndLink, TR::SymbolReference *symRef, u
       {
       target = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
 
-      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinBranchImmediateRange(target, (intptrj_t)cursor),
+      TR_ASSERT_FATAL(cg->comp()->target().cpu.isTargetWithinBranchImmediateRange(target, (intptrj_t)cursor),
                       "Target address is out of range");
       }
 
@@ -291,7 +291,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
             {
             int32_t imm = getSourceImmediate();
 
-            if (TR::Compiler->target.cpu.isTargetWithinBranchImmediateRange((intptrj_t)imm, (intptrj_t)cursor))
+            if (cg()->comp()->target().cpu.isTargetWithinBranchImmediateRange((intptrj_t)imm, (intptrj_t)cursor))
                {
                *(int32_t *)cursor |= encodeBranchDistance((uintptr_t)cursor, (uint32_t) imm);
                }
@@ -321,7 +321,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
                   // have to use the trampoline as the target and not the label
                   intptrj_t targetAddress = cg()->fe()->methodTrampolineLookup(comp, getSymbolReference(), (void *)cursor);
 
-                  TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinBranchImmediateRange(targetAddress, (intptrj_t)cursor),
+                  TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinBranchImmediateRange(targetAddress, (intptrj_t)cursor),
                                   "Target address is out of range");
 
                   *(int32_t *)cursor |= encodeBranchDistance((uintptr_t)cursor, (uintptr_t) targetAddress);
@@ -393,12 +393,12 @@ uint8_t *TR::ARMTrg1Src2Instruction::generateBinaryEncoding()
    if (std::find(comp->getStaticPICSites()->begin(), comp->getStaticPICSites()->end(), this) != comp->getStaticPICSites()->end())
       {
       TR::Node *node = getNode();
-      cg()->jitAddPicToPatchOnClassUnload((void *)(TR::Compiler->target.is64Bit()?node->getLongInt():node->getInt()), (void *)cursor);
+      cg()->jitAddPicToPatchOnClassUnload((void *)(cg()->comp()->target().is64Bit()?node->getLongInt():node->getInt()), (void *)cursor);
       }
    if (std::find(comp->getStaticMethodPICSites()->begin(), comp->getStaticMethodPICSites()->end(), this) != comp->getStaticMethodPICSites()->end())
       {
       TR::Node *node = getNode();
-      cg()->jitAddPicToPatchOnClassUnload((void *) (cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (TR::Compiler->target.is64Bit()?node->getLongInt():node->getInt()), comp->getCurrentMethod())->classOfMethod()), (void *)cursor);
+      cg()->jitAddPicToPatchOnClassUnload((void *) (cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (cg()->comp()->target().is64Bit()?node->getLongInt():node->getInt()), comp->getCurrentMethod())->classOfMethod()), (void *)cursor);
       }
 
    cursor += ARM_INSTRUCTION_LENGTH;

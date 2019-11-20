@@ -66,7 +66,7 @@ void TR::PPCPairedLabelAbsoluteRelocation::apply(TR::CodeGenerator *cg)
    {
    intptrj_t p = (intptrj_t)getLabel()->getCodeLocation();
 
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       {
       _instr1->updateImmediateField(cg->hiValue(p) & 0x0000ffff);
       _instr2->updateImmediateField(LO_VALUE(p) & 0x0000ffff);

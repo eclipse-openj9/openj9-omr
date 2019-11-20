@@ -860,7 +860,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmSymInstruction  * instr)
    intptr_t targetAddress = 0;
 
    //  64 bit always gets the targetAddress from the symRef
-   if(TR::Compiler->target.is64Bit())
+   if(_comp->target().is64Bit())
       {
       // new code patching might have a call to a snippet label, which is not a method
       if(!sym->isLabel())
@@ -1475,7 +1475,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
       "dword",    // TR_FloatReg
       "qword" };  // TR_DoubleReg
 
-   TR_RegisterSizes addressSize = (TR::Compiler->target.cpu.isAMD64() ? TR_DoubleWordReg : TR_WordReg);
+   TR_RegisterSizes addressSize = (_comp->target().cpu.isAMD64() ? TR_DoubleWordReg : TR_WordReg);
    bool hasTerm = false;
    bool hasPrecedingTerm = false;
    trfprintf(pOutFile, "%s ptr [", typeSpecifier[operandSize]);
@@ -1556,14 +1556,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
          if (disp)
             {
             trfprintf(pOutFile, " : ");
-            printHexConstant(pOutFile, disp, TR::Compiler->target.is64Bit() ? 16 : 8, false);
+            printHexConstant(pOutFile, disp, _comp->target().is64Bit() ? 16 : 8, false);
             }
          }
       else if (disp)
          {
          printHexConstant(pOutFile,
-                          TR::Compiler->target.is64Bit() ? disp : (uint32_t)disp,
-                          TR::Compiler->target.is64Bit() ? 16 : 8,
+                          _comp->target().is64Bit() ? disp : (uint32_t)disp,
+                          _comp->target().is64Bit() ? 16 : 8,
                           true);
          }
       else if (cds)
@@ -1632,8 +1632,8 @@ int32_t
 TR_Debug::printHexConstant(TR::FILE *pOutFile, int64_t value, int8_t width, bool padWithZeros)
    {
    // we probably need to revisit generateMasmListingSyntax
-   const char *prefix = TR::Compiler->target.isLinux() ? "0x" : (_cg->generateMasmListingSyntax() ? "0" : "0x");
-   const char *suffix = TR::Compiler->target.isLinux() ? "" : (_cg->generateMasmListingSyntax() ? "h" : "");
+   const char *prefix = _comp->target().isLinux() ? "0x" : (_cg->generateMasmListingSyntax() ? "0" : "0x");
+   const char *suffix = _comp->target().isLinux() ? "" : (_cg->generateMasmListingSyntax() ? "h" : "");
 
    if (padWithZeros)
       trfprintf(pOutFile, "%s%0*llx%s", prefix, width, value, suffix);
@@ -2169,7 +2169,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86CallSnippet  * snippet)
 
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet));
 
-   if (TR::Compiler->target.is64Bit())
+   if (_comp->target().is64Bit())
       {
       int32_t   count;
       int32_t   size = 0;
@@ -2407,7 +2407,7 @@ TR_Debug::getOpCodeName(TR_X86OpCode  * opCode)
 const char *
 TR_Debug::getMnemonicName(TR_X86OpCode  * opCode)
    {
-   if (TR::Compiler->target.isLinux())
+   if (_comp->target().isLinux())
       {
       int32_t o = opCode->getOpCodeValue();
       if (o == (int32_t) DQImm64) return dqString();

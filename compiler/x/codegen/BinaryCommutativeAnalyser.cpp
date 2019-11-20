@@ -929,7 +929,9 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node  
 //
 static bool isVolatileMemoryOperand(TR::Node *node)
    {
-   if (TR::Compiler->target.isSMP() && node->getOpCode().isMemoryReference())
+   TR::Compilation *comp = TR::comp();
+   TR_ASSERT_FATAL(comp, "isVolatileMemoryOperand should only be called during a compilation!");
+   if (comp->target().isSMP() && node->getOpCode().isMemoryReference())
       {
       TR_ASSERT(node->getSymbolReference(), "expecting a symbol reference\n");
       TR::Symbol *sym = node->getSymbolReference()->getSymbol();

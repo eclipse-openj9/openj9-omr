@@ -476,7 +476,7 @@ OMR::X86::MemoryReference::getStrideForNode(
       if (node->getSecondChild()->getOpCode().isLoadConst())
          {
          int32_t multiplier;
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             multiplier = (int32_t)node->getSecondChild()->getLongInt();
          else
             multiplier = node->getSecondChild()->getInt();
@@ -782,7 +782,7 @@ OMR::X86::MemoryReference::evaluate(TR::Node * node, TR::CodeGenerator * cg, TR:
          {
          //Node is already positive and zero extended
          }
-      else if (TR::Compiler->target.is64Bit())
+      else if (cg->comp()->target().is64Bit())
          {
          //Sign extension in the 64-bit case
          TR::Instruction *instr = NULL;
@@ -1324,7 +1324,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
 
             if (label != NULL)
                {
-               if (TR::Compiler->target.is64Bit())
+               if (cg->comp()->target().is64Bit())
                   {
                   // Assume the snippet is in RIP range
                   // TODO:AMD64: Would it be cleaner to have some kind of "isRelative" flag rather than "is64BitTarget"?
@@ -1576,7 +1576,7 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
 
             if (label != NULL)
                {
-               if (TR::Compiler->target.is64Bit())
+               if (cg->comp()->target().is64Bit())
                   {
                   // This cast is ok because we only need the low 32 bits of the address
                   // *(int32_t *)cursor = -(int32_t)(intptrj_t)(cursor+4);
@@ -1759,7 +1759,7 @@ void rematerializeAddressAdds(
 
          if (debug("traceInstructionSelection"))
             {
-            if (TR::Compiler->target.is64Bit())
+            if (cg->comp()->target().is64Bit())
                diagnostic("\nRematerializing aladd [" POINTER_PRINTF_FORMAT "] with [" POINTER_PRINTF_FORMAT "] at [" POINTER_PRINTF_FORMAT "]",
                         tempNode, subTree, rootLoadOrStore);
             else
@@ -1841,7 +1841,7 @@ generateX86MemoryReference(TR::MemoryReference  & mr, intptrj_t n, TR::CodeGener
 TR::MemoryReference  *
 generateX86MemoryReference(TR::MemoryReference& mr, intptrj_t n, TR_ScratchRegisterManager *srm, TR::CodeGenerator *cg)
    {
-   if(TR::Compiler->target.is64Bit())
+   if(cg->comp()->target().is64Bit())
       return new (cg->trHeapMemory()) TR::MemoryReference(mr, n, cg, srm);
    else
       return new (cg->trHeapMemory()) TR::MemoryReference(mr, n, cg);

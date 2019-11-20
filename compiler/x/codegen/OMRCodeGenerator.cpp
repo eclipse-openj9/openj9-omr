@@ -104,7 +104,7 @@ namespace OMR { class RegisterUsage; }
 namespace TR { class RegisterDependencyConditions; }
 
 // Hack markers
-#define CANT_REMATERIALIZE_ADDRESSES (TR::Compiler->target.is64Bit()) // AMD64 produces a memref with an unassigned addressRegister
+#define CANT_REMATERIALIZE_ADDRESSES(cg) (cg->comp()->target().is64Bit()) // AMD64 produces a memref with an unassigned addressRegister
 
 
 TR_X86ProcessorInfo OMR::X86::CodeGenerator::_targetProcessorInfo;
@@ -114,13 +114,13 @@ void TR_X86ProcessorInfo::initialize(TR::CodeGenerator *cg)
    // For now, we only convert the feature bits into a flags32_t, for easier querying.
    // To retrieve other information, the VM functions can be called directly.
    //
-   _featureFlags.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags());
-   _featureFlags2.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags2());
-   _featureFlags8.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags8());
+   _featureFlags.set(cg->comp()->target().cpu.getX86ProcessorFeatureFlags());
+   _featureFlags2.set(cg->comp()->target().cpu.getX86ProcessorFeatureFlags2());
+   _featureFlags8.set(cg->comp()->target().cpu.getX86ProcessorFeatureFlags8());
 
    // Determine the processor vendor.
    //
-   const char *vendor = TR::Compiler->target.cpu.getX86ProcessorVendorId();
+   const char *vendor = cg->comp()->target().cpu.getX86ProcessorVendorId();
    if (!strncmp(vendor, "GenuineIntel", 12))
       _vendorFlags.set(TR_GenuineIntel);
    else if (!strncmp(vendor, "AuthenticAMD", 12))
@@ -137,7 +137,7 @@ void TR_X86ProcessorInfo::initialize(TR::CodeGenerator *cg)
 
    // set up the processor family and cache description
 
-   uint32_t _processorSignature = TR::Compiler->target.cpu.getX86ProcessorSignature();
+   uint32_t _processorSignature = cg->comp()->target().cpu.getX86ProcessorSignature();
 
    if (isGenuineIntel())
       {
@@ -210,7 +210,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
    // Pick a padding table
    //
-   if (_targetProcessorInfo.isGenuineIntel() && TR::Compiler->target.is32Bit())
+   if (_targetProcessorInfo.isGenuineIntel() && comp->target().is32Bit())
       {
       _paddingTable = &_old32BitPaddingTable;
       }
@@ -218,7 +218,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       _paddingTable = &_K8PaddingTable;
    else if (_targetProcessorInfo.prefersMultiByteNOP() && !comp->getOption(TR_DisableZealousCodegenOpts))
       _paddingTable = &_intelMultiBytePaddingTable;
-   else if (TR::Compiler->target.is32Bit())
+   else if (comp->target().is32Bit())
       _paddingTable = &_old32BitPaddingTable; // Unknown 32-bit target
    else
       _paddingTable = &_K8PaddingTable; // Unknown 64-bit target
@@ -227,7 +227,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    //
 
 #if defined(TR_TARGET_X86) && !defined(J9HAMMER)
-   if (_targetProcessorInfo.supportsSSE2() && TR::Compiler->target.cpu.testOSForSSESupport())
+   if (_targetProcessorInfo.supportsSSE2() && comp->target().cpu.testOSForSSESupport())
       supportsSSE2 = true;
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
 
@@ -241,14 +241,14 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
         */
       if (!_targetProcessorInfo.isIntelHaswell())
          {
-         if (TR::Compiler->target.is64Bit())
+         if (comp->target().is64Bit())
             {
             self()->setSupportsTM(); // disable tm on 32bits for now
             }
          }
       }
 
-   if (TR::Compiler->target.is64Bit()
+   if (comp->target().is64Bit()
 #if defined(TR_TARGET_X86) && !defined(J9HAMMER)
        || supportsSSE2
 #endif
@@ -281,7 +281,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    // 32-bit platforms must check the processor and OS.
    // 64-bit platforms unconditionally support prefetching.
    //
-   if (_targetProcessorInfo.supportsSSE() && TR::Compiler->target.cpu.testOSForSSESupport())
+   if (_targetProcessorInfo.supportsSSE() && comp->target().cpu.testOSForSSESupport())
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
       {
       self()->setTargetSupportsSoftwarePrefetches();
@@ -309,7 +309,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
     * This code will be reenabled as part of Issue 2280
     */
 #if 0
-   if (TR::Compiler->target.is64Bit())
+   if (comp->target().is64Bit())
       {
       self()->setFirstGlobalVRF(self()->getFirstGlobalFPR());
       self()->setLastGlobalVRF(self()->getLastGlobalFPR());
@@ -417,7 +417,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       {
       self()->setSupportsLoweringConstIDiv();
 
-      if (TR::Compiler->target.is64Bit())
+      if (comp->target().is64Bit())
          self()->setSupportsLoweringConstLDiv();
       }
 
@@ -474,7 +474,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
          }
       }
 
-   if (TR::Compiler->target.cpu.isI386())
+   if (comp->target().cpu.isI386())
       self()->setGenerateMasmListingSyntax();
 
    if (comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
@@ -518,7 +518,7 @@ OMR::X86::CodeGenerator::createLinkage(TR_LinkageConventions lc)
       case TR_Helper:
          // Intentional fall through
       case TR_System:
-         if (TR::Compiler->target.isLinux() || TR::Compiler->target.isOSX())
+         if (self()->comp()->target().isLinux() || self()->comp()->target().isOSX())
             {
 #if defined(TR_TARGET_64BIT)
             linkage = new (self()->trHeapMemory()) TR::AMD64ABILinkage(self());
@@ -526,7 +526,7 @@ OMR::X86::CodeGenerator::createLinkage(TR_LinkageConventions lc)
             linkage = new (self()->trHeapMemory()) TR::IA32SystemLinkage(self());
 #endif
             }
-         else if (TR::Compiler->target.isWindows())
+         else if (self()->comp()->target().isWindows())
             {
 #if defined(TR_TARGET_64BIT)
             linkage = new (self()->trHeapMemory()) TR::AMD64Win64FastCallLinkage(self());
@@ -659,7 +659,7 @@ static bool willNotInlineCompareAndSwapNative(TR::Node *node,
       {
       return false;
       }
-   else if (size == 8 && TR::Compiler->target.is64Bit())
+   else if (size == 8 && comp->target().is64Bit())
       {
       return false;
       }
@@ -698,7 +698,7 @@ bool OMR::X86::CodeGenerator::willBeEvaluatedAsCallByCodeGen(TR::Node *node, TR:
       case TR::sun_misc_Unsafe_compareAndSwapInt_jlObjectJII_Z:
          return willNotInlineCompareAndSwapNative(node, 4, comp);
       case TR::sun_misc_Unsafe_compareAndSwapObject_jlObjectJjlObjectjlObject_Z:
-         return willNotInlineCompareAndSwapNative(node, (TR::Compiler->target.is64Bit() && !comp->useCompressedPointers()) ? 8 : 4, comp);
+         return willNotInlineCompareAndSwapNative(node, (comp->target().is64Bit() && !comp->useCompressedPointers()) ? 8 : 4, comp);
 #endif
       default:
          return true;
@@ -962,10 +962,10 @@ static const char *getRematerializationOptString()
 
 bool OMR::X86::CodeGenerator::supportsConstantRematerialization()        { static bool b = CAN_REMATERIALIZE("constant"); return b; }
 bool OMR::X86::CodeGenerator::supportsLocalMemoryRematerialization()     { static bool b = CAN_REMATERIALIZE("local"); return b; }
-bool OMR::X86::CodeGenerator::supportsStaticMemoryRematerialization()    { static bool b = CAN_REMATERIALIZE("static"); return !CANT_REMATERIALIZE_ADDRESSES && b; }
+bool OMR::X86::CodeGenerator::supportsStaticMemoryRematerialization()    { static bool b = CAN_REMATERIALIZE("static"); return !CANT_REMATERIALIZE_ADDRESSES(self()) && b; }
 bool OMR::X86::CodeGenerator::supportsXMMRRematerialization()            { static bool b = CAN_REMATERIALIZE("xmmr"); return b; }
-bool OMR::X86::CodeGenerator::supportsIndirectMemoryRematerialization()  { static bool b = ALLOWED_TO_REMATERIALIZE("indirect"); return !CANT_REMATERIALIZE_ADDRESSES && b;}
-bool OMR::X86::CodeGenerator::supportsAddressRematerialization()         { static bool b = ALLOWED_TO_REMATERIALIZE("address"); return !CANT_REMATERIALIZE_ADDRESSES && b; }
+bool OMR::X86::CodeGenerator::supportsIndirectMemoryRematerialization()  { static bool b = ALLOWED_TO_REMATERIALIZE("indirect"); return !CANT_REMATERIALIZE_ADDRESSES(self()) && b;}
+bool OMR::X86::CodeGenerator::supportsAddressRematerialization()         { static bool b = ALLOWED_TO_REMATERIALIZE("address"); return !CANT_REMATERIALIZE_ADDRESSES(self()) && b; }
 
 #undef ALLOWED_TO_REMATERIALIZE
 #undef CAN_REMATERIALIZE
@@ -1027,7 +1027,7 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
        */
       case TR::getvelem:
 #if 0
-         if (TR::Compiler->target.is64Bit() && (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double))
+         if (self()->comp()->target().is64Bit() && (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double))
             return true;
          else
 #endif //closes the if 0
@@ -1638,7 +1638,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       }
 
    TR::Instruction * interpreterEntryInstruction;
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       {
       if (self()->comp()->getMethodSymbol()->getLinkageConvention() != TR_System)
          interpreterEntryInstruction = self()->getLinkage()->copyStackParametersToLinkageRegisters(procEntryInstruction);
@@ -1647,7 +1647,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
 
       // Patching can occur at the jit entry point, so insert padding if necessary.
       //
-      if (TR::Compiler->target.isSMP())
+      if (self()->comp()->target().isSMP())
          {
          TR::Recompilation * recompilation = self()->comp()->getRecompilationInfo();
          const TR_AtomicRegion *atomicRegions;
@@ -1873,7 +1873,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    uint8_t * temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
    TR_ASSERT(temp, "Failed to allocate primary code area.");
 
-   if (TR::Compiler->target.is64Bit() && self()->hasCodeCacheSwitched() && self()->getPicSlotCount() != 0)
+   if (self()->comp()->target().is64Bit() && self()->hasCodeCacheSwitched() && self()->getPicSlotCount() != 0)
       {
       int32_t numTrampolinesToReserve = self()->getPicSlotCount() - self()->getNumReservedIPICTrampolines();
       TR_ASSERT(numTrampolinesToReserve >= 0, "Discrepancy with number of IPIC trampolines to reserve getPicSlotCount()=%d getNumReservedIPICTrampolines()=%d",
@@ -1914,7 +1914,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
               cursorInstruction->getEstimatedBinaryLength(),
               self()->getBinaryBufferCursor() - instructionStart);
 
-      if (TR::Compiler->target.is64Bit() &&
+      if (self()->comp()->target().is64Bit() &&
           (cursorInstruction->getOpCodeValue() == PROCENTRY))
          {
          // A hack to set the linkage info word
@@ -2028,14 +2028,14 @@ TR::Register *OMR::X86::CodeGenerator::gprClobberEvaluate(TR::Node * node, TR_X8
 TR::Register *OMR::X86::CodeGenerator::intClobberEvaluate(TR::Node * node)
    {
    TR_ASSERT(!node->getOpCode().is8Byte() || node->getOpCode().isRef(), "Non-ref 8bytes must use longClobberEvaluate");
-   TR_ASSERT(!node->getOpCode().isRef() || TR::Compiler->target.is32Bit() || self()->comp()->useCompressedPointers(), "64-bit references must use longClobberEvaluate unless under compression");
+   TR_ASSERT(!node->getOpCode().isRef() || self()->comp()->target().is32Bit() || self()->comp()->useCompressedPointers(), "64-bit references must use longClobberEvaluate unless under compression");
    return self()->gprClobberEvaluate(node, MOV4RegReg);
    }
 
 TR::Register *OMR::X86::CodeGenerator::shortClobberEvaluate(TR::Node * node)
    {
    TR_ASSERT(!node->getOpCode().is4Byte() && !node->getOpCode().is8Byte(), "Ints/Longs must use int/longClobberEvaluate");
-   TR_ASSERT(!(node->getOpCode().isRef() && TR::Compiler->target.is64Bit()), "64-bit references must use longClobberEvaluate");
+   TR_ASSERT(!(node->getOpCode().isRef() && self()->comp()->target().is64Bit()), "64-bit references must use longClobberEvaluate");
    return self()->gprClobberEvaluate(node, MOV2RegReg);
    }
 
@@ -2337,7 +2337,7 @@ int32_t OMR::X86::CodeGenerator::branchDisplacementToHelperOrTrampoline(
       {
       helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(helper->getReferenceNumber(), (void *)(nextInstructionAddress-4));
 
-      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(helperAddress, (intptrj_t)nextInstructionAddress),
+      TR_ASSERT_FATAL(self()->comp()->target().cpu.isTargetWithinRIPRange(helperAddress, (intptrj_t)nextInstructionAddress),
                       "Local helper trampoline should be reachable directly");
       }
 
@@ -2417,7 +2417,7 @@ TR::RealRegister::RegNum OMR::X86::CodeGenerator::pickNOPRegister(TR::Instructio
 // TODO: Don't duplicate this function all over the place.  Find a good header for it.
 inline bool getNodeIs64Bit(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::Compiler->target.is64Bit() && node->getSize() > 4;
+   return cg->comp()->target().is64Bit() && node->getSize() > 4;
    }
 
 // TODO: Don't duplicate this function all over the place.  Find a good header for it.
@@ -2519,7 +2519,7 @@ void OMR::X86::CodeGenerator::simulateNodeEvaluation(TR::Node * node, TR_Registe
       bool clobbersNothing = node->getOpCode().isBooleanCompare() || node->getOpCode().isBndCheck();
       bool tryFoldingLeft = node->getOpCode().isCommutative() || clobbersNothing;
 
-      if (TR::Compiler->target.is32Bit())
+      if (self()->comp()->target().is32Bit())
          {
          while (lookForMemrefInChild(left))
             left = left->getFirstChild();
@@ -2583,7 +2583,7 @@ void OMR::X86::CodeGenerator::simulateNodeEvaluation(TR::Node * node, TR_Registe
 
       bool usesMul = true;
       if (secondChild->getOpCode().isLoadConst() &&
-         (TR::Compiler->target.is64Bit() || !nodeType.isInt64()) &&
+         (self()->comp()->target().is64Bit() || !nodeType.isInt64()) &&
          populationCount(integerConstNodeValue(secondChild, self())) <= 2)
          {
          // Will probably use shifts/adds/etc instead of multiply
@@ -2893,7 +2893,7 @@ TR_X86ScratchRegisterManager *OMR::X86::CodeGenerator::generateScratchRegisterMa
 bool
 TR_X86ScratchRegisterManager::reclaimAddressRegister(TR::MemoryReference *mr)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (TR::comp()->target().is32Bit())
       return false;
 
    return reclaimScratchRegister(mr->getAddressRegister());
@@ -3132,6 +3132,6 @@ OMR::X86::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, i
    // Adjust the sourceAddress to the start of the following instruction (+5 bytes)
    //
    return
-      !TR::Compiler->target.cpu.isTargetWithinRIPRange(targetAddress, sourceAddress+5) ||
+      !self()->comp()->target().cpu.isTargetWithinRIPRange(targetAddress, sourceAddress+5) ||
       self()->comp()->getOption(TR_StressTrampolines);
    }

@@ -106,7 +106,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
       cursor += sizeof(int32_t);
 
       // L/LG  rEP, 0(r14)
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          *(int32_t *) cursor = 0xe300e000 + (rEP << 20);           // LG  rEP, 0(r14)
          cursor += sizeof(int32_t);
@@ -151,7 +151,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
          }
 #endif
 
-      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(destAddr, instructionStartAddress),
+      TR_ASSERT_FATAL(cg->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(destAddr, instructionStartAddress),
                       "Helper Call is not reachable.");
       self()->setSnippetDestAddr(destAddr);
 
@@ -170,7 +170,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
 uint32_t
 OMR::Z::Snippet::getPICBinaryLength(TR::CodeGenerator * cg)
    {
-   int32_t lengthOfLoad = (TR::Compiler->target.is64Bit())?6:4;
+   int32_t lengthOfLoad = (cg->comp()->target().is64Bit())?6:4;
 
    if (self()->getKind() == TR::Snippet::IsUnresolvedCall)
       return 6 + lengthOfLoad + 2; // LARL + L/LG + BCR

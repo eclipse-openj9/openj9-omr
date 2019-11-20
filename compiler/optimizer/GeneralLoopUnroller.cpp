@@ -93,7 +93,7 @@ static TR::ILOpCodes getConstOpCode(TR::DataType type)
       case TR::Int16: return TR::sconst;
       case TR::Int32: return TR::iconst;
       case TR::Int64: return TR::lconst;
-      case TR::Address: return TR::Compiler->target.is64Bit() ? TR::lconst : TR::iconst;
+      case TR::Address: return TR::comp()->target().is64Bit() ? TR::lconst : TR::iconst;
       default:
          TR_ASSERT(false, "unsupported type");
          return TR::iconst;

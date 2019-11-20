@@ -554,7 +554,7 @@ bool findLoadNearStartOfBlock(TR::Block *block, TR::SymbolReference *ref)
 bool TR_RegisterCandidates::aliasesPreventAllocation(TR::Compilation *comp, TR::SymbolReference *symRef)
   {
 
-  if (!symRef->getSymbol()->isAutoOrParm() && !(TR::Compiler->target.cpu.isZ() && TR::Compiler->target.isLinux()) ) return true;
+  if (!symRef->getSymbol()->isAutoOrParm() && !(comp->target().cpu.isZ() && comp->target().isLinux()) ) return true;
 
   TR::SparseBitVector use_def_aliases(comp->allocator());
   symRef->getUseDefAliases(false).getAliases(use_def_aliases);
@@ -695,13 +695,13 @@ bool TR_RegisterCandidate::rcNeeds2Regs(TR::Compilation *comp)
    {
    if(getType().isAggregate())
       {
-      if ( (TR::Compiler->target.is32Bit() && !comp->cg()->use64BitRegsOn32Bit() && getSymbol()->getSize() > 4) || (getSymbol()->getSize() > 8 ) )
+      if ( (comp->target().is32Bit() && !comp->cg()->use64BitRegsOn32Bit() && getSymbol()->getSize() > 4) || (getSymbol()->getSize() > 8 ) )
          return true;
       else
          return false;
       }
    else
-      return ((getType().isInt64() && TR::Compiler->target.is32Bit() && !comp->cg()->use64BitRegsOn32Bit())
+      return ((getType().isInt64() && comp->target().is32Bit() && !comp->cg()->use64BitRegsOn32Bit())
 #ifdef J9_PROJECT_SPECIFIC
               || getType().isLongDouble()
 #endif
@@ -1851,7 +1851,7 @@ TR_RegisterCandidates::reprioritizeCandidates(
          {
          if ((!onlyReprioritizeLongs ||
               (rc->getType().isInt64() &&
-               TR::Compiler->target.is32Bit())) &&
+               comp->target().is32Bit())) &&
              ((reprioritizeFP && isFPCandidate) ||
               (!reprioritizeFP && !isFPCandidate)))
             {
@@ -2566,7 +2566,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
          {
          if (trace)
             traceMsg(comp(),"Leaving candidate because it has vector type but no global vector registers provided\n");
-         TR_ASSERT(!TR::Compiler->target.cpu.isZ(),"ed : debug : Should never get here for vector GRA on z");
+         TR_ASSERT(!comp()->target().cpu.isZ(),"ed : debug : Should never get here for vector GRA on z");
          continue;
          }
 

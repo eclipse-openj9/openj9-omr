@@ -84,7 +84,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg);
 
 TR::Register *OMR::Power::TreeEvaluator::ifacmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::iflucmpltEvaluator(node, cg);
    else
       return TR::TreeEvaluator::ifiucmpltEvaluator(node, cg);
@@ -92,7 +92,7 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpltEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::Power::TreeEvaluator::ifacmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::iflucmpgeEvaluator(node, cg);
    else
       return TR::TreeEvaluator::ifiucmpgeEvaluator(node, cg);
@@ -100,7 +100,7 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpgeEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::Power::TreeEvaluator::ifacmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::iflucmpgtEvaluator(node, cg);
    else
       return TR::TreeEvaluator::ifiucmpgtEvaluator(node, cg);
@@ -108,7 +108,7 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpgtEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::Power::TreeEvaluator::ifacmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::iflucmpleEvaluator(node, cg);
    else
       return TR::TreeEvaluator::ifiucmpleEvaluator(node, cg);
@@ -116,7 +116,7 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpleEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::Power::TreeEvaluator::acmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::lucmpltEvaluator(node, cg);
    else
       return TR::TreeEvaluator::iucmpltEvaluator(node, cg);
@@ -124,7 +124,7 @@ TR::Register *OMR::Power::TreeEvaluator::acmpltEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::acmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::lucmpgeEvaluator(node, cg);
    else
       return TR::TreeEvaluator::iucmpgeEvaluator(node, cg);
@@ -132,7 +132,7 @@ TR::Register *OMR::Power::TreeEvaluator::acmpgeEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::acmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::lucmpgtEvaluator(node, cg);
    else
       return TR::TreeEvaluator::iucmpgtEvaluator(node, cg);
@@ -140,7 +140,7 @@ TR::Register *OMR::Power::TreeEvaluator::acmpgtEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::acmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::lucmpleEvaluator(node, cg);
    else
       return TR::TreeEvaluator::iucmpleEvaluator(node, cg);
@@ -269,7 +269,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::Mne
       TR::Node *thirdChild = node->getChild(2);
       TR_ASSERT(thirdChild->getOpCodeValue() == TR::GlRegDeps, "The third child of a compare is assumed to be a TR::GlRegDeps, but wasn't");
       cg->evaluate(thirdChild);
-      if (isHint && TR::Compiler->target.cpu.id() >= TR_PPCgp)
+      if (isHint && cg->comp()->target().cpu.id() >= TR_PPCgp)
          generateDepConditionalBranchInstruction(cg, branchOp, likeliness, node, dstLabel, condReg,
                generateRegisterDependencyConditions(cg, thirdChild, 0));
       else
@@ -279,7 +279,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::Mne
       }
    else
       {
-      if (isHint && TR::Compiler->target.cpu.id() >= TR_PPCgp)
+      if (isHint && cg->comp()->target().cpu.id() >= TR_PPCgp)
          generateConditionalBranchInstruction(cg, branchOp, likeliness, node, dstLabel, condReg);
       else
          generateConditionalBranchInstruction(cg, branchOp, node, dstLabel, condReg);
@@ -448,14 +448,14 @@ static TR::Register *compareLongsForOrderWithAnalyser(TR::InstOpCode::Mnemonic b
       generateLabelInstruction(cg, TR::InstOpCode::label, node, label1);
       if (deps)
          {
-         if (isHint && TR::Compiler->target.cpu.id() >= TR_PPCgp)
+         if (isHint && cg->comp()->target().cpu.id() >= TR_PPCgp)
             generateDepConditionalBranchInstruction(cg, branchOp, likeliness, node, destinationLabel, condReg, deps);
          else
             generateDepConditionalBranchInstruction(cg, branchOp, node, destinationLabel, condReg, deps);
          }
       else
          {
-         if (isHint && TR::Compiler->target.cpu.id() >= TR_PPCgp)
+         if (isHint && cg->comp()->target().cpu.id() >= TR_PPCgp)
             generateConditionalBranchInstruction(cg, branchOp, likeliness, node, destinationLabel, condReg);
          else
             generateConditionalBranchInstruction(cg, branchOp, node, destinationLabel, condReg);
@@ -510,7 +510,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::Mn
       {
       value = secondChild->get64bitIntegralValue();
       }
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       src1Reg = cg->evaluate(firstChild);
       if (secondChild->getOpCode().isLoadConst() &&
@@ -535,7 +535,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::Mn
          TR::Node *thirdChild = node->getChild(2);
          TR_ASSERT(thirdChild->getOpCodeValue() == TR::GlRegDeps, "The third child of a compare is assumed to be a TR::GlRegDeps, but wasn't");
          cg->evaluate(thirdChild);
-         if (isHint && TR::Compiler->target.cpu.id() >= TR_PPCgp)
+         if (isHint && cg->comp()->target().cpu.id() >= TR_PPCgp)
             generateDepConditionalBranchInstruction(cg, branchOp, likeliness, node, dstLabel, condReg,
                   generateRegisterDependencyConditions(cg, thirdChild, 0));
          else
@@ -545,7 +545,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::Mn
          }
       else
          {
-         if (isHint && TR::Compiler->target.cpu.id() >= TR_PPCgp)
+         if (isHint && cg->comp()->target().cpu.id() >= TR_PPCgp)
             generateConditionalBranchInstruction(cg, branchOp, likeliness, node, dstLabel, condReg);
          else
             generateConditionalBranchInstruction(cg, branchOp, node, dstLabel, condReg);
@@ -685,7 +685,7 @@ TR::Register *OMR::Power::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::Co
    TR::Register *returnRegister = cg->evaluate(node->getFirstChild());
    const TR::PPCLinkageProperties &linkageProperties = cg->getProperties();
    TR::RegisterDependencyConditions *dependencies;
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       TR::RealRegister::RegNum machineReturnRegister =
                    linkageProperties.getIntegerReturnRegister();
@@ -867,7 +867,7 @@ static TR::InstOpCode::Mnemonic cmp2cmp(TR::ILOpCodes op, TR::CodeGenerator *cg)
        case TR::lcmpge:
        case TR::lcmpgt:
        case TR::lcmple:
-          return TR::Compiler->target.is64Bit() ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4;
+          return cg->comp()->target().is64Bit() ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4;
        case TR::lucmplt:
        case TR::lucmpge:
        case TR::lucmpgt:
@@ -878,7 +878,7 @@ static TR::InstOpCode::Mnemonic cmp2cmp(TR::ILOpCodes op, TR::CodeGenerator *cg)
        case TR::acmpge:
        case TR::acmpgt:
        case TR::acmple:
-          return TR::Compiler->target.is64Bit() ? TR::InstOpCode::cmpl8 : TR::InstOpCode::cmpl4;
+          return cg->comp()->target().is64Bit() ? TR::InstOpCode::cmpl8 : TR::InstOpCode::cmpl4;
        default:
        TR_ASSERT(false, "assertion failure");
        }
@@ -918,7 +918,7 @@ static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg
        case TR::lcmpge:
        case TR::lcmpgt:
        case TR::lcmple:
-          return TR::Compiler->target.is64Bit() ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4;
+          return cg->comp()->target().is64Bit() ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4;
        case TR::lucmplt:
        case TR::lucmpge:
        case TR::lucmpgt:
@@ -929,7 +929,7 @@ static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg
        case TR::acmpge:
        case TR::acmpgt:
        case TR::acmple:
-          return TR::Compiler->target.is64Bit() ? TR::InstOpCode::cmpli8 : TR::InstOpCode::cmpli4;
+          return cg->comp()->target().is64Bit() ? TR::InstOpCode::cmpli8 : TR::InstOpCode::cmpli4;
        default:
        TR_ASSERT(false, "assertion failure");
        }
@@ -940,7 +940,7 @@ static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg
 TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::DataType type = node->getType();
-   bool two_reg = (TR::Compiler->target.is32Bit()) && type.getDataType() == TR::Int64;
+   bool two_reg = (cg->comp()->target().is32Bit()) && type.getDataType() == TR::Int64;
    TR::Register *resultReg = two_reg ?
                             cg->allocateRegisterPair(cg->allocateRegister(),cg->allocateRegister()) :
                             (type.getDataType() == TR::Float ?
@@ -961,7 +961,7 @@ TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::C
    if (firstChild->getOpCode().isBooleanCompare() &&
        firstChild->getRegister() == NULL &&
        firstChild->getReferenceCount() == 1 &&
-       !(firstChild->getFirstChild()->getType().isInt64() && TR::Compiler->target.is32Bit()))
+       !(firstChild->getFirstChild()->getType().isInt64() && cg->comp()->target().is32Bit()))
       {
       //This is now either 64 bit only.
       // (cmp1Reg [branch_opcode] cmp2Reg) ? trueReg : falseReg;
@@ -1333,7 +1333,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
        {
        TR::Node *thirdChild = node->getChild(2);
        cg->evaluate(thirdChild);
-       if (isHint && TR::Compiler->target.cpu.id() >= TR_PPCgp)
+       if (isHint && cg->comp()->target().cpu.id() >= TR_PPCgp)
           generateDepConditionalBranchInstruction(cg, branchOp, likeliness, node, dstLabel, condReg,
                 generateRegisterDependencyConditions(cg, thirdChild, 0));
        else
@@ -1344,7 +1344,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
        }
     else
        {
-       if (isHint && TR::Compiler->target.cpu.id() >= TR_PPCgp)
+       if (isHint && cg->comp()->target().cpu.id() >= TR_PPCgp)
           generateConditionalBranchInstruction(cg, branchOp, likeliness, node, dstLabel, condReg);
        else
           generateConditionalBranchInstruction(cg, branchOp, node, dstLabel, condReg);
@@ -1426,7 +1426,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareLongsForEquality(TR::Node *node,
 
 TR::Register *OMR::Power::TreeEvaluator::compareLongsForEquality(TR::InstOpCode::Mnemonic branchOp, TR::LabelSymbol *dstLabel, TR::Node *node, TR::CodeGenerator *cg, bool isHint, bool likeliness)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       if (virtualGuardHelper(node, cg))
          return NULL;
@@ -1438,7 +1438,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareLongsForEquality(TR::InstOpCode:
 
    //Peephole to not compare top half of operands if shifted by more than 32
    //Useful for our implementation of BigDecimal.compareTo()
-   if (!disableCompareToOpt && TR::Compiler->target.is32Bit() &&
+   if (!disableCompareToOpt && cg->comp()->target().is32Bit() &&
        firstChild->getOpCodeValue() == TR::lshr && secondChild->getOpCodeValue() == TR::lshr &&
        firstChild->getReferenceCount() == 1 && secondChild->getReferenceCount() == 1)
       {
@@ -1490,7 +1490,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareLongsForEquality(TR::InstOpCode:
    bool isSigned = !node->getOpCode().isUnsignedCompare();
    TR::Compilation *comp = cg->comp();
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -1539,7 +1539,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
          {
          thirdChild = node->getChild(2);
          cg->evaluate(thirdChild);
-         if (isHint && TR::Compiler->target.cpu.id() >= TR_PPCgp)
+         if (isHint && cg->comp()->target().cpu.id() >= TR_PPCgp)
             generateDepConditionalBranchInstruction(cg, branchOp, likeliness, node, dstLabel, condReg,
                   generateRegisterDependencyConditions(cg, thirdChild, 0));
          else
@@ -1549,7 +1549,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
          }
       else
          {
-         if (isHint && TR::Compiler->target.cpu.id() >= TR_PPCgp)
+         if (isHint && cg->comp()->target().cpu.id() >= TR_PPCgp)
             generateConditionalBranchInstruction(cg, branchOp, likeliness, node, dstLabel, condReg);
          else
             generateConditionalBranchInstruction(cg, branchOp, node, dstLabel, condReg);
@@ -1663,7 +1663,7 @@ TR::Register *OMR::Power::TreeEvaluator::iflucmpleEvaluator(TR::Node *node, TR::
 
 TR::Register *OMR::Power::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       TR::Node::recreate(node, TR::iflcmpeq);
       TR::TreeEvaluator::iflcmpeqEvaluator(node, cg);
@@ -1679,7 +1679,7 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::Power::TreeEvaluator::ifacmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       TR::Node::recreate(node, TR::iflcmpne);
       TR::TreeEvaluator::iflcmpeqEvaluator(node, cg);
@@ -1783,7 +1783,7 @@ TR::Register *OMR::Power::TreeEvaluator::icmpneEvaluator(TR::Node *node, TR::Cod
       }
    // 64-bit needs sign extensions if we use the subf/addic/subfe sequence.
    // therefore, we prefer the subf/cntlzw/rlwinm/xori sequence
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       generateTrg1Src1Instruction(cg, TR::InstOpCode::cntlzw, node, temp2Reg, temp1Reg);
       generateShiftRightLogicalImmediate(cg, node, temp2Reg, temp2Reg, 5);
@@ -2090,7 +2090,7 @@ TR::Register *OMR::Power::TreeEvaluator::iucmpgtEvaluator(TR::Node *node, TR::Co
 // also handles acmpeq in 64-bit mode
 TR::Register *OMR::Power::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       {
       return compareLongAndSetOrderedBoolean(TR::InstOpCode::cmp4, TR::InstOpCode::beq, node,cg);
       }
@@ -2151,7 +2151,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::Cod
 // also handles acmpne in 64-bit mode
 TR::Register *OMR::Power::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       {
       return compareLongAndSetOrderedBoolean(TR::InstOpCode::cmp4, TR::InstOpCode::bne, node, cg);
       }
@@ -2202,7 +2202,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       return compareLongAndSetOrderedBoolean(TR::InstOpCode::cmp4, TR::InstOpCode::blt, node, cg);
 
    TR::Node     *firstChild   = node->getFirstChild();
@@ -2253,7 +2253,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpltEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       return compareLongAndSetOrderedBoolean(TR::InstOpCode::cmp4, TR::InstOpCode::ble, node, cg);
 
    TR::Node     *firstChild   = node->getFirstChild();
@@ -2302,7 +2302,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpleEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
      return compareLongAndSetOrderedBoolean(TR::InstOpCode::cmp4, TR::InstOpCode::bge, node, cg);
 
    TR::Node     *firstChild   = node->getFirstChild();
@@ -2356,7 +2356,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpgeEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       return compareLongAndSetOrderedBoolean(TR::InstOpCode::cmp4, TR::InstOpCode::bgt, node, cg);
 
    TR::Node     *firstChild   = node->getFirstChild();
@@ -2411,7 +2411,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpgtEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::lucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       return compareLongAndSetOrderedBoolean(TR::InstOpCode::cmpl4, TR::InstOpCode::blt, node, cg);
 
    TR::Node *firstChild  = node->getFirstChild();
@@ -2430,7 +2430,7 @@ TR::Register *OMR::Power::TreeEvaluator::lucmpltEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       return compareLongAndSetOrderedBoolean(TR::InstOpCode::cmpl4, TR::InstOpCode::ble, node, cg);
 
    TR::Node *firstChild  = node->getFirstChild();
@@ -2449,7 +2449,7 @@ TR::Register *OMR::Power::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::lucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
      return compareLongAndSetOrderedBoolean(TR::InstOpCode::cmpl4, TR::InstOpCode::bge, node, cg);
 
    TR::Node *firstChild  = node->getFirstChild();
@@ -2468,7 +2468,7 @@ TR::Register *OMR::Power::TreeEvaluator::lucmpgeEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::lucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       return compareLongAndSetOrderedBoolean(TR::InstOpCode::cmpl4, TR::InstOpCode::bgt, node, cg);
 
    TR::Node *firstChild  = node->getFirstChild();
@@ -2493,11 +2493,11 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeG
    TR::Node     *secondChild = node->getSecondChild();
    TR::Register *temp1Reg, *temp2Reg, *temp3Reg;
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       if (secondChild->getOpCode().isLoadConst() && secondChild->getLongInt()==0)
          {
-         if (TR::Compiler->target.cpu.id() >= TR_PPCp9)
+         if (cg->comp()->target().cpu.id() >= TR_PPCp9)
             {
             TR::Register *condReg = cg->allocateRegister(TR_CCR);
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi8, node, condReg, src1Reg, 0);
@@ -2518,7 +2518,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeG
       else
          {
          TR::Register *src2Reg = cg->evaluate(secondChild);
-         if (TR::Compiler->target.cpu.id() >= TR_PPCp9)
+         if (cg->comp()->target().cpu.id() >= TR_PPCp9)
             {
             TR::Register *condReg = cg->allocateRegister(TR_CCR);
             generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp8, node, condReg, src1Reg, src2Reg);
@@ -2588,7 +2588,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::Power::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::lcmpeqEvaluator(node, cg);
    else
       return TR::TreeEvaluator::icmpeqEvaluator(node, cg);
@@ -2596,7 +2596,7 @@ TR::Register *OMR::Power::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::acmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::lcmpneEvaluator(node, cg);
    else
       return TR::TreeEvaluator::icmpneEvaluator(node, cg);
@@ -2725,7 +2725,7 @@ static void lookupScheme1(TR::Node *node, bool unbalanced, bool fromTableEval, T
    int32_t      total = node->getNumChildren();
    TR::Register *selector = cg->evaluate(node->getFirstChild());
    bool         isInt64 = false;
-   bool two_reg = (TR::Compiler->target.is32Bit()) && isInt64;
+   bool two_reg = (cg->comp()->target().is32Bit()) && isInt64;
    TR::Register *cndRegister = cg->allocateRegister(TR_CCR);
    TR::RegisterDependencyConditions *acond, *bcond, *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
    TR::Node     *secondChild = node->getSecondChild();
@@ -2755,7 +2755,7 @@ static void lookupScheme1(TR::Node *node, bool unbalanced, bool fromTableEval, T
       if (isInt64)
          {
          int64_t value = child->getCaseConstant();
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi8, node, cndRegister, selector, value);
             }
@@ -2806,7 +2806,7 @@ static void lookupScheme2(TR::Node *node, bool unbalanced, bool fromTableEval, T
    TR::Register *valRegister = NULL;
 
    bool         isInt64 = false;
-   bool two_reg = (TR::Compiler->target.is32Bit()) && isInt64;
+   bool two_reg = (cg->comp()->target().is32Bit()) && isInt64;
    TR::LabelSymbol *toDefaultLabel = NULL;
    if ( two_reg )
       {
@@ -2873,7 +2873,7 @@ static void lookupScheme2(TR::Node *node, bool unbalanced, bool fromTableEval, T
 
       if (isInt64)
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp8, node, cndRegister, selector, valRegister);
             }
@@ -2940,7 +2940,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
    int64_t     *dataTable64 = NULL;
    bool        isInt64 = false;
    TR::Compilation *comp = cg->comp();
-   bool        two_reg = isInt64 && TR::Compiler->target.is32Bit();
+   bool        two_reg = isInt64 && cg->comp()->target().is32Bit();
    if (isInt64)
       {
       dataTableSize *=2;
@@ -2967,7 +2967,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
    TR::Node     *secondChild = node->getSecondChild();
 
    TR::addDependency(conditions, addrRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-   if (isInt64 && TR::Compiler->target.is64Bit())
+   if (isInt64 && cg->comp()->target().is64Bit())
       {
       TR::addDependency(conditions, dataRegister->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
       TR::addDependency(conditions, dataRegister->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
@@ -2991,7 +2991,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
       acond = acond->clone(cg, generateRegisterDependencyConditions(cg, secondChild->getFirstChild(), 0));
       }
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       int32_t offset = TR_PPCTableOfConstants::allocateChunk(1, cg);
 
@@ -3112,7 +3112,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
       TR::Node *child = node->getChild(ii);
       if (isInt64)
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp8, node, cndRegister, selector, dataRegister);
             }
@@ -3149,7 +3149,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
          {
          if (isInt64)
             {
-            if (TR::Compiler->target.is64Bit())
+            if (cg->comp()->target().is64Bit())
                {
                if (nextAddress >= 32760)
                   {
@@ -3224,7 +3224,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    int32_t  numberOfEntries = total - 2;
    size_t  dataTableSize = numberOfEntries * sizeof(int);
    bool        isInt64 = false;
-   bool        two_reg = isInt64 && TR::Compiler->target.is32Bit();
+   bool        two_reg = isInt64 && cg->comp()->target().is32Bit();
    int32_t *dataTable = NULL;
    int64_t *dataTable64 = NULL;
    intptrj_t  address = NULL;
@@ -3293,7 +3293,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
 
    loadConstant(cg, node, (numberOfEntries-1)<<2, highRegister);
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       int32_t offset = TR_PPCTableOfConstants::allocateChunk(1, cg);
 
@@ -3480,7 +3480,7 @@ TR::Register *OMR::Power::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
       }
 
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          int32_t offset = TR_PPCTableOfConstants::allocateChunk(1, cg);
 
@@ -3551,7 +3551,7 @@ OMR::Power::TreeEvaluator::generateNullTestInstructions(
 
    if (cg->getHasResumableTrapHandler())
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          gcPoint = generateSrc1Instruction(cg, TR::InstOpCode::tdeqi, node, trgReg, NULLVALUE);
       else
          gcPoint = generateSrc1Instruction(cg, TR::InstOpCode::tweqi, node, trgReg, NULLVALUE);
@@ -3578,11 +3578,11 @@ OMR::Power::TreeEvaluator::generateNullTestInstructions(
 
       // trampoline kills gr11
       TR::addDependency(conditions, jumpReg, TR::RealRegister::gr11, TR_GPR, cg);
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli8, node, condReg, trgReg, NULLVALUE);
       else
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, trgReg, NULLVALUE);
-      if (TR::Compiler->target.cpu.id() >= TR_PPCgp)
+      if (cg->comp()->target().cpu.id() >= TR_PPCgp)
          // use PPC AS branch hint
          gcPoint = generateDepConditionalBranchInstruction(cg, TR::InstOpCode::beql, PPCOpProp_BranchUnlikely, node, snippetLabel, condReg, conditions);
       else
@@ -3685,11 +3685,11 @@ TR::Register *OMR::Power::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::Co
       {
       TR::Register *value = cg->evaluate(node->getFirstChild());
       TR::Register *condReg = cg->allocateRegister(TR_CCR);
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi8, node, condReg, value, 0);
       else
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, value, 0);
-      if (TR::Compiler->target.cpu.id() >= TR_PPCgp) // Use PPC AS branch hint.
+      if (cg->comp()->target().cpu.id() >= TR_PPCgp) // Use PPC AS branch hint.
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchUnlikely, node, slowPathLabel, condReg);
       else
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, slowPathLabel, condReg);
@@ -3781,7 +3781,7 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
    TR::DataType type = child->getType();
    TR::InstOpCode::Mnemonic move_op = type.isIntegral() ? TR::InstOpCode::mr : TR::InstOpCode::fmr;
    TR::InstOpCode::Mnemonic cmp_op;
-   bool two_reg = (TR::Compiler->target.is32Bit() && type.isInt64());
+   bool two_reg = (cg->comp()->target().is32Bit() && type.isInt64());
    TR::Register *trgReg;
 
    switch (node->getOpCodeValue())

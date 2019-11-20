@@ -959,7 +959,7 @@ void TR::LocalDeadStoreElimination::eliminateDeadObjectInitializations()
                 int32_t offset = -1;
                 if (storeNode->getFirstChild()->getOpCode().isArrayRef())
                    {
-                   if (TR::Compiler->target.is64Bit())
+                   if (comp()->target().is64Bit())
                       {
                       if (storeNode->getFirstChild()->getSecondChild()->getLongInt() > INT_MAX)
                          removableZeroStore = false;

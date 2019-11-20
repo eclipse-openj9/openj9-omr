@@ -815,7 +815,7 @@ bool
 OMR::CodeGenerator::use64BitRegsOn32Bit()
    {
 #ifdef TR_TARGET_S390
-   return TR::Compiler->target.is32Bit();
+   return self()->comp()->target().is32Bit();
 #else
    return false;
 #endif // TR_TARGET_S390
@@ -1836,7 +1836,7 @@ OMR::CodeGenerator::isMemoryUpdate(TR::Node *node)
    // effect of swapping children of commutative operations in order to expose the
    // opportunity.
    //
-   if (TR::Compiler->target.cpu.isX86() && valueChild->getOpCode().isMul())
+   if (self()->comp()->target().cpu.isX86() && valueChild->getOpCode().isMul())
       {
       return false;
       }
@@ -2692,7 +2692,7 @@ OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node, bool doChecks)
    TR::Node *firstChild = node->getFirstChild();
    TR::ILOpCode &opCode = firstChild->getOpCode();
 
-   if (opCode.isLoadVar() || (TR::Compiler->target.is64Bit() && opCode.getOpCodeValue() == TR::l2i))
+   if (opCode.isLoadVar() || (self()->comp()->target().is64Bit() && opCode.getOpCodeValue() == TR::l2i))
       {
       TR::SymbolReference *symRef = NULL;
 
@@ -3084,7 +3084,7 @@ bool OMR::CodeGenerator::AddArtificiallyInflatedNodeToStack(TR::Node * n)
 bool
 OMR::CodeGenerator::constantAddressesCanChangeSize(TR::Node *node)
    {
-   if (!self()->comp()->compileRelocatableCode() || TR::Compiler->target.is32Bit() || node==NULL)
+   if (!self()->comp()->compileRelocatableCode() || self()->comp()->target().is32Bit() || node==NULL)
       return false;
 
    if (node->getOpCodeValue() == TR::aconst && (node->isClassPointerConstant() || node->isMethodPointerConstant()))

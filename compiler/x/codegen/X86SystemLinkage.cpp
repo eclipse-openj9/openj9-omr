@@ -516,7 +516,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
 
    // Allocate the stack frame
    //
-   const int32_t singleWordSize = TR::Compiler->target.is32Bit() ? 4 : 8;
+   const int32_t singleWordSize = cg()->comp()->target().is32Bit() ? 4 : 8;
    if (allocSize == 0)
       {
       // No need to do anything
@@ -706,7 +706,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
 
    // Deallocate the stack frame
    //
-   const int32_t singleWordSize = TR::Compiler->target.is32Bit() ? 4 : 8;
+   const int32_t singleWordSize = comp()->target().is32Bit() ? 4 : 8;
    if (_properties.getAlwaysDedicateFramePointerRegister())
       {
       // Restore stack pointer from frame pointer
@@ -875,7 +875,7 @@ TR::X86SystemLinkage::layoutTypeOnStack(
          dataCursor += 8;
          break;
       case TR::Address:
-         dataCursor += TR::Compiler->target.is32Bit() ? 4 : 8;
+         dataCursor += comp()->target().is32Bit() ? 4 : 8;
          break;
       case TR::Aggregate:
       default:

@@ -93,7 +93,7 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator* cg)
    setProperty(SplitLongParm);
    setProperty(SkipGPRsForFloatParms);
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       setProperty(NeedsWidening);
       }
@@ -174,7 +174,7 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator* cg)
       setVectorReturnRegister(TR::RealRegister::VRF24);
       }
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       setOffsetToFirstParm(XPLINK_STACK_FRAME_BIAS + 128);
       }
@@ -205,7 +205,7 @@ TR::S390zOSSystemLinkage::createEpilogue(TR::Instruction * cursor)
    cursor = fillFPRsInEpilogue(node, cursor);
    cursor = fillGPRsInEpilogue(node, cursor);
 
-   if (TR::Compiler->target.is64Bit())
+   if (comp()->target().is64Bit())
       {
       cursor = generateRXInstruction(cg(), InstOpCode::BC, node, getRealRegister(TR::RealRegister::GPR15), generateS390MemoryReference(getReturnAddressRealRegister(), 2, cg()), cursor);
       }
@@ -293,7 +293,7 @@ TR::S390zOSSystemLinkage::getOutgoingParameterBlockSize()
       {
       // xplink spec has minimal size
       // we assume yes to be safe
-      int32_t minimalArgAreaSize = ((TR::Compiler->target.is64Bit()) ? 32 : 16);
+      int32_t minimalArgAreaSize = ((comp()->target().is64Bit()) ? 32 : 16);
       argAreaSize = (argAreaSize < minimalArgAreaSize) ? minimalArgAreaSize : argAreaSize;
       }
    return argAreaSize;
@@ -329,7 +329,7 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
       case TR::acalli:
          retReg = deps->searchPostConditionRegister(getIntegerReturnRegister());
          returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
-         if(TR::Compiler->target.is64Bit() && returnRegister && !returnRegister->is64BitReg())
+         if(comp()->target().is64Bit() && returnRegister && !returnRegister->is64BitReg())
             {
             returnRegister->setIs64BitReg(true);    //in 64bit target, force return 64bit address register,
             }                                           //until it's known that dispatch functions can return non-64bit addresses.
@@ -342,7 +342,7 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
       case TR::lcalli:
       case TR::lcall:
          {
-         if (TR::Compiler->target.is64Bit())
+         if (comp()->target().is64Bit())
             {
             retReg = deps->searchPostConditionRegister(getIntegerReturnRegister());
             returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
@@ -414,7 +414,7 @@ TR::S390zOSSystemLinkage::getENVPointerRegister()
 TR::RealRegister::RegNum
 TR::S390zOSSystemLinkage::getCAAPointerRegister()
    {
-   return TR::Compiler->target.is64Bit() ?
+   return comp()->target().is64Bit() ?
       TR::RealRegister::NoReg :
       TR::RealRegister::GPR12;
    }
@@ -526,7 +526,7 @@ TR::S390zOSSystemLinkage::getPPA2Snippet() const
 TR::Instruction *
 TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::Node* node, TR::Node* callNode, TR_XPLinkCallTypes callType)
    {
-   if (TR::Compiler->target.is32Bit())
+   if (comp()->target().is32Bit())
       {
       uint32_t callDescriptorValue = TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(this, callNode);
 
@@ -674,7 +674,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
    int32_t  firstSaved, lastSaved, firstPossibleSaved;
 
    // As defined by XPLINK specification
-   int32_t intermediateThreshold = TR::Compiler->target.is64Bit() ? 1024 * 1024 : 4096;
+   int32_t intermediateThreshold = comp()->target().is64Bit() ? 1024 * 1024 : 4096;
 
    TR::RealRegister *spReg = getNormalStackPointerRealRegister(); // normal sp reg used in prol/epil
    stackFrameSize = getStackFrameSize();
@@ -730,7 +730,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
     addImmediateToRealRegister(NULL, stackFrameSize, NULL, NULL, NULL, &needAddTempReg);
 
    // For 64 bit stack checking code - need a temp reg for LAA access
-   if (TR::Compiler->target.is64Bit() && (frameType == TR_XPLinkStackCheckFrame))
+   if (comp()->target().is64Bit() && (frameType == TR_XPLinkStackCheckFrame))
       needAddTempReg = true;
 
    if (needAddTempReg)
@@ -741,7 +741,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
 
    // CAA is either locked or restored on RET - so remove it from mask
    // But not in 64 bit code
-   if(!TR::Compiler->target.is64Bit())
+   if(!comp()->target().is64Bit())
       {
       GPRSaveMask  &= ~(1 << GPREGINDEX(getCAAPointerRegister()));
       }
@@ -892,7 +892,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
               cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr0Real, spReg, cursor);
           cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, gpr3Real, node, cursor); // AHI ...
 
-          if (TR::Compiler->target.is64Bit())
+          if (comp()->target().is64Bit())
              {
              TR::MemoryReference *laaRef;
              bosOffset = 64; // 64=offset in LAA to BOS
@@ -920,7 +920,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
              cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node,  gpr0Real, gpr3Real, cursor); // LR R0,R3
              }
 
-          if (TR::Compiler->target.is64Bit())
+          if (comp()->target().is64Bit())
              {
              extenderOffset = 72;  // offset of extender routine in LAA
              extenderRef = generateS390MemoryReference(gpr3Real, extenderOffset, cg());

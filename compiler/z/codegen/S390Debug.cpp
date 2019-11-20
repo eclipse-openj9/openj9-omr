@@ -1215,7 +1215,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RILInstruction * instr)
          int32_t offsetInHalfWords =(int32_t) (*((int32_t *)(cursor+2)));
          intptrj_t offset = ((intptrj_t)offsetInHalfWords) * 2;
          intptrj_t targetAddress = (intptrj_t)cursor + offset;
-         if (TR::Compiler->target.is32Bit())
+         if (_comp->target().is32Bit())
             targetAddress &= 0x7FFFFFFF;
 
          if (offsetInHalfWords<0)
@@ -1762,7 +1762,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390MIIInstruction * instr)
       offsetInHalfWords = offsetInHalfWords >> 8;
       intptrj_t offset = ((intptrj_t)offsetInHalfWords) * 2;
       intptrj_t targetAddress = (intptrj_t)cursor + offset;
-      if (TR::Compiler->target.is32Bit())
+      if (_comp->target().is32Bit())
          targetAddress &= 0x7FFFFFFF;
       if (offsetInHalfWords<0)
          trfprintf(pOutFile, ", targetAddr=0x%p (offset=-0x%p)", targetAddress, -offset);
@@ -2338,11 +2338,11 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
          case TR::Address:
             if (!privateLinkage->getRightToLeft())
                {
-               offset -= TR::Compiler->target.is64Bit() ? 8 : 4;
+               offset -= _comp->target().is64Bit() ? 8 : 4;
                }
             if (intArgNum < privateLinkage->getNumIntegerArgumentRegisters())
                {
-               if (TR::Compiler->target.is64Bit() && child->getDataType() == TR::Address)
+               if (_comp->target().is64Bit() && child->getDataType() == TR::Address)
                   {
                   printPrefix(pOutFile, NULL, bufferPos, 6);
                   trfprintf(pOutFile, "STG  \t");
@@ -2358,7 +2358,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                print(pOutFile, stackPtr);
                trfprintf(pOutFile, ")");
 
-               if (TR::Compiler->target.is64Bit() && child->getDataType() == TR::Address)
+               if (_comp->target().is64Bit() && child->getDataType() == TR::Address)
                   {
                   bufferPos += 6;
                   }
@@ -2370,18 +2370,18 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
             intArgNum++;
             if (privateLinkage->getRightToLeft())
                {
-               offset -= TR::Compiler->target.is64Bit() ? 8 : 4;
+               offset -= _comp->target().is64Bit() ? 8 : 4;
                }
             break;
 
          case TR::Int64:
             if (!privateLinkage->getRightToLeft())
                {
-               offset -= (TR::Compiler->target.is64Bit() ? 16 : 8);
+               offset -= (_comp->target().is64Bit() ? 16 : 8);
                }
             if (intArgNum < privateLinkage->getNumIntegerArgumentRegisters())
                {
-               if (TR::Compiler->target.is64Bit())
+               if (_comp->target().is64Bit())
                   {
                   printPrefix(pOutFile, NULL, bufferPos, 6);
                   trfprintf(pOutFile, "STG  \t");
@@ -2414,10 +2414,10 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                      }
                   }
                }
-            intArgNum += TR::Compiler->target.is64Bit() ? 1 : 2;
+            intArgNum += _comp->target().is64Bit() ? 1 : 2;
             if (privateLinkage->getRightToLeft())
                {
-               offset += TR::Compiler->target.is64Bit() ? 16 : 8;
+               offset += _comp->target().is64Bit() ? 16 : 8;
                }
             break;
 

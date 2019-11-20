@@ -261,7 +261,7 @@ public:
 
    bool canTransformUnsafeCopyToArrayCopy();
    bool supportsInliningOfIsInstance();
-   bool supports32bitAiadd() {return TR::Compiler->target.is64Bit();}
+   bool supports32bitAiadd() {return OMR::Z::CodeGenerator::comp()->target().is64Bit();}
 
    void addPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist);
    TR::list<TR_OpaqueClassBlock*> * getPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet);
@@ -297,7 +297,7 @@ public:
 
    bool supportsLengthMinusOneForMemoryOpts() {return true;}
 
-   bool codegenSupportsLoadlessBNDCheck() {return TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12);}
+   bool codegenSupportsLoadlessBNDCheck() {return OMR::Z::CodeGenerator::comp()->target().cpu.getSupportsArch(TR::CPU::zEC12);}
    TR::Register *evaluateLengthMinusOneForMemoryOps(TR::Node *,  bool , bool &lenMinusOne);
 
    virtual TR_GlobalRegisterNumber getGlobalRegisterNumber(uint32_t realRegNum);

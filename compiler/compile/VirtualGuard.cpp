@@ -190,7 +190,7 @@ TR_VirtualGuard::createBreakpointGuardNode
    TR::Node * flagBit = NULL;
    TR::Node *guard = NULL;
    TR::Node * zero = NULL;
-   if (TR::Compiler->target.is64Bit())
+   if (comp->target().is64Bit())
       {
       flagBit = TR::Node::create(callNode, TR::lconst, 0, 0);
       flagBit->setLongInt(comp->fej9()->offsetOfMethodIsBreakpointedBit());
@@ -291,7 +291,7 @@ TR_VirtualGuard::createNonoverriddenGuard
    TR::SymbolReference * addressSymRef = symRefTab->createIsOverriddenSymbolRef(calleeSymbol);
 
    TR::Node * guard = NULL;
-   if (TR::Compiler->target.is64Bit())
+   if (comp->target().is64Bit())
       {
       TR::Node * load = TR::Node::createWithSymRef(callNode, TR::lload, 0, addressSymRef);
       TR::Node * flagBit = TR::Node::create(callNode, TR::lconst, 0, 0);

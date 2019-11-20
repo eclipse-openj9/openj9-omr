@@ -256,7 +256,7 @@ void TR_PrefetchInsertion::insertPrefetchInstructions()
 #endif
 
          static char * disablePrefetchStore = feGetEnv("TR_DISABLEPrefetchStore");
-         typeNode = TR::Node::iconst(addressNode, (TR::Compiler->target.cpu.isZ() && foundStore && !disablePrefetchStore) ?
+         typeNode = TR::Node::iconst(addressNode, (comp()->target().cpu.isZ() && foundStore && !disablePrefetchStore) ?
                                                             (int32_t)PrefetchStore :
                                                             (int32_t)PrefetchLoad);
 

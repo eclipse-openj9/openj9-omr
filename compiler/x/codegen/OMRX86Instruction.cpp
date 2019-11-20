@@ -1498,7 +1498,7 @@ void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, in
       TR::Register *indexReg = mr->getIndexRegister();
       TR::Register *addressReg = NULL;
 
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          addressReg = mr->getAddressRegister();
 
 
@@ -1527,7 +1527,7 @@ void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, in
          addressReg = NULL;
          baseReg = anotherMr->getBaseRegister();
          indexReg = anotherMr->getIndexRegister();
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             addressReg = anotherMr->getAddressRegister();
 
          if (baseReg && baseReg->getKind() != TR_X87)
@@ -3386,7 +3386,7 @@ void TR::X86FPCompareEvalInstruction::assignRegisters(TR_RegisterKinds kindsToBe
          case TR::fcmpg:
          case TR::dcmpl:
          case TR::dcmpg:
-            TR_ASSERT(TR::Compiler->target.is32Bit(), "AMD64 doesn't support SAHF");
+            TR_ASSERT(cg()->comp()->target().is32Bit(), "AMD64 doesn't support SAHF");
             cursor = new (cg()->trHeapMemory()) TR::Instruction(SAHF, cursor, cg());
             break;
 

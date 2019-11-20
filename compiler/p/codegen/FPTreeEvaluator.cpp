@@ -88,7 +88,7 @@ TR::Register *OMR::Power::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::Co
       }
    else
       {
-      generateMvFprGprInstructions(cg, node, gprSp2fpr, TR::Compiler->target.is64Bit(),target, cg->evaluate(child));
+      generateMvFprGprInstructions(cg, node, gprSp2fpr, cg->comp()->target().is64Bit(),target, cg->evaluate(child));
       cg->decReferenceCount(child);
       }
 
@@ -116,8 +116,8 @@ TR::Register *OMR::Power::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Co
       }
    else
       {
-      floatReg = TR::Compiler->target.cpu.id() >= TR_PPCp8 ? cg->gprClobberEvaluate(child) : cg->evaluate(child);
-      generateMvFprGprInstructions(cg, node, fpr2gprSp, TR::Compiler->target.is64Bit(),target, floatReg);
+      floatReg = cg->comp()->target().cpu.id() >= TR_PPCp8 ? cg->gprClobberEvaluate(child) : cg->evaluate(child);
+      generateMvFprGprInstructions(cg, node, fpr2gprSp, cg->comp()->target().is64Bit(),target, floatReg);
       childEval = floatReg == child->getRegister();
       cg->decReferenceCount(child);
       }
@@ -165,7 +165,7 @@ TR::Register *OMR::Power::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Co
       {
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 8, cg);
 #ifdef J9_PROJECT_SPECIFIC
-      if (child->getOpCodeValue() == TR::irlload && TR::Compiler->target.is64Bit())        // 64-bit only
+      if (child->getOpCodeValue() == TR::irlload && cg->comp()->target().is64Bit())        // 64-bit only
          {
          TR::Register     *tmpReg = cg->allocateRegister();
          tempMR->forceIndexedForm(child, cg);
@@ -173,7 +173,7 @@ TR::Register *OMR::Power::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Co
          generateMvFprGprInstructions(cg, node, gpr2fprHost64, true, target, tmpReg);
          cg->stopUsingRegister(tmpReg);
          }
-      else if (child->getOpCodeValue() == TR::irlload && TR::Compiler->target.is32Bit())   // 32-bit
+      else if (child->getOpCodeValue() == TR::irlload && cg->comp()->target().is32Bit())   // 32-bit
          {
          TR::Register     *highReg = cg->allocateRegister();
          TR::Register     *lowReg = cg->allocateRegister();
@@ -199,12 +199,12 @@ TR::Register *OMR::Power::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Co
       }
    else
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          generateMvFprGprInstructions(cg, node, gpr2fprHost64, true, target, cg->evaluate(child));
       else
          {
          TR::Register *longReg = cg->evaluate(child);
-         if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
+         if (cg->comp()->target().cpu.id() >= TR_PPCp8)
             {
             TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
             generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, target, longReg->getHighOrder(), longReg->getLowOrder(), tmp1);
@@ -237,7 +237,7 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
       doubleReg = cg->allocateRegister(TR_FPR);
       generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, doubleReg, tempMR);
 
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          lReg  = cg->allocateRegister();
          TR::MemoryReference  *tempMR2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMR, 0, 8, cg);
@@ -264,7 +264,7 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
       {
       doubleReg = cg->evaluate(child);
 
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          lReg  = cg->allocateRegister();
          generateMvFprGprInstructions(cg, node, fpr2gprHost64, true, lReg, doubleReg);
@@ -273,7 +273,7 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
          {
          highReg = cg->allocateRegister();
          lowReg = cg->allocateRegister();
-         if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
+         if (cg->comp()->target().cpu.id() >= TR_PPCp8)
             {
             TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
             generateMvFprGprInstructions(cg, node, fpr2gprHost32, false, highReg, lowReg, doubleReg, tmp1);
@@ -295,10 +295,10 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
       TR::LabelSymbol *nanNormalizeStartLabel = generateLabelSymbol(cg);
       TR::LabelSymbol *nanNormalizeEndLabel = generateLabelSymbol(cg);
 
-      uint16_t numDeps = TR::Compiler->target.is64Bit() ? 2 : 3;
+      uint16_t numDeps = cg->comp()->target().is64Bit() ? 2 : 3;
       TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, cg->trMemory());
       TR::addDependency(deps, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          TR::addDependency(deps, lReg, TR::RealRegister::NoReg, TR_GPR, cg);
          }
@@ -311,7 +311,7 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
       generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, doubleReg, doubleReg);
       generateLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeStartLabel);
       generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchLikely, node, nanNormalizeEndLabel, condReg);
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          loadConstant(cg, node, (int64_t)CONSTANT64(0x7ff8000000000000), lReg);
          }
@@ -328,7 +328,7 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
    if (!childEval)
       cg->stopUsingRegister(doubleReg);
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       node->setRegister(lReg);
       return lReg;
@@ -350,7 +350,7 @@ static TR::Register *fconstHandler(TR::Node *node, TR::CodeGenerator *cg, float 
    TR::Compilation *comp = cg->comp();
 
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       offset = cg->findOrCreateFloatConstant(&value, TR::Float, NULL, NULL, NULL, NULL);
       if (offset != PTOC_FULL_INDEX)
@@ -369,15 +369,15 @@ static TR::Register *fconstHandler(TR::Node *node, TR::CodeGenerator *cg, float 
          }
       }
 
-   if (TR::Compiler->target.is32Bit() || offset==PTOC_FULL_INDEX)
+   if (cg->comp()->target().is32Bit() || offset==PTOC_FULL_INDEX)
       {
       srcRegister = cg->allocateRegister();
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          tempReg = cg->allocateRegister();
       fixedSeqMemAccess(cg, node, 0, q, trgRegister, srcRegister, TR::InstOpCode::lfs, 4, NULL, tempReg);
       cg->findOrCreateFloatConstant(&value, TR::Float, q[0], q[1], q[2], q[3]);
       cg->stopUsingRegister(srcRegister);
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          cg->stopUsingRegister(tempReg);
       }
    node->setRegister(trgRegister);
@@ -425,7 +425,7 @@ TR::Register *OMR::Power::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::Cod
    TR::Instruction *q[4];
    int32_t            offset;
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       offset = cg->findOrCreateFloatConstant(&value, TR::Double, NULL, NULL, NULL, NULL);
       if (offset != PTOC_FULL_INDEX)
@@ -453,14 +453,14 @@ TR::Register *OMR::Power::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::Cod
          }
       }
 
-   if (TR::Compiler->target.is32Bit() || offset==PTOC_FULL_INDEX)
+   if (cg->comp()->target().is32Bit() || offset==PTOC_FULL_INDEX)
       {
       srcRegister = cg->allocateRegister(TR_GPR);
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          tempReg = cg->allocateRegister(TR_GPR);
       fixedSeqMemAccess(cg, node, 0, q, trgRegister, srcRegister, opcode, 8, NULL, tempReg);
       cg->stopUsingRegister(srcRegister);
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          cg->stopUsingRegister(tempReg);
       cg->findOrCreateFloatConstant(&value, TR::Double, q[0], q[1], q[2], q[3]);
       }
@@ -473,7 +473,7 @@ TR::Register *OMR::Power::TreeEvaluator::floadEvaluator(TR::Node *node, TR::Code
    {
    TR::Register *tempReg = node->setRegister(cg->allocateSinglePrecisionRegister());
    TR::MemoryReference *tempMR;
-   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP();
+   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP();
 
    // If the reference is volatile or potentially volatile, the layout needs to be
    // fixed for patching if it turns out to be not a volatile atfer all.
@@ -494,8 +494,8 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
    {
    TR::Compilation *comp = cg->comp();
    TR::MemoryReference *tempMR;
-   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP();
-   if (TR::Compiler->target.is32Bit() && needSync && !cg->is64BitProcessor())
+   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP();
+   if (cg->comp()->target().is32Bit() && needSync && !cg->is64BitProcessor())
       {
       TR::Register *addrReg = cg->allocateRegister();
       TR::SymbolReference *vrlRef = comp->getSymRefTab()->findOrCreateVolatileReadDoubleSymbolRef(comp->getMethodSymbol());
@@ -646,7 +646,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
       TR::Register *tempReg = cg->evaluate(child);
       TR::Register *resReg = cg->allocateRegister(TR_VRF);
 
-      if (!disableDirectMove && TR::Compiler->target.cpu.id() >= TR_PPCp8 && TR::Compiler->target.cpu.getPPCSupportsVSX())
+      if (!disableDirectMove && cg->comp()->target().cpu.id() >= TR_PPCp8 && cg->comp()->target().cpu.getPPCSupportsVSX())
          {
          generateMvFprGprInstructions(cg, node, gprLow2fpr, false, resReg, tempReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, resReg, resReg, 0x1);
@@ -678,9 +678,9 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
       TR::Register *srcReg = cg->evaluate(child);
       TR::Register *trgReg = cg->allocateRegister(TR_VRF);
 
-      if (!disableDirectMove && TR::Compiler->target.cpu.id() >= TR_PPCp8 && TR::Compiler->target.cpu.getPPCSupportsVSX())
+      if (!disableDirectMove && cg->comp()->target().cpu.id() >= TR_PPCp8 && cg->comp()->target().cpu.getPPCSupportsVSX())
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             generateMvFprGprInstructions(cg, node, gpr2fprHost64, false, trgReg, srcReg);
             generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxpermdi, node, trgReg, trgReg, trgReg, 0x0);
@@ -698,7 +698,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
          TR::SymbolReference *temp   = cg->allocateLocalTemp(TR::Int64);
          TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, temp, 8, cg);
 
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, tempMR, srcReg);
             }
@@ -927,7 +927,7 @@ TR::Register *OMR::Power::TreeEvaluator::fstoreEvaluator(TR::Node *node, TR::Cod
 
    TR::Register *valueReg = cg->evaluate(child);
    TR::MemoryReference *tempMR;
-   bool    needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   bool    needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
 
    // If the reference is volatile or potentially volatile, the layout needs to be
    // fixed for patching if it turns out to be not a volatile after all.
@@ -973,9 +973,9 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
 
 
    TR::Register *valueReg = cg->evaluate(child);
-   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP();
+   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP();
    TR::MemoryReference *tempMR;
-   if (TR::Compiler->target.is32Bit() && needSync && !cg->is64BitProcessor())
+   if (cg->comp()->target().is32Bit() && needSync && !cg->is64BitProcessor())
       {
       TR::Register *addrReg = cg->allocateRegister();
       TR::SymbolReference    *vrlRef = comp->getSymRefTab()->findOrCreateVolatileWriteDoubleSymbolRef(comp->getMethodSymbol());
@@ -1363,9 +1363,9 @@ TR::Register *OMR::Power::TreeEvaluator::int2dbl(TR::Node * node, TR::Register *
    TR::Register *trgReg     = cg->allocateRegister(TR_FPR);
    TR::Register *tempReg;
 
-   if (cg->is64BitProcessor() || (cg->comp()->compileRelocatableCode() && TR::Compiler->target.is64Bit()))
+   if (cg->is64BitProcessor() || (cg->comp()->compileRelocatableCode() && cg->comp()->target().is64Bit()))
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          if (node->getOpCodeValue() == TR::iu2f || node->getOpCodeValue() == TR::iu2d)
             {
@@ -1386,7 +1386,7 @@ TR::Register *OMR::Power::TreeEvaluator::int2dbl(TR::Node * node, TR::Register *
          }
       else
          {
-         if (TR::Compiler->target.cpu.id() >= TR_PPCp6 && node->getOpCodeValue() != TR::iu2f && node->getOpCodeValue() != TR::iu2d)
+         if (cg->comp()->target().cpu.id() >= TR_PPCp6 && node->getOpCodeValue() != TR::iu2f && node->getOpCodeValue() != TR::iu2d)
             generateMvFprGprInstructions(cg, node, gprLow2fpr, false, trgReg, srcReg);
          else
             {
@@ -1397,7 +1397,7 @@ TR::Register *OMR::Power::TreeEvaluator::int2dbl(TR::Node * node, TR::Register *
             else
                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, tempReg, srcReg, 31);
 
-            if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
+            if (cg->comp()->target().cpu.id() >= TR_PPCp8)
                {
                TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
                generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, trgReg, tempReg, srcReg, tmp1);
@@ -1408,7 +1408,7 @@ TR::Register *OMR::Power::TreeEvaluator::int2dbl(TR::Node * node, TR::Register *
             cg->stopUsingRegister(tempReg);
             }
          }
-      if ((TR::Compiler->target.cpu.id() >= TR_PPCp7) &&
+      if ((cg->comp()->target().cpu.id() >= TR_PPCp7) &&
           (node->getOpCodeValue() == TR::i2f || node->getOpCodeValue() == TR::iu2f))
          {
          // Generate the code to produce the float result here, setting the register flag is done afterwards
@@ -1456,12 +1456,12 @@ TR::Register *OMR::Power::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGe
    TR::Register *tempReg;
    TR::Register *trgReg;
 
-   if (((TR::Compiler->target.cpu.id() >= TR_PPCp7 &&
+   if (((cg->comp()->target().cpu.id() >= TR_PPCp7 &&
        (node->getOpCodeValue() == TR::iu2f && (child->getOpCodeValue() == TR::iuload || child->getOpCodeValue() == TR::iuloadi))) ||
-       (TR::Compiler->target.cpu.id() >= TR_PPCp6 &&
+       (cg->comp()->target().cpu.id() >= TR_PPCp6 &&
        (node->getOpCodeValue() == TR::i2f && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi)))) &&
        child->getReferenceCount() == 1 && child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP()))
+       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
       tempMR->forceIndexedForm(node, cg);
@@ -1470,7 +1470,7 @@ TR::Register *OMR::Power::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGe
       if (node->getOpCodeValue() == TR::i2f)
          {
          generateTrg1MemInstruction(cg, TR::InstOpCode::lfiwax, node, tempReg, tempMR);
-         if (TR::Compiler->target.cpu.id() >= TR_PPCp7)
+         if (cg->comp()->target().cpu.id() >= TR_PPCp7)
             {
             generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfids, node, trgReg, tempReg);
             }
@@ -1504,13 +1504,13 @@ TR::Register *OMR::Power::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGe
    TR::Node     *child      = node->getFirstChild();
    TR::Register *trgReg;
 
-   if (((TR::Compiler->target.cpu.id() >= TR_PPCp7 &&
+   if (((cg->comp()->target().cpu.id() >= TR_PPCp7 &&
        (node->getOpCodeValue() == TR::iu2d && (child->getOpCodeValue() == TR::iuload || child->getOpCodeValue() == TR::iuloadi))) ||
-       (TR::Compiler->target.cpu.id() >= TR_PPCp6 &&
+       (cg->comp()->target().cpu.id() >= TR_PPCp6 &&
        node->getOpCodeValue() == TR::i2d && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi))) &&
        child->getReferenceCount()==1 &&
        child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP()))
+       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
       // possible TODO: if refcount > 1, do both load and lfiwax?
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
@@ -1545,13 +1545,13 @@ TR::Register *OMR::Power::TreeEvaluator::long2dbl(TR::Node *node, TR::CodeGenera
    TR::Register *trgReg     = cg->allocateRegister(TR_FPR);
 
 
-   if (cg->is64BitProcessor() || (cg->comp()->compileRelocatableCode() && TR::Compiler->target.is64Bit()))
+   if (cg->is64BitProcessor() || (cg->comp()->compileRelocatableCode() && cg->comp()->target().is64Bit()))
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          generateMvFprGprInstructions(cg, node, gpr2fprHost64, false, trgReg, srcReg);
       else
          {
-         if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
+         if (cg->comp()->target().cpu.id() >= TR_PPCp8)
             {
             TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
             generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, trgReg, srcReg->getHighOrder(), srcReg->getLowOrder(), tmp1);
@@ -1605,14 +1605,14 @@ TR::Register *OMR::Power::TreeEvaluator::long2float(TR::Node *node, TR::CodeGene
    TR::Register *srcReg  = cg->evaluate(child);
    TR::Register *trgReg     = cg->allocateSinglePrecisionRegister(TR_FPR);
 
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp7 &&
-      (cg->is64BitProcessor() || (cg->comp()->compileRelocatableCode() && TR::Compiler->target.is64Bit())))
+   if (cg->comp()->target().cpu.id() >= TR_PPCp7 &&
+      (cg->is64BitProcessor() || (cg->comp()->compileRelocatableCode() && cg->comp()->target().is64Bit())))
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          generateMvFprGprInstructions(cg, node, gpr2fprHost64, false, trgReg, srcReg);
       else
          {
-         if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
+         if (cg->comp()->target().cpu.id() >= TR_PPCp8)
             {
             TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
             generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, trgReg, srcReg->getHighOrder(), srcReg->getLowOrder(), tmp1);
@@ -1623,7 +1623,7 @@ TR::Register *OMR::Power::TreeEvaluator::long2float(TR::Node *node, TR::CodeGene
          }
       generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfids, node, trgReg, trgReg);
       }
-   else if (TR::Compiler->target.is64Bit())
+   else if (cg->comp()->target().is64Bit())
       {
       TR::Register *src;
       TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(8, 8, cg->trMemory());
@@ -1693,12 +1693,12 @@ TR::Register *OMR::Power::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::CodeGe
    {
    TR::Register *trgReg;
    TR::Node     *child      = node->getFirstChild();
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp7 &&
+   if (cg->comp()->target().cpu.id() >= TR_PPCp7 &&
        node->getOpCodeValue() == TR::l2f &&
        (child->getOpCodeValue() == TR::lload || child->getOpCodeValue() == TR::lloadi) &&
        child->getReferenceCount()==1 &&
        child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP()))
+       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
       tempMR->forceIndexedForm(node, cg);
@@ -1722,12 +1722,12 @@ TR::Register *OMR::Power::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGe
    TR::Register *trgReg;
    TR::Node     *child      = node->getFirstChild();
    if (
-       TR::Compiler->target.cpu.id() >= TR_PPCp7 &&
+       cg->comp()->target().cpu.id() >= TR_PPCp7 &&
        node->getOpCodeValue() == TR::l2d &&
        (child->getOpCodeValue() == TR::lload || child->getOpCodeValue() == TR::lloadi) &&
        child->getReferenceCount()==1 &&
        child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP()))
+       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
          TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
          tempMR->forceIndexedForm(node, cg);
@@ -1853,13 +1853,13 @@ TR::Register *OMR::Power::TreeEvaluator::d2lEvaluator(TR::Node *node, TR::CodeGe
    TR::Register *sourceReg  = cg->evaluate(child);
    TR::Register *trgReg;
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       trgReg     = cg->allocateRegister();
    else
       trgReg     = cg->allocateRegisterPair(cg->allocateRegister(),
                                                  cg->allocateRegister());
 
-   if (cg->is64BitProcessor() || (cg->comp()->compileRelocatableCode() && TR::Compiler->target.is64Bit()))
+   if (cg->is64BitProcessor() || (cg->comp()->compileRelocatableCode() && cg->comp()->target().is64Bit()))
       {
       TR::Register *condReg = cg->allocateRegister(TR_CCR);
       TR::Register *tempReg = (node->getOpCodeValue() == TR::f2l) ? cg->allocateSinglePrecisionRegister() :  cg->allocateRegister(TR_FPR);
@@ -1867,7 +1867,7 @@ TR::Register *OMR::Power::TreeEvaluator::d2lEvaluator(TR::Node *node, TR::CodeGe
          generateControlFlowInstruction(cg, TR::InstOpCode::d2l, node);
       cfop->addTargetRegister(condReg);
       cfop->addTargetRegister(tempReg);
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          cfop->addTargetRegister(trgReg);
       else
          {
@@ -2029,7 +2029,7 @@ TR::Register *OMR::Power::TreeEvaluator::dcmpneEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::Power::TreeEvaluator::dcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    int64_t imm = 0;
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp9)
+   if (cg->comp()->target().cpu.id() >= TR_PPCp9)
       {
       imm = (TR::RealRegister::CRCC_GT <<  TR::RealRegister::pos_RT | TR::RealRegister::CRCC_LT <<  TR::RealRegister::pos_RA | TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RB);
       }
@@ -2278,7 +2278,7 @@ static TR::Register *compareFloatAndSetOrderedBoolean(TR::InstOpCode::Mnemonic b
       cfop->addTargetRegister(trgReg);
       cfop->addSourceRegister(src1Reg);
       cfop->addSourceRegister(src2Reg);
-      if (TR::Compiler->target.cpu.id() >= TR_PPCp9 && branchOp2 == TR::InstOpCode::bad && imm != 0)
+      if (cg->comp()->target().cpu.id() >= TR_PPCp9 && branchOp2 == TR::InstOpCode::bad && imm != 0)
          {
          cfop->addSourceImmediate(imm);
          }

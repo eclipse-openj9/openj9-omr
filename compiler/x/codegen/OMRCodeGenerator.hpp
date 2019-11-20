@@ -532,7 +532,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    int32_t arrayInitMinimumNumberOfBytes()
       {
-      if (TR::Compiler->target.is64Bit()) return 12;
+      if (OMR::X86::CodeGenerator::comp()->target().is64Bit()) return 12;
       return 8;
       }
 

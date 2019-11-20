@@ -786,7 +786,7 @@ TR_ArrayLoop::updateIndVarStore(TR_ParentOfChildNode * indVarNode, TR::Node * in
    //
    TR::Node * incMul = NULL;
    TR::Node * imul = NULL;
-   if (TR::Compiler->target.is64Bit())
+   if (comp()->target().is64Bit())
       {
       incMul = TR::Node::create(_finalNode, TR::lconst);
       incMul->setLongInt(endInc);
@@ -1053,8 +1053,8 @@ TR_LoopReducer::generateArraycopy(TR_InductionVariable * indVar, TR::Block * loo
       TR::Node *src = loadAddr;
       TR::Node *dst = storeAddr;
       intptrj_t offset;
-      TR::ILOpCodes op_add   = TR::Compiler->target.is64Bit() ? TR::aladd : TR::aiadd;
-      TR::ILOpCodes op_const = TR::Compiler->target.is64Bit() ? TR::lconst : TR::iconst;
+      TR::ILOpCodes op_add   = comp()->target().is64Bit() ? TR::aladd : TR::aiadd;
+      TR::ILOpCodes op_const = comp()->target().is64Bit() ? TR::lconst : TR::iconst;
 
       offset = arraycopyLoop.getStoreNode()->getSymbolReference()->getOffset();
       if (offset != 0)
@@ -1254,8 +1254,8 @@ TR_LoopReducer::generateArrayset(TR_InductionVariable * indVar, TR::Block * loop
 
    TR::Node *dst = storeNode->getFirstChild();
    intptrj_t offset;
-   TR::ILOpCodes op_add   = TR::Compiler->target.is64Bit() ? TR::aladd : TR::aiadd;
-   TR::ILOpCodes op_const = TR::Compiler->target.is64Bit() ? TR::lconst : TR::iconst;
+   TR::ILOpCodes op_add   = comp()->target().is64Bit() ? TR::aladd : TR::aiadd;
+   TR::ILOpCodes op_const = comp()->target().is64Bit() ? TR::lconst : TR::iconst;
    offset = storeNode->getSymbolReference()->getOffset();
    if (offset != 0)
       dst = TR::Node::create(op_add, 2, dst, TR::Node::create(dst, op_const, 0, offset));
@@ -3003,7 +3003,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    TR::TreeTop * branchNewOldExit = branchNewOldBlock->getExit();
 
    TR::Node * tableNode = arraytranslateLoop.getTableNode()->duplicateTree();
-   if (tableNode->getType().isInt64() && TR::Compiler->target.is32Bit())
+   if (tableNode->getType().isInt64() && comp()->target().is32Bit())
       {
       TR::Node * shrunkTableNode = TR::Node::create(TR::l2i, 1, tableNode);
       tableNode = shrunkTableNode;
@@ -3071,7 +3071,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
       TR::Node * compareNode = NULL;
       if (arraytranslateLoop.tableBackedByRawStorage())
          {
-         if (TR::Compiler->target.is64Bit())
+         if (comp()->target().is64Bit())
             {
             TR::Node * zeroNode = TR::Node::create(loadNode, TR::lconst);
             zeroNode->setLongInt(0);
@@ -3770,7 +3770,7 @@ TR_LoopReducer::generateByteToCharArraycopy(TR_InductionVariable * byteIndVar, T
    TR::TreeTop * arrayStoreTree = loopHeader->getFirstRealTreeTop();
    TR::Node * storeNode = arrayStoreTree->getNode();
 
-   TR_ByteToCharArraycopy arraycopyLoop(comp(), charIndVar, byteIndVar, TR::Compiler->target.cpu.isBigEndian());
+   TR_ByteToCharArraycopy arraycopyLoop(comp(), charIndVar, byteIndVar, comp()->target().cpu.isBigEndian());
 
    if (!arraycopyLoop.checkArrayStore(storeNode))
       {
@@ -4019,7 +4019,7 @@ TR_LoopReducer::generateCharToByteArraycopy(TR_InductionVariable * byteIndVar, T
    lowStoreNode = lowArrayStoreTree->getNode();
    nextTreeTop = lowArrayStoreTree->getNextTreeTop();
 
-   TR_CharToByteArraycopy arraycopyLoop(comp(), charIndVar, byteIndVar, TR::Compiler->target.cpu.isBigEndian());
+   TR_CharToByteArraycopy arraycopyLoop(comp(), charIndVar, byteIndVar, comp()->target().cpu.isBigEndian());
 
    if (!arraycopyLoop.checkArrayStores(highStoreNode, lowStoreNode))
       {

@@ -231,7 +231,7 @@ uint8_t *TR::PPCDepImmSymInstruction::generateBinaryEncoding()
                }
             }
 
-         TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinIFormBranchRange(targetAddress, (intptrj_t)cursor),
+         TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinIFormBranchRange(targetAddress, (intptrj_t)cursor),
                          "Target address is out of range");
 
          distance = targetAddress - (intptrj_t)cursor;

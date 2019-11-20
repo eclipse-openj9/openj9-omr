@@ -358,7 +358,7 @@ uint8_t TR::ExternalOrderedPair32BitRelocation::collectModifier()
    uint8_t * updateLocation2;
    TR_ExternalRelocationTargetKind kind = getTargetKind();
 
-   if (TR::Compiler->target.cpu.isPower() &&
+   if (comp->target().cpu.isPower() &&
           (kind == TR_ArrayCopyHelper || kind == TR_ArrayCopyToc || kind == TR_RamMethod || kind == TR_GlobalValue || kind == TR_BodyInfoAddressLoad || kind == TR_DataAddress || kind == TR_DebugCounter))
       {
       TR::Instruction *instr = (TR::Instruction *)getUpdateLocation();
@@ -390,7 +390,7 @@ void TR::ExternalOrderedPair32BitRelocation::apply(TR::CodeGenerator *codeGen)
    TR::IteratedExternalRelocation *rec = getRelocationRecord();
    uint8_t *codeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
    TR_ExternalRelocationTargetKind kind = getRelocationRecord()->getTargetKind();
-   if (TR::Compiler->target.cpu.isPower() &&
+   if (comp->target().cpu.isPower() &&
       (kind == TR_ArrayCopyHelper || kind == TR_ArrayCopyToc || kind == TR_RamMethodSequence || kind == TR_GlobalValue || kind == TR_BodyInfoAddressLoad || kind == TR_DataAddress || kind == TR_DebugCounter))
       {
       TR::Instruction *instr = (TR::Instruction *)getUpdateLocation();

@@ -379,7 +379,7 @@ OMR::Compilation::Compilation(
       {
       if(self()->getMethodHotness() <= warm)
          {
-         if (!TR::Compiler->target.cpu.isPower()) // Temporarily exclude PPC due to perf regression
+         if (!self()->target().cpu.isPower()) // Temporarily exclude PPC due to perf regression
             self()->setOption(TR_DisableInternalPointers);
          }
       }

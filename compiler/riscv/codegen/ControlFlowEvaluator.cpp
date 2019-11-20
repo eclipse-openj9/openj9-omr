@@ -390,7 +390,7 @@ OMR::RV::TreeEvaluator::iucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::RV::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "RV32 not yet supported");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "RV32 not yet supported");
    return icmpeqEvaluator(node, cg);
    }
 
@@ -398,63 +398,63 @@ OMR::RV::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::RV::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "RV32 not yet supported");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "RV32 not yet supported");
    return icmpneEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::RV::TreeEvaluator::lcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "RV32 not yet supported");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "RV32 not yet supported");
    return icmpltEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::RV::TreeEvaluator::lcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "RV32 not yet supported");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "RV32 not yet supported");
    return icmpgeEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::RV::TreeEvaluator::lcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "RV32 not yet supported");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "RV32 not yet supported");
    return icmpgtEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::RV::TreeEvaluator::lcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "RV32 not yet supported");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "RV32 not yet supported");
    return icmpleEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::RV::TreeEvaluator::lucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "RV32 not yet supported");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "RV32 not yet supported");
    return iucmpltEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::RV::TreeEvaluator::lucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "RV32 not yet supported");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "RV32 not yet supported");
    return iucmpgeEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::RV::TreeEvaluator::lucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "RV32 not yet supported");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "RV32 not yet supported");
    return iucmpgtEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::RV::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "RV32 not yet supported");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "RV32 not yet supported");
    return iucmpleEvaluator(node, cg);
    }
 

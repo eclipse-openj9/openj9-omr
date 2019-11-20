@@ -592,7 +592,7 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
       // addressLoadInstruction's node should be that of containingInstruction
       //
       addressLoadInstruction->setNode(_baseNode ? _baseNode : containingInstruction->getNode());
-      if (TR::Compiler->target.isSMP() && self()->getUnresolvedDataSnippet())
+      if (cg->comp()->target().isSMP() && self()->getUnresolvedDataSnippet())
          {
          // Also adjust the node of the TR::X86PatchableCodeAlignmentInstruction
          //

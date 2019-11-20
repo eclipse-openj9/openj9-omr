@@ -138,7 +138,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
          {
          TR::DataType type = paramCursor->getType();
          TR::RealRegister::RegNum regNum;
-         bool twoRegs = (TR::Compiler->target.is32Bit() && type.isInt64() && lri < properties.getNumIntArgRegs()-1);
+         bool twoRegs = (self()->comp()->target().is32Bit() && type.isInt64() && lri < properties.getNumIntArgRegs()-1);
 
          if (!type.isFloatingPoint())
             {
@@ -173,7 +173,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
          if (!paramCursor->isReferencedParameter() && !paramCursor->isParmHasToBeOnStack()) continue;
 
          TR::RealRegister::RegNum regNum;
-         bool twoRegs = (TR::Compiler->target.is32Bit() && type.isInt64() && lri < properties.getNumIntArgRegs()-1);
+         bool twoRegs = (self()->comp()->target().is32Bit() && type.isInt64() && lri < properties.getNumIntArgRegs()-1);
 
          if (type.isFloatingPoint())
             regNum = properties.getFloatArgumentRegister(lri);
@@ -260,7 +260,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   }
                }
 
-            if (TR::Compiler->target.is32Bit() && type.isInt64())
+            if (self()->comp()->target().is32Bit() && type.isInt64())
                {
                int32_t aiLow = paramCursor->getAssignedLowGlobalRegisterIndex();
 
@@ -337,7 +337,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   {
                   busyMoves[0][busyIndex] = offset;
                   busyMoves[1][busyIndex] = ai;
-                  if (TR::Compiler->target.is64Bit())
+                  if (self()->comp()->target().is64Bit())
                      busyMoves[2][busyIndex] = 2;
                   else
                      busyMoves[2][busyIndex] = 1;
@@ -345,7 +345,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   }
                break;
             case TR::Int64:
-               if (TR::Compiler->target.is64Bit())
+               if (self()->comp()->target().is64Bit())
                   {
                   if (freeScratchable.isSet(ai))
                      {
@@ -545,7 +545,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                   numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               if (TR::Compiler->target.is64Bit())
+               if (self()->comp()->target().is64Bit())
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::ld, firstNode, argRegister,
                         new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
                else
@@ -560,7 +560,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                      }
                   }
                }
-            if (TR::Compiler->target.is64Bit())
+            if (self()->comp()->target().is64Bit())
                numIntArgs++;
             else
                numIntArgs+=2;
@@ -647,7 +647,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                   numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               if (TR::Compiler->target.is64Bit())
+               if (self()->comp()->target().is64Bit())
                   cursor = generateMemSrc1Instruction(self()->cg(),TR::InstOpCode::Op_st, firstNode,
                         new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()),
                         argRegister, cursor);
@@ -665,7 +665,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                      }
                   }
                }
-            if (TR::Compiler->target.is64Bit())
+            if (self()->comp()->target().is64Bit())
                numIntArgs++;
             else
                numIntArgs+=2;
@@ -759,7 +759,7 @@ TR::Register *OMR::Power::Linkage::pushLongArg(TR::Node *child)
    TR::Register *pushRegister = NULL;
    if (child->getRegister() == NULL && child->getOpCode().isLoadConst())
       {
-      if (TR::Compiler->target.is64Bit())
+      if (self()->comp()->target().is64Bit())
          {
          pushRegister = self()->cg()->allocateRegister();
          loadConstant(self()->cg(), child, child->getLongInt(), pushRegister);
@@ -823,7 +823,7 @@ TR_ReturnInfo OMR::Power::Linkage::getReturnInfoFromReturnType(TR::DataType retu
       case TR::Int64:
          return TR_LongReturn;
       case TR::Address:
-         return TR::Compiler->target.is64Bit() ? TR_ObjectReturn : TR_IntReturn;
+         return self()->comp()->target().is64Bit() ? TR_ObjectReturn : TR_IntReturn;
       case TR::Float:
          return TR_FloatReturn;
       case TR::Double:

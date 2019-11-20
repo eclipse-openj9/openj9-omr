@@ -1720,7 +1720,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
    else if (!inDebugExtension() &&
             (node->getOpCode().isLoadReg() || node->getOpCode().isStoreReg()) )
       {
-      if ((node->getType().isInt64() && TR::Compiler->target.is32Bit() && !_comp->cg()->use64BitRegsOn32Bit()))
+      if ((node->getType().isInt64() && _comp->target().is32Bit() && !_comp->cg()->use64BitRegsOn32Bit()))
          output.append(" %s:%s ", getGlobalRegisterName(node->getHighGlobalRegisterNumber()), getGlobalRegisterName(node->getLowGlobalRegisterNumber()));
       else
          output.append(" %s ", getGlobalRegisterName(node->getGlobalRegisterNumber()));
@@ -1743,7 +1743,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
          else if (t == TR::Int32) size = TR_WordReg;
          else                    size = TR_DoubleWordReg;
          if ((node->getFirstChild()->getType().isInt64() &&
-              TR::Compiler->target.is32Bit()))
+              _comp->target().is32Bit()))
             output.append(" %s:%s ",
                           getGlobalRegisterName(node->getHighGlobalRegisterNumber(), size),
                           getGlobalRegisterName(node->getLowGlobalRegisterNumber(), size));

@@ -184,6 +184,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::Instruction *generateGroupEndingNop(TR::Node *node , TR::Instruction *preced = 0);
    TR::Instruction *generateProbeNop(TR::Node *node , TR::Instruction *preced = 0);
 
+   bool canEmitDataForExternallyRelocatableInstructions();
+
    bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg);
 
    bool isSnippetMatched(TR::Snippet *, int32_t, TR::SymbolReference *);

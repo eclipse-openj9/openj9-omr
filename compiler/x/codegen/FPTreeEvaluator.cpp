@@ -722,6 +722,19 @@ TR::Register *OMR::X86::TreeEvaluator::fpSqrtEvaluator(TR::Node *node, TR::CodeG
    return result;
    }
 
+TR::Register *OMR::X86::TreeEvaluator::dsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *operand = node->getFirstChild();
+   TR::Register *opRegister = cg->evaluate(operand);
+   TR::Register *targetRegister = cg->allocateRegister(TR_FPR);
+
+   generateRegRegInstruction(SQRTSDRegReg, node, targetRegister, opRegister, cg);
+   
+   node->setRegister(targetRegister);
+   cg->decReferenceCount(operand);
+   return targetRegister;
+   }
+
 TR::Register *OMR::X86::TreeEvaluator::faddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);

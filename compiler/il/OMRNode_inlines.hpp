@@ -171,18 +171,37 @@ OMR::Node::getType()
    return self()->getDataType();
    }
 
-TR_NodeUseAliasSetInterface
+TR_UseOnlyAliasSetInterface
 OMR::Node::mayUse()
    {
-   TR_NodeUseAliasSetInterface aliasSetInterface(self());
-   return aliasSetInterface;
+   if (self()->getOpCode().isLikeUse() && self()->getOpCode().hasSymbolReference())
+      {
+      TR_UseOnlyAliasSetInterface aliasSetInterface(self()->getSymbolReference());
+      return aliasSetInterface;
+      }
+   else 
+      {
+      //if there is no symbolreference, then return an empty aliseset
+       TR_UseOnlyAliasSetInterface aliasSetInterface(NULL);
+      return aliasSetInterface;
+      }
    }
 
-TR_NodeKillAliasSetInterface
+TR_UseDefAliasSetInterface
 OMR::Node::mayKill(bool gcSafe)
    {
-   TR_NodeKillAliasSetInterface aliasSetInterface(self(), self()->getOpCode().isCallDirect(), gcSafe);
-   return aliasSetInterface;
+   if (self()->getOpCode().hasSymbolReference() && (self()->getOpCode().isLikeDef() || self()->mightHaveVolatileSymbolReference())) //we want the old behavior in these cases
+      {
+      bool shares_symbol = self()->getSymbolReference()->sharesSymbol(gcSafe);
+      TR_UseDefAliasSetInterface aliasSetInterface(shares_symbol, self()->getSymbolReference(), self()->getOpCode().isCallDirect(), gcSafe);
+      return aliasSetInterface;
+      }
+   else
+      {
+      //if there is no symbolreference, then return an empty aliseset
+      TR_UseDefAliasSetInterface aliasSetInterface(NULL, self()->getOpCode().isCallDirect(), gcSafe);
+      return aliasSetInterface;
+      }
    }
 
 /**

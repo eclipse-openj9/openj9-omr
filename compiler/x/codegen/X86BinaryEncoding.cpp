@@ -1220,23 +1220,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
 
          if (TR::Compiler->target.is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
             {
-            TR::SymbolReference *calleeSymRef = NULL;
-            TR::LabelSymbol *labelSym = sym->getLabelSymbol();
-
-            if (labelSym==NULL)
-               calleeSymRef = getSymbolReference();
-            else if (getNode() != NULL)
-               calleeSymRef = getNode()->getSymbolReference();
-
-            if (calleeSymRef != NULL)
-               {
-               if (calleeSymRef->getReferenceNumber()>=TR_AMD64numRuntimeHelpers)
-                  cg()->fe()->reserveTrampolineIfNecessary(comp, calleeSymRef, true);
-               }
-            else
-               {
-               TR_ASSERT(0, "Missing possible re-reservation for trampolines.\n");
-               }
+            cg()->redoTrampolineReservationIfNecessary(this, getSymbolReference());
             }
 
          intptrj_t currentInstructionAddress = (intptrj_t)(cursor-1);

@@ -260,22 +260,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
 
       if (cg()->hasCodeCacheSwitched())
          {
-         TR::SymbolReference *calleeSymRef = NULL;
-
-         if (label == NULL)
-            calleeSymRef = getSymbolReference();
-         else if (getNode() != NULL)
-            calleeSymRef = getNode()->getSymbolReference();
-
-         if (calleeSymRef != NULL)
-            {
-            if (calleeSymRef->getReferenceNumber()>=TR_ARMnumRuntimeHelpers)
-               cg()->fe()->reserveTrampolineIfNecessary(comp, calleeSymRef, true);
-            }
-         else
-            {
-            TR_ASSERT(0, "Missing possible re-reservation for trampolines.\n");
-            }
+         cg()->redoTrampolineReservationIfNecessary(this, getSymbolReference());
          }
 
       TR::ResolvedMethodSymbol *sym = getSymbolReference()->getSymbol()->getResolvedMethodSymbol();

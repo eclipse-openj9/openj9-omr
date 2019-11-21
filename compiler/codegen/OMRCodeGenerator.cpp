@@ -3251,3 +3251,32 @@ OMR::CodeGenerator::switchCodeCacheTo(TR::CodeCache *newCodeCache)
       }
 
    }
+
+
+void
+OMR::CodeGenerator::redoTrampolineReservationIfNecessary(TR::Instruction *callInstr, TR::SymbolReference *instructionSymRef)
+   {
+   TR_ASSERT_FATAL(instructionSymRef, "Expecting instruction to have a SymbolReference");
+
+   /**
+    * Determine the callee symbol reference based on the target of the call instruction
+    */
+   TR::LabelSymbol *labelSymbol = instructionSymRef->getSymbol()->getLabelSymbol();
+   TR::SymbolReference *calleeSymRef = NULL;
+
+   if (labelSymbol == NULL)
+      {
+      calleeSymRef = instructionSymRef;
+      }
+   else if (callInstr->getNode() != NULL)
+      {
+      calleeSymRef = callInstr->getNode()->getSymbolReference();
+      }
+
+   TR_ASSERT_FATAL(calleeSymRef != NULL, "Missing possible re-reservation for trampolines");
+
+   if (calleeSymRef->getReferenceNumber() >= TR_numRuntimeHelpers)
+      {
+      self()->fe()->reserveTrampolineIfNecessary(self()->comp(), calleeSymRef, true);
+      }
+   }

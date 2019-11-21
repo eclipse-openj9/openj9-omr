@@ -3018,12 +3018,12 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
          {
          if (cg->needRelocationsForLookupEvaluationData())
             {
-            loadAddressConstant(cg, node, address, addrRegister, true);
+            loadAddressConstant(cg, true, node, address, addrRegister);
             generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, 0, 4, cg));
             }
          else
             {
-            loadAddressConstant(cg, node, cg->hiValue(address)<<16, addrRegister, false);
+            loadAddressConstant(cg, false, node, cg->hiValue(address)<<16, addrRegister);
             nextAddress = LO_VALUE((int32_t)address);
             if (isInt64)
                {
@@ -3313,7 +3313,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
          }
       else
          {
-         loadAddressConstant(cg, node, address, addrRegister, cg->needRelocationsForLookupEvaluationData());
+         loadAddressConstant(cg, cg->needRelocationsForLookupEvaluationData(), node, address, addrRegister);
          }
       }
    else

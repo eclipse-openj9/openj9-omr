@@ -1352,9 +1352,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg) { return false; }
 
-   // J9 only, move to trj9
-   TR_OpaqueClassBlock* getMonClass(TR::Node* monNode);
-
    void setCurrentBlock(TR::Block *b);
    TR::Block *getCurrentBlock() { return _currentBlock; }
 
@@ -1895,8 +1892,6 @@ class OMR_EXTENSIBLE CodeGenerator
    
 
 
-   TR_Array<void *> _monitorMapping;
-
    uint32_t _largestOutgoingArgSize;
 
    uint32_t _estimatedCodeLength;
@@ -1942,8 +1937,6 @@ class OMR_EXTENSIBLE CodeGenerator
    protected:
 
    bool _disableInternalPointers;
-
-   void addMonClass(TR::Node* monNode, TR_OpaqueClassBlock* clazz);
 
    TR::RegisterIterator *_gpRegisterIterator;
    TR::RegisterIterator *_fpRegisterIterator;

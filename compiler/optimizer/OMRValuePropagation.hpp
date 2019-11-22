@@ -788,6 +788,7 @@ class ValuePropagation : public TR::Optimization
       bool _versionBucket;
       bool _notToVersionBucket;
       TR_ScratchList<TR::Node> *_bndChecks;
+      TR_OpaqueClassBlock *_instanceOfClass;
       };
    struct ArrayLengthToVersion : public TR_Link<ArrayLengthToVersion>
       {
@@ -814,7 +815,7 @@ class ValuePropagation : public TR::Optimization
    void removeBndChecksFromFastVersion(BlockVersionInfo *);
    TR::Node * findVarOfSimpleForm(TR::Node *);
    TR::Node * findVarOfSimpleFormOld(TR::Node *);
-   void createNewBucketForArrayIndex(ArrayLengthToVersion *,TR_LinkHead<ArrayLengthToVersion> *, int32_t , TR::Node *, TR::Node *, TR_OpaqueClassBlock *);
+   void createNewBucketForArrayIndex(ArrayLengthToVersion *,TR_LinkHead<ArrayLengthToVersion> *, int32_t , TR::Node *, TR::Node *, TR_OpaqueClassBlock *, TR_OpaqueClassBlock *);
    void collectDefSymRefs(TR::Node *,TR::Node *);
    bool prepareForBlockVersion(TR_LinkHead<ArrayLengthToVersion> *);
    void addToSortedList(TR_LinkHead<ArrayLengthToVersion> *,ArrayLengthToVersion *);

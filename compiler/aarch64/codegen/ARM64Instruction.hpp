@@ -1151,7 +1151,7 @@ class ARM64Trg1ImmInstruction : public ARM64Trg1Instruction
          }
       else if (op == TR::InstOpCode::adr || op == TR::InstOpCode::adrp)
          {
-         *instruction |= ((_sourceImmediate & 0x7ffff) << 5) | ((_sourceImmediate & 0x3) << 29);
+         *instruction |= ((_sourceImmediate & 0x1ffffc) << 3) | ((_sourceImmediate & 0x3) << 29);
          }
       else
          {

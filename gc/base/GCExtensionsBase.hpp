@@ -1427,7 +1427,7 @@ public:
 		, heapAlignment(HEAP_ALIGNMENT)
 		, absoluteMinimumOldSubSpaceSize(MINIMUM_OLD_SPACE_SIZE)
 		, absoluteMinimumNewSubSpaceSize(MINIMUM_NEW_SPACE_SIZE)
-		, darkMatterCompactThreshold((float)0.40)
+		, darkMatterCompactThreshold((float)0.15)
 		, parSweepChunkSize(0)
 		, heapExpansionMinimumSize(1024 * 1024)
 		, heapExpansionMaximumSize(0)
@@ -1764,7 +1764,7 @@ public:
 		, idleMinimumFree(0)
 		, gcOnIdle(false)
 		, compactOnIdle(false)
-		, gcOnIdleCompactThreshold((float)0.25)
+		, gcOnIdleCompactThreshold((float)0.10)
 #endif /* defined(OMR_GC_IDLE_HEAP_MANAGER) */
 #if defined(OMR_VALGRIND_MEMCHECK)
 		, valgrindMempoolAddr(0)

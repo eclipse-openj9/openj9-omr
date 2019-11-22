@@ -413,8 +413,9 @@ MM_MarkingScheme::createWorkPackets(MM_EnvironmentBase *env)
 void
 MM_MarkingScheme::fixupForwardedSlotOutline(GC_SlotObject *slotObject) {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	bool const compressed = _extensions->compressObjectReferences();
 	if (_extensions->getGlobalCollector()->isStwCollectionInProgress()) {
-		MM_ForwardedHeader forwardHeader(slotObject->readReferenceFromSlot());
+		MM_ForwardedHeader forwardHeader(slotObject->readReferenceFromSlot(), compressed);
 		omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
 
 		if (NULL != forwardPtr) {

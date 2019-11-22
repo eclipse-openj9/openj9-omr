@@ -32,7 +32,6 @@
 
 #include "HeapLinkedFreeHeader.hpp"
 
-
 /* Source object header bits */
 #define OMR_FORWARDED_TAG 4
 /* If 'being copied hint' is set, it hints that destination might still be being copied (although it might have just completed).
@@ -102,6 +101,10 @@ private:
 	omrobjectptr_t _objectPtr;					/**< the object on which to act */
 	MutableHeaderFields _preserved; 			/**< a backup copy of the header fields which may be modified by this class */
 	const uintptr_t _forwardingSlotOffset;		/**< fomrobject_t offset from _objectPtr to fomrobject_t slot that will hold the forwarding pointer */
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	bool const _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+
 	static const uintptr_t _forwardedTag = OMR_FORWARDED_TAG;	/**< bit mask used to mark forwarding slot value as forwarding pointer */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	static const fomrobject_t _selfForwardedTag = (fomrobject_t)(_forwardedTag | OMR_SELF_FORWARDED_TAG);	
@@ -111,8 +114,8 @@ private:
 	static const fomrobject_t _copyProgressInfoMask = (fomrobject_t)(_remainingSizeMask | OUTSTANDING_COPIES_MASK);
 	static const uintptr_t _copySizeAlignement = (uintptr_t)SIZE_ALIGNMENT;
 	static const uintptr_t _minIncrement = (131072 & _remainingSizeMask); /**< min size of copy section; does not have to be a power of 2, but it has to be aligned with _copySizeAlignement */ 
-	
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
 /*
  * Function members
  */
@@ -161,6 +164,22 @@ private:
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	
 public:
+	/**
+	 * Return back true if object references are compressed
+	 * @return true, if object references are compressed
+	 */
+	MMINLINE bool compressObjectReferences() {
+#if defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_GC_FULL_POINTERS)
+		return _compressObjectReferences;
+#else /* defined(OMR_GC_FULL_POINTERS) */
+		return true;
+#endif /* defined(OMR_GC_FULL_POINTERS) */
+#else /* defined(OMR_GC_COMPRESSED_POINTERS) */
+		return false;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
+	}
+
 #if defined(FORWARDEDHEADER_DEBUG)
 #define ForwardedHeaderAssertCondition(condition) #condition
 #define ForwardedHeaderAssert(condition) MM_ForwardedHeader::Assert((condition), ForwardedHeaderAssertCondition(((condition))), __FILE__, __LINE__)
@@ -420,6 +439,24 @@ public:
 
 	/**
 	 * Constructor.
+	 *
+	 * @param[in] objectPtr pointer to the object, which may or may not have been forwarded
+	 * @param[in] compressed bool describing whether object references are compressed or not
+	 */
+	MM_ForwardedHeader(omrobjectptr_t objectPtr, bool compressed)
+	: _objectPtr(objectPtr)
+	, _forwardingSlotOffset(0)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	, _compressObjectReferences(compressed)
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+	{
+		/* TODO: Fix the constraint that the object header/forwarding slot offset must be zero. */
+		volatile MutableHeaderFields* originalHeader = (volatile MutableHeaderFields *)((fomrobject_t*)_objectPtr + _forwardingSlotOffset);
+		*(uintptr_t *)&_preserved.slot = *((uintptr_t *)&originalHeader->slot);
+	}
+
+	/**
+	 * TODO: Remove once matching openj9 change is made.
 	 *
 	 * @param[in] objectPtr pointer to the object, which may or may not have been forwarded
 	 * @param[in] forwardingSlotOffset fomrobject_t offset to uintptr_t size slot that will hold the forwarding pointer

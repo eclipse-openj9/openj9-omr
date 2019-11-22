@@ -77,7 +77,7 @@ MM_ForwardedHeader::setForwardedObjectInternal(omrobjectptr_t destinationObjectP
 	if (MM_AtomicOperations::lockCompareExchange((volatile uintptr_t*)&objectHeader->slot, oldValue, newValue) != oldValue) {
 		/* If we lost forwarding it, return where we are really forwarded. Another thread could raced us to forward on another location
 		 * or (Concurrent world) self-forward it. In the later case, we will return NULL */
-		MM_ForwardedHeader forwardedObject(_objectPtr);
+		MM_ForwardedHeader forwardedObject(_objectPtr, compressObjectReferences());
 		ForwardedHeaderAssert(forwardedObject.isForwardedPointer());
 		destinationObjectPtr = forwardedObject.getForwardedObject();
 	}
@@ -213,7 +213,7 @@ MM_ForwardedHeader::setSelfForwardedObject()
 	if (oldValue != lockCompareExchangeObjectHeader(&objectHeader->slot, oldValue, newValue)) {
 		/* If we lost on self-forwarding, return where we are really forwarded. We could still be self-forwarded (another thread raced us) or
 		 * strictly forwarded (another thread successfully copied the object). Either way, getNonStrictForwardedObject() should return us where we really are. */
-		MM_ForwardedHeader forwardedHeader(_objectPtr);
+		MM_ForwardedHeader forwardedHeader(_objectPtr, compressObjectReferences());
 		forwardedObject = forwardedHeader.getNonStrictForwardedObject();
 	}
 

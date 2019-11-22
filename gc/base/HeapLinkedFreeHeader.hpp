@@ -202,15 +202,6 @@ public:
 		nextHead->setNext((MM_HeapLinkedFreeHeader *)newValue, compressed);
 	}
 
-// TODO: Delete all of these once the matching openj9 change has been made
-#if defined(OMR_GC_COMPRESSED_POINTERS)
-	MMINLINE static MM_HeapLinkedFreeHeader* fillWithHoles(void* addrBase, uintptr_t freeEntrySize) { return fillWithHoles(addrBase, freeEntrySize, true); }
-	MMINLINE MM_HeapLinkedFreeHeader *getNext() { return getNext(true); }
-#else
-	MMINLINE static MM_HeapLinkedFreeHeader* fillWithHoles(void* addrBase, uintptr_t freeEntrySize) { return fillWithHoles(addrBase, freeEntrySize, false); }
-	MMINLINE MM_HeapLinkedFreeHeader *getNext() { return getNext(false); }
-#endif
-
 protected:
 private:
 

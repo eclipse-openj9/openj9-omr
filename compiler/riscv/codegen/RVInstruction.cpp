@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -495,15 +495,15 @@ uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
          }
       else
          {
-         TR_ASSERT(0, "Non-recursive calls not (yet) supported");
+         offset = (uint8_t*)getSymbolReference()->getMethodAddress() - cursor;
          }
       }
    else
       {
-      uintptr_t destination = (uintptr_t)(getLabelSymbol()->getCodeLocation());
+      uint8_t* destination = (uint8_t*)(getLabelSymbol()->getCodeLocation());
       if (destination != 0)
          {
-         offset = destination - (uintptr_t)cursor;
+         offset = destination - cursor;
          }
       else
          {

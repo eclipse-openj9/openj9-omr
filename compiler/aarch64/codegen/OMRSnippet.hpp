@@ -81,6 +81,7 @@ class OMR_EXTENSIBLE Snippet : public OMR::Snippet
       IsForceRecompilation,
       IsStackCheckFailure,
       IsUnresolvedData,
+      IsConstantData,
       numKinds
       };
 

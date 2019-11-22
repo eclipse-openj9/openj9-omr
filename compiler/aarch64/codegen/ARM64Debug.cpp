@@ -28,6 +28,7 @@
 #include "codegen/ARM64HelperCallSnippet.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/GCRegisterMap.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/MemoryReference.hpp"
@@ -831,17 +832,19 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmSymInstruction *instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+   trfprintf(pOutFile, ", ");
+
    uint32_t imm = instr->getSourceImmediate() & 0x7FFFF;
    TR::LabelSymbol *label = instr->getLabelSymbol();
    TR::Snippet *snippet = label ? label->getSnippet() : NULL;
    if (snippet)
       {
       print(pOutFile, label);
-      trfprintf(pOutFile, " (%s)", getName(snippet));
+      trfprintf(pOutFile, "(%s)", getName(snippet));
       }
    else
       {
-      trfprintf(pOutFile, " " POINTER_PRINTF_FORMAT, instr->getBinaryEncoding() + (imm << 2));
+      trfprintf(pOutFile, POINTER_PRINTF_FORMAT, instr->getBinaryEncoding() + (imm << 2));
       }
 
    trfflush(_comp->getOutFile());
@@ -1350,6 +1353,9 @@ TR_Debug::getNamea64(TR::Snippet * snippet)
       case TR::Snippet::IsUnresolvedData:
          return "Unresolved Data Snippet";
          break;
+      case TR::Snippet::IsConstantData:
+         return "Constant Data Snippet";
+         break;
       case TR::Snippet::IsRecompilation:
          return "Recompilation Snippet";
          break;
@@ -1403,7 +1409,9 @@ TR_Debug::printa64(TR::FILE *pOutFile, TR::Snippet * snippet)
       case TR::Snippet::IsUnresolvedData:
          print(pOutFile, (TR::UnresolvedDataSnippet *)snippet);
          break;
-
+      case TR::Snippet::IsConstantData:
+         print(pOutFile, (TR::ARM64ConstantDataSnippet*)snippet);
+         break;
 
       case TR::Snippet::IsMonitorExit:
       case TR::Snippet::IsMonitorEnter:

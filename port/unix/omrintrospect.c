@@ -864,7 +864,11 @@ count_threads(struct PlatformWalkData *data)
 		 */
 		while ((file = readdir(proc)) != NULL) {
 			/* we need a directory who's name starts with a '.' - we filter out '.' and '..' */
-			if (file->d_type == DT_DIR && file->d_name[0] == '.' && file->d_name[1] != '\0' && file->d_name[1] != '.') {
+			if ((file->d_type == DT_DIR)
+				&& (file->d_name[0] == '.')
+				&& (file->d_name[1] != '\0')
+				&& (file->d_name[1] != '.'))
+			{
 				FILE *status = NULL;
 				/* The needed buffer size to store the path to status is calculated as:
 				 *  /proc/.<pid>/status\0
@@ -873,9 +877,10 @@ count_threads(struct PlatformWalkData *data)
 				 */
 				char buf[6 + 11 + 7 + 1];
 
-				strcpy(buf, "/proc/");
-				/* If d_name is longer than 11 characters, it will be truncated */
-				strncat(buf, file->d_name, 11);
+				memcpy(&buf[0], "/proc/", 6);
+				memcpy(&buf[6], file->d_name, 11);
+				/* Add a NUL-terminator in case d_name is longer than 11 characters. */
+				buf[6 + 11] = '\0';
 				strcat(buf, "/status");
 
 				status = fopen(buf, "r");

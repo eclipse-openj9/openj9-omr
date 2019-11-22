@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "il/Node.hpp"
@@ -55,10 +56,29 @@ TR::Register *OMR::ARM64::TreeEvaluator::cconstEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::ARM64::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *tempReg = cg->allocateRegister();
-   intptrj_t address = node->getLongInt();
-   loadConstant64(cg, node, address, tempReg);
-   return node->setRegister(tempReg);
+   if (cg->profiledPointersRequireRelocation() &&
+         (node->isMethodPointerConstant() || node->isClassPointerConstant()))
+      {
+      TR::Register *trgReg = node->setRegister(cg->allocateRegister());
+      TR_ExternalRelocationTargetKind reloKind = TR_NoRelocation;
+      if (node->isMethodPointerConstant())
+         {
+         reloKind = TR_MethodPointer;
+         if (node->getInlinedSiteIndex() == -1)
+            reloKind = TR_RamMethod;
+         }
+      else if (node->isClassPointerConstant())
+         reloKind = TR_ClassPointer;
+
+      TR_ASSERT(reloKind != TR_NoRelocation, "relocation kind shouldn't be TR_NoRelocation");
+      loadAddressConstantInSnippet(cg, node, node->getAddress(), trgReg, reloKind);
+
+      return trgReg;
+      }
+
+   TR::Register *tempReg = node->setRegister(cg->allocateRegister());
+   loadConstant64(cg, node, node->getAddress(), tempReg, NULL);
+   return tempReg;
    }
 
 TR::Register *OMR::ARM64::TreeEvaluator::lconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)

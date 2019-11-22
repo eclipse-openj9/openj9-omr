@@ -175,9 +175,9 @@ uintptr_t Get_Number_Of_CPUs();
 
 #endif
 
-#define JIFFIES			100
-#define USECS_PER_SEC	1000000
-#define TICKS_TO_USEC	((uint64_t)(USECS_PER_SEC/JIFFIES))
+#define JIFFIES         100
+#define USECS_PER_SEC   1000000
+#define TICKS_TO_USEC   ((uint64_t)(USECS_PER_SEC/JIFFIES))
 
 /* For the omrsysinfo_env_iterator */
 extern char **environ;
@@ -187,7 +187,7 @@ static uintptr_t copyEnvToBufferSignalHandler(struct OMRPortLibrary *portLib, ui
 
 static void setPortableError(OMRPortLibrary *portLibrary, const char *funcName, int32_t portlibErrno, int systemErrno);
 
-static const char *getgroupsErrorMsgPrefix = "getgroups : ";
+static const char getgroupsErrorMsgPrefix[] = "getgroups : ";
 
 typedef struct EnvListItem {
 	struct EnvListItem *next;
@@ -201,7 +201,7 @@ typedef struct CopyEnvToBufferArgs {
 } CopyEnvToBufferArgs;
 
 /* For the omrsysinfo_limit_iterator */
-struct  {
+struct {
 	int resource;
 	char *resourceName;
 } limitMap[] = {
@@ -268,10 +268,10 @@ struct  {
 #define CGROUP_METRIC_FILE_CONTENT_MAX_LIMIT 1024
 
 /* An entry in /proc/<pid>/cgroup is of following form:
- * 	<hierarchy ID>:<subsystem>[,<subsystem>]*:<cgroup name>
+ *  <hierarchy ID>:<subsystem>[,<subsystem>]*:<cgroup name>
  *
  * An example:
- * 	7:cpuacct,cpu:/mycgroup
+ *  7:cpuacct,cpu:/mycgroup
  */
 #define PROC_PID_CGROUP_ENTRY_FORMAT "%d:%[^:]:%s"
 #define PROC_PID_CGROUP_SYSTEMD_ENTRY_FORMAT "%d::%s"
@@ -281,36 +281,36 @@ struct  {
 /* Currently 12 subsystems or resource controllers are defined.
  */
 typedef enum OMRCgroupSubsystem {
-		INVALID_SUBSYSTEM = -1,
-		BLKIO,
-		CPU,
-		CPUACCT,
-		CPUSET,
-		DEVICES,
-		FREEZER,
-		HUGETLB,
-		MEMORY,
-		NET_CLS,
-		NET_PRIO,
-		PERF_EVENT,
-		PIDS,
-		NUM_SUBSYSTEMS
+	INVALID_SUBSYSTEM = -1,
+	BLKIO,
+	CPU,
+	CPUACCT,
+	CPUSET,
+	DEVICES,
+	FREEZER,
+	HUGETLB,
+	MEMORY,
+	NET_CLS,
+	NET_PRIO,
+	PERF_EVENT,
+	PIDS,
+	NUM_SUBSYSTEMS
 } OMRCgroupSubsystem;
 
-const char *subsystemNames[NUM_SUBSYSTEMS] = {
-						"blkio",
-						"cpu",
-						"cpuacct",
-						"cpuset",
-						"devices",
-						"freezer",
-						"hugetlb",
-						"memory",
-						"net_cls",
-						"net_prio",
-						"perf_event",
-						"pids",
-					};
+const char * const subsystemNames[NUM_SUBSYSTEMS] = {
+	"blkio",
+	"cpu",
+	"cpuacct",
+	"cpuset",
+	"devices",
+	"freezer",
+	"hugetlb",
+	"memory",
+	"net_cls",
+	"net_prio",
+	"perf_event",
+	"pids",
+};
 
 struct {
 	const char *name;
@@ -432,7 +432,7 @@ static int32_t retrieveAIXMemoryStats(struct OMRPortLibrary *portLibrary, struct
  *
  * @param[in] errorCode The error code reported by the OS
  *
- * @return	the (negative) portable error code
+ * @return  the (negative) portable error code
  */
 static int32_t
 findError(int32_t errorCode)
@@ -535,7 +535,7 @@ intptr_t
 omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char *infoString, uintptr_t bufSize)
 {
 	char *value = (char *)getenv(envVar);
-	uintptr_t len;
+	uintptr_t len = 0;
 
 	if (NULL == value) {
 		return -1;
@@ -557,9 +557,7 @@ omrsysinfo_get_OS_type(struct OMRPortLibrary *portLibrary)
 	return "Mac OS X";
 #else
 	if (NULL == PPG_si_osType) {
-		int rc;
-		int len;
-		char *buffer;
+		int rc = 0;
 		struct utsname sysinfo;
 
 #ifdef J9ZOS390
@@ -568,14 +566,14 @@ omrsysinfo_get_OS_type(struct OMRPortLibrary *portLibrary)
 		rc = uname(&sysinfo);
 #endif
 		if (rc >= 0) {
-			len = strlen(sysinfo.sysname) + 1;
-			buffer = portLibrary->mem_allocate_memory(portLibrary, len, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+			int len = strlen(sysinfo.sysname);
+			char *buffer = portLibrary->mem_allocate_memory(portLibrary, len + 1, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 			if (NULL == buffer) {
 				return NULL;
 			}
-			/* copy and null terminte (just in case) */
-			strncpy(buffer, sysinfo.sysname, len - 1);
-			buffer[len - 1] = '\0';
+			/* copy and NUL-terminate */
+			memcpy(buffer, sysinfo.sysname, len);
+			buffer[len] = '\0';
 			PPG_si_osType = buffer;
 		}
 	}
@@ -622,9 +620,8 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 		 * On newer versions of MacOS, the OS name is provided by sysctlbyname().
 		 * On older versions of MacOS, the OS name is provided by a property list file.
 		 * The relevant portion is:
-		 * 		<key>ProductVersion</key>
-		 * 		<string>10.13.6</string>
-		 *
+		 *      <key>ProductVersion</key>
+		 *      <string>10.13.6</string>
 		 */
 		size_t resultSize = 0;
 		rc = sysctlbyname(KERN_OSPRODUCTVERSION, NULL, &resultSize, NULL, 0);
@@ -1217,7 +1214,7 @@ searchSystemPath(struct OMRPortLibrary *portLibrary, char *filename, char **resu
 #ifdef DEBUG
 		(portLibrary->tty_printf)(portLibrary, "Searching path: \"%s\"\n", temp);
 #endif
-		if (!length) {		/* empty path entry */
+		if (!length) { /* empty path entry */
 			continue;
 		}
 		if ((sdir = opendir(temp))) {
@@ -1270,8 +1267,8 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 #elif defined(OMRZTPF)
 		toReturn = get_IPL_IstreamCount();
 		if (0 == toReturn) {
-                        Trc_PRT_sysinfo_get_number_CPUs_by_type_failedPhysical("(no errno) ", 0);
-                }
+						Trc_PRT_sysinfo_get_number_CPUs_by_type_failedPhysical("(no errno) ", 0);
+				}
 #else
 		if (0 == toReturn) {
 			Trc_PRT_sysinfo_get_number_CPUs_by_type_platformNotSupported();
@@ -1435,34 +1432,34 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 	return toReturn;
 }
 
-#define MAX_LINE_LENGTH		128
+#define MAX_LINE_LENGTH     128
 
 /* Memory units are specified in Kilobytes. */
-#define ONE_K				1024
+#define ONE_K               1024
 
 /* Base for the decimal number system is 10. */
-#define COMPUTATION_BASE	10
+#define COMPUTATION_BASE    10
 
 #if defined(LINUX)
-#define MEMSTATPATH			"/proc/meminfo"
+#define MEMSTATPATH         "/proc/meminfo"
 
-#define MEMTOTAL_PREFIX		"MemTotal:"
-#define MEMTOTAL_PREFIX_SZ	(sizeof(MEMTOTAL_PREFIX) - 1)
+#define MEMTOTAL_PREFIX     "MemTotal:"
+#define MEMTOTAL_PREFIX_SZ  (sizeof(MEMTOTAL_PREFIX) - 1)
 
-#define MEMFREE_PREFIX		"MemFree:"
-#define MEMFREE_PREFIX_SZ	(sizeof(MEMFREE_PREFIX) - 1)
+#define MEMFREE_PREFIX      "MemFree:"
+#define MEMFREE_PREFIX_SZ   (sizeof(MEMFREE_PREFIX) - 1)
 
-#define SWAPTOTAL_PREFIX	"SwapTotal:"
-#define SWAPTOTAL_PREFIX_SZ	(sizeof(SWAPTOTAL_PREFIX) - 1)
+#define SWAPTOTAL_PREFIX    "SwapTotal:"
+#define SWAPTOTAL_PREFIX_SZ (sizeof(SWAPTOTAL_PREFIX) - 1)
 
-#define SWAPFREE_PREFIX		"SwapFree:"
-#define SWAPFREE_PREFIX_SZ	(sizeof(SWAPFREE_PREFIX) - 1)
+#define SWAPFREE_PREFIX     "SwapFree:"
+#define SWAPFREE_PREFIX_SZ  (sizeof(SWAPFREE_PREFIX) - 1)
 
-#define CACHED_PREFIX		"Cached:"
-#define CACHED_PREFIX_SZ	(sizeof(CACHED_PREFIX) - 1)
+#define CACHED_PREFIX       "Cached:"
+#define CACHED_PREFIX_SZ    (sizeof(CACHED_PREFIX) - 1)
 
-#define BUFFERS_PREFIX		"Buffers:"
-#define BUFFERS_PREFIX_SZ	(sizeof(BUFFERS_PREFIX) - 1)
+#define BUFFERS_PREFIX      "Buffers:"
+#define BUFFERS_PREFIX_SZ   (sizeof(BUFFERS_PREFIX) - 1)
 
 /**
  * Function collects memory usage statistics by reading /proc/meminfo on Linux platforms.
@@ -1506,8 +1503,9 @@ retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9
 			memInfo->totalPhysical = strtol(tmpPtr, &endPtr, COMPUTATION_BASE);
 			if ((LONG_MIN == memInfo->totalPhysical) || (LONG_MAX == memInfo->totalPhysical)) {
 				Trc_PRT_retrieveLinuxMemoryStats_invalidRangeFound("MemTotal");
-				rc = (ERANGE == errno) ? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE :
-					 OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
+				rc = (ERANGE == errno)
+						? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE
+						: OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
 				goto _cleanup;
 			} /* end outer-if */
 
@@ -1519,8 +1517,9 @@ retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9
 			memInfo->availPhysical = strtol(tmpPtr, &endPtr, COMPUTATION_BASE);
 			if ((LONG_MIN == memInfo->availPhysical) || (LONG_MAX == memInfo->availPhysical)) {
 				Trc_PRT_retrieveLinuxMemoryStats_invalidRangeFound("MemFree");
-				rc = (ERANGE == errno) ? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE :
-					 OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
+				rc = (ERANGE == errno)
+						? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE
+						: OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
 				goto _cleanup;
 			} /* end outer-if */
 
@@ -1532,8 +1531,9 @@ retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9
 			memInfo->totalSwap = strtol(tmpPtr, &endPtr, COMPUTATION_BASE);
 			if ((LONG_MIN == memInfo->totalSwap) || (LONG_MAX == memInfo->totalSwap)) {
 				Trc_PRT_retrieveLinuxMemoryStats_invalidRangeFound("SwapTotal");
-				rc = (ERANGE == errno) ? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE :
-					 OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
+				rc = (ERANGE == errno)
+						? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE
+						: OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
 				goto _cleanup;
 			} /* end outer-if */
 
@@ -1545,8 +1545,9 @@ retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9
 			memInfo->availSwap = strtol(tmpPtr, &endPtr, COMPUTATION_BASE);
 			if ((LONG_MIN == memInfo->availSwap) || (LONG_MAX == memInfo->availSwap)) {
 				Trc_PRT_retrieveLinuxMemoryStats_invalidRangeFound("SwapFree");
-				rc = (ERANGE == errno) ? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE :
-					 OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
+				rc = (ERANGE == errno)
+						? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE
+						: OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
 				goto _cleanup;
 			} /* end outer-if */
 
@@ -1558,8 +1559,9 @@ retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9
 			memInfo->cached = strtol(tmpPtr, &endPtr, COMPUTATION_BASE);
 			if ((LONG_MIN == memInfo->cached) || (LONG_MAX == memInfo->cached)) {
 				Trc_PRT_retrieveLinuxMemoryStats_invalidRangeFound("Cached");
-				rc = (ERANGE == errno) ? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE :
-					 OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
+				rc = (ERANGE == errno)
+						? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE
+						: OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
 				goto _cleanup;
 			} /* end outer-if */
 
@@ -1571,8 +1573,9 @@ retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9
 			memInfo->buffered = strtol(tmpPtr, &endPtr, COMPUTATION_BASE);
 			if ((LONG_MIN == memInfo->buffered) || (LONG_MAX == memInfo->buffered)) {
 				Trc_PRT_retrieveLinuxMemoryStats_invalidRangeFound("Buffers");
-				rc = (ERANGE == errno) ? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE :
-					 OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
+				rc = (ERANGE == errno)
+						? OMRPORT_ERROR_SYSINFO_PARAM_HAS_INVALID_RANGE
+						: OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
 				goto _cleanup;
 			} /* end outer-if */
 
@@ -2568,7 +2571,7 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 	intptr_t bytesRead = -1;
 	/*
 	 * Read the first line of /proc/stat, which takes the form:
-	 * 		cpu <user> <nice> <system> <other data we don't use>
+	 *      cpu <user> <nice> <system> <other data we don't use>
 	 * where user, nice, and system are 64-bit numbers in units of USER_HZ (typically 10 ms).
 	 *
 	 * Each number will have up to 21 decimal digits.  Adding spaces and the "cpu  " prefix brings the total to
@@ -2714,13 +2717,13 @@ omrsysinfo_limit_iterator_next(struct OMRPortLibrary *portLibrary, J9SysinfoLimi
 		limitElement->name = limitMap[state->count].resourceName;
 
 		if (RLIM_INFINITY == limits.rlim_cur) {
-			limitElement->softValue	= (uint64_t) OMRPORT_LIMIT_UNLIMITED;
+			limitElement->softValue = (uint64_t) OMRPORT_LIMIT_UNLIMITED;
 		} else {
 			limitElement->softValue = (uint64_t) limits.rlim_cur;
 		}
 
 		if (RLIM_INFINITY == limits.rlim_max) {
-			limitElement->hardValue	= (uint64_t) OMRPORT_LIMIT_UNLIMITED;
+			limitElement->hardValue = (uint64_t) OMRPORT_LIMIT_UNLIMITED;
 		} else {
 			limitElement->hardValue = (uint64_t) limits.rlim_max;
 		}
@@ -2859,7 +2862,7 @@ convertWithMBTOWC(struct OMRPortLibrary *portLibrary, char *inputBuffer, char *o
  * Initializes the supplied buffer such that it can be used by the @ref omrsysinfo_env_iteraror_next() and @ref omrsysinfo_env_iterator_hasNext() APIs.
  *
  * If the caller supplies a non-NULL buffer that is not big enough to store all the name=value entries of the environment,
- * 	copyEnvToBuffer will store as many entries as possible, until the buffer is used up.
+ *  copyEnvToBuffer will store as many entries as possible, until the buffer is used up.
  *
  * If the buffer wasn't even big enough to contain a single entry, set its entire contents to '\0'
  *
@@ -2868,8 +2871,8 @@ convertWithMBTOWC(struct OMRPortLibrary *portLibrary, char *inputBuffer, char *o
  * @param[in] args pointer to a CopyEnvToBufferArgs structure
  *
  * @return
- * 		 - 0 if the buffer was big enough to store the entire environment.
- * 		 - the required size of the buffer, if it was not big enough to store the entire environment.
+ *       - 0 if the buffer was big enough to store the entire environment.
+ *       - the required size of the buffer, if it was not big enough to store the entire environment.
  *
  * @return: the number of elements available to the iterator
 */
@@ -2904,8 +2907,8 @@ copyEnvToBuffer(struct OMRPortLibrary *portLibrary, void *args)
 
 		storageRequiredForEnvironment = storageRequiredForEnvironment
 										+ sizeof(EnvListItem)
-										+ (intptr_t)(strlen(environ[i]) * J9_MAX_UTF8_SIZE_BYTES)	/* for the string itself (name=value ) */
-										+ 1;	/* for the null-terminator */
+										+ (intptr_t)(strlen(environ[i]) * J9_MAX_UTF8_SIZE_BYTES)   /* for the string itself (name=value ) */
+										+ 1;    /* for the null-terminator */
 	}
 
 	if (NULL == buffer) {
@@ -3076,8 +3079,8 @@ omrsysinfo_env_iterator_next(struct OMRPortLibrary *portLibrary, J9SysinfoEnvIte
 
 #if defined(LINUX)
 
-#define PROCSTATPATH	"/proc/stat"
-#define PROCSTATPREFIX	"cpu"
+#define PROCSTATPATH    "/proc/stat"
+#define PROCSTATPREFIX  "cpu"
 
 /**
  * Function collects processor usage statistics on Linux platforms and returns the same.
@@ -3129,8 +3132,9 @@ retrieveLinuxProcessorStats(struct OMRPortLibrary *portLibrary, struct J9Process
 	}
 
 	/* Loop until all records have been read-off "/proc/stat". */
-	while ((-1 != getline(&linePtr, &lineSz, procStatFs)) &&
-		   (0 == strncmp(linePtr, PROCSTATPREFIX, sizeof(PROCSTATPREFIX) - 1))) {
+	while ((-1 != getline(&linePtr, &lineSz, procStatFs))
+		&& (0 == strncmp(linePtr, PROCSTATPREFIX, sizeof(PROCSTATPREFIX) - 1)))
+	{
 		int32_t cpuid = -1;
 
 		/* Insufficient memory allocated since cpu count increased. Cleanup and return error. */
@@ -3305,9 +3309,9 @@ retrieveAIXProcessorStats(struct OMRPortLibrary *portLibrary, struct J9Processor
 	procInfo->procInfoArray[0].systemTime = total_cpu_usage.sys * TICKS_TO_USEC;
 	procInfo->procInfoArray[0].idleTime = total_cpu_usage.idle * TICKS_TO_USEC;
 	procInfo->procInfoArray[0].waitTime = total_cpu_usage.wait * TICKS_TO_USEC;
-	procInfo->procInfoArray[0].busyTime = procInfo->procInfoArray[0].userTime +
-										  procInfo->procInfoArray[0].systemTime +
-										  procInfo->procInfoArray[0].waitTime;
+	procInfo->procInfoArray[0].busyTime = procInfo->procInfoArray[0].userTime
+										+ procInfo->procInfoArray[0].systemTime
+										+ procInfo->procInfoArray[0].waitTime;
 
 	/* perfstat_cpu() returns (highest_CPUID+1) that was online since last boot, but counts-in
 	 * stale CPU records too. At present, we can't tell exactly which CPUs are online at this
@@ -3332,7 +3336,7 @@ retrieveAIXProcessorStats(struct OMRPortLibrary *portLibrary, struct J9Processor
 	/* Allocate as many entries perfstat_cpu_t as there are processors on the machine. */
 	statp = (perfstat_cpu_t*) portLibrary->mem_allocate_memory(portLibrary,
 															   onlineProcessorCount * sizeof(perfstat_cpu_t),
-												   			   OMR_GET_CALLSITE(),
+															   OMR_GET_CALLSITE(),
 															   OMRMEM_CATEGORY_PORT_LIBRARY);
 	if (NULL == statp) {
 		Trc_PRT_retrieveAIXProcessorStats_memAllocFailed();
@@ -4295,7 +4299,7 @@ _end:
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
  * @param[out] inContainer pointer to BOOLEAN which on successful return indicates if
- * 		the process is running in container or not.  On error it indicates FALSE.
+ *      the process is running in container or not.  On error it indicates FALSE.
  *
  * @return 0 on success, otherwise negative error code
  */
@@ -4396,7 +4400,7 @@ getCgroupMemoryLimit(struct OMRPortLibrary *portLibrary, uint64_t *limit)
 	if (cgroupMemLimit > physicalMemLimit) {
 		Trc_PRT_sysinfo_cgroup_get_memlimit_unlimited();
 		rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_NOT_SET, "memory limit is not set");
-                goto _end;
+				goto _end;
 	}
 	if (NULL != limit) {
 		*limit = cgroupMemLimit;
@@ -4586,14 +4590,14 @@ omrsysinfo_cgroup_subsystem_iterator_init(struct OMRPortLibrary *portLibrary, ui
 	state->fileMetricCounter = 0;
 	switch (subsystem) {
 	case OMR_CGROUP_SUBSYSTEM_MEMORY :
-		 state->numElements = sizeof(omrCgroupMemoryMetricMap) / sizeof(omrCgroupMemoryMetricMap[0]);
-		 break;
+		state->numElements = sizeof(omrCgroupMemoryMetricMap) / sizeof(omrCgroupMemoryMetricMap[0]);
+		break;
 	case OMR_CGROUP_SUBSYSTEM_CPU :
-		 state->numElements = sizeof(omrCgroupCpuMetricMap) / sizeof(omrCgroupCpuMetricMap[0]);
-		 break;
+		state->numElements = sizeof(omrCgroupCpuMetricMap) / sizeof(omrCgroupCpuMetricMap[0]);
+		break;
 	case OMR_CGROUP_SUBSYSTEM_CPUSET :
-		 state->numElements = sizeof(omrCgroupCpusetMetricMap) / sizeof(omrCgroupCpusetMetricMap[0]);
-		 break;
+		state->numElements = sizeof(omrCgroupCpusetMetricMap) / sizeof(omrCgroupCpusetMetricMap[0]);
+		break;
 	default :
 		goto _end;
 	}
@@ -4768,25 +4772,23 @@ omrsysinfo_cgroup_subsystem_iterator_destroy(struct OMRPortLibrary *portLibrary,
 
 #if defined(OMRZTPF)
 /*
- *	Return the number of I-streams ("processors", as called by other
- *	systems) in an unsigned integer as detected at IPL time.
+ * Return the number of I-streams ("processors", as called by other
+ * systems) in an unsigned integer as detected at IPL time.
  */
 uintptr_t
-get_IPL_IstreamCount( void ) {
-	struct dctist *ist;
-	ist = (struct dctist *)cinfc_fast(CINFC_CMMIST);
+get_IPL_IstreamCount(void) {
+	struct dctist *ist = (struct dctist *)cinfc_fast(CINFC_CMMIST);
 	int numberOfIStreams = ist->istactis;
 	return (uintptr_t)numberOfIStreams;
 }
 
 /*
- *      Return the number of I-streams ("processors", as called by other
- *      systems) in an unsigned integer as detect at Process Dispatch time.
+ * Return the number of I-streams ("processors", as called by other
+ * systems) in an unsigned integer as detect at Process Dispatch time.
  */
 uintptr_t
-get_Dispatch_IstreamCount( void ) {
-	struct dctist *ist;
-	ist = (struct dctist *)cinfc_fast(CINFC_CMMIST);
+get_Dispatch_IstreamCount(void) {
+	struct dctist *ist = (struct dctist *)cinfc_fast(CINFC_CMMIST);
 	int numberOfIStreams = ist->istuseis;
 	return (uintptr_t)numberOfIStreams;
 }

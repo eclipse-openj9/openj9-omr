@@ -2960,9 +2960,15 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
 	/* Empty all the Packets if we are aborting concurrent mark.
-	 * If we have had a RS overflow abort the concurrent collection
-	 * regardless of how far we got to force a full STW mark.
+	 * If we have had a RS overflow or an explicit gc (resulting for idleness) then 
+	 * abort the concurrent collection regardless of how far we got to force a full STW mark.
 	 */
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode) && (CONCURRENT_OFF < executionModeAtGC)) {
+		abortCollection(env, ABORT_COLLECTION_IDLE_GC);
+		MM_ParallelGlobalGC::internalPreCollect(env, subSpace, allocDescription, gcCode);
+	} else
+#endif /* OMR_GC_IDLE_HEAP_MANAGER */
 	if (_extensions->isRememberedSetInOverflowState() || ((CONCURRENT_OFF < executionModeAtGC) && (CONCURRENT_TRACE_ONLY > executionModeAtGC))) {
 		CollectionAbortReason reason = (_extensions->isRememberedSetInOverflowState() ? ABORT_COLLECTION_REMEMBERSET_OVERFLOW : ABORT_COLLECTION_INSUFFICENT_PROGRESS);
 		abortCollection(env, reason);

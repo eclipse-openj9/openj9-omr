@@ -85,3 +85,23 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(Apple)?Clang$")
 else()
 	set(OMR_PLATFORM_THREAD_LIBRARY -pthread)
 endif()
+
+function(_omr_toolchain_separate_debug_symbols tgt)
+	set(exe_file "$<TARGET_FILE:${tgt}>")
+	set(dbg_file "$<TARGET_FILE:${tgt}>.dbg")
+	if(OMR_OS_OSX)
+		add_custom_command(
+			TARGET "${tgt}"
+			POST_BUILD
+			COMMAND dysymutil -f ${exe_file} -o ${dbg_file}
+		)
+	else()
+		add_custom_command(
+			TARGET "${tgt}"
+			POST_BUILD
+			COMMAND "${CMAKE_OBJCOPY}" --only-keep-debug "${exe_file}" "${dbg_file}"
+			COMMAND "${CMAKE_OBJCOPY}" --strip-debug "${exe_file}"
+			COMMAND "${CMAKE_OBJCOPY}" "--add-gnu-debuglink=${dbg_file}" "${exe_file}"
+		)
+	endif()
+endfunction()

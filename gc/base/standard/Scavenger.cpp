@@ -1167,6 +1167,7 @@ MMINLINE bool
 MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_t *objectPtrIndirect)
 {
 	bool toReturn = false;
+	bool const compressed = _extensions->compressObjectReferences();
 
 	/* clear effectiveCopyCache to support aliasing check -- will be updated if copy actually takes place */
 	env->_effectiveCopyScanCache = NULL;
@@ -1175,7 +1176,7 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_
 	if (NULL != objectPtr) {
 		if (isObjectInEvacuateMemory(objectPtr)) {
 			/* Object needs to be copy and forwarded.  Check if the work has already been done */
-			MM_ForwardedHeader forwardHeader(objectPtr);
+			MM_ForwardedHeader forwardHeader(objectPtr, compressed);
 			omrobjectptr_t forwardPtr = forwardHeader.getForwardedObject();
 
 			if (NULL != forwardPtr) {
@@ -1200,7 +1201,7 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_
 							/* Failed to self-forward (someone successfully copied it). Re-fetch the forwarding info
 							 * and ensure it's fully copied before exposing this new version of the object */
 							toReturn = isObjectInNewSpace(forwardPtr);
-							MM_ForwardedHeader(objectPtr).copyOrWait(forwardPtr);
+							MM_ForwardedHeader(objectPtr, compressed).copyOrWait(forwardPtr);
 							*objectPtrIndirect = forwardPtr;
 						}
 					}
@@ -1213,7 +1214,7 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_
 			}
 		} else if (isObjectInNewSpace(objectPtr)) {
 #if defined(OMR_GC_MODRON_SCAVENGER_STRICT)
-			MM_ForwardedHeader forwardHeader(objectPtr);
+			MM_ForwardedHeader forwardHeader(objectPtr, compressed);
 			Assert_MM_true(!forwardHeader.isForwardedPointer());
 #endif /* defined(OMR_GC_MODRON_SCAVENGER_STRICT) */
 			/* When slot has been scanned before, and is already copied or forwarded
@@ -1303,6 +1304,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 #endif /* defined(J9VM_INTERP_NATIVE_SUPPORT) */
 	MM_CopyScanCacheStandard *copyCache;
 	void *newCacheAlloc;
+	bool const compressed = _extensions->compressObjectReferences();
 
 	if (isBackOutFlagRaised()) {
 		/* Waste of time to copy, if we aborted */
@@ -1453,7 +1455,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 
 #if defined(J9VM_INTERP_NATIVE_SUPPORT)
 		if (NULL != hotFieldPadBase) {
-			bool const compressed = env->compressObjectReferences();
+			bool const compressed = _extensions->compressObjectReferences();
 			/* lay down a hole (XXX:  This assumes that we are using AOL (address-ordered-list)) */
 			MM_HeapLinkedFreeHeader::fillWithHoles(hotFieldPadBase, hotFieldPadSize, compressed);
 		}
@@ -1561,7 +1563,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 
 		/* Failed to forward (someone else did it). Re-fetch the forwarding info and (for Concurrent Scavenger only) ensure
 		 * it's fully copied before letting the caller expose this new version of the object */
-		MM_ForwardedHeader(forwardedHeader->getObject()).copyOrWait(destinationObjectPtr);
+		MM_ForwardedHeader(forwardedHeader->getObject(), compressed).copyOrWait(destinationObjectPtr);
 	}
 	/* return value for updating the slot */
 	return destinationObjectPtr;
@@ -2830,6 +2832,7 @@ void
 MM_Scavenger::rescanThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *objectPtrIndirect)
 {
 	Assert_MM_false(IS_CONCURRENT_ENABLED);
+	bool const compressed = _extensions->compressObjectReferences();
 
 	omrobjectptr_t objectPtr = *objectPtrIndirect;
 	if(NULL != objectPtr) {
@@ -2837,7 +2840,7 @@ MM_Scavenger::rescanThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *obje
 			/* the slot is still pointing at evacuate memory. This means that it must have been left unforwarded
 			 * in the first pass so that we would process it here.
 			 */
-			MM_ForwardedHeader forwardedHeader(objectPtr);
+			MM_ForwardedHeader forwardedHeader(objectPtr, compressed);
 			omrobjectptr_t tenuredObjectPtr = forwardedHeader.getForwardedObject();
 
 			Trc_MM_ParallelScavenger_rescanThreadSlot_rememberedObject(env->getLanguageVMThread(), tenuredObjectPtr);
@@ -3373,9 +3376,10 @@ bool
 MM_Scavenger::backOutFixSlotWithoutCompression(volatile omrobjectptr_t *slotPtr)
 {
 	omrobjectptr_t objectPtr = *slotPtr;
+	bool const compressed = _extensions->compressObjectReferences();
 
 	if(NULL != objectPtr) {
-		MM_ForwardedHeader forwardHeader(objectPtr);
+		MM_ForwardedHeader forwardHeader(objectPtr, compressed);
 		Assert_MM_false(forwardHeader.isForwardedPointer());
 		if (forwardHeader.isReverseForwardedPointer()) {
 			*slotPtr = forwardHeader.getReverseForwardedPointer();
@@ -3394,9 +3398,10 @@ bool
 MM_Scavenger::backOutFixSlot(GC_SlotObject *slotObject)
 {
 	omrobjectptr_t objectPtr = slotObject->readReferenceFromSlot();
+	bool const compressed = _extensions->compressObjectReferences();
 
 	if(NULL != objectPtr) {
-		MM_ForwardedHeader forwardHeader(objectPtr);
+		MM_ForwardedHeader forwardHeader(objectPtr, compressed);
 		Assert_MM_false(forwardHeader.isForwardedPointer());
 		if (forwardHeader.isReverseForwardedPointer()) {
 			slotObject->writeReferenceToSlot(forwardHeader.getReverseForwardedPointer());
@@ -3437,7 +3442,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 {
 	GC_MemorySubSpaceRegionIteratorStandard evacuateRegionIterator(_activeSubSpace);
 	MM_HeapRegionDescriptorStandard* rootRegion = NULL;
-	bool const compressed = env->compressObjectReferences();
+	bool const compressed = _extensions->compressObjectReferences();
 
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
@@ -3457,7 +3462,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 
 			while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
-				MM_ForwardedHeader header(objectPtr);
+				MM_ForwardedHeader header(objectPtr, compressed);
 				if (header.isForwardedPointer()) {
 					omrobjectptr_t forwardedObject = header.getForwardedObject();
 					omrobjectptr_t originalObject = header.getObject();
@@ -3504,7 +3509,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 				omrobjectptr_t objectPtr = NULL;
 
 				while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
-					MM_ForwardedHeader header(objectPtr);
+					MM_ForwardedHeader header(objectPtr, compressed);
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 					uint32_t originalOverlap = header.getPreservedOverlap();
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
@@ -3525,9 +3530,10 @@ bool
 MM_Scavenger::fixupSlotWithoutCompression(volatile omrobjectptr_t *slotPtr)
 {
 	omrobjectptr_t objectPtr = *slotPtr;
+	bool const compressed = _extensions->compressObjectReferences();
 
 	if(NULL != objectPtr) {
-		MM_ForwardedHeader forwardHeader(objectPtr);
+		MM_ForwardedHeader forwardHeader(objectPtr, compressed);
 		omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
 		if (NULL != forwardPtr) {
 			if (forwardHeader.isSelfForwardedPointer()) {
@@ -3545,9 +3551,10 @@ bool
 MM_Scavenger::fixupSlot(GC_SlotObject *slotObject)
 {
 	omrobjectptr_t objectPtr = slotObject->readReferenceFromSlot();
+	bool const compressed = _extensions->compressObjectReferences();
 
 	if(NULL != objectPtr) {
-		MM_ForwardedHeader forwardHeader(objectPtr);
+		MM_ForwardedHeader forwardHeader(objectPtr, compressed);
 		if (forwardHeader.isStrictlyForwardedPointer()) {
 			slotObject->writeReferenceToSlot(forwardHeader.getForwardedObject());
 			Assert_MM_false(isObjectInEvacuateMemory(slotObject->readReferenceFromSlot()));
@@ -3584,6 +3591,7 @@ MM_Scavenger::processRememberedSetInBackout(MM_EnvironmentStandard *env)
 	omrobjectptr_t *slotPtr;
 	omrobjectptr_t objectPtr;
 	MM_SublistPuddle *puddle;
+	bool const compressed = _extensions->compressObjectReferences();
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavenger) {
@@ -3600,7 +3608,7 @@ MM_Scavenger::processRememberedSetInBackout(MM_EnvironmentStandard *env)
 						/* Is slot flagged for deferred removal ? */
 						/* Yes..so first remove tag bit from object address */
 						objectPtr = (omrobjectptr_t)((uintptr_t)objectPtr & ~(uintptr_t)DEFERRED_RS_REMOVE_FLAG);
-						Assert_MM_false(MM_ForwardedHeader(objectPtr).isForwardedPointer());
+						Assert_MM_false(MM_ForwardedHeader(objectPtr, compressed).isForwardedPointer());
 
 						/* The object did not have Nursery references at initial RS scan, but one could have been added during CS cycle by a mutator. */
 						if (!shouldRememberObject(env, objectPtr)) {
@@ -3643,7 +3651,7 @@ MM_Scavenger::processRememberedSetInBackout(MM_EnvironmentStandard *env)
 				objectPtr = *slotPtr;
 
 				if(objectPtr) {
-					if (MM_ForwardedHeader(objectPtr).isReverseForwardedPointer()) {
+					if (MM_ForwardedHeader(objectPtr, compressed).isReverseForwardedPointer()) {
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 						omrtty_printf("{SCAV: Back out remove RS object %p[%p]}\n", objectPtr, *objectPtr);
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
@@ -3671,6 +3679,7 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 	 * 3) Restore the remembered set
 	 * 4) Client language completion of back out
 	 */
+	bool const compressed = _extensions->compressObjectReferences();
 
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
@@ -3729,7 +3738,7 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 						omrobjectptr_t objectPtr = NULL;
 						omrobjectptr_t fwdObjectPtr = NULL;
 						while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
-							MM_ForwardedHeader header(objectPtr);
+							MM_ForwardedHeader header(objectPtr, compressed);
 							fwdObjectPtr = header.getForwardedObject();
 							if (NULL != fwdObjectPtr) {
 								if(_extensions->objectModel.isRemembered(fwdObjectPtr)) {

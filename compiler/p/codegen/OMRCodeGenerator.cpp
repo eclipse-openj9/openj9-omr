@@ -2732,7 +2732,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *addrReg = self()->allocateRegister();
    TR::Register *counterReg = self()->allocateRegister();
 
-   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor);
+   cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
                                        new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
    cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addi, node, counterReg, counterReg, delta, cursor);
@@ -2762,7 +2762,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *addrReg = self()->allocateRegister();
    TR::Register *counterReg = self()->allocateRegister();
 
-   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor);
+   cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
                                        new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
    cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::add, node, counterReg, counterReg, deltaReg, cursor);
@@ -2802,7 +2802,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *addrReg = srm.findOrCreateScratchRegister();
    TR::Register *counterReg = srm.findOrCreateScratchRegister();
 
-   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor);
+   cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
                                        new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
    cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addi, node, counterReg, counterReg, delta, cursor);
@@ -2823,7 +2823,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *addrReg = srm.findOrCreateScratchRegister();
    TR::Register *counterReg = srm.findOrCreateScratchRegister();
 
-   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor);
+   cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
                                        new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
    cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::add, node, counterReg, counterReg, deltaReg, cursor);

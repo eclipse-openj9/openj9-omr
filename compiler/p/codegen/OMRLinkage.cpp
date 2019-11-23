@@ -733,9 +733,9 @@ TR::Register *OMR::Power::Linkage::pushAddressArg(TR::Node *child)
       else
          {
          if (child->isMethodPointerConstant())
-            loadAddressConstant(self()->cg(), child, child->getAddress(), pushRegister, NULL, false, TR_RamMethodSequence);
+            loadAddressConstant(self()->cg(), self()->cg()->comp()->compileRelocatableCode(), child, child->getAddress(), pushRegister, NULL, false, TR_RamMethodSequence);
          else
-            loadAddressConstant(self()->cg(), child, child->getAddress(), pushRegister);
+            loadAddressConstant(self()->cg(), self()->cg()->comp()->compileRelocatableCode(), child, child->getAddress(), pushRegister);
          }
       child->setRegister(pushRegister);
       }

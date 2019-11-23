@@ -1053,6 +1053,12 @@ OMR::CodeGenerator::getCodeLength() // cast explicitly
    }
 
 bool
+OMR::CodeGenerator::needRelocationsForLookupEvaluationData()
+   {
+   return self()->comp()->compileRelocatableCode();
+   }
+
+bool
 OMR::CodeGenerator::isGlobalVRF(TR_GlobalRegisterNumber n)
    {
    return self()->hasGlobalVRF() &&

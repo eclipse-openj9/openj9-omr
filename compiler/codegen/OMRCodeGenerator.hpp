@@ -1158,6 +1158,7 @@ class OMR_EXTENSIBLE CodeGenerator
    bool needRelocationsForStatics() { return false; }
    bool needRelocationsForBodyInfoData() { return false; }
    bool needRelocationsForPersistentInfoData() { return false; }
+   bool needRelocationsForLookupEvaluationData();
 
    // This query can be used if we need to decide whether data represented by TR_HelperAddress or TR_AbsoluteHelperAddress
    // relocation type needs a relocation record.

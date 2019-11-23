@@ -117,6 +117,25 @@ TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node * 
 TR::Instruction *
 loadAddressConstant(
       TR::CodeGenerator *cg,
+      bool isRelocatable,
+      TR::Node * node,
+      intptrj_t value,
+      TR::Register *trgReg,
+      TR::Instruction *cursor,
+      bool isPicSite,
+      int16_t typeAddress)
+   {
+   if (isRelocatable)
+      return cg->loadAddressConstantFixed(node, value, trgReg, cursor, NULL, typeAddress);
+
+   return loadActualConstant(cg, node, value, trgReg, cursor, isPicSite);
+   }
+
+
+// loadAddressConstant could be merged with loadConstant 64-bit
+TR::Instruction *
+loadAddressConstant(
+      TR::CodeGenerator *cg,
       TR::Node * node,
       intptrj_t value,
       TR::Register *trgReg,

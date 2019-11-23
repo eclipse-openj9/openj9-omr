@@ -19,8 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_Power_LINKAGE_INCL
-#define OMR_Power_LINKAGE_INCL
+#ifndef OMR_POWER_LINKAGE_INCL
+#define OMR_POWER_LINKAGE_INCL
 
 /*
  * The following #define and typedef must appear before any #includes in this file
@@ -35,22 +35,22 @@ namespace OMR { typedef OMR::Power::Linkage LinkageConnector; }
 
 #include <stddef.h>
 #include <stdint.h>
-#include "codegen/CodeGenerator.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/RealRegister.hpp"
-#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "codegen/RegisterDependency.hpp"
+#include "compile/CompilationTypes.hpp"
 #include "env/TRMemory.hpp"
 #include "infra/Annotations.hpp"
 
-class TR_FrontEnd;
 namespace TR { class AutomaticSymbol; }
+namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
 namespace TR { class MemoryReference; }
 namespace TR { class Node; }
 namespace TR { class ParameterSymbol; }
+namespace TR { class Register; }
+namespace TR { class RegisterDependencyConditions; }
 namespace TR { class ResolvedMethodSymbol; }
 template <class T> class List;
 

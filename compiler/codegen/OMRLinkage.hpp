@@ -31,9 +31,6 @@ namespace OMR { class Linkage; }
 namespace OMR { typedef OMR::Linkage LinkageConnector; }
 #endif
 
-#include "infra/List.hpp"
-#include "il/ParameterSymbol.hpp"
-
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/RegisterConstants.hpp"

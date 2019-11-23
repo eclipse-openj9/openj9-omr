@@ -30,6 +30,7 @@
 #include "env/StackMemoryRegion.hpp"
 #include "il/AutomaticSymbol.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
 
 
 TR::ARM64SystemLinkage::ARM64SystemLinkage(TR::CodeGenerator *cg)

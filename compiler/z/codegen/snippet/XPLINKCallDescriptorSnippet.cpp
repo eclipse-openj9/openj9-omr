@@ -19,10 +19,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
+#include "codegen/Relocation.hpp"
 #include "codegen/SystemLinkagezOS.hpp"
 #include "codegen/snippet/XPLINKCallDescriptorSnippet.hpp"
+#include "env/CompilerEnv.hpp"
+#include "il/DataTypes.hpp"
+#include "il/Node.hpp"
 #include "OMR/Bytes.hpp"
 
 uint32_t TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(TR::S390zOSSystemLinkage* linkage, TR::Node* callNode)
@@ -48,7 +54,7 @@ uint32_t TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(TR::S390zO
          XPLINK_RVA_RETURN_COMPLEX16       = 0x0E,
          XPLINK_RVA_RETURN_AGGREGATE       = 0x10,
          };
-      
+
       TR::DataType dataType = callNode->getDataType();
 
       switch (dataType)

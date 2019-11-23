@@ -35,22 +35,17 @@ namespace OMR { typedef OMR::Z::Linkage LinkageConnector; }
 
 #include <stddef.h>
 #include <stdint.h>
-#include "codegen/CodeGenerator.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "codegen/Machine.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "codegen/Snippet.hpp"
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
 #include "infra/Assert.hpp"
 
-#include "codegen/RegisterDependency.hpp"
-
-class TR_FrontEnd;
 namespace TR { class S390JNICallDataSnippet; }
 namespace TR { class AutomaticSymbol; }
+namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
 namespace TR { class MemoryReference; }
@@ -59,6 +54,7 @@ namespace TR { class ParameterSymbol; }
 namespace TR { class Register; }
 namespace TR { class RegisterDependencyConditions; }
 namespace TR { class ResolvedMethodSymbol; }
+namespace TR { class Snippet; }
 namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class SystemLinkage; }

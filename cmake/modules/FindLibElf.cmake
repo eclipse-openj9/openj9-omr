@@ -30,11 +30,27 @@
 
 find_package(LibZ)
 
-find_path(ELF_H_INCLUDE_DIR elf.h)
+# First we try getting the info we need from pkg-config
+find_package(PkgConfig QUIET)
+pkg_check_modules(PC_LIBELF QUIET libelf)
 
-find_path(LIBELF_H_INCLUDE_DIR libelf.h)
+find_path(ELF_H_INCLUDE_DIR NAMES elf.h
+	HINTS
+	${PC_LIBELF_INCLUDEDIR}
+	${PC_LIBELF_INCLUDE_DIRS}
+)
 
-find_library(LIBELF_LIBRARY elf)
+find_path(LIBELF_H_INCLUDE_DIR NAMES libelf.h
+	HINTS
+	${PC_LIBELF_INCLUDEDIR}
+	${PC_LIBELF_INCLUDE_DIRS}
+)
+
+find_library(LIBELF_LIBRARY NAMES elf
+	HINTS
+	${PC_LIBELF_LIBRARY_DIRS}
+	${PC_LIBELF_LIBDIR}
+)
 
 include(FindPackageHandleStandardArgs)
 

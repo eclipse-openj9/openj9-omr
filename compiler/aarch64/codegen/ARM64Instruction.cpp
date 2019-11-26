@@ -273,13 +273,13 @@ void TR::ARM64MemSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssig
    if (getDependencyConditions())
       getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
 
-   sourceVirtual->block();
-   mref->assignRegisters(this, cg());
-   sourceVirtual->unblock();
-
    mref->blockRegisters();
    setSource1Register(machine->assignOneRegister(this, sourceVirtual));
    mref->unblockRegisters();
+
+   sourceVirtual->block();
+   mref->assignRegisters(this, cg());
+   sourceVirtual->unblock();
 
    if (getDependencyConditions())
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());

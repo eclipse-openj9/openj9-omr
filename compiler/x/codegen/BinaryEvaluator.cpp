@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1933,11 +1933,13 @@ TR::Register *OMR::X86::TreeEvaluator::integerDualMulEvaluator(TR::Node *node, T
 
 TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *targetRegister = 0;
-   TR::Node     *firstChild     = node->getFirstChild();
-   TR::Node     *secondChild    = node->getSecondChild();
-   bool          nodeIs64Bit    = TR::TreeEvaluator::getNodeIs64Bit(node, cg);
-   intptrj_t    value;
+   TR::Register *targetRegister  = 0;
+   TR::Node     *firstChild      = node->getFirstChild();
+   TR::Node     *secondChild     = node->getSecondChild();
+   TR::DataType dataType         = secondChild->getDataType();
+   bool         nodeIs64Bit      = TR::TreeEvaluator::getNodeIs64Bit(node, cg);
+   bool firstChildRefCountIsZero = false;
+   intptr_t     value;
 
    if (node->isDualCyclic())
       {
@@ -1947,14 +1949,13 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
    if (secondChild->getOpCode().isLoadConst() &&
       (value = TR::TreeEvaluator::integerConstNodeValue(secondChild, cg)))
       {
-      intptrj_t absValue = (value < 0) ? -value : value;
-      bool firstChildRefCountIsZero = false;
-
       if (value == 0)
          {
          if (firstChild->getReferenceCount() > 1)
+            {
             // Respect the evaluation point of the child
             cg->evaluate(firstChild);
+            }
          else
             {
             firstChildRefCountIsZero = true;
@@ -1999,19 +2000,20 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
          // decomposition failed
          // large constants must be loaded into a register first so these cases
          // are evaluated by the generic analyser call below
-         if (targetRegister == 0 && IS_32BIT_SIGNED(value)) // decomposition failed
+         if (targetRegister == 0 && IS_32BIT_SIGNED(value) && (dataType != TR::Int8)) // decomposition failed
             {
-            TR_X86OpCodes opCode;
+            TR_X86OpCodes opCode = BADIA32Op;
+
             if (firstChild->getReferenceCount() > 1 ||
                 firstChild->getRegister() != 0)
                {
                if (value >= -128 && value <= 127)
                   {
-                  opCode = IMULRegRegImms(nodeIs64Bit);
+                  opCode = IMulRegRegImms(node->getSize());
                   }
                else
                   {
-                  opCode = IMULRegRegImm4(nodeIs64Bit);
+                  opCode = IMulRegRegImm4(node->getSize());
                   }
                targetRegister = cg->allocateRegister();
                generateRegRegImmInstruction(opCode, node, targetRegister, cg->evaluate(firstChild), value, cg);
@@ -2022,13 +2024,13 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
                   {
                   if (value >= -128 && value <= 127)
                      {
-                     opCode = IMULRegMemImms(nodeIs64Bit);
+                     opCode = IMulRegMemImms(node->getSize());
                      }
                   else
                      {
-                     opCode = IMULRegMemImm4(nodeIs64Bit);
+                     opCode = IMulRegMemImm4(node->getSize());
                      }
-                  TR::MemoryReference  *tempMR = generateX86MemoryReference(firstChild, cg);
+                  TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, cg);
                   targetRegister = cg->allocateRegister();
                   generateRegMemImmInstruction(opCode, node, targetRegister, tempMR, value, cg);
                   tempMR->decNodeReferenceCounts(cg);
@@ -2037,11 +2039,11 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
                   {
                   if (value >= -128 && value <= 127)
                      {
-                     opCode = IMULRegRegImms(nodeIs64Bit);
+                     opCode = IMulRegRegImms(node->getSize());
                      }
                   else
                      {
-                     opCode = IMULRegRegImm4(nodeIs64Bit);
+                     opCode = IMulRegRegImm4(node->getSize());
                      }
                   targetRegister = cg->evaluate(firstChild);
                   generateRegRegImmInstruction(opCode, node, targetRegister, targetRegister, value, cg);
@@ -2049,19 +2051,42 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
                }
             }
          }
-      if (targetRegister)
+      }
+
+   //Evaluate the byte multiplier
+   if (!targetRegister && dataType == TR::Int8)
+      {
+      targetRegister = cg->intClobberEvaluate(secondChild);
+      //Set register dependecy on EAX. AX = AL * r/m8
+      TR::RegisterDependencyConditions  *multDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+      multDependencies->addPreCondition(targetRegister, TR::RealRegister::eax, cg);
+      multDependencies->addPostCondition(targetRegister, TR::RealRegister::eax, cg);
+
+      if (firstChild->getReferenceCount() == 1 &&
+          firstChild->getOpCode().isMemoryReference())
          {
-         node->setRegister(targetRegister);
-         if (!firstChildRefCountIsZero)
-            cg->decReferenceCount(firstChild);
-         cg->decReferenceCount(secondChild);
+         TR::MemoryReference  *tempMR = generateX86MemoryReference(firstChild, cg);
+         generateRegMemInstruction(IMUL1AccMem, node, targetRegister, tempMR, multDependencies, cg);
+         tempMR->decNodeReferenceCounts(cg);
+         }
+      else
+         {
+         TR::Register *tempRegister = cg->evaluate(firstChild);
+         generateRegRegInstruction(IMUL1AccReg, node, targetRegister, tempRegister, multDependencies, cg);
          }
       }
 
-   if (targetRegister == 0)
+   if (targetRegister)
       {
-      TR_X86BinaryCommutativeAnalyser  temp(cg);
-      temp.genericAnalyser(node, IMULRegReg(nodeIs64Bit), IMULRegMem(nodeIs64Bit), MOVRegReg(nodeIs64Bit));
+      node->setRegister(targetRegister);
+      if (!firstChildRefCountIsZero)
+         cg->decReferenceCount(firstChild);
+      cg->decReferenceCount(secondChild);
+      }
+   else
+      {
+      TR_X86BinaryCommutativeAnalyser temp(cg);
+      temp.genericAnalyser(node, IMulRegReg(node->getSize()), IMulRegMem(node->getSize()), MovRegReg(node->getSize()));
       targetRegister = node->getRegister();
       }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -305,6 +305,7 @@ template <typename T> const T one_value() { return static_cast<T>(1); }
 template <typename T> const T negative_one_value() { return static_cast<T>(-1); }
 template <typename T> const T positive_value() { return static_cast<T>(42); }
 template <typename T> const T negative_value() { return static_cast<T>(-42); }
+template <typename T> const T two_square_value() { return static_cast<T>(64); }
 
 /**
  * @brief Convenience function returning possible test inputs of the specified type
@@ -317,6 +318,7 @@ std::vector<T> const_values()
                       negative_one_value<T>(),
                       positive_value<T>(),
                       negative_value<T>(),
+                      two_square_value<T>(),
                       std::numeric_limits<T>::min(),
                       std::numeric_limits<T>::max(),
                       static_cast<T>(std::numeric_limits<T>::min() + 1),
@@ -337,6 +339,7 @@ inline std::vector<int64_t> const_values<int64_t>()
                       negative_one_value<int64_t>(),
                       positive_value<int64_t>(),
                       negative_value<int64_t>(),
+                      two_square_value<int64_t>(),
                       std::numeric_limits<int64_t>::min(),
                       std::numeric_limits<int64_t>::max(),
                       static_cast<int64_t>(std::numeric_limits<int64_t>::min() + 1),
@@ -365,6 +368,7 @@ inline std::vector<uint64_t> const_values<uint64_t>()
                       negative_one_value<uint64_t>(),
                       positive_value<uint64_t>(),
                       negative_value<uint64_t>(),
+                      two_square_value<uint64_t>(),
                       std::numeric_limits<uint64_t>::min(),
                       std::numeric_limits<uint64_t>::max(),
                       static_cast<uint64_t>(std::numeric_limits<uint64_t>::min() + 1),
@@ -397,6 +401,7 @@ inline std::vector<int32_t> const_values<int32_t>()
                       negative_one_value<int32_t>(),
                       positive_value<int32_t>(),
                       negative_value<int32_t>(),
+                      two_square_value<int32_t>(),
                       std::numeric_limits<int32_t>::min(),
                       std::numeric_limits<int32_t>::max(),
                       static_cast<int32_t>(std::numeric_limits<int32_t>::min() + 1),
@@ -423,6 +428,7 @@ inline std::vector<uint32_t> const_values<uint32_t>()
                       negative_one_value<uint32_t>(),
                       positive_value<uint32_t>(),
                       negative_value<uint32_t>(),
+                      two_square_value<uint32_t>(),
                       std::numeric_limits<uint32_t>::min(),
                       std::numeric_limits<uint32_t>::max(),
                       static_cast<uint32_t>(std::numeric_limits<uint32_t>::min() + 1),

@@ -1692,7 +1692,7 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsock.c::omrsock_getaddrinfo_length "omrsock_getaddrinfo_length"*/
 	int32_t (*sock_getaddrinfo_length)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t hints, uint32_t *length) ;
 	/** see @ref omrsock.c::omrsock_getaddrinfo_family "omrsock_getaddrinfo_family"*/
-	int32_t (*sock_getaddrinfo_family)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t *handle, int32_t *family, int32_t index )	;
+	int32_t (*sock_getaddrinfo_family)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, int32_t index )	;
 	/** see @ref omrsock.c::omrsock_getaddrinfo_socktype "omrsock_getaddrinfo_socktype"*/
 	int32_t (*sock_getaddrinfo_socktype)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, int32_t index) ;
 	/** see @ref omrsock.c::omrsock_getaddrinfo_protocol "omrsock_getaddrinfo_protocol"*/
@@ -1700,7 +1700,7 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsock.c::omrsock_freeaddrinfo "omrsock_freeaddrinfo"*/
 	int32_t (*sock_freeaddrinfo)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle) ;
 	/** see @ref omrsock.c::omrsock_socket "omrsock_socket"*/
-	int32_t (*sock_socket)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t family, int32_t socktype, int32_t protocol) ;
+	int32_t (*sock_socket)(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32_t family, int32_t socktype, int32_t protocol) ;
 	/** see @ref omrsock.c::omrsock_bind "omrsock_bind"*/
 	int32_t (*sock_bind)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_sockaddr_t addr) ;
 	/** see @ref omrsock.c::omrsock_listen "omrsock_listen"*/
@@ -1718,7 +1718,7 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsock.c::omrsock_recvfrom "omrsock_recvfrom"*/
 	int32_t (*sock_recvfrom)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags, omrsock_sockaddr_t addrHandle) ;
 	/** see @ref omrsock.c::omrsock_close "omrsock_close"*/
-	int32_t (*sock_close)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock) ;
+	int32_t (*sock_close)(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock) ;
 #if defined(OMR_OPT_CUDA)
 	/** CUDA configuration data */
 	J9CudaConfig *cuda_configData;

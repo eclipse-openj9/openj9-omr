@@ -50,7 +50,10 @@ TEST_F(IlGenTest, Return3) {
     auto Int32 = types.PrimitiveType(TR::Int32);
     TR::IlType* argTypes[] = { Int32 };
 
-    Tril::TRLangBuilder injector(trees, &types);
+    Tril::GenericNodeConverter genericNodeConverter;
+    Tril::CallConverter callConverter(&genericNodeConverter);
+
+    Tril::TRLangBuilder injector(trees, &types, &callConverter);
     TR::ResolvedMethod compilee(__FILE__, LINETOSTR(__LINE__), "Return3InIL", sizeof(argTypes)/sizeof(TR::IlType*), argTypes, Int32, 0, &injector);
     TR::IlGeneratorMethodDetails methodDetails(&compilee);
     int32_t rc = 0;

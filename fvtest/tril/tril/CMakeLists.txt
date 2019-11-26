@@ -34,6 +34,8 @@ add_library(tril STATIC
 	ast.cpp
 	parser.cpp
 	ilgen.cpp
+	CallConverter.cpp
+	GenericNodeConverter.cpp
 	simple_compiler.cpp
 )
 

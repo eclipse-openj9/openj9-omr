@@ -775,6 +775,12 @@ OMR::X86::Linkage::paramMovType(TR::ParameterSymbol *param)
    return self()->movType(param->getDataType());
    }
 
+TR::Environment&
+OMR::X86::Linkage::getTargetFromComp()
+   {
+   return TR::comp()->target();
+   }
+
 
 TR_X86OpCodes OMR::X86::Linkage::_movOpcodes[NumMovOperandTypes][NumMovDataTypes] =
    {

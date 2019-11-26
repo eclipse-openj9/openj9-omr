@@ -2834,6 +2834,17 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
    return cursor;
    }
 
+bool
+OMR::Power::CodeGenerator::canEmitDataForExternallyRelocatableInstructions()
+   {
+   // On Power, data cannot be emitted inside instructions that will be associated with an
+   // external relocation record (ex. AOT or Remote compiles in OpenJ9). This is because when the
+   // relocation is applied when a method is loaded, the new data in the instruction is OR'ed in (The reason
+   // for OR'ing is that sometimes usefule information such as flags and hints can be stored during compilation in these data fields).
+   // Hence, for the relocation to be applied correctly, we must ensure that the data fields inside the instruction
+   // initially are zero.
+   return !self()->comp()->compileRelocatableCode();
+   }
 
 bool OMR::Power::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt)
    {
@@ -3070,7 +3081,7 @@ OMR::Power::CodeGenerator::loadAddressConstantFixed(
       bool doAOTRelocation)
    {
    TR::Compilation *comp = self()->comp();
-   bool isAOT = comp->compileRelocatableCode();
+   bool canEmitData = self()->canEmitDataForExternallyRelocatableInstructions();
 
    if (TR::Compiler->target.is32Bit())
       {
@@ -3087,28 +3098,28 @@ OMR::Power::CodeGenerator::loadAddressConstantFixed(
    if (tempReg == NULL)
       {
       // lis trgReg, upper 16-bits
-      cursor = firstInstruction = generateTrg1ImmInstruction(self(), TR::InstOpCode::lis, node, trgReg, isAOT? 0: (value>>48) , cursor);
+      cursor = firstInstruction = generateTrg1ImmInstruction(self(), TR::InstOpCode::lis, node, trgReg, canEmitData ? (value>>48) : 0 , cursor);
 
       // ori trgReg, trgReg, next 16-bits
-      cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::ori, node, trgReg, trgReg, isAOT ? 0 : ((value>>32) & 0x0000ffff), cursor);
+      cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::ori, node, trgReg, trgReg, canEmitData ? ((value>>32) & 0x0000ffff) : 0, cursor);
       // shiftli trgReg, trgReg, 32
       cursor = generateTrg1Src1Imm2Instruction(self(), TR::InstOpCode::rldicr, node, trgReg, trgReg, 32, CONSTANT64(0xFFFFFFFF00000000), cursor);
       // oris trgReg, trgReg, next 16-bits
-      cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::oris, node, trgReg, trgReg, isAOT ? 0 : ((value>>16) & 0x0000ffff), cursor);
+      cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::oris, node, trgReg, trgReg, canEmitData ? ((value>>16) & 0x0000ffff) : 0, cursor);
       // ori trgReg, trgReg, last 16-bits
-      cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::ori, node, trgReg, trgReg, isAOT ? 0 : (value & 0x0000ffff), cursor);
+      cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::ori, node, trgReg, trgReg, canEmitData ? (value & 0x0000ffff) : 0, cursor);
       }
    else
       {
       // lis tempReg, bits[0-15]
-      cursor = firstInstruction = generateTrg1ImmInstruction(self(), TR::InstOpCode::lis, node, tempReg, isAOT ? 0 : value>>48, cursor);
+      cursor = firstInstruction = generateTrg1ImmInstruction(self(), TR::InstOpCode::lis, node, tempReg, canEmitData ? value>>48 : 0, cursor);
 
       // lis trgReg, bits[32-47]
-      cursor = generateTrg1ImmInstruction(self(), TR::InstOpCode::lis, node, trgReg, isAOT ? 0 : (value>>16) & 0x0000ffff, cursor);
+      cursor = generateTrg1ImmInstruction(self(), TR::InstOpCode::lis, node, trgReg, canEmitData ? ((value>>16) & 0x0000ffff) : 0, cursor);
       // ori tempReg, tempReg, bits[16-31]
-      cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::ori, node, tempReg, tempReg, isAOT ? 0 : (value>>32) & 0x0000ffff, cursor);
+      cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::ori, node, tempReg, tempReg, canEmitData ? ((value>>32) & 0x0000ffff) : 0, cursor);
       // ori trgReg, trgReg, bits[48-63]
-      cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::ori, node, trgReg, trgReg, isAOT ? 0 : value & 0x0000ffff, cursor);
+      cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::ori, node, trgReg, trgReg, canEmitData ? (value & 0x0000ffff) : 0, cursor);
       // rldimi trgReg, tempReg, 32, 0
       cursor = generateTrg1Src1Imm2Instruction(self(), TR::InstOpCode::rldimi, node, trgReg, tempReg, 32, CONSTANT64(0xFFFFFFFF00000000), cursor);
       }
@@ -3238,7 +3249,7 @@ OMR::Power::CodeGenerator::addMetaDataFor64BitFixedLoadLabelAddressIntoReg(
       TR::Instruction **q)
    {
 
-   if (!self()->comp()->compileRelocatableCode())
+   if (self()->canEmitDataForExternallyRelocatableInstructions())
       {
       self()->addRelocation(new (self()->trHeapMemory()) TR::PPCPairedLabelAbsoluteRelocation(q[0], q[1], q[2], q[3], label));
       }

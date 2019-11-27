@@ -156,6 +156,14 @@ BUILD_CC=$CC
 # Prevent AC_PROG_CXX() from defaulting CXXFLAGS to -g -O2 for g++.
 : ${CXXFLAGS=""}
 
+AS_IF([test "x$OMR_CROSS_CONFIGURE" != "xyes"],
+	[
+		AC_PROG_CC()
+		AC_PROG_CXX()
+		AC_PROG_CPP()
+	]
+)
+
 # If OMR_HOST_OS is set, use it.
 # Otherwise, calculate it from the canonical host.
 AC_MSG_CHECKING([OMR_HOST_OS])
@@ -215,12 +223,6 @@ AC_MSG_RESULT([$OMR_TOOLCHAIN])
 
 # Default OMRGLUE to example/glue if it was not specified
 OMRGLUE=${OMRGLUE:-"./example/glue"}
-
-## Default Variables
-
-# Set program defaults if they are undefined
-AC_PROG_CC()
-AC_PROG_CXX()
 
 CCLINK=${CCLINK:-"\$(CC)"}
 CCLINKSHARED=${CCLINKSHARED:-"\$(CCLINK)"}

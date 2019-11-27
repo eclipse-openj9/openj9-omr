@@ -77,19 +77,19 @@
 #define OMRVMEM_DEBUG
 #endif
 
-#define VMEM_MEMINFO_SIZE_MAX	2048
-#define VMEM_PROC_MEMINFO_FNAME	"/proc/meminfo"
-#define VMEM_PROC_MAPS_FNAME	"/proc/self/maps"
+#define VMEM_MEMINFO_SIZE_MAX   2048
+#define VMEM_PROC_MEMINFO_FNAME "/proc/meminfo"
+#define VMEM_PROC_MAPS_FNAME    "/proc/self/maps"
 
 #define VMEM_TRANSPARENT_HUGEPAGE_FNAME "/sys/kernel/mm/transparent_hugepage/enabled"
 #define VMEM_TRANSPARENT_HUGEPAGE_MADVISE "always [madvise] never"
 #define VMEM_TRANSPARENT_HUGEPAGE_MADVISE_LENGTH 22
 
 typedef struct vmem_hugepage_info_t {
-	uintptr_t	enabled;		/*!< boolean enabling j9 large page support */
-	uintptr_t	pages_total;	/*!< total number of pages maintained by the kernel */
-	uintptr_t	pages_free;		/*!< number of free pages that may be allocated by us */
-	uintptr_t	page_size;		/*!< page size in bytes */
+	uintptr_t   enabled;        /*!< boolean enabling j9 large page support */
+	uintptr_t   pages_total;    /*!< total number of pages maintained by the kernel */
+	uintptr_t   pages_free;     /*!< number of free pages that may be allocated by us */
+	uintptr_t   page_size;      /*!< page size in bytes */
 } vmem_hugepage_info_t;
 
 typedef void *ADDRESS;
@@ -284,9 +284,9 @@ initializeNumaGlobals(struct OMRPortLibrary *portLibrary)
 /*
  * Init the range with values
  *
- * @param AddressRange* range	[out]	Returns the range object
- * @param void* 		start	[in] 	The start address of the range
- * @param void*  		end		[in]	The end address of the range
+ * @param AddressRange* range   [out]   Returns the range object
+ * @param void*         start   [in]    The start address of the range
+ * @param void*         end     [in]    The end address of the range
  */
 static void
 addressRange_Init(AddressRange *range, ADDRESS start, ADDRESS end)
@@ -298,9 +298,9 @@ addressRange_Init(AddressRange *range, ADDRESS start, ADDRESS end)
 /*
  * Calculate out the intersection of 2 ranges
  *
- * @param AddressRange* a		[in] 	a range object
- * @param AddressRange* b		[in] 	another range object
- * @param AddressRange* result 	[out]	the intersection of the above 2 ranges
+ * @param AddressRange* a       [in]    a range object
+ * @param AddressRange* b       [in]    another range object
+ * @param AddressRange* result  [out]   the intersection of the above 2 ranges
  *
  * Returns TRUE if they have intersection.
  */
@@ -317,7 +317,7 @@ addressRange_Intersect(AddressRange *a, AddressRange *b, AddressRange *result)
  * Calculate if a range is valid.
  * A valid range should have start < its end
  *
- * @param AddressRange* range	[in] 	a range object
+ * @param AddressRange* range   [in]    a range object
  *
  * Returns TRUE if range's start < end.
  */
@@ -330,7 +330,7 @@ addressRange_IsValid(AddressRange *range)
 /*
  * Calculate out the with of a range
  *
- * @param AddressRange* range 	[in]	a range object
+ * @param AddressRange* range   [in]    a range object
  *
  * Returns the width of the range.
  * Caller should make sure the input parameter 'range' is valid,
@@ -347,12 +347,12 @@ addressRange_Width(AddressRange *range)
  * Find a memory block using maps information from file /proc/self/maps
  * In order to avoid file context corruption, this method implemented without memory operation such as malloc/free
  *
- * @param OMRPortLibrary *portLibrary	[in] The portLibrary object
- * @param ADDRESS 		start			[in] The start address allowed, see also @param end
- * @param ADDRESS 		end				[in] The end address allowed, see also @param start.
- * 											 The returned memory address should be within the range defined by the @param start and the @param end.
- * @param uintptr_t 	byteAmount		[in] The block size required.
- * @param BOOLEAN 		reverse			[in] Returns the first available memory block when this param equals FALSE, returns the last available memory block when this param equals TRUE
+ * @param OMRPortLibrary *portLibrary   [in] The portLibrary object
+ * @param ADDRESS       start           [in] The start address allowed, see also @param end
+ * @param ADDRESS       end             [in] The end address allowed, see also @param start.
+ *                                           The returned memory address should be within the range defined by the @param start and the @param end.
+ * @param uintptr_t     byteAmount      [in] The block size required.
+ * @param BOOLEAN       reverse         [in] Returns the first available memory block when this param equals FALSE, returns the last available memory block when this param equals TRUE
  * @param BOOLEAN       strictRange     [in] Must the returned address within the range defined by @param start and @param end?
  *
  * returns the address available.
@@ -954,7 +954,7 @@ omrvmem_supported_page_flags(struct OMRPortLibrary *portLibrary)
 /* Get the state of Transparent HugePage (THP) from OS
  *
  * return 0 if THP is set to never/always
- * 		- (always will handled by OS automatically, treat same as never)
+ *      - (always will handled by OS automatically, treat same as never)
  * retrun 1 if THP is set to madvise
  */
 static uintptr_t
@@ -990,9 +990,9 @@ get_transparent_hugepage_info(struct OMRPortLibrary *portLibrary)
 static uintptr_t
 get_hugepages_info(struct OMRPortLibrary *portLibrary, vmem_hugepage_info_t *page_info)
 {
-	int 	fd;
-	int	bytes_read;
-	char	*line_ptr, read_buf[VMEM_MEMINFO_SIZE_MAX];
+	int     fd;
+	int bytes_read;
+	char    *line_ptr, read_buf[VMEM_MEMINFO_SIZE_MAX];
 
 	fd = omrfile_open(portLibrary, VMEM_PROC_MEMINFO_FNAME, EsOpenRead, 0);
 	if (fd < 0) {
@@ -1028,13 +1028,13 @@ get_hugepages_info(struct OMRPortLibrary *portLibrary, vmem_hugepage_info_t *pag
 			} else if (!strcmp(token_name, "HugePages_Free:")) {
 				page_info->pages_free = token_value;
 			} else if (!strcmp(token_name, "Hugepagesize:")) {
-				page_info->page_size = token_value * 1024;	/* value is in kB, convert to bytes */
+				page_info->page_size = token_value * 1024;  /* value is in kB, convert to bytes */
 			}
 		}
 
 		line_ptr = strpbrk(line_ptr, "\n");
 		if (line_ptr && *line_ptr) {
-			line_ptr++;	/* skip the \n if we are not done yet */
+			line_ptr++; /* skip the \n if we are not done yet */
 		}
 	}
 
@@ -1082,9 +1082,9 @@ default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *addres
 
 	if (useBackingSharedFile) {
 		char filename[FILE_NAME_SIZE + 1];
-		sprintf(filename, "omrvmem_temp_%zu_%09d_%zu",  (size_t)omrtime_current_time_millis(portLibrary), 
-								getpid(), 
-								(size_t)pthread_self()); 
+		sprintf(filename, "omrvmem_temp_%zu_%09d_%zu",  (size_t)omrtime_current_time_millis(portLibrary),
+								getpid(),
+								(size_t)pthread_self());
 		fd = shm_open(filename, O_RDWR | O_CREAT, 0600);
 		shm_unlink(filename);
 		ft = ftruncate(fd, byteAmount);
@@ -1099,9 +1099,9 @@ default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *addres
 		fd = portLibrary->file_open(portLibrary, "/dev/zero", EsOpenRead | EsOpenWrite, 0);
 	}
 
-	if((fd == -1 && (!useBackingSharedFile && !useBackingFile)) || 
+	if((fd == -1 && (!useBackingSharedFile && !useBackingFile)) ||
 	   (fd != -1 && (useBackingSharedFile || useBackingFile))) {
-	
+
 		if (0 != (OMRPORT_VMEM_MEMORY_MODE_COMMIT & mode)) {
 			protectionFlags = get_protectionBits(mode);
 		} else {
@@ -1114,9 +1114,9 @@ default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *addres
 		result = mmap(address, (size_t)byteAmount, protectionFlags, flags, fd, 0);
 
 		if(useBackingFile) {
-			portLibrary->file_close(portLibrary, fd); 
+			portLibrary->file_close(portLibrary, fd);
 		}
-	
+
 		if (MAP_FAILED == result) {
 			if(useBackingSharedFile && fd != -1)
 				close(fd);
@@ -1188,7 +1188,7 @@ omrvmem_get_contiguous_region_memory(struct OMRPortLibrary *portLibrary, void* a
 		successfulContiguousMap = TRUE;
 		/* Update identifier and commit memory if required, else return reserved memory */
 		update_vmemIdentifier(newIdentifier, contiguousMap, contiguousMap, byteAmount, mode, pageSize, OMRPORT_VMEM_PAGE_FLAG_NOT_USED, OMRPORT_VMEM_RESERVE_USED_MMAP, category, -1);
-		omrmem_categories_increment_counters(category, byteAmount); 
+		omrmem_categories_increment_counters(category, byteAmount);
 		if (0 != (OMRPORT_VMEM_MEMORY_MODE_COMMIT & mode)) {
 			if (NULL == omrvmem_commit_memory(portLibrary, contiguousMap, byteAmount, newIdentifier)) {
 				/* If the commit fails free the memory  */
@@ -1229,7 +1229,7 @@ omrvmem_get_contiguous_region_memory(struct OMRPortLibrary *portLibrary, void* a
 
 			if (address == MAP_FAILED) {
 				successfulContiguousMap = FALSE;
-                                portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_VMEM_OPFAILED, "Failed to double map.");
+								portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_VMEM_OPFAILED, "Failed to double map.");
 #if defined(OMRVMEM_DEBUG)
 				printf("***************************** errno: %d\n", errno);
 				printf("Failed to mmap address[%zu] at mmapContiguous()\n", i);
@@ -1238,7 +1238,7 @@ omrvmem_get_contiguous_region_memory(struct OMRPortLibrary *portLibrary, void* a
 				break;
 			} else if (nextAddress != address) {
 				successfulContiguousMap = FALSE;
-                                portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_VMEM_OPFAILED, "Double Map failed to provide the correct address");
+								portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_VMEM_OPFAILED, "Double Map failed to provide the correct address");
 #if defined(OMRVMEM_DEBUG)
 				printf("Map failed to provide the correct address. nextAddress %p != %p\n", nextAddress, address);
 				fflush(stdout);
@@ -1257,7 +1257,6 @@ omrvmem_get_contiguous_region_memory(struct OMRPortLibrary *portLibrary, void* a
 
 	return contiguousMap;
 }
-
 
 /**
  * @internal
@@ -1498,7 +1497,7 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 		void *smartAddress = findAvailableMemoryBlockNoMalloc(portLibrary,
 				startAddress, endAddress, byteAmount,
 				(1 == direction) ? FALSE : TRUE,
-	 			OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS) ? TRUE : FALSE);
+				OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS) ? TRUE : FALSE);
 
 		if (NULL != smartAddress) {
 			/* smartAddress is not NULL: try to get memory there */
@@ -1722,7 +1721,7 @@ omrvmem_numa_set_affinity(struct OMRPortLibrary *portLibrary, uintptr_t numaNode
 				nodeMask.mask[wordIndex] |= bit;
 
 				/**
-				 *	mbind returns 0 in the case of success, otherwise -1.
+				 *  mbind returns 0 in the case of success, otherwise -1.
 				 *
 				 */
 				if (0 != do_mbind(address, byteAmount, MPOL_PREFERRED, nodeMask.mask, PPG_numa_max_node_bits, 0)) {
@@ -1812,10 +1811,11 @@ omrvmem_numa_get_node_details(struct OMRPortLibrary *portLibrary, J9MemoryNodeDe
 				unsigned long nodeIndex = 0;
 				if (1 == sscanf(node->d_name, "node%lu", &nodeIndex)) {
 					if (nodeIndex < PPG_numa_max_node_bits) {
+						static const char prefix[] = "/sys/devices/system/node/";
 						DIR *oneNode = NULL;
-						char nodeName[sizeof("/sys/devices/system/node/") + NAME_MAX + 1] = "/sys/devices/system/node/";
+						char nodeName[sizeof(prefix) + NAME_MAX + 1];
 
-						strncat(nodeName, node->d_name, NAME_MAX);
+						portLibrary->str_printf(portLibrary, nodeName, sizeof(nodeName), "%s%s", prefix, node->d_name);
 						/* walk the directory for this specific node to find its CPUs */
 						oneNode = opendir(nodeName);
 						if (NULL != oneNode) {
@@ -1870,13 +1870,10 @@ omrvmem_numa_get_node_details(struct OMRPortLibrary *portLibrary, J9MemoryNodeDe
 					}
 				}
 			}
-			//when error occurs, node is null and errno is changed (!=0)
-			if(node == NULL && errno != 0)
-			{
+			/* when error occurs, node is NULL and errno is changed (!=0) */
+			if ((NULL == node) && (0 != errno)) {
 				result = OMRPORT_ERROR_VMEM_OPFAILED;
-			}
-			else
-			{
+			} else {
 				/* save back how many entries we saw (the caller knows that the number of entries we populated is the minimum of how many we were given and how many we found) */
 				*nodeCount = populatedNodeCount;
 				result = 0;

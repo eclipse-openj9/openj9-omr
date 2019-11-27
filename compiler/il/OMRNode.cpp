@@ -5751,6 +5751,35 @@ OMR::Node::printIsHeapificationAlloc()
    }
 
 
+bool
+OMR::Node::isIdentityless()
+   {
+   TR_ASSERT(self()->getOpCode().isNew(), "Opcode must be isNew");
+   return _flags.testAny(Identityless);
+   }
+
+void
+OMR::Node::setIdentityless(bool v)
+   {
+   TR::Compilation * c = TR::comp();
+   TR_ASSERT(self()->getOpCode().isNew(), "Opcode must be isNew");
+   if (performNodeTransformation2(c,"O^O NODE FLAGS: Setting Identityless flag on node %p to %d\n", self(), v))
+      _flags.set(Identityless, v);
+   }
+
+bool
+OMR::Node::chkIdentityless()
+   {
+   return self()->getOpCode().isNew() && _flags.testAny(Identityless);
+   }
+
+const char *
+OMR::Node::printIsIdentityless()
+   {
+   return self()->chkIdentityless() ? "Identityless " : "";
+   }
+
+
 
 bool
 OMR::Node::isLiveMonitorInitStore()

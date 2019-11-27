@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1121,10 +1121,16 @@ public:
    bool chkHeapificationStore();
    const char * printIsHeapificationStore();
 
+   // Flags only used for isNew() opcodes
    bool isHeapificationAlloc();
    void setHeapificationAlloc(bool v);
    bool chkHeapificationAlloc();
    const char * printIsHeapificationAlloc();
+
+   bool isIdentityless();
+   void setIdentityless(bool v);
+   bool chkIdentityless();
+   const char * printIsIdentityless();
 
    bool isLiveMonitorInitStore();
    void setLiveMonitorInitStore(bool v);
@@ -2086,6 +2092,7 @@ protected:
       // Flags only used for isNew() opcodes
       //
       HeapificationAlloc                    = 0x00001000,
+      Identityless                          = 0x00002000,
 
       // Flag used by TR::newarray and TR::anewarray
       //

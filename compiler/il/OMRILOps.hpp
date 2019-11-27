@@ -1440,13 +1440,13 @@ private:
  * FIXME: I suspect that these templates may be an antipattern, involving a fair
  *        amount of mixing between host and target types...
  */
-template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode< uint8_t>() { return TR::buconst; }
+template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode< uint8_t>() { return TR::bconst; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<  int8_t>() { return TR::bconst; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<uint16_t>() { return TR::cconst; }
+template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<uint16_t>() { return TR::sconst; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode< int16_t>() { return TR::sconst; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<uint32_t>() { return TR::iuconst; }
+template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<uint32_t>() { return TR::iconst; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode< int32_t>() { return TR::iconst; }
-template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<uint64_t>() { return TR::luconst; }
+template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<uint64_t>() { return TR::lconst; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode< int64_t>() { return TR::lconst; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<   float>() { return TR::fconst; }
 template <> inline TR::ILOpCodes OMR::ILOpCode::getConstOpCode<  double>() { return TR::dconst; }

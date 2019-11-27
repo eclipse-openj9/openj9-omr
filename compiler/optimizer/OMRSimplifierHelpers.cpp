@@ -197,7 +197,7 @@ void foldUIntConstant(TR::Node * node, uint32_t value, TR::Simplifier * s, bool 
 
    if (anchorChildrenP) s->anchorChildren(node, s->_curTree);
 
-   s->prepareToReplaceNode(node, TR::iuconst);
+   s->prepareToReplaceNode(node, TR::iconst);
    node->setUnsignedInt(value);
    dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getInt());
    }
@@ -251,18 +251,10 @@ void foldByteConstant(TR::Node * node, int8_t value, TR::Simplifier * s, bool an
 
    if (anchorChildrenP) s->anchorChildren(node, s->_curTree);
 
-   if (node->getOpCode().isUnsigned())
-      {
-      s->prepareToReplaceNode(node, TR::buconst);
-      node->setUnsignedByte((uint8_t)value);
-      dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getUnsignedByte());
-      }
-   else
-      {
-      s->prepareToReplaceNode(node, TR::bconst);
-      node->setByte(value);
-      dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getByte());
-      }
+   s->prepareToReplaceNode(node, TR::bconst);
+   node->setByte(value);
+   dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getByte());
+
    }
 
 void foldShortIntConstant(TR::Node * node, int16_t value, TR::Simplifier * s, bool anchorChildrenP)

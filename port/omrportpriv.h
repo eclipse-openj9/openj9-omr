@@ -608,7 +608,7 @@ omrsock_getaddrinfo(struct OMRPortLibrary *portLibrary, char *node, char *servic
 extern J9_CFUNC int32_t
 omrsock_getaddrinfo_length(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t hints, uint32_t *length);
 extern J9_CFUNC int32_t
-omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t *handle, int32_t *family, int32_t index);
+omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, int32_t index);
 extern J9_CFUNC int32_t
 omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, int32_t index);
 extern J9_CFUNC int32_t
@@ -616,7 +616,7 @@ omrsock_getaddrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinf
 extern J9_CFUNC int32_t
 omrsock_freeaddrinfo(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle);
 extern J9_CFUNC int32_t
-omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t family, int32_t socktype, int32_t protocol);
+omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32_t family, int32_t socktype, int32_t protocol);
 extern J9_CFUNC int32_t
 omrsock_bind(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_sockaddr_t addr);
 extern J9_CFUNC int32_t
@@ -634,7 +634,7 @@ omrsock_recv(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t 
 extern J9_CFUNC int32_t
 omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags, omrsock_sockaddr_t addrHandle);
 extern J9_CFUNC int32_t
-omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock);
+omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock);
 
 /* J9SourceJ9Str*/
 extern J9_CFUNC uintptr_t

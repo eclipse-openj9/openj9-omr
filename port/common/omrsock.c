@@ -105,7 +105,7 @@ omrsock_getaddrinfo_length(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_
  * @return 0, if no errors occurred, otherwise return an error.
  */
 int32_t
-omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t *handle, int32_t *family, int32_t index)
+omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, int32_t index)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
@@ -171,7 +171,7 @@ omrsock_freeaddrinfo(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t hand
  * @return 0, if no errors occurred, otherwise return an error.
  */
 int32_t
-omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t family, int32_t socktype, int32_t protocol)
+omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32_t family, int32_t socktype, int32_t protocol)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
@@ -362,7 +362,7 @@ omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint
  * @return 0, if no errors occurred, otherwise return an error.
  */
 int32_t
-omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock)
+omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }

@@ -103,8 +103,8 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
 
       if (secondChild->getOpCode().isLoadConst())
          {
-         bool isInteger = (parent->getOpCodeValue() == TR::imul);
-         int64_t value = isInteger ? secondChild->getInt() : secondChild->getLongInt();
+         bool is32BitOp = parent->getOpCode().is4Byte();
+         int64_t value = is32BitOp ? secondChild->getInt() : secondChild->getLongInt();
 
          int32_t shftAmnt = TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(value);
          if (shftAmnt > 0)
@@ -113,7 +113,7 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                {
                if (secondChild->getReferenceCount()==1)
                   {
-                  if (isInteger)
+                  if (is32BitOp)
                      {
                      TR::Node::recreate(parent, TR::ishl);
                      }
@@ -130,20 +130,20 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                   parent->getSecondChild()->decReferenceCount();
                   parent->setSecond(newChild);
                   parent->getSecondChild()->incReferenceCount();
-                  TR::Node::recreate(parent, isInteger ? TR::ishl : TR::lshl);
+                  TR::Node::recreate(parent, is32BitOp ? TR::ishl : TR::lshl);
                   }
                }
             else //negative value of the multiply constant
                {
                if (secondChild->getReferenceCount() == 1)
                   {
-                  TR::Node * newChild = TR::Node::create(parent, isInteger ? TR::ishl : TR::lshl, 2);;
+                  TR::Node * newChild = TR::Node::create(parent, is32BitOp ? TR::ishl : TR::lshl, 2);;
 
                   newChild->setVisitCount(parent->getVisitCount());
                   newChild->incReferenceCount();
                   newChild->setFirst(firstChild);
                   newChild->setSecond(secondChild);
-                  if (isInteger)
+                  if (is32BitOp)
                      {
                      TR::Node::recreate(parent, TR::ineg);
                      }
@@ -159,7 +159,7 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                else if (secondChild->getReferenceCount() > 1)
                   {
                   TR::Node * newChild = TR::Node::create(parent, TR::iconst, 0, shftAmnt);
-                  TR::Node * newChild2 = TR::Node::create(parent, isInteger ? TR::ishl : TR::lshl, 2);
+                  TR::Node * newChild2 = TR::Node::create(parent, is32BitOp ? TR::ishl : TR::lshl, 2);
                   newChild2->setFirst(parent->getFirstChild());
                   newChild2->setSecond(newChild);
                   newChild2->getFirstChild()->incReferenceCount();
@@ -167,7 +167,7 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                   parent->getFirstChild()->decReferenceCount();
                   parent->getSecondChild()->decReferenceCount();
                   parent->setNumChildren(1);
-                  TR::Node::recreate(parent, isInteger ? TR::ineg : TR::lneg);
+                  TR::Node::recreate(parent, is32BitOp ? TR::ineg : TR::lneg);
                   parent->setFirst(newChild2);
                   parent->getFirstChild()->incReferenceCount();
                   }

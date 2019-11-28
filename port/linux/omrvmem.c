@@ -103,7 +103,7 @@ static void addressRange_Init(AddressRange *range, ADDRESS start, ADDRESS end);
 static BOOLEAN addressRange_Intersect(AddressRange *a, AddressRange *b, AddressRange *result);
 static BOOLEAN addressRange_IsValid(AddressRange *range);
 static uintptr_t addressRange_Width(AddressRange *range);
-static ADDRESS findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse, BOOLEAN strictRange);
+static ADDRESS findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse, BOOLEAN strictRange, BOOLEAN *error);
 
 /*
  * This structure captures the state of an iterator of addresses between minimum
@@ -358,7 +358,7 @@ addressRange_Width(AddressRange *range)
  * returns the address available.
  */
 static ADDRESS
-findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse, BOOLEAN strictRange)
+findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse, BOOLEAN strictRange, BOOLEAN *error)
 {
 	BOOLEAN dataCorrupt = FALSE;
 	BOOLEAN matchFound = FALSE;
@@ -379,6 +379,9 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 	addressRange_Init(&lastAvailableRange, NULL, NULL);
 
 	int fd = -1;
+
+	*error = FALSE;
+
 	if ((fd = omrfile_open(portLibrary, VMEM_PROC_MAPS_FNAME, EsOpenRead, 0)) != -1) {
 		char readBuf[1024];
 		intptr_t bytesRead = 0;
@@ -401,7 +404,20 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 			BOOLEAN gotEOF = FALSE;
 			bytesRead = omrfile_read(portLibrary, fd, readBuf, sizeof(readBuf));
 			if (-1 == bytesRead) {
-				break;
+				int32_t lastErrorCode = omrerror_last_error_number(portLibrary);
+				/*
+				 * In case of EOF (read() has returned 0) omrfile_read() returns -1
+				 * recognize this case based on last error number stored in Port Library
+				 */
+				if (OMRPORT_ERROR_FILE_EOF == lastErrorCode) {
+					gotEOF = TRUE;
+					bytesRead = 0;
+				} else {
+					/* file read error occur */
+					dataCorrupt = TRUE;
+					Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_fileReadFailed(VMEM_PROC_MAPS_FNAME, lastErrorCode);
+					break;
+				}
 			}
 
 			intptr_t readCursor = 0;
@@ -412,8 +428,7 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 				 * 1. End the line with '\0'.
 				 * 2. Set lineEnd = TRUE when '\n' found.
 				 */
-				if (0 == bytesRead) {
-					gotEOF = TRUE;
+				if (gotEOF) {
 					ch = '\n';
 				} else {
 					ch = readBuf[readCursor];
@@ -449,17 +464,20 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 						start = (uintptr_t)strtoull(lineBuf, &next, 16);
 						if ((ULLONG_MAX == start) && (ERANGE == errno)) {
 							dataCorrupt = TRUE;
+							Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_parseFirstAddressFailed(lineBuf);
 							break;
 						}
 						/* skip the '-' */
 						next++;
 						if (next >= (lineBuf + lineCursor - 1)) {
 							dataCorrupt = TRUE;
+							Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_parseDashFailed(lineBuf);
 							break;
 						}
 						end = (uintptr_t)strtoull(next, &next, 16);
 						if ((ULLONG_MAX == end) && (ERANGE == errno)) {
 							dataCorrupt = TRUE;
+							Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_parseSecondAddressFailed(lineBuf);
 							break;
 						}
 
@@ -470,6 +488,7 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 						if ((currentMmapRange.start >= currentMmapRange.end) ||
 							(currentMmapRange.start < lastMmapRange.end)) {
 							dataCorrupt = TRUE;
+							Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_addressesMismatch(lineBuf);
 							break;
 						}
 					}
@@ -533,9 +552,12 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 		omrfile_close(portLibrary, fd);
 	} else {
 		dataCorrupt = TRUE;
+		Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_fileOpenFailed(VMEM_PROC_MAPS_FNAME, omrerror_last_error_number(portLibrary));
 	}
 
 	if (dataCorrupt) {
+		/* File can not be opened, read or parsed */
+		*error = TRUE;
 		return NULL;
 	}
 
@@ -1494,10 +1516,11 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 
 	/* check if we should use quick search for fast performance */
 	if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_QUICK)) {
+		BOOLEAN error = FALSE;
 		void *smartAddress = findAvailableMemoryBlockNoMalloc(portLibrary,
 				startAddress, endAddress, byteAmount,
 				(1 == direction) ? FALSE : TRUE,
-				OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS) ? TRUE : FALSE);
+				OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS) ? TRUE : FALSE, &error);
 
 		if (NULL != smartAddress) {
 			/* smartAddress is not NULL: try to get memory there */
@@ -1517,11 +1540,15 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 					memoryPointer = NULL;
 				}
 			}
+		} else {
+			if ((FALSE == error) && (0 == PPG_performFullMemorySearch)) {
+				/*
+				 * Memory range has not been found but maps file was parsed properly without errors
+				 * so trust this result and fail allocation except such behavior is overwritten by option
+				 */
+				return NULL;
+			}
 		}
-		/*
-		 * memoryPointer != NULL means that available address was found.
-		 * Otherwise, the below logic will continue trying.
-		 */
 	}
 
 	if (NULL == memoryPointer) {

@@ -301,6 +301,16 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 #endif
 		return 0;
 	}
+
+	/* work around for case if smart address feature still be not reliable enough */
+	if (0 == strcmp(OMRPORT_CTLDATA_VMEM_PERFORM_FULL_MEMORY_SEARCH, key)) {
+#if defined(PPG_performFullMemorySearch)
+		Assert_PRT_true((0 == value) || (1 == value));
+		PPG_performFullMemorySearch = value;
+#endif /* PPG_performFullMemorySearch */
+		return 0;
+	}
+
 	return 1;
 }
 

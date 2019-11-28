@@ -1093,3 +1093,11 @@ TraceException=Trc_PRT_sysinfo_get_open_file_count_memAllocFailed Group=sysinfo 
 TraceException=Trc_PRT_sysinfo_gethostname_error Group=sysinfo Overhead=1 Level=1 NoEnv Template="gethostname failed: errno=%d"
 
 TraceExit-Exception=Trc_PRT_omrsig_ambiguous_signal_flag_failed_exiting Group=signal Overhead=1 Level=1 NoEnv Template="%s failed: Ambiguous port library signal flag(s) received, flags=0x%X."
+
+TraceException=Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_fileOpenFailed Group=mem Overhead=1 Level=1 NoEnv Template="findAvailableMemoryBlockNoMalloc failed to open file %s, portable error code %d"
+TraceException=Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_fileReadFailed Group=mem Overhead=1 Level=1 NoEnv Template="findAvailableMemoryBlockNoMalloc failed to read from file %s, portable error code %d"
+
+TraceException=Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_parseFirstAddressFailed Group=mem Overhead=1 Level=5 NoEnv Template="findAvailableMemoryBlockNoMalloc parser failed to get first address from line (%s)"
+TraceException=Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_parseDashFailed Group=mem Overhead=1 Level=5 NoEnv Template="findAvailableMemoryBlockNoMalloc parser failed to get dash from line (%s)"
+TraceException=Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_parseSecondAddressFailed Group=mem Overhead=1 Level=5 NoEnv Template="findAvailableMemoryBlockNoMalloc parser failed to get second address from line (%s)"
+TraceException=Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_addressesMismatch Group=mem Overhead=1 Level=5 NoEnv Template="findAvailableMemoryBlockNoMalloc parser found addresses mismatch from line (%s)"

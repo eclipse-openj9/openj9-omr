@@ -681,7 +681,6 @@ OMR::Node::getIntegerNodeValue()
       case TR::cconst: length = (T)self()->getConst<uint16_t>(); break;
       case TR::sconst: length = (T)self()->getShortInt(); break;
       case TR::iconst:
-      case TR::iuconst:
          length = (T)self()->getUnsignedInt(); break;
       case TR::lconst:
       case TR::luconst:

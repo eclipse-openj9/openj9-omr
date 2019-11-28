@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -508,7 +508,7 @@ static TR::Register *shiftHelper(TR::Node *node, TR::ARM64ShiftCode shiftType, T
    bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op;
 
-   if (secondOp == TR::iconst || secondOp == TR::iuconst)
+   if (secondOp == TR::iconst)
       {
       int32_t value = secondChild->getInt();
       uint32_t shift = is64bit ? (value & 0x3F) : (value & 0x1F);

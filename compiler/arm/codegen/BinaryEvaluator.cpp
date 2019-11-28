@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -81,7 +81,7 @@ TR::Register *OMR::ARM::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGen
    src1Reg = cg->evaluate(firstChild);
    TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
 
-   if ((secondOp == TR::iconst || secondOp == TR::iuconst) &&
+   if (secondOp == TR::iconst &&
        secondChild->getRegister() == NULL)
       {
       trgReg = addConstantToInteger(node, src1Reg, secondChild->getInt(), cg);
@@ -1044,7 +1044,7 @@ TR::Register *OMR::ARM::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGen
    TR::Register    *srcReg = cg->evaluate(firstChild);
    TR::Register    *trgReg = cg->allocateRegister();
 
-   if (secondChild->getOpCodeValue() == TR::iconst || secondChild->getOpCodeValue() == TR::iuconst)
+   if (secondChild->getOpCodeValue() == TR::iconst)
       {
       int32_t value = secondChild->getInt() & 0x1F;
       if (value != 0)
@@ -1084,7 +1084,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lrolEvaluator(TR::Node *node, TR::CodeGen
    TR::Register    *highReg = cg->allocateRegister();
    TR::Register    *trgReg = cg->allocateRegisterPair(lowReg, highReg);
 
-   if (secondChild->getOpCodeValue() == TR::iconst || secondChild->getOpCodeValue() == TR::iuconst)
+   if (secondChild->getOpCodeValue() == TR::iconst)
       {
       int32_t value = secondChild->getInt() & 0x3F;
       if (value == 0)

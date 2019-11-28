@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2974,7 +2974,6 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                  lastRealNode->getOpCodeValue() == TR::ifiucmpge ||
                  lastRealNode->getOpCodeValue() == TR::iflcmpge) &&
                 (lastRealNode->getSecondChild()->getOpCodeValue() == TR::iconst ||
-                 lastRealNode->getSecondChild()->getOpCodeValue() == TR::iuconst ||
                  lastRealNode->getSecondChild()->getOpCodeValue() == TR::lconst) &&
                 (lastRealNode->getSecondChild()->get64bitIntegralValue() == 0))
                {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -291,8 +291,7 @@ static void genericLongAnalyzer(
          {
          if (firstOp == TR::iu2l || firstOp == TR::su2l ||
              (firstOp == TR::lushr &&
-              (child->getSecondChild()->getOpCodeValue() == TR::iconst ||
-               child->getSecondChild()->getOpCodeValue() == TR::iuconst) &&
+              (child->getSecondChild()->getOpCodeValue() == TR::iconst) &&
               (child->getSecondChild()->getInt() & LONG_SHIFT_MASK) == 32))
             {
             child = child->getFirstChild();
@@ -539,7 +538,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
          // might not be true for aladd, since secondchild of the ladd is made
          // to be an lconst
          else if (!setsOrReadsCC &&
-                  (secondOp == TR::iconst || secondOp == TR::iuconst) && // may be true if aladd?
+                  (secondOp == TR::iconst) && // may be true if aladd?
                   secondChild->getRegister() == NULL)
             {
             trgReg = addConstantToLong(node, src1Reg, (int64_t)secondChild->getInt(), trgReg, cg);
@@ -1454,7 +1453,7 @@ TR::Register *OMR::Power::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::Code
 
    // imulh is generated for constant idiv and the second child is the magic number
    // assume magic number is usually a large odd number with little optimization opportunity
-   if (secondChild->getOpCodeValue() == TR::iconst || secondChild->getOpCodeValue() == TR::iuconst)
+   if (secondChild->getOpCodeValue() == TR::iconst)
       {
       int32_t value = secondChild->get64bitIntegralValue();
       TR::Register *tempReg = cg->allocateRegister();

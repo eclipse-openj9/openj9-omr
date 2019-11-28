@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3414,7 +3414,7 @@ TR::Register *OMR::X86::TreeEvaluator::bushrEvaluator(TR::Node *node, TR::CodeGe
          tempMR = generateX86MemoryReference(firstChild, cg, false);
          }
       }
-   else if ((testOpcode1 == TR::bconst || testOpcode1 == TR::buconst) &&
+   else if (testOpcode1 == TR::bconst &&
             performTransformation(comp, "O^O BUSHREvaluator: first child is not an 8-bit signed two's complement, or an 8 bit unsigned %x\n", testOpcode1))
       {
       targetRegister = cg->allocateRegister();
@@ -3426,7 +3426,7 @@ TR::Register *OMR::X86::TreeEvaluator::bushrEvaluator(TR::Node *node, TR::CodeGe
       targetRegister = cg->intClobberEvaluate(firstChild);
       }
 
-   if ((testOpcode2 == TR::bconst || testOpcode2 == TR::buconst) &&
+   if (testOpcode2 == TR::bconst &&
        performTransformation(comp, "O^O BUSHREvaluator: first child is not an 8-bit signed two's complement, or an 8 bit unsigned %x\n", testOpcode2))
       {
       int32_t value = secondChild->get64bitIntegralValue();

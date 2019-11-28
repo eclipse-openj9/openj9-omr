@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1743,7 +1743,6 @@ bool OMR::Z::MemoryReference::ZeroBasePtr_EvaluateSubtree(TR::Node * subTree, TR
       case TR::lconst:    // load long integer constant (64-bit signed 2's complement)
       case TR::luconst:   // load unsigned long integer constant (64-bit unsigned)
       case TR::bconst:    // load byte integer constant (8-bit signed 2's complement)
-      case TR::buconst:   // load unsigned byte integer constant (8-bit unsigned)
       case TR::sconst:    // load short integer constant (16-bit signed 2's complement)
       case TR::cconst:    // load unicode constant (16-bit unsigned)
          {

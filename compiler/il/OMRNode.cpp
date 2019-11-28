@@ -1376,24 +1376,6 @@ OMR::Node::sconst(int16_t val)
    return TR::Node::sconst(0, val);
    }
 
-
-
-TR::Node *
-OMR::Node::cconst(TR::Node *originatingByteCodeNode, uint16_t val)
-   {
-   TR::Node *r = TR::Node::create(originatingByteCodeNode, TR::sconst);
-   r->setUnsignedShortInt(val);
-   return r;
-   }
-
-TR::Node *
-OMR::Node::cconst(uint16_t val)
-   {
-   return TR::Node::cconst(0, val);
-   }
-
-
-
 TR::Node *
 OMR::Node::iconst(TR::Node *originatingByteCodeNode, int32_t val)
    {

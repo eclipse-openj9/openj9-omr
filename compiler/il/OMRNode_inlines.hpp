@@ -683,7 +683,6 @@ OMR::Node::getIntegerNodeValue()
       case TR::iconst:
          length = (T)self()->getUnsignedInt(); break;
       case TR::lconst:
-      case TR::luconst:
          length = (T)self()->getUnsignedLongInt(); break;
       case TR::iloadi:
          TR_ASSERT(false, "Invalid type for length node."); break;

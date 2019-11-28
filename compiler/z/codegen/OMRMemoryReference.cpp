@@ -1740,7 +1740,6 @@ bool OMR::Z::MemoryReference::ZeroBasePtr_EvaluateSubtree(TR::Node * subTree, TR
       case TR::aconst:    // load address constant (zero value means NULL)
       case TR::iconst:    // load integer constant (32-bit signed 2's complement)
       case TR::lconst:    // load long integer constant (64-bit signed 2's complement)
-      case TR::luconst:   // load unsigned long integer constant (64-bit unsigned)
       case TR::bconst:    // load byte integer constant (8-bit signed 2's complement)
       case TR::sconst:    // load short integer constant (16-bit signed 2's complement)
       case TR::cconst:    // load unicode constant (16-bit unsigned)

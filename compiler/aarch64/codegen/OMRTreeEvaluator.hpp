@@ -652,9 +652,7 @@ public:
 	static TR::Register *tableEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *exceptionRangeFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dbgFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *NULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ResolveCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *resolveAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *DIVCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *OverflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *UnsignedOverflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);

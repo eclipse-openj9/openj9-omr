@@ -776,3 +776,25 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
    return false;
 #endif
    }
+
+TR::Register *OMR::ARM64::TreeEvaluator::igotoEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *labelAddr = node->getFirstChild();
+   TR::Register *addrReg = cg->evaluate(labelAddr);
+   TR::RegisterDependencyConditions *deps = NULL;
+   if (node->getNumChildren() > 1)
+      {
+      TR_ASSERT(node->getNumChildren() == 2 && node->getChild(1)->getOpCodeValue() == TR::GlRegDeps, "igoto has maximum of two children and second one must be global register dependency");
+      TR::Node *glregdep = node->getChild(1);
+      cg->evaluate(glregdep);
+      deps = generateRegisterDependencyConditions(cg, glregdep, 0);
+      cg->decReferenceCount(glregdep);
+      }
+   if (deps)
+      generateRegBranchInstruction(cg, TR::InstOpCode::br, node, addrReg, deps);
+   else
+      generateRegBranchInstruction(cg, TR::InstOpCode::br, node, addrReg);
+   cg->decReferenceCount(labelAddr);
+   node->setRegister(NULL);
+   return NULL;
+   }

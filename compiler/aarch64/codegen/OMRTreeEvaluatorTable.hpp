@@ -684,7 +684,7 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ilatomicorEvaluator ,	// TR::ilatomicor 
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dexpEvaluator ,	// TR::dexp		// double exponent
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::branchEvaluator ,	// TR::branch		// generic branch --> DEPRECATED use TR::case instead
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::igotoEvaluator ,	// TR::igoto		// indirect goto; branches to the address specified by a child
+    TR::TreeEvaluator::igotoEvaluator , // TR::igoto		// indirect goto; branches to the address specified by a child
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bexpEvaluator ,	// TR::bexp		// signed byte exponent  (raise signed byte to power)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::buexpEvaluator ,	// TR::buexp		// unsigned byte exponent
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sexpEvaluator ,	// TR::sexp		// short exponent

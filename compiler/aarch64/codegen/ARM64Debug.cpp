@@ -1394,7 +1394,7 @@ TR_Debug::printa64(TR::FILE *pOutFile, TR::Snippet * snippet)
          print(pOutFile, (TR::ARM64ForceRecompilationSnippet *)snippet);
          break;
       case TR::Snippet::IsRecompilation:
-         TR_UNIMPLEMENTED();
+         print(pOutFile, (TR::ARM64RecompilationSnippet *)snippet);
          break;
 #endif
       case TR::Snippet::IsHelperCall:

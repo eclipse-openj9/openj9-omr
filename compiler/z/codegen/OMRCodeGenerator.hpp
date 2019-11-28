@@ -784,9 +784,6 @@ public:
    uint32_t getJitMethodEntryAlignmentThreshold();
 
    // LL: move to .cpp
-   bool arithmeticNeedsLiteralFromPool(TR::Node *node);
-
-   // LL: move to .cpp
    bool bitwiseOpNeedsLiteralFromPool(TR::Node *parent, TR::Node *child);
 
    virtual bool isDispInRange(int64_t disp);

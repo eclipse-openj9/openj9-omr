@@ -4468,17 +4468,6 @@ OMR::Z::CodeGenerator::getGlobalRegisterNumber(uint32_t realRegNum)
    return self()->machine()->getGlobalReg((TR::RealRegister::RegNum)(realRegNum+1));
    }
 
-/**
- * Check if arithmetic operations with a constant requires entry in the literal pool.
- */
-bool
-OMR::Z::CodeGenerator::arithmeticNeedsLiteralFromPool(TR::Node *node)
-   {
-   int64_t value = getIntegralValue(node);
-
-   return value > GE_MAX_IMMEDIATE_VAL || value < GE_MIN_IMMEDIATE_VAL;
-   }
-
 bool
 OMR::Z::CodeGenerator::bitwiseOpNeedsLiteralFromPool(TR::Node *parent, TR::Node *child)
    {

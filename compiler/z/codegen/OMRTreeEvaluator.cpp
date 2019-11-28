@@ -383,10 +383,7 @@ getIntegralValue(TR::Node * node)
             value = node->getByte();
             break;
          case TR::Int16:
-            if (node->getOpCodeValue()==TR::cconst)
-               value = node->getConst<uint16_t>();
-            else
-               value = node->getShortInt();
+            value = node->getShortInt();
             break;
          case TR::Int32:
             value = node->getInt();

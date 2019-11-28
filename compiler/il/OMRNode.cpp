@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -649,7 +649,7 @@ OMR::Node::create(TR::Node * originatingByteCodeNode, TR::ILOpCodes op, uint16_t
 TR::Node *
 OMR::Node::create(TR::Node * originatingByteCodeNode, TR::ILOpCodes op, uint16_t numChildren, int32_t intValue, TR::TreeTop * dest)
    {
-   TR_ASSERT(op != TR::bconst && op != TR::cconst && op != TR::sconst, "Invalid constructor for 8/16-bit constants");
+   TR_ASSERT(op != TR::bconst && op != TR::sconst, "Invalid constructor for 8/16-bit constants");
    TR::Node * node = TR::Node::create(originatingByteCodeNode, op, numChildren, dest);
    if (op == TR::lconst)
       {

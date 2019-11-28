@@ -2348,10 +2348,11 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
          {
          if (firstOp == TR::su2l)
             {
-            if (secondOp == TR::cconst || secondOp == TR::su2l ||
-                (secondOp == TR::lconst               &&
-                 secondChild->getLongInt() >= 0 &&
-                 secondChild->getLongInt() <= USHRT_MAX))
+            if ( secondOp == TR::sconst || 
+                 secondOp == TR::su2l ||
+                  (secondOp == TR::lconst &&
+                  secondChild->getLongInt() >= 0 &&
+                  secondChild->getLongInt() <= USHRT_MAX))
                {
                node->setAndIncChild(0, firstChild->getFirstChild());
                TR::Node::recreate(node, charOp);

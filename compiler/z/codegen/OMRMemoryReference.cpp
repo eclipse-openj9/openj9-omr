@@ -1742,7 +1742,6 @@ bool OMR::Z::MemoryReference::ZeroBasePtr_EvaluateSubtree(TR::Node * subTree, TR
       case TR::lconst:    // load long integer constant (64-bit signed 2's complement)
       case TR::bconst:    // load byte integer constant (8-bit signed 2's complement)
       case TR::sconst:    // load short integer constant (16-bit signed 2's complement)
-      case TR::cconst:    // load unicode constant (16-bit unsigned)
          {
          if (subTree->getRegister()) return false;
 

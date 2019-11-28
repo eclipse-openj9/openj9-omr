@@ -461,7 +461,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
 
    enum
       {
-      doPrint                         = 0x01,
+      // AVAILABLE                    = 0x01,
       skipForLabelTargetNOPs          = 0x02,
       estimateDoneForLabelTargetNOPs  = 0x04,
       // AVAILABLE                    = 0x08
@@ -473,32 +473,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::Node          *n,
                            TR::LabelSymbol    *sym,
                            TR::CodeGenerator *cg)
-      : S390LabeledInstruction(op, n, sym, cg), _alignment(0), _handle(0), _flags(0)
-      {
-      if (op==TR::InstOpCode::LABEL)
-         sym->setInstruction(this);
-      cg->getNextAvailableBlockIndex();
-      }
-
-   S390LabelInstruction(TR::InstOpCode::Mnemonic    op,
-                           TR::Node          *n,
-                           TR::Register      *targetReg,
-                           TR::LabelSymbol    *sym,
-                           TR::CodeGenerator *cg)
-      : S390LabeledInstruction(op, n, sym, cg), _alignment(0), _handle(0), _flags(0)
-      {
-      if (op==TR::InstOpCode::LABEL)
-         sym->setInstruction(this);
-      cg->getNextAvailableBlockIndex();
-      }
-
-   S390LabelInstruction(TR::InstOpCode::Mnemonic    op,
-                           TR::Node          *n,
-                           TR::Register      *targetReg,
-                           TR::LabelSymbol    *sym,
-                           TR::Instruction   *precedingInstruction,
-                           TR::CodeGenerator *cg)
-      : S390LabeledInstruction(op, n, sym, precedingInstruction, cg), _alignment(0), _handle(0), _flags(0)
+      : S390LabeledInstruction(op, n, sym, cg), _alignment(0), _flags(0)
       {
       if (op==TR::InstOpCode::LABEL)
          sym->setInstruction(this);
@@ -510,7 +485,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::LabelSymbol    *sym,
                            TR::RegisterDependencyConditions * cond,
                            TR::CodeGenerator *cg)
-      : S390LabeledInstruction(op, n, sym, cond, cg), _alignment(0), _handle(0), _flags(0)
+      : S390LabeledInstruction(op, n, sym, cond, cg), _alignment(0), _flags(0)
       {
       if (op==TR::InstOpCode::LABEL)
          sym->setInstruction(this);
@@ -522,7 +497,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::LabelSymbol    *sym,
                            TR::Instruction   *precedingInstruction,
                            TR::CodeGenerator *cg)
-      : S390LabeledInstruction(op, n, sym, precedingInstruction, cg), _alignment(0), _handle(0), _flags(0)
+      : S390LabeledInstruction(op, n, sym, precedingInstruction, cg), _alignment(0), _flags(0)
       {
       if (op==TR::InstOpCode::LABEL)
          sym->setInstruction(this);
@@ -535,7 +510,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::RegisterDependencyConditions * cond,
                            TR::Instruction   *precedingInstruction,
                            TR::CodeGenerator *cg)
-      : S390LabeledInstruction(op, n, sym, cond, precedingInstruction, cg), _alignment(0), _handle(0), _flags(0)
+      : S390LabeledInstruction(op, n, sym, cond, precedingInstruction, cg), _alignment(0), _flags(0)
       {
       if (op==TR::InstOpCode::LABEL)
          sym->setInstruction(this);
@@ -546,7 +521,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::Node           *n,
                            TR::Snippet        *s,
                            TR::CodeGenerator  *cg)
-      : S390LabeledInstruction(op, n, s, cg), _alignment(0), _handle(0), _flags(0)
+      : S390LabeledInstruction(op, n, s, cg), _alignment(0), _flags(0)
       {}
 
    S390LabelInstruction(TR::InstOpCode::Mnemonic     op,
@@ -554,7 +529,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::Snippet        *s,
                            TR::RegisterDependencyConditions * cond,
                            TR::CodeGenerator  *cg)
-      : S390LabeledInstruction(op, n, s, cond, cg), _alignment(0), _handle(0), _flags(0)
+      : S390LabeledInstruction(op, n, s, cond, cg), _alignment(0), _flags(0)
       {}
 
    S390LabelInstruction(TR::InstOpCode::Mnemonic     op,
@@ -562,7 +537,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::Snippet        *s,
                            TR::Instruction    *precedingInstruction,
                            TR::CodeGenerator  *cg)
-      : S390LabeledInstruction(op, n, s, precedingInstruction, cg), _alignment(0), _handle(0), _flags(0)
+      : S390LabeledInstruction(op, n, s, precedingInstruction, cg), _alignment(0), _flags(0)
       {}
 
    S390LabelInstruction(TR::InstOpCode::Mnemonic     op,
@@ -571,7 +546,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::RegisterDependencyConditions * cond,
                            TR::Instruction    *precedingInstruction,
                            TR::CodeGenerator  *cg)
-      : S390LabeledInstruction(op, n, s, cond, precedingInstruction, cg), _alignment(0), _handle(0), _flags(0)
+      : S390LabeledInstruction(op, n, s, cond, precedingInstruction, cg), _alignment(0), _flags(0)
       {}
 
    virtual char *description() { return "S390LabelInstruction"; }
@@ -580,9 +555,6 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
    virtual uint8_t *generateBinaryEncoding();
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    void assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned);
-
-   void preservedForListing()    { _flags.set(doPrint);}
-   bool isPreservedForListing()  {return _flags.testAny(doPrint); }
 
    void setSkipForLabelTargetNOPs()    { _flags.set(skipForLabelTargetNOPs);}
    bool isSkipForLabelTargetNOPs()     {return _flags.testAny(skipForLabelTargetNOPs); }
@@ -597,7 +569,6 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
 
    protected:
       uint16_t _alignment;
-      int32_t _handle;
    };
 
 ////////////////////////////////////////////////////////////////////////////////

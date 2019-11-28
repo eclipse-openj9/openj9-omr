@@ -193,7 +193,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _lastOverlappedGlobalVRF(-1),
      _overlapOffsetBetweenFPRandVRFgrns(0),
      _supportedLiveRegisterKinds(0),
-     _monitorMapping(self()->comp()->trMemory(), 256),
      _blocksWithCalls(NULL),
      _codeCache(0),
      _committedToCodeCache(false),
@@ -2588,27 +2587,6 @@ OMR::CodeGenerator::shutdown(TR_FrontEnd *fe, TR::FILE *logFile)
    {
    }
 #endif
-
-// I need to preserve the type information for monitorenter/exit through
-// code generation, but the secondChild is being used for other monitor
-// optimizations and I can't find anywhere to stick it on the TR::Node.
-// Creating the node with more children doesn't seem to help either.
-//
-void
-OMR::CodeGenerator::addMonClass(TR::Node* monNode, TR_OpaqueClassBlock* clazz)
-   {
-   _monitorMapping.add(monNode);
-   _monitorMapping.add(clazz);
-   }
-
-TR_OpaqueClassBlock *
-OMR::CodeGenerator::getMonClass(TR::Node* monNode)
-   {
-   for (int i = 0; i < _monitorMapping.size(); i += 2)
-      if (_monitorMapping[i] == monNode)
-         return (TR_OpaqueClassBlock *) _monitorMapping[i+1];
-   return 0;
-   }
 
 
 #if !(defined(TR_HOST_POWER) && (defined(__IBMC__) || defined(__IBMCPP__) || defined(__ibmxl__)))

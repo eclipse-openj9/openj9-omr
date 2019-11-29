@@ -26,6 +26,8 @@
  * @brief Sockets
  */
 
+#include "omrcfg.h"
+#if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrport.h"
 #include "omrporterror.h"
 #include "omrportsock.h"
@@ -366,3 +368,5 @@ omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
+
+#endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

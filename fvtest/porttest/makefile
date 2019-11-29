@@ -42,7 +42,6 @@ OBJECTS := \
   omrsignalExtendedTest \
   omrsignalTest \
   omrslTest \
-  omrsockTest \
   omrstrTest \
   omrtimeTest \
   omrttyExtendedTest \
@@ -53,6 +52,10 @@ OBJECTS := \
   testHelpers \
   testProcessHelpers \
   main_function
+
+ifeq (1,$(OMR_PORT_SOCKET_SUPPORT))
+  OBJECTS += omrsockTest
+endif
 
 vpath main_function.cpp $(top_srcdir)/util/main_function
 

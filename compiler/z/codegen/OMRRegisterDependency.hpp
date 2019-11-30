@@ -208,7 +208,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    uint16_t                         _numPostConditions;
    uint16_t                         _addCursorForPost;
    bool                            _isUsed;
-   bool                            _conflictsResolved;
    TR::CodeGenerator               *_cg;
 
    public:
@@ -239,7 +238,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
         _numPostConditions(numPostConds),
         _addCursorForPost(numPostConds),
         _isUsed(false),
-        _conflictsResolved(false),
 	_cg(cg)
       {}
 
@@ -251,7 +249,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
         _numPostConditions(0),
         _addCursorForPost(0),
         _isUsed(false),
-        _conflictsResolved(false),
 	_cg(NULL)
       {}
 
@@ -266,7 +263,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
         _numPostConditions(numPostConds + NUM_VM_THREAD_REG_DEPS),
         _addCursorForPost(0),
         _isUsed(false),
-        _conflictsResolved(false),
         _cg(cg)
       {
       for(int32_t i=0;i<numPreConds;i++)
@@ -291,9 +287,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    bool getIsUsed() {return _isUsed;}
    void setIsUsed() {_isUsed=true;}
    void resetIsUsed() {_isUsed=false;}
-   bool getConflictsResolved() {return _conflictsResolved;}
-   void setConflictsResolved() {_conflictsResolved=true;}
-   void resetConflictsResolved() {_conflictsResolved=false;}
 
    TR_S390RegisterDependencyGroup *getPreConditions()  {return _preConditions;}
 

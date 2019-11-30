@@ -104,7 +104,6 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeGener
    _numPostConditions = totalNum;
    _addCursorForPost = 0;
    _isUsed = false;
-   _conflictsResolved = false;
 
    for (i = 0; i < totalNum; i++)
       {
@@ -171,7 +170,6 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterD
      _numPostConditions((iConds?iConds->getNumPostConditions():0)+numNewPostConds),
      _addCursorForPost(0),
      _isUsed(false),
-     _conflictsResolved(false),
      _cg(cg)
    {
      int32_t i;
@@ -231,7 +229,6 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterD
      _numPostConditions(conds_1->getNumPostConditions()+conds_2->getNumPostConditions()),
      _addCursorForPost(0),
      _isUsed(false),
-     _conflictsResolved(false),
      _cg(cg)
    {
    int32_t i;

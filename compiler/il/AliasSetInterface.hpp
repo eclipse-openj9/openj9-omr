@@ -36,15 +36,27 @@
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 
+typedef enum {
+   useDefAliasSet,
+   UseOnlyAliasSet
+} TR_AliasSetType;
 
-template <class AliasSetInterface>
+template <uint32_t AliasSetInterface>
 class TR_AliasSetInterface {
 public:
-
-   TR_AliasSetInterface(bool isDirectCall = false, bool includeGCSafePoint = false) :
+   
+   TR_AliasSetInterface(TR::SymbolReference *symRef, bool isDirectCall = false, bool includeGCSafePoint = false) :
       _isDirectCall(isDirectCall),
-      _includeGCSafePoint(includeGCSafePoint)
-      {}
+      _includeGCSafePoint(includeGCSafePoint),
+      _symbolReference(symRef),
+      _shares_symbol(true) {}
+
+   TR_AliasSetInterface(bool shares_symbol, TR::SymbolReference *symRef, bool isDirectCall = false, bool includeGCSafePoint = false) :
+      _isDirectCall(isDirectCall),
+      _includeGCSafePoint(includeGCSafePoint),
+      _symbolReference(symRef),
+      _shares_symbol(shares_symbol) {}
+
 
    TR_BitVector *getTRAliases()
       {
@@ -239,6 +251,8 @@ public:
     * SYMREF-BASED ALIASING
     */
 public:
+   TR_BitVector *getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint);
+
    void
    setAlias_impl(TR::SymbolReference *symRef2, bool value, bool isDirectCall, bool includeGCSafePoint);
 
@@ -272,9 +286,45 @@ private:
    static void addSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint);
    static void setSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint, bool value);
 
+   TR::SymbolReference *_symbolReference;
+   //shows if the _symbolReference can have alias. Could only be false when called from Node::mayKill() function
+   bool _shares_symbol;
 };
+template <> inline
+TR_BitVector *TR_AliasSetInterface<useDefAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
+   {
+   if(_symbolReference)
+      {
+      if(_shares_symbol)
+         return _symbolReference->getUseDefAliasesBV(isDirectCall, includeGCSafePoint);
 
-template <class AliasSetInterface> inline
+      else
+         {
+         //if symbol refereance cannot have alias 
+         TR::Compilation *comp = TR::comp();
+         TR_BitVector *bv = NULL;
+
+         bv = new (comp->aliasRegion()) TR_BitVector(comp->getSymRefCount(), comp->aliasRegion(), growable);
+         bv->set(_symbolReference->getReferenceNumber());
+
+         return bv;
+         }
+      }
+   else
+      //if there is no symbol reference associated with the node, we return an empty bit container
+      return NULL;
+   }
+
+template <> inline
+TR_BitVector *TR_AliasSetInterface<UseOnlyAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
+   {      
+   if(!_symbolReference)
+      //if there is no symbol reference, then we return an empty bit container
+      return NULL;
+      
+   return _symbolReference->getUseonlyAliasesBV(TR::comp()->getSymRefTab());
+   }
+template <uint32_t AliasSetInterface> inline
 void TR_AliasSetInterface<AliasSetInterface>::setAlias_impl(TR::SymbolReference *symRef2, bool value, bool isDirectCall, bool includeGCSafePoint)
    {
    TR::Compilation *comp = TR::comp();
@@ -318,7 +368,7 @@ void TR_AliasSetInterface<AliasSetInterface>::setAlias_impl(TR::SymbolReference 
       }
    }
 
-template <class AliasSetInterface> inline
+template <uint32_t AliasSetInterface> inline
 void TR_AliasSetInterface<AliasSetInterface>::removeSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint)
    {
    TR_BitVector *symRef1_killedAliases = symRef1->getUseDefAliases(includeGCSafePoint).getTRAliases();
@@ -334,7 +384,7 @@ void TR_AliasSetInterface<AliasSetInterface>::removeSymRef1KillsSymRef2Asymmetri
       symRef2_useAliases->reset(symRef1->getReferenceNumber());
    }
 
-template <class AliasSetInterface> inline
+template <uint32_t AliasSetInterface> inline
 void TR_AliasSetInterface<AliasSetInterface>::addSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint)
    {
    TR::Compilation *comp = TR::comp();
@@ -354,7 +404,7 @@ void TR_AliasSetInterface<AliasSetInterface>::addSymRef1KillsSymRef2Asymmetrical
       }
    }
 
-template <class AliasSetInterface> inline
+template <uint32_t AliasSetInterface> inline
 void TR_AliasSetInterface<AliasSetInterface>::setSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint, bool value)
    {
    TR::Compilation *comp = TR::comp();
@@ -369,35 +419,6 @@ void TR_AliasSetInterface<AliasSetInterface>::setSymRef1KillsSymRef2Asymmetrical
 
 ////////////////// SYMREF-BASED ALIASING
 
-typedef enum {
-   useDefAliasSet,
-   UseOnlyAliasSet
-} TR_AliasSetType;
-
-template <uint32_t _aliasSetType>
-class TR_SymAliasSetInterface : public TR_AliasSetInterface<TR_SymAliasSetInterface<_aliasSetType> > {
-public:
-
-   TR_SymAliasSetInterface(TR::SymbolReference *symRef, bool isDirectCall = false, bool includeGCSafePoint = false) :
-    TR_AliasSetInterface<TR_SymAliasSetInterface<_aliasSetType> >(isDirectCall, includeGCSafePoint),
-    _symbolReference(symRef),
-    _shares_symbol(true) {}
-
-  TR_SymAliasSetInterface(bool shares_symbol, TR::SymbolReference *symRef, bool isDirectCall = false, bool includeGCSafePoint = false) :
-    TR_AliasSetInterface<TR_SymAliasSetInterface<_aliasSetType> >(isDirectCall, includeGCSafePoint),
-    _symbolReference(symRef),
-    _shares_symbol(shares_symbol) {}
-
-   TR_BitVector *getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint);
-
-
-private:
-
-  TR::SymbolReference *_symbolReference;
-  
-  //shows if the _symbolReference can have alias. Could only be false when called from Node::mayKill() function
-  bool _shares_symbol;
-};
 
 struct TR_UseDefAliasSetInterface : public TR_SymAliasSetInterface<useDefAliasSet> {
   TR_UseDefAliasSetInterface(TR::SymbolReference *symRef,
@@ -422,41 +443,6 @@ struct TR_UseOnlyAliasSetInterface: public TR_SymAliasSetInterface<UseOnlyAliasS
     (symRef, isDirectCall, includeGCSafePoint) {}
 };
 
-
-template <> inline
-TR_BitVector *TR_SymAliasSetInterface<useDefAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
-   {
-   if(_symbolReference)
-      {
-      if(_shares_symbol)
-         return _symbolReference->getUseDefAliasesBV(isDirectCall, includeGCSafePoint);
-
-      else
-         {
-         //if symbol refereance cannot have alias 
-         TR::Compilation *comp = TR::comp();
-         TR_BitVector *bv = NULL;
-
-         bv = new (comp->aliasRegion()) TR_BitVector(comp->getSymRefCount(), comp->aliasRegion(), growable);
-         bv->set(_symbolReference->getReferenceNumber());
-
-         return bv;
-         }
-      }
-   else
-      //if there is no symbol reference associated with the node, we return an empty bit container
-      return NULL;
-   }
-
-template <> inline
-TR_BitVector *TR_SymAliasSetInterface<UseOnlyAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
-   {      
-   if(!_symbolReference)
-      //if there is no symbol reference, then we return an empty bit container
-      return NULL;
-      
-   return _symbolReference->getUseonlyAliasesBV(TR::comp()->getSymRefTab());
-   }
 
 template <class T>
 void CountUseDefAliases( T& t, const TR::SparseBitVector &syms)

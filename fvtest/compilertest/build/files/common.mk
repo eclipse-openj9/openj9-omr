@@ -28,6 +28,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/control/OptimizationPlan.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/OMRRecompilation.cpp  \
     $(JIT_OMR_DIRTY_DIR)/env/ExceptionTable.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/FrontEnd.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/Assert.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/BitVector.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/Checklist.cpp \
@@ -182,7 +183,6 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/codegen/CodeGenPrep.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/CodeGenGC.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/CodeGenRA.cpp \
-    $(JIT_OMR_DIRTY_DIR)/codegen/FrontEnd.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRGCRegisterMap.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRGCStackAtlas.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRLinkage.cpp \

@@ -238,12 +238,85 @@ public:
    /*
     * SYMREF-BASED ALIASING
     */
+public:
+   void
+   setAlias_impl(TR::SymbolReference *symRef2, bool value, bool isDirectCall, bool includeGCSafePoint);
+
+   void
+   setAliases_impl(TR::SparseBitVector &aliasesToModify, bool value, bool isDirectCall, bool includeGCSafePoint)
+      {
+      TR::Compilation *comp = TR::comp();
+      TR_ASSERT(_aliasSetType == useDefAliasSet || _aliasSetType ==  UseOnlyAliasSet, "failed: can only call setAliases_impl for UseOnly or useDef presently");
+
+         {
+         TR::SparseBitVector::Cursor aliasCursor(aliasesToModify);
+         for (aliasCursor.SetToFirstOne(); aliasCursor.Valid(); aliasCursor.SetToNextOne())
+            {
+            uint32_t symRefNum = aliasCursor;
+            TR::SymbolReference *symRef2 = comp->getSymRefTab()->getSymRef(aliasCursor);
+            setAlias_impl(symRef2, value, isDirectCall, includeGCSafePoint);
+            }
+         }
+      }
+
+   void
+   removeAllAliases()
+      {
+      TR::Compilation *comp = TR::comp();
+      LexicalTimer t("removeAllAliases", comp->phaseTimer());
+      TR_ASSERT(_aliasSetType == useDefAliasSet || _aliasSetType ==  UseOnlyAliasSet, "failed: can only call removeAllAliases for UseOnly or useDef presently");
+
+      }
 private:
    static void removeSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint);
    static void addSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint);
    static void setSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint, bool value);
 
 };
+
+template <class AliasSetInterface> inline
+void TR_AliasSetInterface<AliasSetInterface>::setAlias_impl(TR::SymbolReference *symRef2, bool value, bool isDirectCall, bool includeGCSafePoint)
+   {
+   TR::Compilation *comp = TR::comp();
+   if (symRef2 == NULL)
+      return;
+
+   TR_ASSERT(_aliasSetType == useDefAliasSet || _aliasSetType ==  UseOnlyAliasSet, "failed: can only call setAlias_impl for UseOnly or useDef presently");
+
+      {
+      if (_aliasSetType == useDefAliasSet)
+         {
+         // carry out symmetrically
+         setSymRef1KillsSymRef2Asymmetrically(_symbolReference, symRef2, includeGCSafePoint, value);
+
+         if (!_symbolReference->getSymbol()->isMethod() && !symRef2->getSymbol()->isMethod())
+            {
+            // symmetric, complete symmetry
+            setSymRef1KillsSymRef2Asymmetrically(symRef2, _symbolReference, includeGCSafePoint, value);
+            }
+         }
+      else if (_aliasSetType == UseOnlyAliasSet)
+         {
+         // carry out asymmetrically
+         if (_symbolReference->getSymbol()->isMethod() && !symRef2->getSymbol()->isMethod())
+            { // foo uses x, same as x kills foo
+            symRef2->getUseDefAliases(includeGCSafePoint).setAlias(_symbolReference, value);
+            }
+         else if (!_symbolReference->getSymbol()->isMethod() && symRef2->getSymbol()->isMethod())
+            { // x uses foo, same as foo kills x
+            symRef2->getUseDefAliases(includeGCSafePoint).setAlias(_symbolReference, value);
+            }
+         else if (!_symbolReference->getSymbol()->isMethod() && !symRef2->getSymbol()->isMethod())
+            { // x uses y, same as y kills x. Its symmetric
+            symRef2->getUseDefAliases(includeGCSafePoint).setAlias(_symbolReference, value);
+            }
+         else
+            { // foo uses bar, bar kills foo
+            symRef2->getUseDefAliases(includeGCSafePoint).setAlias(_symbolReference, value);
+            }
+         }
+      }
+   }
 
 template <class AliasSetInterface> inline
 void TR_AliasSetInterface<AliasSetInterface>::removeSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint)
@@ -317,34 +390,6 @@ public:
 
    TR_BitVector *getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint);
 
-   void
-   setAlias_impl(TR::SymbolReference *symRef2, bool value, bool isDirectCall, bool includeGCSafePoint);
-
-   void
-   setAliases_impl(TR::SparseBitVector &aliasesToModify, bool value, bool isDirectCall, bool includeGCSafePoint)
-      {
-      TR::Compilation *comp = TR::comp();
-      TR_ASSERT(_aliasSetType == useDefAliasSet || _aliasSetType ==  UseOnlyAliasSet, "failed: can only call setAliases_impl for UseOnly or useDef presently");
-
-         {
-         TR::SparseBitVector::Cursor aliasCursor(aliasesToModify);
-         for (aliasCursor.SetToFirstOne(); aliasCursor.Valid(); aliasCursor.SetToNextOne())
-            {
-            uint32_t symRefNum = aliasCursor;
-            TR::SymbolReference *symRef2 = comp->getSymRefTab()->getSymRef(aliasCursor);
-            setAlias_impl(symRef2, value, isDirectCall, includeGCSafePoint);
-            }
-         }
-      }
-
-   void
-   removeAllAliases()
-      {
-      TR::Compilation *comp = TR::comp();
-      LexicalTimer t("removeAllAliases", comp->phaseTimer());
-      TR_ASSERT(_aliasSetType == useDefAliasSet || _aliasSetType ==  UseOnlyAliasSet, "failed: can only call removeAllAliases for UseOnly or useDef presently");
-
-      }
 
 private:
 
@@ -377,49 +422,6 @@ struct TR_UseOnlyAliasSetInterface: public TR_SymAliasSetInterface<UseOnlyAliasS
     (symRef, isDirectCall, includeGCSafePoint) {}
 };
 
-template <uint32_t _aliasSetType> inline
-void TR_SymAliasSetInterface<_aliasSetType>::setAlias_impl(TR::SymbolReference *symRef2, bool value, bool isDirectCall, bool includeGCSafePoint)
-   {
-   TR::Compilation *comp = TR::comp();
-   if (symRef2 == NULL)
-      return;
-
-   TR_ASSERT(_aliasSetType == useDefAliasSet || _aliasSetType ==  UseOnlyAliasSet, "failed: can only call setAlias_impl for UseOnly or useDef presently");
-
-      {
-      if (_aliasSetType == useDefAliasSet)
-         {
-         // carry out symmetrically
-         setSymRef1KillsSymRef2Asymmetrically(_symbolReference, symRef2, includeGCSafePoint, value);
-
-         if (!_symbolReference->getSymbol()->isMethod() && !symRef2->getSymbol()->isMethod())
-            {
-            // symmetric, complete symmetry
-            setSymRef1KillsSymRef2Asymmetrically(symRef2, _symbolReference, includeGCSafePoint, value);
-            }
-         }
-      else if (_aliasSetType == UseOnlyAliasSet)
-         {
-         // carry out asymmetrically
-         if (_symbolReference->getSymbol()->isMethod() && !symRef2->getSymbol()->isMethod())
-            { // foo uses x, same as x kills foo
-            symRef2->getUseDefAliases(includeGCSafePoint).setAlias(_symbolReference, value);
-            }
-         else if (!_symbolReference->getSymbol()->isMethod() && symRef2->getSymbol()->isMethod())
-            { // x uses foo, same as foo kills x
-            symRef2->getUseDefAliases(includeGCSafePoint).setAlias(_symbolReference, value);
-            }
-         else if (!_symbolReference->getSymbol()->isMethod() && !symRef2->getSymbol()->isMethod())
-            { // x uses y, same as y kills x. Its symmetric
-            symRef2->getUseDefAliases(includeGCSafePoint).setAlias(_symbolReference, value);
-            }
-         else
-            { // foo uses bar, bar kills foo
-            symRef2->getUseDefAliases(includeGCSafePoint).setAlias(_symbolReference, value);
-            }
-         }
-      }
-   }
 
 template <> inline
 TR_BitVector *TR_SymAliasSetInterface<useDefAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)

@@ -96,6 +96,7 @@ struct ARM64LinkageProperties
    TR::RealRegister::RegNum _methodMetaDataRegister;
    TR::RealRegister::RegNum _stackPointerRegister;
    TR::RealRegister::RegNum _framePointerRegister;
+   TR::RealRegister::RegNum _computedCallTargetRegister; // for icallVMprJavaSendPatchupVirtual
    TR::RealRegister::RegNum _vtableIndexArgumentRegister; // for icallVMprJavaSendPatchupVirtual
    TR::RealRegister::RegNum _j9methodArgumentRegister; // for icallVMprJavaSendStatic
    uint8_t _numberOfDependencyGPRegisters;
@@ -240,6 +241,11 @@ struct ARM64LinkageProperties
    TR::RealRegister::RegNum getFramePointerRegister() const
       {
       return _framePointerRegister;
+      }
+
+   TR::RealRegister::RegNum getComputedCallTargetRegister() const
+      {
+      return _computedCallTargetRegister;
       }
 
    TR::RealRegister::RegNum getVTableIndexArgumentRegister() const

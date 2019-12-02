@@ -36,10 +36,6 @@
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 
-typedef enum {
-   useDefAliasSet,
-   UseOnlyAliasSet
-} AliasSetInterface;
 
 template <AliasSetInterface _AliasSetInterface>
 class TR_AliasSetInterface {
@@ -260,7 +256,7 @@ public:
    setAliases_impl(TR::SparseBitVector &aliasesToModify, bool value, bool isDirectCall, bool includeGCSafePoint)
       {
       TR::Compilation *comp = TR::comp();
-      TR_ASSERT_FATAL(_AliasSetInterface == useDefAliasSet || _AliasSetInterface ==  UseOnlyAliasSet, "failed: can only call setAliases_impl for UseOnly or useDef presently");
+      TR_ASSERT_FATAL(_AliasSetInterface == UseDefAliasSet || _AliasSetInterface ==  UseOnlyAliasSet, "failed: can only call setAliases_impl for UseOnly or useDef presently");
 
          {
          TR::SparseBitVector::Cursor aliasCursor(aliasesToModify);
@@ -278,7 +274,7 @@ public:
       {
       TR::Compilation *comp = TR::comp();
       LexicalTimer t("removeAllAliases", comp->phaseTimer());
-      TR_ASSERT_FATAL(_AliasSetInterface == useDefAliasSet || _AliasSetInterface ==  UseOnlyAliasSet, "failed: can only call removeAllAliases for UseOnly or useDef presently");
+      TR_ASSERT_FATAL(_AliasSetInterface == UseDefAliasSet || _AliasSetInterface ==  UseOnlyAliasSet, "failed: can only call removeAllAliases for UseOnly or useDef presently");
 
       }
 private:
@@ -294,18 +290,18 @@ private:
 /*
  * Interface to initialize TR_AliasSetInterface
  */
-struct TR_UseDefAliasSetInterface : public TR_AliasSetInterface<useDefAliasSet> {
+struct TR_UseDefAliasSetInterface : public TR_AliasSetInterface<UseDefAliasSet> {
   TR_UseDefAliasSetInterface(TR::SymbolReference *symRef,
                              bool isDirectCall = false,
                              bool includeGCSafePoint = false) :
-  TR_AliasSetInterface<useDefAliasSet>
+  TR_AliasSetInterface<UseDefAliasSet>
     (symRef, isDirectCall, includeGCSafePoint) {}
 
    TR_UseDefAliasSetInterface(bool shares_symbol,
                               TR::SymbolReference *symRef,
                               bool isDirectCall = false,
                               bool includeGCSafePoint = false) :
-  TR_AliasSetInterface<useDefAliasSet>
+  TR_AliasSetInterface<UseDefAliasSet>
     (shares_symbol, symRef, isDirectCall, includeGCSafePoint) {}
 };
 
@@ -321,7 +317,7 @@ struct TR_UseOnlyAliasSetInterface: public TR_AliasSetInterface<UseOnlyAliasSet>
  * Member function definitions of class TR_AliasSetInterface
  */
 template <> inline
-TR_BitVector *TR_AliasSetInterface<useDefAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
+TR_BitVector *TR_AliasSetInterface<UseDefAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
    {
    if(_symbolReference)
       {
@@ -361,10 +357,10 @@ void TR_AliasSetInterface<_AliasSetInterface>::setAlias_impl(TR::SymbolReference
    if (symRef2 == NULL)
       return;
 
-   TR_ASSERT_FATAL(_AliasSetInterface == useDefAliasSet || _AliasSetInterface ==  UseOnlyAliasSet, "failed: can only call setAlias_impl for UseOnly or useDef presently");
+   TR_ASSERT_FATAL(_AliasSetInterface == UseDefAliasSet || _AliasSetInterface ==  UseOnlyAliasSet, "failed: can only call setAlias_impl for UseOnly or useDef presently");
 
       {
-      if (_AliasSetInterface == useDefAliasSet)
+      if (_AliasSetInterface == UseDefAliasSet)
          {
          // carry out symmetrically
          setSymRef1KillsSymRef2Asymmetrically(_symbolReference, symRef2, includeGCSafePoint, value);

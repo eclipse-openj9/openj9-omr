@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -290,6 +290,36 @@ private:
    //shows if the _symbolReference can have alias. Could only be false when called from Node::mayKill() function
    bool _shares_symbol;
 };
+
+/*
+ * Interface to initialize TR_AliasSetInterface
+ */
+struct TR_UseDefAliasSetInterface : public TR_AliasSetInterface<useDefAliasSet> {
+  TR_UseDefAliasSetInterface(TR::SymbolReference *symRef,
+                             bool isDirectCall = false,
+                             bool includeGCSafePoint = false) :
+  TR_AliasSetInterface<useDefAliasSet>
+    (symRef, isDirectCall, includeGCSafePoint) {}
+
+   TR_UseDefAliasSetInterface(bool shares_symbol,
+                              TR::SymbolReference *symRef,
+                              bool isDirectCall = false,
+                              bool includeGCSafePoint = false) :
+  TR_AliasSetInterface<useDefAliasSet>
+    (shares_symbol, symRef, isDirectCall, includeGCSafePoint) {}
+};
+
+struct TR_UseOnlyAliasSetInterface: public TR_AliasSetInterface<UseOnlyAliasSet> {
+  TR_UseOnlyAliasSetInterface(TR::SymbolReference *symRef,
+                              bool isDirectCall = false,
+                              bool includeGCSafePoint = false) :
+  TR_AliasSetInterface<UseOnlyAliasSet>
+    (symRef, isDirectCall, includeGCSafePoint) {}
+};
+
+/*
+ * Member function definitions of class TR_AliasSetInterface
+ */
 template <> inline
 TR_BitVector *TR_AliasSetInterface<useDefAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
    {
@@ -417,33 +447,6 @@ void TR_AliasSetInterface<_AliasSetInterface>::setSymRef1KillsSymRef2Asymmetrica
       removeSymRef1KillsSymRef2Asymmetrically(symRef1, symRef2, includeGCSafePoint);
    }
 
-////////////////// SYMREF-BASED ALIASING
-
-
-struct TR_UseDefAliasSetInterface : public TR_SymAliasSetInterface<useDefAliasSet> {
-  TR_UseDefAliasSetInterface(TR::SymbolReference *symRef,
-                             bool isDirectCall = false,
-                             bool includeGCSafePoint = false) :
-  TR_SymAliasSetInterface<useDefAliasSet>
-    (symRef, isDirectCall, includeGCSafePoint) {}
-
-   TR_UseDefAliasSetInterface(bool shares_symbol,
-                              TR::SymbolReference *symRef,
-                              bool isDirectCall = false,
-                              bool includeGCSafePoint = false) :
-  TR_SymAliasSetInterface<useDefAliasSet>
-    (shares_symbol, symRef, isDirectCall, includeGCSafePoint) {}
-};
-
-struct TR_UseOnlyAliasSetInterface: public TR_SymAliasSetInterface<UseOnlyAliasSet> {
-  TR_UseOnlyAliasSetInterface(TR::SymbolReference *symRef,
-                              bool isDirectCall = false,
-                              bool includeGCSafePoint = false) :
-  TR_SymAliasSetInterface<UseOnlyAliasSet>
-    (symRef, isDirectCall, includeGCSafePoint) {}
-};
-
-
 template <class T>
 void CountUseDefAliases( T& t, const TR::SparseBitVector &syms)
    {
@@ -473,9 +476,11 @@ void CountUseDefAliases( T& t, const TR::SparseBitVector &syms)
       }
    }
 
-///////////////////////////////////////
 
-
+/*
+ * Interface to initialize TR_AliasSetInterface from OMR::SymbolReference
+ * (Member function definitions of class OMR::SymbolReference)
+ */
 inline TR_UseOnlyAliasSetInterface
 OMR::SymbolReference::getUseonlyAliases()
    {

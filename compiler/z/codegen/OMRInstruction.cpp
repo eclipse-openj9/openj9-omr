@@ -1531,7 +1531,7 @@ OMR::Z::Instruction::renameRegister(TR::Register *from, TR::Register *to)
     }
 
   TR::RegisterDependencyConditions *conds = self()->getDependencyConditions();
-  if (conds && !conds->getConflictsResolved())
+  if (conds)
     {
     TR_S390RegisterDependencyGroup *preConds = conds->getPreConditions();
     TR_S390RegisterDependencyGroup *postConds = conds->getPostConditions();

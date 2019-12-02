@@ -160,15 +160,7 @@ class TR_S390RegisterDependencyGroup
                         TR_RegisterKinds kindToBeAssigned,
                         uint32_t         numberOfRegisters,
                         TR::CodeGenerator *cg);
-   void decFutureUseCounts(uint32_t         numberOfRegisters,
-                           TR::CodeGenerator *cg)
-      {
-      for (uint32_t i = 0; i< numberOfRegisters; i++)
-         {
-         TR::Register *virtReg = _dependencies[i].getRegister();
-         virtReg->decFutureUseCount();
-         }
-      }
+
    void blockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg)
       {
       for (uint32_t i = 0; i < numberOfRegisters; i++)
@@ -216,8 +208,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    uint16_t                         _numPostConditions;
    uint16_t                         _addCursorForPost;
    bool                            _isUsed;
-   bool                            _isHint;
-   bool                            _conflictsResolved;
    TR::CodeGenerator               *_cg;
 
    public:
@@ -247,9 +237,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
         _addCursorForPre(numPreConds),
         _numPostConditions(numPostConds),
         _addCursorForPost(numPostConds),
-        _isHint(false),
         _isUsed(false),
-        _conflictsResolved(false),
 	_cg(cg)
       {}
 
@@ -260,9 +248,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
         _addCursorForPre(0),
         _numPostConditions(0),
         _addCursorForPost(0),
-        _isHint(false),
         _isUsed(false),
-        _conflictsResolved(false),
 	_cg(NULL)
       {}
 
@@ -276,9 +262,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
         _addCursorForPre(0),
         _numPostConditions(numPostConds + NUM_VM_THREAD_REG_DEPS),
         _addCursorForPost(0),
-        _isHint(false),
         _isUsed(false),
-        _conflictsResolved(false),
         _cg(cg)
       {
       for(int32_t i=0;i<numPreConds;i++)
@@ -303,12 +287,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    bool getIsUsed() {return _isUsed;}
    void setIsUsed() {_isUsed=true;}
    void resetIsUsed() {_isUsed=false;}
-   bool getIsHint() {return _isHint;}
-   void setIsHint() {_isHint = true;}
-   void resetIsHint() {_isUsed = false;}
-   bool getConflictsResolved() {return _conflictsResolved;}
-   void setConflictsResolved() {_conflictsResolved=true;}
-   void resetConflictsResolved() {_conflictsResolved=false;}
 
    TR_S390RegisterDependencyGroup *getPreConditions()  {return _preConditions;}
 
@@ -454,10 +432,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
          {
          cg->clearRegisterAssignmentFlags();
          cg->setRegisterAssignmentFlag(TR_PostDependencyCoercion);
-         if (getIsHint())
-            _postConditions->decFutureUseCounts(_addCursorForPost, cg);
-         else
-            _postConditions->assignRegisters(currentInstruction, kindToBeAssigned, _addCursorForPost, cg);
+         _postConditions->assignRegisters(currentInstruction, kindToBeAssigned, _addCursorForPost, cg);
          }
       }
 

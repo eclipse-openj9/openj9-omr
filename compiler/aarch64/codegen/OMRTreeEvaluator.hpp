@@ -784,10 +784,12 @@ public:
 	static TR::Register *lbitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+	static TR::Register *performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg);
+
 	static TR::Instruction *generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *dstReg, TR::Register *srcReg, TR::Instruction *preced=NULL);
 	static TR::Instruction *generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *reg, TR::Instruction *preced=NULL);
    };
 
-}
-}
+} // ARM64
+} // OMR
 #endif //OMR_ARM64_TREE_EVALUATOR_INCL

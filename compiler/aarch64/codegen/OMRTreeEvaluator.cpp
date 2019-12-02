@@ -864,6 +864,22 @@ OMR::ARM64::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *
    return NULL;
    }
 
+TR::Register *
+OMR::ARM64::TreeEvaluator::performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg)
+   {
+   TR::SymbolReference *symRef = node->getSymbolReference();
+   TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
+   TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
+   TR::Register *returnRegister;
+
+   if (isIndirect)
+      returnRegister = linkage->buildIndirectDispatch(node);
+   else
+      returnRegister = linkage->buildDirectDispatch(node);
+
+   return returnRegister;
+   }
+
 TR::Instruction *
 OMR::ARM64::TreeEvaluator::generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *dstReg, TR::Register *srcReg, TR::Instruction *preced)
    {

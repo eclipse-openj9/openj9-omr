@@ -113,6 +113,7 @@ TR::ARM64SystemLinkage::ARM64SystemLinkage(TR::CodeGenerator *cg)
    _properties._methodMetaDataRegister      = TR::RealRegister::NoReg;
    _properties._stackPointerRegister        = TR::RealRegister::sp;
    _properties._framePointerRegister        = TR::RealRegister::x29;
+   _properties._computedCallTargetRegister  = TR::RealRegister::NoReg;
    _properties._vtableIndexArgumentRegister = TR::RealRegister::NoReg;
    _properties._j9methodArgumentRegister    = TR::RealRegister::NoReg;
 

@@ -352,6 +352,16 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    self()->comp()->setReturnInfo(returnInfo);
    }
 
+TR::Linkage *
+OMR::Power::CodeGenerator::deriveCallingLinkage(TR::Node *node, bool isIndirect)
+    {
+    TR::SymbolReference *symRef     = node->getSymbolReference();
+    TR::MethodSymbol    *callee = symRef->getSymbol()->castToMethodSymbol();
+    TR::Linkage         *linkage = self()->getLinkage(callee->getLinkageConvention());
+
+    return linkage;
+    }
+
 uintptrj_t *
 OMR::Power::CodeGenerator::getTOCBase()
     {

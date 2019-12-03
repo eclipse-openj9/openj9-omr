@@ -5432,9 +5432,7 @@ bool OMR::Power::CodeGenerator::inlineDirectCall(TR::Node *node, TR::Register *&
 
 TR::Register *OMR::Power::TreeEvaluator::performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg)
    {
-   TR::SymbolReference *symRef     = node->getSymbolReference();
-   TR::MethodSymbol    *callee = symRef->getSymbol()->castToMethodSymbol();
-   TR::Linkage      *linkage = cg->getLinkage(callee->getLinkageConvention());
+   TR::Linkage      *linkage = cg->deriveCallingLinkage(node, isIndirect);
    TR::Register *returnRegister;
 
    if (isIndirect)

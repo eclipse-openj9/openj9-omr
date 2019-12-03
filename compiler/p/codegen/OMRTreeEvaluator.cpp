@@ -199,7 +199,7 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t va
    int32_t offset = PTOC_FULL_INDEX;
 
    bool canUseTOC = (!TR::isJ9() || !isPicSite) &&
-                    !comp->getOption(TR_DisableTOCForConsts);
+                    !comp->getOption(TR_DisableTOC);
    if (canUseTOC && useTOC)
       offset = TR_PPCTableOfConstants::lookUp((int8_t *)&value, sizeof(int64_t), true, 0, cg);
 

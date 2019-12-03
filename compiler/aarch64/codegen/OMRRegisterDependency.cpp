@@ -146,10 +146,46 @@ void OMR::ARM64::RegisterDependencyConditions::incRegisterTotalUseCounts(TR::Cod
 TR::RegisterDependencyConditions *
 OMR::ARM64::RegisterDependencyConditions::clone(
    TR::CodeGenerator *cg,
-   TR::RegisterDependencyConditions *added)
+   TR::RegisterDependencyConditions *added,
+   bool omitPre, bool omitPost)
    {
-   TR_UNIMPLEMENTED();
-   return NULL;
+   int preNum = omitPre ? 0 : getAddCursorForPre();
+   int postNum = omitPost ? 0 : getAddCursorForPost();
+   int addPreNum = 0;
+   int addPostNum = 0;
+
+   if (added != NULL)
+      {
+      addPreNum = omitPre ? 0 : added->getAddCursorForPre();
+      addPostNum = omitPost ? 0 : added->getAddCursorForPost();
+      }
+   
+   TR::RegisterDependencyConditions *result =  new (cg->trHeapMemory()) TR::RegisterDependencyConditions(preNum + addPreNum, postNum + addPostNum, cg->trMemory());
+   for (int i = 0; i < preNum; i++)
+      {
+      auto singlePair = getPreConditions()->getRegisterDependency(i);
+      result->addPreCondition(singlePair->getRegister(), singlePair->getRealRegister(), singlePair->getFlags());
+      }
+
+   for (int i = 0; i < postNum; i++)
+      {
+      auto singlePair = getPostConditions()->getRegisterDependency(i);
+      result->addPostCondition(singlePair->getRegister(), singlePair->getRealRegister(), singlePair->getFlags());
+      }
+
+   for (int i = 0; i < addPreNum; i++)
+      {
+      auto singlePair = added->getPreConditions()->getRegisterDependency(i);
+      result->addPreCondition(singlePair->getRegister(), singlePair->getRealRegister(), singlePair->getFlags());
+      }
+
+   for (int i = 0; i < addPostNum; i++)
+      {
+      auto singlePair = added->getPostConditions()->getRegisterDependency(i);
+      result->addPostCondition(singlePair->getRegister(), singlePair->getRealRegister(), singlePair->getFlags());
+      }
+
+   return result;
    }
 
 void TR_ARM64RegisterDependencyGroup::assignRegisters(

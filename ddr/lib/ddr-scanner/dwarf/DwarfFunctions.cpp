@@ -285,12 +285,15 @@ dwarf_offdie_b(Dwarf_Debug dbg,
 	if (NULL == return_die) {
 		ret = DW_DLV_ERROR;
 		setError(error, DW_DLE_IA);
-	} else if (Dwarf_Die_s::refMap.end() != Dwarf_Die_s::refMap.find(offset)) {
-		/* Return any Die from its global offset. */
-		*return_die = Dwarf_Die_s::refMap[offset];
 	} else {
-		ret = DW_DLV_NO_ENTRY;
-		setError(error, DW_DLE_BADOFF);
+		unordered_map<Dwarf_Off, Dwarf_Die>::const_iterator iter = Dwarf_Die_s::refMap.find(offset);
+		if ((Dwarf_Die_s::refMap.end() != iter) && (NULL != iter->second)) {
+			/* Return any Die from its global offset. */
+			*return_die = iter->second;
+		} else {
+			ret = DW_DLV_NO_ENTRY;
+			setError(error, DW_DLE_BADOFF);
+		}
 	}
 	return ret;
 }

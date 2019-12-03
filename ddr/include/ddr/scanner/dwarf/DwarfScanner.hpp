@@ -59,12 +59,6 @@ using std::make_pair;
 using std::map;
 using std::string;
 
-#if defined(OMR_HAVE_TR1)
-using std::tr1::hash;
-#else
-using std::hash;
-#endif
-
 class DwarfScanner : public Scanner
 {
 public:

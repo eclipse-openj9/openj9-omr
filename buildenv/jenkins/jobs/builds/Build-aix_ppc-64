@@ -33,15 +33,15 @@ pipeline {
                 timestamps {
                     echo 'Output CCACHE stats before running and clear them'
                     sh '''ccache -s -z'''
-                    
+
                     dir('build') {
                         echo 'Configure...'
                         sh '''cmake -Wdev -DCMAKE_XL_CreateExportList="/usr/vac/bin/CreateExportList -X64" -DOMR_DDR=OFF -C../cmake/caches/Travis.cmake ..'''
-                       
+
                         echo 'Compile...'
-                        sh '''make -j8'''
+                        sh '''export CCACHE_EXTRAFILES="$PWD/omrcfg.h" && make -j8'''
                     }
-                    
+
                     echo 'Output CCACHE stats after running'
                     sh '''ccache -s'''
                 }

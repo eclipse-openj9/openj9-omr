@@ -115,6 +115,9 @@ static void postForkResetThreads(omrthread_t self);
 static void postForkResetLib(omrthread_t self);
 static void postForkResetMonitors(omrthread_t self);
 static void postForkResetRWMutexes(omrthread_t self);
+#if defined(OMR_THR_MCS_LOCKS)
+static void preserveMCSNodesInForkSurvivor(omrthread_t forkSurvivorThread);
+#endif /* defined(OMR_THR_MCS_LOCKS) */
 #endif /* defined(OMR_THR_FORK_SUPPORT) */
 
 #if defined(OMR_THR_MCS_LOCKS)
@@ -860,6 +863,10 @@ postForkResetThreads(omrthread_t self)
 	omrthread_t threadIterator = NULL;
 	J9PoolState threadPoolState;
 
+#if defined(OMR_THR_MCS_LOCKS)
+	preserveMCSNodesInForkSurvivor(self);
+#endif /* defined(OMR_THR_MCS_LOCKS) */
+
 	threadIterator = (omrthread_t)pool_startDo(lib->thread_pool, &threadPoolState);
 	while (NULL != threadIterator) {
 		if (threadIterator == self) {
@@ -957,6 +964,10 @@ postForkResetMonitors(omrthread_t self)
 				} else {
 #if defined(OMR_THR_THREE_TIER_LOCKING)
 #if defined(OMR_THR_MCS_LOCKS)
+					/* Refer to preserveMCSNodesInForkSurvivor, which is invoked from postForkResetThreads.
+					 * It is used to preserve the state of the MCS locks and nodes (monitors), which are
+					 * owned by the fork survivor thread.
+					 */
 					entry->spinlockState = J9THREAD_MONITOR_SPINLOCK_OWNED;
 #else /* defined(OMR_THR_MCS_LOCKS) */
 					if (J9THREAD_MONITOR_SPINLOCK_EXCEEDED == entry->spinlockState) {
@@ -998,6 +1009,59 @@ postForkResetMonitors(omrthread_t self)
 		threadMonitorPool = threadMonitorPool->next;
 	}
 }
+
+#if defined(OMR_THR_MCS_LOCKS)
+/**
+ * This function preserves the MCS nodes in a fork survivor thread post fork.
+ *
+ * The MCS node, whose associated monitor is owned by the fork survivor thread, is
+ * preserved and placed at the tail of the MCS queue with the queueNext field set
+ * to NULL and the blocked field set to reflect that the fork survivor thread can
+ * acquire the MCS lock.
+ *
+ * The MCS node, whose associated monitor is not owned by the fork survivor thread,
+ * is removed from the stack and freed.
+ *
+ * @param[in] forkSurvivorThread the fork survivor thread
+ *
+ * @return void
+ */
+static void
+preserveMCSNodesInForkSurvivor(omrthread_t forkSurvivorThread)
+{
+	omrthread_mcs_node_t mcsNode = forkSurvivorThread->mcsNodes->stackHead;
+	omrthread_mcs_node_t prevMcsNode = mcsNode;
+	while (NULL != mcsNode) {
+		omrthread_mcs_node_t nextMcsNode = mcsNode->stackNext;
+		omrthread_monitor_t monitorMcsNode = mcsNode->monitor;
+		if (forkSurvivorThread == monitorMcsNode->owner) {
+			/* The MCS node is owned by the fork survivor thread so it should be preserved
+			 * in the stack.
+			 */
+			prevMcsNode = mcsNode;
+
+			/* The MCS node should be placed at the queue tail since no other thread survives
+			 * except the fork survivor thread. The MCS queue has only one MCS node since only
+			 * the fork survivor thread persists and owns the monitor.
+			 */
+			monitorMcsNode->queueTail = mcsNode;
+			mcsNode->queueNext = NULL;
+			mcsNode->blocked = OMRTHREAD_MCS_THREAD_ACQUIRE;
+		} else {
+			/* If the monitor associated to the MCS node is not owned by the fork survivor
+			 * thread, then it is not needed so it should be removed from the stack and freed.
+			 */
+			if (mcsNode == forkSurvivorThread->mcsNodes->stackHead) {
+				forkSurvivorThread->mcsNodes->stackHead = nextMcsNode;
+			} else {
+				prevMcsNode->stackNext = nextMcsNode;
+			}
+			omrthread_mcs_node_free(forkSurvivorThread, mcsNode);
+		}
+		mcsNode = nextMcsNode;
+	}
+}
+#endif /* defined(OMR_THR_MCS_LOCKS) */
 
 static void
 postForkResetRWMutexes(omrthread_t self)

@@ -81,7 +81,7 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             {
             fcursor = new (_cg->trHeapMemory()) PPCConstant<float>(_cg, fin.fvalue);
             _floatConstants.add(fcursor);
-            if (TR::Compiler->target.is64Bit() && !comp->getOption(TR_DisableTOCForConsts))
+            if (TR::Compiler->target.is64Bit())
                {
                ret = TR_PPCTableOfConstants::lookUp(fin.fvalue, _cg);
                }
@@ -110,7 +110,7 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             {
             dcursor = new (_cg->trHeapMemory()) PPCConstant<double>(_cg, din.dvalue);
             _doubleConstants.add(dcursor);
-            if (TR::Compiler->target.is64Bit() && !comp->getOption(TR_DisableTOCForConsts))
+            if (TR::Compiler->target.is64Bit())
                {
                ret = TR_PPCTableOfConstants::lookUp(din.dvalue, _cg);
                }

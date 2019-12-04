@@ -180,7 +180,7 @@ TR_PPCTableOfConstants::lookUp(int32_t val, struct TR_tocHashEntry *tmplate, int
    {
    TR::Compilation *comp = cg->comp();
 
-   if (comp->compileRelocatableCode() || (comp->getOption(TR_EnableHCR) && comp->getOption(TR_HCRPatchClassPointers)) || comp->getOption(TR_MimicInterpreterFrameShape))
+   if (comp->compileRelocatableCode() || comp->getOption(TR_DisableTOC) || (comp->getOption(TR_EnableHCR) && comp->getOption(TR_HCRPatchClassPointers)) || comp->getOption(TR_MimicInterpreterFrameShape))
       return PTOC_FULL_INDEX;
 
    if (comp->isOptServer())
@@ -391,7 +391,7 @@ int32_t TR_PPCTableOfConstants::lookUp(int8_t *name, int32_t len, bool isAddr, i
    struct TR_tocHashEntry localEntry;
    int32_t                val, offsetInSlot;
 
-   if (comp->compileRelocatableCode() || (comp->getOption(TR_EnableHCR) && comp->getOption(TR_HCRPatchClassPointers)))
+   if (comp->compileRelocatableCode() || comp->getOption(TR_DisableTOC) || (comp->getOption(TR_EnableHCR) && comp->getOption(TR_HCRPatchClassPointers)))
       return PTOC_FULL_INDEX;
 
    if (comp->isOptServer())
@@ -424,6 +424,9 @@ int32_t TR_PPCTableOfConstants::lookUp(double dvalue, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
 
+   if (comp->getOption(TR_DisableTOC))
+      return PTOC_FULL_INDEX;
+
    if (comp->isOptServer())
       {
       if (comp->getMethodHotness() < warm || comp->isDLT() || comp->isProfilingCompilation() || cg->getCurrentBlock()->isCold())
@@ -449,6 +452,9 @@ int32_t TR_PPCTableOfConstants::lookUp(double dvalue, TR::CodeGenerator *cg)
 int32_t TR_PPCTableOfConstants::lookUp(float fvalue, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
+
+   if (comp->getOption(TR_DisableTOC))
+      return PTOC_FULL_INDEX;
 
    if (comp->isOptServer())
       {
@@ -477,6 +483,9 @@ int32_t TR_PPCTableOfConstants::lookUp(float fvalue, TR::CodeGenerator *cg)
 int32_t TR_PPCTableOfConstants::lookUp(TR::SymbolReference *symRef, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
+
+   if (comp->getOption(TR_DisableTOC))
+      return PTOC_FULL_INDEX;
 
    if (comp->isOptServer())
       {
@@ -559,7 +568,7 @@ int32_t TR_PPCTableOfConstants::allocateChunk(uint32_t numEntries, TR::CodeGener
    {
    TR_PPCTableOfConstants *tocManagement = toPPCTableOfConstants(TR_PersistentMemory::getNonThreadSafePersistentInfo()->getPersistentTOC());
 
-   if (tocManagement == NULL || cg->comp()->compileRelocatableCode() || (cg->comp()->getOption(TR_EnableHCR) && cg->comp()->getOption(TR_HCRPatchClassPointers)))
+   if (tocManagement == NULL || cg->comp()->getOption(TR_DisableTOC) || cg->comp()->compileRelocatableCode() || (cg->comp()->getOption(TR_EnableHCR) && cg->comp()->getOption(TR_HCRPatchClassPointers)))
       return PTOC_FULL_INDEX;
 
    if (grabMonitor)

@@ -322,7 +322,7 @@ enum TR_CompilationOptions
    TR_TurnOffSelectiveNoOptServerIfNoStartupHint = 0x01000000 + 7,
    TR_TraceDominators                     = 0x02000000 + 7,
    TR_EnableHCR                           = 0x04000000 + 7, // enable hot code replacement
-   TR_DisableTOCForConsts                 = 0x08000000 + 7,
+   TR_DisableTOC                          = 0x08000000 + 7,
    TR_UseLowPriorityQueueDuringCLP        = 0x10000000 + 7,
    TR_DisableVectorBCD                    = 0x20000000 + 7,
    // Available                           = 0x40000000 + 7,

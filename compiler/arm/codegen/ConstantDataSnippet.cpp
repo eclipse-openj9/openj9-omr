@@ -73,7 +73,7 @@ int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
 	    {
             fcursor = new (_cg->trHeapMemory()) TR::ARMConstant<float>(_cg, fin.fvalue);
             _floatConstants.add(fcursor);
-            if (TR::Compiler->target.is64Bit() && !comp->getOption(TR_DisableTOCForConsts))
+            if (TR::Compiler->target.is64Bit() && !comp->getOption(TR_DisableTOC))
 	       {
                ret = TR_ARMTableOfConstants::lookUp(fin.fvalue, _cg);
                fcursor->setTOCOffset(ret);
@@ -102,7 +102,7 @@ int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
 	    {
             dcursor = new (_cg->trHeapMemory()) TR::ARMConstant<double>(_cg, din.dvalue);
             _doubleConstants.add(dcursor);
-            if (TR::Compiler->target.is64Bit() && !comp->getOption(TR_DisableTOCForConsts))
+            if (TR::Compiler->target.is64Bit() && !comp->getOption(TR_DisableTOC))
 	       {
                ret = TR_ARMTableOfConstants::lookUp(din.dvalue, _cg);
                dcursor->setTOCOffset(ret);

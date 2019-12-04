@@ -39,13 +39,14 @@
 
 /* C++ TR1 support */
 
-#if (__cplusplus < 201103) && (defined(AIXPPC) || defined(J9ZOS390))
+#if (defined(AIXPPC) && (__xlC__ < 0x1000)) || defined(J9ZOS390)
 #if !defined(__IBMCPP_TR1__)
 #define __IBMCPP_TR1__ 1
 #endif
+#define OMR_HAVE_TR1 1
 #else
 #define OMR_HAVE_CXX11 1
-#endif /* (__cplusplus < 201103) && (defined(AIXPPC) || defined(J9ZOS390)) */
+#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
 
 /* Why is this disabled? */
 

@@ -270,16 +270,6 @@ Done:
 	return rc;
 }
 
-#if defined(AIXPPC) || defined(J9ZOS390) || defined(LINUXPPC)
-static bool
-isOnlyDigits(const char *text)
-{
-	size_t digitCount = strspn(text, "0123456789");
-
-	return '\0' == text[digitCount];
-}
-#endif /* defined(AIXPPC) || defined(J9ZOS390) || defined(LINUXPPC) */
-
 static bool
 isUnnamed(const char *name)
 {
@@ -291,13 +281,15 @@ isUnnamed(const char *name)
 		return true;
 	}
 
-#if defined(AIXPPC) || defined(J9ZOS390) || defined(LINUXPPC)
+#if defined(J9ZOS390) || defined(LINUXPPC)
 	if (0 == strncmp(name, "__", 2)) {
-		return isOnlyDigits(name + 2);
-	} else if (0 == strncmp(name, "#bit_field_", 11)) {
-		return isOnlyDigits(name + 11);
+		size_t digitCount = strspn(name + 2, "0123456789");
+
+		if ('\0' == name[digitCount + 2]) {
+			return true;
+		}
 	}
-#endif /* defined(AIXPPC) || defined(J9ZOS390) || defined(LINUXPPC) */
+#endif /* defined(J9ZOS390) || defined(LINUXPPC) */
 
 	return false;
 }
@@ -974,14 +966,13 @@ DwarfVisitor::visitNamespace(NamespaceUDT *newClass) const
 static bool
 isVtablePointer(const char *fieldName)
 {
-	return false
-#if defined(AIXPPC) || defined(J9ZOS390) || defined(LINUXPPC)
-		|| (0 == strcmp(fieldName, "__vfp"))
-#endif /* defined(AIXPPC) || defined(J9ZOS390) || defined(LINUXPPC) */
 #if defined(__GNUC__)
-		|| (0 == strncmp(fieldName, "_vptr.", 6))
+	return 0 == strncmp(fieldName, "_vptr.", 6);
+#elif defined(AIXPPC) || defined(J9ZOS390) || defined(LINUXPPC)
+	return 0 == strcmp(fieldName, "__vfp");
+#else /* defined(__GNUC__) */
+	return false;
 #endif /* defined(__GNUC__) */
-		;
 }
 
 /* A Die for a class/struct/union has children Die's for all of its properties,
@@ -1098,84 +1089,13 @@ DwarfVisitor::visitUnion(UnionUDT *newType) const
 	return rc;
 }
 
-/*
- * Given an attribute of type DW_AT_const_value, return its value.
- */
-static DDR_RC
-getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, uint64_t *value)
-{
-	DDR_RC rc = DDR_RC_ERROR;
-	Dwarf_Error error = NULL;
-	Dwarf_Half form = 0;
-
-	/* Get the literal value form. */
-	/* Get the literal value. */
-	if (DW_DLV_ERROR == dwarf_whatform(attr, &form, &error)) {
-		ERRMSG("Getting form of const_value attribute: %s\n", dwarf_errmsg(error));
-	} else if ((DW_FORM_block  == form) || (DW_FORM_block1 == form)
-			|| (DW_FORM_block2 == form) || (DW_FORM_block4 == form)) {
-		Dwarf_Block *block = NULL;
-		if (DW_DLV_ERROR == dwarf_formblock(attr, &block, &error)) {
-			ERRMSG("Getting block of const_value attribute: %s\n", dwarf_errmsg(error));
-		} else {
-			/* Note: This assumes the host byte-order. */
-			switch (block->bl_len) {
-			case 1:
-				*value = *(uint8_t *)(void *)block->bl_data;
-				rc = DDR_RC_OK;
-				break;
-			case 2:
-				*value = *(uint16_t *)(void *)block->bl_data;
-				rc = DDR_RC_OK;
-				break;
-			case 4:
-				*value = *(uint32_t *)(void *)block->bl_data;
-				rc = DDR_RC_OK;
-				break;
-			case 8:
-				*value = *(uint64_t *)(void *)block->bl_data;
-				rc = DDR_RC_OK;
-				break;
-			default:
-				ERRMSG("Unsupported const_value block size: %d\n", (int )block->bl_len);
-				break;
-			}
-			dwarf_dealloc(debug, block, DW_DLA_BLOCK);
-		}
-	} else if (DW_FORM_udata == form) {
-		Dwarf_Unsigned uvalue = 0;
-
-		if (DW_DLV_ERROR == dwarf_formudata(attr, &uvalue, &error)) {
-			ERRMSG("Getting const_value of enum: %s\n", dwarf_errmsg(error));
-		} else {
-			*value = uvalue;
-			rc = DDR_RC_OK;
-		}
-	} else {
-		Dwarf_Signed svalue = 0;
-
-		if (DW_DLV_ERROR == dwarf_formsdata(attr, &svalue, &error)) {
-			ERRMSG("Getting const_value of enum: %s\n", dwarf_errmsg(error));
-		} else {
-			*value = (uint64_t)(int64_t)svalue;
-			rc = DDR_RC_OK;
-		}
-	}
-
-	if (NULL != error) {
-		dwarf_dealloc(debug, error, DW_DLA_ERROR);
-	}
-
-	return rc;
-}
-
 /* Add an enum member to an enum UDT from a Die. */
 DDR_RC
 DwarfScanner::addEnumMember(Dwarf_Die die, NamespaceUDT *outerUDT, EnumUDT *newEnum)
 {
 	Dwarf_Attribute attr = NULL;
 	string enumName = "";
-	uint64_t enumValue = 0;
+	int enumValue = 0;
 	Dwarf_Error error = NULL;
 	vector<EnumMember *> *members = NULL;
 
@@ -1206,20 +1126,49 @@ DwarfScanner::addEnumMember(Dwarf_Die die, NamespaceUDT *outerUDT, EnumUDT *newE
 		goto AddEnumMemberError;
 	}
 
-	rc = getConstValue(_debug, attr, &enumValue);
-	dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
+	if (NULL != attr) {
+		Dwarf_Half form = 0;
 
-	if (DDR_RC_OK == rc) {
+		/* Get the literal value form. */
+		if (DW_DLV_ERROR == dwarf_whatform(attr, &form, &error)) {
+			ERRMSG("Getting form of const_value attribute: %s\n", dwarf_errmsg(error));
+			goto AddEnumMemberError;
+		}
+
+		/* Get the literal value. */
+		if (DW_FORM_udata == form) {
+			Dwarf_Unsigned value = 0;
+
+			if (DW_DLV_ERROR == dwarf_formudata(attr, &value, &error)) {
+				ERRMSG("Getting const value of enum: %s\n", dwarf_errmsg(error));
+				goto AddEnumMemberError;
+			}
+			enumValue = (int)value;
+		} else {
+			Dwarf_Signed value = 0;
+
+			if (DW_DLV_ERROR == dwarf_formsdata(attr, &value, &error)) {
+				ERRMSG("Getting const value of enum: %s\n", dwarf_errmsg(error));
+				goto AddEnumMemberError;
+			}
+			enumValue = (int)value;
+		}
+	}
+
+	{
 		/* Create new enum member. */
 		EnumMember *newEnumMember = new EnumMember;
 
 		newEnumMember->_name = enumName;
-		newEnumMember->_value = (int)(int64_t)enumValue;
+		newEnumMember->_value = enumValue;
 
 		members->push_back(newEnumMember);
 	}
 
 AddEnumMemberDone:
+	if (NULL != attr) {
+		dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
+	}
 	if (NULL != error) {
 		dwarf_dealloc(_debug, error, DW_DLA_ERROR);
 	}

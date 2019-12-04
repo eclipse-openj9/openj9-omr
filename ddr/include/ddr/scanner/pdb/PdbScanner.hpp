@@ -39,6 +39,7 @@
 #include "ddr/scanner/Scanner.hpp"
 #include "ddr/ir/Symbol_IR.hpp"
 
+using std::hash;
 using std::map;
 using std::pair;
 using std::set;

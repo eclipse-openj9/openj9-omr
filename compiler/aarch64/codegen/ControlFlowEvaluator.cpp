@@ -23,6 +23,7 @@
 #include "codegen/ARM64HelperCallSnippet.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
@@ -514,8 +515,70 @@ OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeGenerator *cg
 TR::Register *
 OMR::ARM64::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   // Only temporary (#3858 implements this)
-   cg->comp()->failCompilation<TR::AssertionFailure>("tableEvaluator");
+   int32_t numBranchTableEntries = node->getNumChildren() - 2;
+   TR::Node *defaultChild = node->getSecondChild();
+   TR::Register *selectorReg = cg->evaluate(node->getFirstChild());
+   TR::Register *tmpRegister = NULL;
+   TR::RegisterDependencyConditions *conditions;
+   int32_t i;
+
+   if (5 <= numBranchTableEntries)
+      {
+      conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      tmpRegister = cg->allocateRegister();
+      TR::addDependency(conditions, tmpRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+      }
+   else
+      {
+      conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+      }
+
+   TR::addDependency(conditions, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
+
+   if (0 < defaultChild->getNumChildren())
+      {
+      cg->evaluate(defaultChild->getFirstChild());
+      conditions = conditions->clone(cg, generateRegisterDependencyConditions(cg, defaultChild->getFirstChild(), 0));
+      }
+
+   if (5 > numBranchTableEntries)
+      {
+      for (i = 0; i < numBranchTableEntries; i++)
+         {
+         generateCompareImmInstruction(cg, node, selectorReg, i);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, node->getChild(2+i)->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ);
+         }
+
+      generateLabelInstruction(cg, TR::InstOpCode::b, node, defaultChild->getBranchDestination()->getNode()->getLabel(), conditions);
+      }
+   else
+      {
+      if (!constantIsUnsignedImm12(numBranchTableEntries))
+         {
+         loadConstant32(cg, node, numBranchTableEntries, tmpRegister);
+         generateCompareInstruction(cg, node, selectorReg, tmpRegister);
+         }
+      else
+         {
+         generateCompareImmInstruction(cg, node, selectorReg, numBranchTableEntries);
+         }
+
+      generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, defaultChild->getBranchDestination()->getNode()->getLabel(), TR::CC_CS);
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::adr, node, tmpRegister, 12); // distance between this instruction to the jump table
+      generateTrg1Src2ShiftedInstruction(cg, TR::InstOpCode::addx, node, tmpRegister, tmpRegister, selectorReg, TR::SH_LSL, 2);
+      generateRegBranchInstruction(cg, TR::InstOpCode::br, node, tmpRegister);
+
+      for (i = 2; i < node->getNumChildren()-1; i++)
+         {
+         generateLabelInstruction(cg, TR::InstOpCode::b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel());
+         }
+      generateLabelInstruction(cg, TR::InstOpCode::b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel(), conditions);
+      }
+
+   if (NULL != tmpRegister)
+      cg->stopUsingRegister(tmpRegister);
+
+   cg->decReferenceCount(node->getFirstChild());
    return NULL;
    }
 

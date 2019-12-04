@@ -874,6 +874,17 @@ postForkResetThreads(omrthread_t self)
 		} else {
 			omrthread_tls_finalizeNoLock(threadIterator);
 
+#if defined(OMR_THR_MCS_LOCKS)
+			/* For all threads other than the fork survivor thread, the stack head and J9Pool,
+			 * which is stored in J9Thread->mcsNodes, should be reset. This is part of
+			 * resetting the monitors. This step is performed in postForkResetThreads instead
+			 * of postForkResetMonitors because mcsNodes is the property of a thread. Thus, it
+			 * is easier to process in postForkResetThreads.
+			 */
+			threadIterator->mcsNodes->stackHead = NULL;
+			pool_clear(threadIterator->mcsNodes->pool);
+#endif /* defined(OMR_THR_MCS_LOCKS) */
+
 			/* Flush the thread local list of destroyed monitors of the thread that no longer exists to the global list. */
 			if (NULL != threadIterator->destroyed_monitor_head) {
 				threadIterator->destroyed_monitor_tail->owner = (omrthread_t)lib->monitor_pool->next_free;

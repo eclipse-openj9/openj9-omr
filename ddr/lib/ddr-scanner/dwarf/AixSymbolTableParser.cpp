@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corp. and others
+ * Copyright (c) 2015, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,6 +22,7 @@
 #include "ddr/error.hpp"
 
 #include "ddr/scanner/dwarf/AixSymbolTableParser.hpp"
+#include "ddr/scanner/dwarf/DwarfScanner.hpp"
 
 /* Statics. */
 static die_map createdDies;
@@ -105,7 +106,6 @@ dwarf_init(int fd,
 	int ret = DW_DLV_OK;
 	FILE *fp = NULL;
 	char buffer[50000];
-	char filepath[100] = {'\0'};
 	Dwarf_CU_Context::_firstCU = NULL;
 	Dwarf_CU_Context::_currentCU = NULL;
 	refNumber = 1;
@@ -114,13 +114,10 @@ dwarf_init(int fd,
 	ret = populateBuiltInTypeDies(error);
 	populateAttributeReferences();
 
-	/* Get the path of the file descriptor. */
-	sprintf(filepath, "/proc/%d/fd/%d", getpid(), fd);
-
 	/* Call dump to get the symbol table. */
 	if (DW_DLV_OK == ret) {
 		stringstream ss;
-		ss << "dump -tvXany " << filepath << " 2>&1";
+		ss << "dump -tvXany " << DwarfScanner::getScanFileName() << " 2>&1";
 		fp = popen(ss.str().c_str(), "r");
 		if (NULL == fp) {
 			ret = DW_DLV_ERROR;

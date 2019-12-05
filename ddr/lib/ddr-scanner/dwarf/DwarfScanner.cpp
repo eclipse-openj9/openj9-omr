@@ -64,6 +64,8 @@ public:
 	virtual DDR_RC visitUnion(UnionUDT *type) const;
 };
 
+const char * DwarfScanner::scanFileName = NULL;
+
 DwarfScanner::DwarfScanner()
 	: _fileNameCount(0), _fileNamesTable(NULL), _ir(NULL), _debug(NULL)
 {
@@ -1563,6 +1565,7 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *f
 		Dwarf_Handler errhand = 0;
 		Dwarf_Ptr errarg = NULL;
 		intptr_t native_fd = omrfile_convert_omrfile_fd_to_native_fd(fd);
+		DwarfScanner::scanFileName = filepath;
 		res = dwarf_init((int)native_fd, access, errhand, errarg, &_debug, &error);
 		if (DW_DLV_OK != res) {
 			ERRMSG("Failed to initialize libDwarf scanning %s: %s\nExiting...\n", filepath, dwarf_errmsg(error));
@@ -1597,6 +1600,7 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *f
 		omrfile_close(fd);
 	}
 
+	DwarfScanner::scanFileName = NULL;
 	DEBUGPRINTF("Start Scan Finished: Returning...");
 
 	return rc;

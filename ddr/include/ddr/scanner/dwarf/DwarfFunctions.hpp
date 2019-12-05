@@ -18,6 +18,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
+#ifndef DWARFFUNCTIONS_HPP
+#define DWARFFUNCTIONS_HPP
 
 #include "ddr/config.hpp"
 
@@ -324,3 +326,5 @@ int dwarf_dieoffset(Dwarf_Die die, Dwarf_Off *dieOffset, Dwarf_Error *error);
 int dwarf_get_TAG_name(Dwarf_Half tag, const char **name);
 
 void setError(Dwarf_Error *error, Dwarf_Half num);
+
+#endif /*DWARFFUNCTIONS_HPP*/

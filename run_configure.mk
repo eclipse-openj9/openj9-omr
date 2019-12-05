@@ -133,7 +133,7 @@ sh configure --disable-auto-build-flag 'OMRGLUE=$(OMRGLUE)' 'SPEC=$(SPEC)' $(CON
 touch $(CONFIGURE_OUTPUT_FILES)
 endef
 
-CONFIGURE_DEPENDENCIES := SPEC config.guess config.sub configure tools/configure
+CONFIGURE_DEPENDENCIES := SPEC configure tools/configure
 CONFIGURE_OUTPUT_FILES := include_core/omrcfg.h include_core/omrversionstrings.h omrmakefiles/configure.mk ./omr.rc tools/toolconfigure.mk CONFIGURE_SENTINEL_FILE
 CONFIGURE_INPUT_FILES := include_core/omrcfg.h.in include_core/omrversionstrings.h.in omrmakefiles/configure.mk.in ./omr.rc.in tools/toolconfigure.mk.in
 CONFIGURE_BYPRODUCTS := config.cache config.status config.log autom4te.cache tools/config.cache tools/config.status toolconfig/config.log tools/autom4te.cache
@@ -153,12 +153,6 @@ ifeq ($(HAS_AUTOCONF),1)
 else
 	@echo "WARNING: autoconf needs to be re-run in $$PWD/tools.  You should do this by hand, or set HAS_AUTOCONF=1 to have this makefile do it for you."
 endif
-
-config.guess:
-	curl -o config.guess "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD"
-
-config.sub:
-	curl -o config.sub "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD"
 
 # Since configure has many output files, we are using a 'sentinel file' to make
 # sure that this recipe is only executed once when running configure in parallel.

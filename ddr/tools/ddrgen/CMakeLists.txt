@@ -34,8 +34,8 @@ target_link_libraries(omr_ddrgen
 	omr_ddr_ir
 	omr_ddr_macros
 	omr_ddr_scanner
-	${OMR_PORT_LIB}
-	${OMR_THREAD_LIB}
+	omrport
+	j9thrstatic
 )
 
 if(OMRPORT_OMRSIG_SUPPORT)

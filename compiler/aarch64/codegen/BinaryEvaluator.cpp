@@ -616,7 +616,7 @@ bool findLogicImmediateBitPattern(T value, int elementSize, int32_t &rotateCount
  * @param[out] immEncoded : immr and imms encoded in 12bit field
  * @return true if value can be encoded as immediate operand
  */
-static inline bool
+bool
 logicImmediateHelper(uint64_t value, bool is64Bit, bool &n, uint32_t &immEncoded)
    {
    uint64_t mask = ~(uint64_t)0;

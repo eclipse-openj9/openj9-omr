@@ -93,7 +93,7 @@ function(_omr_toolchain_separate_debug_symbols tgt)
 		add_custom_command(
 			TARGET "${tgt}"
 			POST_BUILD
-			COMMAND dysymutil -f ${exe_file} -o ${dbg_file}
+			COMMAND dsymutil -f ${exe_file} -o ${dbg_file}
 		)
 	else()
 		add_custom_command(

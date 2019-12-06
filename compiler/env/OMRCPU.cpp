@@ -75,6 +75,13 @@ OMR::CPU::initializeByHostQuery()
    _majorArch = TR::arch_z;
 #elif defined(TR_HOST_ARM64)
    _majorArch = TR::arch_arm64;
+#elif defined(TR_HOST_RISCV)
+   _majorArch = TR::arch_riscv;
+   #if defined (TR_HOST_64BIT)
+   _minorArch = TR::m_arch_riscv64;
+   #else
+   _minorArch = TR::m_arch_riscv32;
+   #endif
 #else
    TR_ASSERT(0, "unknown host architecture");
    _majorArch = TR::arch_unknown;

@@ -1154,16 +1154,16 @@ class OMR_EXTENSIBLE CodeGenerator
    void apply32BitLabelTableRelocation(int32_t * cursor, TR::LabelSymbol *);
 
 
-   bool needClassAndMethodPointerRelocations() { return false; }
-   bool needRelocationsForStatics() { return false; }
-   bool needRelocationsForBodyInfoData() { return false; }
-   bool needRelocationsForPersistentInfoData() { return false; }
+   bool needClassAndMethodPointerRelocations();
+   bool needRelocationsForStatics();
+   bool needRelocationsForBodyInfoData();
+   bool needRelocationsForPersistentInfoData();
    bool needRelocationsForLookupEvaluationData();
-   bool needRelocationsForCurrentMethodPC() { return false; }
+   bool needRelocationsForCurrentMethodPC();
 
    // This query can be used if we need to decide whether data represented by TR_HelperAddress or TR_AbsoluteHelperAddress
    // relocation type needs a relocation record.
-   bool needRelocationsForHelpers() { return false; }
+   bool needRelocationsForHelpers();
 
    // --------------------------------------------------------------------------
    // Snippets

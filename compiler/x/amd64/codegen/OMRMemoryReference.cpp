@@ -247,7 +247,7 @@ bool OMR::X86::AMD64::MemoryReference::needsAddressLoadInstruction(intptrj_t rip
       }
    else if (_baseRegister || _indexRegister)
       return !IS_32BIT_SIGNED(displacement);
-   else if (cg->needClassAndMethodPointerRelocations() || cg->needRelocationsForStatics())
+   else if (cg->needClassAndMethodPointerRelocations())
       return true;
    else if (sr.getSymbol() && sr.getSymbol()->isRecompilationCounter() && cg->needRelocationsForBodyInfoData())
       return true;
@@ -419,7 +419,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
          }
       else if (sr.getSymbol()->isCountForRecompile())
          {
-         if (cg->needRelocationsForStatics() || cg->needRelocationsForPersistentInfoData())
+         if (cg->needRelocationsForPersistentInfoData())
             cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(
                                    displacementLocation, (uint8_t *) TR_CountForRecompile, TR_GlobalValue, cg),
                                  __FILE__,
@@ -428,7 +428,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
          }
       else if (sr.getSymbol()->isRecompilationCounter())
          {
-         if (cg->needRelocationsForStatics() || cg->needRelocationsForBodyInfoData())
+         if (cg->needRelocationsForBodyInfoData())
             cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_BodyInfoAddress, cg),
                                  __FILE__,__LINE__,containingInstruction->getNode());
          }

@@ -63,6 +63,16 @@ extern TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, in
 
 extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, TR::Node *node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor=NULL, bool isPicSite=false, int16_t typeAddress=-1);
 
+/**
+ * @brief Helper function for encoding immediate value of logic instructions.
+ * @param[in] value : immediate value to encode
+ * @param[in] is64Bit : true if 64bit instruction
+ * @param[out] n : N bit
+ * @param[out] immEncoded : immr and imms encoded in 12bit field
+ * @return true if value can be encoded as immediate operand
+ */
+extern bool logicImmediateHelper(uint64_t value, bool is64Bit, bool &n, uint32_t &immEncoded);
+
 namespace OMR
 {
 

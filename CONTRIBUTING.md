@@ -127,6 +127,7 @@ can be achieved with the following labels:
 * [**`arch:aarch32`**](https://github.com/eclipse/omr/labels/arch%3Aaarch32)
 * [**`arch:aarch64`**](https://github.com/eclipse/omr/labels/arch%3Aaarch64)
 * [**`arch:power`**](https://github.com/eclipse/omr/labels/arch%3Apower)
+* [**`arch:riscv`**](https://github.com/eclipse/omr/labels/arch%3Ariscv)
 * [**`arch:x86`**](https://github.com/eclipse/omr/labels/arch%3Ax86)
 * [**`arch:z`**](https://github.com/eclipse/omr/labels/arch%3Az)
 <br/>

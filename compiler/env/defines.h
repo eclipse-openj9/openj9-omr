@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -190,6 +190,10 @@
 
 #if (HOST_ARCH == ARCH_ARM64)
 #  define TR_HOST_ARM64    1
+#endif
+
+#if (HOST_ARCH == ARCH_RISCV)
+#  define TR_HOST_RISCV    1
 #endif
 
 /* @ddr_namespace: default */

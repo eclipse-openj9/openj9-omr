@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2018 IBM Corp. and others
+# Copyright (c) 2015, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -76,6 +76,9 @@ ifneq (,$(findstring linux_aarch64,$(SPEC)))
 endif
 ifneq (,$(findstring linux_ppc,$(SPEC)))
   include $(CONFIG_INCL_DIR)/configure_linux_ppc.mk
+endif
+ifneq (,$(findstring linux_riscv,$(SPEC)))
+  include $(CONFIG_INCL_DIR)/configure_linux_riscv.mk
 endif
 ifneq (,$(findstring linux_x86,$(SPEC)))
   include $(CONFIG_INCL_DIR)/configure_linux_x86.mk

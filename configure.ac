@@ -45,7 +45,7 @@ AC_ARG_VAR([OMRGLUE_INCLUDES], [Extra include directories to be passed to the C 
 AC_ARG_VAR([lib_output_dir], [The output directory for libraries. (Default: $top_srcdir/lib)])
 AC_ARG_VAR([exe_output_dir], [The output directory for executables. (Default: $top_srcdir)])
 AC_ARG_VAR([OMR_HOST_OS], [The operating system where the package will run. One of: aix,linux,osx,win,zos])
-AC_ARG_VAR([OMR_HOST_ARCH], [The architecture of the CPU where the package will run. One of: aarch64,arm,ppc,s390,x86])
+AC_ARG_VAR([OMR_HOST_ARCH], [The architecture of the CPU where the package will run. One of: aarch64,arm,ppc,riscv,s390,x86])
 AC_ARG_VAR([OMR_TARGET_DATASIZE], [Specifies whether the package will run in 32- or 64-bit mode. One of: 31,32,64])
 AC_ARG_VAR([OMR_TOOLCHAIN], [The toolchain used to build the package. One of: gcc,xlc,msvc])
 AC_ARG_VAR([OMR_TOOLS_CC], [The C compiler to use for building tools (can differ from CC).])
@@ -424,6 +424,7 @@ OMRCFG_DEFINE_FLAG_OFF([OMR_ARCH_ARM])
 OMRCFG_DEFINE_FLAG_OFF([OMR_ARCH_AARCH64])
 OMRCFG_DEFINE_FLAG_OFF([OMR_ARCH_X86])
 OMRCFG_DEFINE_FLAG_OFF([OMR_ARCH_S390])
+OMRCFG_DEFINE_FLAG_OFF([OMR_ARCH_RISCV])
 
 OMRCFG_DEFINE_FLAG([OMR_ENV_DATA64],[],
 	[AS_IF([test "$OMR_TARGET_DATASIZE" = 64],

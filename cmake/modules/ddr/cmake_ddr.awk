@@ -22,10 +22,10 @@
 
 function get_basename(){
 	n = split(FILENAME, array, "/")
-	split(array[n], array, ".")
+	split(array[n], filename_array, ".")
 
 	#capitalize the first letter
-	return toupper(substr(array[1], 1, 1)) substr(array[1], 2)
+	return toupper(substr(filename_array[1], 1, 1)) substr(filename_array[1], 2)
 }
 
 function set_default_namespaces() {

@@ -28,9 +28,14 @@ include(OmrAssert)
 include(OmrUtility)
 include(ExternalProject)
 
+# Make sure we have performed platform detection
+include(OmrPlatform)
+
 set(OMR_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(DDR_INFO_DIR "${CMAKE_BINARY_DIR}/ddr_info")
 
+
+set(OMR_SEPARATE_DEBUG_INFO OFF CACHE BOOL "Maintain debug info in a separate file")
 
 function(make_ddr_set set_name)
 	# if DDR is not enabled, just skip
@@ -140,9 +145,21 @@ function(target_enable_ddr tgt)
 		"$<JOIN:$<TARGET_PROPERTY:${tgt},DDR_PREINCLUDES>,\n>"
 	)
 	if((target_type MATCHES "EXECUTABLE|SHARED_LIBRARY") AND (NOT opt_NO_DEBUG_INFO))
+		# Default to using config option
+		set(use_split_debug ${OMR_SEPARATE_DEBUG_INFO})
+
 		# OMR_SEPARATE_DEBUG_INFO has no impact on windows since it already
 		# uses separate .pdb files
-		if(OMR_SEPARATE_DEBUG_INFO AND (NOT OMR_OS_WINDOWS))
+		if(OMR_OS_WINDOWS)
+			set(use_split_debug FALSE)
+		endif()
+
+		# DDR requires separate debug info on osx
+		if(OMR_OS_OSX)
+			set(use_split_debug TRUE)
+		endif()
+
+		if(use_split_debug)
 			set(MAGIC_TEMPLATE "OUTPUT_FILE\n$<TARGET_FILE:${tgt}>.dbg\n${MAGIC_TEMPLATE}")
 			# Add rules to generate the split debug info
 			omr_split_debug("${tgt}")

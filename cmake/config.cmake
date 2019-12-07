@@ -204,5 +204,3 @@ set(OMR_ENV_GCC OFF CACHE BOOL "TODO: Document")
 set(OMR_OPT_CUDA ${CUDA_FOUND} CACHE BOOL "Enable CUDA support in OMR")
 
 set(OMR_SANITIZE OFF CACHE STRING "Sanitizer selection. Only has an effect on GNU or Clang")
-
-set(OMR_SEPARATE_DEBUG_INFO OFF CACHE BOOL "Maintain debug info in a separate file")

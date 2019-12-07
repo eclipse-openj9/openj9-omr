@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -134,8 +134,8 @@ add_custom_target(header_check ALL
 	${CMAKE_COMMAND} "-Domr_SOURCE_DIR=${omr_SOURCE_DIR}" -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckSourceTree.cmake)
 endif()
 
-configure_file(./omrcfg.CMakeTemplate.h omrcfg.h)
-configure_file(./omrversionstrings.CMakeTemplate.h omrversionstrings.h)
+configure_file(include_core/omrcfg.cmake.h.in omrcfg.h)
+configure_file(include_core/omrversionstrings.cmake.h.in omrversionstrings.h)
 
 
 ###

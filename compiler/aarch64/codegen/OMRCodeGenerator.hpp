@@ -73,6 +73,26 @@ extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, TR::Node *nod
  */
 extern bool logicImmediateHelper(uint64_t value, bool is64Bit, bool &n, uint32_t &immEncoded);
 
+/**
+ * Decodes bitmask for 32bit variants of logic op codes
+ * @param[in] Nbit: N bit
+ * @param[in] immr : immr part of immediate
+ * @param[in] imms : imms part of immediate
+ * @param[out] wmask : returned immediate
+ * @return true if successfully decoded
+ */
+extern bool decodeBitMasks(bool Nbit, uint32_t immr, uint32_t imms, uint32_t &wmask);
+
+/**
+ * Decodes bitmask for 64bit variants of logic op codes
+ * @param[in] Nbit: N bit
+ * @param[in] immr : immr part of immediate
+ * @param[in] imms : imms part of immediate
+ * @param[out] wmask : returned immediate
+ * @return true if successfully decoded
+ */
+extern bool decodeBitMasks(bool Nbit, uint32_t immr, uint32_t imms, uint64_t &wmask);
+
 struct TR_ARM64BinaryEncodingData : public TR_BinaryEncodingData
    {
    int32_t estimate;

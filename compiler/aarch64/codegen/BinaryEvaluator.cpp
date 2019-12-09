@@ -617,6 +617,79 @@ OMR::ARM64::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 /**
+ * Helper template function that decodes bitmask for logic op codes
+ * @param[in] Nbit: N bit
+ * @param[in] immr : immr part of immediate
+ * @param[in] imms : imms part of immediate
+ * @param[out] wmask : returned immediate
+ * @return true if successfully decoded
+ */
+template<typename U>
+bool
+decodeBitMasksImpl(bool Nbit, uint32_t immr, uint32_t imms, U &wmask)
+   {
+   const size_t immBitLen = sizeof(U) * 8;
+   if ((immBitLen == 32) && Nbit)
+      {
+      return false;
+      }
+   int len = Nbit ? 6 : (31 - leadingZeroes((~imms) & 0x3f));
+   if ((len <= 0) || (immBitLen < (1 << len)))
+      {
+      return false;
+      }
+
+   uint32_t levels = (1 << len) - 1;
+   uint32_t s = imms & levels;
+
+   if (s == levels)
+      {
+      return false;
+      }
+   U welem = (static_cast<U>(1) << (s + 1)) - 1;
+   uint32_t elemLen = 1 << len;
+   uint32_t r = immr & levels;
+   U mask = (immBitLen == elemLen) ? (~static_cast<U>(0)) : (static_cast<U>(1) << elemLen) - 1;
+   U elem = ((welem << (elemLen - r)) | (welem >> r)) & mask;
+
+   while (elemLen < immBitLen)
+      {
+      elem |= (elem << elemLen);
+      elemLen *= 2;
+      }
+   wmask = elem;
+   return true;
+   }
+
+/**
+ * Decodes bitmask for 32bit variants of logic op codes
+ * @param[in] Nbit: N bit
+ * @param[in] immr : immr part of immediate
+ * @param[in] imms : imms part of immediate
+ * @param[out] wmask : returned immediate
+ * @return true if successfully decoded
+ */
+bool
+decodeBitMasks(bool Nbit, uint32_t immr, uint32_t imms, uint32_t &wmask)
+   {
+   return decodeBitMasksImpl(Nbit, immr, imms, wmask);
+   }
+
+/**
+ * Decodes bitmask for 64bit variants of logic op codes
+ * @param[in] Nbit: N bit
+ * @param[in] immr : immr part of immediate
+ * @param[in] imms : imms part of immediate
+ * @param[out] wmask : returned immediate
+ * @return true if successfully decoded
+ */
+bool
+decodeBitMasks(bool Nbit, uint32_t immr, uint32_t imms, uint64_t &wmask)
+   {
+   return decodeBitMasksImpl(Nbit, immr, imms, wmask);
+   }
+
+/**
  * Helper template function that find rotate count and ones count for value.
  * @param[in] value : immediate value element
  * @param[in] elementSize : element size

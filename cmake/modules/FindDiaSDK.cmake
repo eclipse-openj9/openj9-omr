@@ -34,18 +34,27 @@
 # leave the other hints as well.
 get_filename_component(VSPath ${CMAKE_CXX_COMPILER} DIRECTORY CACHE)
 
+# Note we need to tell CMake to search DiaSDK_ROOT
+# this is default behavior on newer versions of cmake
 find_path(DIA2_H_DIR "dia2.h"
 	HINTS
 		"${VSPath}/../../../DIA SDK/include"
-		"$ENV{DIASDK}\\include"
-		"$ENV{VSSDK140Install}..\\DIA SDK\\include"
+		"$ENV{DIASDK}/include"
+		"$ENV{VSSDK140Install}../DIA SDK/include"
+		"${DiaSDK_ROOT}/include"
 )
 
+if(OMR_ENV_DATA64)
+	set(lib_dir "lib/amd64")
+else()
+	set(lib_dir "lib")
+endif()
 find_library(DIAGUIDS_LIBRARY "diaguids"
 	HINTS
-		"${VSPath}/../../../DIA SDK/lib"
-		"$ENV{DIASDK}\\lib"
-		"$ENV{VSSDK140Install}..\\DIA SDK\\lib"
+		"${VSPath}/../../../DIA SDK/${lib_dir}"
+		"$ENV{DIASDK}/${lib_dir}"
+		"$ENV{VSSDK140Install}../DIA SDK/${lib_dir}"
+		"${DiaSDK_ROOT}/${lib_dir}"
 )
 
 include (FindPackageHandleStandardArgs)

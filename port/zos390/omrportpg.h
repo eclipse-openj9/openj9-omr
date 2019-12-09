@@ -48,17 +48,6 @@
 #define TTOKEN_BUF_SZ                   16
 #endif /* defined(OMR_ENV_DATA64) */
 
-typedef struct OMRSTFLEFacilities {
-	uint64_t dw1;
-	uint64_t dw2;
-	uint64_t dw3;
-} OMRSTFLEFacilities;
-
-typedef struct OMRSTFLECache {
-	uintptr_t lastDoubleWord;
-	OMRSTFLEFacilities facilities;
-} OMRSTFLECache;
-
 typedef struct OMRPortPlatformGlobals {
 	char *si_osType;
 	char *si_osVersion;
@@ -79,7 +68,6 @@ typedef struct OMRPortPlatformGlobals {
 	MUTEX globalConverterMutex[UNCACHED_ICONV_DESCRIPTOR];
 	uintptr_t systemLoggingFlags;
 	char *si_executableName;
-	OMRSTFLECache stfleCache;
 #if defined(OMR_ENV_DATA64)
 	char iptTtoken[TTOKEN_BUF_SZ];
 #endif /* defined(OMR_ENV_DATA64) */
@@ -104,7 +92,5 @@ typedef struct OMRPortPlatformGlobals {
 
 #define PPG_si_executableName (portLibrary->portGlobals->platformGlobals.si_executableName)
 #define PPG_ipt_ttoken (portLibrary->portGlobals->platformGlobals.iptTtoken)
-
-#define PPG_stfleCache (portLibrary->portGlobals->platformGlobals.stfleCache)
 
 #endif /* omrportpg_h */

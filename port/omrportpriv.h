@@ -473,10 +473,6 @@ extern J9_CFUNC uintptr_t
 omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t type);
 extern J9_CFUNC const char *
 omrsysinfo_get_CPU_architecture(struct OMRPortLibrary *portLibrary);
-extern J9_CFUNC intptr_t
-omrsysinfo_get_processor_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
-extern J9_CFUNC BOOLEAN
-omrsysinfo_processor_has_feature(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature);
 extern J9_CFUNC const char *
 omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC int32_t

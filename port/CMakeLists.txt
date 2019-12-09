@@ -193,7 +193,9 @@ list(APPEND OBJECTS
 	omrsysinfo.c
 )
 
-list(APPEND OBJECTS omrsysinfo_helpers.c)
+if(OMR_HOST_OS STREQUAL zos)
+	list(APPEND OBJECTS omrsysinfo_helpers.c)
+endif()
 
 list(APPEND OBJECTS omrsyslog.c)
 

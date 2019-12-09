@@ -124,6 +124,7 @@ omr_add_exports(j9thr_obj
 	omrthread_attr_set_priority
 	omrthread_attr_set_stacksize
 	omrthread_attr_set_category
+	omrthread_attr_set_detachstate
 
 	# for builder use only
 	omrthread_monitor_lock

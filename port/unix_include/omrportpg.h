@@ -52,17 +52,6 @@ typedef struct J9PortNodeMask {
 } J9PortNodeMask;
 #endif
 
-typedef struct OMRSTFLEFacilities {
-	uint64_t dw1;
-	uint64_t dw2;
-	uint64_t dw3;
-} OMRSTFLEFacilities;
-
-typedef struct OMRSTFLECache {
-	uintptr_t lastDoubleWord;
-	OMRSTFLEFacilities facilities;
-} OMRSTFLECache;
-
 typedef struct OMRPortPlatformGlobals {
 	uintptr_t numa_platform_supports_numa;
 	uintptr_t numa_platform_interleave_memory;
@@ -102,7 +91,6 @@ typedef struct OMRPortPlatformGlobals {
 	uintptr_t performFullMemorySearch; /**< Always perform full range memory search even smart address can not be established */
 	BOOLEAN syscallNotAllowed; /**< Assigned True if the mempolicy syscall is failed due to security opts (Can be seen in case of docker) */
 #endif /* defined(LINUX) */
-	OMRSTFLECache stfleCache;
 } OMRPortPlatformGlobals;
 
 
@@ -151,8 +139,6 @@ typedef struct OMRPortPlatformGlobals {
 #define PPG_numaSyscallNotAllowed (portLibrary->portGlobals->platformGlobals.syscallNotAllowed)
 #define PPG_performFullMemorySearch (portLibrary->portGlobals->platformGlobals.performFullMemorySearch)
 #endif /* defined(LINUX) */
-
-#define PPG_stfleCache (portLibrary->portGlobals->platformGlobals.stfleCache)
 
 #endif /* omrportpg_h */
 

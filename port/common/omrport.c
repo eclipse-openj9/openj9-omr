@@ -72,8 +72,6 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsysinfo_get_OS_version, /* sysinfo_get_OS_version */
 	omrsysinfo_get_env, /* sysinfo_get_env */
 	omrsysinfo_get_CPU_architecture, /* sysinfo_get_CPU_architecture */
-	omrsysinfo_get_processor_description, /* omrsysinfo_get_processor_description */
-	omrsysinfo_processor_has_feature, /* omrsysinfo_processor_has_feature */
 	omrsysinfo_get_OS_type, /* sysinfo_get_OS_type */
 	omrsysinfo_get_executable_name, /* sysinfo_get_executable_name */
 	omrsysinfo_get_username, /* sysinfo_get_username */

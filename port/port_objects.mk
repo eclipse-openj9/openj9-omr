@@ -150,7 +150,9 @@ endif
 OBJECTS += omrsl
 OBJECTS += omrstr
 OBJECTS += omrsysinfo
-OBJECTS += omrsysinfo_helpers
+ifeq (zos,$(OMR_HOST_OS))
+  OBJECTS += omrsysinfo_helpers
+endif
 OBJECTS += omrsyslog
 ifeq (win,$(OMR_HOST_OS))
   OBJECTS += omrsyslogmessages.res

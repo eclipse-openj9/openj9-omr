@@ -169,7 +169,6 @@ list(APPEND OBJECTS
 	omrmemcategories.c
 	omrport.c
 	omrmmap.c
-	omrsock.c
 	j9nls.c
 	j9nlshelpers.c
 	omrosbacktrace.c
@@ -182,6 +181,10 @@ list(APPEND OBJECTS
 
 	omrsignal.c
 )
+
+if(OMR_PORT_SOCKET_SUPPORT)
+	list(APPEND OBJECTS omrsock.c)
+endif()
 
 if(NOT OMR_HOST_OS STREQUAL "win")
 	list(APPEND OBJECTS omrsignal_context.c)

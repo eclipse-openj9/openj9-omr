@@ -22,6 +22,7 @@
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 set(cudaSources "")
+set(socketSources "")
 
 if(OMR_OPT_CUDA)
 	set(cudaSources
@@ -41,6 +42,11 @@ if(OMR_OPT_CUDA)
 	)
 endif()
 
+if(OMR_PORT_SOCKET_SUPPORT)
+	set(socketSources
+		omrsockTest.cpp
+	)
+endif()
 
 add_executable(omrporttest
 	fileTest.cpp
@@ -59,7 +65,6 @@ add_executable(omrporttest
 	omrsignalExtendedTest.cpp
 	omrsignalTest.cpp
 	omrslTest.cpp
-	omrsockTest.cpp
 	omrstrTest.cpp
 	omrtimeTest.cpp
 	omrttyExtendedTest.cpp
@@ -71,6 +76,7 @@ add_executable(omrporttest
 	testProcessHelpers.cpp
 
 	${cudaSources}
+	${socketSources}
 )
 
 

@@ -24,7 +24,7 @@
 
 #include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
 #include "env/FilePointerDecl.hpp"
 

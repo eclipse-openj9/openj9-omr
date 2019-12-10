@@ -27,7 +27,7 @@
 #include <string.h>
 #include "codegen/BackingStore.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/Instruction.hpp"
@@ -2867,7 +2867,7 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
             TR::DebugCounter::incStaticDebugCounter(self()->comp(), "nopInst/-1/unknown");
          }
       }
-   // End -- Static debug coutners to track nop generation
+   // End -- Static debug counters to track nop generation
    TR_ASSERT(cursor == desiredReturnValue, "Must produce the correct amount of padding");
    return cursor;
    }

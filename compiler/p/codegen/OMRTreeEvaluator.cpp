@@ -27,7 +27,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/CodeGeneratorUtils.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
@@ -5674,6 +5674,9 @@ TR::Register *OMR::Power::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Co
 
    TR::Instruction * fence = generateAdminInstruction(cg, TR::InstOpCode::fence, node,
                                TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._startPC));
+
+   if (block->firstBlockInLoop() && !block->isCold())
+      generateAlignmentNopInstruction(cg, node, 32);
 
    TR::Instruction *labelInst = NULL;
 

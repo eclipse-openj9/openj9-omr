@@ -467,11 +467,14 @@
 		fmaxd,                                                  	/* 0x1E604800	FMAX      	 */
 		fmins,                                                  	/* 0x1E205800	FMIN      	 */
 		fmind,                                                  	/* 0x1E605800	FMIN      	 */
+/* Hint instructions */
+		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */
 		proc,  // Entry to the method
 		fence, // Fence
 		retn,  // Return
 		dd,    // Define word
 		label, // Destination of a jump
-		ARM64LastOp = label,
+		vgdnop, // Virtual Guard NOP instruction
+		ARM64LastOp = vgdnop,
 		ARM64NumOpCodes = ARM64LastOp+1,

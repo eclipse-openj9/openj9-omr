@@ -34,6 +34,7 @@ set(JITBUILDER_OBJECTS
 	optimizer/JBOptimizer.cpp
 	optimizer/Optimizer.hpp
 	runtime/JBCodeCacheManager.cpp
+	runtime/JBJitConfig.cpp
 )
 
 if(OMR_ARCH_X86)

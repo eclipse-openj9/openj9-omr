@@ -23,40 +23,16 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake/modules"
 	${CMAKE_MODULE_PATH})
 
 include(OmrUtility)
-include(FindYACC)
-include(FindLEX)
-
-find_package(YACC REQUIRED)
-find_package(LEX REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-list(APPEND TRIL_FLEX_FLAGS)
-
-# There is no unistd.h on Windows, so if win_flex.exe is in use,
-# the --wincompat option must be added.
-if(OMR_HOST_OS STREQUAL "win")
-	list(APPEND TRIL_FLEX_FLAGS
-		"--wincompat"
-	)
-endif()
-
-omr_stringify(TRIL_FLEX_OPTIONS ${TRIL_FLEX_FLAGS})
-YACC_TARGET(tril_parser tril.y ${CMAKE_CURRENT_BINARY_DIR}/tril.parser.c
-	DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/tril.parser.h)
-LEX_TARGET(tril_scanner tril.l ${CMAKE_CURRENT_BINARY_DIR}/tril.scanner.c
-	COMPILE_FLAGS ${TRIL_FLEX_OPTIONS}
-)
-ADD_LEX_YACC_DEPENDENCY(tril_scanner tril_parser)
-
 set(TRIL_BACKEND_LIB      testcompiler)
 
 add_library(tril STATIC
-	${YACC_tril_parser_OUTPUTS}
-	${LEX_tril_scanner_OUTPUTS}
 	ast.cpp
+	parser.cpp
 	ilgen.cpp
 	simple_compiler.cpp
 )
@@ -75,6 +51,14 @@ target_link_libraries(tril PUBLIC
 	${TRIL_BACKEND_LIB}
 	${CMAKE_DL_LIBS}
 )
+
+#TODO  system thread library should be linked in a more generic way.
+if(NOT OMR_HOST_OS STREQUAL "win")
+	if(NOT OMR_HOST_OS STREQUAL "zos")
+		target_link_libraries(tril PUBLIC pthread)
+	endif()
+endif()
+
 
 add_executable(tril_dumper compiler.cpp)
 target_link_libraries(tril_dumper tril)

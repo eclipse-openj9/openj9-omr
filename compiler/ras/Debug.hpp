@@ -169,6 +169,7 @@ namespace TR { class X86ForceRecompilationSnippet; }
 namespace TR { class X86RecompilationSnippet; }
 #endif
 
+namespace TR { class PPCAlignmentNopInstruction;         }
 namespace TR { class PPCDepInstruction;                  }
 namespace TR { class PPCLabelInstruction;                }
 namespace TR { class PPCDepLabelInstruction;             }
@@ -352,11 +353,14 @@ namespace TR { class ARM64Trg1Src3Instruction; }
 namespace TR { class ARM64Trg1MemInstruction; }
 namespace TR { class ARM64MemInstruction; }
 namespace TR { class ARM64MemSrc1Instruction; }
+namespace TR { class ARM64Trg1MemSrc1Instruction; }
 namespace TR { class ARM64Src1Instruction; }
 namespace TR { class ARM64Src2Instruction; }
 namespace TR { class ARM64HelperCallSnippet; }
 
 #ifdef J9_PROJECT_SPECIFIC
+namespace TR { class ARM64VirtualGuardNOPInstruction; }
+
 namespace TR { class ARM64InterfaceCallSnippet; }
 namespace TR { class ARM64StackCheckFailureSnippet; }
 namespace TR { class ARM64ForceRecompilationSnippet; }
@@ -860,6 +864,7 @@ public:
 #ifdef TR_TARGET_POWER
    void printPrefix(TR::FILE *, TR::Instruction *);
 
+   void print(TR::FILE *, TR::PPCAlignmentNopInstruction *);
    void print(TR::FILE *, TR::PPCDepInstruction *);
    void print(TR::FILE *, TR::PPCLabelInstruction *);
    void print(TR::FILE *, TR::PPCDepLabelInstruction *);
@@ -1103,9 +1108,12 @@ public:
    void print(TR::FILE *, TR::ARM64Trg1MemInstruction *);
    void print(TR::FILE *, TR::ARM64MemInstruction *);
    void print(TR::FILE *, TR::ARM64MemSrc1Instruction *);
+   void print(TR::FILE *, TR::ARM64Trg1MemSrc1Instruction *);
    void print(TR::FILE *, TR::ARM64Src1Instruction *);
    void print(TR::FILE *, TR::ARM64Src2Instruction *);
-
+#ifdef J9_PROJECT_SPECIFIC
+   void print(TR::FILE *, TR::ARM64VirtualGuardNOPInstruction *);
+#endif
    void print(TR::FILE *, TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
    void print(TR::FILE *, TR::RegisterDependency *);
    void print(TR::FILE *, TR::RegisterDependencyConditions *);

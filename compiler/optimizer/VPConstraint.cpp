@@ -23,7 +23,7 @@
 
 #include <ctype.h>
 #include <stddef.h>
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
@@ -46,7 +46,7 @@
 #include "ilgen/IlGenRequest.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
 #include "optimizer/Optimization_inlines.hpp"
-#include "optimizer/OMRValuePropagation.hpp"
+#include "optimizer/ValuePropagation.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/PersistentCHTable.hpp"

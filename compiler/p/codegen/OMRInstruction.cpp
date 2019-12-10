@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/MemoryReference.hpp"
@@ -157,28 +157,6 @@ OMR::Power::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       OMR::Power::Instruction::getDependencyConditions()->assignPostConditionRegisters(self(), kindToBeAssigned, self()->cg());
       OMR::Power::Instruction::getDependencyConditions()->assignPreConditionRegisters(self()->getPrev(), kindToBeAssigned, self()->cg());
       }
-   }
-
-bool
-OMR::Power::Instruction::isNopCandidate()
-   {
-   return (self()->getNode() != NULL
-        && self()->getNode()->getOpCodeValue() == TR::BBStart
-        && self()->getNode()->getBlock() != NULL
-        && self()->getNode()->getBlock()->firstBlockInLoop()
-        && !self()->getNode()->getBlock()->isCold());
-   }
-
-int
-OMR::Power::Instruction::MAX_LOOP_ALIGN_NOPS()
-   {
-   static int LOCAL_MAX_LOOP_ALIGN_NOPS = -1;
-   if (LOCAL_MAX_LOOP_ALIGN_NOPS == -1)
-      {
-      static char *TR_LoopAlignNops = feGetEnv("TR_LoopAlignNops");
-      LOCAL_MAX_LOOP_ALIGN_NOPS = (TR_LoopAlignNops == NULL ? 7 : atoi(TR_LoopAlignNops));
-      }
-   return LOCAL_MAX_LOOP_ALIGN_NOPS;
    }
 
 bool

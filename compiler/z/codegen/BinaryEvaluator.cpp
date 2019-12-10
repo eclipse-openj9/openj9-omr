@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Machine.hpp"
@@ -1205,7 +1205,7 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
       if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
          {
          // Generate RISBG for lshl + i2l sequence
-         if (node->getOpCodeValue() == TR::lshl || node->getOpCodeValue() == TR::lushl)
+         if (node->getOpCodeValue() == TR::lshl)
             {
             if (firstChild->getOpCodeValue() == TR::i2l && firstChild->isSingleRefUnevaluated() && (firstChild->isNonNegative() || firstChild->getFirstChild()->isNonNegative()))
                {

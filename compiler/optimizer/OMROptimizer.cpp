@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/CompilationTypes.hpp"
 #include "compile/Method.hpp"
@@ -987,6 +987,13 @@ TR_ValueNumberInfo *OMR::Optimizer::setValueNumberInfo(TR_ValueNumberInfo *v)
    return (_valueNumberInfo = v);
    }
 
+TR_UseDefInfo* OMR::Optimizer::createUseDefInfo(TR::Compilation* comp,
+    bool requiresGlobals, bool prefersGlobals, bool loadsShouldBeDefs, bool cannotOmitTrivialDefs,
+    bool conversionRegsOnly, bool doCompletion)
+    {
+    return new (comp->allocator()) TR_UseDefInfo(comp, comp->getFlowGraph(), self(), requiresGlobals, prefersGlobals, loadsShouldBeDefs,
+        cannotOmitTrivialDefs, conversionRegsOnly, doCompletion, getCallsAsUses());
+    }
 
 TR_ValueNumberInfo *OMR::Optimizer::createValueNumberInfo(bool requiresGlobals, bool preferGlobals, bool noUseDefInfo)
    {
@@ -1807,7 +1814,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 
             LexicalTimer t("use defs (for globals definitely)", comp()->phaseTimer());
             TR::LexicalMemProfiler mp("use defs (for globals definitely)", comp()->phaseMemProfiler());
-            useDefInfo = new (comp()->allocator()) TR_UseDefInfo(comp(), comp()->getFlowGraph(), self(),
+            useDefInfo = createUseDefInfo(comp(), 
                                    true, // requiresGlobals
                                    false,// prefersGlobals
                                    !manager->getDoesNotRequireLoadsAsDefsInUseDefs(),
@@ -1853,7 +1860,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 #endif
             LexicalTimer t("use defs (for globals possibly)", comp()->phaseTimer());
             TR::LexicalMemProfiler mp("use defs (for globals possibly)", comp()->phaseMemProfiler());
-            useDefInfo = new (comp()->allocator()) TR_UseDefInfo(comp(), comp()->getFlowGraph(), self(),
+            useDefInfo = createUseDefInfo(comp(), 
                                                false, // requiresGlobals
                                                manager->getPrefersGlobalsUseDefInfo() || manager->getPrefersGlobalsValueNumbering(),
                                                !manager->getDoesNotRequireLoadsAsDefsInUseDefs(),

@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "env/KnownObjectTable.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "codegen/InstOpCode.hpp"
@@ -76,7 +76,7 @@
 #include "optimizer/TransformUtil.hpp"
 #include "optimizer/UseDefInfo.hpp"
 #include "optimizer/VPConstraint.hpp"
-#include "optimizer/OMRValuePropagation.hpp"
+#include "optimizer/ValuePropagation.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
@@ -6029,101 +6029,6 @@ TR::Node *constrainImul(OMR::ValuePropagation *vp, TR::Node *node)
             }
 
          if (lowest < TR::getMinSigned<TR::Int32>() || highest > TR::getMaxSigned<TR::Int32>())
-            {
-            constraint = NULL;
-            }
-         else
-            {
-            constraint = TR::VPIntRange::create(vp, (int32_t)lowest, (int32_t)highest/*, isUnsigned*/);
-            }
-         }
-      if (constraint)
-         {
-         if (constraint->asIntConst())
-            {
-            vp->replaceByConstant(node, constraint, lhsGlobal);
-            return node;
-            }
-
-         vp->addBlockOrGlobalConstraint(node, constraint,lhsGlobal);
-         }
-      }
-
-   checkForNonNegativeAndOverflowProperties(vp, node);
-   return node;
-   }
-
-
-TR::Node *constrainIumul(OMR::ValuePropagation *vp, TR::Node *node)
-   {
-   if (findConstant(vp, node))
-      return node;
-   constrainChildren(vp, node);
-
-   bool lhsGlobal, rhsGlobal;
-   TR::VPConstraint *lhs = vp->getConstraint(node->getFirstChild(), lhsGlobal);
-   TR::VPConstraint *rhs = vp->getConstraint(node->getSecondChild(), rhsGlobal);
-   lhsGlobal &= rhsGlobal;
-   //bool isUnsigned = node->getType().isUnsignedInt();
-
-   if (lhs && rhs)
-      {
-      TR::VPConstraint *constraint = NULL;
-      if (lhs->asIntConst() && rhs->asIntConst())
-         {
-         //if (isUnsigned)
-         //   constraint = TR::VPIntConst::create(vp, ((uint32_t)lhs->asIntConst()->getInt()*(uint32_t)rhs->asIntConst()->getInt()), isUnsigned);
-         //else
-            constraint = TR::VPIntConst::create(vp, lhs->asIntConst()->getInt()*rhs->asIntConst()->getInt());
-         }
-      else
-         {
-         uint64_t lowerLowerLimit = (uint64_t)lhs->getLowInt() * (uint64_t)rhs->getLowInt();
-         uint64_t lowerUpperLimit = (uint64_t)lhs->getLowInt() * (uint64_t)rhs->getHighInt();
-         uint64_t upperLowerLimit = (uint64_t)lhs->getHighInt() * (uint64_t)rhs->getLowInt();
-         uint64_t upperUpperLimit = (uint64_t)lhs->getHighInt() * (uint64_t)rhs->getHighInt();
-         uint64_t tempLower1 = 0, tempLower2 = 0, lowest = 0;
-         uint64_t tempHigher1 = 0, tempHigher2 = 0, highest = 0;
-         if (lowerLowerLimit < lowerUpperLimit)
-            {
-            tempLower1  = lowerLowerLimit;
-            tempHigher1 = lowerUpperLimit;
-            }
-         else
-            {
-            tempLower1  = lowerUpperLimit;
-            tempHigher1 = lowerLowerLimit;
-            }
-         if (upperLowerLimit < upperUpperLimit)
-            {
-            tempLower2  = upperLowerLimit;
-            tempHigher2 = upperUpperLimit;
-            }
-         else
-            {
-            tempLower2  = upperUpperLimit;
-            tempHigher2 = upperLowerLimit;
-            }
-
-         if (tempLower1 < tempLower2)
-            {
-            lowest = tempLower1;
-            }
-         else
-            {
-            lowest = tempLower2;
-            }
-
-         if (tempHigher1 > tempHigher2)
-            {
-            highest = tempHigher1;
-            }
-         else
-            {
-            highest = tempHigher2;
-            }
-
-         if (lowest < TR::getMinUnsigned<TR::Int32>() || highest > TR::getMaxUnsigned<TR::Int32>())
             {
             constraint = NULL;
             }

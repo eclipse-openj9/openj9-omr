@@ -21,8 +21,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "codegen/FrontEnd.hpp"
-#include "codegen/OMRMachine.hpp"
+#include "env/FrontEnd.hpp"
+#include "codegen/Machine.hpp"
 #include "compile/Compilation.hpp"
 #include "env/jittypes.h"
 #include "infra/Assert.hpp"

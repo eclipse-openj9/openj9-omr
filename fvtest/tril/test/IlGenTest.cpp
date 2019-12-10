@@ -40,6 +40,9 @@
 
 class IlGenTest : public Tril::Test::JitTest {};
 
+// This test is currently broken on AIX, since it is not valid to use the return value of
+// compileMethodFromDetails as a function pointer.
+#if !defined(AIXPPC)
 TEST_F(IlGenTest, Return3) {
     auto trees = parseString("(block (ireturn (iconst 3)))");
 
@@ -59,3 +62,4 @@ TEST_F(IlGenTest, Return3) {
     auto entry = reinterpret_cast<int32_t(*)(void)>(entry_point);
     ASSERT_EQ(3, entry()) << "Compiled body did not return expected value";
 }
+#endif

@@ -160,7 +160,6 @@
    dmul,     // multiply 2 doubles
    bmul,     // multiply 2 bytes
    smul,     // multiply 2 short integers
-   iumul,    // multiply 2 unsigned integers
    idiv,     // divide 2 integers                (child1 / child2)
    ldiv,     // divide 2 long integers           (child1 / child2)
    fdiv,     // divide 2 floats                  (child1 / child2)
@@ -622,8 +621,6 @@
    busub,    // subtract 2 unsigned bytes          (child1 - child2)
    iuneg,    // negate an unsigned integer
    luneg,    // negate a unsigned long integer
-   iushl,    // shift unsigned integer left       (child1 << child2)
-   lushl,    // shift unsigned long integer left  (child1 << child2)
    f2iu,     // convert float to unsigned integer
    f2lu,     // convert float to unsigned long integer
    f2bu,     // convert float to unsigned byte
@@ -636,10 +633,6 @@
    luRegLoad, // Load unsigned long integer global register
    iuRegStore,// Store unsigned integer global register
    luRegStore,// Store long integer global register
-   iuternary,  // second or the third child.  Analogous to the "condition ? a : b" operations in C/Java.
-   luternary,  //
-   buternary,  //
-   suternary,  //
    cconst,   // load unicode constant (16-bit unsigned)
    cload,    // load short unsigned integer
    cloadi,   // load indirect unsigned short integer
@@ -797,15 +790,6 @@
 
    getstack, // returns current value of SP
    dealloca, // resets value of SP
-
-   ishfl,    // int shift logical
-   lshfl,    // long shift logical
-   iushfl,   // unsigned int shift logical
-   lushfl,   // unsigned long shift logical
-   bshfl,    // byte shift logical
-   sshfl,    // short shift logical
-   bushfl,   // unsigned byte shift logical
-   sushfl,   // unsigned short shift logical
 
    idoz,     // difference or zero
 

@@ -40,7 +40,7 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "compile/CompilationTypes.hpp"
 #include "compile/OSRData.hpp"

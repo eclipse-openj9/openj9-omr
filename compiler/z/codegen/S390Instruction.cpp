@@ -28,7 +28,7 @@
 #include <algorithm>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
@@ -248,8 +248,6 @@ bool TR::S390LabeledInstruction::isNopCandidate()
    return isNopCandidate;
    }
 
-
-
 ////////////////////////////////////////////////////////
 // TR::S390LabelInstruction:: member functions
 ////////////////////////////////////////////////////////
@@ -285,7 +283,6 @@ TR::S390LabelInstruction::generateBinaryEncoding()
          size_t batchObjCodeSize = 0;
          size_t objCodeSize = 0;
 
-
          if (traceLabelTargetNOPs)
             traceMsg(comp,"\toffsetForLabelTargetNOPs = absOffset 0x%p + batchObjCodeSize 0x%p + objCodeSize 0x%p = 0x%p\n",
                offsetForLabelTargetNOPs,batchObjCodeSize,objCodeSize,offsetForLabelTargetNOPs + batchObjCodeSize + objCodeSize);
@@ -317,7 +314,6 @@ TR::S390LabelInstruction::generateBinaryEncoding()
       cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
       cg()->addProjectSpecializedRelocation(cursor, NULL, NULL, TR_AbsoluteMethodAddress,
                              __FILE__, __LINE__, getNode());
-
 
       if (label->getCodeLocation() != NULL)
          {
@@ -474,7 +470,7 @@ TR::S390LabelInstruction::generateBinaryEncoding()
             traceMsg(comp,"\tfinished NOP insertion : setBinaryLength to 0, addAccumError = estBinLen %d - bytesInserted %d = %d, setBinaryEncoding to 0x%x\n",
                getEstimatedBinaryLength(),labelTargetBytesInserted,getEstimatedBinaryLength() - labelTargetBytesInserted,instructionStart);
          setBinaryLength(0);
-         TR_ASSERT(getEstimatedBinaryLength() >= labelTargetBytesInserted,"lable inst %p : estimatedBinaryLength %d must be >= labelTargetBytesInserted %d inserted\n",
+         TR_ASSERT(getEstimatedBinaryLength() >= labelTargetBytesInserted,"label inst %p : estimatedBinaryLength %d must be >= labelTargetBytesInserted %d inserted\n",
             this,getEstimatedBinaryLength(),labelTargetBytesInserted);
          cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - labelTargetBytesInserted);
          setBinaryEncoding(instructionStart);
@@ -532,7 +528,6 @@ TR::S390LabelInstruction::considerForLabelTargetNOPs(bool inEncodingPhase)
 
    return doConsider;
    }
-
 
 int32_t
 TR::S390LabelInstruction::estimateBinaryLength(int32_t  currentEstimate)
@@ -836,7 +831,6 @@ TR::S390BranchInstruction::estimateBinaryLength(int32_t  currentEstimate)
    setEstimatedBinaryLength(length);
    return currentEstimate + getEstimatedBinaryLength();
    }
-
 
 ////////////////////////////////////////////////////////
 // TR::S390BranchOnCountInstruction:: member functions
@@ -1154,8 +1148,6 @@ TR::S390PseudoInstruction::generateBinaryEncoding()
       }
    setBinaryLength(0);
 
-
-
    if (_callDescLabel != NULL) // We have to emit a branch around a 8-byte aligned call descriptor.
       {
       // For zOS-31 XPLINK, if the call descriptor is too far away from the native call NOP, we have
@@ -1198,7 +1190,6 @@ TR::S390PseudoInstruction::generateBinaryEncoding()
 
    return cursor;
    }
-
 
 int32_t
 TR::S390PseudoInstruction::estimateBinaryLength(int32_t currentEstimate)
@@ -1345,7 +1336,6 @@ TR::S390ImmInstruction::generateBinaryEncoding()
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    return cursor;
    }
-
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 /**
@@ -1600,7 +1590,6 @@ TR::S390TranslateInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-
 // TR::S390RRFInstruction:: member functions /////////////////////////////////////////
 
 bool
@@ -1716,7 +1705,6 @@ TR::S390RRFInstruction::generateBinaryEncoding()
          else
             toRealRegister(srcRegPair->getHighOrder())->setRegisterField((uint32_t *) cursor, 0);
 
-
          if ( !isSrc2Pair )
             toRealRegister(getRegisterOperand(3))->setRegisterField((uint32_t *) cursor, 3);
          else
@@ -1794,7 +1782,6 @@ TR::S390RRRInstruction::generateBinaryEncoding()
    TR::RegisterPair* src2RegPair = getRegisterOperand(3)->getRegisterPair();
    TR::RegisterPair* tgtRegPair = getRegisterOperand(1)->getRegisterPair();
    bool isTgtFPPair = false;
-
 
    if (!isTgtFPPair)
       {
@@ -2002,12 +1989,10 @@ TR::S390RILInstruction::generateBinaryEncoding()
    TR::Compilation *comp = cg()->comp();
    int32_t offsetToLongDispSlot = (cg()->getLinkage())->getOffsetToLongDispSlot();
 
-
    if (isLiteralPoolAddress())
       {
       setTargetSnippet(cg()->getFirstSnippet());
       }
-
 
    if (getTargetSnippet() &&
       getTargetSnippet()->getKind() == TR::Snippet::IsConstantData)
@@ -2623,7 +2608,6 @@ TR::S390RSInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-
 // TR::S390RRSInstruction:: member functions
 
 /**
@@ -2688,7 +2672,6 @@ TR::S390RRSInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-
 // TR::S390RIEInstruction:: member functions
 /**
  *    RIE Format
@@ -2741,7 +2724,6 @@ TR::S390RIEInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390RIEInstruction::generateBinaryEncoding()
    {
-
 
    // let's determine what form of RIE we are dealing with
    bool RIE1 = (getRieForm() == TR::S390RIEInstruction::RIE_RR);
@@ -2995,7 +2977,6 @@ TR::S390RIEInstruction::generateBinaryEncoding()
    // the end.
    cursor += 2;
 
-
    // set the binary length of our instruction
    setBinaryLength(cursor - instructionStart);
 
@@ -3169,7 +3150,6 @@ TR::S390RIEInstruction::splitIntoCompareAndBranch(TR::Instruction *insertBranchA
 
    }
 
-
 // TR::S390RISInstruction:: member functions
 /**
  *    RIS Format
@@ -3233,8 +3213,6 @@ TR::S390RISInstruction::generateBinaryEncoding()
    // return the the cursor for the next instruction.
    return cursor;
    }
-
-
 
 // TR::S390MemInstruction:: member functions
 
@@ -3507,12 +3485,10 @@ TR::S390RXFInstruction::generateBinaryEncoding()
 
    getOpCode().copyBinaryToBufferWithoutClear(cursor);
 
-
    TR::RegisterPair* srcRegPair = getRegisterOperand(2)->getRegisterPair();
    TR::RegisterPair* tgtRegPair = getRegisterOperand(1)->getRegisterPair();
 
    bool isTgtFPPair = false;
-
 
    if(isTgtFPPair)
       {
@@ -3652,7 +3628,6 @@ TR::S390VRIInstruction::preGenerateBinaryEncoding()
 
    return instructionStart;
    }
-
 
 /**
  * VRI postGenerateBinaryEncoding
@@ -3889,7 +3864,6 @@ TR::S390VRIhInstruction::generateBinaryEncoding()
    return postGenerateBinaryEncoding(cursor);
    }
 
-
 /** \details
  *
  * VRI-i generate binary encoding for VRI-i instruction format
@@ -4066,7 +4040,6 @@ TR::S390VRRInstruction::getExtendedMnemonicName()
    return setOpCodeBuffer(tmpOpCodeBuffer);
    }
 
-
 /** \details
  *
  *  VRR Generate Binary Encoding for most sub-types of the VRR instruction format
@@ -4109,7 +4082,6 @@ TR::S390VRRInstruction::generateBinaryEncoding()
    if (getRegisterOperand(3) != NULL)
       toRealRegister(getRegisterOperand(3))->setRegister3Field(reinterpret_cast<uint32_t *>(cursor));
 
-
    if (getRegisterOperand(4) != NULL)
       {
        // Will cause assertion failure by now
@@ -4120,7 +4092,6 @@ TR::S390VRRInstruction::generateBinaryEncoding()
        // mask in mask field 3 (bit 32-35) is aliased with register operand 4
       setMaskField(reinterpret_cast<uint32_t *>(cursor), maskIn3, 3);
       }
-
 
    // Cursor move
    // update binary length
@@ -4151,7 +4122,6 @@ TR::S390VRRaInstruction::generateBinaryEncoding()
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
-
 /** \details
  *
  * VRR-b generate binary encoding
@@ -4169,7 +4139,6 @@ TR::S390VRRbInstruction::generateBinaryEncoding()
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
-
 /** \details
  *
  * VRR-d generate binary encoding
@@ -4186,7 +4155,6 @@ TR::S390VRRcInstruction::generateBinaryEncoding()
    // Generate Binary Encoding
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
-
 
 /** \details
  *
@@ -4206,7 +4174,6 @@ TR::S390VRRdInstruction::generateBinaryEncoding()
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
-
 /** \details
  *
  * VRR-e generate binary encoding
@@ -4225,7 +4192,6 @@ TR::S390VRReInstruction::generateBinaryEncoding()
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
-
 /** \details
  *
  * VRR-f generate binary encoding
@@ -4242,8 +4208,6 @@ TR::S390VRRfInstruction::generateBinaryEncoding()
    // Generate Binary Encoding
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
-
-
 
 /** \details
  *
@@ -4276,7 +4240,6 @@ TR::S390VRRgInstruction::generateBinaryEncoding()
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    return cursor;
    }
-
 
 /** \details
  *
@@ -4317,7 +4280,6 @@ TR::S390VRRhInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-
 /** \details
  *
  * VRR-i generate binary encoding
@@ -4355,7 +4317,6 @@ TR::S390VRRiInstruction::generateBinaryEncoding()
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    return cursor;
    }
-
 
 /** \details
  *
@@ -4448,7 +4409,6 @@ TR::S390VStorageInstruction::estimateBinaryLength(int32_t  currentEstimate)
       return TR::Instruction::estimateBinaryLength(currentEstimate);
       }
    }
-
 
 /**** VRS variants ***/
 /** \details
@@ -4548,7 +4508,6 @@ TR::S390VRVInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-
 /** \details
  *
  * VSI format generate binary encoding implementation
@@ -4594,7 +4553,6 @@ TR::S390VSIInstruction::generateBinaryEncoding()
 
    return cursor;
    }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // TR::S390MemMemInstruction:: member functions
@@ -4761,7 +4719,6 @@ TR::S390SS2Instruction::generateBinaryEncoding()
    uint16_t lenField = (getLen() << 4) | getLen2();
    (*(uint8_t *) (cursor + 1)) |= lenField;
 
-
    instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
 
@@ -4811,7 +4768,6 @@ TR::S390SS4Instruction::generateBinaryEncoding()
       toRealRegister(getRegForBinaryEncoding(getLengthReg()))->setRegisterField((uint32_t *)cursor, 5);
    if(getSourceKeyReg())
       toRealRegister(getRegForBinaryEncoding(getSourceKeyReg()))->setRegisterField((uint32_t *)cursor, 4);
-
 
    instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
@@ -5252,7 +5208,6 @@ TR::S390SInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // TR::S390NOPInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -5611,7 +5566,6 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
              nextI->getOpCodeValue() == TR::InstOpCode::LARL)
             break;
 
-
          // we shouldn't need to check for PSEUDO instructions, but VGNOP has a non-zero length so
          // skip PSEUDO instructions from length consideration because in practice they will generally
          // be zero
@@ -5722,7 +5676,6 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
    return cursor;
    }
 #endif
-
 
 TR::MemoryReference *getFirstReadWriteMemoryReference(TR::Instruction *i)
   {

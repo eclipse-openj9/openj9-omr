@@ -25,7 +25,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
@@ -134,6 +134,12 @@ static void traceAssertionFailure(const char * file, int32_t line, const char *c
 
 namespace TR
    {
+   static void OMR_NORETURN va_fatal_assertion(const char *file, int line, const char *condition, const char *format, va_list ap)
+      {
+      traceAssertionFailure(file, line, condition, format, ap);
+      TR::trap();
+      }
+
    void assertion(const char *file, int line, const char *condition, const char *format, ...)
       {
       TR::Compilation *comp = TR::comp();
@@ -146,15 +152,17 @@ namespace TR
          if (comp->getOption(TR_SoftFailOnAssume))
             comp->failCompilation<TR::AssertionFailure>("Assertion Failure");
          }
-      fatal_assertion(file, line, condition, format);
+      va_list ap;
+      va_start(ap, format);
+      va_fatal_assertion(file, line, condition, format, ap);
+      va_end(ap);
       }
 
    void OMR_NORETURN fatal_assertion(const char *file, int line, const char *condition, const char *format, ...)
       {
       va_list ap;
       va_start(ap, format);
-      traceAssertionFailure(file, line, condition, format, ap);
+      va_fatal_assertion(file, line, condition, format, ap);
       va_end(ap);
-      TR::trap();
       }
    }

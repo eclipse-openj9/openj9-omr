@@ -207,8 +207,10 @@ struct TR_CallTarget : public TR_Link<TR_CallTarget>
 
    };
 
-#define TR_CALLSITE_INHERIT_CONSTRUCTOR_AND_TR_ALLOC(EXTENDED,BASE) \
-   TR_ALLOC(TR_Memory::Inliner); \
+#define TR_CALLSITE_DEFAULT_ALLOC \
+   TR_ALLOC(TR_Memory::Inliner);
+
+#define TR_CALLSITE_INHERIT_CONSTRUCTOR_COMMON(EXTENDED,BASE) \
    EXTENDED (TR_ResolvedMethod *callerResolvedMethod,  \
                   TR::TreeTop *callNodeTreeTop,  \
                   TR::Node *parent,  \
@@ -240,7 +242,28 @@ struct TR_CallTarget : public TR_Link<TR_CallTarget>
                                  bcInfo, \
                                  comp, \
                                  depth, \
-                                 allConsts) {};
+                                 allConsts)
+
+#define TR_CALLSITE_EMPTY_CONSTRUCTOR_BODY { };
+
+/*
+ * \def TR_CALLSITE_TR_ALLOC_AND_INHERIT_EMPTY_CONSTRUCTOR (EXTENDED,BASE)
+ *    Declare the allocation and a constructor with an empty method body.
+ *    Used by call sites constructors that initialize given fields and do nothing else.
+ */
+#define TR_CALLSITE_TR_ALLOC_AND_INHERIT_EMPTY_CONSTRUCTOR(EXTENDED,BASE) \
+   TR_CALLSITE_DEFAULT_ALLOC \
+   TR_CALLSITE_INHERIT_CONSTRUCTOR_COMMON (EXTENDED,BASE) \
+   TR_CALLSITE_EMPTY_CONSTRUCTOR_BODY
+
+/*
+ * \def TR_CALLSITE_TR_ALLOC_AND_INHERIT_CONSTRUCTOR(EXTENDED,BASE)
+ *    Declare the allocation and a constructor WITHOUT a method body.
+ *    Used by call sites constructors that do more complicated things other than just initializing given field.
+ */
+#define TR_CALLSITE_TR_ALLOC_AND_INHERIT_CONSTRUCTOR(EXTENDED,BASE) \
+   TR_CALLSITE_DEFAULT_ALLOC \
+   TR_CALLSITE_INHERIT_CONSTRUCTOR_COMMON (EXTENDED,BASE)
 
 struct TR_CallSite : public TR_Link<TR_CallSite>
    {
@@ -422,7 +445,7 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
 class TR_DirectCallSite : public TR_CallSite
    {
    public:
-      TR_CALLSITE_INHERIT_CONSTRUCTOR_AND_TR_ALLOC(TR_DirectCallSite, TR_CallSite)
+      TR_CALLSITE_TR_ALLOC_AND_INHERIT_EMPTY_CONSTRUCTOR(TR_DirectCallSite, TR_CallSite)
       virtual bool findCallSiteTarget (TR_CallStack *callStack, TR_InlinerBase* inliner);
       virtual const char*  name () { return "TR_DirectCallSite"; }
    };
@@ -431,7 +454,7 @@ class TR_IndirectCallSite : public TR_CallSite
    {
 
    public:
-      TR_CALLSITE_INHERIT_CONSTRUCTOR_AND_TR_ALLOC(TR_IndirectCallSite, TR_CallSite)
+      TR_CALLSITE_TR_ALLOC_AND_INHERIT_EMPTY_CONSTRUCTOR(TR_IndirectCallSite, TR_CallSite)
       virtual bool findCallSiteTarget (TR_CallStack *callStack, TR_InlinerBase* inliner);
 		virtual const char*  name () { return "TR_IndirectCallSite"; }
       virtual TR_ResolvedMethod* findSingleJittedImplementer (TR_InlinerBase* inliner);
@@ -461,7 +484,7 @@ class TR_IndirectCallSite : public TR_CallSite
 class TR_FunctionPointerCallSite : public  TR_IndirectCallSite
    {
    protected :
-      TR_CALLSITE_INHERIT_CONSTRUCTOR_AND_TR_ALLOC(TR_FunctionPointerCallSite, TR_IndirectCallSite)
+      TR_CALLSITE_TR_ALLOC_AND_INHERIT_EMPTY_CONSTRUCTOR(TR_FunctionPointerCallSite, TR_IndirectCallSite)
    };
 
 #endif

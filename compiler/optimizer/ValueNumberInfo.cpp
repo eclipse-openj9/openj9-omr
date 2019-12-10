@@ -93,7 +93,7 @@ TR_ValueNumberInfo::TR_ValueNumberInfo(TR::Compilation *comp, TR::Optimizer *opt
             {
             TR::LexicalMemProfiler mp("use defs (value numbers - I)", comp->phaseMemProfiler());
 
-            _useDefInfo = new (comp->allocator()) TR_UseDefInfo(comp, comp->getFlowGraph(), optimizer, requiresGlobals, prefersGlobals);
+            _useDefInfo = optimizer->createUseDefInfo(comp, requiresGlobals, prefersGlobals);
             if (_useDefInfo->infoIsValid())
                {
                _optimizer->setUseDefInfo(_useDefInfo);
@@ -1533,7 +1533,7 @@ TR_HashValueNumberInfo::TR_HashValueNumberInfo(TR::Compilation *comp, TR::Optimi
          if (!(requiresGlobals && _optimizer->cantBuildGlobalsUseDefInfo()))
             {
             TR::LexicalMemProfiler mp("use defs (value numbers - II)", comp->phaseMemProfiler());
-            _useDefInfo = new (comp->allocator()) TR_UseDefInfo(comp, comp->getFlowGraph(), optimizer, requiresGlobals, prefersGlobals);
+            _useDefInfo = optimizer->createUseDefInfo(comp, requiresGlobals, prefersGlobals);
             if (_useDefInfo->infoIsValid())
                {
                _optimizer->setUseDefInfo(_useDefInfo);

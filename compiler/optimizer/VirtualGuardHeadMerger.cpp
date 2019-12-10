@@ -20,7 +20,7 @@
  *******************************************************************************/
 
 #include <stddef.h>
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "compile/Compilation.hpp"
 #include "env/jittypes.h"
 #include "il/Block.hpp"

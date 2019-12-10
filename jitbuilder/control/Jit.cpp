@@ -36,6 +36,10 @@
 #include "runtime/Runtime.hpp"
 #include "runtime/JBJitConfig.hpp"
 
+#if defined(AIXPPC)
+#include "p/codegen/PPCTableOfConstants.hpp"
+#endif
+
 extern TR_RuntimeHelperTable runtimeHelpers;
 extern void setupCodeCacheParameters(int32_t *, OMR::CodeCacheCodeGenCallbacks *callBacks, int32_t *numHelpers, int32_t *CCPreLoadedCodeSize);
 
@@ -197,6 +201,22 @@ internal_compileMethodBuilder(TR::MethodBuilder *m, void **entry)
    fd->func = *entry;
 
    *entry = (void*) fd;
+#elif defined(AIXPPC)
+   struct FunctionDescriptor
+      {
+      void* func;
+      void* toc;
+      void* environment;
+      };
+
+   FunctionDescriptor* fd = new FunctionDescriptor();
+   fd->func = *entry;
+   // TODO: There should really be a better way to get this. Usually, we would use
+   // cg->getTOCBase(), but the code generator has already been destroyed by now...
+   fd->toc = toPPCTableOfConstants(TR_PersistentMemory::getNonThreadSafePersistentInfo()->getPersistentTOC())->getTOCBase();
+   fd->environment = NULL;
+
+   *entry = (uint8_t*) fd;
 #endif
 
    return rc;

@@ -122,7 +122,6 @@
     TR::TreeEvaluator::dmulEvaluator, // TR::dmul		// multiply 2 doubles
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bmulEvaluator ,	// TR::bmul		// multiply 2 bytes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::smulEvaluator ,	// TR::smul		// multiply 2 short integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iumulEvaluator ,	// TR::iumul		// multiply 2 unsigned integers
     TR::TreeEvaluator::idivEvaluator, // TR::idiv		// divide 2 integers                (child1 / child2)
     TR::TreeEvaluator::ldivEvaluator, // TR::ldiv		// divide 2 long integers           (child1 / child2)
     TR::TreeEvaluator::fdivEvaluator, // TR::fdiv		// divide 2 floats                  (child1 / child2)
@@ -560,8 +559,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::busubEvaluator ,	// TR::busub		// subtract 2 unsigned bytes          (child1 - child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iunegEvaluator ,	// TR::iuneg		// negate an unsigned integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lunegEvaluator ,	// TR::luneg		// negate a unsigned long integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iushlEvaluator ,	// TR::iushl		// shift unsigned integer left       (child1 << child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lushlEvaluator ,	// TR::lushl		// shift unsigned long integer left  (child1 << child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2iuEvaluator ,	// TR::f2iu		// convert float to unsigned integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2luEvaluator ,	// TR::f2lu		// convert float to unsigned long integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2buEvaluator ,	// TR::f2bu		// convert float to unsigned byte
@@ -573,11 +570,7 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iuRegLoadEvaluator ,	// TR::iuRegLoad		// Load unsigned integer global register
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::luRegLoadEvaluator ,	// TR::luRegLoad		// Load unsigned long integer global register
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iuRegStoreEvaluator ,	// TR::iuRegStore	// Store unsigned integer global register
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::luRegStoreEvaluator ,	// TR::luRegStore	// Store long integer global register
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iuternaryEvaluator ,	// TR::iuternary		// second or the third child.  Analogous to the "condition ? a : b" operations in C/Java.
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::luternaryEvaluator ,	// TR::luternary  
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::buternaryEvaluator ,	// TR::buternary  
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::suternaryEvaluator ,	// TR::suternary  
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::luRegStoreEvaluator ,	// TR::luRegStore	// Store long integer global register 
     TR::TreeEvaluator::cconstEvaluator, // TR::cconst		// load unicode constant (16-bit unsigned)
     TR::TreeEvaluator::cloadEvaluator, // TR::cload		// load short unsigned integer
     TR::TreeEvaluator::cloadEvaluator, // TR::cloadi		// load indirect unsigned short integer
@@ -715,14 +708,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dsqrtEvaluator ,	// TR::dsqrt		// square root of double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::getstackEvaluator ,	// TR::getstack		// returns current value of SP
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::deallocaEvaluator ,	// TR::dealloca		// resets value of SP
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ishflEvaluator ,	// TR::ishfl		// int shift logical
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lshflEvaluator ,	// TR::lshfl		// long shift logical
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iushflEvaluator ,	// TR::iushfl		// unsigned int shift logical
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lushflEvaluator ,	// TR::lushfl		// unsigned long shift logical
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bshflEvaluator ,	// TR::bshfl		// byte shift logical
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sshflEvaluator ,	// TR::sshfl		// short shift logical
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bushflEvaluator ,	// TR::bushfl		// unsigned byte shift logical
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sushflEvaluator ,	// TR::sushfl		// unsigned short shift logical
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::idozEvaluator ,	// TR::idoz		// difference or zero
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcosEvaluator ,	// TR::dcos		// cos of double; returning double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dsinEvaluator ,	// TR::dsin		// sin of double; returning double

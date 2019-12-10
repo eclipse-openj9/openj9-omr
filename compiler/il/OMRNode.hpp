@@ -378,29 +378,8 @@ private:
       {
       switch (opvalue) 
          {
-         //Multiply
-         case TR::iumul: 
-
-         //Ternary
-         case TR::buternary: 
-         case TR::iuternary: 
-         case TR::luternary: 
-         case TR::suternary: 
-
-         //Shift
-         case TR::iushl: 
-         case TR::lushl:
-
-         //Shift Logical 
-         case TR::ishfl: 
-         case TR::lshfl: 
-         case TR::iushfl: 
-         case TR::lushfl:
-         case TR::bshfl: 
-         case TR::sshfl:  
-         case TR::bushfl:
-         case TR::sushfl:
-            return false;
+            //More cases is going to be added to this function for eclipse/omr#2657.
+            //return false;
             
          default: 
             return true;

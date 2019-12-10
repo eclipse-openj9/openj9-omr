@@ -466,4 +466,5 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x1E604800,	/* FMAX      	fmaxd	 */
 		0x1E205800,	/* FMIN      	fmins	 */
 		0x1E605800,	/* FMIN      	fmind	 */
+		0xD503201F,	/* NOP          nop      */
 };

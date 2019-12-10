@@ -19,12 +19,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/OMRTreeEvaluator.hpp"
+#include "codegen/TreeEvaluator.hpp"
 
 #include <stdint.h>
 #include <stdio.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/Register.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "compile/Compilation.hpp"

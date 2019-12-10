@@ -417,6 +417,8 @@ TEST_P(ShortTernaryDoubleCompareTest, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
         << "The Z code generator implementation is missing currently (see issue #3796)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     auto param = to_struct(GetParam());
 

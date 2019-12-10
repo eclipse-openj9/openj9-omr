@@ -78,7 +78,6 @@ TR::Node *constrainIfcmplt(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIfcmpne(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIiload(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainImul(OMR::ValuePropagation *vp, TR::Node *node);
-TR::Node *constrainIumul(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIneg(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIabs(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainInstanceOf(OMR::ValuePropagation *vp, TR::Node *node);
@@ -260,7 +259,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::dmul
    constrainChildren,        // TR::bmul
    constrainChildren,        // TR::smul
-   constrainIumul,           // TR::iumul
    constrainIdiv,            // TR::idiv
    constrainLdiv,            // TR::ldiv
    constrainChildren,        // TR::fdiv
@@ -728,8 +726,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainSubtract,        // TR::busub
    constrainIneg,            // TR::iuneg
    constrainLneg,            // TR::luneg
-   constrainIshl,            // TR::iushl
-   constrainLshl,            // TR::lushl
    constrainChildren,        // TR::f2iu
    constrainChildren,        // TR::f2lu
    constrainChildren,        // TR::f2bu   todo
@@ -742,10 +738,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::luRegLoad
    constrainChildren,        // TR::iuRegStore
    constrainChildren,        // TR::luRegStore
-   constrainChildrenFirstToLast,        // TR::iuternary
-   constrainChildrenFirstToLast,        // TR::luternary
-   constrainChildrenFirstToLast,        // TR::buternary
-   constrainChildrenFirstToLast,        // TR::suternary
    constrainShortConst,      // TR::cconst
    constrainIntLoad,         // TR::cload
    constrainIntLoad,         // TR::cloadi
@@ -791,11 +783,9 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::iumulh
    constrainChildren,        // TR::lmulh
    constrainChildren,        // TR::lumulh
-//   constrainChildren,        // TR::cmul
 //   constrainChildren,        // TR::cdiv
 //   constrainChildren,        // TR::crem
 
-   //   constrainChildren,        // TR::cshl
 //   constrainChildren,        // TR::cushr
 
    constrainChildren,        // TR::ibits2f
@@ -900,16 +890,6 @@ const ValuePropagationPtr constraintHandlers[] =
 
    constrainChildren,        // TR::getstack
    constrainChildren,        // TR::dealloca
-
-
-   constrainChildren,        // TR::ishfl
-   constrainChildren,        // TR::lshfl
-   constrainChildren,        // TR::iushfl
-   constrainChildren,        // TR::lushfl
-   constrainChildren,        // TR::bshfl
-   constrainChildren,        // TR::sshfl
-   constrainChildren,        // TR::bushfl
-   constrainChildren,        // TR::sushfl
 
    constrainChildren,        // TR::idoz
 

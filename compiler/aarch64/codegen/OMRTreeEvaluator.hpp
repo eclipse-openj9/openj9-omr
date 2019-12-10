@@ -150,7 +150,6 @@ public:
 	static TR::Register *dmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *smulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iumulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *idivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ldivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *fdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -587,8 +586,6 @@ public:
 	static TR::Register *busubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iunegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lunegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iushlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lushlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *f2iuEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *f2luEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *f2buEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -601,10 +598,6 @@ public:
 	static TR::Register *luRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iuRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *luRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iuternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *luternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *buternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *suternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -741,14 +734,6 @@ public:
 	static TR::Register *dsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *getstackEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *deallocaEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ishflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lshflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *bshflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *sshflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *bushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *sushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *idozEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dcosEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dsinEvaluator(TR::Node *node, TR::CodeGenerator *cg);

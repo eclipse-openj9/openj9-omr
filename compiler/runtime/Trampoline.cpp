@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/Processors.hpp"

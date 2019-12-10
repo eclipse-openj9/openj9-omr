@@ -24,7 +24,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
 #include "codegen/RegisterDependency.hpp"
@@ -125,7 +125,7 @@ MemToMemVarLenMacroOp::generateLoop()
          _raReg = _cg->allocateRegister();
 
       //use literal for aot to make it easier for relocation
-      if (comp->compileRelocatableCode())
+      if (_cg->needRelocationsForHelpers())
          {
          generateRegLitRefInstruction(_cg, TR::InstOpCode::getLoadOpCode(), _rootNode, _raReg, (uintptrj_t)getHelperSymRef(), TR_HelperAddress, NULL, NULL, NULL);
          }

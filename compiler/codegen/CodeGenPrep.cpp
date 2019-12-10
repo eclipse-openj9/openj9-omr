@@ -24,7 +24,7 @@
  * before actual code generation should go in this file.
  */
 
-#include "codegen/OMRCodeGenerator.hpp" // IWYU pragma: keep
+#include "codegen/CodeGenerator.hpp" // IWYU pragma: keep
 
 #include <stddef.h>
 #include <stdint.h>
@@ -33,7 +33,7 @@
 #include <algorithm>                           // For std::find
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/TreeEvaluator.hpp"

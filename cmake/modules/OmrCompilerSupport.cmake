@@ -280,10 +280,14 @@ macro(set_tr_compile_options)
 		#  Prepend leading '-D' only if required
 		if(def MATCHES "^-D")
 			set(TR_ASM_FLAGS "${TR_ASM_FLAGS} ${def}")
+			list(APPEND SPP_FLAGS "${def}")
 		else()
 			set(TR_ASM_FLAGS "${TR_ASM_FLAGS} -D${def}")
+			list(APPEND SPP_FLAGS "-D${def}")
 		endif()
 	endforeach()
+
+	set(SPP_FLAGS ${SPP_FLAGS} PARENT_SCOPE)
 
 	# We need special handling on x86 because we could be gnu or NASM assembler
 	if(OMR_ARCH_X86)

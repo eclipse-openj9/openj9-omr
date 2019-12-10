@@ -36,7 +36,7 @@ namespace OMR { typedef OMR::SymbolReferenceTable SymbolReferenceTableConnector;
 #include <stddef.h>
 #include <stdint.h>
 #include "env/TRMemory.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "env/KnownObjectTable.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "codegen/RegisterConstants.hpp"

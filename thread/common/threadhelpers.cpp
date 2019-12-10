@@ -26,6 +26,7 @@ extern "C" {
 
 #include "thrtypes.h"
 #include "threaddef.h"
+#include "ut_j9thr.h"
 
 void
 omrthread_monitor_pin(omrthread_monitor_t monitor, omrthread_t self)
@@ -194,6 +195,91 @@ omrthread_spinlock_swapState(omrthread_monitor_t monitor, uintptr_t newState)
 	}
 	return oldState;
 }
+
+#if defined(OMR_THR_MCS_LOCKS)
+/**
+ * Acquire the MCS lock.
+ *
+ * @param[in] self the current omrthread_t
+ * @param[in] monitor the monitor to be acquired
+ * @param[in] mcsNode the MCS node belonging to self
+ * @param[in] retry specifies if a MCS node is reused in which case the MCS lock queue
+ * and MCS node characteristics should not be updated. Only spinning should be performed
+ * against mcsNode->blocked.
+ *
+ * @return 0 on success, -1 on failure
+ */
+intptr_t
+omrthread_mcs_lock(omrthread_t self, omrthread_monitor_t monitor, omrthread_mcs_node_t mcsNode, BOOLEAN retry)
+{
+	/* Unimplemented. */
+	Assert_THR_true(FALSE);
+	return -1;
+}
+
+/**
+ * Try to acquire the MCS lock.
+ *
+ * @param[in] self the current omrthread_t
+ * @param[in] monitor the monitor to be acquired
+ * @param[in] mcsNode the MCS node belonging to self
+ *
+ * @return 0 on success, -1 on failure
+ */
+intptr_t
+omrthread_mcs_trylock(omrthread_t self, omrthread_monitor_t monitor, omrthread_mcs_node_t mcsNode)
+{
+	/* Unimplemented. */
+	Assert_THR_true(FALSE);
+	return -1;
+}
+
+/**
+ * Unlock the MCS lock.
+ *
+ * @param[in] self the current omrthread_t
+ * @param[in] monitor the monitor to be released
+ *
+ * @return the next thread which will acquire the lock
+ */
+omrthread_t
+omrthread_mcs_unlock(omrthread_t self, omrthread_monitor_t monitor)
+{
+	/* Unimplemented. */
+	Assert_THR_true(FALSE);
+	return NULL;
+}
+
+/**
+ * Allocate memory and get an instance of OMRThreadMCSNode.
+ *
+ * @param[in] self the current omrthread_t
+ *
+ * @return a pointer to a new OMRThreadMCSNode on success and NULL on failure
+ */
+omrthread_mcs_node_t
+omrthread_mcs_node_allocate(omrthread_t self)
+{
+	/* Unimplemented. */
+	Assert_THR_true(FALSE);
+	return NULL;
+}
+
+/**
+ * Free memory and return the instance of OMRThreadMCSNode.
+ *
+ * @param[in] self the current omrthread_t
+ * @param[in] mcsNode the MCS node belonging to self
+ *
+ * @return void
+ */
+void
+omrthread_mcs_node_free(omrthread_t self, omrthread_mcs_node_t mcsNode)
+{
+	/* Unimplemented. */
+	Assert_THR_true(FALSE);
+}
+#endif /* defined(OMR_THR_MCS_LOCKS) */
 
 #endif /* OMR_THR_THREE_TIER_LOCKING */
 

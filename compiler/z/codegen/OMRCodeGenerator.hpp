@@ -38,7 +38,7 @@ namespace OMR { typedef OMR::Z::CodeGenerator CodeGeneratorConnector; }
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/Machine.hpp"
@@ -95,7 +95,6 @@ namespace TR { class S390ConstantInstructionSnippet; }
 namespace TR { class S390EyeCatcherDataSnippet; }
 namespace TR { class S390ImmInstruction; }
 class TR_S390OutOfLineCodeSection;
-namespace TR { class S390PrivateLinkage; }
 class TR_S390ScratchRegisterManager;
 namespace TR { class S390WritableDataSnippet; }
 class TR_StorageReference;
@@ -368,7 +367,6 @@ public:
 
 //Convenience accessor methods
    TR::Linkage *getS390Linkage();
-   TR::S390PrivateLinkage *getS390PrivateLinkage();
 
    TR::RealRegister *getStackPointerRealRegister(TR::Symbol *symbol = NULL);
    TR::RealRegister *getEntryPointRealRegister();

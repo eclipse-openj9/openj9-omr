@@ -25,7 +25,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/Method.hpp"
 #include "compile/SymbolReferenceTable.hpp"
@@ -74,8 +74,27 @@
 
 const char* const TR_UseDefInfo::allocatorName = "UseDefInfo";
 
+/**
+ * Constructs TR_UseDefInfo instance. Note that this should not be called directly.
+ * Instead construction is handled by OMR::Optimizer::createUseDefInfo() method.
+ *
+ * @param cfg                        The compilation instance
+ * @param requiresGlobals
+ * @param prefersGlobals
+ * @param loadsShouldBeDefs
+ * @param cannotOmitTrivialDefs
+ * @param conversionRegsOnly
+ * @param doCompletion
+ * @param callsShouldBeUses          Enables inclusion of calls as uses so that the alias analysis can detect
+ *                                   when local (stack) variable has been aliased by a function call.
+ *                                   A value of false is fine for Java like languages where
+ *                                   local (stack) variables cannot be passed by reference to function calls
+ *                                   and hence cannot be aliased. However for C like languages this flag should be
+ *                                   set to true.
+ */
 TR_UseDefInfo::TR_UseDefInfo(TR::Compilation *comp, TR::CFG *cfg, TR::Optimizer *optimizer,
-      bool requiresGlobals, bool prefersGlobals, bool loadsShouldBeDefs, bool cannotOmitTrivialDefs, bool conversionRegsOnly, bool doCompletion)
+      bool requiresGlobals, bool prefersGlobals, bool loadsShouldBeDefs, bool cannotOmitTrivialDefs, bool conversionRegsOnly, 
+      bool doCompletion, bool callsShouldBeUses)
    : _region(comp->trMemory()->heapMemoryRegion()),
      _compilation(comp),
      _optimizer(optimizer),
@@ -91,6 +110,7 @@ TR_UseDefInfo::TR_UseDefInfo(TR::Compilation *comp, TR::CFG *cfg, TR::Optimizer 
      _tempsOnly(false),
      _trace(comp->getOption(TR_TraceUseDefs)),
      _hasLoadsAsDefs(loadsShouldBeDefs),
+     _hasCallsAsUses(callsShouldBeUses),
      _useDefs(0, _region),
      _numMemorySymbols(0),
      _valueNumbersToMemorySymbolsMap(0, static_cast<MemorySymbolList *>(NULL), _region),

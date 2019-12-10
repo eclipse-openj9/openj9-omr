@@ -36,7 +36,7 @@ namespace OMR { typedef OMR::CodeGenerator CodeGeneratorConnector; }
 #include <stdint.h>
 #include <map>
 #include "codegen/CodeGenPhase.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "codegen/RegisterConstants.hpp"
@@ -1158,6 +1158,10 @@ class OMR_EXTENSIBLE CodeGenerator
    bool needRelocationsForStatics() { return false; }
    bool needRelocationsForBodyInfoData() { return false; }
    bool needRelocationsForPersistentInfoData() { return false; }
+
+   // This query can be used if we need to decide whether data represented by TR_HelperAddress or TR_AbsoluteHelperAddress
+   // relocation type needs a relocation record.
+   bool needRelocationsForHelpers() { return false; }
 
    // --------------------------------------------------------------------------
    // Snippets

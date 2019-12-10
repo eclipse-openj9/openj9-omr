@@ -19,14 +19,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "il/OMRBlock.hpp"
+#include "il/Block.hpp"
 
 #include <limits.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/CompilationTypes.hpp"
 #include "compile/Method.hpp"
@@ -1165,17 +1165,22 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
                {
                while (valueChild->getOpCode().isArrayRef())
                   valueChild = valueChild->getFirstChild();
-
-               if (valueChild->getOpCode().isLoadVarDirect() &&
-                     valueChild->getSymbolReference()->getSymbol()->isAuto())
+               // If the node we are uncommoning is internal pointer and while iterating a child we found a node that is not 
+               // Array Reference, There are only two possibilities.
+               // 1. It is  internal poiter which was commoned means could be stored into register or on temp slot. 
+               // 2. Itself is a pointer to array object.
+               TR::SymbolReference *valueChildSymRef = valueChild->getSymbolReference();
+               if (valueChildSymRef != NULL &&
+                  (valueChild->getOpCode().isLoadVarDirect() && valueChildSymRef->getSymbol()->isAuto()) ||
+                  (valueChild->getOpCode().isLoadReg() && valueChildSymRef->getSymbol()->castToAutoSymbol()->isInternalPointer()))
                   {
-                  if (valueChild->getSymbolReference()->getSymbol()->castToAutoSymbol()->isInternalPointer())
+                  if (valueChildSymRef->getSymbol()->castToAutoSymbol()->isInternalPointer())
                      {
-                     pinningArray = valueChild->getSymbolReference()->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer();
+                     pinningArray = valueChildSymRef->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer();
                      }
                   else
                      {
-                     pinningArray = valueChild->getSymbolReference()->getSymbol()->castToAutoSymbol();
+                     pinningArray = valueChildSymRef->getSymbol()->castToAutoSymbol();
                      pinningArray->setPinningArrayPointer();
                      }
                   }
@@ -1413,6 +1418,10 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
             TR::Node *regDeps = iter->getNode()->getNumChildren() > 0 ? iter->getNode()->getChild(0) : NULL;
             if (regDeps && regDeps->getOpCodeValue() == TR::GlRegDeps)
                {
+               // If the previous tree top of BBEnd contains branch, we need to make sure any regStore we add are added before that.
+               TR::TreeTop *prevTT = iter->getPrevTreeTop();
+               if (prevTT->getNode()->getOpCode().isBranch() || prevTT->getNode()->getOpCode().hasBranchChildren())
+                  iter = prevTT;
                gatherUnavailableRegisters(comp, regDeps, iter, nodeInfo, storeNodeInfo, &storeRegNodePostSplitPoint, unavailableRegisters);
                }
             }

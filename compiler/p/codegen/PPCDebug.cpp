@@ -27,7 +27,7 @@ int jitDebugPPC;
 #include <string.h>
 #include "codegen/CodeGenPhase.hpp"
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/GCRegisterMap.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
@@ -109,6 +109,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * instr)
 
    switch (instr->getKind())
       {
+      case OMR::Instruction::IsAlignmentNop:
+         print(pOutFile, (TR::PPCAlignmentNopInstruction *)instr);
+         break;
       case OMR::Instruction::IsImm:
          print(pOutFile, (TR::PPCImmInstruction *)instr);
          break;
@@ -128,7 +131,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * instr)
          print(pOutFile, (TR::PPCDepImmSymInstruction *)instr);
          break;
       case OMR::Instruction::IsLabel:
-      case OMR::Instruction::IsAlignedLabel:
          print(pOutFile, (TR::PPCLabelInstruction *)instr);
          break;
       case OMR::Instruction::IsDepLabel:
@@ -221,6 +223,14 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction * instr)
       }
    else
       trfprintf(pOutFile, "0 \t");
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::PPCAlignmentNopInstruction * instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s\t; Align to %u bytes", getOpCodeName(&instr->getOpCode()), instr->getAlignment());
+   trfflush(pOutFile);
    }
 
 void
@@ -926,7 +936,6 @@ TR::Instruction* TR_Debug::getOutlinedTargetIfAny(TR::Instruction *instr)
    switch (instr->getKind())
       {
       case TR::Instruction::IsLabel:
-      case TR::Instruction::IsAlignedLabel:
       case TR::Instruction::IsDepLabel:
       case TR::Instruction::IsVirtualGuardNOP:
       case TR::Instruction::IsConditionalBranch:

@@ -21,7 +21,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
@@ -40,7 +40,7 @@
 #include "infra/Assert.hpp"
 #include "infra/List.hpp"
 #include "optimizer/VPConstraint.hpp"
-#include "optimizer/OMRValuePropagation.hpp"
+#include "optimizer/ValuePropagation.hpp"
 #include "runtime/Runtime.hpp"
 #include "optimizer/TransformUtil.hpp"
 

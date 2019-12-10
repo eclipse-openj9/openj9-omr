@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "codegen/CodeGenerator.hpp"

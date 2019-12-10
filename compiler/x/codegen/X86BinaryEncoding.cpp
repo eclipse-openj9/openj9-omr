@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include "codegen/BackingStore.hpp"
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
@@ -2624,7 +2624,7 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
    TR::SymbolReference *methodSymRef = getNode()->getOpCode().hasSymbolReference()?getNode()->getSymbolReference():NULL;
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (comp->fej9()->helpersNeedRelocation())
+   if (cg()->needRelocationsForHelpers())
       {
       if (getNode()->getOpCode().hasSymbolReference() &&
           methodSymRef &&

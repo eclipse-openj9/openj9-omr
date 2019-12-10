@@ -21,7 +21,7 @@
 
 #include "arm/codegen/ConstantDataSnippet.hpp"
 
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/Relocation.hpp"
 #include "compile/Compilation.hpp"
 #include "control/Options.hpp"

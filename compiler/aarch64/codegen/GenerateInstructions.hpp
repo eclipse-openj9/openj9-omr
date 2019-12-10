@@ -505,6 +505,26 @@ TR::Instruction *generateMemSrc1Instruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates "store exclusive" instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] mr : memory reference
+ * @param[in] sreg : source register
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTrg1MemSrc1Instruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::MemoryReference *mr,
+                   TR::Register *sreg,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates src1 instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
@@ -788,4 +808,19 @@ TR::ARM64ExceptionInstruction *generateExceptionInstruction(
                   uint32_t imm,
                   TR::Instruction *preced = NULL);
 
+#ifdef J9_PROJECT_SPECIFIC
+/*
+ * @brief Generates virtual guard nop instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] site : virtual guard site
+ * @param[in] cond : register dependency condition
+ * @param[in] sym : label symbol
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateVirtualGuardNOPInstruction(TR::CodeGenerator *cg,  TR::Node *node, TR_VirtualGuardSite *site,
+   TR::RegisterDependencyConditions *cond, TR::LabelSymbol *sym, TR::Instruction *preced = NULL);
+
+#endif
 #endif

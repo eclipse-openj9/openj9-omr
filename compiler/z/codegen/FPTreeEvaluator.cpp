@@ -22,7 +22,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
@@ -67,7 +67,7 @@
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
-#include "z/codegen/OMRLinkage.hpp"
+#include "z/codegen/Linkage.hpp"
 
 static TR::InstOpCode::Mnemonic getIntToFloatLogicalConversion(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic convertOpCode)
    {

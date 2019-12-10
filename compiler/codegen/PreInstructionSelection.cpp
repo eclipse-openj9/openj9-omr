@@ -19,13 +19,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/OMRCodeGenerator.hpp"
+#include "codegen/CodeGenerator.hpp"
 
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "codegen/RealRegister.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/Method.hpp"

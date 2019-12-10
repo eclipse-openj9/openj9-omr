@@ -122,7 +122,6 @@
    TR::TreeEvaluator::dmulEvaluator,        // TR::dmul
    TR::TreeEvaluator::unImpOpEvaluator,        // TR::bmul
    TR::TreeEvaluator::unImpOpEvaluator,        // TR::smul
-   TR::TreeEvaluator::imulEvaluator,        // TR::iumul
    TR::TreeEvaluator::idivEvaluator,        // TR::idiv
    TR::TreeEvaluator::ldivEvaluator,        // TR::ldiv
    TR::TreeEvaluator::fdivEvaluator,        // TR::fdiv
@@ -598,8 +597,6 @@
    TR::TreeEvaluator::bsubEvaluator,        // TR::busub
    TR::TreeEvaluator::inegEvaluator,        // TR::iuneg
    TR::TreeEvaluator::lnegEvaluator,        // TR::luneg
-   TR::TreeEvaluator::ishlEvaluator,        // TR::iushl
-   TR::TreeEvaluator::lshlEvaluator,        // TR::lushl
    TR::TreeEvaluator::f2iEvaluator,         // TR::f2iu
    TR::TreeEvaluator::f2lEvaluator,         // TR::f2lu
    TR::TreeEvaluator::f2iEvaluator,         // TR::f2bu
@@ -612,10 +609,6 @@
    TR::TreeEvaluator::lRegLoadEvaluator,    // TR::luRegLoad
    TR::TreeEvaluator::iRegStoreEvaluator,   // TR::iuRegStore
    TR::TreeEvaluator::lRegStoreEvaluator,   // TR::luRegStore
-   TR::TreeEvaluator::ternaryEvaluator,     // TR::iuternary
-   TR::TreeEvaluator::ternaryEvaluator,     // TR::luternary
-   TR::TreeEvaluator::ternaryEvaluator,     // TR::buternary
-   TR::TreeEvaluator::ternaryEvaluator,     // TR::suternary
    TR::TreeEvaluator::cconstEvaluator,      // TR::cconst
    TR::TreeEvaluator::sloadEvaluator,       // TR::cload
    TR::TreeEvaluator::sloadEvaluator,       // TR::cloadi
@@ -767,15 +760,6 @@
 
    TR::TreeEvaluator::unImpOpEvaluator,    // TR::getstack
    TR::TreeEvaluator::unImpOpEvaluator,    // TR::dealloca
-
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::ishfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::lshfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::iushfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::lushfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::bshfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::sshfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::bushfl
-   TR::TreeEvaluator::unImpOpEvaluator,         // TR::sushfl
 
    TR::TreeEvaluator::unImpOpEvaluator,         // TR::idoz
 

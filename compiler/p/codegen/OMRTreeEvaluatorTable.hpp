@@ -121,7 +121,6 @@
    TR::TreeEvaluator::dmulEvaluator,                    // TR::dmul
    TR::TreeEvaluator::imulEvaluator,                    // TR::bmul
    TR::TreeEvaluator::imulEvaluator,                    // TR::smul
-   TR::TreeEvaluator::imulEvaluator,                    // TR::iumul
    TR::TreeEvaluator::idivEvaluator,                    // TR::idiv
    TR::TreeEvaluator::ldivEvaluator,                    // TR::ldiv
    TR::TreeEvaluator::fdivEvaluator,                    // TR::fdiv
@@ -567,8 +566,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,                 // TR::busub
    TR::TreeEvaluator::inegEvaluator,                    // TR::iuneg
    TR::TreeEvaluator::lnegEvaluator,                    // TR::luneg
-   TR::TreeEvaluator::ishlEvaluator,                    // TR::iushl
-   TR::TreeEvaluator::lshlEvaluator,                    // TR::lushl
    TR::TreeEvaluator::d2iuEvaluator,                    // TR::f2iu
    TR::TreeEvaluator::unImpOpEvaluator,                 // TR::f2lu
    TR::TreeEvaluator::d2iuEvaluator,                    // TR::f2bu
@@ -581,10 +578,6 @@
    TR::TreeEvaluator::gprRegLoadEvaluator,              // TR::luRegLoad
    TR::TreeEvaluator::gprRegStoreEvaluator,             // TR::iuRegStore
    TR::TreeEvaluator::gprRegStoreEvaluator,             // TR::luRegStore
-   TR::TreeEvaluator::iternaryEvaluator,                // TR::iuternary
-   TR::TreeEvaluator::iternaryEvaluator,                // TR::luternary
-   TR::TreeEvaluator::iternaryEvaluator,                // TR::buternary
-   TR::TreeEvaluator::iternaryEvaluator,                // TR::suternary
    TR::TreeEvaluator::iconstEvaluator,                  // TR::cconst
    TR::TreeEvaluator::cloadEvaluator,                   // TR::cload
    TR::TreeEvaluator::cloadEvaluator,                   // TR::cloadi
@@ -724,14 +717,6 @@
    TR::TreeEvaluator::dsqrtEvaluator,                   // TR::dsqrt
    TR::TreeEvaluator::getstackEvaluator,                // TR::getstack
    TR::TreeEvaluator::deallocaEvaluator,                // TR::dealloca
-   TR::TreeEvaluator::badILOpEvaluator,                 // TR::ishfl
-   TR::TreeEvaluator::badILOpEvaluator,                 // TR::lshfl
-   TR::TreeEvaluator::badILOpEvaluator,                 // TR::iushfl
-   TR::TreeEvaluator::badILOpEvaluator,                 // TR::lushfl
-   TR::TreeEvaluator::badILOpEvaluator,                 // TR::bshfl
-   TR::TreeEvaluator::badILOpEvaluator,                 // TR::sshfl
-   TR::TreeEvaluator::badILOpEvaluator,                 // TR::bushfl
-   TR::TreeEvaluator::badILOpEvaluator,                 // TR::sushfl
    TR::TreeEvaluator::idozEvaluator,                    // TR::idoz
    TR::TreeEvaluator::libmFuncEvaluator,                // TR::dcos
    TR::TreeEvaluator::libmFuncEvaluator,                // TR::dsin

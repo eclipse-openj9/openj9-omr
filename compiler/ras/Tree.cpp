@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "env/KnownObjectTable.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "compile/Compilation.hpp"
@@ -2367,7 +2367,6 @@ int32_t childTypes[] =
    TR::Double,                     // TR::dmul
    TR::Int8,                      // TR::bmul
    TR::Int16,                     // TR::smul
-   TR::Int32,                     // TR::iumul
    TR::Int32,                     // TR::idiv
    TR::Int64,                     // TR::ldiv
    TR::Float,                      // TR::fdiv
@@ -2832,8 +2831,6 @@ int32_t childTypes[] =
    TR::Int8,                      // TR::busub
    TR::Int32,                     // TR::iuneg
    TR::Int64,                     // TR::luneg
-   TR::Int32 | (TR::Int32<<16),   // TR::iushl
-   TR::Int64 | (TR::Int32<<16),   // TR::lushl
    TR::Float,                      // TR::f2iu
    TR::Float,                      // TR::f2lu
    TR::Float,                      // TR::f2bu
@@ -2846,10 +2843,6 @@ int32_t childTypes[] =
    TR::Int64,                     // TR::luRegLoad
    TR::Int32,                     // TR::iuRegStore
    TR::Int64,                     // TR::luRegStore
-   TR::Int32 | (TR::Int32<<8),    // TR::iuternary
-   TR::Int64 | (TR::Int32<<8),    // TR::luternary
-   TR::Int8  | (TR::Int32<<8),    // TR::buternary
-   TR::Int16 | (TR::Int32<<8),    // TR::suternary
    TR::Int16,                     // TR::cconst
    TR::Int16,                     // TR::cload
    TR::Int16 | (TR::Address<<8),   // TR::cloadi
@@ -2895,10 +2888,8 @@ int32_t childTypes[] =
    TR::Int32,                     // TR::iumulh
    TR::Int64,                     // TR::lmulh
    TR::Int64,                     // TR::lumulh
-   // TR::Int16,                     // TR::cmul
    // TR::Int16,                     // TR::cdiv
    // TR::Int16,                     // TR::crem
-   // TR::Int16,                     // TR::cshl
    // TR::Int16 | (TR::Int32<<16),   // TR::cushr
 
    TR::Int32,                     // TR::ibits2f
@@ -3002,15 +2993,6 @@ int32_t childTypes[] =
 
    TR::NoType,                     // TR::getstack
    TR::Address,                    // TR::dealloca
-
-   TR::Int32,                     // TR::ishfl
-   TR::Int64,                     // TR::lshfl
-   TR::Int32,                     // TR::iushfl
-   TR::Int64,                     // TR::lushfl
-   TR::Int32,                     // TR::bshfl
-   TR::Int64,                     // TR::sshfl
-   TR::Int32,                     // TR::bushfl
-   TR::Int64,                     // TR::sushfl
 
    TR::Int32,                     // TR::idoz
 

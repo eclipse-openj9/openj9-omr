@@ -42,6 +42,7 @@ OBJECTS := \
   omrsignalExtendedTest \
   omrsignalTest \
   omrslTest \
+  omrsockTest \
   omrstrTest \
   omrtimeTest \
   omrttyExtendedTest \

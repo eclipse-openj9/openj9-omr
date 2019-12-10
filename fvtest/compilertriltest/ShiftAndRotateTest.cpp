@@ -206,7 +206,7 @@ TEST_P(Int64ShiftAndRotate, UsingConst) {
         "  (block"
         "    (lreturn"
         "      (%s"
-        "        (lconst %" PRId64 ")"
+        "        (lconst %" OMR_PRId64 ")"
         "        (iconst %d)))))",
         param.opcode.c_str(),
         param.lhs,
@@ -257,7 +257,7 @@ TEST_P(Int64ShiftAndRotate, UsingLhsConst) {
         "  (block"
         "    (lreturn"
         "      (%s"
-        "        (lconst %" PRId64 ")"
+        "        (lconst %" OMR_PRId64 ")"
         "        (iload parm=0)))))",
         param.opcode.c_str(),
         param.lhs);
@@ -339,6 +339,8 @@ TEST_P(Int8ShiftAndRotate, UsingRhsConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -369,6 +371,8 @@ TEST_P(Int8ShiftAndRotate, UsingLhsConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -399,6 +403,8 @@ TEST_P(Int8ShiftAndRotate, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -463,6 +469,8 @@ TEST_P(Int16ShiftAndRotate, UsingRhsConst) {
 
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -493,6 +501,8 @@ TEST_P(Int16ShiftAndRotate, UsingLhsConst) {
 
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -523,6 +533,8 @@ TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
 
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -670,7 +682,7 @@ TEST_P(UInt64ShiftAndRotate, UsingConst) {
         "  (block"
         "    (lreturn"
         "      (%s"
-        "        (lconst %" PRIu64 ")"
+        "        (lconst %" OMR_PRIu64 ")"
         "        (iconst %d)))))",
         param.opcode.c_str(),
         param.lhs,
@@ -721,7 +733,7 @@ TEST_P(UInt64ShiftAndRotate, UsingLhsConst) {
         "  (block"
         "    (lreturn"
         "      (%s"
-        "        (lconst %" PRIu64 ")"
+        "        (lconst %" OMR_PRIu64 ")"
         "        (iload parm=0)))))",
         param.opcode.c_str(),
         param.lhs);
@@ -801,6 +813,8 @@ TEST_P(UInt8ShiftAndRotate, UsingRhsConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -831,6 +845,8 @@ TEST_P(UInt8ShiftAndRotate, UsingLhsConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -859,6 +875,8 @@ TEST_P(UInt8ShiftAndRotate, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -924,6 +942,8 @@ TEST_P(UInt16ShiftAndRotate, UsingRhsConst) {
 
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -954,6 +974,8 @@ TEST_P(UInt16ShiftAndRotate, UsingLhsConst) {
 
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -982,6 +1004,8 @@ TEST_P(UInt16ShiftAndRotate, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -1196,7 +1220,7 @@ TEST_P(UInt64MaskThenShift, UsingLoadParam) {
         "      (%s"
         "        (land"
         "          (lload parm=0)"
-        "          (lconst %" PRIu64 "))"
+        "          (lconst %" OMR_PRIu64 "))"
         "        (iconst %d)))))",
         param.opcode.c_str(),
         param.mask,
@@ -1231,7 +1255,7 @@ TEST_P(Int64MaskThenShift, UsingLoadParam) {
         "      (%s"
         "        (land"
         "          (lload parm=0)"
-        "          (lconst %" PRId64 "))"
+        "          (lconst %" OMR_PRId64 "))"
         "        (iconst %d)))))",
         param.opcode.c_str(),
         param.mask,
@@ -1333,6 +1357,8 @@ TEST_P(UInt16MaskThenShift, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -1373,6 +1399,8 @@ TEST_P(Int16MaskThenShift, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -1413,6 +1441,8 @@ TEST_P(UInt8MaskThenShift, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -1453,6 +1483,8 @@ TEST_P(Int8MaskThenShift, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+    SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
+        << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),

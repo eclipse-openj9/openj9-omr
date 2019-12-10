@@ -21,6 +21,7 @@
 
 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 
+set(OMR_EXE_LAUNCHER "@OMR_EXE_LAUNCHER@")
 set(OMR_MODULES_DIR "@OMR_MODULES_DIR@")
 set(DDR_SUPPORT_DIR "@OMR_MODULES_DIR@/ddr")
 set(DDR_INFO_DIR "@DDR_INFO_DIR@")
@@ -243,8 +244,8 @@ file(WRITE "${DDR_INFO_DIR}/sets/@DDR_TARGET_NAME@.binaries" "${binaries_list}")
 if(DDR_BLOB OR DDR_SUPERSET)
 	add_custom_command(
 		OUTPUT ${DDR_BLOB} ${DDR_SUPERSET}
-		DEPENDS ${DDR_MACRO_LIST} ${target_files} ${subset_binaries}
-		COMMAND omr_ddrgen
+		DEPENDS ${DDR_MACRO_LIST} ${target_files} ${subset_binaries} omr_ddrgen
+		COMMAND ${OMR_EXE_LAUNCHER} $<TARGET_FILE:omr_ddrgen>
 			${target_files} ${subset_binaries}
 			--show-empty
 			--macrolist ${DDR_MACRO_LIST}

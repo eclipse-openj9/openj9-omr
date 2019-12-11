@@ -49,7 +49,7 @@
 extern "C" {
 #endif
 
-#define OMR_OS_STACK_SIZE	256 * 1024 /* Corresponds to desktopBigStack in builder */
+#define OMR_OS_STACK_SIZE 256 * 1024 /* Corresponds to desktopBigStack in builder */
 
 typedef enum {
 	OMR_ERROR_NONE = 0,
@@ -82,7 +82,7 @@ struct UtThreadData;
 struct OMR_TraceThread;
 
 typedef struct OMR_RuntimeConfiguration {
-	uintptr_t _maximum_vm_count;		/* 0 for unlimited */
+	uintptr_t _maximum_vm_count; /* 0 for unlimited */
 } OMR_RuntimeConfiguration;
 
 typedef struct OMR_Runtime {
@@ -96,7 +96,7 @@ typedef struct OMR_Runtime {
 } OMR_Runtime;
 
 typedef struct OMR_VMConfiguration {
-	uintptr_t _maximum_thread_count;		/* 0 for unlimited */
+	uintptr_t _maximum_thread_count; /* 0 for unlimited */
 } OMR_VMConfiguration;
 
 typedef struct movedObjectHashCode {
@@ -371,7 +371,6 @@ void omr_vmthread_reattach(OMR_VMThread *currentThread, const char *threadName);
  */
 void omr_vmthread_redetach(OMR_VMThread *omrVMThread);
 
-
 /**
  * Get the current OMR_VMThread, if the current thread is attached.
  *
@@ -446,9 +445,6 @@ void omr_vm_preFork(OMR_VM *vm);
 
 #endif /* defined(OMR_THR_FORK_SUPPORT) */
 
-
-
-
 /*
  * LANGUAGE VM GLUE
  * The following functions must be implemented by the language VM.
@@ -462,7 +458,7 @@ void omr_vm_preFork(OMR_VM *vm);
  *
  * @param[in] omrVM the OMR vm
  * @param[in] threadName An optional name for the thread. May be NULL.
- * 	 It is the responsibility of the caller to ensure this string remains valid for the lifetime of the thread.
+ *   It is the responsibility of the caller to ensure this string remains valid for the lifetime of the thread.
  * @param[out] omrVMThread the current OMR VMThread
  * @return an OMR error code
  */
@@ -561,7 +557,21 @@ int OMR_Glue_GetMethodDictionaryPropertyNum(void);
 const char * const *OMR_Glue_GetMethodDictionaryPropertyNames(void);
 
 #ifdef __cplusplus
-}
-#endif
+/*
+ * Not all compilers retain debugging information for anonymous enum types.
+ * This macro works around that behavior by declaring a static member
+ * (that will not be defined). It must be applied selectively because
+ * not all compilers generate debugging information for static members
+ * (__xlC__ is defined by xlC_r, __ibmxl_version__ is defined by xlclang++).
+ */
+#if (defined(__xlC__) && ((__xlC__ >> 8) >= 16)) \
+ || (defined(__ibmxl_version__) && (__ibmxl_version__ >= 16))
+#define ddr_constant(name, value) static enum { name = value } ddr_ref_ ## name
+#else /* defined(__ibmxl_version__) && (__ibmxl_version__ >= 16) */
+#define ddr_constant(name, value)        enum { name = value }
+#endif /* defined(__ibmxl_version__) && (__ibmxl_version__ >= 16) */
+
+} /* extern "C" */
+#endif /* __cplusplus */
 
 #endif /* omr_h */

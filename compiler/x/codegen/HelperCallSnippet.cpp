@@ -131,7 +131,7 @@ TR::X86HelperCallSnippet::addMetaDataForLoadAddrArg(
        && (!child->getSymbol()->isClassObject()
            || cg()->wantToPatchClassPointer((TR_OpaqueClassBlock*)sym->getStaticAddress(), buffer)))
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg()->comp()->target().is64Bit())
          cg()->jitAddPicToPatchOnClassRedefinition(((void *) (uintptrj_t)sym->getStaticAddress()), (void *) buffer);
       else
          cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *) (uintptrj_t)sym->getStaticAddress()), (void *) buffer);
@@ -146,7 +146,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
    //
    if (_stackPointerAdjustment < -128 || _stackPointerAdjustment > 127)
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg()->comp()->target().is64Bit())
          {
          *buffer++ = 0x48; // Rex
          }
@@ -157,7 +157,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
       }
    else if (_stackPointerAdjustment != 0)
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg()->comp()->target().is64Bit())
          {
          *buffer++ = 0x48; // Rex
          }
@@ -169,7 +169,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
    if (_callNode)
       {
       if(!debug("amd64unimplemented"))
-         TR_ASSERT(TR::Compiler->target.is32Bit(), "AMD64 genHelperCall with _callNode not yet implemented");
+         TR_ASSERT(cg()->comp()->target().is32Bit(), "AMD64 genHelperCall with _callNode not yet implemented");
       int32_t i = 0;
 
       if (_offset != -1)
@@ -266,7 +266,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
 
    // Insert alignment padding if the instruction might be patched dynamically.
    //
-   if (_alignCallDisplacementForPatching && TR::Compiler->target.isSMP())
+   if (_alignCallDisplacementForPatching && cg()->comp()->target().isSMP())
       {
       uintptrj_t mod = (uintptrj_t)(buffer) % cg()->getInstructionPatchAlignmentBoundary();
       mod = cg()->getInstructionPatchAlignmentBoundary() - mod;
@@ -298,7 +298,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
    //
    if (_stackPointerAdjustment < -128 || _stackPointerAdjustment > 127)
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg()->comp()->target().is64Bit())
          {
          *buffer++ = 0x48; // Rex
          }
@@ -309,7 +309,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
       }
    else if (_stackPointerAdjustment != 0)
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg()->comp()->target().is64Bit())
          {
          *buffer++ = 0x48; // Rex
          }
@@ -342,9 +342,9 @@ TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uin
 
    if (snippet->getStackPointerAdjustment() != 0)
       {
-      uint8_t size = 5 + (TR::Compiler->target.is64Bit()? 1 : 0);
+      uint8_t size = 5 + (comp()->target().is64Bit()? 1 : 0);
       printPrefix(pOutFile, NULL, bufferPos, size);
-      trfprintf(pOutFile, "add \t%s, %d\t\t\t%s Temporarily deallocate stack frame", TR::Compiler->target.is64Bit()? "rsp":"esp", snippet->getStackPointerAdjustment(),
+      trfprintf(pOutFile, "add \t%s, %d\t\t\t%s Temporarily deallocate stack frame", comp()->target().is64Bit()? "rsp":"esp", snippet->getStackPointerAdjustment(),
                     commentString());
       bufferPos += size;
       }
@@ -415,9 +415,9 @@ TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uin
 
    if (snippet->getStackPointerAdjustment() != 0)
       {
-      uint8_t size = 5 + (TR::Compiler->target.is64Bit()? 1 : 0);
+      uint8_t size = 5 + (comp()->target().is64Bit()? 1 : 0);
       printPrefix(pOutFile, NULL, bufferPos, size);
-      trfprintf(pOutFile, "sub \t%s, %d\t\t\t%s Reallocate stack frame", TR::Compiler->target.is64Bit()? "rsp":"esp", snippet->getStackPointerAdjustment(),
+      trfprintf(pOutFile, "sub \t%s, %d\t\t\t%s Reallocate stack frame", comp()->target().is64Bit()? "rsp":"esp", snippet->getStackPointerAdjustment(),
                     commentString());
       bufferPos += size;
       }
@@ -474,7 +474,7 @@ uint32_t TR::X86HelperCallSnippet::getLength(int32_t estimatedSnippetStart)
 
    // Conservatively assume that 4 NOPs might be required for alignment.
    //
-   if (_alignCallDisplacementForPatching && TR::Compiler->target.isSMP())
+   if (_alignCallDisplacementForPatching && cg()->comp()->target().isSMP())
       {
       length += 4;
       }
@@ -495,7 +495,7 @@ int32_t TR::X86HelperCallSnippet::branchDisplacementToHelper(
       {
       helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(helper->getReferenceNumber(), (void *)(callInstructionAddress+1));
 
-      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(helperAddress, nextInstructionAddress),
+      TR_ASSERT_FATAL(cg->comp()->target().cpu.isTargetWithinRIPRange(helperAddress, nextInstructionAddress),
                       "Local helper trampoline should be reachable directly");
       }
 

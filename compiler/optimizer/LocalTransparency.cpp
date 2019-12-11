@@ -869,7 +869,7 @@ void TR_LocalTransparency::adjustInfoForAddressAdd(TR::Node *node, TR::Node *chi
                _transparencyInfo[i]->reset(node->getLocalIndex());
                if (trace())
                   {
-                  if (TR::Compiler->target.is64Bit())
+                  if (comp()->target().is64Bit())
                      traceMsg(comp(), "Expression %d killed by symRef #%d because grandchild (child of aladd) %d is already killed by the symRef\n", node->getLocalIndex(), i, child->getLocalIndex());
                   else
                      traceMsg(comp(), "Expression %d killed by symRef #%d because grandchild (child of aiadd) %d is already killed by the symRef\n", node->getLocalIndex(), i, child->getLocalIndex());

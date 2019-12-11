@@ -200,7 +200,7 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, uint32_t
          }
       }
 
-   if (TR::Compiler->target.is32Bit() || !symbol->isConstObjectRef())
+   if (cg->comp()->target().is32Bit() || !symbol->isConstObjectRef())
       self()->addToOffset(rootLoadOrStore, ref->getOffset(), cg);
    if (self()->getUnresolvedSnippet() != NULL)
       self()->adjustForResolution(cg);
@@ -232,7 +232,7 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *node, TR::SymbolReference
          }
       }
 
-   if (TR::Compiler->target.is32Bit() || !symbol->isConstObjectRef())
+   if (cg->comp()->target().is32Bit() || !symbol->isConstObjectRef())
       self()->addToOffset(0, symRef->getOffset(), cg);
    if (self()->getUnresolvedSnippet() != NULL)
       self()->adjustForResolution(cg);
@@ -347,7 +347,7 @@ void OMR::Power::MemoryReference::addToOffset(TR::Node * node, intptrj_t amount,
             }
          else
             {
-            if (TR::Compiler->target.is64Bit() && (upper<LOWER_IMMED || upper>UPPER_IMMED))
+            if (cg->comp()->target().is64Bit() && (upper<LOWER_IMMED || upper>UPPER_IMMED))
                {
                TR::Register *tempReg = cg->allocateRegister();
                loadActualConstant(cg, node, upper<<16, tempReg);
@@ -483,7 +483,7 @@ void OMR::Power::MemoryReference::bookKeepingRegisterUses(TR::Instruction *instr
 
 static bool isLoadConstAndShift(TR::Node *subTree, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       if (subTree->getOpCodeValue() == TR::lshl)
          {
@@ -568,7 +568,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          if (integerChild->getOpCode().isLoadConst())
             {
             self()->populateMemoryReference(addressChild, cg);
-            if (TR::Compiler->target.is64Bit())
+            if (cg->comp()->target().is64Bit())
                {
                intptrj_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
                                    integerChild->getInt() :
@@ -580,7 +580,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             cg->decReferenceCount(integerChild);
             }
          else if (integerChild->getEvaluationPriority(cg)>addressChild->getEvaluationPriority(cg) &&
-                  !(subTree->getOpCode().isArrayRef() && TR::Compiler->target.cpu.id()==TR_PPCp6))
+                  !(subTree->getOpCode().isArrayRef() && cg->comp()->target().cpu.id()==TR_PPCp6))
             {
             self()->populateMemoryReference(integerChild, cg);
             self()->populateMemoryReference(addressChild, cg);
@@ -594,7 +594,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          }
       else if (isLoadConstAndShift(subTree, cg))
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             { // 64-bit
             intptrj_t amount = (subTree->getSecondChild()->getOpCodeValue() == TR::iconst) ?
                                 subTree->getSecondChild()->getInt() :
@@ -662,7 +662,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
                _baseNode = NULL;
                }
             }
-         if (TR::Compiler->target.is32Bit() || !symbol->isConstObjectRef())
+         if (cg->comp()->target().is32Bit() || !symbol->isConstObjectRef())
             self()->addToOffset(subTree, subTree->getSymbolReference()->getOffset(), cg);
          // TODO: aliasing sets?
          cg->decReferenceCount(subTree); // need to decrement ref count because
@@ -1081,7 +1081,7 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
    base = (self()->getBaseRegister()==NULL)?cg->machine()->getRealRegister(TR::RealRegister::gr0):toRealRegister(self()->getBaseRegister());
    index=(self()->getIndexRegister()==NULL)?NULL:toRealRegister(self()->getIndexRegister());
 
-   if (TR::Compiler->target.is64Bit() && self()->isTOCAccess())
+   if (cg->comp()->target().is64Bit() && self()->isTOCAccess())
       {
       uint32_t preserve = *wcursor;
       TR::RealRegister *target = toRealRegister(currentInstruction->getMemoryDataRegister());
@@ -1404,7 +1404,7 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
             {
             TR::RealRegister   *stackPtr = cg->getStackPointerRegister();
             TR::RealRegister *rX = cg->machine()->getRealRegister(choose_rX(currentInstruction, base));
-            *wcursor = (TR::Compiler->target.is64Bit())?0xf800fff8:0x9000fffc;
+            *wcursor = (cg->comp()->target().is64Bit())?0xf800fff8:0x9000fffc;
             rX->setRegisterFieldRS(wcursor);
             stackPtr->setRegisterFieldRA(wcursor);
             cursor += PPC_INSTRUCTION_LENGTH;
@@ -1422,7 +1422,7 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
             wcursor++;                                  // ld Rt, [rX, lower]
                                                         // st Rs, [rX, lower]
 
-            *wcursor = (TR::Compiler->target.is64Bit())?0xe800fff8:0x8000fffc;
+            *wcursor = (cg->comp()->target().is64Bit())?0xe800fff8:0x8000fffc;
             rX->setRegisterFieldRT(wcursor);
             stackPtr->setRegisterFieldRA(wcursor);
                                                        // lwz rX, [sp, -4] | ld rX, [sp, -8]
@@ -1570,7 +1570,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          useUnresSnippetToAvoidRelo = false;
       }
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       TR::Node *topNode = cg->getCurrentEvaluationTreeTop()->getNode();
       TR::UnresolvedDataSnippet *snippet = NULL;

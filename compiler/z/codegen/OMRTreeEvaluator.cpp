@@ -234,7 +234,7 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
    //disable LARL for AOT for easier relocation
    //cannot safely generate LARL for longs on 31-bit
    else if (cg->canUseRelativeLongInstructions(value) &&
-            TR::Compiler->target.is64Bit() && !(comp->compileRelocatableCode()))
+            comp->target().is64Bit() && !(comp->compileRelocatableCode()))
       {
       cursor = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value), cursor);
       }
@@ -301,7 +301,7 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptrj_t value
       return unloadableConstInstr;
       }
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       return genLoadLongConstant(cg, node, (uint64_t) value, targetRegister, cursor, cond, base);
       }
@@ -339,7 +339,7 @@ generateLoad32BitConstant(TR::CodeGenerator * cg, TR::Node * constExpr)
          break;
       case TR::Address:
          tempReg = cg->allocateRegister();
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             genLoadLongConstant(cg, constExpr, constExpr->getLongInt(), tempReg);
             }
@@ -444,7 +444,7 @@ TR::Instruction *multiply31Reduction(TR::CodeGenerator * cg, TR::Node * node,
          {
          if (targetRegister != sourceRegister)
             {
-            if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+            if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
                {
                cursor = generateRSInstruction(cg, TR::InstOpCode::SLLK, node, targetRegister, sourceRegister, shiftValue, preced);
                }
@@ -472,7 +472,7 @@ TR::Instruction *multiply31Reduction(TR::CodeGenerator * cg, TR::Node * node,
    // We also need to disable the optimization in the tree simplifier -- see overloaded
    // method, TR_S390CodeGenerator::mulDecompositionCostIsJustified()
 
-   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+   if (!cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       {
       return cursor;
       }
@@ -1078,7 +1078,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             {
             immOp = TR::InstOpCode::MGHI;
             }
-         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL)
+         else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL)
             {
             ei_immOp = TR::InstOpCode::MSGFI;
             }
@@ -1109,7 +1109,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             {
             immOp = TR::InstOpCode::MHI;
             }
-         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && memOp == TR::InstOpCode::MS)
+         else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && memOp == TR::InstOpCode::MS)
             {
             ei_immOp = TR::InstOpCode::MSFI;
             }
@@ -1205,7 +1205,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
    // in 32bit target.  Currently we only handle long constant for 32bit target for
    // bitwise instructions.
    // NOTE: You can only get in here if bitwiseOpNeedsLiteralFromPool() return false.
-   if (TR::Compiler->target.is32Bit() &&
+   if (cg->comp()->target().is32Bit() &&
         (memOp == TR::InstOpCode::N || memOp == TR::InstOpCode::O || memOp == TR::InstOpCode::X))
       {
       TR_ASSERT( sourceRegister->getRegisterPair(), "Long value in 32-bit target must be in a register pair : OpCode %s\n", memOp);
@@ -1356,7 +1356,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
             {
             immOp = TR::InstOpCode::MGHI;
             }
-         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL)
+         else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL)
             {
             ei_immOp = TR::InstOpCode::MSGFI;
             }
@@ -1390,7 +1390,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
             {
             ei_immOp = TR::InstOpCode::CGFI;
             }
-         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+         else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
             {
             memOp = TR::InstOpCode::CGRL;
             }
@@ -1400,7 +1400,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
             {
             ei_immOp = TR::InstOpCode::CLGFI;
             }
-         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+         else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
             {
             memOp = TR::InstOpCode::CLGRL;
             }
@@ -1414,7 +1414,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
             {
             ei_immOp = TR::InstOpCode::LLILF;
             }
-         else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+         else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
             {
             memOp = TR::InstOpCode::LGRL;
             }
@@ -1476,7 +1476,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
       }
    else
       {
-      if (TR::Compiler->target.is32Bit() && memOp != TR::InstOpCode::MLG)
+      if (cg->comp()->target().is32Bit() && memOp != TR::InstOpCode::MLG)
          {
          TR_ASSERT(!targetRegister->getRegisterPair(), "This instruction is for 64bit target only, it should not take a register pair.\n");
          }
@@ -2069,7 +2069,7 @@ tryGenerateSIComparisons(TR::Node *node, TR::Node *constNode, TR::Node *otherNod
    else if (operandSize == 2 || operandSize == 4 || operandSize == 8) // we can use the SIL form compares
       {
       // 16-bit immediates and these instructions are only avaialble on z10 and up
-      if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+      if (!cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
          {
          return 0;
          }
@@ -2398,7 +2398,7 @@ tryGenerateCLCForComparison(TR::Node *node, TR::CodeGenerator *cg)
 
    if (operand1IsVFTSymbol || operand2IsVFTSymbol)
       {
-      if (TR::Compiler->target.is64Bit() && (cg->isCompressedClassPointerOfObjectHeader(operand1) || cg->isCompressedClassPointerOfObjectHeader(operand2)))
+      if (cg->comp()->target().is64Bit() && (cg->isCompressedClassPointerOfObjectHeader(operand1) || cg->isCompressedClassPointerOfObjectHeader(operand2)))
          numOfBytesToCompare = 4; //getSize() currently return wrong value in compressedrefs
 
       numOfBytesToCompare--;
@@ -2734,7 +2734,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
    if (dataType == TR::Address)
       {
       isUnsignedCmp = true;
-      if(TR::Compiler->target.is64Bit() && !cg->isCompressedClassPointerOfObjectHeader(firstChild))
+      if(cg->comp()->target().is64Bit() && !cg->isCompressedClassPointerOfObjectHeader(firstChild))
          {
          dataType = TR::Int64;
          }
@@ -2829,12 +2829,12 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
           !isUnsignedCmp &&
           !nonConstNode->getOpCode().isDouble() &&
           getIntegralValue(constNode) == 0 &&
-          (!nonConstNode->isExtendedTo64BitAtSource() || TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) ))
+          (!nonConstNode->isExtendedTo64BitAtSource() || cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) ))
          {
          TR::SymbolReference * symRef = nonConstNode->getSymbolReference();
          TR::Symbol * symbol = symRef->getSymbol();
-         bool useLTG = (TR::Compiler->target.is64Bit() && (constType == TR::Int64 || constType == TR::Address)) ||
-                       (TR::Compiler->target.is32Bit() && (constType == TR::Int64));
+         bool useLTG = (cg->comp()->target().is64Bit() && (constType == TR::Int64 || constType == TR::Address)) ||
+                       (cg->comp()->target().is32Bit() && (constType == TR::Int64));
 
          if (nonConstNode->getDataType() == TR::Address &&
              !symbol->isInternalPointer() &&
@@ -2851,7 +2851,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
          TR::MemoryReference * tempMR = generateS390MemoryReference(nonConstNode, cg);
          bool mustExtend = !useLTG && nonConstNode->isExtendedTo64BitAtSource();
 
-         if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && mustExtend)
+         if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && mustExtend)
             {
             if (isUnsignedCmp)
                {
@@ -2883,8 +2883,8 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
             }
          else
             {
-            TR_ASSERT(  TR::Compiler->target.is32Bit(), "ICM can be used for 32bit code-gen only!");
-            if (TR::Compiler->target.is32Bit() && (constType == TR::Int64))
+            TR_ASSERT(  cg->comp()->target().is32Bit(), "ICM can be used for 32bit code-gen only!");
+            if (cg->comp()->target().is32Bit() && (constType == TR::Int64))
                {
                generateRXInstruction(cg, TR::InstOpCode::LG, nonConstNode, testRegister, tempMR);
                if (branchTarget != NULL)
@@ -2991,7 +2991,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
          bool isAddress = constType == TR::Address;
          if (constType == TR::Address)
             {
-            constType = (TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32);
+            constType = (cg->comp()->target().is64Bit() ? TR::Int64 : TR::Int32);
             isUnsignedCmp = true;
             }
 
@@ -3146,7 +3146,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
       if (childType == TR::Address)
          {
          isUnsignedCmp = true;
-         if (TR::Compiler->target.is64Bit() && !cg->isCompressedClassPointerOfObjectHeader(secondChild))
+         if (cg->comp()->target().is64Bit() && !cg->isCompressedClassPointerOfObjectHeader(secondChild))
             {
             childType = TR::Int64;
             }
@@ -3358,7 +3358,7 @@ getOpCodeIfSuitableForCompareAndBranch(TR::CodeGenerator * cg, TR::Node * node, 
    bool isUnsignedCmp = node->getOpCode().isUnsignedCompare();
    if (dataType == TR::Address)
       {
-      dataType = (TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32);
+      dataType = (cg->comp()->target().is64Bit() ? TR::Int64 : TR::Int32);
       isUnsignedCmp = true;
       }
 
@@ -4001,7 +4001,7 @@ containsValidOpCodesForConditionalMoves(TR::Node* node, TR::CodeGenerator* cg)
       // On 32-bit platforms, we should not generate a STM/LM on condition.
       if (!node->getType().isInt64() && !node->getType().isAddress() && !node->getType().isInt32())
          return false;
-      if (TR::Compiler->target.is32Bit() && node->getType().isInt64())
+      if (cg->comp()->target().is32Bit() && node->getType().isInt64())
          return false;
       if (node->useSignExtensionMode() || (node->getOpCode().isLoad() && node->isLoadAndTest()))
          return false;
@@ -4235,7 +4235,7 @@ generateS390CompareBranch(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
    bool isLoadOrStoreOnConditionCandidateFallthrough  = false;
 
    // Determine if successor blocks maybe candidates for conditional load/stores/moves
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       canadidateLoadStoreConditionalBlock = checkForCandidateBlockForConditionalLoadAndStores(node, cg, cg->getCurrentBlock(), &isLoadOrStoreOnConditionCandidateFallthrough);
       if (canadidateLoadStoreConditionalBlock)
@@ -4574,7 +4574,7 @@ OMR::Z::TreeEvaluator::extendCastEvaluator(TR::Node * node, TR::CodeGenerator * 
    TR::Compilation *comp = cg->comp();
 
    childRegister = targetRegister = cg->evaluate(firstChild);
-   if (numberOfExtendBits == 32 && targetRegister->getRegisterPair() != NULL) //&& TR::Compiler->target.is32Bit()
+   if (numberOfExtendBits == 32 && targetRegister->getRegisterPair() != NULL) //&& cg->comp()->target().is32Bit()
       // if were using the register pairs (i.e. force64bit() might have been set), just throw away the top
       targetRegister = targetRegister->getLowOrder();
 
@@ -4805,7 +4805,7 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) &&
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) &&
        symbol->isStatic() &&
        !symRef->isUnresolved() &&
        !cg->comp()->compileRelocatableCode() &&
@@ -4816,7 +4816,7 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
       uintptrj_t staticAddress = (uintptrj_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
 
       TR::InstOpCode::Mnemonic op = TR::InstOpCode::BAD;
-      if (node->getType().isInt32() || (!(TR::Compiler->target.is64Bit()) && node->getType().isAddress() ))
+      if (node->getType().isInt32() || (!(cg->comp()->target().is64Bit()) && node->getType().isAddress() ))
          {
          op = TR::InstOpCode::LRL;
 
@@ -4838,8 +4838,8 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
       TR_ASSERT(op != TR::InstOpCode::BAD, "Bad opcode selection in relative load helper!\n");
 
       if ((!disableFORCELRL || cg->canUseRelativeLongInstructions(staticAddress)) &&
-           ((TR::Compiler->target.is32Bit() && (staticAddress&0x3) == 0)  ||
-             (TR::Compiler->target.is64Bit() && (staticAddress&0x7) == 0)
+           ((cg->comp()->target().is32Bit() && (staticAddress&0x3) == 0)  ||
+             (cg->comp()->target().is64Bit() && (staticAddress&0x7) == 0)
            )
          )
          {
@@ -4849,7 +4849,7 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
             }
          else
             {
-            if (TR::Compiler->target.is64Bit())
+            if (cg->comp()->target().is64Bit())
                {
                // On 64bit we could end up having to transform the LGRL into LLILF/LG.
                // We would not be able to handle GRP0 in this case
@@ -4910,7 +4910,7 @@ iloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       {
       bool mustExtend = node->isExtendedTo64BitAtSource();
 
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && mustExtend)
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && mustExtend)
          {
          if (node->isZeroExtendedTo64BitAtSource())
             {
@@ -5148,7 +5148,7 @@ bool relativeLongStoreHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) &&
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) &&
        symbol->isStatic() &&
        !symRef->isUnresolved() &&
        !cg->comp()->compileRelocatableCode() &&
@@ -5161,8 +5161,8 @@ bool relativeLongStoreHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
 
       TR::Register * sourceRegister = cg->evaluate(valueChild);
 
-      if ((TR::Compiler->target.is32Bit() && (staticAddress&0x3) == 0)  ||
-           (TR::Compiler->target.is64Bit() && (staticAddress&0x7) == 0)
+      if ((cg->comp()->target().is32Bit() && (staticAddress&0x3) == 0)  ||
+           (cg->comp()->target().is64Bit() && (staticAddress&0x7) == 0)
          )
          {
          generateRILInstruction(cg, op, node, sourceRegister, symRef, reinterpret_cast<void*>(staticAddress));
@@ -5240,7 +5240,7 @@ bool storeHelperImmediateInstruction(TR::Node * valueChild, TR::CodeGenerator * 
    TR::Compilation *comp = cg->comp();
 
    // All the immediates that use this require non reversed instructions
-   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) || isReversed || cg->getConditionalMovesEvaluationMode())
+   if (!cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) || isReversed || cg->getConditionalMovesEvaluationMode())
       {
       return true;
       }
@@ -5255,7 +5255,7 @@ bool storeHelperImmediateInstruction(TR::Node * valueChild, TR::CodeGenerator * 
          {
          int64_t tmp;
          case TR::Address:
-            if (TR::Compiler->target.is32Bit())
+            if (cg->comp()->target().is32Bit())
                {
                imm = (uintptrj_t)valueChild->getAddress();
                if ((imm <= MIN_IMMEDIATE_VAL) || (imm >= MAX_IMMEDIATE_VAL))
@@ -5460,7 +5460,7 @@ sstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
       else
          {
          sourceRegister = cg->gprClobberEvaluate(valueChild);
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             generateRSInstruction(cg, TR::InstOpCode::SRLG, node, sourceRegister, sourceRegister, 48);
          else
             generateRSInstruction(cg, TR::InstOpCode::SRL, node, sourceRegister, 16);
@@ -5615,7 +5615,7 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
          }
       else
          {
-         if (valueChild->getDataType() != TR::Aggregate || TR::Compiler->target.is32Bit())
+         if (valueChild->getDataType() != TR::Aggregate || cg->comp()->target().is32Bit())
             sourceRegister = cg->evaluate(valueChild);
          else
             {
@@ -5910,7 +5910,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::aladdEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    TR::Compilation *comp = cg->comp();
-   TR_ASSERT(TR::Compiler->target.is64Bit(), "aladd should not be seen on 32-bit");
+   TR_ASSERT(cg->comp()->target().is64Bit(), "aladd should not be seen on 32-bit");
 
    TR::Register * targetRegister = cg->allocateRegister();
 
@@ -6283,7 +6283,7 @@ OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       else
          {
          sourceRegister = cg->gprClobberEvaluate(valueChild);
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             generateRSInstruction(cg, TR::InstOpCode::SRLG, node, sourceRegister, sourceRegister, 56);
          else
             generateRSInstruction(cg, TR::InstOpCode::SRL, node, sourceRegister, 24);
@@ -6507,12 +6507,12 @@ OMR::Z::TreeEvaluator::z990PopCountHelper(TR::Node *node, TR::CodeGenerator *cg,
    TR::LabelSymbol *cFlowRegionStart = generateLabelSymbol(cg);
    TR::LabelSymbol *cFlowRegionEnd = generateLabelSymbol(cg);
 
-   TR::InstOpCode::Mnemonic subOp = TR::Compiler->target.is64Bit() ? TR::InstOpCode::SGR : TR::InstOpCode::SR;
-   TR::InstOpCode::Mnemonic addOp = TR::Compiler->target.is64Bit() ? TR::InstOpCode::AGR : TR::InstOpCode::AR;
+   TR::InstOpCode::Mnemonic subOp = cg->comp()->target().is64Bit() ? TR::InstOpCode::SGR : TR::InstOpCode::SR;
+   TR::InstOpCode::Mnemonic addOp = cg->comp()->target().is64Bit() ? TR::InstOpCode::AGR : TR::InstOpCode::AR;
 
    // check if 0 to skip below instructions
    generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, outReg, outReg);
-   generateRIInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGHI : TR::InstOpCode::CHI, node, inReg, 0);
+   generateRIInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::CGHI : TR::InstOpCode::CHI, node, inReg, 0);
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRE, node, cFlowRegionEnd);
@@ -6524,7 +6524,7 @@ OMR::Z::TreeEvaluator::z990PopCountHelper(TR::Node *node, TR::CodeGenerator *cg,
 
    // x -= (x >> 1) & 0x555555555
    generateRSInstruction(cg, TR::InstOpCode::SRLG, node, outReg, inReg, 1);
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
      generateS390ImmOp(cg, TR::InstOpCode::N, node, outReg, outReg, (int64_t) 0x5555555555555555, regDeps);
    else
      generateS390ImmOp(cg, TR::InstOpCode::N, node, outReg, outReg, (int32_t) 0x55555555, regDeps);
@@ -6532,7 +6532,7 @@ OMR::Z::TreeEvaluator::z990PopCountHelper(TR::Node *node, TR::CodeGenerator *cg,
 
    // x = (x & 0x33333333) + ((x >> 2) & 0x33333333)
    generateRSInstruction(cg, TR::InstOpCode::SRLG, node, outReg, inReg, 2);
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       generateS390ImmOp(cg, TR::InstOpCode::N, node, outReg, outReg, (int64_t) 0x3333333333333333, regDeps);
       generateS390ImmOp(cg, TR::InstOpCode::N, node, inReg, inReg, (int64_t) 0x3333333333333333, regDeps);
@@ -6547,7 +6547,7 @@ OMR::Z::TreeEvaluator::z990PopCountHelper(TR::Node *node, TR::CodeGenerator *cg,
    // x = (x + (x >> 4)) & 0x0f0f0f0f
    generateRSInstruction(cg, TR::InstOpCode::SRLG, node, outReg, inReg, 4);
    generateRRInstruction(cg, addOp, node, inReg, outReg);
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
      generateS390ImmOp(cg, TR::InstOpCode::N, node, inReg, inReg, (int64_t) 0x0f0f0f0f0f0f0f0f, regDeps);
    else
      generateS390ImmOp(cg, TR::InstOpCode::N, node, inReg, inReg, (int32_t) 0x0f0f0f0f, regDeps);
@@ -6565,7 +6565,7 @@ OMR::Z::TreeEvaluator::z990PopCountHelper(TR::Node *node, TR::CodeGenerator *cg,
    generateRRInstruction(cg, addOp, node, outReg, inReg);
 
    // x = x & 0x7f
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
      generateS390ImmOp(cg, TR::InstOpCode::N, node, outReg, outReg, (int64_t) 0x000000000000007f, regDeps);
    else
      generateS390ImmOp(cg, TR::InstOpCode::N, node, outReg, outReg, (int32_t) 0x0000007f, regDeps);
@@ -6745,7 +6745,7 @@ TR::Register *getConditionCode(TR::Node *node, TR::CodeGenerator *cg, TR::Regist
       }
 
    generateRRInstruction(cg, TR::InstOpCode::IPM, node, programRegister, programRegister);
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       generateRRInstruction(cg, TR::InstOpCode::LLGTR, node, programRegister, programRegister);
       generateRSInstruction(cg, TR::InstOpCode::SRLG, node, programRegister, programRegister, 28);
@@ -8043,7 +8043,7 @@ inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    bool disableSIMDP256 = NULL != disableECCSIMD || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
    bool disableMLGRP256 = NULL != disableECCMLGR || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
 
-   if (!disableVMSL && TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z14) && cg->getSupportsVectorRegisters())
+   if (!disableVMSL && cg->comp()->target().cpu.getSupportsArch(TR::CPU::z14) && cg->getSupportsVectorRegisters())
       return inlineVMSL256Multiply(node, cg);
    if (disableECCKarat==NULL && cg->getSupportsVectorRegisters())
       return inlineSIMDP256Multiply(node, cg);
@@ -8938,7 +8938,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
          }
       else
          {
-         needs64BitOpCode =  TR::Compiler->target.is64Bit();
+         needs64BitOpCode =  cg->comp()->target().is64Bit();
          }
 
       if (maxLenIn256)
@@ -9047,7 +9047,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
 
             //cFlowRegionEnd = generateLabelSymbol(cg);
 
-            generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LTGR : TR::InstOpCode::LTR, node, lengthReg, lengthReg);
+            generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::LTGR : TR::InstOpCode::LTR, node, lengthReg, lengthReg);
 
             //The following test may not be necessary as TR::InstOpCode::CLCLU/TR::InstOpCode::CLCLE does not care zero legth case?
             if (isFoldedIf)
@@ -9065,12 +9065,12 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
 
             if(isWideChar)
                {
-               if(TR::Compiler->target.is64Bit())
+               if(cg->comp()->target().is64Bit())
                   generateRSInstruction(cg, TR::InstOpCode::SLLG, node, lengthReg, lengthReg, 1);
                else
                   generateRSInstruction(cg, TR::InstOpCode::SLL, node, lengthReg, 1);
                }
-            generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, lengthCopyReg, lengthReg);
+            generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, lengthCopyReg, lengthReg);
 
             TR::LabelSymbol *continueLabel = generateLabelSymbol(cg);
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, continueLabel);
@@ -9146,7 +9146,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
 
             TR::LabelSymbol * EXTargetLabel;
 
-            if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && !comp->getOption(TR_DisableInlineEXTarget))
+            if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && !comp->getOption(TR_DisableInlineEXTarget))
                {
                // Inline the EXRL target so it is always in the instruction cache
                generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, EXTargetLabel = generateLabelSymbol(cg));
@@ -9183,7 +9183,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
             source1MemRef= generateS390MemoryReference(source1Reg, 0, cg);
             source2MemRef= generateS390MemoryReference(source2Reg, 0, cg);
 
-            if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && !comp->getOption(TR_DisableInlineEXTarget))
+            if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && !comp->getOption(TR_DisableInlineEXTarget))
                {
                cursor = new (cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, node, lengthReg, EXTargetLabel, cg);
                }
@@ -9536,7 +9536,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
       litpool->setUnresolvedDataSnippet(uds);
 
       TR::S390RILInstruction * lrlInstr = NULL;
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
          {
          lrlInstr = static_cast<TR::S390RILInstruction *>(generateRILInstruction(cg, TR::InstOpCode::getLoadRelativeLongOpCode(), node, targetRegister, reinterpret_cast<void*>(0xBABE), 0));
          uds->setDataReferenceInstruction(lrlInstr);
@@ -10205,7 +10205,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
       // For chars, scale the index and array/search length by 2 (size of char) to convert into bytes.
       if (elementChar)
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             generateRSInstruction(cg, TR::InstOpCode::SLLG, node, indexReg, indexReg, 1);
             generateRSInstruction(cg, TR::InstOpCode::SLLG, node, alenReg, alenReg, 1);
@@ -10324,7 +10324,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
 
          // Index into helper table - Each entry in table is 16 bytes.
          //   Actual index to helper table is the remaining length (8-byte) * 16.
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             generateShiftAndKeepSelected64Bit(node, cg, tmpReg, tmpReg, 52, 59, 4, true, false);
          else
             generateShiftAndKeepSelected31Bit(node, cg, tmpReg, tmpReg, 20, 27, 4, true, false);
@@ -10525,7 +10525,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
       if (elementChar)
          {
          // Scale the result index from bytes to char.
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             generateRSInstruction(cg, TR::InstOpCode::SRLG, node, indexReg, indexReg, 1);
             }
@@ -10608,7 +10608,7 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
       {
       // We need to copy the final length to resultReg, so that we can calculate
       // number of elements translated after TRXX.
-      if (TR::Compiler->target.is64Bit() && !(inputLengthNode->getOpCode().isLong()))
+      if (cg->comp()->target().is64Bit() && !(inputLengthNode->getOpCode().isLong()))
          generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, resultReg, inputLenReg);
       else
          generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, inputLenReg);
@@ -10618,7 +10618,7 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
    if (node->isByteToByteTranslate() || node->isByteToCharTranslate())
       {
       opCode = (node->isByteToByteTranslate())?TR::InstOpCode::TROO:TR::InstOpCode::TROT;
-      if (!isLengthConstant && TR::Compiler->target.is64Bit() && !(inputLengthNode->getOpCode().isLong())) // need to ensure this value is sign extended as well
+      if (!isLengthConstant && cg->comp()->target().is64Bit() && !(inputLengthNode->getOpCode().isLong())) // need to ensure this value is sign extended as well
             generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, inputLenReg, resultReg);
       }
    else
@@ -10628,7 +10628,7 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
 
       if (!isLengthConstant)
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             if (!(inputLengthNode->getOpCode().isLong()))
                generateRSInstruction(cg, TR::InstOpCode::SLLG, node, inputLenReg, resultReg, 1);  // resultReg is sign extended above.
@@ -10725,7 +10725,7 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
 
    if (opCode == TR::InstOpCode::TRTO || opCode == TR::InstOpCode::TRTT)
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          generateRSInstruction(cg, TR::InstOpCode::SRLG, node, inputLenReg, inputLenReg, 1);
       else
          generateRSInstruction(cg, TR::InstOpCode::SRL, node, inputLenReg, 1);
@@ -10814,7 +10814,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
    if (constType == TR::Address)
       {
-      bool refs64 = TR::Compiler->target.is64Bit() && !comp->useCompressedPointers();
+      bool refs64 = cg->comp()->target().is64Bit() && !comp->useCompressedPointers();
       constType = (refs64 ? TR::Int64 : TR::Int32);
       }
 
@@ -11136,7 +11136,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
             }
          else
             {
-            if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+            if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
                {
                generateRSInstruction(cg, TR::InstOpCode::SRAK, node, itersReg, elemsRegister, 6);
                }
@@ -11337,7 +11337,7 @@ OMR::Z::TreeEvaluator::generateLoadAndStoreForArrayCopy(TR::Node *node, TR::Code
             generateRXInstruction(cg, TR::InstOpCode::STG, node, workReg, dstMemRef);
          break;
       case TR::Address:
-         if (TR::Compiler->target.is64Bit() && !cg->comp()->useCompressedPointers())
+         if (cg->comp()->target().is64Bit() && !cg->comp()->useCompressedPointers())
             {
             if (needsGuardedLoad)
                {
@@ -11393,7 +11393,7 @@ OMR::Z::TreeEvaluator::generateMemToMemElementCopy(TR::Node *node, TR::CodeGener
    deps->addPostCondition(endReg, TR::RealRegister::LegalOddOfPair);
    deps->addPostCondition(brxReg, TR::RealRegister::EvenOddPair);
    TR::DataType elementType = node->getArrayCopyElementType();
-   int32_t elementSize = (elementType == TR::Address && TR::Compiler->target.is64Bit() && cg->comp()->useCompressedPointers()) ? 4 : TR::DataType::getSize(elementType);
+   int32_t elementSize = (elementType == TR::Address && cg->comp()->target().is64Bit() && cg->comp()->useCompressedPointers()) ? 4 : TR::DataType::getSize(elementType);
    TR::Instruction *cursor = NULL;
    TR_Debug *debug = cg->getDebug();
 #define iComment(str) if (debug) debug->addInstructionComment(cursor, (str));
@@ -11508,7 +11508,7 @@ OMR::Z::TreeEvaluator::forwardArrayCopySequenceGenerator(TR::Node *node, TR::Cod
                                        generateS390MemoryReference(byteDstReg, 0, cg),
                                        generateS390MemoryReference(byteSrcReg, 0, cg));
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, exrlInstructionLabel);
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && !cg->comp()->getOption(TR_DisableInlineEXTarget))
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && !cg->comp()->getOption(TR_DisableInlineEXTarget))
          {
          generateRILInstruction(cg, TR::InstOpCode::EXRL, node, byteLenReg, exrlTargetLabel);
          }
@@ -11531,7 +11531,7 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
    TR::RegisterDependencyConditions *deps = NULL;
    bool genStartICFLabel = node->isBackwardArrayCopy() && byteLenNode->getOpCode().isLoadConst();
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z15))
       {
       TR::Register* loopIterReg = srm->findOrCreateScratchRegister();
 
@@ -11831,7 +11831,7 @@ OMR::Z::TreeEvaluator::aRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
    TR::Machine *machine = cg->machine();
 
    // GRA needs to tell LRA about the register type
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       globalReg->setIs64BitReg(true);
       }
@@ -11926,7 +11926,7 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
        !cg->comp()->compileRelocatableCode())
       {
       needsLGFR = false;
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          useLGHI = true;
          }
@@ -12061,7 +12061,7 @@ OMR::Z::TreeEvaluator::long2StringEvaluator(TR::Node * node, TR::CodeGenerator *
    TR::Register * workReg = cg->evaluate(node->getChild(3));
    TR::Register * raReg = cg->allocateRegister();
    TR_ASSERT( inputNode->getDataType() == TR::Int64 || inputNode->getDataType() == TR::Int32, "error");
-   TR_ASSERT( !isLong || TR::Compiler->target.is64Bit(), "Not supported");
+   TR_ASSERT( !isLong || cg->comp()->target().is64Bit(), "Not supported");
 
    TR::Instruction *cursor;
 
@@ -12233,7 +12233,7 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
    // Use z14's VBPERM instruction if possible. (Note: VBPERM supports permutation on arrays
    // of up to size 16, and beats the performance of the loop unrolling technique used above
    // for arrays with size greater than the bitPermuteConstantUnrollThreshold constant defined above)
-   else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z14) &&
+   else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z14) &&
          isLoadConst  &&
          arrayLen <= 16 )
       {
@@ -12604,7 +12604,7 @@ TR::Register *OMR::Z::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeG
    TR::Compilation *comp = cg->comp();
 
    static char * disablePrefetch = feGetEnv("TR_DisablePrefetch");
-   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) || disablePrefetch)
+   if (!cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) || disablePrefetch)
       {
       cg->recursivelyDecReferenceCount(firstChild);
       cg->recursivelyDecReferenceCount(secondChild);
@@ -12955,14 +12955,14 @@ arraycmpWithPadHelper::arraycmpWithPadHelper(TR::Node *n,
 void arraycmpWithPadHelper::setupCLCLandCLCLE()
    {
    source1LenReg = cg->gprClobberEvaluate(source1LenNode);
-   if ((source1LenNode->getSize()) <= 4 && TR::Compiler->target.is64Bit())
+   if ((source1LenNode->getSize()) <= 4 && cg->comp()->target().is64Bit())
       {
       // Cleanup the high order part of the reg
       generateRRInstruction(cg, TR::InstOpCode::LLGFR, node, source1LenReg, source1LenReg);
       }
 
    source2LenReg = cg->gprClobberEvaluate(source2LenNode);
-   if ((source2LenNode->getSize()) <= 4 && TR::Compiler->target.is64Bit())
+   if ((source2LenNode->getSize()) <= 4 && cg->comp()->target().is64Bit())
       {
       // Cleanup the high order part of the reg
       generateRRInstruction(cg, TR::InstOpCode::LLGFR, node, source2LenReg, source2LenReg);
@@ -12998,7 +12998,7 @@ void arraycmpWithPadHelper::setupConstCLCL()
 TR::Register *arraycmpWithPadHelper::generateConstCLCL()
    {
    uint32_t lenPad = ((uint32_t)source2Len & 0x00FFFFFF) | ((uint32_t)CLCLpaddingChar << 24);
-   if(TR::Compiler->target.is64Bit())
+   if(cg->comp()->target().is64Bit())
       genLoadLongConstant(cg, node, lenPad, source2LenReg);
    else
       generateLoad32BitConstant(cg, node, lenPad, source2LenReg, true);
@@ -13029,9 +13029,9 @@ TR::Register *arraycmpWithPadHelper::generateConstCLCL()
 
 TR::Register *arraycmpWithPadHelper::generateCLCL()
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
          {
          generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, source2LenReg, paddingReg, 32, 39, 24);
          }
@@ -13249,19 +13249,19 @@ void arraycmpWithPadHelper::generateVarCLCSetup()
       regDeps->addPostCondition(countReg, TR::RealRegister::AssignAny);
       regDeps->addPostCondition(paddingPosReg, TR::RealRegister::AssignAny);
 
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, countReg, source1LenReg);
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, paddingPosReg, source2Reg);
-      if (TR::Compiler->target.is64Bit())
+      generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, countReg, source1LenReg);
+      generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, paddingPosReg, source2Reg);
+      if (cg->comp()->target().is64Bit())
          genLoadLongConstant(cg, node, 2, paddingUnequalRetValReg);
       else
          generateLoad32BitConstant(cg, node, 2, paddingUnequalRetValReg, true);
 
       TR::LabelSymbol *doneAssignLabel = generateLabelSymbol(cg);
-      generateS390CompareAndBranchInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGR : TR::InstOpCode::CR, node, source2LenReg, source1LenReg, TR::InstOpCode::COND_BHR, doneAssignLabel);
+      generateS390CompareAndBranchInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::CGR : TR::InstOpCode::CR, node, source2LenReg, source1LenReg, TR::InstOpCode::COND_BHR, doneAssignLabel);
 
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, countReg, source2LenReg);
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, paddingPosReg, source1Reg);
-      if(TR::Compiler->target.is64Bit())
+      generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, countReg, source2LenReg);
+      generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, paddingPosReg, source1Reg);
+      if(cg->comp()->target().is64Bit())
          genLoadLongConstant(cg, node, 1, paddingUnequalRetValReg);
       else
          generateLoad32BitConstant(cg, node, 1, paddingUnequalRetValReg, true);
@@ -13270,26 +13270,26 @@ void arraycmpWithPadHelper::generateVarCLCSetup()
       cursor->setDependencyConditions(regDeps);
 
       paddingLenReg = cg->allocateRegister();
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::SLGR : TR::InstOpCode::SLR, node, source1LenReg, source2LenReg);
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LPGR : TR::InstOpCode::LPR, node, paddingLenReg, source1LenReg);
+      generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::SLGR : TR::InstOpCode::SLR, node, source1LenReg, source2LenReg);
+      generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::LPGR : TR::InstOpCode::LPR, node, paddingLenReg, source1LenReg);
       if(isUTF16)
          {
-         if(TR::Compiler->target.is64Bit())
+         if(cg->comp()->target().is64Bit())
             generateRSInstruction(cg, TR::InstOpCode::SRLG, node, paddingLenReg, paddingLenReg, 1);
          else
             generateRSInstruction(cg, TR::InstOpCode::SRL, node, paddingLenReg, 1);
          }
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::ALGR : TR::InstOpCode::ALR, node, paddingPosReg, countReg);
+      generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::ALGR : TR::InstOpCode::ALR, node, paddingPosReg, countReg);
 
       retValReg = cg->allocateRegister();
-      if(TR::Compiler->target.is64Bit())
+      if(cg->comp()->target().is64Bit())
          genLoadLongConstant(cg, node, 0, retValReg);
       else
          generateLoad32BitConstant(cg, node, 0, retValReg, true);
       }
 
    loopCountReg = cg->allocateRegister();
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       generateRSInstruction(cg, TR::InstOpCode::SRLG, node, loopCountReg, countReg, 8);
       }
@@ -13386,7 +13386,7 @@ void arraycmpWithPadHelper::generateVarCLCMainLoop()
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, loopStartLabel);
 
-   generateS390BranchInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::BRCTG : TR::InstOpCode::BRCT, node, loopCountReg, loopTopLabel);
+   generateS390BranchInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::BRCTG : TR::InstOpCode::BRCT, node, loopCountReg, loopTopLabel);
    cg->stopUsingRegister(loopCountReg);
    }
 
@@ -13428,7 +13428,7 @@ void arraycmpWithPadHelper::generateVarCLCRemainder()
    // this compare and branch will work because we'd only get here if the CC was 0
    // if we skip, we're setting it to 0 again (no change)
    // otherwise we're setting it properly with a CLC
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       generateS390ImmOp(cg, TR::InstOpCode::NG, node, countReg, countReg, (int64_t)0xFF);
 
@@ -13441,7 +13441,7 @@ void arraycmpWithPadHelper::generateVarCLCRemainder()
       generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::C, node, countReg, (int32_t)0, TR::InstOpCode::COND_BE, isFoldedIf ? unequalLabel : cmpDoneLabel, false, false);
       }
 
-   generateRIInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::AGHI : TR::InstOpCode::AHI, node, countReg, -1);
+   generateRIInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::AGHI : TR::InstOpCode::AHI, node, countReg, -1);
 
    TR::MemoryReference *pos1Ref;
    if (!isAddr1Const)
@@ -13487,7 +13487,7 @@ TR::Register* arraycmpWithPadHelper::generateCLCUnequal()
       }
 
    generateRRInstruction(cg, TR::InstOpCode::IPM, node, retValReg, retValReg);
-   if(TR::Compiler->target.is64Bit())
+   if(cg->comp()->target().is64Bit())
       {
       generateRRInstruction(cg, TR::InstOpCode::LLGTR, node, retValReg, retValReg);
       generateRSInstruction(cg, TR::InstOpCode::SRLG, node, retValReg, retValReg, 28);
@@ -13717,7 +13717,7 @@ void arraycmpWithPadHelper::generateConstCLCPaddingLoop()
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK6, node, paddingUnequalLabel);
       }
 
-   if(TR::Compiler->target.is64Bit())
+   if(cg->comp()->target().is64Bit())
       genLoadLongConstant(cg, node, 0, retValReg);
    else
       generateLoad32BitConstant(cg, node, 0, retValReg, true);
@@ -13726,7 +13726,7 @@ void arraycmpWithPadHelper::generateConstCLCPaddingLoop()
    //IPM
    generateRRInstruction(cg, TR::InstOpCode::IPM, node, retValReg, retValReg);
    //SRL(G)
-   if(TR::Compiler->target.is64Bit())
+   if(cg->comp()->target().is64Bit())
       {
       generateRRInstruction(cg, TR::InstOpCode::LLGTR, node, retValReg, retValReg);
       generateRSInstruction(cg, TR::InstOpCode::SRLG, node, retValReg, retValReg, 28);
@@ -13768,12 +13768,12 @@ void arraycmpWithPadHelper::generateVarCLCPaddingLoop()
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, loopStartLabel);
 
-   generateS390BranchInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::BRCTG : TR::InstOpCode::BRCT, node, paddingLenReg, loopTopLabel);
+   generateS390BranchInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::BRCTG : TR::InstOpCode::BRCT, node, paddingLenReg, loopTopLabel);
 
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK15, node, doneLabel); //if we finish the loop, then everything is equal and we're done
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, paddingUnequalLabel);
-   generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, retValReg, paddingUnequalRetValReg);
+   generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, retValReg, paddingUnequalRetValReg);
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK15, node, doneLabel);
 
    cg->stopUsingRegister(paddingReg);
@@ -14041,7 +14041,7 @@ TR::Register* arraycmpWithPadHelper::generate()
 
    if (isAddr1Const)
       {
-      if(TR::Compiler->target.is64Bit())
+      if(cg->comp()->target().is64Bit())
          {
          source1Reg = cg->allocateRegister();
          genLoadLongConstant(cg, node, addr1Const, source1Reg);
@@ -14055,7 +14055,7 @@ TR::Register* arraycmpWithPadHelper::generate()
 
    if (isAddr2Const)
       {
-      if(TR::Compiler->target.is64Bit())
+      if(cg->comp()->target().is64Bit())
          {
          source2Reg = cg->allocateRegister();
          genLoadLongConstant(cg, node, addr2Const, source2Reg);
@@ -14122,7 +14122,7 @@ TR::Register *OMR::Z::TreeEvaluator::integerNumberOfTrailingZeros(TR::Node *node
 
 TR::Register *OMR::Z::TreeEvaluator::integerBitCount(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT_FATAL(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15), "TR::popcnt IL only supported on z15+");
+   TR_ASSERT_FATAL(cg->comp()->target().cpu.getSupportsArch(TR::CPU::z15), "TR::popcnt IL only supported on z15+");
 
    TR::Register* resultReg = cg->allocateRegister();
    TR::Register* valueReg = cg->gprClobberEvaluate(node->getChild(0));
@@ -14648,7 +14648,7 @@ OMR::Z::TreeEvaluator::arraytranslateDecodeSIMDEvaluator(TR::Node * node, TR::Co
       inputLen = cg->gprClobberEvaluate(inputLenNode, true);
 
       // Sign extend the value if needed
-      if (TR::Compiler->target.is64Bit() && !(inputLenNode->getOpCode().isLong()))
+      if (cg->comp()->target().is64Bit() && !(inputLenNode->getOpCode().isLong()))
          {
          generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, inputLen,   inputLen);
          generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, inputLen16, inputLen);
@@ -14926,7 +14926,7 @@ OMR::Z::TreeEvaluator::arraytranslateEncodeSIMDEvaluator(TR::Node * node, TR::Co
       inputLen = cg->gprClobberEvaluate(inputLenNode, true);
 
       // Sign extend the value if needed
-      if (TR::Compiler->target.is64Bit() && !(inputLenNode->getOpCode().isLong()))
+      if (cg->comp()->target().is64Bit() && !(inputLenNode->getOpCode().isLong()))
          {
          generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, inputLen,   inputLen);
          generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, inputLen16, inputLen);
@@ -15235,7 +15235,7 @@ inlineStringHashCode(TR::Node* node, TR::CodeGenerator* cg, bool isCompressed)
    TR::Register* registerIndex = cg->gprClobberEvaluate(nodeIndex);
    TR::Register* registerCount = cg->gprClobberEvaluate(nodeCount);
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, registerIndex, registerIndex);
       generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, registerCount, registerCount);
@@ -15453,7 +15453,7 @@ inlineUTF16BEEncodeSIMD(TR::Node *node, TR::CodeGenerator *cg)
       generateRSInstruction(cg, TR::InstOpCode::getShiftLeftLogicalSingleOpCode(), node, inputLen, inputLen, 1);
 
       // Sign extend the value if needed
-      if (TR::Compiler->target.is64Bit() && !(inputLenNode->getOpCode().isLong()))
+      if (cg->comp()->target().is64Bit() && !(inputLenNode->getOpCode().isLong()))
          {
          generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, inputLen,   inputLen);
          generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, inputLen16, inputLen);
@@ -15886,7 +15886,7 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
             {
             // Return -1 or 1 based off the condition code of VFENE
             generateRRInstruction(cg, TR::InstOpCode::IPM, node, resultReg, resultReg);
-            if (TR::Compiler->target.is64Bit())
+            if (cg->comp()->target().is64Bit())
                {
                generateRSInstruction(cg, TR::InstOpCode::SLLG, node, resultReg, resultReg, 34);
                generateRSInstruction(cg, TR::InstOpCode::SRAG, node, resultReg, resultReg, 64-2);
@@ -16609,7 +16609,7 @@ OMR::Z::TreeEvaluator::vrandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    // last element index. mask4=0,1,2,3 -> last element index=15,7,3,1
    TR::MemoryReference *extractIndexMR = generateS390MemoryReference((1 << (4 - mask4)) - 1, cg);
 
-   TR::Register *resultReg = (TR::Compiler->target.is32Bit() && mask4 == 3) ? cg->allocateRegister() : cg->allocateRegister();
+   TR::Register *resultReg = (cg->comp()->target().is32Bit() && mask4 == 3) ? cg->allocateRegister() : cg->allocateRegister();
    generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, resultReg, workReg, extractIndexMR, mask4);
 
    cg->stopUsingRegister(workReg);
@@ -16814,11 +16814,11 @@ OMR::Z::TreeEvaluator::getvelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       }
    else if (dt == TR::VectorInt16 && !isUnsigned)
       {
-      generateRRInstruction(cg, (TR::Compiler->target.is64Bit()) ? TR::InstOpCode::LGHR : TR::InstOpCode::LHR, node, returnReg, returnReg);
+      generateRRInstruction(cg, (cg->comp()->target().is64Bit()) ? TR::InstOpCode::LGHR : TR::InstOpCode::LHR, node, returnReg, returnReg);
       }
    else if (dt == TR::VectorInt8 && !isUnsigned)
       {
-      generateRRInstruction(cg, (TR::Compiler->target.is64Bit()) ? TR::InstOpCode::LGBR : TR::InstOpCode::LBR, node, returnReg, returnReg);
+      generateRRInstruction(cg, (cg->comp()->target().is64Bit()) ? TR::InstOpCode::LGBR : TR::InstOpCode::LBR, node, returnReg, returnReg);
       }
 
    cg->stopUsingRegister(vectorReg);
@@ -17010,7 +17010,7 @@ OMR::Z::TreeEvaluator::genLoadForObjectHeadersMasked(TR::CodeGenerator *cg, TR::
 TR::Register*
 OMR::Z::TreeEvaluator::intrinsicAtomicAdd(TR::Node* node, TR::CodeGenerator* cg)
    {
-   TR_ASSERT_FATAL(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196), "Atomic add intrinsics are only supported z196+");
+   TR_ASSERT_FATAL(cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196), "Atomic add intrinsics are only supported z196+");
 
    TR::Node* addressNode = node->getChild(0);
    TR::Node* valueNode = node->getChild(1);
@@ -17041,7 +17041,7 @@ OMR::Z::TreeEvaluator::intrinsicAtomicAdd(TR::Node* node, TR::CodeGenerator* cg)
 TR::Register*
 OMR::Z::TreeEvaluator::intrinsicAtomicFetchAndAdd(TR::Node* node, TR::CodeGenerator* cg)
    {
-   TR_ASSERT_FATAL(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196), "Atomic add intrinsics are only supported z196+");
+   TR_ASSERT_FATAL(cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196), "Atomic add intrinsics are only supported z196+");
 
    TR::Node* addressNode = node->getChild(0);
    TR::Node* valueNode = node->getChild(1);

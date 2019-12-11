@@ -129,7 +129,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
       }
 #endif
 
-   TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(destAddr, branchInstructionStartAddress),
+   TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(destAddr, branchInstructionStartAddress),
                    "Helper Call is not reachable.");
    this->setSnippetDestAddr(destAddr);
 

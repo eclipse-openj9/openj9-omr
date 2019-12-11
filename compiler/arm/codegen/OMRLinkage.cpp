@@ -498,7 +498,7 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
    bool isHelper  = (conventions == TR_Helper);
    bool isVirtual = (isVirtualOrJNI && conventions == TR_Private);
    bool isSystem  = (conventions == TR_System);
-   bool bigEndian = TR::Compiler->target.cpu.isBigEndian();
+   bool bigEndian = self()->comp()->target().cpu.isBigEndian();
    int32_t   i;
    int32_t   totalSize = 0;
    uint32_t  numIntegerArgs = 0;

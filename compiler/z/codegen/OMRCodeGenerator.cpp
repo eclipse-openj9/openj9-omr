@@ -279,7 +279,7 @@ OMR::Z::CodeGenerator::lowerTreeIfNeeded(
    OMR::CodeGenerator::lowerTreeIfNeeded(node, childNumberOfNode, parent, tt);
 
    // Z
-   if (TR::Compiler->target.cpu.isZ() &&
+   if (self()->comp()->target().cpu.isZ() &&
        (node->getOpCode().isLoadVar() || node->getOpCode().isStore()) &&
        node->getOpCode().isIndirect())
       {
@@ -292,7 +292,7 @@ OMR::Z::CodeGenerator::lowerTreeIfNeeded(
       TR::Node* index = NULL;
       TR::ILOpCodes addOp, subOp, constOp;
 
-      if (TR::Compiler->target.is64Bit())
+      if (self()->comp()->target().is64Bit())
          {
          addOp = TR::aladd;
          subOp = TR::lsub;
@@ -344,7 +344,7 @@ OMR::Z::CodeGenerator::lowerTreeIfNeeded(
          // traceMsg(comp(), "&&& Found pattern root=%llx add1=%llx add2=%llx const1=%llx sub=%llx const2=%llx\n", node, add1, add2, const1, sub, const2);
 
          intptrj_t offset = 0;
-         if (TR::Compiler->target.is64Bit())
+         if (self()->comp()->target().is64Bit())
             {
             offset = const1->getLongInt();
             if (const2)
@@ -365,7 +365,7 @@ OMR::Z::CodeGenerator::lowerTreeIfNeeded(
 
          TR::Node* newAdd2 = TR::Node::create(addOp, 2, base, index);
          TR::Node* newConst = TR::Node::create(constOp, 0);
-         if (TR::Compiler->target.is64Bit())
+         if (self()->comp()->target().is64Bit())
             newConst->setLongInt(offset);
          else
             newConst->setInt(offset);
@@ -391,7 +391,7 @@ bool OMR::Z::CodeGenerator::canTransformUnsafeCopyToArrayCopy()
 
 bool OMR::Z::CodeGenerator::supportsDirectIntegralLoadStoresFromLiteralPool()
    {
-   return TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10);
+   return self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10);
    }
 
 OMR::Z::CodeGenerator::CodeGenerator()
@@ -429,14 +429,14 @@ OMR::Z::CodeGenerator::CodeGenerator()
    bool enableBranchPreload = comp->getOption(TR_EnableBranchPreload);
    bool disableBranchPreload = comp->getOption(TR_DisableBranchPreload);
 
-   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12)))
+   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && self()->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12)))
       self()->setEnableBranchPreload();
    else
       self()->setDisableBranchPreload();
 
    static bool bpp = (feGetEnv("TR_BPRP")!=NULL);
 
-   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12)))
+   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && self()->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12)))
       self()->setEnableBranchPreloadForCalls();
    else
       self()->setDisableBranchPreloadForCalls();
@@ -492,7 +492,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
    self()->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       {
       self()->setSupportsTranslateAndTestCharString();
 
@@ -511,7 +511,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       comp->setOption(TR_DisableTraps);
       }
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       self()->setSupportsAtomicLoadAndAdd();
       }
@@ -522,17 +522,17 @@ OMR::Z::CodeGenerator::CodeGenerator()
       comp->setOption(TR_DisableMaxMinOptimization);
       }
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12))
+   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12))
       {
       self()->setSupportsZonedDFPConversions();
-      if (TR::Compiler->target.cpu.getSupportsTransactionalMemoryFacility() && !comp->getOption(TR_DisableTM))
+      if (self()->comp()->target().cpu.getSupportsTransactionalMemoryFacility() && !comp->getOption(TR_DisableTM))
          self()->setSupportsTM();
       }
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
+   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
       self()->setSupportsFastPackedDFPConversions();
 
-   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z14))
+   if (!self()->comp()->target().cpu.getSupportsArch(TR::CPU::z14))
       {
       comp->setOption(TR_DisableVectorBCD);
       }
@@ -551,7 +551,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    // Set up vector register support for machine after zEC12.
    // This should also happen before prepareForGRA
 
-   if(!(TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13) && !comp->getOption(TR_DisableZ13)))
+   if(!(self()->comp()->target().cpu.getSupportsArch(TR::CPU::z13) && !comp->getOption(TR_DisableZ13)))
      {
      comp->setOption(TR_DisableZ13LoadAndMask);
      comp->setOption(TR_DisableZ13LoadImmediateOnCond);
@@ -833,7 +833,7 @@ OMR::Z::CodeGenerator::mulDecompositionCostIsJustified(int32_t numOfOperations, 
    {
    bool trace = self()->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       int32_t numCycles = 0;
       numCycles = numOfOperations+1;
@@ -848,7 +848,7 @@ OMR::Z::CodeGenerator::mulDecompositionCostIsJustified(int32_t numOfOperations, 
             traceMsg(self()->comp(), "MulDecomp cost is too high. numCycle=%i(max:3)\n", numCycles);
       return numCycles <= 3;
       }
-   else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+   else if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       {
       int32_t numCycles = 0;
       numCycles = numOfOperations+1;
@@ -970,7 +970,7 @@ OMR::Z::CodeGenerator::isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild)
    {
    static char * disableASI = feGetEnv("TR_DISABLEASI");
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       {
       if (!disableASI && self()->isMemoryUpdate(node) && valueChild->getSecondChild()->getOpCode().isLoadConst())
          {
@@ -983,7 +983,7 @@ OMR::Z::CodeGenerator::isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild)
                return true;
                }
             }
-         else if (TR::Compiler->target.is64Bit() && (valueChild->getOpCodeValue() == TR::ladd || valueChild->getOpCodeValue() == TR::lsub))
+         else if (self()->comp()->target().is64Bit() && (valueChild->getOpCodeValue() == TR::ladd || valueChild->getOpCodeValue() == TR::lsub))
             {
             int64_t value = valueChild->getSecondChild()->getLongInt();
 
@@ -1085,7 +1085,7 @@ OMR::Z::CodeGenerator::beginInstructionSelection()
 
          cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
 
-         if (TR::Compiler->target.is64Bit())
+         if (self()->comp()->target().is64Bit())
             {
             cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
             }
@@ -1534,7 +1534,7 @@ OMR::Z::CodeGenerator::isLitPoolFreeForAssignment()
       {
       litPoolRegIsFree = true;
       }
-   else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) && !self()->anyLitPoolSnippets())
+   else if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && !self()->anyLitPoolSnippets())
       {
       litPoolRegIsFree = true;
       }
@@ -2109,7 +2109,7 @@ OMR::Z::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelp
       case TR::SymbolReferenceTable::atomicAddSymbol:
       case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
          {
-         result = TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196);
+         result = self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196);
          break;
          }
 
@@ -2212,7 +2212,7 @@ OMR::Z::CodeGenerator::anyLitPoolSnippets()
 bool
 OMR::Z::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
    {
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       return (!self()->comp()->getOption(TR_DisableUTF16BEEncoder) ||
                (self()->getSupportsVectorRegisters() && !self()->comp()->getOption(TR_DisableSIMDUTF16BEEncoder)));
@@ -2247,7 +2247,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    //
    if (self()->comp()->getJittedMethodSymbol()->isJNI() && !self()->comp()->getOption(TR_FullSpeedDebug))
       {
-      data.preProcInstruction = TR::Compiler->target.is64Bit() ?
+      data.preProcInstruction = self()->comp()->target().is64Bit() ?
          data.cursorInstruction->getNext()->getNext()->getNext() :
          data.cursorInstruction->getNext()->getNext();
       }
@@ -2420,7 +2420,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);
    // need to reset constant data snippets offset for inlineEXTarget peephole optimization
    static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
-   if (!(bool)disableEXRLDispatch && TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+   if (!(bool)disableEXRLDispatch && self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       {
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets();
       }
@@ -2923,7 +2923,7 @@ OMR::Z::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node * node)
          {
          int64_t value = getIntegralValue(node->getSecondChild());
 
-         if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) && value >= MIN_IMMEDIATE_BYTE_VAL && value <= MAX_IMMEDIATE_BYTE_VAL)
+         if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12) && value >= MIN_IMMEDIATE_BYTE_VAL && value <= MAX_IMMEDIATE_BYTE_VAL)
             {
             return maxGPRs - 2;   // CLGIJ R,IMM,LAB,MASK, last instruction on block boundary
             }
@@ -3965,7 +3965,7 @@ OMR::Z::CodeGenerator::createLinkage(TR_LinkageConventions lc)
         // no private linkage, fall through to system
 
       case TR_System:
-         if (TR::Compiler->target.isLinux())
+         if (self()->comp()->target().isLinux())
             linkage = new (self()->trHeapMemory()) TR::S390zLinuxSystemLinkage(self());
          else
             linkage = new (self()->trHeapMemory()) TR::S390zOSSystemLinkage(self());
@@ -4011,7 +4011,7 @@ OMR::Z::CodeGenerator::createLiteralPoolSnippet(TR::Node * node)
          if (node->isClassUnloadingConst())
             {
             TR_ASSERT(0, "Shouldn't come here, isClassUnloadingConst is done in aloadHelper");
-            if (TR::Compiler->target.is64Bit())
+            if (self()->comp()->target().is64Bit())
                {
                targetSnippet = self()->Create8ByteConstant(node, value, true);
                }
@@ -4026,7 +4026,7 @@ OMR::Z::CodeGenerator::createLiteralPoolSnippet(TR::Node * node)
             }
          else
             {
-            if (TR::Compiler->target.is64Bit())
+            if (self()->comp()->target().is64Bit())
                {
                targetSnippet = self()->findOrCreate8ByteConstant(0, value);
                }
@@ -4100,7 +4100,7 @@ OMR::Z::CodeGenerator::Create8ByteConstant(TR::Node * node, int64_t c, bool writ
 TR::S390WritableDataSnippet *
 OMR::Z::CodeGenerator::CreateWritableConstant(TR::Node * node)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       {
       return (TR::S390WritableDataSnippet *) self()->Create8ByteConstant(node, 0, true);
       }
@@ -4400,7 +4400,7 @@ OMR::Z::CodeGenerator::canUseRelativeLongInstructions(int64_t value)
    {
    if ((value < 0) || (value % 2 != 0)) return false;
 
-   if (TR::Compiler->target.isLinux())
+   if (self()->comp()->target().isLinux())
       {
       intptrj_t codeCacheBase = (intptrj_t)(self()->getCodeCache()->getCodeBase());
       intptrj_t codeCacheTop = (intptrj_t)(self()->getCodeCache()->getCodeTop());
@@ -4582,8 +4582,8 @@ bool OMR::Z::CodeGenerator::isActiveCompareCC(TR::InstOpCode::Mnemonic opcd, TR:
       TR::Register* ccSrcReg = ccInst->srcRegArrElem(0);
 
       // On z10 trueCompElimination may swap the previous compare operands, so give up early
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10) &&
-          !TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+      if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10) &&
+          !self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
          {
          if (tReg->getKind() != TR_FPR)
             {
@@ -4765,7 +4765,7 @@ bool OMR::Z::CodeGenerator::isILOpCodeSupported(TR::ILOpCodes o)
 
 bool  OMR::Z::CodeGenerator::needs64bitPrecision(TR::Node *node)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (self()->comp()->target().is64Bit())
       return true;
    else
       return false;
@@ -5395,10 +5395,10 @@ OMR::Z::CodeGenerator::opCodeIsNoOpOnThisPlatform(TR::ILOpCode &opCode)
    {
    TR::ILOpCodes op = opCode.getOpCodeValue();
 
-   if ((op == TR::a2i || op == TR::i2a) && TR::Compiler->target.is32Bit())
+   if ((op == TR::a2i || op == TR::i2a) && self()->comp()->target().is32Bit())
       return true;
 
-   if ((op == TR::a2l || op == TR::l2a) && TR::Compiler->target.is64Bit() &&
+   if ((op == TR::a2l || op == TR::l2a) && self()->comp()->target().is64Bit() &&
        !self()->comp()->useCompressedPointers())
       return true;
 
@@ -5462,7 +5462,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
     * Prior to z14, vector operations that operated on floating point numbers only supported
     * Doubles. On z14 and onward, Float type floating point numbers are supported as well.
     */
-   if (dt == TR::Float && !TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z14))
+   if (dt == TR::Float && !self()->comp()->target().cpu.getSupportsArch(TR::CPU::z14))
       {
       return false;
       }
@@ -6040,6 +6040,6 @@ bool
 OMR::Z::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
    {
    return
-      !TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||
+      !self()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||
       self()->comp()->getOption(TR_StressTrampolines);
    }

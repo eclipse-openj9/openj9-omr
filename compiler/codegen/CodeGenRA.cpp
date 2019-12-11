@@ -133,7 +133,7 @@ OMR::CodeGenerator::estimateRegisterPressure(TR::Node *node, int32_t &registerPr
                {
                registerPressure--;
                if ((node->getType().isInt64()) &&
-                   TR::Compiler->target.is32Bit())
+                   self()->comp()->target().is32Bit())
                   registerPressure--;
                }
 
@@ -229,7 +229,7 @@ OMR::CodeGenerator::estimateRegisterPressure(TR::Node *node, int32_t &registerPr
                   {
                   registerPressure++;
                   if ((node->getType().isInt64()) &&
-                      TR::Compiler->target.is32Bit())
+                      self()->comp()->target().is32Bit())
                      registerPressure++;
                   }
                }
@@ -247,7 +247,7 @@ OMR::CodeGenerator::estimateRegisterPressure(TR::Node *node, int32_t &registerPr
             //
             if (highRegisterPressureOpCode ||
                 ((node->getType().isInt64()) &&
-                 TR::Compiler->target.is32Bit() &&
+                 self()->comp()->target().is32Bit() &&
                  (node->getOpCode().isMul() ||
                   node->getOpCode().isDiv() ||
                   node->getOpCode().isRem() ||
@@ -1177,7 +1177,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
          {
          TR_GlobalRegisterNumber lowRegisterNumber = bvi.getNextElement();
 
-         if (TR::Compiler->target.is32Bit() && rc->getDataType() == TR::Int64)
+         if (self()->comp()->target().is32Bit() && rc->getDataType() == TR::Int64)
             highRegisterNumber = bvi.getNextElement();
          else
             highRegisterNumber = -1;
@@ -2192,9 +2192,9 @@ bool OMR::CodeGenerator::isLoadAlreadyAssignedOnEntry(TR::Node *node,  TR_Regist
 uint8_t OMR::CodeGenerator::gprCount(TR::DataType type,int32_t size)
    {
    if (type.isAggregate())
-      return (TR::Compiler->target.is32Bit() && !self()->use64BitRegsOn32Bit() && size > 4 && size <=  8) ? 2 : 1;
+      return (self()->comp()->target().is32Bit() && !self()->use64BitRegsOn32Bit() && size > 4 && size <=  8) ? 2 : 1;
 
-   return (type.isInt64() && TR::Compiler->target.is32Bit() && !self()->use64BitRegsOn32Bit())? 2 : (type.isIntegral() || type.isAddress())? 1 : 0;
+   return (type.isInt64() && self()->comp()->target().is32Bit() && !self()->use64BitRegsOn32Bit())? 2 : (type.isIntegral() || type.isAddress())? 1 : 0;
    }
 
 TR::CodeGenerator::TR_SimulatedNodeState &

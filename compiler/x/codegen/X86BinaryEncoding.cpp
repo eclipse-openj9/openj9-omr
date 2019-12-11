@@ -80,7 +80,7 @@ int32_t memoryBarrierRequired(
       bool onlyAskingAboutFences)
    {
    TR::Compilation *comp = cg->comp();
-   if (!TR::Compiler->target.isSMP())
+   if (!comp->target().isSMP())
       return NoFence;
 
    // LOCKed instructions are serializing instructions and implicitly handle
@@ -706,7 +706,7 @@ uint8_t *TR::X86FenceInstruction::generateBinaryEncoding()
 
 int32_t TR::X86VirtualGuardNOPInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   setEstimatedBinaryLength(TR::Compiler->target.is64Bit() ? 5 : 6); //TODO:AMD64: What if patched instruction needs a Rex?  Is 6 enough?
+   setEstimatedBinaryLength(self()->cg()->comp()->target().is64Bit() ? 5 : 6); //TODO:AMD64: What if patched instruction needs a Rex?  Is 6 enough?
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -786,7 +786,7 @@ uint8_t *TR::X86VirtualGuardNOPInstruction::generateBinaryEncoding()
    TR::Instruction *instToBePatched = cg()->getInstructionToBePatched(this);
 
    int32_t shortJumpWidth = 2;
-   int32_t longJumpWidth = TR::Compiler->target.is64Bit() ? 5 : 6;
+   int32_t longJumpWidth = cg()->comp()->target().is64Bit() ? 5 : 6;
 
    _nopSize = 0;
 
@@ -1218,7 +1218,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
          {
          intptrj_t targetAddress = (int32_t)getSourceImmediate();
 
-         if (TR::Compiler->target.is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
+         if (cg()->comp()->target().is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
             {
             cg()->redoTrampolineReservationIfNecessary(this, getSymbolReference());
             }
@@ -1231,10 +1231,10 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
             // Compute method's jit entry point
             //
             uint8_t *start = cg()->getCodeStart();
-            if (TR::Compiler->target.is64Bit())
+            if (comp->target().is64Bit())
                {
                start += TR_LinkageInfo::get(start)->getReservedWord();
-               TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange((intptrj_t)start, nextInstructionAddress),
+               TR_ASSERT_FATAL(comp->target().cpu.isTargetWithinRIPRange((intptrj_t)start, nextInstructionAddress),
                                "Method start must be within RIP range");
                cg()->fe()->reserveTrampolineIfNecessary(comp, getSymbolReference(), true);
                }
@@ -1269,7 +1269,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                //
                TR::MethodSymbol *methodSym = sym->getMethodSymbol();
 
-               if (TR::Compiler->target.is64Bit())
+               if (self()->cg()->comp()->target().is64Bit())
                   {
                   // Obtain the actual target of this call instruction.
                   //
@@ -1308,7 +1308,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                   {
                   // we need to reserve trampoline in all cases, since methods can get recompiled
                   // and we might need one in the future.
-                  if (TR::Compiler->target.is64Bit())
+                  if (cg()->comp()->target().is64Bit())
                      cg()->fe()->reserveTrampolineIfNecessary(comp, getSymbolReference(), true);
 
                   if (isTrampolineRequired)
@@ -1317,7 +1317,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                      }
                   }
 
-               TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(targetAddress, nextInstructionAddress),
+               TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinRIPRange(targetAddress, nextInstructionAddress),
                                "Direct call target must be reachable directly");
                }
             }
@@ -1404,7 +1404,7 @@ TR::X86RegInstruction::enlarge(int32_t requestedEnlargementSize, int32_t maxEnla
    int32_t enlargementSize = std::min(requestedEnlargementSize, maxEnlargementSize);
 
    TR::Compilation *comp = cg()->comp();
-   if (  TR::Compiler->target.is64Bit()
+   if (comp->target().is64Bit()
       && !getOpCode().info().hasMandatoryPrefix()
       && performTransformation(comp, "O^O Enlarging instruction %p by %d bytes by repeating the REX prefix\n", this, enlargementSize))
       {
@@ -1901,7 +1901,7 @@ int32_t TR::X86MemInstruction::estimateBinaryLength(int32_t currentEstimate)
    if (barrier & NeedsExplicitBarrier)
       length += estimateMemoryBarrierBinaryLength(barrier, cg());
 
-   int32_t patchBoundaryPadding = (TR::Compiler->target.isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
+   int32_t patchBoundaryPadding = (cg()->comp()->target().isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
 
    setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + length + patchBoundaryPadding);
 
@@ -2092,7 +2092,7 @@ int32_t TR::X86MemImmInstruction::estimateBinaryLength(int32_t currentEstimate)
    else
       length++;
 
-   uint32_t patchBoundaryPadding = (TR::Compiler->target.isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
+   uint32_t patchBoundaryPadding = (cg()->comp()->target().isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
 
    setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + length + patchBoundaryPadding);
 
@@ -2291,7 +2291,7 @@ int32_t TR::X86MemRegImmInstruction::estimateBinaryLength(int32_t currentEstimat
    else
       length++;
 
-   int32_t patchBoundaryPadding = (TR::Compiler->target.isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
+   int32_t patchBoundaryPadding = (cg()->comp()->target().isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
 
    setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + length + patchBoundaryPadding);
    return currentEstimate + getEstimatedBinaryLength();
@@ -2344,7 +2344,7 @@ int32_t TR::X86RegMemInstruction::estimateBinaryLength(int32_t currentEstimate)
    if (barrier & NeedsExplicitBarrier)
       length += estimateMemoryBarrierBinaryLength(barrier, cg());
 
-   int32_t patchBoundaryPadding = (TR::Compiler->target.isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
+   int32_t patchBoundaryPadding = (cg()->comp()->target().isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
 
    setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + rexRepeatCount() + length + patchBoundaryPadding);
    return currentEstimate + getEstimatedBinaryLength();
@@ -2471,7 +2471,7 @@ int32_t TR::X86RegMemImmInstruction::estimateBinaryLength(int32_t currentEstimat
    else
       length++;
 
-   int32_t patchBoundaryPadding = (TR::Compiler->target.isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
+   int32_t patchBoundaryPadding = (cg()->comp()->target().isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
 
    setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + length + patchBoundaryPadding);
 

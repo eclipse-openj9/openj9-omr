@@ -55,96 +55,36 @@ int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
 
    switch(type)
       {
-#if 0
-      case TR::Float:
-	 {
-	 ListIterator< TR::ARMConstant<float> >  fiterator(&_floatConstants);
-         TR::ARMConstant<float>                 *fcursor=fiterator.getFirst();
-
-         fin.fvalue = *(float *)v;
-         while (fcursor != NULL)
-	    {
-            fex.fvalue = fcursor->getConstantValue();
-            if (fin.ivalue == fex.ivalue)
-               break;
-            fcursor = fiterator.getNext();
-	    }
-         if (fcursor == NULL)
-	    {
-            fcursor = new (_cg->trHeapMemory()) TR::ARMConstant<float>(_cg, fin.fvalue);
-            _floatConstants.add(fcursor);
-            if (TR::Compiler->target.is64Bit() && !comp->getOption(TR_DisableTOC))
-	       {
-               ret = TR_ARMTableOfConstants::lookUp(fin.fvalue, _cg);
-               fcursor->setTOCOffset(ret);
-	       }
-	    }
-         ret = fcursor->getTOCOffset();
-         if (TR::Compiler->target.is32Bit() || ret==PTOC_FULL_INDEX)
-            fcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
-         }
-         break;
-
-      case TR::Double:
-	 {
-	 ListIterator< TR::ARMConstant<double> > diterator(&_doubleConstants);
-         TR::ARMConstant<double>                *dcursor=diterator.getFirst();
-
-         din.dvalue = *(double *)v;
-         while (dcursor != NULL)
-	    {
-            dex.dvalue = dcursor->getConstantValue();
-            if (din.lvalue == dex.lvalue)
-               break;
-            dcursor = diterator.getNext();
-	    }
-         if (dcursor == NULL)
-	    {
-            dcursor = new (_cg->trHeapMemory()) TR::ARMConstant<double>(_cg, din.dvalue);
-            _doubleConstants.add(dcursor);
-            if (TR::Compiler->target.is64Bit() && !comp->getOption(TR_DisableTOC))
-	       {
-               ret = TR_ARMTableOfConstants::lookUp(din.dvalue, _cg);
-               dcursor->setTOCOffset(ret);
-	       }
-	    }
-         ret = dcursor->getTOCOffset();
-         if (TR::Compiler->target.is32Bit() || ret==PTOC_FULL_INDEX)
-            dcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
-         }
-         break;
-#endif
       case TR::Address:
-	 {
-	 ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
+         {
+         ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
          TR::ARMConstant<intptrj_t>                 *acursor=aiterator.getFirst();
 
          ain = *(intptrj_t *)v;
          while (acursor != NULL)
-	    {
-            aex = acursor->getConstantValue();
-            // if pointers require relocation, then not all pointers may be relocated for the same reason
-            //   so be conservative and do not combine them (e.g. HCR versus profiled inlined site enablement)
-            if (ain == aex &&
-                (!cg()->profiledPointersRequireRelocation() || acursor->getNode() == node))
-               break;
-            acursor = aiterator.getNext();
-	    }
+            {
+             aex = acursor->getConstantValue();
+             // if pointers require relocation, then not all pointers may be relocated for the same reason
+             //   so be conservative and do not combine them (e.g. HCR versus profiled inlined site enablement)
+             if (ain == aex &&
+                 (!cg()->profiledPointersRequireRelocation() || acursor->getNode() == node))
+                break;
+             acursor = aiterator.getNext();
+             }
          if (acursor && acursor->isUnloadablePicSite()!=isUnloadablePicSite)
             {
             TR_ASSERT(0, "Existing address constant does not have a matching unloadable state.\n" );
             acursor = NULL; // If asserts are turned off then we should just create a duplicate constant
             }
          if (acursor == NULL)
-	    {
+            {
             acursor = new (_cg->trHeapMemory()) TR::ARMConstant<intptrj_t>(_cg, ain, node, isUnloadablePicSite);
             _addressConstants.add(acursor);
-	    }
-         acursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
+            }
+            acursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
          }
          break;
       default:
-         //TR_ASSERT(0, "Only float and address constants are supported. Data type is %d.\n", type);
          TR_ASSERT(0, "Only address constants are supported. Data type is %d.\n", type);
       }
 
@@ -153,98 +93,7 @@ int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
 
 bool TR::ARMConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, TR::Instruction **q, bool remove)
    {
-   int32_t count = TR::Compiler->target.is64Bit()?4:2;
-#if 0
-   ListIterator< TR::ARMConstant<double> >  diterator(&_doubleConstants);
-   TR::ARMConstant<double>                 *dcursor=diterator.getFirst();
-
-   while (dcursor != NULL)
-      {
-      TR_Array<TR::Instruction *> &requestors = dcursor->getRequestors();
-      if (requestors.size() > 0)
-         {
-         for (int32_t i = 0; i < requestors.size(); i+=count)
-            {
-            if (count == 2)
-               {
-               if (requestors[i] == nibble || requestors[i+1] == nibble)
-                  {
-                  q[0] = requestors[i];
-                  q[1] = requestors[i+1];
-                  q[2] = NULL;
-                  q[3] = NULL;
-                  if (remove)
-                     {
-                     requestors.remove(i+1);
-                     requestors.remove(i);
-                     }
-                  return true;
-                  }
-               }
-            else // count == 4
-               {
-               int32_t j;
-               if (requestors[i] == nibble || requestors[i+1] == nibble || requestors[i+2] == nibble || requestors[i+3] == nibble)
-                  {
-                  for (j = 0; j < count; j++)
-                      q[j] = requestors[i+j];
-                  if (remove)
-                     {
-                     for (j = count-1; j >= 0 ; j--)
-                         requestors.remove(i+j);
-                     }
-                  return true;
-                  }
-               }
-            }
-         }
-      dcursor = diterator.getNext();
-      }
-   ListIterator< TR::ARMConstant<float> >  fiterator(&_floatConstants);
-   TR::ARMConstant<float>               *fcursor=fiterator.getFirst();
-   while (fcursor != NULL)
-      {
-      TR_Array<TR::Instruction *> &requestors = fcursor->getRequestors();
-      if (requestors.size() > 0)
-         {
-         for (int32_t i = 0; i < requestors.size(); i+=count)
-            {
-            if (count == 2)
-               {
-               if (requestors[i] == nibble || requestors[i+1] == nibble)
-                  {
-                  q[0] = requestors[i];
-                  q[1] = requestors[i+1];
-                  q[2] = NULL;
-                  q[3] = NULL;
-                  if (remove)
-                     {
-                     requestors.remove(i+1);
-                     requestors.remove(i);
-                     }
-                  return true;
-                  }
-               }
-            else // count == 4
-               {
-               int32_t j = 0;
-               if (requestors[i] == nibble || requestors[i+1] == nibble || requestors[i+2] == nibble || requestors[i+3] == nibble)
-                  {
-                  for (j = 0; j < count; j++)
-                      q[j] = requestors[i+j];
-                  if (remove)
-                     {
-                     for (j = count-1; j >= 0 ; j--)
-                         requestors.remove(i+j);
-                     }
-                  return true;
-                  }
-               }
-            }
-         }
-      fcursor = fiterator.getNext();
-      }
-#endif
+   int32_t count = cg()->comp()->target().is64Bit()?4:2;
    ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
    TR::ARMConstant<intptrj_t>               *acursor=aiterator.getFirst();
    while (acursor != NULL)
@@ -471,7 +320,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
 	       // Register an unload assumption on the lower 32bit of the class constant.
 	       // The patching code thinks it's low bit tagging an instruction not a class pointer!!
                cg()->
-               jitAddPicToPatchOnClassUnload((void *)acursor->getConstantValue(), (void *)(codeCursor+((TR::Compiler->target.is64Bit())?4:0)) );
+               jitAddPicToPatchOnClassUnload((void *)acursor->getConstantValue(), (void *)(codeCursor+((cg()->comp()->target().is64Bit())?4:0)) );
                }
             }
 
@@ -514,43 +363,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
 
 uint32_t TR::ARMConstantDataSnippet::getLength()
    {
-#if 0
-   if (TR::Compiler->target.is64Bit())
-      {
-      ListIterator< TR::ARMConstant<double> >  diterator(&_doubleConstants);
-      TR::ARMConstant<double>                 *dcursor=diterator.getFirst();
-      ListIterator< TR::ARMConstant<float> >   fiterator(&_floatConstants);
-      TR::ARMConstant<float>                  *fcursor=fiterator.getFirst();
-      ListIterator< TR::ARMConstant<intptrj_t> >   aiterator(&_addressConstants);
-      TR::ARMConstant<intptrj_t>              *acursor=aiterator.getFirst();
-      uint32_t length=0;
-
-      while (dcursor!=NULL)
-	 {
-         if (dcursor->getRequestors().size() > 0)
-            length += 8;
-         dcursor = diterator.getNext();
-	 }
-
-      while (fcursor!=NULL)
-	 {
-         if (fcursor->getRequestors().size() > 0)
-            length += 4;
-         fcursor = fiterator.getNext();
-	 }
-     while (acursor!=NULL)
-	 {
-         if (acursor->getRequestors().size() > 0)
-            length += sizeof(intptrj_t);
-         acursor = aiterator.getNext();
-	 }
-      return length;
-      }
-   else
-      return _doubleConstants.getSize()*8 + _floatConstants.getSize()*4 + _addressConstants.getSize()*4;
-#else
-      return _addressConstants.getSize()*4;
-#endif
+   return _addressConstants.getSize()*4;
    }
 
 
@@ -567,33 +380,6 @@ void TR::ARMConstantDataSnippet::print(TR::FILE *outFile)
 
    trfprintf(outFile, "\n%08x\t\t\t\t\t; Constant Data", codeCursor-codeStart);
 
-#if 0
-   ListIterator< TR::ARMConstant<double> >  diterator(&_doubleConstants);
-   TR::ARMConstant<double>                 *dcursor=diterator.getFirst();
-   while (dcursor != NULL)
-      {
-      if (TR::Compiler->target.is32Bit() || dcursor->getRequestors().size()>0)
-	 {
-         trfprintf(outFile, "\n%08x %08x %08x\t\t; %16f Double", codeCursor-codeStart,
-                 *(int32_t *)codeCursor, *(int32_t *)(codeCursor+4), dcursor->getConstantValue());
-         codeCursor += 8;
-	 }
-      dcursor = diterator.getNext();
-      }
-
-   ListIterator< TR::ARMConstant<float> >  fiterator(&_floatConstants);
-   TR::ARMConstant<float>                 *fcursor=fiterator.getFirst();
-   while (fcursor != NULL)
-      {
-      if (TR::Compiler->target.is32Bit() || fcursor->getRequestors().size()>0)
-	 {
-         trfprintf(outFile, "\n%08x %08x\t\t; %16f Float", codeCursor-codeStart,
-                 *(int32_t *)codeCursor, fcursor->getConstantValue());
-         codeCursor += 4;
-	 }
-      fcursor = fiterator.getNext();
-      }
-#endif
    ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
    TR::ARMConstant<intptrj_t>                 *acursor=aiterator.getFirst();
    while (acursor != NULL)

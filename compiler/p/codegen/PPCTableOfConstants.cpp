@@ -368,7 +368,7 @@ TR_PPCTableOfConstants::lookUp(int32_t val, struct TR_tocHashEntry *tmplate, int
       case TR_FLAG_tocFloatKey:
          hash[idx]._fKey = tmplate->_fKey;
          uintptrj_t slotValue;
-         if (TR::Compiler->target.cpu.isBigEndian())
+         if (comp->target().cpu.isBigEndian())
             slotValue = (*offsetInSlot == 0)?(((uintptrj_t)hash[idx]._fKey)<<32):(getTOCSlot(rval*sizeof(intptrj_t))|hash[idx]._fKey);
          else
             slotValue = (*offsetInSlot == 0)?((uintptrj_t)hash[idx]._fKey):(getTOCSlot(rval*sizeof(intptrj_t))|(((uintptrj_t)hash[idx]._fKey)<<32));

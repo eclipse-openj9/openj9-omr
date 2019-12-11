@@ -66,7 +66,7 @@ OMR::CodeGenerator::setUpStackSizeForCallNode(TR::Node *node)
       {
       int32_t roundedSize = node->getChild(i)->getRoundedSize();
 
-      if (TR::Compiler->target.is64Bit() && node->getChild(i)->getDataType() != TR::Address)
+      if (self()->comp()->target().is64Bit() && node->getChild(i)->getDataType() != TR::Address)
          {
          currentArgSize += roundedSize * 2;
          }

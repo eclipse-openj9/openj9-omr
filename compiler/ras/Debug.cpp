@@ -747,12 +747,12 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction *instr, uint8_t *curso
 
       // Print machine code in bytes on X86, in words on PPC,ARM,ARM64
       // Stop if we try to run over the buffer.
-      if (TR::Compiler->target.cpu.isX86())
+      if (_comp->target().cpu.isX86())
          {
          for (int i = 0; i < size && p1 - p0 + 3 < prefixWidth; i++, p1 += 3)
             sprintf(p1, " %02x", *cursor++);
          }
-      else if (TR::Compiler->target.cpu.isPower() || TR::Compiler->target.cpu.isARM() || TR::Compiler->target.cpu.isARM64())
+      else if (_comp->target().cpu.isPower() || _comp->target().cpu.isARM() || _comp->target().cpu.isARM64())
          {
          for (int i = 0; i < size && p1 - p0 + 9 < prefixWidth; i += 4, p1 += 9, cursor += 4)
             sprintf(p1, " %08x", *((uint32_t *)cursor));
@@ -833,7 +833,7 @@ TR_Debug::printSnippetLabel(TR::FILE *pOutFile, TR::LabelSymbol *label, uint8_t 
    trfprintf(pOutFile, ":");
    if (comment1)
       {
-      trfprintf(pOutFile, "\t\t%c %s", (TR::Compiler->target.cpu.isX86() && TR::Compiler->target.isLinux()) ? '#' : ';', comment1);
+      trfprintf(pOutFile, "\t\t%c %s", (_comp->target().cpu.isX86() && _comp->target().isLinux()) ? '#' : ';', comment1);
       if (comment2)
          trfprintf(pOutFile, " (%s)", comment2);
       }
@@ -2545,7 +2545,7 @@ TR_Debug::dumpMethodInstrs(TR::FILE *pOutFile, const char *title, bool dumpTrees
            crtLineNo = lastLineNoPrinted;
            }
 
-        bool printEveryLine = TR::Compiler->target.cpu.isZ() && TR::Compiler->target.isLinux();
+        bool printEveryLine = _comp->target().cpu.isZ() && _comp->target().isLinux();
         // Emit .line directive if there was change in line number, or source file or
         // inlined method state since last time
         if ((crtLineNo != -1) &&
@@ -2560,7 +2560,7 @@ TR_Debug::dumpMethodInstrs(TR::FILE *pOutFile, const char *title, bool dumpTrees
 
            int32_t lno;
 
-           if (TR::Compiler->target.cpu.isZ() && TR::Compiler->target.isLinux())
+           if (_comp->target().cpu.isZ() && _comp->target().isLinux())
               {
               lno = crtLineNo - 1;
               }
@@ -2597,7 +2597,7 @@ TR_Debug::dumpMethodInstrs(TR::FILE *pOutFile, const char *title, bool dumpTrees
          printS390OOLSequences(pOutFile);
 #endif
 #elif defined(TR_TARGET_X86)
-      if (TR::Compiler->target.cpu.isX86())
+      if (_comp->target().cpu.isX86())
          printX86OOLSequences(pOutFile);
 #endif
 
@@ -2773,7 +2773,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * inst, const char *title)
       return;
 
 #if defined(TR_TARGET_X86)
-   if (TR::Compiler->target.cpu.isX86())
+   if (_comp->target().cpu.isX86())
       {
       printx(pOutFile, inst);
       return;
@@ -2781,7 +2781,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * inst, const char *title)
 #endif
 
 #if defined(TR_TARGET_POWER)
-   if (TR::Compiler->target.cpu.isPower())
+   if (_comp->target().cpu.isPower())
       {
       print(pOutFile, inst);
       return;
@@ -2789,7 +2789,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * inst, const char *title)
 #endif
 
 #if defined(TR_TARGET_ARM)
-   if (TR::Compiler->target.cpu.isARM())
+   if (_comp->target().cpu.isARM())
       {
       print(pOutFile, inst);
       return;
@@ -2797,7 +2797,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * inst, const char *title)
 #endif
 
 #if defined(TR_TARGET_ARM64)
-   if (TR::Compiler->target.cpu.isARM64())
+   if (_comp->target().cpu.isARM64())
       {
       print(pOutFile, inst);
       return;
@@ -2805,7 +2805,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * inst, const char *title)
 #endif
 
 #if defined(TR_TARGET_S390)
-   if (TR::Compiler->target.cpu.isZ())
+   if (_comp->target().cpu.isZ())
       {
       printz(pOutFile, inst, title);
       return;
@@ -2821,7 +2821,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCRegisterMap * map)
       return;
 
 #if defined(TR_TARGET_X86)
-   if (TR::Compiler->target.cpu.isX86())
+   if (_comp->target().cpu.isX86())
       {
       printX86GCRegisterMap(pOutFile, map);
       return;
@@ -2829,7 +2829,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCRegisterMap * map)
 #endif
 
 #if defined(TR_TARGET_POWER)
-   if (TR::Compiler->target.cpu.isPower())
+   if (_comp->target().cpu.isPower())
       {
       printPPCGCRegisterMap(pOutFile, map);
       return;
@@ -2837,7 +2837,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCRegisterMap * map)
 #endif
 
 #if defined(TR_TARGET_ARM)
-   if (TR::Compiler->target.cpu.isARM())
+   if (_comp->target().cpu.isARM())
       {
       printARMGCRegisterMap(pOutFile, map);
       return;
@@ -2845,7 +2845,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCRegisterMap * map)
 #endif
 
 #if defined(TR_TARGET_S390)
-   if (TR::Compiler->target.cpu.isZ())
+   if (_comp->target().cpu.isZ())
       {
       printS390GCRegisterMap(pOutFile, map);
       return;
@@ -2853,7 +2853,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCRegisterMap * map)
 #endif
 
 #if defined(TR_TARGET_ARM64)
-   if (TR::Compiler->target.cpu.isARM64())
+   if (_comp->target().cpu.isARM64())
       {
       printARM64GCRegisterMap(pOutFile, map);
       return;
@@ -2900,15 +2900,15 @@ const char *
 TR_Debug::getName(TR::Snippet *snippet)
    {
 #if defined(TR_TARGET_X86)
-   if (TR::Compiler->target.cpu.isX86())
+   if (_comp->target().cpu.isX86())
       return getNamex(snippet);
 #endif
 #if defined(TR_TARGET_ARM)
-   if (TR::Compiler->target.cpu.isARM())
+   if (_comp->target().cpu.isARM())
       return getNamea(snippet);
 #endif
 #if defined(TR_TARGET_ARM64)
-   if (TR::Compiler->target.cpu.isARM64())
+   if (_comp->target().cpu.isARM64())
       return getNamea64(snippet);
 #endif
    return "<unknown snippet>"; // TODO: Return a more informative name
@@ -2918,35 +2918,35 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::Snippet * snippet)
    {
 #if defined(TR_TARGET_X86)
-   if (TR::Compiler->target.cpu.isX86())
+   if (_comp->target().cpu.isX86())
       {
       printx(pOutFile, snippet);
       return;
       }
 #endif
 #if defined(TR_TARGET_POWER)
-   if (TR::Compiler->target.cpu.isPower())
+   if (_comp->target().cpu.isPower())
       {
       printp(pOutFile, snippet);
       return;
       }
 #endif
 #if defined(TR_TARGET_ARM)
-   if (TR::Compiler->target.cpu.isARM())
+   if (_comp->target().cpu.isARM())
       {
       printa(pOutFile, snippet);
       return;
       }
 #endif
 #if defined(TR_TARGET_S390)
-   if (TR::Compiler->target.cpu.isZ())
+   if (_comp->target().cpu.isZ())
       {
       printz(pOutFile, (TR::Snippet *)snippet);
       return;
       }
 #endif
 #if defined(TR_TARGET_ARM64)
-   if (TR::Compiler->target.cpu.isARM64())
+   if (_comp->target().cpu.isARM64())
       {
       printa64(pOutFile, snippet);
       return;
@@ -2985,23 +2985,23 @@ TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
    if (reg->getRealRegister())
       {
 #if defined(TR_TARGET_X86)
-      if (TR::Compiler->target.cpu.isX86())
+      if (_comp->target().cpu.isX86())
          return getName((TR::RealRegister *)reg, size);
 #endif
 #if defined(TR_TARGET_POWER)
-      if (TR::Compiler->target.cpu.isPower())
+      if (_comp->target().cpu.isPower())
          return getName((TR::RealRegister *)reg, size);
 #endif
 #if defined(TR_TARGET_ARM)
-      if (TR::Compiler->target.cpu.isARM())
+      if (_comp->target().cpu.isARM())
          return getName((TR::RealRegister *)reg, size);
 #endif
 #if defined(TR_TARGET_S390)
-      if (TR::Compiler->target.cpu.isZ())
+      if (_comp->target().cpu.isZ())
          return getName(toRealRegister(reg), size);
 #endif
 #if defined(TR_TARGET_ARM64)
-      if (TR::Compiler->target.cpu.isARM64())
+      if (_comp->target().cpu.isARM64())
          return getName((TR::RealRegister *)reg, size);
 #endif
       TR_ASSERT(0, "TR_Debug::getName() ==> unknown target platform for given real register\n");
@@ -3070,19 +3070,19 @@ const char *TR_Debug::getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR_R
    {
    uint32_t realRegNum = _comp->cg()->getGlobalRegister(regNum);
 #if defined(TR_TARGET_X86)
-   if (TR::Compiler->target.cpu.isX86())
+   if (_comp->target().cpu.isX86())
       return getName(realRegNum, size);
 #endif
 #if defined(TR_TARGET_POWER)
-   if (TR::Compiler->target.cpu.isPower())
+   if (_comp->target().cpu.isPower())
       return getPPCRegisterName(realRegNum);
 #endif
 #if defined(TR_TARGET_S390)
-   if (TR::Compiler->target.cpu.isZ())
+   if (_comp->target().cpu.isZ())
       return getS390RegisterName(realRegNum);
 #endif
 #if defined(TR_TARGET_ARM)
-   if (TR::Compiler->target.cpu.isARM())
+   if (_comp->target().cpu.isARM())
       return getName(realRegNum, size);
 #endif
    return "???";
@@ -3141,7 +3141,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Register * reg, TR_RegisterSizes size)
    if (pOutFile == NULL)
       return;
 #if defined(TR_TARGET_S390)
-   if (reg == NULL && TR::Compiler->target.cpu.isZ()) // zero based ptr
+   if (reg == NULL && _comp->target().cpu.isZ()) // zero based ptr
       {
       trfprintf(pOutFile, "%s", "GPR0");
       return;
@@ -3151,35 +3151,35 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Register * reg, TR_RegisterSizes size)
    if (reg->getRealRegister())
       {
 #if defined(TR_TARGET_X86)
-      if (TR::Compiler->target.cpu.isX86())
+      if (_comp->target().cpu.isX86())
          {
          print(pOutFile, (TR::RealRegister *)reg, size);
          return;
          }
 #endif
 #if defined(TR_TARGET_POWER)
-      if (TR::Compiler->target.cpu.isPower())
+      if (_comp->target().cpu.isPower())
          {
          print(pOutFile, (TR::RealRegister *)reg, size);
          return;
          }
 #endif
 #if defined(TR_TARGET_ARM)
-      if (TR::Compiler->target.cpu.isARM())
+      if (_comp->target().cpu.isARM())
          {
          print(pOutFile, (TR::RealRegister *)reg, size);
          return;
          }
 #endif
 #if defined(TR_TARGET_S390)
-      if (TR::Compiler->target.cpu.isZ())
+      if (_comp->target().cpu.isZ())
          {
          print(pOutFile, toRealRegister(reg), size);
          return;
          }
 #endif
 #if defined(TR_TARGET_ARM64)
-      if (TR::Compiler->target.cpu.isARM64())
+      if (_comp->target().cpu.isARM64())
          {
          print(pOutFile, (TR::RealRegister *)reg, size);
          return;
@@ -3318,7 +3318,7 @@ TR_Debug::printGPRegisterStatus(TR::FILE *pOutFile, OMR::MachineConnector *machi
    if (pOutFile == NULL)
       return;
 #if defined(TR_TARGET_S390)
-   if (TR::Compiler->target.cpu.isZ())
+   if (_comp->target().cpu.isZ())
       {
       printGPRegisterStatus(pOutFile, (TR::Machine *)machine);
       return;
@@ -3331,7 +3331,7 @@ TR_Debug::printFPRegisterStatus(TR::FILE *pOutFile, OMR::MachineConnector *machi
    if (pOutFile == NULL)
       return;
 #if defined(TR_TARGET_S390)
-   if (TR::Compiler->target.cpu.isZ())
+   if (_comp->target().cpu.isZ())
       {
       printFPRegisterStatus(pOutFile, (TR::Machine *)machine);
       return;
@@ -3778,7 +3778,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          }
       }
 #ifdef TR_TARGET_X86
-   else if ((TR::Compiler->target.cpu.isI386() || TR::Compiler->target.cpu.isAMD64()) && !inDebugExtension())
+   else if ((_comp->target().cpu.isI386() || _comp->target().cpu.isAMD64()) && !inDebugExtension())
       {
       if (index < TR_LXRH)
          {
@@ -3822,7 +3822,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_outlinedPrologue_8preserved:         return "outlinedPrologue_8preserved";
             }
          }
-      else if (TR::Compiler->target.cpu.isI386())
+      else if (_comp->target().cpu.isI386())
          {
          switch (index)
             {
@@ -3883,7 +3883,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          }
       }
 #elif defined (TR_TARGET_POWER)
-   else if (TR::Compiler->target.cpu.isPower() && !inDebugExtension())
+   else if (_comp->target().cpu.isPower() && !inDebugExtension())
       {
       switch (index)
          {
@@ -4000,7 +4000,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          }
       }
 #elif defined (TR_TARGET_S390)
-   else if (TR::Compiler->target.cpu.isZ() && !inDebugExtension())
+   else if (_comp->target().cpu.isZ() && !inDebugExtension())
       {
       switch (index)
          {
@@ -4097,7 +4097,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          }
       }
 #elif defined (TR_TARGET_ARM)
-   else if (TR::Compiler->target.cpu.isARM() && !inDebugExtension())
+   else if (_comp->target().cpu.isARM() && !inDebugExtension())
       {
       switch (index)
          {
@@ -4231,7 +4231,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          }
       }
 #elif defined (TR_TARGET_ARM64)
-   else if (TR::Compiler->target.cpu.isARM64() && !inDebugExtension())
+   else if (_comp->target().cpu.isARM64() && !inDebugExtension())
       {
       switch (index)
          {

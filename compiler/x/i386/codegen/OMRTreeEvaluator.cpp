@@ -490,7 +490,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
                generateRegRegInstruction(MOV4RegReg, node, ecxReg, valueReg->getHighOrder(), cg);
 
                TR::MemoryReference  *cmpxchgMR = generateX86MemoryReference(node, cg);
-               generateMemInstruction (TR::Compiler->target.isSMP() ? LCMPXCHG8BMem : CMPXCHG8BMem, node, cmpxchgMR, deps, cg);
+               generateMemInstruction (cg->comp()->target().isSMP() ? LCMPXCHG8BMem : CMPXCHG8BMem, node, cmpxchgMR, deps, cg);
 
                cg->stopUsingRegister(eaxReg);
                cg->stopUsingRegister(edxReg);
@@ -498,7 +498,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
                cg->stopUsingRegister(ebxReg);
                }
             }
-         else if(symRef && symRef->isUnresolved() && symRef->getSymbol()->isVolatile() && (!comp->getOption(TR_DisableNewX86VolatileSupport) && TR::Compiler->target.is32Bit()) )
+         else if(symRef && symRef->isUnresolved() && symRef->getSymbol()->isVolatile() && (!comp->getOption(TR_DisableNewX86VolatileSupport) && cg->comp()->target().is32Bit()) )
             {
             TR_ASSERT( cg->getX86ProcessorInfo().supportsCMPXCHG8BInstruction(), "Assumption of support of the CMPXCHG8B instruction failed in lstoreEvaluator()" );
             eaxReg = cg->allocateRegister();
@@ -527,7 +527,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
             highMR->setProcessAsLongVolatileHigh();
 
             TR::MemoryReference  *cmpxchgMR = generateX86MemoryReference(node, cg);
-            generateMemInstruction (TR::Compiler->target.isSMP() ? LCMPXCHG8BMem : CMPXCHG8BMem, node, cmpxchgMR, deps, cg);
+            generateMemInstruction (cg->comp()->target().isSMP() ? LCMPXCHG8BMem : CMPXCHG8BMem, node, cmpxchgMR, deps, cg);
 
             cg->stopUsingRegister(eaxReg);
             cg->stopUsingRegister(edxReg);
@@ -3169,7 +3169,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::performLload(TR::Node *node, TR::Me
 
          generateRegRegInstruction (MOV4RegReg, node, ecxReg, highRegister, cg);
          generateRegRegInstruction (MOV4RegReg, node, ebxReg, lowRegister, cg);
-         generateMemInstruction ( TR::Compiler->target.isSMP() ? LCMPXCHG8BMem : CMPXCHG8BMem, node, sourceMR, deps, cg);
+         generateMemInstruction ( cg->comp()->target().isSMP() ? LCMPXCHG8BMem : CMPXCHG8BMem, node, sourceMR, deps, cg);
 
          cg->stopUsingRegister(ecxReg);
          cg->stopUsingRegister(ebxReg);
@@ -3756,7 +3756,7 @@ OMR::X86::I386::TreeEvaluator::lcmpsetEvaluator(TR::Node *node, TR::CodeGenerato
    deps->addPostCondition(compareReg->getLowOrder(),  TR::RealRegister::eax, cg);
    deps->addPostCondition(replaceReg->getHighOrder(), TR::RealRegister::ecx, cg);
    deps->addPostCondition(replaceReg->getLowOrder(),  TR::RealRegister::ebx, cg);
-   generateMemInstruction(TR::Compiler->target.isSMP() ? LCMPXCHG8BMem : CMPXCHG8BMem, node, memRef, deps, cg);
+   generateMemInstruction(cg->comp()->target().isSMP() ? LCMPXCHG8BMem : CMPXCHG8BMem, node, memRef, deps, cg);
 
    cg->stopUsingRegister(compareReg);
 

@@ -759,7 +759,7 @@ bool reduceLongOpToIntegerOp(OMR::ValuePropagation *vp, TR::Node *node, TR::VPCo
    // Adding this check because it is likely suboptimal on machines where you can use long registers to convert things to integers and insert conversion trees.
    // Conversion trees are not free.
    // LoadExtensions (and other codegen peepholes) should in theory catch uneeded conversions (like widening) as described in the case below on 64 bit platforms.
-   if (TR::Compiler->target.is64Bit() || vp->comp()->cg()->use64BitRegsOn32Bit())
+   if (vp->comp()->target().is64Bit() || vp->comp()->cg()->use64BitRegsOn32Bit())
       return false;
 
 
@@ -1169,7 +1169,7 @@ TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
                {
                TR::VPConstString *constString = baseVPConstraint->getClassType()->asConstString();
 
-               uintptrj_t offset = TR::Compiler->target.is64Bit() ? (uintptrj_t)index->getUnsignedLongInt() : (uintptrj_t)index->getUnsignedInt();
+               uintptrj_t offset = vp->comp()->target().is64Bit() ? (uintptrj_t)index->getUnsignedLongInt() : (uintptrj_t)index->getUnsignedInt();
                uintptrj_t chIdx = (offset - (uintptrj_t)TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2;
                uint16_t ch = constString->charAt(chIdx, vp->comp());
                if (ch != 0)
@@ -1195,7 +1195,7 @@ TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
                   if (constrainAnyIntLoadCriticalSection.hasVMAccess())
                      {
                      uintptrj_t arrayObj = knot->getPointer(idx);
-                     uintptrj_t offset = TR::Compiler->target.is64Bit()
+                     uintptrj_t offset = vp->comp()->target().is64Bit()
                                          ? (uintptrj_t)index->getUnsignedLongInt() : (uintptrj_t)index->getUnsignedInt();
                      uintptrj_t lengthInElements = TR::Compiler->om.getArrayLengthInElements(vp->comp(), arrayObj);
                      TR::DataType elementType = kobj->getPrimitiveArrayDataType();
@@ -1921,7 +1921,7 @@ static TR::Node *findArrayLengthNode(OMR::ValuePropagation *vp, TR::Node *node, 
 static TR::Node *findArrayIndexNode(OMR::ValuePropagation *vp, TR::Node *node, int32_t stride)
   {
   TR::Node *offset = node->getSecondChild();
-  bool usingAladd = (TR::Compiler->target.is64Bit()
+  bool usingAladd = (vp->comp()->target().is64Bit()
                      ) ?
           true : false;
 

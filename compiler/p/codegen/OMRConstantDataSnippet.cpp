@@ -81,14 +81,14 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             {
             fcursor = new (_cg->trHeapMemory()) PPCConstant<float>(_cg, fin.fvalue);
             _floatConstants.add(fcursor);
-            if (TR::Compiler->target.is64Bit())
+            if (comp->target().is64Bit())
                {
                ret = TR_PPCTableOfConstants::lookUp(fin.fvalue, _cg);
                }
             fcursor->setTOCOffset(ret);
             }
          ret = fcursor->getTOCOffset();
-         if (TR::Compiler->target.is32Bit() || ret==PTOC_FULL_INDEX)
+         if (comp->target().is32Bit() || ret==PTOC_FULL_INDEX)
             fcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
          }
          break;
@@ -110,14 +110,14 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             {
             dcursor = new (_cg->trHeapMemory()) PPCConstant<double>(_cg, din.dvalue);
             _doubleConstants.add(dcursor);
-            if (TR::Compiler->target.is64Bit())
+            if (comp->target().is64Bit())
                {
                ret = TR_PPCTableOfConstants::lookUp(din.dvalue, _cg);
                }
             dcursor->setTOCOffset(ret);
             }
          ret = dcursor->getTOCOffset();
-         if (TR::Compiler->target.is32Bit() || ret==PTOC_FULL_INDEX)
+         if (comp->target().is32Bit() || ret==PTOC_FULL_INDEX)
             dcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
          }
          break;
@@ -164,7 +164,7 @@ bool OMR::ConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, 
    {
    ListIterator< PPCConstant<double> >  diterator(&_doubleConstants);
    PPCConstant<double>                 *dcursor=diterator.getFirst();
-   int32_t count = TR::Compiler->target.is64Bit()?4:2;
+   int32_t count = cg()->comp()->target().is64Bit()?4:2;
 
    while (dcursor != NULL)
       {
@@ -421,7 +421,7 @@ OMR::ConstantDataSnippet::emitAddressConstant(
          // Register an unload assumption on the lower 32bit of the class constant.
          // The patching code thinks it's low bit tagging an instruction not a class pointer!!
          cg()->
-         jitAddPicToPatchOnClassUnload((void *)acursor->getConstantValue(), (void *)(codeCursor+((TR::Compiler->target.is64Bit())?4:0)) );
+         jitAddPicToPatchOnClassUnload((void *)acursor->getConstantValue(), (void *)(codeCursor+((cg()->comp()->target().is64Bit())?4:0)) );
          }
       }
 
@@ -481,7 +481,7 @@ uint8_t *OMR::ConstantDataSnippet::emitSnippetBody()
    int32_t size, count;
 
    setSnippetBinaryStart(codeCursor);
-   count = TR::Compiler->target.is64Bit()?4:2;
+   count = cg()->comp()->target().is64Bit()?4:2;
 
    // Align cursor to 8 bytes alignment
    codeCursor = (uint8_t *)((intptr_t)(codeCursor+7) & ~7);
@@ -563,7 +563,7 @@ void OMR::ConstantDataSnippet::print(TR::FILE *outFile)
    PPCConstant<double>                 *dcursor=diterator.getFirst();
    while (dcursor != NULL)
       {
-      if (TR::Compiler->target.is32Bit() || dcursor->getRequestors().size()>0)
+      if (cg()->comp()->target().is32Bit() || dcursor->getRequestors().size()>0)
          {
          trfprintf(outFile, "\n%08x %08x %08x\t\t; %16f Double", codeCursor-codeStart,
                  *(int32_t *)codeCursor, *(int32_t *)(codeCursor+4), dcursor->getConstantValue());
@@ -576,7 +576,7 @@ void OMR::ConstantDataSnippet::print(TR::FILE *outFile)
    PPCConstant<float>                 *fcursor=fiterator.getFirst();
    while (fcursor != NULL)
       {
-      if (TR::Compiler->target.is32Bit() || fcursor->getRequestors().size()>0)
+      if (cg()->comp()->target().is32Bit() || fcursor->getRequestors().size()>0)
          {
          trfprintf(outFile, "\n%08x %08x\t\t; %16f Float", codeCursor-codeStart,
                  *(int32_t *)codeCursor, fcursor->getConstantValue());

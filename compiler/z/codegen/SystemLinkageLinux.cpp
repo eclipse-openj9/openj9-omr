@@ -83,7 +83,7 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
    {
    setProperties(FirstParmAtFixedOffset);
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       setProperty(NeedsWidening);
       setProperty(PadFloatParms);
@@ -102,7 +102,7 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
                                                                 // This possibly assumes that we don't shuffle the return address register around elsewhere
    setRegisterFlag(TR::RealRegister::GPR15, Preserved);
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       setRegisterFlag(TR::RealRegister::FPR8, Preserved);
       setRegisterFlag(TR::RealRegister::FPR9, Preserved);
@@ -152,7 +152,7 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
    setFloatArgumentRegister(0, TR::RealRegister::FPR0);
    setFloatArgumentRegister(1, TR::RealRegister::FPR2);
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       setFloatArgumentRegister(2, TR::RealRegister::FPR4);
       setFloatArgumentRegister(3, TR::RealRegister::FPR6);
@@ -212,7 +212,7 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
    // x'1c0' see ICST_PAR in tpf/icstk.h
    setOffsetToFirstParm(448);
 #else
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       setOffsetToRegSaveArea(16);
       setGPRSaveAreaBeginOffset(48);
@@ -383,7 +383,7 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
       case TR::lcall:
       case TR::lcalli:
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg()->comp()->target().is64Bit())
             {
             returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
             }
@@ -474,7 +474,7 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
       switch (parmCursor->getDataType())
          {
          case TR::Int64:
-            if(TR::Compiler->target.is32Bit())
+            if(cg()->comp()->target().is32Bit())
                {
                //make sure that we can fit the entire value in registers, not half in registers half on the stack
                if((numIntegerArgs + 2) <= getNumIntegerArgumentRegisters())
@@ -521,7 +521,7 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
                   {
                   if (numIntegerArgs < getNumIntegerArgumentRegisters())
                      {
-                     numIntegerArgs += (TR::Compiler->target.is64Bit()) ? 1 : 2;
+                     numIntegerArgs += (cg()->comp()->target().is64Bit()) ? 1 : 2;
                      }
                   }
             break;
@@ -570,7 +570,7 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
          parmCursor->setParameterOffset(parmCursor->getParameterOffset() + gprSize - parmCursor->getSize());
          }
 
-      if (TR::Compiler->target.is64Bit() && parmCursor->getType().isAddress() && (parmCursor->getSize()==4))
+      if (cg()->comp()->target().is64Bit() && parmCursor->getType().isAddress() && (parmCursor->getSize()==4))
          {
          // This is a 31-bit pointer parameter. It's real location is +4 bytes from the start of the
          // 8-byte parm slot. Since ptr31 parms are passed as 64-bit values, the prologue code has the
@@ -591,8 +591,8 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
 int32_t
 TR::S390zLinuxSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
    {
-   int32_t gpr2Offset = TR::Compiler->target.is64Bit() ? 16 : 8;
-   int32_t fpr0Offset = TR::Compiler->target.is64Bit() ? 128 : 64;
+   int32_t gpr2Offset = cg()->comp()->target().is64Bit() ? 16 : 8;
+   int32_t fpr0Offset = cg()->comp()->target().is64Bit() ? 128 : 64;
    switch(srcReg)
       {
       case TR::RealRegister::FPR0: return fpr0Offset;

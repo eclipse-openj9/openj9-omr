@@ -90,13 +90,13 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    _unlatchedRegisterList[0] = 0; // mark that list is empty
 
    _linkageProperties = &self()->getLinkage()->getProperties();
-   _linkageProperties->setEndianness(TR::Compiler->target.cpu.isBigEndian());
+   _linkageProperties->setEndianness(self()->comp()->target().cpu.isBigEndian());
 
    if (!self()->comp()->getOption(TR_FullSpeedDebug))
       self()->setSupportsDirectJNICalls();
    self()->setSupportsVirtualGuardNOPing();
 
-   if(TR::Compiler->target.isLinux())
+   if(self()->comp()->target().isLinux())
       {
       // only hardhat linux-arm builds have the required gcc soft libraries
       // that allow the vm to be compiled with -msoft-float.
@@ -157,7 +157,7 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    self()->setSupportsJavaFloatSemantics();
    self()->setSupportsInliningOfTypeCoersionMethods();
 
-   if (TR::Compiler->target.isLinux())
+   if (self()->comp()->target().isLinux())
       {
       // On AIX and Linux, we are very far away from address
       // wrapping-around.
@@ -261,7 +261,7 @@ directToInterpreterHelper(TR::ResolvedMethodSymbol *methodSymbol, TR::CodeGenera
       case TR::Int32:
          return sync?TR_ARMicallVMprJavaSendStaticSync1:TR_ARMicallVMprJavaSendStatic1;
       case TR::Address:
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             return sync?TR_ARMicallVMprJavaSendStaticSyncJ:TR_ARMicallVMprJavaSendStaticJ;
          else
             return sync?TR_ARMicallVMprJavaSendStaticSync1:TR_ARMicallVMprJavaSendStatic1;
@@ -831,6 +831,6 @@ bool
 OMR::ARM::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
    {
    return
-      !TR::Compiler->target.cpu.isTargetWithinBranchImmediateRange(targetAddress, sourceAddress) ||
+      !self()->comp()->target().cpu.isTargetWithinBranchImmediateRange(targetAddress, sourceAddress) ||
       self()->comp()->getOption(TR_StressTrampolines);
    }

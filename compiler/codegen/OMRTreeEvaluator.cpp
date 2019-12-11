@@ -397,7 +397,7 @@ TR_GlobalRegisterNumber
 OMR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(TR::Node *node, TR::CodeGenerator *cg)
    {
     //No need for register pairs in 64-bit mode
-    if (TR::Compiler->target.is64Bit())
+    if (cg->comp()->target().is64Bit())
         return -1;
 
     //if the node itself doesn't have a type (e.g passthrough) we assume it has a child with a type

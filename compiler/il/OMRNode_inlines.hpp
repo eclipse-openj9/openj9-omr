@@ -632,7 +632,7 @@ OMR::Node::setAddress(uint64_t a)
    TR_ASSERT(self()->getOpCodeValue() == TR::aconst,"TR::Node::setAddress: used for a non aconst node");
    self()->freeExtensionIfExists();
 
-   if (TR::Compiler->target.is32Bit())
+   if (TR::comp()->target().is32Bit())
       a = a & 0x00000000ffffffff;
 
    return (uint64_t)(_unionBase._constValue = (int64_t)a);
@@ -670,7 +670,7 @@ OMR::Node::getIntegerNodeValue()
    TR::ILOpCodes opcode = self()->getOpCodeValue();
    if (opcode == TR::aconst)
       {
-      if (TR::Compiler->target.is64Bit())
+      if (comp->target().is64Bit())
          opcode = TR::lconst;
       else
          opcode = TR::iconst;

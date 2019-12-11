@@ -1261,7 +1261,7 @@ TR::S390DebugCounterBumpInstruction::generateBinaryEncoding()
    *(int32_t *) cursor  = boi(0xEB000000 | (((int8_t) getDelta()) << 16));                // On 64-bit platforms
    scratchReg->setBaseRegisterField((uint32_t *)cursor);                                  // AGSI 0(Rscrtch), delta
    cursor += 4;                                                                           //
-   *(int16_t *) cursor  = TR::Compiler->target.is64Bit() ? bos(0x007A) : bos(0x006A);     // On 32-bit platforms
+   *(int16_t *) cursor  = comp->target().is64Bit() ? bos(0x007A) : bos(0x006A);     // On 32-bit platforms
    cursor += 2;                                                                           //  ASI 0(Rscrtch), delta
 
    if (spillNeeded)
@@ -1315,7 +1315,7 @@ TR::S390ImmInstruction::generateBinaryEncoding()
       // We can't register the first word because the second word wouldn't yet
       // be binary-encoded by the time we need to compute the proper hash key.
       //
-      void **locationToPatch = (void**)(cursor - (TR::Compiler->target.is64Bit()?4:0));
+      void **locationToPatch = (void**)(cursor - (comp->target().is64Bit()?4:0));
       cg()->jitAddPicToPatchOnClassUnload(*locationToPatch, locationToPatch);
       }
    if (std::find(comp->getStaticHCRPICSites()->begin(), comp->getStaticHCRPICSites()->end(), this) != comp->getStaticHCRPICSites()->end())
@@ -1324,7 +1324,7 @@ TR::S390ImmInstruction::generateBinaryEncoding()
       // We can't register the first word because the second word wouldn't yet
       // be binary-encoded by the time we need to compute the proper hash key.
       //
-      void **locationToPatch = (void**)(cursor - (TR::Compiler->target.is64Bit()?4:0));
+      void **locationToPatch = (void**)(cursor - (comp->target().is64Bit()?4:0));
       cg()->jitAddPicToPatchOnClassRedefinition(*locationToPatch, locationToPatch);
       cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
       }
@@ -1377,7 +1377,7 @@ TR::S390Imm2Instruction::generateBinaryEncoding()
       // We can't register the first word because the second word wouldn't yet
       // be binary-encoded by the time we need to compute the proper hash key.
       //
-      void **locationToPatch = (void**)(cursor - (TR::Compiler->target.is64Bit()?4:0));
+      void **locationToPatch = (void**)(cursor - (comp->target().is64Bit()?4:0));
       cg()->jitAddPicToPatchOnClassUnload(*locationToPatch, locationToPatch);
       }
 
@@ -1882,7 +1882,7 @@ TR::S390RILInstruction::estimateBinaryLength(int32_t  currentEstimate)
    int32_t delta = 0;
    TR::Compilation *comp = cg()->comp();
 
-   if (TR::Compiler->target.is64Bit()                        &&
+   if (comp->target().is64Bit()                        &&
         (getOpCode().getOpCodeValue() == TR::InstOpCode::LGRL  ||
          getOpCode().getOpCodeValue() == TR::InstOpCode::LGFRL ||
          getOpCode().getOpCodeValue() == TR::InstOpCode::LLGFRL
@@ -1896,7 +1896,7 @@ TR::S390RILInstruction::estimateBinaryLength(int32_t  currentEstimate)
       //
       delta = 12;
       }
-   else if (TR::Compiler->target.is64Bit()                        &&
+   else if (comp->target().is64Bit()                        &&
         getOpCode().getOpCodeValue() == TR::InstOpCode::STGRL
         )
       {
@@ -1909,7 +1909,7 @@ TR::S390RILInstruction::estimateBinaryLength(int32_t  currentEstimate)
       //
       delta = 24;
       }
-   else if (TR::Compiler->target.is64Bit()                        &&
+   else if (comp->target().is64Bit()                        &&
             (getOpCode().getOpCodeValue() == TR::InstOpCode::STRL ||
              getOpCode().getOpCodeValue() == TR::InstOpCode::LRL))
       {
@@ -1969,7 +1969,7 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
       else
          targetAddr = cg()->fe()->methodTrampolineLookup(cg()->comp(), getSymbolReference(), (void *)currentInst);
 
-      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(targetAddr, (intptrj_t)currentInst),
+      TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddr, (intptrj_t)currentInst),
                       "Local trampoline must be directly reachable.");
 
       offsetHalfWords = (int32_t)((targetAddr - (uintptrj_t)currentInst) / 2);
@@ -2029,7 +2029,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
       i2 = (int32_t)((addr - (uintptrj_t)cursor) / 2);
 
-      if (TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
+      if (cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
          {
          getOpCode().copyBinaryToBuffer(instructionStart);
          toRealRegister(getRegisterOperand(1))->setRegister1Field((uint32_t *) cursor);
@@ -2038,7 +2038,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
          }
       else // We need to do things the old fashioned way
          {
-         TR_ASSERT( TR::Compiler->target.is64Bit() ,"We should only be here on 64-bit platforms\n");
+         TR_ASSERT( cg()->comp()->target().is64Bit() ,"We should only be here on 64-bit platforms\n");
 
          TR::RealRegister * scratchReg = NULL;
          TR::RealRegister * sourceReg  = NULL;
@@ -2270,7 +2270,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
             // Check to make sure that we can reach our target!  Otherwise, we
             // need to look up appropriate trampoline and branch through the
             // trampoline.
-            if (!isImmediateOffsetInBytes() && !TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
+            if (!isImmediateOffsetInBytes() && !cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
                {
                intptrj_t targetAddr = ((intptrj_t)(cursor) + ((intptrj_t)(i2) * 2));
                TR_ASSERT( targetAddr != getTargetPtr(), "LARL is correct already!\n");

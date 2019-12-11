@@ -90,7 +90,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg);
 // Right now, this function is duplicated in TreeEval, ControlFlowEval, Binary &UnaryEval.
 inline bool getNodeIs64Bit(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::Compiler->target.is64Bit() && node->getSize() > 4;
+   return cg->comp()->target().is64Bit() && node->getSize() > 4;
    }
 
 // Right now, this is duplicated in ControlFlowEval, BinaryEval and TreeEval.
@@ -110,7 +110,7 @@ inline intptrj_t integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg)
 inline bool constNodeValueIs32BitSigned(TR::Node *node, intptrj_t *value, TR::CodeGenerator *cg)
    {
    *value = integerConstNodeValue(node, cg);
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       return IS_32BIT_SIGNED(*value);
       }
@@ -465,7 +465,7 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
 
    TR::MemoryReference *jumpMR = NULL;
    TR::Register *branchTableReg = NULL;
-   if (TR::Compiler->target.is64Bit() && cg->comp()->compileRelocatableCode())
+   if (cg->comp()->target().is64Bit() && cg->comp()->compileRelocatableCode())
       {
       // Generate position-independent code so that no (external) relocation is
       // necessary:
@@ -485,7 +485,7 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       jumpMR = generateX86MemoryReference(
          (TR::Register *)NULL,
          selectorReg,
-         (uint8_t)(TR::Compiler->target.is64Bit()? 3 : 2),
+         (uint8_t)(cg->comp()->target().is64Bit()? 3 : 2),
          (intptrj_t)branchTable, cg);
 
       jumpMR->setNeedsCodeAbsoluteExternalRelocation();
@@ -969,7 +969,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
       //
       TR::Node *firstChild = node->getFirstChild();
 
-      if (TR::Compiler->target.is64Bit() && TR::Compiler->om.generateCompressedObjectHeaders())
+      if (cg->comp()->target().is64Bit() && TR::Compiler->om.generateCompressedObjectHeaders())
          {
          if (   (firstChild->getOpCode().isLoadIndirect()
                  && firstChild->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
@@ -1231,7 +1231,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerReturnEvaluator(TR::Node *node, TR
 
    if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private)
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          TR_ReturnInfo returnInfo;
          switch (node->getDataType())
@@ -1305,7 +1305,7 @@ TR::Register *OMR::X86::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::Cod
 
    // don't need to test if we're already using a compare eq or compare ne
    auto conditionOp = condition->getOpCode();
-   bool longCompareOn32bit = (TR::Compiler->target.is32Bit() && conditionOp.isBooleanCompare() &&
+   bool longCompareOn32bit = (cg->comp()->target().is32Bit() && conditionOp.isBooleanCompare() &&
          condition->getFirstChild()->getOpCode().isLong());
    //if ((conditionOp == TR::icmpeq) || (conditionOp == TR::icmpne) || (conditionOp == TR::lcmpeq) || (conditionOp == TR::lcmpne))
    if (!longCompareOn32bit && conditionOp.isCompareForEquality() && condition->getFirstChild()->getOpCode().isIntegerOrAddress())
@@ -1563,7 +1563,7 @@ bool OMR::X86::TreeEvaluator::generateLAddOrSubForOverflowCheck(TR::Node *compar
       // leftChild might appear twice in this tree, and we need a clobber evaluate only if it also appears elsewhere
       bool leftNeedsCopy = u.leftChild->getReferenceCount() > 2 || (u.leftChild->getReferenceCount() > 1 && u.operationNode->getRegister());
       TR::Register *leftReg  = leftNeedsCopy? cg->longClobberEvaluate(u.leftChild) : cg->evaluate(u.leftChild);
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          TR_X86OpCodes opCode = u.operationNode->getOpCode().isAdd()? ADD8RegReg : SUB8RegReg;
          generateRegRegInstruction(opCode, u.operationNode, leftReg, rightReg, cg);
@@ -2333,7 +2333,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
 
    // Guards patched when the threads are stopped have no issues with multithreaded patching.
    // therefore alignment is not required
-   if (TR::Compiler->target.isSMP() && !node->isStopTheWorldGuard())
+   if (cg->comp()->target().isSMP() && !node->isStopTheWorldGuard())
       {
       // the compiler is now capable of generating a train of vgnops all looking to patch the
       // same point with different constraints. alignment is required before the delegated patch

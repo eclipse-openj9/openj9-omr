@@ -79,7 +79,7 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
          TR_ASSERT_FATAL(jitToJitStart, "Unknown compiled method entry point.  Entry point should be available by now.");
 
-         TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(jitToJitStart, (intptrj_t)cursor),
+         TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(jitToJitStart, (intptrj_t)cursor),
                          "Target address is out of range");
 
          intptrj_t distance = jitToJitStart - (intptrj_t)cursor;
@@ -102,7 +102,7 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
                {
                destination = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
 
-               TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptrj_t)cursor),
+               TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptrj_t)cursor),
                                "Target address is out of range");
                }
 
@@ -123,7 +123,7 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
             if (cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
                {
                destination = (intptrj_t)cg()->fe()->methodTrampolineLookup(cg()->comp(), symRef, (void *)cursor);
-               TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptrj_t)cursor),
+               TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptrj_t)cursor),
                                "Call target address is out of range");
                }
 

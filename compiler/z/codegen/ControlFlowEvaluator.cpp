@@ -353,7 +353,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
 
    if (node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::imin)
       {
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z15))
          {
          lhsReg = cg->allocateRegister();
 
@@ -363,7 +363,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
          generateRRInstruction(cg, TR::InstOpCode::CR, node, tmpRegister, rhsReg);
          generateRRFInstruction(cg, TR::InstOpCode::SELR, node, lhsReg, rhsReg, tmpRegister, mask);
          }
-      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+      else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
          {
          lhsReg = cg->gprClobberEvaluate(lhsNode);
 
@@ -399,7 +399,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
       }
    else if (node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lmin)
       {
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z15))
          {
          lhsReg = cg->allocateRegister();
 
@@ -409,7 +409,7 @@ static TR::Register* maxMinHelper(TR::Node* node, TR::CodeGenerator* cg, bool is
          generateRREInstruction(cg, TR::InstOpCode::CGR, node, tmpRegister, rhsReg);
          generateRRFInstruction(cg, TR::InstOpCode::SELGR, node, lhsReg, rhsReg, tmpRegister, mask);
          }
-      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+      else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
          {
          lhsReg = cg->gprClobberEvaluate(lhsNode);
 
@@ -690,7 +690,7 @@ OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       case TR::lreturn:
          comp->setReturnInfo(TR_LongReturn);
 
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             dependencies->addPostCondition(returnValRegister, linkage->getLongReturnRegister());
             }
@@ -1301,12 +1301,12 @@ OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          node->getOpCodeValue() == TR::acmpeq)
       {
       // RXSBG only supported on z10+
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
          {
          TR::Node* firstChild = node->getFirstChild();
          TR::Node* secondChild = node->getSecondChild();
          if (node->getOpCodeValue() != TR::acmpeq &&
-             TR::Compiler->target.is64Bit() &&
+             cg->comp()->target().is64Bit() &&
              firstChild->getOpCodeValue() == TR::iand &&
              firstChild->getSecondChild()->getOpCodeValue() == TR::iconst &&
              secondChild->getOpCodeValue() == TR::iconst &&
@@ -1747,7 +1747,7 @@ OMR::Z::TreeEvaluator::tableEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    tableKind tableKindToBeEvaluated = AddressTable32bit;
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       if (node->getFirstChild()->getType().isInt64())
          tableKindToBeEvaluated = AddressTable64bitLongLookup;
@@ -1890,7 +1890,7 @@ OMR::Z::TreeEvaluator::lookupEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
       // for 31bit mode with 64 bit values
       TR::LabelSymbol *skipLoCompareLabel = NULL;
-      if (type.isInt64() && TR::Compiler->target.is32Bit())
+      if (type.isInt64() && cg->comp()->target().is32Bit())
          skipLoCompareLabel = generateLabelSymbol(cg);
 
       // Compare a key value
@@ -1921,7 +1921,7 @@ OMR::Z::TreeEvaluator::lookupEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          {
          // GRA
          cg->evaluate(child->getFirstChild());
-         if (type.isInt64() && TR::Compiler->target.is32Bit())
+         if (type.isInt64() && cg->comp()->target().is32Bit())
             {
             cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, brCond, node, child->getBranchDestination()->getNode()->getLabel());
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipLoCompareLabel, generateRegisterDependencyConditions(cg, child->getFirstChild(), 0), cursor);
@@ -1933,7 +1933,7 @@ OMR::Z::TreeEvaluator::lookupEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       else
          {
          cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, brCond, node, child->getBranchDestination()->getNode()->getLabel());
-         if (type.isInt64() && TR::Compiler->target.is32Bit())
+         if (type.isInt64() && cg->comp()->target().is32Bit())
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipLoCompareLabel);
          }
 
@@ -2227,7 +2227,7 @@ TR::Node* OMR::Z::TreeEvaluator::DAAAddressPointer(TR::Node* callNode, TR::CodeG
       }
 #endif
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       TR::Node* addressBase   = base;
       TR::Node* addressIndex  = TR::Node::create(TR::i2l,    1, index);
@@ -2567,14 +2567,14 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       auto bc = TR::TreeEvaluator::getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
 
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z15))
          {
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, trueReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
          }
-      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+      else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
          {
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
@@ -2635,12 +2635,12 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       TR::Instruction *compareInst = generateRILInstruction(cg,condition->getOpCode().isLongCompare() ? TR::InstOpCode::CGFI : TR::InstOpCode::CFI,condition,condition->getRegister(), 0);
 
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z15))
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z15))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, trueReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
          }
-      else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+      else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);

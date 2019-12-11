@@ -466,14 +466,14 @@ void OMR::X86::Linkage::mapIncomingParms(TR::ResolvedMethodSymbol *method)
       for (; parmCursor; parmCursor = parameterIterator.getNext())
          {
          if (!debug("amd64unimplemented"))
-         TR_ASSERT(TR::Compiler->target.is32Bit(), "Right-to-left not yet implemented on AMD64");
+         TR_ASSERT(self()->comp()->target().is32Bit(), "Right-to-left not yet implemented on AMD64");
          parmCursor->setParameterOffset(currentOffset);
          currentOffset += parmCursor->getRoundedSize();
          }
       }
    else
       {
-      TR_ASSERT(TR::Compiler->target.is32Bit(), "This code is IA32-specific");
+      TR_ASSERT(self()->comp()->target().is32Bit(), "This code is IA32-specific");
       // TODO:AMD64: This code deosn't need to support 8-byte slots; put it back the way it was
       uint8_t parmSlotShift = self()->getProperties().getParmSlotShift();
       int32_t topOfParameterArea = (method->getNumParameterSlots() << parmSlotShift) + offsetToFirstParm;
@@ -510,7 +510,7 @@ void OMR::X86::Linkage::mapSingleAutomatic(TR::AutomaticSymbol *p,
    stackIndex -= size;
    // align stack-allocated objects that don't have GC map index > 0
    // and are referenced through a register
-   if (p->isLocalObject() && TR::Compiler->target.is64Bit())
+   if (p->isLocalObject() && self()->comp()->target().is64Bit())
       {
       if (p->getGCMapIndex() == -1)
          self()->alignLocalObjectWithoutCollectedFields(stackIndex);
@@ -773,6 +773,12 @@ TR_MovDataTypes
 OMR::X86::Linkage::paramMovType(TR::ParameterSymbol *param)
    {
    return self()->movType(param->getDataType());
+   }
+
+TR::Environment&
+OMR::X86::Linkage::getTargetFromComp()
+   {
+   return TR::comp()->target();
    }
 
 

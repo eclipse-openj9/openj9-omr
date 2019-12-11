@@ -266,7 +266,7 @@ inline void setCCOr(T value, TR::Node *node, TR::Simplifier *s)
 static void convertToTestUnderMask(TR::Node *node, TR::Block *block, TR::Simplifier *s)
    {
    // butest evaluator is only implemented on Z
-   if (!TR::Compiler->target.cpu.isZ())
+   if (!s->comp()->target().cpu.isZ())
       return;
 
    if (debug("disableConvertToTestUnderMask"))
@@ -2189,7 +2189,7 @@ static void addressCompareConversion(TR::Node * node, TR::Simplifier * s)
       }
 
       if (firstOp == TR::a2i && firstChild->getFirstChild()->getType().isAddress() &&
-          TR::Compiler->target.is32Bit() &&
+          s->comp()->target().is32Bit() &&
           firstChild->getReferenceCount()==1)
          {
          if ((secondOp == TR::iconst && secondChild->getInt()==0) ||
@@ -2224,7 +2224,7 @@ static void addressCompareConversion(TR::Node * node, TR::Simplifier * s)
             }
          }
       else  if (firstOp == TR::a2l && firstChild->getFirstChild()->getType().isAddress() &&
-                TR::Compiler->target.is64Bit() &&
+                s->comp()->target().is64Bit() &&
                 firstChild->getReferenceCount()==1)
          {
         if ((secondOp == TR::lconst && secondChild->getLongInt()==0) ||
@@ -5532,7 +5532,7 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
          TR::Node *loadNode = node;
          if (loadDataType != addrDataType)
             {
-            uint8_t precision = node->getType().isAddress() ? (TR::Compiler->target.is64Bit() ? 8 : 4) : 0;
+            uint8_t precision = node->getType().isAddress() ? (s->comp()->target().is64Bit() ? 8 : 4) : 0;
             TR::Node::recreateWithoutProperties(node, convOpCode, 1);
 
             loadNode = TR::Node::create(node, TR::BadILOp, 0);
@@ -8456,7 +8456,7 @@ TR::Node *lmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             }
          }
       }
-   else if (TR::Compiler->target.is64Bit() && secondChildOp==TR::lconst && !s->getLastRun() && secondChild->getLongInt()!=0 && !isNonNegativePowerOf2(secondChild->getLongInt()) && secondChild->getLongInt() != TR::getMinSigned<TR::Int64>())
+   else if (s->comp()->target().is64Bit() && secondChildOp==TR::lconst && !s->getLastRun() && secondChild->getLongInt()!=0 && !isNonNegativePowerOf2(secondChild->getLongInt()) && secondChild->getLongInt() != TR::getMinSigned<TR::Int64>())
       {
       decomposeMultiply(node, s, true);
       }
@@ -11285,7 +11285,7 @@ TR::Node *lorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    // Disable transformation if rotate evaluator does not support 64-bit registers on 32-bit platform
-   if ((TR::Compiler->target.is64Bit() || s->comp()->cg()->use64BitRegsOn32Bit()) && checkAndReplaceRotation<int64_t>(node,block,s))
+   if ((s->comp()->target().is64Bit() || s->comp()->cg()->use64BitRegsOn32Bit()) && checkAndReplaceRotation<int64_t>(node,block,s))
       {
       return node;
       }
@@ -11604,7 +11604,7 @@ TR::Node *lxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    // Disable transformation if rotate evaluator does not support 64-bit registers on 32-bit platform
-   if ((TR::Compiler->target.is64Bit() || s->comp()->cg()->use64BitRegsOn32Bit()) && checkAndReplaceRotation<int64_t>(node,block,s))
+   if ((s->comp()->target().is64Bit() || s->comp()->cg()->use64BitRegsOn32Bit()) && checkAndReplaceRotation<int64_t>(node,block,s))
       {
       return node;
       }
@@ -11858,7 +11858,7 @@ TR::Node *i2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
    if (firstChild->getOpCode().isLoadConst())
       {
-      uint8_t addrPr = (TR::Compiler->target.is64Bit() ? 8 : 4);
+      uint8_t addrPr = (s->comp()->target().is64Bit() ? 8 : 4);
       foldAddressConstant(node, firstChild->getInt(), s, false /* !anchorChildren */);
       return node;
       }
@@ -11869,7 +11869,7 @@ TR::Node *i2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
       if (firstChild->getDataType() == TR::Address &&
           !firstChild->getOpCode().isLoadAddr() &&
-          TR::Compiler->target.is32Bit())
+          s->comp()->target().is32Bit())
          return s->replaceNode(node, firstChild, s->_curTree);
       else
          firstChild = node->getFirstChild(); // reset firstChild
@@ -12053,7 +12053,7 @@ TR::Node *l2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
         ((int32_t)(firstChild->getLongIntHigh() & 0xffffffff) == (int32_t)0) &&
         ((int64_t)firstChild->getLongInt() >= (int64_t)0))
       {
-      uint8_t addrPr = (TR::Compiler->target.is64Bit() ? 8 : 4);
+      uint8_t addrPr = (s->comp()->target().is64Bit() ? 8 : 4);
       foldAddressConstant(node, firstChild->getLongInt() & 0xFFFFFFFF, s, false /* !anchorChildren */);
       return node;
       }
@@ -12064,7 +12064,7 @@ TR::Node *l2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
       if (firstChild->getDataType() == TR::Address &&
           !firstChild->getOpCode().isLoadAddr() &&
-          TR::Compiler->target.is64Bit())
+          s->comp()->target().is64Bit())
          return s->replaceNode(node, firstChild, s->_curTree);
       else
          firstChild = node->getFirstChild(); // reset firstChild
@@ -12090,11 +12090,11 @@ TR::Node *l2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       )
       {
       TR::Node *constChild = firstChild->getSecondChild();
-      bool is64Bit = TR::Compiler->target.is64Bit();
+      bool is64Bit = s->comp()->target().is64Bit();
       TR::ILOpCodes addressAddOp = ((constChild->getReferenceCount() == 1) && // is firstChild the only parent of constChild?
                                      (constChild->get64bitIntegralValue() <= (int64_t)CONSTANT64(0x000000000FFFFFFF) && // Does 64bit value fit in 32bit?
                                       constChild->get64bitIntegralValue() >= (int64_t)CONSTANT64(0xFFFFFFFFF0000000)) &&
-                                      TR::Compiler->target.is32Bit()
+                                      s->comp()->target().is32Bit()
                                     ) ? TR::aiadd : TR::aladd;
 
       if (!(addressAddOp == TR::aladd && !is64Bit) &&  // aladd only allowed in 64bit
@@ -15509,7 +15509,7 @@ TR::Node *a2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (firstChild->getType().isAddress())
          {
          //on Z the address cast evaluation of a2l of a 4 byte addr child will always zero out bit 32, need to do equivalently here
-         if (TR::Compiler->target.cpu.isZ() && node->getFirstChild()->getSize() == 4)
+         if (s->comp()->target().cpu.isZ() && node->getFirstChild()->getSize() == 4)
             foldLongIntConstant(node, firstChild->getAddress() & CLEARBIT32, s, false /* !anchorChildren */);
          else
             foldLongIntConstant(node, firstChild->getAddress(), s, false /* !anchorChildren */);

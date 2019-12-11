@@ -35,7 +35,7 @@ uint32_t TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(TR::S390zO
    {
    uint32_t result = 0;
 
-   if (TR::Compiler->target.is32Bit())
+   if (linkage->cg()->comp()->target().is32Bit())
       {
       uint32_t returnValueAdjust = 0;
 

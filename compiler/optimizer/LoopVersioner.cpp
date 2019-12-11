@@ -6279,7 +6279,7 @@ void TR_LoopVersioner::RemoveSpineCheck::improveLoop()
    //          i
    //       iconst strideShift
 
-   bool is64BitTarget = TR::Compiler->target.is64Bit() ? true : false;
+   bool is64BitTarget = comp()->target().is64Bit() ? true : false;
    TR::DataType type =  spineCheckNode->getChild(0)->getDataType();
    uint32_t elementSize = TR::Symbol::convertTypeToSize(type);
    if (comp()->useCompressedPointers() && (type == TR::Address))
@@ -7942,7 +7942,7 @@ bool TR_LoopVersioner::depsForLoopEntryPrep(
             TR::Node *vftLoad = TR::Node::createWithSymRef(TR::aloadi, 1, 1, node->getFirstChild(), comp()->getSymRefTab()->findOrCreateVftSymbolRef());
             //TR::Node *componentTypeLoad = TR::Node::create(TR::aloadi, 1, vftLoad, comp()->getSymRefTab()->findOrCreateArrayComponentTypeSymbolRef());
             TR::Node *classFlag = NULL;
-            if (TR::Compiler->target.is32Bit())
+            if (comp()->target().is32Bit())
                {
                classFlag = TR::Node::createWithSymRef(TR::iloadi, 1, 1, vftLoad, comp()->getSymRefTab()->findOrCreateClassAndDepthFlagsSymbolRef());
                }

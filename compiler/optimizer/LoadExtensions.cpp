@@ -138,7 +138,7 @@ const bool TR_LoadExtensions::canSkipConversion(TR::Node* conversion, TR::Node* 
          conversion->getSize() > child->getSize() &&
 
          // Ensure we do not use register pairs for 64-bit loads on 32-bit platforms
-         (TR::Compiler->target.is64Bit() || comp()->cg()->use64BitRegsOn32Bit() || conversion->getSize() != 8) &&
+         (comp()->target().is64Bit() || comp()->cg()->use64BitRegsOn32Bit() || conversion->getSize() != 8) &&
 
          // Ensure the conversion matches our preferred extension on the load
          ((loadPrefersSignExtension && loadPrefersSignExtension == conversionOpCode.isSignExtension()) ||
@@ -365,7 +365,7 @@ void TR_LoadExtensions::flagPreferredLoadExtensions(TR::Node* parent)
             TR::ILOpCode& childOpCode = child->getOpCode();
 
             if (childOpCode.isLoadReg()
-               && !(parent->getSize() > 4 && TR::Compiler->target.is32Bit())
+               && !(parent->getSize() > 4 && comp()->target().is32Bit())
                && excludedNodes->count(parent) == 0)
                {
                TR::Node* useRegLoad = child;

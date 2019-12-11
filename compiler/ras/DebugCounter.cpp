@@ -58,7 +58,7 @@ void
 TR::DebugCounter::prependDebugCounterBump(TR::Compilation *comp, TR::TreeTop *nextTreeTop, TR::DebugCounterBase *counter, int32_t delta)
    {
    // Use long operations in 64 bit platforms and int operations in 32 bit platforms
-   if (TR::Compiler->target.is64Bit())
+   if (comp->target().is64Bit())
       {
       prependDebugCounterBump(comp, nextTreeTop, counter, TR::Node::lconst(nextTreeTop->getNode(), delta));
       }
@@ -284,9 +284,9 @@ const char *TR::DebugCounter::debugCounterBucketName(TR::Compilation *comp, int3
 TR::Node *TR::DebugCounterBase::createBumpCounterNode(TR::Compilation *comp, TR::Node *deltaNode)
    {
    TR::SymbolReference *symref = getBumpCountSymRef(comp);
-   TR::Node *load = TR::Node::createWithSymRef(deltaNode, TR::Compiler->target.is64Bit() ? TR::lload : TR::iload, 0, symref);
-   TR::Node *add = TR::Node::create(TR::Compiler->target.is64Bit() ? TR::ladd : TR::iadd, 2, load, deltaNode);
-   TR::Node *store = TR::Node::createWithSymRef(TR::Compiler->target.is64Bit() ? TR::lstore : TR::istore, 1, 1, add, symref);
+   TR::Node *load = TR::Node::createWithSymRef(deltaNode, comp->target().is64Bit() ? TR::lload : TR::iload, 0, symref);
+   TR::Node *add = TR::Node::create(comp->target().is64Bit() ? TR::ladd : TR::iadd, 2, load, deltaNode);
+   TR::Node *store = TR::Node::createWithSymRef(comp->target().is64Bit() ? TR::lstore : TR::istore, 1, 1, add, symref);
 
    if (comp->compileRelocatableCode())
       comp->mapStaticAddressToCounter(symref, this);
@@ -319,7 +319,7 @@ TR::DebugCounterBase::finalizeReloData(TR::Compilation *comp, TR::Node *node, ui
 
 TR::SymbolReference *TR::DebugCounter::getBumpCountSymRef(TR::Compilation *comp)
    {
-   TR::SymbolReference *symRef = comp->getSymRefTab()->findOrCreateCounterSymRef(const_cast<char*>(_name), TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32, &_bumpCount);
+   TR::SymbolReference *symRef = comp->getSymRefTab()->findOrCreateCounterSymRef(const_cast<char*>(_name), comp->target().is64Bit() ? TR::Int64 : TR::Int32, &_bumpCount);
    symRef->getSymbol()->setIsDebugCounter();
    return symRef;
    }

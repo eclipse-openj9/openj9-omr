@@ -232,7 +232,7 @@ genNullTestForCompressedPointers(TR::Node *node, TR::CodeGenerator *cg, TR::Regi
    {
    TR::Compilation *comp = cg->comp();
    bool hasCompressedPointers = false;
-   if (TR::Compiler->target.is64Bit() &&
+   if (cg->comp()->target().is64Bit() &&
          comp->useCompressedPointers() &&
          node->containsCompressionSequence()  /* &&
          !node->isNonZero() */ )
@@ -326,7 +326,7 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node *curTreeNode = cg->getCurrentEvaluationTreeTop()->getNode();
    bool bumpedRefCount = false;
 
-   bool isCompressionSequence = TR::Compiler->target.is64Bit() &&
+   bool isCompressionSequence = cg->comp()->target().is64Bit() &&
            comp->useCompressedPointers() &&
            node->containsCompressionSequence();
 
@@ -548,7 +548,7 @@ generic32BitAddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       bool useAHIK = false;
 
       // If negative or large enough range we must use LAY. LA has more restrictions.
-      bool useLA = TR::Compiler->target.is64Bit() && node->isNonNegative()
+      bool useLA = cg->comp()->target().is64Bit() && node->isNonNegative()
          && ((value < MAXLONGDISP && value > MINLONGDISP) || (value >= 0 && value <= MAXDISP));
 
       TR::Register * childTargetReg = cg->evaluate(firstChild);
@@ -569,7 +569,7 @@ generic32BitAddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          useLA = false;
          }
 
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
          {
          if (!canClobberReg && (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL))
             {
@@ -650,7 +650,7 @@ generic32BitSubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             break;
          }
 
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196) &&
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196) &&
             firstChild->getRegister() && !cg->canClobberNodesRegister(firstChild) &&
           ((-value) >= MIN_IMMEDIATE_VAL && (-value) <= MAX_IMMEDIATE_VAL))
          {
@@ -1202,7 +1202,7 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
       {
       int32_t value = secondChild->getInt();
 
-      if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
          {
          // Generate RISBG for lshl + i2l sequence
          if (node->getOpCodeValue() == TR::lshl)
@@ -1211,7 +1211,7 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
                {
                srcReg = cg->evaluate(firstChild->getFirstChild());
                trgReg = cg->allocateRegister();
-               auto mnemonic = TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+               auto mnemonic = cg->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
 
                generateRIEInstruction(cg, mnemonic, node, trgReg, srcReg, (int8_t)(32-value), (int8_t)((63-value)|0x80), (int8_t)value);
 
@@ -1446,7 +1446,7 @@ genericRotateLeft(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       {
       if (node->getOpCodeValue() == TR::lor)
          {
@@ -1487,7 +1487,7 @@ genericRotateLeft(TR::Node * node, TR::CodeGenerator * cg)
                   targetReg = sourceReg;
                   }
 
-               TR::InstOpCode::Mnemonic opCode = TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+               TR::InstOpCode::Mnemonic opCode = cg->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
                   generateRIEInstruction(cg, opCode, node, targetReg, sourceReg, 0, 63, lShftAmnt);
 
                // Clean up skipped nodes
@@ -1637,7 +1637,7 @@ genericRotateLeft(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
    {
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       {
       TR::Node * firstChild = node->getFirstChild();
       TR::Node * secondChild = node->getSecondChild();
@@ -1677,7 +1677,7 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
          switch (secondChild->getDataType())
             {
             case TR::Address:
-               TR_ASSERT( TR::Compiler->target.is32Bit(),"genericRotateAndInsertHelper: unexpected data type");
+               TR_ASSERT( cg->comp()->target().is32Bit(),"genericRotateAndInsertHelper: unexpected data type");
             case TR::Int64:
                value = (uint64_t) secondChild->getLongInt();
                break;
@@ -1770,13 +1770,13 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
                   generateRRInstruction(cg, TR::InstOpCode::XR, node, targetReg, targetReg);
                   }
                }
-            else if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196) && !node->getType().isInt64())
+            else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196) && !node->getType().isInt64())
                {
                generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, sourceReg, msBit, 0x80 + lsBit, shiftAmnt);
                }
             else
                {
-               auto mnemonic = TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+               auto mnemonic = cg->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
 
                generateRIEInstruction(cg, mnemonic, node, targetReg, sourceReg, msBit, 0x80 + lsBit, shiftAmnt);
                }
@@ -1802,7 +1802,7 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * node, TR::CodeGenerator * cg, int32_t shiftAmount, bool isSignedShift)
    {
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z10))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       {
       TR::Node * firstChild = node->getFirstChild();
       TR::Node * secondChild = node->getSecondChild();
@@ -1948,7 +1948,7 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
             TR::Register * sourceReg = cg->evaluate(firstChild);
 
             // if possible then use the instruction that doesn't set the CC as it's faster
-            TR::InstOpCode::Mnemonic opCode = TR::Compiler->target.cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+            TR::InstOpCode::Mnemonic opCode = cg->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
 
             // If the shift amount is zero, this instruction sets the rotation factor to 0 and sets the zero bit(0x80).
             // So it's effectively zeroing out every bit except the inclusive range of lsBit to msBit.
@@ -2024,7 +2024,7 @@ lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node *curTreeNode = cg->getCurrentEvaluationTreeTop()->getNode();
 
    bool isCompressionSequence = false;
-   if (TR::Compiler->target.is64Bit() &&
+   if (cg->comp()->target().is64Bit() &&
          comp->useCompressedPointers() &&
          node->containsCompressionSequence())
       isCompressionSequence = true;
@@ -2307,7 +2307,7 @@ lmulHelper64(TR::Node * node, TR::CodeGenerator * cg)
       bool create_LA = false;
       if (firstChild->getRegister() != NULL &&
           value == 2 &&
-          TR::Compiler->target.is64Bit()) // 3 way AGEN LA is cracked on zG
+          cg->comp()->target().is64Bit()) // 3 way AGEN LA is cracked on zG
          {
          create_LA = true;
          }
@@ -2378,7 +2378,7 @@ OMR::Z::TreeEvaluator::caddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::isubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   if ((node->getOpCodeValue() == TR::asub) && TR::Compiler->target.is64Bit())
+   if ((node->getOpCodeValue() == TR::asub) && cg->comp()->target().is64Bit())
       {
       return lsubHelper64(node, cg);
       }
@@ -2603,7 +2603,7 @@ OMR::Z::TreeEvaluator::imulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       // has already been evaluated (by checking if it has a register).
 
       bool create_LA = false;
-      if ((firstChild->getRegister() != NULL) && (value == 2) && (node->isNonNegative() && TR::Compiler->target.is64Bit()))
+      if ((firstChild->getRegister() != NULL) && (value == 2) && (node->isNonNegative() && cg->comp()->target().is64Bit()))
          {
          create_LA = true;
          }
@@ -3042,7 +3042,7 @@ OMR::Z::TreeEvaluator::inegEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       cg->decReferenceCount(firstChild->getFirstChild());
 
       // Load Negative
-      if (TR::Compiler->target.is64Bit() && targetRegister->alreadySignExtended())
+      if (cg->comp()->target().is64Bit() && targetRegister->alreadySignExtended())
          generateRRInstruction(cg, TR::InstOpCode::LNGR, node, targetRegister, sourceRegister);
       else
          generateRRInstruction(cg, TR::InstOpCode::LNR, node, targetRegister, sourceRegister);
@@ -3067,7 +3067,7 @@ OMR::Z::TreeEvaluator::inegEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       sourceRegister = cg->evaluate(firstChild);
 
       // Do complement
-      if (TR::Compiler->target.is64Bit() && targetRegister->alreadySignExtended())
+      if (cg->comp()->target().is64Bit() && targetRegister->alreadySignExtended())
          generateRRInstruction(cg, TR::InstOpCode::LCGR, node, targetRegister, sourceRegister);
       else
          generateRRInstruction(cg, TR::InstOpCode::LCR, node, targetRegister, sourceRegister);
@@ -3163,7 +3163,7 @@ OMR::Z::TreeEvaluator::ishlEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    auto altShiftOp = TR::InstOpCode::SLLG;
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       altShiftOp = TR::InstOpCode::SLLK;
       }
@@ -3190,7 +3190,7 @@ OMR::Z::TreeEvaluator::bshlEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    auto altShiftOp = TR::InstOpCode::SLLG;
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       altShiftOp = TR::InstOpCode::SLLK;
       }
@@ -3207,7 +3207,7 @@ OMR::Z::TreeEvaluator::sshlEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    auto altShiftOp = TR::InstOpCode::SLLG;
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       altShiftOp = TR::InstOpCode::SLLK;
       }
@@ -3267,7 +3267,7 @@ OMR::Z::TreeEvaluator::iushrEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    auto altShiftOp = TR::InstOpCode::SRLG;
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       altShiftOp = TR::InstOpCode::SRLK;
       }
@@ -3294,7 +3294,7 @@ OMR::Z::TreeEvaluator::bushrEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    auto altShiftOp = TR::InstOpCode::SRLG;
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       altShiftOp = TR::InstOpCode::SRLK;
       }
@@ -3311,7 +3311,7 @@ OMR::Z::TreeEvaluator::sushrEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    auto altShiftOp = TR::InstOpCode::SRLG;
 
-   if (TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z196))
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       altShiftOp = TR::InstOpCode::SRLK;
       }

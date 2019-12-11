@@ -204,7 +204,7 @@ TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeG
 
    TR::Node *firstChild = node->getFirstChild();
 
-  if (TR::Compiler->target.cpu.id() >= TR_PPCp9 &&
+  if (cg->comp()->target().cpu.id() >= TR_PPCp9 &&
       firstChild->getOpCodeValue() == TR::imul &&
       firstChild->getReferenceCount() == 1 &&
       firstChild->getRegister() == NULL)
@@ -447,7 +447,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
    bool setsOrReadsCC = NEED_CC(node) || (node->getOpCodeValue() == TR::luaddc);
    TR::InstOpCode::Mnemonic regToRegOpCode = TR::InstOpCode::addc;
 
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       {
       if (!setsOrReadsCC && (secondOp == TR::lconst || secondOp == TR::luconst) &&
           secondChild->getRegister() == NULL)
@@ -509,7 +509,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
          return trgReg;
          }
 
-      if (TR::Compiler->target.cpu.id() >= TR_PPCp9 &&
+      if (cg->comp()->target().cpu.id() >= TR_PPCp9 &&
           !setsOrReadsCC &&
           (node->getOpCodeValue() == TR::ladd || node->getOpCodeValue() == TR::aladd) &&
           firstChild->getOpCodeValue() == TR::lmul &&
@@ -690,7 +690,7 @@ TR::Register *OMR::Power::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::Power::TreeEvaluator::asubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return TR::TreeEvaluator::lsubEvaluator(node, cg);
    else
       return TR::TreeEvaluator::isubEvaluator(node, cg);
@@ -838,7 +838,7 @@ TR::Register *lsub64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
 // also handles lusub
 TR::Register *OMR::Power::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
      return lsub64Evaluator(node, cg);
 
    TR::Node     *firstChild     = node->getFirstChild();
@@ -1234,7 +1234,7 @@ OMR::Power::TreeEvaluator::dualMulEvaluator(TR::Node * node, TR::CodeGenerator *
          lmulNode = NULL;
          }
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
          {
          return TR::TreeEvaluator::dualMulHelper64(node, lmulNode, lumulhNode, cg);
          }
@@ -1255,7 +1255,7 @@ TR::Register *OMR::Power::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeG
       return TR::TreeEvaluator::dualMulEvaluator(node, cg);
       }
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       TR::Register *trgReg;
       if (secondChild->getOpCodeValue() == TR::lconst || secondChild->getOpCodeValue() == TR::luconst)
@@ -1490,7 +1490,7 @@ TR::Register *OMR::Power::TreeEvaluator::lmulhEvaluator(TR::Node *node, TR::Code
 
    // lmulh is generated for constant ldiv and the second child is the magic number
    // assume magic number is usually a large odd number with little optimization opportunity
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       TR::Register *src1Reg = cg->evaluate(firstChild);
       TR::Register *trgReg = cg->allocateRegister();
@@ -1624,7 +1624,7 @@ static TR::Register *signedIntegerDivisionOrRemainderAnalyser(TR::Node          
             generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, trgReg, trgReg);
          }
       }
-   else if (TR::Compiler->target.cpu.id() >= TR_PPCp9 && isRemainder)
+   else if (cg->comp()->target().cpu.id() >= TR_PPCp9 && isRemainder)
       {
       if (divisorReg == NULL)
          divisorReg = cg->evaluate(node->getSecondChild());
@@ -1800,14 +1800,14 @@ static TR::Register *signedLongDivisionOrRemainderAnalyser(TR::Node *node, TR::C
 
       if (divisor > 0)
          {
-         if(TR::Compiler->target.is64Bit())
+         if(cg->comp()->target().is64Bit())
             generateShiftRightLogicalImmediateLong(cg, node, temp4Reg, dividendReg, 63);
          else
             generateShiftRightLogicalImmediate(cg, node, temp4Reg, dividendReg, 31);
          }
       else
          {
-         if(TR::Compiler->target.is64Bit())
+         if(cg->comp()->target().is64Bit())
             generateShiftRightLogicalImmediateLong(cg, node, temp4Reg, temp3Reg, 63);
          else
             generateShiftRightLogicalImmediate(cg, node, temp4Reg, temp3Reg, 31);
@@ -2081,7 +2081,7 @@ strengthReducingLongDivideOrRemainder32BitMode(TR::Node *node,      TR::CodeGene
 
          if (isRemainder)
             {
-            if (TR::Compiler->target.cpu.id() >= TR_PPCp9)
+            if (cg->comp()->target().cpu.id() >= TR_PPCp9)
                {
                generateTrg1Src2Instruction(cg, TR::InstOpCode::moduw, node, dr_l, dd_l, dr_l);
                }
@@ -2102,7 +2102,7 @@ strengthReducingLongDivideOrRemainder32BitMode(TR::Node *node,      TR::CodeGene
 
    TR_RuntimeHelper helper;
 
-   if (TR::Compiler->target.cpu.id() >= TR_PPCp7 && !isDivisorImpossible32Bit)
+   if (cg->comp()->target().cpu.id() >= TR_PPCp7 && !isDivisorImpossible32Bit)
       helper = isSignedOp ? TR_PPClongDivideEP : TR_PPCunsignedLongDivideEP;
    else
       helper = isSignedOp ? TR_PPClongDivide : TR_PPCunsignedLongDivide;
@@ -2119,7 +2119,7 @@ strengthReducingLongDivideOrRemainder32BitMode(TR::Node *node,      TR::CodeGene
 TR::Register *OMR::Power::TreeEvaluator::ldivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return ldiv64Evaluator(node, cg);
 
    TR::Register *dd_lowReg, *dr_lowReg;
@@ -2157,7 +2157,7 @@ TR::Register *OMR::Power::TreeEvaluator::iremEvaluator(TR::Node *node, TR::CodeG
          {
          TR::Register *divisorReg = cg->evaluate(secondChild);
          trgReg = cg->allocateRegister();
-         if(TR::Compiler->target.cpu.id() >= TR_PPCp9)
+         if(cg->comp()->target().cpu.id() >= TR_PPCp9)
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsw, node, trgReg, dividendReg, divisorReg);
             }
@@ -2213,7 +2213,7 @@ TR::Register *OMR::Power::TreeEvaluator::iremEvaluator(TR::Node *node, TR::CodeG
             generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, doneLabel, condReg);
             cg->stopUsingRegister(condReg);
             }
-         if(TR::Compiler->target.cpu.id() >= TR_PPCp9)
+         if(cg->comp()->target().cpu.id() >= TR_PPCp9)
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsw, node, trgReg, dividendReg, divisorReg);
             }
@@ -2253,7 +2253,7 @@ TR::Register *lrem64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
          {
          TR::Register *divisorReg = cg->evaluate(secondChild);
          trgReg = cg->allocateRegister();
-         if(TR::Compiler->target.cpu.id() >= TR_PPCp9)
+         if(cg->comp()->target().cpu.id() >= TR_PPCp9)
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsd, node, trgReg, dividendReg, divisorReg);
             }
@@ -2309,7 +2309,7 @@ TR::Register *lrem64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
             generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, doneLabel, condReg);
             cg->stopUsingRegister(condReg);
             }
-         if (TR::Compiler->target.cpu.id() >= TR_PPCp9)
+         if (cg->comp()->target().cpu.id() >= TR_PPCp9)
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsd, node, trgReg, dividendReg, divisorReg);
             }
@@ -2331,7 +2331,7 @@ TR::Register *lrem64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *OMR::Power::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return lrem64Evaluator(node, cg);
 
    TR::Register *dd_lowReg, *dr_lowReg;
@@ -2353,7 +2353,7 @@ TR::Register *OMR::Power::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeG
 static bool isPower9Extswsli(TR::CodeGenerator *cg, TR::Node *node)
    {
    static bool disableExtswsli = feGetEnv("TR_DisableExtswsli");
-   if (disableExtswsli || TR::Compiler->target.cpu.id() < TR_PPCp9)
+   if (disableExtswsli || cg->comp()->target().cpu.id() < TR_PPCp9)
       return false;
 
    TR::Node *lhs = node->getFirstChild();
@@ -2609,7 +2609,7 @@ TR::Register *OMR::Power::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::Power::TreeEvaluator::lshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return integerShiftLeft(node, 8, cg);
    else
       return lshl32Evaluator(node, cg);
@@ -2993,7 +2993,7 @@ TR::Register *OMR::Power::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Power::TreeEvaluator::lshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return integerShiftRight(node, 8, false, cg);
    else
       return lshr32Evaluator(node, false, cg);
@@ -3001,7 +3001,7 @@ TR::Register *OMR::Power::TreeEvaluator::lshrEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::Power::TreeEvaluator::lushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       return integerShiftRight(node, 8, true, cg);
    else
       return lshr32Evaluator(node, true, cg);
@@ -3034,7 +3034,7 @@ TR::Register *OMR::Power::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::Power::TreeEvaluator::lrolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT_FATAL(TR::Compiler->target.is64Bit(), "lrol is not currently supported on ppc32");
+   TR_ASSERT_FATAL(cg->comp()->target().is64Bit(), "lrol is not currently supported on ppc32");
 
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -3206,7 +3206,7 @@ TR::Register *OMR::Power::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeG
    TR::Register *trgReg  = NULL;
    TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       TR::Register *src1Reg = cg->evaluate(firstChild);
       trgReg  = cg->allocateRegister();
@@ -3272,7 +3272,7 @@ static inline TR::Register *lorTypeEvaluator(TR::Node *node,
    TR::Node     *firstChild  = node->getFirstChild();
    TR::ILOpCodes  secondOp = secondChild->getOpCodeValue();
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       if ((secondOp == TR::lconst || secondOp == TR::luconst) &&
          secondChild->getRegister() == NULL)
@@ -3381,7 +3381,7 @@ TR::Register *OMR::Power::TreeEvaluator::lorEvaluator(TR::Node *node, TR::CodeGe
 
    if ((node->getFirstChild()->isHighWordZero() || node->getSecondChild()->isHighWordZero()) &&
        !((secondOp == TR::lconst || secondOp == TR::luconst) && node->getSecondChild()->getRegister() == NULL) &&
-       !(TR::Compiler->target.is64Bit()))
+       !(cg->comp()->target().is64Bit()))
       {
       return carrylessLongEvaluatorWithAnalyser(node, cg,
                                                     TR::InstOpCode::OR,
@@ -3400,7 +3400,7 @@ TR::Register *OMR::Power::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeG
 
    if ((node->getFirstChild()->isHighWordZero() || node->getSecondChild()->isHighWordZero()) &&
        !((secondOp == TR::lconst || secondOp == TR::luconst) && node->getSecondChild()->getRegister() == NULL) &&
-       !(TR::Compiler->target.is64Bit()))
+       !(cg->comp()->target().is64Bit()))
       {
       return carrylessLongEvaluatorWithAnalyser(node, cg,
                                                     TR::InstOpCode::XOR,
@@ -3509,7 +3509,7 @@ TR::Register *OMR::Power::TreeEvaluator::lxfrsEvaluator(TR::Node *node, TR::Code
    TR::Register *tmp2Reg  = cg->allocateRegister();
    TR::Register  *trgReg;
 
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       {
       TR::Register *lowReg  = cg->allocateRegister();
       TR::Register *highReg = cg->allocateRegister();

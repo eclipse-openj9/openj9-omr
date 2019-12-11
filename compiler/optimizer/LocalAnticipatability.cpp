@@ -818,7 +818,7 @@ bool TR_LocalAnticipatability::adjustInfoForAddressAdd(TR::Node *node, TR::Node 
       if (killedExpressions->get(child->getLocalIndex()))
          {
          if (trace())
-            (TR::Compiler->target.is64Bit()
+            (comp()->target().is64Bit()
              ) ?
                traceMsg(comp(), "\n330Definition #%d (aladd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber())
                : traceMsg(comp(), "\n330Definition #%d (aiadd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber());
@@ -839,7 +839,7 @@ bool TR_LocalAnticipatability::adjustInfoForAddressAdd(TR::Node *node, TR::Node 
                   !storeNodes->get(child->getLocalIndex()))))
                {
                if (trace())
-                  (TR::Compiler->target.is64Bit()
+                  (comp()->target().is64Bit()
                    ) ?
                   traceMsg(comp(), "\n330Definition #%d (aladd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber())
                   : traceMsg(comp(), "\n330Definition #%d (aiadd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber());

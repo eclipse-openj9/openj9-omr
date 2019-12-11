@@ -1424,7 +1424,7 @@ class X86MemInstruction : public TR::Instruction
          padUnresolvedReferenceInstruction(this, mr, cg);
          }
 
-      if (!cg->comp()->getOption(TR_DisableNewX86VolatileSupport) && TR::Compiler->target.is32Bit())
+      if (!cg->comp()->getOption(TR_DisableNewX86VolatileSupport) && cg->comp()->target().is32Bit())
          {
          int32_t barrier = memoryBarrierRequired(this->getOpCode(), mr, cg, true);
 
@@ -1465,7 +1465,7 @@ class X86MemInstruction : public TR::Instruction
          padUnresolvedReferenceInstruction(this, p, cg);
          }
 
-      if (!cg->comp()->getOption(TR_DisableNewX86VolatileSupport) && TR::Compiler->target.is32Bit())
+      if (!cg->comp()->getOption(TR_DisableNewX86VolatileSupport) && cg->comp()->target().is32Bit())
          {
          int32_t barrier = memoryBarrierRequired(this->getOpCode(), p, cg, true);
 
@@ -1898,7 +1898,7 @@ class X86RegMemInstruction : public TR::X86RegInstruction
          padUnresolvedReferenceInstruction(this, p, cg);
          }
 
-      if (!cg->comp()->getOption(TR_DisableNewX86VolatileSupport) && TR::Compiler->target.is32Bit())
+      if (!cg->comp()->getOption(TR_DisableNewX86VolatileSupport) && cg->comp()->target().is32Bit())
          {
          int32_t barrier = memoryBarrierRequired(this->getOpCode(), p, cg, true);
 

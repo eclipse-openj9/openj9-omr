@@ -288,7 +288,7 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
          // skip it.  The occupied flag is not accurate in this case because we
          // did not free the spill and therefore did not clear the flag.
          //
-         if ((TR::Compiler->target.cpu.isPower() || TR::Compiler->target.cpu.isZ()) && (*location)->getMaxSpillDepth() == 0  && comp->cg()->isOutOfLineHotPath())
+         if ((self()->comp()->target().cpu.isPower() || self()->comp()->target().cpu.isZ()) && (*location)->getMaxSpillDepth() == 0  && comp->cg()->isOutOfLineHotPath())
             {
             if (self()->getDebug())
                traceMsg(comp, "\nSkipping GC map [%p] index %d (%s) for instruction [%p] in OOL hot path because it has already been reverse spilled.\n",

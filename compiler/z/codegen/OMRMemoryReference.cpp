@@ -556,7 +556,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
             {
             uintptrj_t staticAddressValue = (uintptrj_t) symbol->getStaticSymbol()->getStaticAddress();
             TR::S390ConstantDataSnippet * targetsnippet;
-            if (TR::Compiler->target.is64Bit())
+            if (cg->comp()->target().is64Bit())
                {
                targetsnippet = cg->findOrCreate8ByteConstant(0, staticAddressValue);
                }
@@ -596,7 +596,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
                {
                // Storing to the symbol reference
                TR::Register * tempReg;
-               if (TR::Compiler->target.is64Bit())
+               if (cg->comp()->target().is64Bit())
                   tempReg = cg->allocateRegister();
                else
                   tempReg = cg->allocateRegister();
@@ -858,7 +858,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Snippet * s, TR::CodeGenerator * cg
       {
       if (cg->isLiteralPoolOnDemandOn())
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             self()->setBaseRegister(cg->allocateRegister(), cg);
          else
             self()->setBaseRegister(cg->allocateRegister(), cg);
@@ -1147,7 +1147,7 @@ OMR::Z::MemoryReference::bookKeepingRegisterUses(TR::Instruction * instr, TR::Co
       _baseRegister->setIsUsedInMemRef();
       // Set addressing register to 64 bit data
       // but be careful of instructions using X type operand to specify something else other then memory
-      if(TR::Compiler->target.is64Bit() && (instr->getOpCode().isLoad() || instr->getOpCode().isStore() ||
+      if(cg->comp()->target().is64Bit() && (instr->getOpCode().isLoad() || instr->getOpCode().isStore() ||
                                  instr->getOpCodeValue() == TR::InstOpCode::LA || instr->getOpCodeValue() == TR::InstOpCode::LARL ||
                                  instr->getOpCodeValue() == TR::InstOpCode::LAY || instr->getOpCodeValue() == TR::InstOpCode::LAE ||
                                  instr->getOpCodeValue() == TR::InstOpCode::LAEY) )
@@ -1159,7 +1159,7 @@ OMR::Z::MemoryReference::bookKeepingRegisterUses(TR::Instruction * instr, TR::Co
       {
       instr->useRegister(_indexRegister);
       _indexRegister->setIsUsedInMemRef();
-      if(TR::Compiler->target.is64Bit() && (instr->getOpCode().isLoad() || instr->getOpCode().isStore() ||
+      if(cg->comp()->target().is64Bit() && (instr->getOpCode().isLoad() || instr->getOpCode().isStore() ||
                                  instr->getOpCodeValue() == TR::InstOpCode::LA || instr->getOpCodeValue() == TR::InstOpCode::LARL ||
                                  instr->getOpCodeValue() == TR::InstOpCode::LAY || instr->getOpCodeValue() == TR::InstOpCode::LAE ||
                                  instr->getOpCodeValue() == TR::InstOpCode::LAEY) )
@@ -1333,7 +1333,7 @@ OMR::Z::MemoryReference::populateAddTree(TR::Node * subTree, TR::CodeGenerator *
       // catch the pattern of aiadd on iaload <base> / isub of <expression> and -<constant> and
       // convert it into LA Rx,<constant>(R<expression>,R<base>)
       //
-      bool usingAladd = (TR::Compiler->target.is64Bit()) ? true : false;
+      bool usingAladd = (cg->comp()->target().is64Bit()) ? true : false;
 
       TR::Node * firstSubChild = integerChild->getFirstChild();
       TR::Node * secondSubChild = integerChild->getSecondChild();
@@ -1851,7 +1851,7 @@ OMR::Z::MemoryReference::populateMemoryReference(TR::Node * subTree, TR::CodeGen
          }
       else if (subTree->getOpCodeValue() == TR::aconst)
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             {
             _offset += subTree->getLongInt();
             }
@@ -1918,7 +1918,7 @@ OMR::Z::MemoryReference::consolidateRegisters(TR::Node * node, TR::CodeGenerator
       {
       if (node && node->isInternalPointer() && node->getPinningArrayPointer())
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg->comp()->target().is64Bit())
             tempTargetRegister = cg->allocateRegister();
          else
             tempTargetRegister = cg->allocateRegister();
@@ -1933,7 +1933,7 @@ OMR::Z::MemoryReference::consolidateRegisters(TR::Node * node, TR::CodeGenerator
       }
    else
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          tempTargetRegister = cg->allocateRegister();
       else
          tempTargetRegister = cg->allocateRegister();
@@ -2099,7 +2099,7 @@ OMR::Z::MemoryReference::enforce4KDisplacementLimit(TR::Node * node, TR::CodeGen
        !self()->isAdjustedForLongDisplacement())
       {
       TR::Register * tempTargetRegister = NULL;
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          tempTargetRegister = cg->allocateRegister();
       else
          tempTargetRegister = cg->allocateRegister();
@@ -2169,7 +2169,7 @@ OMR::Z::MemoryReference::enforceDisplacementLimit(TR::Node * node, TR::CodeGener
       {
       TR_ASSERT( node,"node should be non-null for enforceDisplacementLimit\n");
       TR::Register * tempTargetRegister;
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          tempTargetRegister = cg->allocateRegister();
       else
          tempTargetRegister = cg->allocateRegister();
@@ -2222,7 +2222,7 @@ OMR::Z::MemoryReference::eliminateNegativeDisplacement(TR::Node * node, TR::Code
       {
 
       TR::Register * tempTargetRegister;
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          tempTargetRegister = cg->allocateRegister();
       else
          tempTargetRegister = cg->allocateRegister();
@@ -2271,7 +2271,7 @@ OMR::Z::MemoryReference::separateIndexRegister(TR::Node * node, TR::CodeGenerato
          return preced;
          }
       TR::Register * tempTargetRegister = NULL;
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          tempTargetRegister = cg->allocateRegister();
       else
          tempTargetRegister = cg->allocateRegister();
@@ -2415,7 +2415,7 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
 bool
 OMR::Z::MemoryReference::needsAdjustDisp(TR::Instruction * instr, OMR::Z::MemoryReference * mRef, TR::CodeGenerator * cg)
    {
-   TR_ASSERT( TR::Compiler->target.is64Bit(), "needsAdjustDisp() call is for 64bit code-gen only");
+   TR_ASSERT( cg->comp()->target().is64Bit(), "needsAdjustDisp() call is for 64bit code-gen only");
 
    TR::SymbolReference * symRef = mRef->getSymbolReference();
    TR::Compilation *comp = cg->comp();
@@ -2497,7 +2497,7 @@ OMR::Z::MemoryReference::estimateBinaryLength(int32_t  currentEstimate, TR::Code
    else
       {
       length = instr->getOpCode().getInstructionLength();
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          // most pessimistic case has LGHI/SLLG/LA/SLLG/LA + LA
          // LGHI/SLLG/LA/SLLG/LA + LA (4+6+4+6+4+4)
@@ -2779,7 +2779,7 @@ OMR::Z::MemoryReference::calcDisplacement(uint8_t * cursor, TR::Instruction * in
       if (symbol->isRegisterMappedSymbol())
          {
          disp += symbol->castToRegisterMappedSymbol()->getOffset();
-         if (TR::Compiler->target.is64Bit() && TR::MemoryReference::needsAdjustDisp(instr, this, cg) && !self()->getDispAdjusted())
+         if (cg->comp()->target().is64Bit() && TR::MemoryReference::needsAdjustDisp(instr, this, cg) && !self()->getDispAdjusted())
             {
             disp += 4;
             }
@@ -2808,7 +2808,7 @@ generateImmToRegister(TR::CodeGenerator * cg, TR::Node * node, TR::Register * ta
       low  = (value & 0xfff);
       cursor = generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), node,  // LHI Rscrtch, (value>>12)&0xFFFF
                       targetRegister, (high&0xFFFF), cursor);
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
         {
         cursor = generateRSInstruction(cg, TR::InstOpCode::SLLG,
                    node, targetRegister, targetRegister, 12, cursor); // SLLG Rscrtch,Rscrtch,12
@@ -2831,7 +2831,7 @@ generateImmToRegister(TR::CodeGenerator * cg, TR::Node * node, TR::Register * ta
                                      ((value >> 24) & 0xff),
                                      cursor);  // LHI Rscrtch,value>>24&0xFF
       // now shift that left by 12 bits
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          cursor = generateRSInstruction(cg,
                                         TR::InstOpCode::SLLG,
@@ -2856,7 +2856,7 @@ generateImmToRegister(TR::CodeGenerator * cg, TR::Node * node, TR::Register * ta
                                      generateS390MemoryReference(targetRegister, ((value >> 12) & 0xfff), cg),
                                      cursor);         // LA  Rscrtch, value&0xFFF(,Rscrtch)
       // now shift those 20 bits left by 12 bits
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().is64Bit())
          {
          cursor = generateRSInstruction(cg,
                                         TR::InstOpCode::SLLG,
@@ -3002,7 +3002,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             else
                {
                scratchReg  = instr->assignBestSpillRegister2();
-               if (TR::Compiler->target.is64Bit())
+               if (cg->comp()->target().is64Bit())
                   offsetToLongDispSlot += 8;
                else
                   offsetToLongDispSlot += 4;
@@ -3235,7 +3235,7 @@ OMR::Z::MemoryReference::generateBinaryEncodingTouchUpForLongDisp(uint8_t *curso
          scratchReg = instr->getLocalLocalSpillReg2();
          if (!scratchReg)
             scratchReg = instr->assignBestSpillRegister2();
-         if(TR::Compiler->target.is64Bit())
+         if(cg->comp()->target().is64Bit())
             offsetToLongDispSlot += 8;
          else
             offsetToLongDispSlot += 4;

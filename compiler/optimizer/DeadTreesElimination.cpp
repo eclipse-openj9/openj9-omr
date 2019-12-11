@@ -96,7 +96,7 @@ static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::NodeChecklist &v
    // fold it into if statment and save jump instruction
    if (node->getOpCodeValue() == TR::arraycmp &&
       !node->isArrayCmpLen() &&
-      TR::Compiler->target.cpu.isX86())
+      opt->comp()->target().cpu.isX86())
       {
       anchorArrayCmp = false;
       }

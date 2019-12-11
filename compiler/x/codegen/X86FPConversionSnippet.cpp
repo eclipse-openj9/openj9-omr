@@ -67,7 +67,7 @@ uint8_t *TR::X86FPConversionSnippet::emitCallToConversionHelper(uint8_t *buffer)
       {
       helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(getHelperSymRef()->getReferenceNumber(), (void *)buffer);
 
-      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(helperAddress, nextInstructionAddress),
+      TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinRIPRange(helperAddress, nextInstructionAddress),
                       "Local helper trampoline must be reachable directly");
       }
    *(int32_t *)buffer = (int32_t)(helperAddress - nextInstructionAddress);

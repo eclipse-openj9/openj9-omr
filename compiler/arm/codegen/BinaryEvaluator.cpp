@@ -279,7 +279,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGen
        secondChild->getRegister() == NULL)
       {
       TR::Register *src1Reg   = cg->evaluate(firstChild);
-      if (TR::Compiler->target.cpu.isBigEndian())
+      if (cg->comp()->target().cpu.isBigEndian())
          {
          longVal.x.highValue = secondChild->getLongIntLow();
          longVal.x.lowValue = secondChild->getLongIntHigh();
@@ -423,7 +423,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeGen
    lowReg = cg->allocateRegister();
    trgReg = cg->allocateRegisterPair(lowReg, highReg);
 
-   if(TR::Compiler->target.cpu.isBigEndian())
+   if(cg->comp()->target().cpu.isBigEndian())
       {
       dependencies->addPreCondition(dd_lowReg, TR::RealRegister::gr1);
       dependencies->addPreCondition(dd_highReg, TR::RealRegister::gr0);
@@ -725,7 +725,7 @@ static TR::Register *ldivAndLRemHelper(TR::Node *node, bool isDivide, TR::CodeGe
    lowReg = cg->allocateRegister();
    trgReg = cg->allocateRegisterPair(lowReg, highReg);
 
-   if(TR::Compiler->target.cpu.isBigEndian())
+   if(cg->comp()->target().cpu.isBigEndian())
       {
       dependencies->addPreCondition(dd_lowReg, TR::RealRegister::gr1);
       dependencies->addPreCondition(dd_highReg, TR::RealRegister::gr0);

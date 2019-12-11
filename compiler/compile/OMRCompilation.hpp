@@ -1071,6 +1071,16 @@ public:
     */
    const TR::TypeLayout* typeLayout(TR_OpaqueClassBlock * clazz);
 
+   /**
+    * \brief
+    *    Returns a copy of the target env singleton that has been specialized
+    *    for the current compilation
+    *
+    * \return
+    *    reference to the copy of the target env
+    */
+   TR::Environment& target() { return _target; }
+
 private:
    void resetVisitCounts(vcount_t, TR::ResolvedMethodSymbol *);
    int16_t restoreInlineDepthUntil(int32_t stopIndex, TR_ByteCodeInfo &currentInfo);
@@ -1286,6 +1296,8 @@ private:
    typedef std::less<TR_OpaqueClassBlock*> LayoutComparator;
    typedef std::map<TR_OpaqueClassBlock *, const TR::TypeLayout *, LayoutComparator, LayoutAllocator> TypeLayoutMap;
    TypeLayoutMap _typeLayoutMap;
+
+   TR::Environment _target;
 
    /*
     * This must be last

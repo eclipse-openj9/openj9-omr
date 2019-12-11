@@ -187,7 +187,7 @@ OMR::Z::TreeEvaluator::iabsEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 #endif
    else if (node->getOpCodeValue() == TR::iabs)
       opCode = TR::InstOpCode::getLoadPositiveRegWidenOpCode();
-   else if (TR::Compiler->target.is64Bit())
+   else if (cg->comp()->target().is64Bit())
       opCode = TR::InstOpCode::LPGR;
    else
       TR_ASSERT( 0,"labs for 32 bit not implemented yet");

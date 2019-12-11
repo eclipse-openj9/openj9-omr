@@ -495,6 +495,6 @@ bool
 OMR::ARM64::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
    {
    return
-      !TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(targetAddress, sourceAddress) ||
+      !self()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(targetAddress, sourceAddress) ||
       self()->comp()->getOption(TR_StressTrampolines);
    }

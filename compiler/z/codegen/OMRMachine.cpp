@@ -409,7 +409,7 @@ boundNext(TR::Instruction * currentInstruction, int32_t realNum, TR::Register * 
 uint8_t
 OMR::Z::Machine::getGPRSize()
    {
-   return TR::Compiler->target.is64Bit() ? 8 : 4;
+   return self()->cg()->comp()->target().is64Bit() ? 8 : 4;
    }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3794,7 +3794,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
       }
 
    p = self()->addGlobalRegLater(linkage->getMethodMetaDataRegister(), p);
-   if (TR::Compiler->target.isZOS())
+   if (self()->cg()->comp()->target().isZOS())
       {
       p = self()->addGlobalRegLater(self()->cg()->getS390Linkage()->getStackPointerRegister(), p);
       }

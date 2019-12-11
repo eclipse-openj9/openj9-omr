@@ -75,7 +75,7 @@ mappedOffsetToFirstLocal(
    TR::Machine *machine = cg->machine();
 
    uint32_t min_arg_area = machine->getLinkRegisterKilled() ?
-                               (TR::Compiler->target.is64Bit() ? 8*8 : 8*4)
+                               (cg->comp()->target().is64Bit() ? 8*8 : 8*4)
                                : 0;
 
    uint32_t offset = linkage.getOffsetToFirstLocal() +
@@ -105,7 +105,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    _properties._registerFlags[TR::RealRegister::gr10] = IntegerArgument;
    _properties._registerFlags[TR::RealRegister::gr11] = 0;
    _properties._registerFlags[TR::RealRegister::gr12] = 0;
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       _properties._registerFlags[TR::RealRegister::gr13] = Preserved|PPC_Reserved; // system
    else
       _properties._registerFlags[TR::RealRegister::gr13] = Preserved;
@@ -123,7 +123,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    _properties._registerFlags[TR::RealRegister::fp7]   = FloatArgument;
    _properties._registerFlags[TR::RealRegister::fp8]   = FloatArgument;
 
-   if (TR::Compiler->target.is64Bit() || TR::Compiler->target.isAIX())
+   if (cg->comp()->target().is64Bit() || cg->comp()->target().isAIX())
       {
       _properties._registerFlags[TR::RealRegister::fp9]   = FloatArgument;
       _properties._registerFlags[TR::RealRegister::fp10]  = FloatArgument;
@@ -161,7 +161,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
 
    _properties._numIntegerArgumentRegisters  = 8;
    _properties._firstIntegerArgumentRegister = 0;
-   if (TR::Compiler->target.is64Bit() || TR::Compiler->target.isAIX())
+   if (cg->comp()->target().is64Bit() || cg->comp()->target().isAIX())
       _properties._numFloatArgumentRegisters    = 13;
    else
       _properties._numFloatArgumentRegisters    = 8;
@@ -193,7 +193,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    _properties._argumentRegisters[15] = TR::RealRegister::fp7;
    _properties._argumentRegisters[16] = TR::RealRegister::fp8;
 
-   if (TR::Compiler->target.is64Bit() || TR::Compiler->target.isAIX())
+   if (cg->comp()->target().is64Bit() || cg->comp()->target().isAIX())
        {
        _properties._argumentRegisters[17] = TR::RealRegister::fp9;
        _properties._argumentRegisters[18] = TR::RealRegister::fp10;
@@ -215,7 +215,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    _properties._returnRegisters[5]  = TR::RealRegister::fp4;
    _properties._returnRegisters[6]  = TR::RealRegister::vsr34;
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       _properties._numAllocatableIntegerRegisters          = 29; // 64
       _properties._firstAllocatableFloatArgumentRegister   = 42; // 64
@@ -228,7 +228,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
       _properties._lastAllocatableFloatVolatileRegister    = 43; // 32
       }
 
-   if (TR::Compiler->target.is32Bit() && TR::Compiler->target.isAIX())
+   if (cg->comp()->target().is32Bit() && cg->comp()->target().isAIX())
       _properties._firstAllocatableIntegerArgumentRegister = 9;  // aix 32 only
    else
       _properties._firstAllocatableIntegerArgumentRegister = 8;
@@ -240,7 +240,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    i = 0;
    _properties._allocationOrder[i++] = TR::RealRegister::gr12;
 
-   if (TR::Compiler->target.is32Bit() && TR::Compiler->target.isAIX())
+   if (cg->comp()->target().is32Bit() && cg->comp()->target().isAIX())
       _properties._allocationOrder[i++] = TR::RealRegister::gr11;
 
    _properties._allocationOrder[i++] = TR::RealRegister::gr10;
@@ -252,7 +252,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    _properties._allocationOrder[i++] = TR::RealRegister::gr4;
    _properties._allocationOrder[i++] = TR::RealRegister::gr3;
 
-   if (TR::Compiler->target.is64Bit() || !TR::Compiler->target.isAIX())
+   if (cg->comp()->target().is64Bit() || !cg->comp()->target().isAIX())
       _properties._allocationOrder[i++] = TR::RealRegister::gr11;
 
    _properties._allocationOrder[i++] = TR::RealRegister::gr0;
@@ -275,7 +275,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    _properties._allocationOrder[i++] = TR::RealRegister::gr15;
    _properties._allocationOrder[i++] = TR::RealRegister::gr14;
 
-   if (TR::Compiler->target.is32Bit())
+   if (cg->comp()->target().is32Bit())
       _properties._allocationOrder[i++] = TR::RealRegister::gr13;
 
    _properties._allocationOrder[i++] = TR::RealRegister::fp0;
@@ -330,9 +330,9 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    // Note: FPRs 14-31 are preserved, however if you use them as vector registers you must
    // assume the additional 64 bits are volatile because the callee will only preserve
    // the FPR portion and the additional 64 bits will be undefined after the callee returns.
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
-      bool isBE = TR::Compiler->target.cpu.isBigEndian();
+      bool isBE = cg->comp()->target().cpu.isBigEndian();
 
       // Volatile GPR (0,2-12) + FPR (0-13) + CCR (0-1,5-7) + VR (0-19) + FPR (14-31) if used as vector
       _properties._numberOfDependencyGPRegisters = 12 + 14 + 5 + 20 + 18;
@@ -341,7 +341,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
       }
    else
       {
-      if (TR::Compiler->target.isAIX())
+      if (cg->comp()->target().isAIX())
          {
          // Volatile GPR (0,2-12) + FPR (0-13) + CCR (0-1,5-7) + VR (0-19) + FPR (14-31) if used as vector
          _properties._numberOfDependencyGPRegisters = 12 + 14 + 5 + 20 + 18;
@@ -658,7 +658,7 @@ TR::PPCSystemLinkage::createPrologue(
 
    if (savedFirst <= TR::RealRegister::LastGPR)
       {
-      if (TR::Compiler->target.cpu.id() == TR_PPCgp || TR::Compiler->target.is64Bit() ||
+      if (cg()->comp()->target().cpu.id() == TR_PPCgp || cg()->comp()->target().is64Bit() ||
           (!comp()->getOption(TR_OptimizeForSpace) &&
            TR::RealRegister::LastGPR - savedFirst <= 3))
          for (regIndex=TR::RealRegister::LastGPR; regIndex>=savedFirst; regIndex=(TR::RealRegister::RegNum)((uint32_t)regIndex-1))
@@ -761,7 +761,7 @@ TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
 
    if (savedFirst <= TR::RealRegister::LastGPR)
       {
-      if (TR::Compiler->target.cpu.id() == TR_PPCgp || TR::Compiler->target.is64Bit() ||
+      if (cg()->comp()->target().cpu.id() == TR_PPCgp || cg()->comp()->target().is64Bit() ||
           (!comp()->getOption(TR_OptimizeForSpace) &&
            TR::RealRegister::LastGPR - savedFirst <= 3))
          for (regIndex=TR::RealRegister::LastGPR; regIndex>=savedFirst; regIndex=(TR::RealRegister::RegNum)((uint32_t)regIndex-1))
@@ -832,7 +832,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
    TR::Symbol * callSymbol = callNode->getSymbolReference()->getSymbol();
 
    uint32_t firstArgumentChild = callNode->getFirstArgumentIndex();
-   bool aix_style_linkage = (TR::Compiler->target.isAIX() || (TR::Compiler->target.is64Bit() && TR::Compiler->target.isLinux()));
+   bool aix_style_linkage = (cg()->comp()->target().isAIX() || (cg()->comp()->target().is64Bit() && cg()->comp()->target().isLinux()));
 
    /* Step 1 - figure out how many arguments are going to be spilled to memory i.e. not in registers */
    for (i = firstArgumentChild; i < callNode->getNumChildren(); i++)
@@ -849,7 +849,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
             numIntegerArgs++;
             break;
          case TR::Int64:
-            if (TR::Compiler->target.is64Bit())
+            if (cg()->comp()->target().is64Bit())
                {
                if (numIntegerArgs >= properties.getNumIntArgRegs())
                   memArgs++;
@@ -891,7 +891,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
          case TR::Double:
             if (aix_style_linkage)
                {
-               if (TR::Compiler->target.is64Bit())
+               if (cg()->comp()->target().is64Bit())
                   {
                   if (numIntegerArgs >= properties.getNumIntArgRegs())
                      memArgs++;
@@ -989,7 +989,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                   dependencies->addPreCondition(argRegister, TR::RealRegister::gr3);
                   dependencies->addPostCondition(resultReg, TR::RealRegister::gr3);
                   }
-               else if (TR::Compiler->target.is32Bit() && numIntegerArgs == 1 && resType.isInt64())
+               else if (cg()->comp()->target().is32Bit() && numIntegerArgs == 1 && resType.isInt64())
                   {
                   TR::Register *resultReg = cg()->allocateRegister();
                   dependencies->addPreCondition(argRegister, TR::RealRegister::gr4);
@@ -1025,7 +1025,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                {
                if (!cg()->canClobberNodesRegister(child, 0))
                   {
-                  if (TR::Compiler->target.is64Bit())
+                  if (cg()->comp()->target().is64Bit())
                      {
                      tempRegister = cg()->allocateRegister();
                      generateTrg1Src1Instruction(cg(), TR::InstOpCode::mr, callNode, tempRegister, argRegister);
@@ -1047,13 +1047,13 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                      resultReg = cg()->allocateCollectedReferenceRegister();
                   else
                      resultReg = cg()->allocateRegister();
-                  if (TR::Compiler->target.is64Bit())
+                  if (cg()->comp()->target().is64Bit())
                      dependencies->addPreCondition(argRegister, TR::RealRegister::gr3);
                   else
                      dependencies->addPreCondition(argRegister->getRegisterPair()->getHighOrder(), TR::RealRegister::gr3);
                   dependencies->addPostCondition(resultReg, TR::RealRegister::gr3);
                   }
-               else if (TR::Compiler->target.is32Bit() && numIntegerArgs == 1 && resType.isInt64())
+               else if (cg()->comp()->target().is32Bit() && numIntegerArgs == 1 && resType.isInt64())
                   {
                   TR::Register *resultReg = cg()->allocateRegister();
                   dependencies->addPreCondition(argRegister, TR::RealRegister::gr4);
@@ -1061,12 +1061,12 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else
                   {
-                  if (TR::Compiler->target.is64Bit())
+                  if (cg()->comp()->target().is64Bit())
                      TR::addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
                   else
                      TR::addDependency(dependencies, argRegister->getRegisterPair()->getHighOrder(), properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
                   }
-               if (TR::Compiler->target.is32Bit())
+               if (cg()->comp()->target().is32Bit())
                   {
                   if (numIntegerArgs < properties.getNumIntArgRegs()-1)
                      {
@@ -1095,7 +1095,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                }
             else // numIntegerArgs >= properties.getNumIntArgRegs()
                {
-               if (TR::Compiler->target.is64Bit())
+               if (cg()->comp()->target().is64Bit())
                   {
                   mref = getOutgoingArgumentMemRef(argSize, argRegister, TR::InstOpCode::std, pushToMemory[argIndex++], TR::Compiler->om.sizeofReferenceAddress());
                   }
@@ -1170,7 +1170,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else // numIntegerArgs >= properties.getNumIntArgRegs()
                   {
-                  if (TR::Compiler->target.is64Bit() && TR::Compiler->target.isLinux())
+                  if (cg()->comp()->target().is64Bit() && cg()->comp()->target().isLinux())
                      {
                      mref = getOutgoingArgumentMemRef(argSize+4, argReg, TR::InstOpCode::stfs, pushToMemory[argIndex++], 4);
                      }
@@ -1244,7 +1244,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                   else
                      TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
 
-                  if (TR::Compiler->target.is32Bit())
+                  if (cg()->comp()->target().is32Bit())
                      {
                      if ((numIntegerArgs+1) < properties.getNumIntArgRegs())
                         TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs+1), TR_GPR, cg());
@@ -1259,7 +1259,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                   mref = getOutgoingArgumentMemRef(argSize, argReg, TR::InstOpCode::stfd, pushToMemory[argIndex++], 8);
                   }
 
-               numIntegerArgs += TR::Compiler->target.is64Bit()?1:2;
+               numIntegerArgs += cg()->comp()->target().is64Bit()?1:2;
                }
             numFloatArgs++;
             if (aix_style_linkage)
@@ -1397,7 +1397,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
    TR::Instruction             *gcPoint;
    TR::MethodSymbol               *callSymbol = callSymRef->getSymbol()->castToMethodSymbol();
    TR::ResolvedMethodSymbol        *sym = callSymbol->getResolvedMethodSymbol();
-   bool aix_style_linkage = (TR::Compiler->target.isAIX() || (TR::Compiler->target.is64Bit() && TR::Compiler->target.isLinux()));
+   bool aix_style_linkage = (cg()->comp()->target().isAIX() || (cg()->comp()->target().is64Bit() && cg()->comp()->target().isLinux()));
    int32_t                        refNum = callSymRef->getReferenceNumber();
 
    //This is not JIT pseudo TOC, but jit-module system TOC.
@@ -1407,7 +1407,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
          //Implies TOC needs to be restored (ie not 32bit ppc-linux-be)
          //This is wrong with regard to where system TOC is restored from, but happens to be right for JIT
          //for the time being.
-         if(TR::Compiler->target.cpu.isBigEndian())
+         if(cg()->comp()->target().cpu.isBigEndian())
             {
 #if !defined(JITTEST)
             TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
@@ -1463,7 +1463,7 @@ TR::Register *TR::PPCSystemLinkage::buildDirectDispatch(TR::Node *callNode)
          break;
       case TR::lcall:
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg()->comp()->target().is64Bit())
             returnRegister = dependencies->searchPostConditionRegister(
                                 pp.getLongReturnRegister());
          else
@@ -1506,7 +1506,7 @@ void TR::PPCSystemLinkage::buildVirtualDispatch(TR::Node                        
                                                TR::RegisterDependencyConditions *dependencies,
                                                uint32_t                            sizeOfArguments)
    {
-   bool aix_style_linkage = (TR::Compiler->target.isAIX() || (TR::Compiler->target.is64Bit() && TR::Compiler->target.isLinux()));
+   bool aix_style_linkage = (cg()->comp()->target().isAIX() || (cg()->comp()->target().is64Bit() && cg()->comp()->target().isLinux()));
    TR_ASSERT(callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->isComputed(), "system linkage only supports computed indirect call for now %p\n", callNode);
    //We do not support Linux 32bit.
    if(!aix_style_linkage)
@@ -1540,10 +1540,10 @@ void TR::PPCSystemLinkage::buildVirtualDispatch(TR::Node                        
    cg()->evaluate(callNode->getChild(0));
    cg()->decReferenceCount(callNode->getChild(0));
 
-   int32_t callerSaveTOCOffset = (TR::Compiler->target.cpu.isBigEndian() ? 5 : 3) *  TR::Compiler->om.sizeofReferenceAddress();
+   int32_t callerSaveTOCOffset = (cg()->comp()->target().cpu.isBigEndian() ? 5 : 3) *  TR::Compiler->om.sizeofReferenceAddress();
 
    TR::Register *targetRegister;
-   if (TR::Compiler->target.cpu.isBigEndian())
+   if (cg()->comp()->target().cpu.isBigEndian())
       {
       // load target from FD
       generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, callNode, gr0, new (trHeapMemory()) TR::MemoryReference(callNode->getChild(0)->getRegister(), 0, TR::Compiler->om.sizeofReferenceAddress(), cg()));
@@ -1559,7 +1559,7 @@ void TR::PPCSystemLinkage::buildVirtualDispatch(TR::Node                        
 
    generateSrc1Instruction(cg(), TR::InstOpCode::mtctr, callNode, targetRegister, 0);
 
-   if (TR::Compiler->target.cpu.isBigEndian())
+   if (cg()->comp()->target().cpu.isBigEndian())
       generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, callNode, grTOCReg, new (trHeapMemory()) TR::MemoryReference(callNode->getChild(0)->getRegister(), TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress(), cg()));
 
    generateDepInstruction(cg(), TR::InstOpCode::bctrl, callNode, dependencies);
@@ -1594,7 +1594,7 @@ TR::Register *TR::PPCSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
          break;
       case TR::lcalli:
          {
-         if (TR::Compiler->target.is64Bit())
+         if (cg()->comp()->target().is64Bit())
             returnRegister = dependencies->searchPostConditionRegister(
                                 pp.getLongReturnRegister());
          else
@@ -1665,7 +1665,7 @@ void TR::PPCSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSy
                {
                index = numIntArgs;
                }
-            if (TR::Compiler->target.is64Bit())
+            if (cg()->comp()->target().is64Bit())
                numIntArgs ++;
             else
                numIntArgs += 2;

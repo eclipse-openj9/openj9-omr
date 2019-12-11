@@ -1569,7 +1569,7 @@ OMR::Node::createAddConstantToAddress(TR::Node * addr, intptr_t value, TR::Node 
 
    if (value == 0) return addr;
 
-   if (TR::Compiler->target.is64Bit())
+   if (TR::comp()->target().is64Bit())
       {
       TR::Node *lconst = TR::Node::lconst(parentOfNewNode, (int64_t)value);
       ret = TR::Node::create(parentOfNewNode, TR::aladd, 2);
@@ -3701,7 +3701,7 @@ TR::Node *
 OMR::Node::createLongIfNeeded()
    {
    TR::Compilation * comp = TR::comp();
-   bool usingAladd = TR::Compiler->target.is64Bit();
+   bool usingAladd = comp->target().is64Bit();
    TR::Node *retNode = NULL;
 
    if (usingAladd)
@@ -4295,7 +4295,7 @@ OMR::Node::countChildren(TR::ILOpCodes opcode)
 bool
 OMR::Node::requiresRegisterPair(TR::Compilation *comp)
    {
-   return (self()->getType().isInt64() && TR::Compiler->target.is32Bit() && !comp->cg()->use64BitRegsOn32Bit());
+   return (self()->getType().isInt64() && comp->target().is32Bit() && !comp->cg()->use64BitRegsOn32Bit());
    }
 
 
@@ -4567,7 +4567,7 @@ OMR::Node::get64bitIntegralValue()
    else if (type.isInt64())
       return self()->getLongInt();
    else if (type.isAddress())
-      return self()->getAddress(); //TR::Compiler->target.is64Bit() ? getUnsignedLongInt() : getUnsignedInt();
+      return self()->getAddress();
    else
       {
       TR_ASSERT(false, "Must be an integral or address but it is type %s on node %p\n", self()->getDataType().toString(), self());
@@ -4592,7 +4592,7 @@ OMR::Node::set64bitIntegralValue(int64_t value)
       self()->setLongInt(value);
    else if (type.isAddress())
       {
-      if (TR::Compiler->target.is64Bit())
+      if (TR::comp()->target().is64Bit())
          self()->setLongInt(value);
       else
          self()->setInt((int32_t)value);
@@ -4617,7 +4617,7 @@ OMR::Node::get64bitIntegralValueAsUnsigned()
    else if (type.isInt64())
       return self()->getUnsignedLongInt();
    else if (type.isAddress())
-      return TR::Compiler->target.is64Bit() ? self()->getUnsignedLongInt() : self()->getUnsignedInt();
+      return TR::comp()->target().is64Bit() ? self()->getUnsignedLongInt() : self()->getUnsignedInt();
    else
       {
       TR_ASSERT(false, "Must be an integral or address but it is type %s", self()->getDataType().toString());

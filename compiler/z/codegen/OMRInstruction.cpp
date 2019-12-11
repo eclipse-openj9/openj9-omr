@@ -86,7 +86,7 @@ OMR::Z::Instruction::Instruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic
    OMR::Instruction(cg, op, node),
    CTOR_INITIALIZER_LIST
    {
-   TR_ASSERT_FATAL(TR::Compiler->target.cpu.getSupportsArch(_opcode.getMinimumALS()), "Processor detected does not support instruction %s\n", _opcode.getMnemonicName());
+   TR_ASSERT_FATAL(cg->comp()->target().cpu.getSupportsArch(_opcode.getMinimumALS()), "Processor detected does not support instruction %s\n", _opcode.getMnemonicName());
 
    self()->initialize();
    }
@@ -96,7 +96,7 @@ OMR::Z::Instruction::Instruction(TR::CodeGenerator*cg, TR::Instruction* precedin
    OMR::Instruction(cg, precedingInstruction, op, node),
    CTOR_INITIALIZER_LIST
    {
-   TR_ASSERT_FATAL(TR::Compiler->target.cpu.getSupportsArch(_opcode.getMinimumALS()), "Processor detected does not support instruction %s\n", _opcode.getMnemonicName());
+   TR_ASSERT_FATAL(cg->comp()->target().cpu.getSupportsArch(_opcode.getMinimumALS()), "Processor detected does not support instruction %s\n", _opcode.getMnemonicName());
 
    self()->initialize(precedingInstruction, true);
    }
@@ -960,7 +960,7 @@ OMR::Z::Instruction::useTargetRegister(TR::Register* reg)
    self()->useRegister(reg);
 
    if (reg->getKind() == TR_GPR && (_opcode.is64bit() || _opcode.is32to64bit() ||
-         (TR::Compiler->target.is64Bit() &&
+         (comp->target().is64Bit() &&
             (self()->getOpCodeValue() == TR::InstOpCode::LA ||
              self()->getOpCodeValue() == TR::InstOpCode::LAY ||
              self()->getOpCodeValue() == TR::InstOpCode::LARL ||

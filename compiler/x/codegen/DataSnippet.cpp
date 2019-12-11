@@ -61,7 +61,7 @@ TR::X86DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
                                   __FILE__, __LINE__, self()->getNode());
          }
 
-      if (TR::Compiler->target.is64Bit())
+      if (cg()->comp()->target().is64Bit())
          {
          if (!needRelocation)
             cg()->jitAddPicToPatchOnClassUnload((void*)-1, (void *) cursor);

@@ -74,7 +74,7 @@ OMR::X86::I386::CodeGenerator::CodeGenerator() :
    self()->setSupportsDoubleWordCAS();
    self()->setSupportsDoubleWordSet();
 
-   if (TR::Compiler->target.isWindows())
+   if (self()->comp()->target().isWindows())
       {
       if (self()->comp()->getOption(TR_DisableTraps))
          {
@@ -92,7 +92,7 @@ OMR::X86::I386::CodeGenerator::CodeGenerator() :
       self()->setJNILinkageCalleeCleanup();
       self()->setRealVMThreadRegister(self()->machine()->getRealRegister(TR::RealRegister::ebp));
       }
-   else if (TR::Compiler->target.isLinux())
+   else if (self()->comp()->target().isLinux())
       {
       if (self()->comp()->getOption(TR_DisableTraps))
          {

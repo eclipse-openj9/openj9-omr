@@ -114,7 +114,7 @@ OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFact
          break;
       case OMR::tacticalGlobalRegisterAllocator:
          _flags.set(requiresStructure);
-         if (self()->comp()->getMethodHotness() >= hot && TR::Compiler->target.is64Bit())
+         if (self()->comp()->getMethodHotness() >= hot && o->comp()->target().is64Bit())
             _flags.set(requiresLocalsUseDefInfo | doesNotRequireLoadsAsDefs);
          break;
       case OMR::loopInversion:
@@ -180,7 +180,7 @@ OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFact
       case OMR::loopStrider:
          _flags.set(requiresStructure);
          // get UseDefInfo for sign-extension elimination on 64-bit
-         if (TR::Compiler->target.is64Bit())
+         if (o->comp()->target().is64Bit())
             _flags.set(requiresLocalsUseDefInfo | doesNotRequireLoadsAsDefs);
          break;
       case OMR::profiledNodeVersioning:

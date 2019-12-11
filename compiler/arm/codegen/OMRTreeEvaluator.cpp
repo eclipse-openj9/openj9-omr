@@ -327,7 +327,7 @@ TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, TR::Node * node, int
 TR::Register *OMR::ARM::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *tempReg;
-   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
 
    tempReg = cg->allocateRegister();
    if (node->getSymbolReference()->getSymbol()->isInternalPointer())
@@ -340,9 +340,9 @@ TR::Register *OMR::ARM::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGe
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
    generateTrg1MemInstruction(cg, ARMOp_ldr, node, tempReg, tempMR);
 
-   if (needSync && TR::Compiler->target.cpu.id() != TR_DefaultARMProcessor)
+   if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
-      generateInstruction(cg, (TR::Compiler->target.cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
+      generateInstruction(cg, (cg->comp()->target().cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
       }
    tempMR->decNodeReferenceCounts();
 
@@ -432,7 +432,7 @@ TR::Register *OMR::ARM::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGe
       }
 
    TR::Register *tempReg;
-   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
 
    if (!node->getSymbolReference()->getSymbol()->isInternalPointer())
       {
@@ -459,9 +459,9 @@ TR::Register *OMR::ARM::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGe
       }
 #endif
 
-   if (needSync && TR::Compiler->target.cpu.id() != TR_DefaultARMProcessor)
+   if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
-      generateInstruction(cg, (TR::Compiler->target.cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
+      generateInstruction(cg, (cg->comp()->target().cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
       }
    tempMR->decNodeReferenceCounts();
 
@@ -475,10 +475,10 @@ TR::Register *OMR::ARM::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGe
    TR::Register           *highReg = cg->allocateRegister();
    TR::RegisterPair       *trgReg = cg->allocateRegisterPair(lowReg, highReg);
    TR::Compilation *comp = cg->comp();
-   bool bigEndian = TR::Compiler->target.cpu.isBigEndian();
-   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   bool bigEndian = cg->comp()->target().cpu.isBigEndian();
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
 
-   if (needSync && TR::Compiler->target.cpu.id() != TR_DefaultARMProcessor)
+   if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
       TR::SymbolReference *vrlRef = comp->getSymRefTab()->findOrCreateVolatileReadLongSymbolRef(comp->getMethodSymbol());
@@ -534,11 +534,11 @@ TR::Register *OMR::ARM::TreeEvaluator::commonLoadEvaluator(TR::Node *node,  TR_A
    {
    TR::Register *tempReg = node->setRegister(cg->allocateRegister());
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
-   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    generateTrg1MemInstruction(cg, memToRegOp, node, tempReg, tempMR);
-   if (needSync && TR::Compiler->target.cpu.id() != TR_DefaultARMProcessor)
+   if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
-      generateInstruction(cg, (TR::Compiler->target.cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
+      generateInstruction(cg, (cg->comp()->target().cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
       }
    tempMR->decNodeReferenceCounts();
    return tempReg;
@@ -552,7 +552,7 @@ TR::Register *OMR::ARM::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::Code
    TR::Node                *firstChild = node->getFirstChild();
    TR::Register            *sourceRegister;
    bool killSource = false;
-   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
 
    if (firstChild->getReferenceCount() > 1 && firstChild->getRegister() != NULL)
       {
@@ -570,9 +570,9 @@ TR::Register *OMR::ARM::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::Code
    else
       sourceRegister = cg->evaluate(firstChild);
 
-   if (needSync && TR::Compiler->target.cpu.id() != TR_DefaultARMProcessor)
+   if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
-      generateInstruction(cg, (TR::Compiler->target.cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
+      generateInstruction(cg, (cg->comp()->target().cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
       }
 
    generateMemSrc1Instruction(cg, ARMOp_str, node, tempMR, sourceRegister);
@@ -598,7 +598,7 @@ TR::Register *OMR::ARM::TreeEvaluator::awrtbariEvaluator(TR::Node *node, TR::Cod
    TR::Node                *secondChild = node->getSecondChild();
    TR::Register            *sourceRegister;
    bool killSource = false;
-   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
 
    /* comp->useCompressedPointers() is false for 32bit environment, leaving the compressed pointer support unimplemented. */
    if (secondChild->getReferenceCount() > 1 && secondChild->getRegister() != NULL)
@@ -617,9 +617,9 @@ TR::Register *OMR::ARM::TreeEvaluator::awrtbariEvaluator(TR::Node *node, TR::Cod
    else
       sourceRegister = cg->evaluate(secondChild);
 
-   if (needSync && TR::Compiler->target.cpu.id() != TR_DefaultARMProcessor)
+   if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
-      generateInstruction(cg, (TR::Compiler->target.cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
+      generateInstruction(cg, (cg->comp()->target().cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
       }
 
    generateMemSrc1Instruction(cg, ARMOp_str, node, tempMR, sourceRegister);
@@ -652,11 +652,11 @@ TR::Register *OMR::ARM::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeG
       {
       valueChild = node->getFirstChild();
       }
-   bool bigEndian = TR::Compiler->target.cpu.isBigEndian();
-   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   bool bigEndian = cg->comp()->target().cpu.isBigEndian();
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    TR::Register *valueReg = cg->evaluate(valueChild);
 
-   if (needSync && TR::Compiler->target.cpu.id() != TR_DefaultARMProcessor)
+   if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
       TR::Register           *addrReg  = cg->allocateRegister();
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
@@ -718,7 +718,7 @@ TR::Register *OMR::ARM::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::ARM::TreeEvaluator::commonStoreEvaluator(TR::Node *node, TR_ARMOpCodes memToRegOp, int32_t memSize, TR::CodeGenerator *cg)
    {
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
-   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    TR::Node *valueChild;
    if (node->getOpCode().isIndirect())
       {
@@ -729,14 +729,14 @@ TR::Register *OMR::ARM::TreeEvaluator::commonStoreEvaluator(TR::Node *node, TR_A
       valueChild = node->getFirstChild();
       }
 
-   if (needSync && TR::Compiler->target.cpu.id() != TR_DefaultARMProcessor)
+   if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
-      generateInstruction(cg, (TR::Compiler->target.cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb_st, node);
+      generateInstruction(cg, (cg->comp()->target().cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb_st, node);
       }
    generateMemSrc1Instruction(cg, memToRegOp, node, tempMR, cg->evaluate(valueChild));
-   if (needSync && TR::Compiler->target.cpu.id() != TR_DefaultARMProcessor)
+   if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
-      generateInstruction(cg, (TR::Compiler->target.cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
+      generateInstruction(cg, (cg->comp()->target().cpu.id() == TR_ARMv6) ? ARMOp_dmb_v6 : ARMOp_dmb, node);
       }
    valueChild->decReferenceCount();
    tempMR->decNodeReferenceCounts();
@@ -1429,7 +1429,7 @@ TR::Register *OMR::ARM::TreeEvaluator::conversionAnalyser(TR::Node          *nod
    if (child->getReferenceCount() == 1 && child->getRegister() == NULL && child->getOpCode().isMemoryReference())
       {
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, dstBits >> 3, cg);
-      if (TR::Compiler->target.cpu.isBigEndian() && node->getSize() < child->getSize())
+      if (cg->comp()->target().cpu.isBigEndian() && node->getSize() < child->getSize())
          {
          tempMR->addToOffset(node, child->getSize() - (dstBits>>3), cg);
          }
@@ -1454,7 +1454,7 @@ static void generateSignOrZeroExtend(TR::Node *node, TR::Register *dst, TR::Regi
    {
    TR_ARMOpCodes opcode = ARMOp_bad;
 
-   if (TR::Compiler->target.cpu.id() >= TR_ARMv6)
+   if (cg->comp()->target().cpu.id() >= TR_ARMv6)
       {
       // sxtb/sxth/uxtb/uxth instructions are unavailable in ARMv5 and older
       if (needSignExtend)

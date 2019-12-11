@@ -97,7 +97,7 @@ static void forceSize(TR::Node *node, TR::Register *reg, bool is64Bit, TR::CodeG
 inline TR::Register *evaluateAndForceSize(TR::Node *node, bool is64Bit, TR::CodeGenerator *cg)
    {
    TR::Register *reg = cg->evaluate(node);
-   if (TR::Compiler->target.is64Bit())
+   if (cg->comp()->target().is64Bit())
       {
       forceSize(node, reg, is64Bit, cg);
       }
@@ -967,7 +967,7 @@ TR::Register *OMR::X86::TreeEvaluator::baddEvaluator(TR::Node *node, TR::CodeGen
 
    // This comment has been tested on X86_32 and X86_64 Linux only, and has not been tested
    // on any Windows operating systems.
-   // TR_ASSERT(TR::Compiler->target.is32Bit(), "AMD64 baddEvaluator not yet supported");
+   // TR_ASSERT(cg->comp()->target().is32Bit(), "AMD64 baddEvaluator not yet supported");
 
    // See if we can generate a direct memory operation. In this case there is no
    // target register generated and we return NULL to the caller (which should be
@@ -1093,7 +1093,7 @@ TR::Register *OMR::X86::TreeEvaluator::saddEvaluator(TR::Node *node, TR::CodeGen
 
    //This comment has been tested on X86_32 and X86_64 Linux only, and has not been tested
    //on any Windows operating systems.
-   //TR_ASSERT(TR::Compiler->target.is32Bit(), "AMD64 baddEvaluator not yet supported");
+   //TR_ASSERT(cg->comp()->target().is32Bit(), "AMD64 baddEvaluator not yet supported");
 
    // See if we can generate a direct memory operation. In this case there is no
    // target register generated and we return NULL to the caller (which should be
@@ -1226,7 +1226,7 @@ TR::Register *OMR::X86::TreeEvaluator::caddEvaluator(TR::Node *node, TR::CodeGen
    bool                 oursIsTheOnlyMemRef = true;
    TR::Compilation     *comp                = cg->comp();
 
-   TR_ASSERT(TR::Compiler->target.is32Bit(), "AMD64 baddEvaluator not yet supported");
+   TR_ASSERT(cg->comp()->target().is32Bit(), "AMD64 baddEvaluator not yet supported");
 
    // See if we can generate a direct memory operation. In this case there is no
    // target register generated and we return NULL to the caller (which should be
@@ -2715,7 +2715,7 @@ TR::X86RegInstruction  *OMR::X86::TreeEvaluator::generateRegisterShift(TR::Node 
                   diagnostic("shift: removed sign or zero extend to shift amount in memory in method %s\n",
                               comp->signature());
                }
-            else if (op != TR::l2i || TR::Compiler->target.is64Bit()) // cannot use a reigster pair as the shift amount
+            else if (op != TR::l2i || comp->target().is64Bit()) // cannot use a reigster pair as the shift amount
                {
                secondChild->decReferenceCount();
                secondChild = grandChild;
@@ -2826,7 +2826,7 @@ TR::X86MemInstruction  *OMR::X86::TreeEvaluator::generateMemoryShift(TR::Node *n
                if (reportShiftAmount)
                   diagnostic("shift: removed sign or zero extend to shift amount in memory in method %s\n", comp->signature());
                }
-            else if (op != TR::l2i || TR::Compiler->target.is64Bit())
+            else if (op != TR::l2i || comp->target().is64Bit())
                {
                secondChild->decReferenceCount();
                secondChild = grandChild;

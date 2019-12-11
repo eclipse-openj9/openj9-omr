@@ -545,7 +545,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src1Imm2Instruction * instr)
    print(pOutFile, instr->getSource1Register(), TR_WordReg);
 
    lmask = instr->getLongMask();
-   if (TR::Compiler->target.is64Bit())
+   if (instr->cg()->comp()->target().is64Bit())
       trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT ", " POINTER_PRINTF_FORMAT, instr->getSourceImmediate(), lmask);
    else
       trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT ", 0x%x", instr->getSourceImmediate(), (uint32_t)lmask);
@@ -594,7 +594,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src2ImmInstruction * instr)
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource2Register(), TR_WordReg);
    lmask = instr->getLongMask();
-   if (TR::Compiler->target.is64Bit())
+   if (instr->cg()->comp()->target().is64Bit())
       trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT, lmask);
    else
       trfprintf(pOutFile, ", 0x%x", (uint32_t)lmask);

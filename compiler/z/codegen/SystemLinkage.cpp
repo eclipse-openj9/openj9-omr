@@ -305,10 +305,10 @@ TR::SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackInd
       }
 
    // Map slot for long displacement
-   if (TR::Compiler->target.isLinux())
+   if (comp()->target().isLinux())
       {
       // Linux on Z has a special reserved slot in the linkage convention
-      setOffsetToLongDispSlot(TR::Compiler->target.is64Bit() ? 8 : 4);
+      setOffsetToLongDispSlot(comp()->target().is64Bit() ? 8 : 4);
       }
    else
       {

@@ -977,20 +977,12 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
       }
    if (kindOfRegister != TR_FPR && kindOfRegister != TR_VRF && assignedRegister != NULL)
       {
-      // In case we need a register shuffle, if the register we are assigning is a source register of the instruction,
-      // the shuffling instruction should happen before this instruction
-      TR::Instruction *appendInst = currInst;
-      if (!defsRegister && currInst->usesRegister(targetRegister) )
-         {
-         appendInst = currInst->getPrev();
-         }
-
       if ((assignedRegister->getRealRegisterMask() & availRegMask) == 0)
          {
          // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
          // find a new register to shuffle to
          TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
-         TR::Instruction *cursor = self()->registerCopy(self()->cg(), kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, appendInst);
+         TR::Instruction *cursor = self()->registerCopy(self()->cg(), kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, currInst);
          targetRegister->setAssignedRegister(newAssignedRegister);
          newAssignedRegister->setAssignedRegister(targetRegister);
          newAssignedRegister->setState(TR::RealRegister::Assigned);

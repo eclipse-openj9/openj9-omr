@@ -73,6 +73,14 @@ extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, TR::Node *nod
  */
 extern bool logicImmediateHelper(uint64_t value, bool is64Bit, bool &n, uint32_t &immEncoded);
 
+struct TR_ARM64BinaryEncodingData : public TR_BinaryEncodingData
+   {
+   int32_t estimate;
+   TR::Instruction *cursorInstruction;
+   TR::Instruction *i2jEntryInstruction;
+   TR::Recompilation *recomp;
+   };
+
 namespace OMR
 {
 
@@ -327,6 +335,12 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * @param[in] rtii : the returnTypeInfo instruction
     */
    void setReturnTypeInfoInstruction(TR::ARM64ImmInstruction *rtii) { _returnTypeInfoInstruction = rtii; }
+
+   /**
+    * @brief Generates pre-prologue
+    * @param[in] data : binary encoding data
+    */
+   void generateBinaryEncodingPrePrologue(TR_ARM64BinaryEncodingData &data);
 
    private:
 

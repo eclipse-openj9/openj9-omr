@@ -219,7 +219,7 @@ struct Dwarf_CU_Context
 	Dwarf_Unsigned _nextCUheaderOffset;
 	Dwarf_CU_Context *_nextCU;
 
-	static vector<string> _fileList;
+	static unordered_map<string, size_t> _fileId; /* key: file name, value: order added indexed at 0 */
 	static Dwarf_CU_Context *_firstCU;
 	static Dwarf_CU_Context *_currentCU;
 };

@@ -35,7 +35,7 @@ static const char * const _errmsgs[] = {
 	"DW_DLE_VMM (9) dwarf format/library version mismatch",
 };
 
-vector<string> Dwarf_CU_Context::_fileList;
+unordered_map<string, size_t> Dwarf_CU_Context::_fileId;
 unordered_map<Dwarf_Off, Dwarf_Die> Dwarf_Die_s::refMap;
 
 int
@@ -53,21 +53,19 @@ dwarf_srcfiles(Dwarf_Die die, char ***srcfiles, Dwarf_Signed *filecount, Dwarf_E
 		 * This implementation maintains the entire list through
 		 * all CU's, rather than just the current CU, for simplicity.
 		 */
-		*filecount = Dwarf_CU_Context::_fileList.size();
+		*filecount = Dwarf_CU_Context::_fileId.size();
 		*srcfiles = new char *[*filecount];
 		if (NULL == *srcfiles) {
 			ret = DW_DLV_ERROR;
 			setError(error, DW_DLE_MAF);
 		} else {
-			size_t index = 0;
-			for (str_vect::iterator it = Dwarf_CU_Context::_fileList.begin(); it != Dwarf_CU_Context::_fileList.end(); ++it) {
-				(*srcfiles)[index] = strdup(it->c_str());
-				if (NULL == (*srcfiles)[index]) {
+			for (unordered_map<string, size_t>::const_iterator it = Dwarf_CU_Context::_fileId.begin(); it != Dwarf_CU_Context::_fileId.end(); ++it) {
+				(*srcfiles)[it->second] = strdup(it->first.c_str());
+				if (NULL == (*srcfiles)[it->second]) {
 					ret = DW_DLV_ERROR;
 					setError(error, DW_DLE_MAF);
 					break;
 				}
-				index += 1;
 			}
 		}
 	}

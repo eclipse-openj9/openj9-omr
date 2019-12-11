@@ -5055,7 +5055,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::tabortweqi_r,
    /* .name        = */ "tabortweqi.",
    /* .description =    "Transactional Memory abort if equal to immediate value", */
-   /* .opcode      = */ 0x7C8006DD,
+   /* .opcode      = */ 0x7C80069D,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
@@ -5077,7 +5077,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::tabortwgei_r,
    /* .name        = */ "tabortwgei.",
    /* .description =    "Transactional Memory abort if greater than or equal to immediate", */
-   /* .opcode      = */ 0x7D8006DD,
+   /* .opcode      = */ 0x7D80069D,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
@@ -5099,7 +5099,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::tabortwgti_r,
    /* .name        = */ "tabortwgti.",
    /* .description =    "Transactional Memory abort if greater than immediate", */
-   /* .opcode      = */ 0x7D0006DD,
+   /* .opcode      = */ 0x7D00069D,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
@@ -5121,7 +5121,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::tabortwlei_r,
    /* .name        = */ "tabortwlei.",
    /* .description =    "Transactional Memory abort if less than or equal to immediate", */
-   /* .opcode      = */ 0x7E8006DD,
+   /* .opcode      = */ 0x7E80069D,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
@@ -5143,7 +5143,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::tabortwlgei_r,
    /* .name        = */ "tabortwlgei.",
    /* .description =    "Transactional Memory abort if logically greater than or equal to immediate", */
-   /* .opcode      = */ 0x7CA006DD,
+   /* .opcode      = */ 0x7CA0069D,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
@@ -5165,7 +5165,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::tabortwlgti_r,
    /* .name        = */ "tabortwlgti.",
    /* .description =    "Transactional Memory abort if logically greater than immediate", */
-   /* .opcode      = */ 0x7C2006DD,
+   /* .opcode      = */ 0x7C20069D,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
@@ -5187,7 +5187,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::tabortwllei_r,
    /* .name        = */ "tabortwllei.",
    /* .description =    "Transactional Memory abort if logically less than or equal to immediate", */
-   /* .opcode      = */ 0x7CC006DD,
+   /* .opcode      = */ 0x7CC0069D,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
@@ -5209,7 +5209,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::tabortwllti_r,
    /* .name        = */ "tabortwllti.",
    /* .description =    "Transactional Memory abort if logically less than immediate", */
-   /* .opcode      = */ 0x7C4006DD,
+   /* .opcode      = */ 0x7C40069D,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
@@ -5231,7 +5231,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::tabortwlti_r,
    /* .name        = */ "tabortwlti.",
    /* .description =    "Transactional Memory abort if less than immediate", */
-   /* .opcode      = */ 0x7E0006DD,
+   /* .opcode      = */ 0x7E00069D,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
@@ -5253,7 +5253,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::tabortwneqi_r,
    /* .name        = */ "tabortwneqi.",
    /* .description =    "Transactional Memory abort if not equal to immediate", */
-   /* .opcode      = */ 0x7F0006DD,
+   /* .opcode      = */ 0x7F00069D,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |

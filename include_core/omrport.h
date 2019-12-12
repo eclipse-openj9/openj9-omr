@@ -1163,6 +1163,314 @@ typedef struct OMROSKernelInfo {
 #define OMR_CGROUP_SUBSYSTEM_CPUSET ((uint64_t)0x4)
 #define OMR_CGROUP_SUBSYSTEM_ALL (OMR_CGROUP_SUBSYSTEM_CPU | OMR_CGROUP_SUBSYSTEM_MEMORY | OMR_CGROUP_SUBSYSTEM_CPUSET)
 
+
+/* List of all processors that are currently supported by OMR's processor detection */
+
+typedef enum OMRProcessorArchitecture {
+
+	OMR_PROCESSOR_UNDEFINED,
+
+	OMR_PROCESSOR_S390_UNKNOWN,
+	OMR_PROCESSOR_S390_GP6,
+	OMR_PROCESSOR_S390_GP7,
+	OMR_PROCESSOR_S390_GP8,
+	OMR_PROCESSOR_S390_GP9,
+	OMR_PROCESSOR_S390_GP10,
+	OMR_PROCESSOR_S390_GP11,
+	OMR_PROCESSOR_S390_GP12,
+	OMR_PROCESSOR_S390_GP13,
+	OMR_PROCESSOR_S390_GP14,
+
+	OMR_PROCESSOR_PPC_UNKNOWN,
+	OMR_PROCESSOR_PPC_7XX,
+	OMR_PROCESSOR_PPC_GP,
+	OMR_PROCESSOR_PPC_GR,
+	OMR_PROCESSOR_PPC_NSTAR,
+	OMR_PROCESSOR_PPC_PULSAR,
+	OMR_PROCESSOR_PPC_PWR403,
+	OMR_PROCESSOR_PPC_PWR405,
+	OMR_PROCESSOR_PPC_PWR440,
+	OMR_PROCESSOR_PPC_PWR601,
+	OMR_PROCESSOR_PPC_PWR602,
+	OMR_PROCESSOR_PPC_PWR603,
+	OMR_PROCESSOR_PPC_PWR604,
+	OMR_PROCESSOR_PPC_PWR620,
+	OMR_PROCESSOR_PPC_PWR630,
+	OMR_PROCESSOR_PPC_RIOS1,
+	OMR_PROCESSOR_PPC_RIOS2,
+	OMR_PROCESSOR_PPC_P6,
+	OMR_PROCESSOR_PPC_P7,
+	OMR_PROCESSOR_PPC_P8,
+	OMR_PROCESSOR_PPC_P9,
+
+	OMR_PROCESSOR_X86_UNKNOWN,
+	OMR_PROCESSOR_X86_INTELPENTIUM,
+	OMR_PROCESSOR_X86_INTELP6,
+	OMR_PROCESSOR_X86_INTELPENTIUM4,
+	OMR_PROCESSOR_X86_INTELCORE2,
+	OMR_PROCESSOR_X86_INTELTULSA,
+	OMR_PROCESSOR_X86_INTELNEHALEM,
+	OMR_PROCESSOR_X86_INTELWESTMERE,
+	OMR_PROCESSOR_X86_INTELSANDYBRIDGE,
+	OMR_PROCESSOR_X86_INTELHASWELL,
+	OMR_PROCESSOR_X86_AMDK5,
+	OMR_PROCESSOR_X86_AMDK6,
+	OMR_PROCESSOR_X86_AMDATHLONDURON,
+	OMR_PROCESSOR_X86_AMDOPTERON,
+
+	OMR_PROCESSOR_DUMMY = 0x40000000 /* force wide enums */
+
+} OMRProcessorArchitecture;
+
+/* Holds processor type and features used with j9sysinfo_get_processor_description
+ * and j9sysinfo_processor_has_feature
+ */
+#define OMRPORT_SYSINFO_FEATURES_SIZE 5
+typedef struct OMRProcessorDesc {
+	OMRProcessorArchitecture processor;
+	OMRProcessorArchitecture physicalProcessor;
+	uint32_t features[OMRPORT_SYSINFO_FEATURES_SIZE];
+} OMRProcessorDesc;
+
+/* PowerPC features
+ * Auxiliary Vector Hardware Capability (AT_HWCAP) features for PowerPC.
+ */
+#define OMR_FEATURE_PPC_32                    31 /* 32-bit mode.  */
+#define OMR_FEATURE_PPC_64                    30 /* 64-bit mode.  */
+#define OMR_FEATURE_PPC_601_INSTR             29 /* 601 chip, Old POWER ISA.  */
+#define OMR_FEATURE_PPC_HAS_ALTIVEC           28 /* SIMD/Vector Unit.  */
+#define OMR_FEATURE_PPC_HAS_FPU               27 /* Floating Point Unit.  */
+#define OMR_FEATURE_PPC_HAS_MMU               26 /* Memory Management Unit.  */
+#define OMR_FEATURE_PPC_HAS_4xxMAC            25 /* 4xx Multiply Accumulator.  */
+#define OMR_FEATURE_PPC_UNIFIED_CACHE         24 /* Unified I/D cache.  */
+#define OMR_FEATURE_PPC_HAS_SPE               23 /* Signal Processing ext.  */
+#define OMR_FEATURE_PPC_HAS_EFP_SINGLE        22 /* SPE Float.  */
+#define OMR_FEATURE_PPC_HAS_EFP_DOUBLE        21 /* SPE Double.  */
+#define OMR_FEATURE_PPC_NO_TB                 20 /* 601/403gx have no timebase.  */
+#define OMR_FEATURE_PPC_POWER4                19 /* POWER4 ISA 2.01.  */
+#define OMR_FEATURE_PPC_POWER5                18 /* POWER5 ISA 2.02.  */
+#define OMR_FEATURE_PPC_POWER5_PLUS           17 /* POWER5+ ISA 2.03.  */
+#define OMR_FEATURE_PPC_CELL_BE               16 /* CELL Broadband Engine */
+#define OMR_FEATURE_PPC_BOOKE                 15 /* ISA Embedded Category.  */
+#define OMR_FEATURE_PPC_SMT                   14 /* Simultaneous Multi-Threading.  */
+#define OMR_FEATURE_PPC_ICACHE_SNOOP          13
+#define OMR_FEATURE_PPC_ARCH_2_05             12 /* ISA 2.05.  */
+#define OMR_FEATURE_PPC_PA6T                  11 /* PA Semi 6T Core.  */
+#define OMR_FEATURE_PPC_HAS_DFP               10 /* Decimal FP Unit.  */
+#define OMR_FEATURE_PPC_POWER6_EXT             9 /* P6 + mffgpr/mftgpr.  */
+#define OMR_FEATURE_PPC_ARCH_2_06              8 /* ISA 2.06.  */
+#define OMR_FEATURE_PPC_HAS_VSX                7 /* P7 Vector Scalar Extension.  */
+#define OMR_FEATURE_PPC_PSERIES_PERFMON_COMPAT 6 /* Has ISA >= 2.05 PMU basic subset support.  */
+#define OMR_FEATURE_PPC_TRUE_LE                1 /* Processor in true Little Endian mode.  */
+#define OMR_FEATURE_PPC_LE                     0 /* Processor emulates Little Endian Mode.  */
+
+#define OMR_FEATURE_PPC_ARCH_2_07             32 + 31
+#define OMR_FEATURE_PPC_HTM                   32 + 30
+#define OMR_FEATURE_PPC_DSCR                  32 + 29
+#define OMR_FEATURE_PPC_EBB                   32 + 28
+#define OMR_FEATURE_PPC_ISEL                  32 + 27
+#define OMR_FEATURE_PPC_TAR                   32 + 26
+
+/* s390 features
+ * z/Architecture Principles of Operation 4-69
+ * STORE FACILITY LIST EXTENDED (STFLE)
+ */
+#define OMR_FEATURE_S390_ESAN3      0 /* STFLE bit 0 */
+#define OMR_FEATURE_S390_ZARCH      1 /* STFLE bit 2 */
+#define OMR_FEATURE_S390_STFLE      2 /* STFLE bit 7 */
+#define OMR_FEATURE_S390_MSA        3 /* STFLE bit 17 */
+#define OMR_FEATURE_S390_DFP        6 /* STFLE bit 42 & 44 */
+#define OMR_FEATURE_S390_HPAGE      7
+#define OMR_FEATURE_S390_TE        10 /* STFLE bit 50 & 73 */
+#define OMR_FEATURE_S390_MSA_EXTENSION3                      11 /* STFLE bit 76 */
+#define OMR_FEATURE_S390_MSA_EXTENSION4                      12 /* STFLE bit 77 */
+
+#define OMR_FEATURE_S390_COMPARE_AND_SWAP_AND_STORE          32 + 0  /* STFLE bit 32 */
+#define OMR_FEATURE_S390_COMPARE_AND_SWAP_AND_STORE2         32 + 1  /* STFLE bit 33 */
+#define OMR_FEATURE_S390_EXECUTE_EXTENSIONS                  32 + 3  /* STFLE bit 35 */
+#define OMR_FEATURE_S390_FPE                                 32 + 9  /* STFLE bit 41 */
+
+#define OMR_FEATURE_S390_RI            64 + 0 /* STFLE bit 64 */
+
+/* z990 facilities */
+
+/* STFLE bit 19 - Long-displacement facility */
+#define OMR_FEATURE_S390_LONG_DISPLACEMENT 19
+
+/* z9 facilities */
+
+/* STFLE bit 21 - Extended-immediate facility */
+#define OMR_FEATURE_S390_EXTENDED_IMMEDIATE 21
+
+/* STFLE bit 22 - Extended-translation facility 3 */
+#define OMR_FEATURE_S390_EXTENDED_TRANSLATION_3 22
+
+/* STFLE bit 30 - ETF3-enhancement facility */
+#define OMR_FEATURE_S390_ETF3_ENHANCEMENT 30
+
+/* z10 facilities */
+
+/* STFLE bit 34 - General-instructions-extension facility */
+#define OMR_FEATURE_S390_GENERAL_INSTRUCTIONS_EXTENSIONS 34
+
+/* z196 facilities */
+
+/* STFLE bit 45 - High-word facility */
+#define OMR_FEATURE_S390_HIGH_WORD 45
+
+/* STFLE bit 45 - Load/store-on-condition facility 1 */
+#define OMR_FEATURE_S390_LOAD_STORE_ON_CONDITION_1 45
+
+/* zEC12 facilities */
+
+/* STFLE bit 49 - Miscellaneous-instruction-extension facility */
+#define OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION 49
+
+/* z13 facilities */
+
+/* STFLE bit 53 - Load/store-on-condition facility 2 */
+#define OMR_FEATURE_S390_LOAD_STORE_ON_CONDITION_2 53
+
+/* STFLE bit 53 - Load-and-zero-rightmost-byte facility */
+#define OMR_FEATURE_S390_LOAD_AND_ZERO_RIGHTMOST_BYTE 53
+
+/* STFLE bit 129 - Vector facility */
+#define OMR_FEATURE_S390_VECTOR_FACILITY 129
+
+/* z14 facilities */
+
+/* STFLE bit 58 - Miscellaneous-instruction-extensions facility 2 */
+#define OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_2 58
+
+/* STFLE bit 59 - Semaphore-assist facility */
+#define OMR_FEATURE_S390_SEMAPHORE_ASSIST 59
+
+/* STFLE bit 131 - Side-effect-access facility */
+#define OMR_FEATURE_S390_SIDE_EFFECT_ACCESS 131
+
+/* STFLE bit 133 - Guarded-storage facility */
+#define OMR_FEATURE_S390_GUARDED_STORAGE 133
+
+/* STFLE bit 134 - Vector packed decimal facility */
+#define OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL 134
+
+/* STFLE bit 135 - Vector enhancements facility 1 */
+#define OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1 135
+
+/* STFLE bit 146 - Message-security-assist-extension-8 facility */
+#define OMR_FEATURE_S390_MSA_EXTENSION_8 146
+
+/* STFLE bit 57 - Message-security-assist-extension-5 facility */
+#define OMR_FEATURE_S390_MSA_EXTENSION_5 57
+
+/* z15 facilities */
+
+/* STFLE bit 61 - Miscellaneous-instruction-extensions facility 3 */ 
+#define OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_3 61
+
+/* STFLE bit 148 - Vector enhancements facility 2 */
+#define OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_2 148
+
+/* STFLE bit 152 - Vector packed decimal enhancement facility */
+#define OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY 152
+
+
+/*  Linux on Z features
+ *  Auxiliary Vector Hardware Capability (AT_HWCAP) features for Linux on Z.
+ *  Obtained from: https://github.com/torvalds/linux/blob/050cdc6c9501abcd64720b8cc3e7941efee9547d/arch/s390/include/asm/elf.h#L94-L109.
+ *  If new facility support is required, then it must be defined there (and here), before we can check for it consistently.
+ *
+ *  The linux kernel will use the defines in the above link to set HWCAP features. This is done inside "setup_hwcaps(void)" routine found
+ *  in arch/s390/kernel/setup.c in the linux kernel source tree.
+ */
+#define OMR_HWCAP_S390_ESAN3     0x1
+#define OMR_HWCAP_S390_ZARCH     0x2
+#define OMR_HWCAP_S390_STFLE     0x4
+#define OMR_HWCAP_S390_MSA       0x8
+#define OMR_HWCAP_S390_LDISP     0x10
+#define OMR_HWCAP_S390_EIMM      0x20
+#define OMR_HWCAP_S390_DFP       0x40
+#define OMR_HWCAP_S390_HPAGE     0x80
+#define OMR_HWCAP_S390_ETF3EH    0x100
+#define OMR_HWCAP_S390_HIGH_GPRS 0x200
+#define OMR_HWCAP_S390_TE        0x400
+#define OMR_HWCAP_S390_VXRS      0x800
+#define OMR_HWCAP_S390_VXRS_BCD  0x1000
+#define OMR_HWCAP_S390_VXRS_EXT  0x2000
+#define OMR_HWCAP_S390_GS        0x4000
+
+/* x86 features
+ * INTEL INSTRUCTION SET REFERENCE, A-M
+ * 3-170 Vol. 2A Table 3-21. More on Feature Information Returned in the EDX Register
+ */
+#define OMR_FEATURE_X86_FPU     0 /* Floating Point Unit On-Chip. */
+#define OMR_FEATURE_X86_VME     1 /* Virtual 8086 Mode Enhancements. */
+#define OMR_FEATURE_X86_DE      2 /* DE Debugging Extensions. */
+#define OMR_FEATURE_X86_PSE     3 /* Page Size Extension. */
+#define OMR_FEATURE_X86_TSC     4 /* Time Stamp Counter. */
+#define OMR_FEATURE_X86_MSR     5 /* Model Specific Registers RDMSR and WRMSR Instructions. */
+#define OMR_FEATURE_X86_PAE     6 /* Physical Address Extension. */
+#define OMR_FEATURE_X86_MCE     7 /* Machine Check Exception. */
+#define OMR_FEATURE_X86_CX8     8 /* Compare-and-exchange 8 bytes (64 bits) instruction */
+#define OMR_FEATURE_X86_APIC    9 /* APIC On-Chip. */
+#define OMR_FEATURE_X86_10     10 /* Reserved */
+#define OMR_FEATURE_X86_SEP    11 /* SYSENTER and SYSEXIT Instructions. */
+#define OMR_FEATURE_X86_MTRR   12 /* Memory Type Range Registers. */
+#define OMR_FEATURE_X86_PGE    13 /* Page Global Bit. */
+#define OMR_FEATURE_X86_MCA    14 /* Machine Check Architecture. */
+#define OMR_FEATURE_X86_CMOV   15 /* Conditional Move Instructions. */
+#define OMR_FEATURE_X86_PAT    16 /* Page Attribute Table. */
+#define OMR_FEATURE_X86_PSE_36 17 /* 36-Bit Page Size Extension. */
+#define OMR_FEATURE_X86_PSN    18 /* Processor Serial Number. */
+#define OMR_FEATURE_X86_CLFSH  19 /* CLFLUSH Instruction. */
+#define OMR_FEATURE_X86_20     20 /* Reserved */
+#define OMR_FEATURE_X86_DS     21 /* Debug Store. */
+#define OMR_FEATURE_X86_ACPI   22 /* Thermal Monitor and Software Controlled Clock Facilities. */
+#define OMR_FEATURE_X86_MMX    23 /* Intel MMX Technology. */
+#define OMR_FEATURE_X86_FXSR   24 /* FXSAVE and FXRSTOR Instructions. */
+#define OMR_FEATURE_X86_SSE    25 /* The processor supports the SSE extensions. */
+#define OMR_FEATURE_X86_SSE2   26 /* The processor supports the SSE2 extensions. */
+#define OMR_FEATURE_X86_SS     27 /* Self Snoop. */
+#define OMR_FEATURE_X86_HTT    28 /* Hyper Threading. */
+#define OMR_FEATURE_X86_TM     29 /* Thermal Monitor. */
+#define OMR_FEATURE_X86_30     30 /* Reserved */
+#define OMR_FEATURE_X86_PBE    31 /* Pending Break Enable. */
+
+/* INTEL INSTRUCTION SET REFERENCE, A-M
+ * Vol. 2A 3-167 Table 3-20. Feature Information Returned in the ECX Register
+ */
+#define OMR_FEATURE_X86_SSE3         32 + 0 /* Streaming SIMD Extensions 3 */
+#define OMR_FEATURE_X86_PCLMULQDQ    32 + 1 /* PCLMULQDQ. */
+#define OMR_FEATURE_X86_DTES64       32 + 2 /* 64-bit DS Area. */
+#define OMR_FEATURE_X86_MONITOR      32 + 3 /* MONITOR/MWAIT. */
+#define OMR_FEATURE_X86_DS_CPL       32 + 4 /* CPL Qualified Debug Store. */
+#define OMR_FEATURE_X86_VMX          32 + 5 /* Virtual Machine Extensions. */
+#define OMR_FEATURE_X86_SMX          32 + 6 /* Safer Mode Extensions. */
+#define OMR_FEATURE_X86_EIST         32 + 7 /* Enhanced Intel SpeedStep technology. */
+#define OMR_FEATURE_X86_TM2          32 + 8 /* Thermal Monitor 2. */
+#define OMR_FEATURE_X86_SSSE3        32 + 9 /* Supplemental Streaming SIMD Extensions 3 */
+#define OMR_FEATURE_X86_CNXT_ID      32 + 10 /* L1 Context ID. */
+#define OMR_FEATURE_X86_11           32 + 11 /* Reserved */
+#define OMR_FEATURE_X86_FMA          32 + 12 /* FMA extensions using YMM state. */
+#define OMR_FEATURE_X86_CMPXCHG16B   32 + 13 /* CMPXCHG16B Available. */
+#define OMR_FEATURE_X86_XTPR         32 + 14 /* xTPR Update Control. */
+#define OMR_FEATURE_X86_PDCM         32 + 15 /* Perfmon and Debug Capability. */
+#define OMR_FEATURE_X86_16           32 + 16 /* Reserved. */
+#define OMR_FEATURE_X86_PCID         32 + 17 /* Process-context identifiers. */
+#define OMR_FEATURE_X86_DCA          32 + 18 /* Processor supports the ability to prefetch data from a memory mapped device. */
+#define OMR_FEATURE_X86_SSE4_1       32 + 19 /* Processor supports SSE4.1. */
+#define OMR_FEATURE_X86_SSE4_2       32 + 20 /* Processor supports SSE4.2. */
+#define OMR_FEATURE_X86_X2APIC       32 + 21 /* Processor supports x2APIC feature. */
+#define OMR_FEATURE_X86_MOVBE        32 + 22 /* Processor supports MOVBE instruction. */
+#define OMR_FEATURE_X86_POPCNT       32 + 23 /* Processor supports the POPCNT instruction. */
+#define OMR_FEATURE_X86_TSC_DEADLINE 32 + 24 /* Processor's local APIC timer supports one-shot operation using a TSC deadline value. */
+#define OMR_FEATURE_X86_AESNI        32 + 25 /* Processor supports the AESNI instruction extensions. */
+#define OMR_FEATURE_X86_XSAVE        32 + 26 /* Processor supports the XSAVE/XRSTOR processor extended states. */
+#define OMR_FEATURE_X86_OSXSAVE      32 + 27 /* OS has enabled XSETBV/XGETBV instructions to access XCR0, and support for processor extended state management using XSAVE/XRSTOR. */
+#define OMR_FEATURE_X86_AVX          32 + 28 /* Processor supports the AVX instruction extensions. */
+#define OMR_FEATURE_X86_F16C         32 + 29 /* 16-bit floating-point conversion instructions. */
+#define OMR_FEATURE_X86_RDRAND       32 + 30 /* Processor supports RDRAND instruction. */
+
 struct OMRPortLibrary;
 typedef struct J9Heap J9Heap;
 
@@ -1244,6 +1552,10 @@ typedef struct OMRPortLibrary {
 	intptr_t (*sysinfo_get_env)(struct OMRPortLibrary *portLibrary, const char *envVar, char *infoString, uintptr_t bufSize) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_CPU_architecture "omrsysinfo_get_CPU_architecture"*/
 	const char *(*sysinfo_get_CPU_architecture)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_get_processor_description "omrsysinfo_get_processor_description"*/
+	intptr_t  ( *sysinfo_get_processor_description)(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_processor_has_feature "omrsysinfo_processor_has_feature"*/
+	BOOLEAN  ( *sysinfo_processor_has_feature)(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_OS_type "omrsysinfo_get_OS_type"*/
 	const char *(*sysinfo_get_OS_type)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_executable_name "omrsysinfo_get_executable_name"*/
@@ -1949,6 +2261,8 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_get_OS_version() privateOmrPortLibrary->sysinfo_get_OS_version(privateOmrPortLibrary)
 #define omrsysinfo_get_env(param1,param2,param3) privateOmrPortLibrary->sysinfo_get_env(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsysinfo_get_CPU_architecture() privateOmrPortLibrary->sysinfo_get_CPU_architecture(privateOmrPortLibrary)
+#define omrsysinfo_get_processor_description(param1) privateOmrPortLibrary->sysinfo_get_processor_description(privateOmrPortLibrary,param1)
+#define omrsysinfo_processor_has_feature(param1,param2) privateOmrPortLibrary->sysinfo_processor_has_feature(privateOmrPortLibrary,param1,param2)
 #define omrsysinfo_get_OS_type() privateOmrPortLibrary->sysinfo_get_OS_type(privateOmrPortLibrary)
 #define omrsysinfo_get_executable_name(param1,param2) privateOmrPortLibrary->sysinfo_get_executable_name(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_get_username(param1,param2) privateOmrPortLibrary->sysinfo_get_username(privateOmrPortLibrary, (param1), (param2))

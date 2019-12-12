@@ -8146,7 +8146,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::vmaxsb,
    /* .name        = */ "vmaxsb",
    /* .description =    "vector maximum signed byte", */
-   /* .opcode      = */ 0x10000002,
+   /* .opcode      = */ 0x10000102,
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
@@ -8157,7 +8157,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::vmaxsh,
    /* .name        = */ "vmaxsh",
    /* .description =    "vector maximum signed halfword", */
-   /* .opcode      = */ 0x10000042,
+   /* .opcode      = */ 0x10000142,
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
@@ -8168,7 +8168,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::vmaxsw,
    /* .name        = */ "vmaxsw",
    /* .description =    "vector maximum signed word", */
-   /* .opcode      = */ 0x10000082,
+   /* .opcode      = */ 0x10000182,
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
@@ -8179,7 +8179,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::vmaxub,
    /* .name        = */ "vmaxub",
    /* .description =    "vector maximum unsigned byte", */
-   /* .opcode      = */ 0x10000102,
+   /* .opcode      = */ 0x10000002,
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
@@ -8190,7 +8190,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::vmaxuh,
    /* .name        = */ "vmaxuh",
    /* .description =    "vector maximum unsigned halfword", */
-   /* .opcode      = */ 0x10000142,
+   /* .opcode      = */ 0x10000042,
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
@@ -8201,7 +8201,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::vmaxuw,
    /* .name        = */ "vmaxuw",
    /* .description =    "vector maximum unsigned word", */
-   /* .opcode      = */ 0x10000182,
+   /* .opcode      = */ 0x10000082,
    /* .format      = */ VX_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |

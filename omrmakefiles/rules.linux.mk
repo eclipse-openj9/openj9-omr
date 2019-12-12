@@ -32,7 +32,7 @@ endif
 
 ## Header File Dependencies
 ifeq (gcc,$(OMR_TOOLCHAIN))
-  ifeq (x86,$(OMR_HOST_ARCH))
+  ifneq (,$(filter riscv x86,$(OMR_HOST_ARCH)))
     #-- GCC compilers support dependency generation --
     GLOBAL_CFLAGS+=-MMD -MP
     GLOBAL_CXXFLAGS+=-MMD -MP
@@ -164,7 +164,7 @@ endif
 ## Debugging Information
 # Indicate that GNU debug symbols are being used
 ifeq (gcc,$(OMR_TOOLCHAIN))
-  ifneq (,$(filter aarch64 arm ppc s390 x86,$(OMR_HOST_ARCH)))
+  ifneq (,$(filter aarch64 arm ppc riscv s390 x86,$(OMR_HOST_ARCH)))
     USE_GNU_DEBUG:=1
   endif
 endif
@@ -195,6 +195,19 @@ ifeq (x86,$(OMR_HOST_ARCH))
         GLOBAL_CPPFLAGS+=-DJ9X86
     endif
 
+else ifeq (riscv,$(OMR_HOST_ARCH))
+        GLOBAL_CFLAGS  +=-DRISCV
+        GLOBAL_CXXFLAGS+=-DRISCV
+        GLOBAL_CPPFLAGS+=-DRISCV
+        ifeq (1,$(OMR_ENV_DATA64))
+             GLOBAL_CFLAGS  +=-DRISCV64
+             GLOBAL_CXXFLAGS+=-DRISCV64
+             GLOBAL_CPPFLAGS+=-DRISCV64
+        else
+             GLOBAL_CFLAGS  +=-DRISCV32
+             GLOBAL_CXXFLAGS+=-DRISCV32
+             GLOBAL_CPPFLAGS+=-DRISCV32
+        endif
 else ifeq (aarch64,$(OMR_HOST_ARCH))
     GLOBAL_CFLAGS+=-march=armv8-a+simd -Wno-unused-but-set-variable
     GLOBAL_CXXFLAGS+=-march=armv8-a+simd -Wno-unused-but-set-variable
@@ -313,7 +326,7 @@ else
         endif
     endif
 
-  ifeq ($(OMR_HOST_ARCH),x86)
+  ifneq (,$(filter riscv x86,$(OMR_HOST_ARCH)))
     ifneq ($(OMR_ENV_DATA64),1)
       GLOBAL_LDFLAGS+=-lc -lm -ldl
     else
@@ -387,6 +400,8 @@ ifeq ($(OMR_OPTIMIZE),1)
             else
                 ifeq (s390,$(OMR_HOST_ARCH))
                     OPTIMIZATION_FLAGS+=-O3 -mtune=z10 -march=z9-109 -mzarch
+                else ifeq (riscv,$(OMR_HOST_ARCH))
+                    OPTIMIZATION_FLAGS+=-O3 -fno-strict-aliasing
                 else
                     OPTIMIZATION_FLAGS+=-O
                 endif

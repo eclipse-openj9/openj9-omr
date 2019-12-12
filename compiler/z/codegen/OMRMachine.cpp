@@ -977,20 +977,12 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
       }
    if (kindOfRegister != TR_FPR && kindOfRegister != TR_VRF && assignedRegister != NULL)
       {
-      // In case we need a register shuffle, if the register we are assigning is a source register of the instruction,
-      // the shuffling instruction should happen before this instruction
-      TR::Instruction *appendInst = currInst;
-      if (!defsRegister && currInst->usesRegister(targetRegister) )
-         {
-         appendInst = currInst->getPrev();
-         }
-
       if ((assignedRegister->getRealRegisterMask() & availRegMask) == 0)
          {
          // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
          // find a new register to shuffle to
          TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
-         TR::Instruction *cursor = self()->registerCopy(self()->cg(), kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, appendInst);
+         TR::Instruction *cursor = self()->registerCopy(self()->cg(), kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, currInst);
          targetRegister->setAssignedRegister(newAssignedRegister);
          newAssignedRegister->setAssignedRegister(targetRegister);
          newAssignedRegister->setState(TR::RealRegister::Assigned);
@@ -2012,7 +2004,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
 
    uint32_t preference = (virtualReg != NULL) ? virtualReg->getAssociation() : 0;
 
-   bool useGPR0 = (virtualReg == NULL) ? false : (virtualReg->isUsedInMemRef() == false);
+   bool useGPR0 = (virtualReg == NULL) ? false : (availRegMask & TR::RealRegister::GPR0Mask);
    bool liveRegOn = (self()->cg()->getLiveRegisters(rk) != NULL);
 
    if (comp->getOption(TR_Randomize))
@@ -2062,12 +2054,6 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
    if (!liveRegOn && useGPR0)
       {
       interference |= 1;
-      }
-
-   // Check to see if we exclude GPR0
-   if (!useGPR0)
-      {
-      availRegMask &= ~TR::RealRegister::GPR0Mask;
       }
 
    // We can't use FPRs for vector registers when current instruction is a call
@@ -2788,7 +2774,11 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
    if (targetRegister == NULL)
       {
       // find a free register and assign
-      targetRegister = self()->findBestFreeRegister(currentInstruction, spilledRegister->getKind(), spilledRegister);
+      uint64_t regMask = 0xffffffff;
+      if (spilledRegister->isUsedInMemRef())
+         regMask = ~TR::RealRegister::GPR0Mask;
+
+      targetRegister = self()->findBestFreeRegister(currentInstruction, spilledRegister->getKind(), spilledRegister, regMask);
       if (targetRegister == NULL)
          {
          targetRegister = self()->freeBestRegister(currentInstruction, spilledRegister, spilledRegister->getKind());
@@ -3075,8 +3065,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       {
       currentTargetVirtual = targetRegister->getAssignedRegister();
       self()->cg()->traceRegisterAssignment("target %R is blocked, assigned to %R", targetRegister, currentTargetVirtual);
-
-      spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual);
+      uint64_t regMask = 0xffffffff;
+      if (currentTargetVirtual->isUsedInMemRef())
+         regMask = ~TR::RealRegister::GPR0Mask;
+      spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual, regMask);
 
       self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
 
@@ -3176,8 +3168,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             return cursor;
             }
          }
-
-      spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual);
+      uint64_t regMask = 0xffffffff;
+      if (currentTargetVirtual->isUsedInMemRef())
+         regMask = ~TR::RealRegister::GPR0Mask;
+      spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual, regMask);
 
       self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
 

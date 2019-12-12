@@ -216,25 +216,34 @@ OMR::ARM64::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    }
 
 void
+OMR::ARM64::CodeGenerator::generateBinaryEncodingPrePrologue(TR_ARM64BinaryEncodingData &data)
+   {
+   data.recomp = NULL;
+   data.cursorInstruction = self()->getFirstInstruction();
+   data.i2jEntryInstruction = data.cursorInstruction;
+   }
+
+void
 OMR::ARM64::CodeGenerator::doBinaryEncoding()
    {
+   TR_ARM64BinaryEncodingData data;
+   data.estimate = 0;
    TR::Compilation *comp = self()->comp();
-   int32_t estimate = 0;
-   TR::Instruction *cursorInstruction = self()->getFirstInstruction();
-   TR::Instruction *i2jEntryInstruction = cursorInstruction;
 
-   self()->getLinkage()->createPrologue(cursorInstruction);
+   self()->generateBinaryEncodingPrePrologue(data);
+   self()->getLinkage()->createPrologue(data.cursorInstruction);
 
+   data.cursorInstruction = self()->getFirstInstruction();
    bool skipOneReturn = false;
-   while (cursorInstruction)
+   while (data.cursorInstruction)
       {
-      if (cursorInstruction->getOpCodeValue() == TR::InstOpCode::retn)
+      if (data.cursorInstruction->getOpCodeValue() == TR::InstOpCode::retn)
          {
          if (skipOneReturn == false)
             {
-            TR::Instruction *temp = cursorInstruction->getPrev();
+            TR::Instruction *temp = data.cursorInstruction->getPrev();
             self()->getLinkage()->createEpilogue(temp);
-            cursorInstruction = temp->getNext();
+            data.cursorInstruction = temp->getNext();
             skipOneReturn = true;
             }
          else
@@ -242,15 +251,15 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
             skipOneReturn = false;
             }
          }
-      estimate = cursorInstruction->estimateBinaryLength(estimate);
-      cursorInstruction = cursorInstruction->getNext();
+      data.estimate = data.cursorInstruction->estimateBinaryLength(data.estimate);
+      data.cursorInstruction = data.cursorInstruction->getNext();
       }
 
-   estimate = self()->setEstimatedLocationsForSnippetLabels(estimate);
+   data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);
 
-   self()->setEstimatedCodeLength(estimate);
+   self()->setEstimatedCodeLength(data.estimate);
 
-   cursorInstruction = self()->getFirstInstruction();
+   data.cursorInstruction = self()->getFirstInstruction();
    uint8_t *coldCode = NULL;
    uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
 
@@ -258,18 +267,18 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
    self()->setBinaryBufferCursor(temp);
    self()->alignBinaryBufferCursor();
 
-   while (cursorInstruction)
+   while (data.cursorInstruction)
       {
-      self()->setBinaryBufferCursor(cursorInstruction->generateBinaryEncoding());
-      self()->addToAtlas(cursorInstruction);
+      self()->setBinaryBufferCursor(data.cursorInstruction->generateBinaryEncoding());
+      self()->addToAtlas(data.cursorInstruction);
 
-      if (cursorInstruction == i2jEntryInstruction)
+      if (data.cursorInstruction == data.i2jEntryInstruction)
          {
          self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart());
          self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
          }
 
-      cursorInstruction = cursorInstruction->getNext();
+      data.cursorInstruction = data.cursorInstruction->getNext();
       }
 
    // Create exception table entries for outlined instructions.

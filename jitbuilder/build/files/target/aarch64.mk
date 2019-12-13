@@ -29,6 +29,7 @@ JIT_PRODUCT_BACKEND_SOURCES+= \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/ARM64SystemLinkage.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/BinaryEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/ControlFlowEvaluator.cpp \
+    $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/ConstantDataSnippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/FPTreeEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/GenerateInstructions.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/OMRCodeGenerator.cpp \

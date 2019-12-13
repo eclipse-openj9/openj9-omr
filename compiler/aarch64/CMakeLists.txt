@@ -28,6 +28,7 @@ compiler_library(aarch64
 	${CMAKE_CURRENT_LIST_DIR}/codegen/ARM64OutOfLineCodeSection.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/ARM64SystemLinkage.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/BinaryEvaluator.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/ConstantDataSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/ControlFlowEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/FPTreeEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/GenerateInstructions.cpp

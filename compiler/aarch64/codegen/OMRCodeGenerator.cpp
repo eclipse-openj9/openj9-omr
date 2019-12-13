@@ -26,6 +26,7 @@
 #include "codegen/ARM64SystemLinkage.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
+#include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/GenerateInstructions.hpp"
@@ -40,7 +41,7 @@
 
 OMR::ARM64::CodeGenerator::CodeGenerator() :
       OMR::CodeGenerator(),
-      _constantData(NULL),
+      _dataSnippetList(getTypedAllocator<TR::ARM64ConstantDataSnippet*>(TR::comp()->allocator())),
       _outOfLineCodeSectionList(getTypedAllocator<TR_ARM64OutOfLineCodeSection*>(self()->comp()->allocator()))
    {
    // Initialize Linkage for Code Generator
@@ -324,42 +325,68 @@ TR::Linkage *OMR::ARM64::CodeGenerator::createLinkage(TR_LinkageConventions lc)
 
 void OMR::ARM64::CodeGenerator::emitDataSnippets()
    {
-   TR_UNIMPLEMENTED();
-   /*
-    * Commented out until TR::ConstantDataSnippet is implemented
-   self()->setBinaryBufferCursor(_constantData->emitSnippetBody());
-    */
-   }
-
-bool OMR::ARM64::CodeGenerator::hasDataSnippets()
-   {
-   return (_constantData == NULL) ? false : true;
+   for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
+      {
+      self()->setBinaryBufferCursor((*iterator)->emitSnippetBody());
+      }
    }
 
 int32_t OMR::ARM64::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart)
    {
-   TR_UNIMPLEMENTED();
-   return 0;
-   /*
-    * Commented out until TR::ConstantDataSnippet is implemented
-   return estimatedSnippetStart + _constantData->getLength();
-    */
+   // Assume constants should be aligned according to their size.
+   for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
+      {
+      auto size = (*iterator)->getDataSize();
+      estimatedSnippetStart = ((estimatedSnippetStart+size-1)/size) * size;
+      (*iterator)->getSnippetLabel()->setEstimatedCodeLocation(estimatedSnippetStart);
+      estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
+      }
+   return estimatedSnippetStart;
+   }
+
+TR::ARM64ConstantDataSnippet *OMR::ARM64::CodeGenerator::findOrCreateConstantDataSnippet(TR::Node * node, void * c, size_t s)
+   {
+   // A simple linear search should suffice for now since the number of data constants
+   // produced is typically very small.  Eventually, this should be implemented as an
+   // ordered list or a hash table.
+   for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
+      {
+      if ((*iterator)->getKind() == TR::Snippet::IsConstantData &&
+          (*iterator)->getDataSize() == s)
+         {
+         // if pointers require relocation, then not all pointers may be relocated for the same reason
+         //   so be conservative and do not combine them (e.g. HCR versus profiled inlined site enablement)
+         if (!memcmp((*iterator)->getRawData(), c, s) &&
+                (!self()->profiledPointersRequireRelocation() || (*iterator)->getNode() == node))
+            {
+            return (*iterator);
+            }
+         }
+      }
+
+   // Constant was not found: create a new snippet for it and add it to the constant list.
+   //
+   auto snippet = new (self()->trHeapMemory()) TR::ARM64ConstantDataSnippet(self(), node, c, s);
+   _dataSnippetList.push_back(snippet);
+   return snippet;
+   }
+
+TR::ARM64ConstantDataSnippet *OMR::ARM64::CodeGenerator::findOrCreate8ByteConstant(TR::Node * n, int64_t c)
+   {
+   return self()->findOrCreateConstantDataSnippet(n, &c, 8);
    }
 
 
-#ifdef DEBUG
 void OMR::ARM64::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    {
    if (outFile == NULL)
       return;
 
-   TR_UNIMPLEMENTED();
-   /*
-    * Commented out until TR::ConstantDataSnippet is implemented
-   _constantData->print(outFile);
-    */
+   for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
+      {
+      (*iterator)->print(outFile, self()->getDebug());
+      }
    }
-#endif
 
 
 TR::Instruction *OMR::ARM64::CodeGenerator::generateSwitchToInterpreterPrePrologue(TR::Instruction *cursor, TR::Node *node)

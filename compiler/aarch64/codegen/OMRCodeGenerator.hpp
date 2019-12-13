@@ -40,7 +40,7 @@ namespace OMR { typedef OMR::ARM64::CodeGenerator CodeGeneratorConnector; }
 
 class TR_ARM64OutOfLineCodeSection;
 namespace TR { class ARM64LinkageProperties; }
-namespace TR { class ConstantDataSnippet; }
+namespace TR { class ARM64ConstantDataSnippet; }
 
 /**
  * @brief Generates instructions for loading 32-bit integer value to a register
@@ -131,7 +131,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * @brief Has data snippets or not
     * @return true if it has data snippets, false otherwise
     */
-   bool hasDataSnippets();
+   bool hasDataSnippets() { return !_dataSnippetList.empty();}
 
    /**
     * @brief Sets estimated locations for data snippet labels
@@ -140,13 +140,11 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     */
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart);
 
-#ifdef DEBUG
    /**
     * @brief Dumps data snippets
     * @param[in] outFile : FILE for output
     */
    void dumpDataSnippets(TR::FILE *outFile);
-#endif
 
    /**
     * @brief Generates switch-to-interpreter pre-prologue
@@ -207,6 +205,27 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * @param[in] label : label
     */
    void apply32BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label);
+
+   /**
+    * @brief find or create a constant data snippet for 8 byte constant.
+    *
+    * @param[in] node : the node which this constant data snippet belongs to
+    * @param[in] c    : 8 byte constant
+    *
+    * @return : a constant data snippet
+    */
+   TR::ARM64ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *node, int64_t c);
+
+   /**
+    * @brief find or create a constant data snippet.
+    *
+    * @param[in] node : the node which this constant data snippet belongs to
+    * @param[in] data : a pointer to initial data or NULL for skipping initialization
+    * @param[in] size : the size of this constant data snippet
+    *
+    * @return : a constant data snippet with specified size
+    */
+   TR::ARM64ConstantDataSnippet* findOrCreateConstantDataSnippet(TR::Node* node, void* data, size_t size);
 
    /**
     * @brief Status of IsOutOfLineHotPath flag
@@ -358,9 +377,9 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::RealRegister *_stackPtrRegister;
    TR::RealRegister *_methodMetaDataRegister;
    TR::ARM64ImmInstruction *_returnTypeInfoInstruction;
-   TR::ConstantDataSnippet *_constantData;
    const TR::ARM64LinkageProperties *_linkageProperties;
    TR::list<TR_ARM64OutOfLineCodeSection*> _outOfLineCodeSectionList;
+   TR::vector<TR::ARM64ConstantDataSnippet*> _dataSnippetList;
 
    };
 

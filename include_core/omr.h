@@ -43,7 +43,7 @@
 
 #if !defined(OMR_GC_COMPRESSED_POINTERS)
 #define OMR_GC_FULL_POINTERS
-#endif /* defined(J9VM_GC_FULL_POINTERS) */
+#endif /* !defined(OMR_GC_COMPRESSED_POINTERS) */
 
 #ifdef __cplusplus
 extern "C" {

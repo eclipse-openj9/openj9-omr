@@ -501,12 +501,10 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 	compactedThisCycle = _compactThisCycle;
 #endif /* OMR_GC_MODRON_COMPACTION */
 
-	/* If the J9VM_DEBUG_ATTRIBUTE_ALLOW_USER_HEAP_WALK flag is set then fix the heap so that it can be walked
-	 * by debugging tools
-	 */
+	/* If the delegate has isAllowUserHeapWalk set, fix the heap so that it can be walked */
 	if (_delegate.isAllowUserHeapWalk() || env->_cycleState->_gcCode.isRASDumpGC()) {
 		if (!_fixHeapForWalkCompleted) {
-#if defined(J9VM_GC_MODRON_COMPACTION)
+#if defined(OMR_GC_MODRON_COMPACTION)
 			if (compactedThisCycle) {
 				OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 				U_64 startTime = omrtime_hires_clock();
@@ -514,7 +512,7 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 				_extensions->globalGCStats.fixHeapForWalkTime = omrtime_hires_delta(startTime, omrtime_hires_clock(), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 				_extensions->globalGCStats.fixHeapForWalkReason = FIXUP_DEBUG_TOOLING;
 			} else
-#endif /* J9VM_GC_MODRON_COMPACTION */
+#endif /* OMR_GC_MODRON_COMPACTION */
 			{
 				fixHeapForWalk(env, MEMORY_TYPE_RAM, FIXUP_DEBUG_TOOLING, fixObject);
 			}

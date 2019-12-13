@@ -1297,11 +1297,9 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	omrobjectptr_t destinationObjectPtr;
 	uintptr_t objectCopySizeInBytes, objectReserveSizeInBytes;
 	uintptr_t hotFieldsDescriptor = 0;
-#if defined(J9VM_INTERP_NATIVE_SUPPORT)
 	uintptr_t hotFieldsAlignment = 0;
 	uintptr_t* hotFieldPadBase = NULL;
 	uintptr_t hotFieldPadSize = 0;
-#endif /* defined(J9VM_INTERP_NATIVE_SUPPORT) */
 	MM_CopyScanCacheStandard *copyCache;
 	void *newCacheAlloc;
 	bool const compressed = _extensions->compressObjectReferences();
@@ -1345,7 +1343,6 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 		}
 	} else {
 		/* Move straight to tenuring on the object */
-#if defined(J9VM_INTERP_NATIVE_SUPPORT)
 		/* adjust the reserved object's size if we are aligning hot fields and this class has a known hot field */
 		if (_extensions->scavengerAlignHotFields && HOTFIELD_SHOULD_ALIGN(hotFieldsDescriptor)) {
 			/* this optimization is a source of fragmentation (alloc request size always assumes maximum padding,
@@ -1359,7 +1356,6 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 				Assert_MM_objectAligned(env, objectReserveSizeInBytes);
             }
 		}
-#endif /* J9VM_INTERP_NATIVE_SUPPORT */
 		copyCache = reserveMemoryForAllocateInTenureSpace(env, forwardedHeader->getObject(), objectReserveSizeInBytes);
 		if (NULL != copyCache) {
 			/* Clear age and set the old bit */
@@ -1400,7 +1396,6 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	/* Memory has been reserved */
 	destinationObjectPtr = (omrobjectptr_t)copyCache->cacheAlloc;
 	/* now correct for the hot field alignment */
-#if defined(J9VM_INTERP_NATIVE_SUPPORT)
 	if (0 != hotFieldsAlignment) {
 		uintptr_t remainingInCacheLine = _cacheLineAlignment - ((uintptr_t)destinationObjectPtr % _cacheLineAlignment);
 		uintptr_t alignmentBias = HOTFIELD_ALIGNMENT_BIAS(hotFieldsAlignment, _objectAlignmentInBytes);
@@ -1418,7 +1413,6 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 		 */
 		objectReserveSizeInBytes = objectReserveSizeInBytes - (_cacheLineAlignment - _objectAlignmentInBytes);
 	}
-#endif /* J9VM_INTERP_NATIVE_SUPPORT */
 
 	/* and correct for the double array alignment */
 	newCacheAlloc = (void *) (((uint8_t *)destinationObjectPtr) + objectReserveSizeInBytes);
@@ -1453,13 +1447,11 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	if (originalDestinationObjectPtr == destinationObjectPtr) {
 		/* Succeeded in forwarding the object, or we allow duplicate (did not even tried to forward yet). */
 
-#if defined(J9VM_INTERP_NATIVE_SUPPORT)
 		if (NULL != hotFieldPadBase) {
 			bool const compressed = _extensions->compressObjectReferences();
 			/* lay down a hole (XXX:  This assumes that we are using AOL (address-ordered-list)) */
 			MM_HeapLinkedFreeHeader::fillWithHoles(hotFieldPadBase, hotFieldPadSize, compressed);
 		}
-#endif /* J9VM_INTERP_NATIVE_SUPPORT */
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 		valgrindMempoolAlloc(_extensions, (uintptr_t) destinationObjectPtr, objectReserveSizeInBytes);

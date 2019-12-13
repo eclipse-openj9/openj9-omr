@@ -6863,7 +6863,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                 traceMsg(comp(), "PREX:      parm %d class is final\n", index);
              parmInfo.setClassIsFixed();
              }
-          else if (!fe()->classHasBeenExtended(clazz))
+          else if (classIsCurrentlyFinal(clazz))
              {
              if (enableTrace)
                 traceMsg(comp(), "PREX:      parm %d class is currently final\n", index);
@@ -6925,7 +6925,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                parmInfo.setClassIsRefined();
                parmInfo.setClass(clazz);
 
-               if (!fe()->classHasBeenExtended(clazz))
+               if (classIsCurrentlyFinal(clazz))
                   {
                   parmInfo.setClassIsCurrentlyFinal();
                   }
@@ -7032,7 +7032,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                if (enableTrace)
                   traceMsg(comp(), "PREX:        Parm %d class is preexistent\n", index);
                parmInfo.setClassIsPreexistent();
-               if (!fe()->classHasBeenExtended(clazz))
+               if (classIsCurrentlyFinal(clazz))
                   {
                   parmInfo.setClassIsCurrentlyFinal();
                   if (enableTrace)
@@ -7121,6 +7121,16 @@ TR_InvariantArgumentPreexistence::ParmInfo *TR_InvariantArgumentPreexistence::ge
    return info;
    }
 
+bool TR_InvariantArgumentPreexistence::classIsCurrentlyFinal(TR_OpaqueClassBlock* clazz)
+   {
+   if (!TR::Compiler->cls.isInterfaceClass(comp(), clazz) &&
+       !TR::Compiler->cls.isAbstractClass(comp(), clazz) &&
+       !fe()->classHasBeenExtended(clazz))
+      return true;
+
+   return false;
+   }
+
 void TR_InvariantArgumentPreexistence::processNode(TR::Node *node, TR::TreeTop *treeTop, vcount_t visitCount)
    {
    if (node->getVisitCount() == visitCount)
@@ -7167,6 +7177,13 @@ bool TR_InvariantArgumentPreexistence::devirtualizeVirtualCall(TR::Node *node, T
    TR::SymbolReference *symRef = node->getSymbolReference();
    int32_t offset = symRef->getOffset();
    TR_ResolvedMethod *refinedMethod = symRef->getOwningMethod(comp())->getResolvedVirtualMethod(comp(), clazz, offset);
+
+   if (!refinedMethod)
+      {
+      if (trace())
+         traceMsg(comp(), "Can't find a method from class %p with offset %d\n", clazz, offset);
+      return false;
+      }
 
    if (!performTransformation(comp(), "%sspecialize and devirtualize invoke [%p] on currently fixed or final parameter\n", optDetailString(), node))
       return false;

@@ -723,12 +723,12 @@ class TR_InvariantArgumentPreexistence : public TR::Optimization
       bool     _classIsPreexistent;
       };
 
-   void traceIfEnabled(const char* format, ...);
    void processNode        (TR::Node *node, TR::TreeTop *treeTop, vcount_t visitCount);
    void processIndirectCall(TR::Node *node, TR::TreeTop *treeTop, vcount_t visitCount);
    void processIndirectLoad(TR::Node *node, TR::TreeTop *treeTop, vcount_t visitCount);
    bool convertCall(TR::Node *node, TR::TreeTop *treeTop);
    bool devirtualizeVirtualCall(TR::Node *node, TR::TreeTop *treeTop, TR_OpaqueClassBlock* clazz);
+   bool classIsCurrentlyFinal(TR_OpaqueClassBlock* clazz);
    TR_YesNoMaybe classIsCompatibleWithMethod(TR_OpaqueClassBlock* thisClazz, TR_ResolvedMethod* method);
 
    ParmInfo *getSuitableParmInfo(TR::Node *node);

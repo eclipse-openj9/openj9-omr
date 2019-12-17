@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,6 +29,7 @@
 #include "codegen/InstructionDelegate.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Relocation.hpp"
+#include "il/StaticSymbol.hpp"
 #include "runtime/CodeCacheManager.hpp"
 
 uint8_t *OMR::ARM64::Instruction::generateBinaryEncoding()
@@ -359,13 +360,29 @@ uint8_t *TR::ARM64Trg1ImmSymInstruction::generateBinaryEncoding()
    uint8_t *cursor = instructionStart;
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
    insertTargetRegister(toARM64Cursor(cursor));
-   insertImmediateField(toARM64Cursor(cursor));
 
-   auto label = getLabelSymbol();
-   if (label != NULL)
+   auto sym = getSymbol();
+   if (sym != NULL)
       {
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
+      if (sym->isLabel())
+         {
+         auto label = sym->getLabelSymbol();
+         if (label != NULL)
+            {
+            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
+            }
+         }
+      else if ((getOpCodeValue() == TR::InstOpCode::adr) && sym->isStartPC())
+         {
+         intptr_t offset = reinterpret_cast<intptr_t>(reinterpret_cast<uint8_t *>(sym->getStaticSymbol()->getStaticAddress()) - cursor);
+         if (!constantIsSignedImm21(offset))
+            {
+            cg()->comp()->failCompilation<TR::CompilationException>("offset (%ld) is too far for adr", offset);
+            }
+         setSourceImmediate(offset);
+         }
       }
+   insertImmediateField(toARM64Cursor(cursor));
 
    cursor += ARM64_INSTRUCTION_LENGTH;
    setBinaryLength(ARM64_INSTRUCTION_LENGTH);

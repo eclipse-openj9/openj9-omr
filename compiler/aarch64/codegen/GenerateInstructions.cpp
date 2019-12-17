@@ -270,7 +270,7 @@ TR::Instruction *generateArithmeticShiftRightImmInstruction(TR::CodeGenerator *c
    /* Alias of SBFM instruction */
 
    bool is64bit = node->getDataType().isInt64();
-   TR_ASSERT(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
+   TR_ASSERT_FATAL(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::sbfmx : TR::InstOpCode::sbfmw;
    uint32_t imms = is64bit ? 0x3f : 0x1f;
@@ -288,7 +288,7 @@ TR::Instruction *generateLogicalShiftRightImmInstruction(TR::CodeGenerator *cg, 
    /* Alias of UBFM instruction */
 
    bool is64bit = node->getDataType().isInt64();
-   TR_ASSERT(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
+   TR_ASSERT_FATAL(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw;
    uint32_t imms = is64bit ? 0x3f : 0x1f;
@@ -306,7 +306,7 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, T
    /* Alias of UBFM instruction */
 
    bool is64bit = node->getDataType().isInt64();
-   TR_ASSERT(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
+   TR_ASSERT_FATAL(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::ubfmx : TR::InstOpCode::Mnemonic::ubfmw;
    uint32_t imms = (is64bit ? 63 : 31) - shiftAmount;
@@ -317,6 +317,7 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, T
       return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, cg);
    }
+
 TR::Instruction *generateLogicalImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,
    TR::Node *node, TR::Register *treg, TR::Register *s1reg, bool N, uint32_t imm, TR::Instruction *preced)
    {
@@ -350,6 +351,7 @@ TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *
    /* Alias of SUBS instruction */
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::subsimmx : TR::InstOpCode::subsimmw;
+   TR_ASSERT_FATAL(constantIsUnsignedImm12(imm), "Immediate value is out of range for subsimm");
 
    return generateZeroSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
    }

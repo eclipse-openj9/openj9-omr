@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -446,6 +446,14 @@ OMR::TypeDictionary::MemoryManager::~MemoryManager()
    static_cast<TR::SystemSegmentProvider *>(_segmentProvider)->~SystemSegmentProvider();
    ::operator delete(_segmentProvider, TR::Compiler->persistentAllocator());
    }
+
+// Copy constructor is private but it must be defined
+// to avoid undefined behavior, since we can't use `delete`
+OMR::TypeDictionary::TypeDictionary(const TypeDictionary &src) : 
+   _client(0),
+   _structsByName(str_comparator, trMemory()->heapMemoryRegion()),
+   _unionsByName(str_comparator, trMemory()->heapMemoryRegion()) 
+   {}
 
 OMR::TypeDictionary::TypeDictionary() :
    _client(0),

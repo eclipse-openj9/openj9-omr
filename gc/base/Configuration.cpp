@@ -476,7 +476,7 @@ MM_Configuration::initializeGCParameters(MM_EnvironmentBase* env)
 		if (extensions->scavengerEnabled) {
 			extensions->splitFreeListSplitAmount = (extensions->gcThreadCount - 1) / 8  +  1;
 		} else
-	#endif /* J9VM_GC_MODRON_SCAVENGER */
+	#endif /* OMR_GC_MODRON_SCAVENGER */
 		{
 			OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 			extensions->splitFreeListSplitAmount = (omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE) - 1) / 8  +  1;

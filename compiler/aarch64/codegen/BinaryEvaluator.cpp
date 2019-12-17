@@ -106,64 +106,108 @@ genericBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstO
    return trgReg;
    }
 
-static TR::Register *addOrSubInteger(TR::Node *node, TR::CodeGenerator *cg)
+// multiply and add
+// multiply and subtract
+static TR::Register *
+generateMaddOrMsub(TR::Node *node, TR::Node *mulNode, TR::Node *anotherNode, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
    {
-   TR::Node *firstChild = node->getFirstChild();
-   TR::Register *src1Reg = cg->evaluate(firstChild);
-   TR::Node *secondChild = node->getSecondChild();
-   TR::Register *trgReg = cg->allocateRegister();
-   bool isAdd = node->getOpCode().isAdd();
-
-   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+   if ((mulNode->getOpCodeValue() == TR::imul || mulNode->getOpCodeValue() == TR::lmul) &&
+       mulNode->getReferenceCount() == 1 &&
+       mulNode->getRegister() == NULL)
       {
-      int32_t value = secondChild->getInt();
-      if (constantIsUnsignedImm12(value))
-         {
-         generateTrg1Src1ImmInstruction(cg, isAdd ? TR::InstOpCode::addimmw : TR::InstOpCode::subimmw, node, trgReg, src1Reg, value);
-         }
-      else
-         {
-         TR::Register *tmpReg = cg->allocateRegister();
-         loadConstant32(cg, node, value, tmpReg);
-         generateTrg1Src2Instruction(cg, isAdd ? TR::InstOpCode::addw : TR::InstOpCode::subw, node, trgReg, src1Reg, tmpReg);
-         cg->stopUsingRegister(tmpReg);
-         }
+      TR::Register *trgReg = cg->allocateRegister();
+      TR::Register *mulSrc1Reg = cg->evaluate(mulNode->getFirstChild());
+      TR::Register *mulSrc2Reg = cg->evaluate(mulNode->getSecondChild());
+      TR::Register *src3Reg = cg->evaluate(anotherNode);
+
+      generateTrg1Src3Instruction(cg, op, node, trgReg, mulSrc1Reg, mulSrc2Reg, src3Reg);
+
+      node->setRegister(trgReg);
+      cg->decReferenceCount(mulNode->getFirstChild());
+      cg->decReferenceCount(mulNode->getSecondChild());
+      cg->decReferenceCount(mulNode);
+      cg->decReferenceCount(anotherNode);
+      return trgReg;
       }
    else
       {
-      TR::Register *src2Reg = cg->evaluate(secondChild);
-      generateTrg1Src2Instruction(cg, isAdd ? TR::InstOpCode::addw : TR::InstOpCode::subw, node, trgReg, src1Reg, src2Reg);
+      return NULL; // not applicable
       }
-
-   node->setRegister(trgReg);
-   firstChild->decReferenceCount();
-   secondChild->decReferenceCount();
-   return trgReg;
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *retReg;
+
+   retReg = generateMaddOrMsub(node, firstChild, secondChild, TR::InstOpCode::maddw, cg); // x*y + z
+   if (retReg)
+      {
+      return retReg;
+      }
+   retReg = generateMaddOrMsub(node, secondChild, firstChild, TR::InstOpCode::maddw, cg); // x + y*z
+   if (retReg)
+      {
+      return retReg;
+      }
+
    return genericBinaryEvaluator(node, TR::InstOpCode::addw, TR::InstOpCode::addimmw, false, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return genericBinaryEvaluator(node, TR::InstOpCode::addx, TR::InstOpCode::addimmx, true, cg);
-	}
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *retReg;
+
+   retReg = generateMaddOrMsub(node, firstChild, secondChild, TR::InstOpCode::maddx, cg); // x*y + z
+   if (retReg)
+      {
+      return retReg;
+      }
+   retReg = generateMaddOrMsub(node, secondChild, firstChild, TR::InstOpCode::maddx, cg); // x + y*z
+   if (retReg)
+      {
+      return retReg;
+      }
+
+   return genericBinaryEvaluator(node, TR::InstOpCode::addx, TR::InstOpCode::addimmx, true, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *retReg;
+
+   retReg = generateMaddOrMsub(node, secondChild, firstChild, TR::InstOpCode::msubw, cg); // x - y*z
+   if (retReg)
+      {
+      return retReg;
+      }
+
    return genericBinaryEvaluator(node, TR::InstOpCode::subw, TR::InstOpCode::subimmw, false, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return genericBinaryEvaluator(node, TR::InstOpCode::subx, TR::InstOpCode::subimmx, true, cg);
-	}
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *retReg;
+
+   retReg = generateMaddOrMsub(node, secondChild, firstChild, TR::InstOpCode::msubx, cg); // x - y*z
+   if (retReg)
+      {
+      return retReg;
+      }
+
+   return genericBinaryEvaluator(node, TR::InstOpCode::subx, TR::InstOpCode::subimmx, true, cg);
+   }
 
 // Multiply a register by a 32-bit constant
 static void mulConstant32(TR::Node *node, TR::Register *treg, TR::Register *sreg, int32_t value, TR::CodeGenerator *cg)

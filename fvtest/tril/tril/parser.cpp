@@ -513,12 +513,13 @@ ASTNode* buildAST(TokenIter &tokenIt) {
  * @return The root of the AST
  */
 ASTNode* parseFile(FILE *in) {
-    fseek(in, 0, SEEK_END);
-    long fsize = ftell(in);
-    fseek(in, 0, SEEK_SET);
-    char *string = (char *) malloc(fsize + 1);
-    fread(string, 1, fsize, in);
-    std::vector<Token> scanToken = scan(string);
+    std::string result;
+    while(!feof(in)) {
+        char temp[100];
+        fgets(temp, 100, in);
+        result += temp;
+    }
+    std::vector<Token> scanToken = scan(result);
     TokenIter token = TokenIter(scanToken.begin(), scanToken.end());
     return buildAST(token);
 }

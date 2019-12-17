@@ -1363,8 +1363,6 @@ class S390RegInstruction : public TR::Instruction
 
    virtual uint8_t *generateBinaryEncoding();
 
-   virtual void assignRegistersNoDependencies(TR_RegisterKinds kindToBeAssigned);
-
    virtual bool refsRegister(TR::Register *reg);
 
    TR::InstOpCode::S390BranchCondition getBranchCondition()  {return _branchCondition;}

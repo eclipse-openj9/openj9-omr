@@ -1470,17 +1470,6 @@ TR::S390RegInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-void
-TR::S390RegInstruction::assignRegistersNoDependencies(TR_RegisterKinds kindToBeAssigned)
-   {
-   TR::Machine *machine = cg()->machine();
-   setRegisterOperand(1,machine->assignBestRegister(getRegisterOperand(1), this, BOOKKEEPING));
-
-   return;
-   }
-
-// TR::S390RRInstruction:: member functions /////////////////////////////////////////
-
 bool
 TR::S390RRInstruction::refsRegister(TR::Register * reg)
    {

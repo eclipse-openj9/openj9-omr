@@ -409,6 +409,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setSupportsEfficientNarrowUnsignedIntComputation();
    self()->setSupportsVirtualGuardNOPing();
    self()->setSupportsDynamicANewArray();
+   self()->setSupportsTernary();
 
    // allows [i/l]div to decompose to [i/l]mulh in TreeSimplifier
    //

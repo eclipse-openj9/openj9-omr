@@ -2876,20 +2876,20 @@ OMR::Power::TreeEvaluator::inlineVectorCompareBranch(TR::Node * node, TR::CodeGe
    TR::InstOpCode::Mnemonic branchOp = TR::InstOpCode::bad, vcmpOp = TR::InstOpCode::bad;
 
    switch (ilOp) {
-      case TR::vicmpalleq: vcmpOp = TR::InstOpCode::vcmpeuwr; branchOp = branchIfTrue ? PPCOp_bva  : PPCOp_bvna; break;
-      case TR::vicmpanyeq: vcmpOp = TR::InstOpCode::vcmpeuwr; branchOp = branchIfTrue ? PPCOp_bvnn : PPCOp_bvn;  break;
-      case TR::vicmpallne: vcmpOp = TR::InstOpCode::vcmpeuwr; branchOp = branchIfTrue ? PPCOp_bvn  : PPCOp_bvnn; break;
-      case TR::vicmpanyne: vcmpOp = TR::InstOpCode::vcmpeuwr; branchOp = branchIfTrue ? PPCOp_bvna : PPCOp_bva;  break;
+      case TR::vicmpalleq: vcmpOp = TR::InstOpCode::vcmpequw_r; branchOp = branchIfTrue ? PPCOp_bva  : PPCOp_bvna; break;
+      case TR::vicmpanyeq: vcmpOp = TR::InstOpCode::vcmpequw_r; branchOp = branchIfTrue ? PPCOp_bvnn : PPCOp_bvn;  break;
+      case TR::vicmpallne: vcmpOp = TR::InstOpCode::vcmpequw_r; branchOp = branchIfTrue ? PPCOp_bvn  : PPCOp_bvnn; break;
+      case TR::vicmpanyne: vcmpOp = TR::InstOpCode::vcmpequw_r; branchOp = branchIfTrue ? PPCOp_bvna : PPCOp_bva;  break;
 
-      case TR::vicmpallgt: vcmpOp = TR::InstOpCode::vcmpgswr; branchOp = branchIfTrue ? PPCOp_bva  : PPCOp_bvna; break;
-      case TR::vicmpanygt: vcmpOp = TR::InstOpCode::vcmpgswr; branchOp = branchIfTrue ? PPCOp_bvnn : PPCOp_bvn;  break;
-      case TR::vicmpallle: vcmpOp = TR::InstOpCode::vcmpgswr; branchOp = branchIfTrue ? PPCOp_bvn  : PPCOp_bvnn; break;
-      case TR::vicmpanyle: vcmpOp = TR::InstOpCode::vcmpgswr; branchOp = branchIfTrue ? PPCOp_bvna : PPCOp_bva;  break;
+      case TR::vicmpallgt: vcmpOp = TR::InstOpCode::vcmpgtsw_r; branchOp = branchIfTrue ? PPCOp_bva  : PPCOp_bvna; break;
+      case TR::vicmpanygt: vcmpOp = TR::InstOpCode::vcmpgtsw_r; branchOp = branchIfTrue ? PPCOp_bvnn : PPCOp_bvn;  break;
+      case TR::vicmpallle: vcmpOp = TR::InstOpCode::vcmpgtsw_r; branchOp = branchIfTrue ? PPCOp_bvn  : PPCOp_bvnn; break;
+      case TR::vicmpanyle: vcmpOp = TR::InstOpCode::vcmpgtsw_r; branchOp = branchIfTrue ? PPCOp_bvna : PPCOp_bva;  break;
 
-      case TR::vicmpalllt: vcmpOp = TR::InstOpCode::vcmpgswr; branchOp = branchIfTrue ? PPCOp_bva  : PPCOp_bvna; vecCmpNode->swapChildren(); break;
-      case TR::vicmpanylt: vcmpOp = TR::InstOpCode::vcmpgswr; branchOp = branchIfTrue ? PPCOp_bvnn : PPCOp_bvn;  vecCmpNode->swapChildren(); break;
-      case TR::vicmpallge: vcmpOp = TR::InstOpCode::vcmpgswr; branchOp = branchIfTrue ? PPCOp_bvn  : PPCOp_bvnn; vecCmpNode->swapChildren(); break;
-      case TR::vicmpanyge: vcmpOp = TR::InstOpCode::vcmpgswr; branchOp = branchIfTrue ? PPCOp_bvna : PPCOp_bva;  vecCmpNode->swapChildren(); break;
+      case TR::vicmpalllt: vcmpOp = TR::InstOpCode::vcmpgtsw_r; branchOp = branchIfTrue ? PPCOp_bva  : PPCOp_bvna; vecCmpNode->swapChildren(); break;
+      case TR::vicmpanylt: vcmpOp = TR::InstOpCode::vcmpgtsw_r; branchOp = branchIfTrue ? PPCOp_bvnn : PPCOp_bvn;  vecCmpNode->swapChildren(); break;
+      case TR::vicmpallge: vcmpOp = TR::InstOpCode::vcmpgtsw_r; branchOp = branchIfTrue ? PPCOp_bvn  : PPCOp_bvnn; vecCmpNode->swapChildren(); break;
+      case TR::vicmpanyge: vcmpOp = TR::InstOpCode::vcmpgtsw_r; branchOp = branchIfTrue ? PPCOp_bvna : PPCOp_bva;  vecCmpNode->swapChildren(); break;
    }
 
    TR::Node *firstChild = vecCmpNode->getFirstChild();
@@ -3018,7 +3018,7 @@ TR::Register *OMR::Power::TreeEvaluator::vicmpanyHelper(TR::Node *node, TR::Code
 
 TR::Register *OMR::Power::TreeEvaluator::vicmpalleqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::vicmpallHelper(node, cg, TR::InstOpCode::vcmpeuwr, 25);
+   return TR::TreeEvaluator::vicmpallHelper(node, cg, TR::InstOpCode::vcmpequw_r, 25);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vicmpallneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -3027,26 +3027,26 @@ TR::Register *OMR::Power::TreeEvaluator::vicmpallneEvaluator(TR::Node *node, TR:
    }
 TR::Register *OMR::Power::TreeEvaluator::vicmpallgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::vicmpallHelper(node, cg, TR::InstOpCode::vcmpgswr, 25);
+   return TR::TreeEvaluator::vicmpallHelper(node, cg, TR::InstOpCode::vcmpgtsw_r, 25);
    }
 TR::Register *OMR::Power::TreeEvaluator::vicmpallgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    node->swapChildren();
-   return TR::TreeEvaluator::vicmpallHelper(node, cg, TR::InstOpCode::vcmpgswr, 27);
+   return TR::TreeEvaluator::vicmpallHelper(node, cg, TR::InstOpCode::vcmpgtsw_r, 27);
    }
 TR::Register *OMR::Power::TreeEvaluator::vicmpallltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    node->swapChildren();
-   return TR::TreeEvaluator::vicmpallHelper(node, cg, TR::InstOpCode::vcmpgswr, 25);
+   return TR::TreeEvaluator::vicmpallHelper(node, cg, TR::InstOpCode::vcmpgtsw_r, 25);
    }
 TR::Register *OMR::Power::TreeEvaluator::vicmpallleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::vicmpallHelper(node, cg, TR::InstOpCode::vcmpgswr, 27);
+   return TR::TreeEvaluator::vicmpallHelper(node, cg, TR::InstOpCode::vcmpgtsw_r, 27);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vicmpanyeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::vicmpanyHelper(node, cg, TR::InstOpCode::vcmpeuwr, 27);
+   return TR::TreeEvaluator::vicmpanyHelper(node, cg, TR::InstOpCode::vcmpequw_r, 27);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vicmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -3056,21 +3056,21 @@ TR::Register *OMR::Power::TreeEvaluator::vicmpanyneEvaluator(TR::Node *node, TR:
 
 TR::Register *OMR::Power::TreeEvaluator::vicmpanygtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::vicmpanyHelper(node, cg, TR::InstOpCode::vcmpgswr, 27);
+   return TR::TreeEvaluator::vicmpanyHelper(node, cg, TR::InstOpCode::vcmpgtsw_r, 27);
    }
 TR::Register *OMR::Power::TreeEvaluator::vicmpanygeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    node->swapChildren();
-   return TR::TreeEvaluator::vicmpanyHelper(node, cg, TR::InstOpCode::vcmpgswr, 25);
+   return TR::TreeEvaluator::vicmpanyHelper(node, cg, TR::InstOpCode::vcmpgtsw_r, 25);
    }
 TR::Register *OMR::Power::TreeEvaluator::vicmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    node->swapChildren();
-   return TR::TreeEvaluator::vicmpanyHelper(node, cg, TR::InstOpCode::vcmpgswr, 27);
+   return TR::TreeEvaluator::vicmpanyHelper(node, cg, TR::InstOpCode::vcmpgtsw_r, 27);
    }
 TR::Register *OMR::Power::TreeEvaluator::vicmpanyleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::vicmpanyHelper(node, cg, TR::InstOpCode::vcmpgswr, 25);
+   return TR::TreeEvaluator::vicmpanyHelper(node, cg, TR::InstOpCode::vcmpgtsw_r, 25);
    }
 
 

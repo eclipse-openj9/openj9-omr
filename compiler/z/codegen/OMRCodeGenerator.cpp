@@ -453,6 +453,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->setMultiplyIsDestructive();
 
+   self()->setSupportsTernary();
+
    self()->setIsOutOfLineHotPath(false);
 
    self()->setUsesRegisterPairsForLongs();

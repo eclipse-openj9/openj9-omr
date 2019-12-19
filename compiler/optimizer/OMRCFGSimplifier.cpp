@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <stddef.h>
+#include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
@@ -368,8 +369,7 @@ static bool containsIndirectOperation(TR::Compilation *comp, TR::TreeTop *treeto
 
 bool OMR::CFGSimplifier::simplifyCondStoreSequence(bool needToDuplicateTree)
    {
-   static char *disableSimplifyCondStoreSequence = feGetEnv("TR_disableSimplifyCondStoreSequence");
-   if (disableSimplifyCondStoreSequence != NULL)
+   if (!(comp()->cg()->getSupportsTernary()))
       return false;
 
    if (trace())
@@ -474,8 +474,7 @@ bool OMR::CFGSimplifier::simplifyCondStoreSequence(bool needToDuplicateTree)
 
 bool OMR::CFGSimplifier::simplifySimpleStore(bool needToDuplicateTree)
    {
-   static char *disableSimplifySimpleStore = feGetEnv("TR_disableSimplifySimpleStore");
-   if (disableSimplifySimpleStore != NULL)
+   if (!(comp()->cg()->getSupportsTernary()))
       return false;
 
    if (trace())
@@ -737,8 +736,7 @@ bool OMR::CFGSimplifier::simplifyNullToException(bool needToDuplicateTree)
 //
 bool OMR::CFGSimplifier::simplifyBooleanStore(bool needToDuplicateTree)
    {
-   static char *enableSimplifyBooleanStore = feGetEnv("TR_enableSimplifyBooleanStore");
-   if (enableSimplifyBooleanStore == NULL)
+   if (!(comp()->cg()->getSupportsTernary()))
       return false;
 
    if (trace())

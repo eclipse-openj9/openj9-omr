@@ -131,6 +131,8 @@ typedef struct OMRPortLibraryGlobalData {
 	J9CudaGlobalData cudaGlobals;
 #endif /* OMR_OPT_CUDA */
 	uintptr_t vmemEnableMadvise;					/* madvise to use Transparent HugePage (THP) for Virtual memory allocated by mmap */
+	J9SysinfoCPUTime oldestCPUTime;
+	J9SysinfoCPUTime latestCPUTime;
 } OMRPortLibraryGlobalData;
 
 /* J9SourceJ9CPUControl*/
@@ -511,6 +513,8 @@ extern J9_CFUNC int32_t
 omrsysinfo_env_iterator_next(struct OMRPortLibrary *portLibrary, J9SysinfoEnvIteratorState *state, J9SysinfoEnvElement *envElement);
 extern J9_CFUNC intptr_t
 omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9SysinfoCPUTime *cpuTime);
+extern J9_CFUNC intptr_t
+omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad);
 extern J9_CFUNC void
 omrsysinfo_set_number_user_specified_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number);
 extern J9_CFUNC intptr_t

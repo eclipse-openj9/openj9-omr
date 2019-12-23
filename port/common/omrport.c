@@ -81,6 +81,7 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsysinfo_get_hostname, /* sysinfo_get_hostname */
 	omrsysinfo_get_load_average, /* sysinfo_get_load_average */
 	omrsysinfo_get_CPU_utilization, /* omrsysinfo_get_CPU_utilization */
+	omrsysinfo_get_CPU_load, /* omrsysinfo_get_CPU_load */
 	omrsysinfo_limit_iterator_init, /* sysinfo_limit_iterator_next */
 	omrsysinfo_limit_iterator_hasNext, /* sysinfo_limit_iterator_hasNext */
 	omrsysinfo_limit_iterator_next, /* sysinfo_limit_iterator_next */

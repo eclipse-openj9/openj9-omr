@@ -1107,6 +1107,12 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 	return 0;
 }
 
+intptr_t
+omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
+{
+	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+}
+
 int32_t
 omrsysinfo_limit_iterator_init(struct OMRPortLibrary *portLibrary, J9SysinfoLimitIteratorState *state)
 {

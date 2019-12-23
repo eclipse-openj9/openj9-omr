@@ -1575,6 +1575,8 @@ typedef struct OMRPortLibrary {
 	intptr_t (*sysinfo_get_load_average)(struct OMRPortLibrary *portLibrary, struct J9PortSysInfoLoadData *loadAverageData) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_CPU_utilization "omrsysinfo_get_CPU_utilization"*/
 	intptr_t (*sysinfo_get_CPU_utilization)(struct OMRPortLibrary *portLibrary, struct J9SysinfoCPUTime *cpuTime) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_get_CPU_load "omrsysinfo_get_CPU_utilization"*/
+	intptr_t (*sysinfo_get_CPU_load)(struct OMRPortLibrary *portLibrary, double *load) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_limit_iterator_init "omrsysinfo_limit_iterator_init"*/
 	int32_t (*sysinfo_limit_iterator_init)(struct OMRPortLibrary *portLibrary, J9SysinfoLimitIteratorState *state) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_limit_iterator_hasNext "omrsysinfo_limit_iterator_hasNext"*/
@@ -2275,6 +2277,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_get_hostname(param1,param2) privateOmrPortLibrary->sysinfo_get_hostname(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_get_load_average(param1) privateOmrPortLibrary->sysinfo_get_load_average(privateOmrPortLibrary, (param1))
 #define omrsysinfo_get_CPU_utilization(param1) privateOmrPortLibrary->sysinfo_get_CPU_utilization(privateOmrPortLibrary, (param1))
+#define omrsysinfo_get_CPU_load(param1) privateOmrPortLibrary->sysinfo_get_CPU_load(privateOmrPortLibrary, (param1))
 #define omrsysinfo_limit_iterator_init(param1) privateOmrPortLibrary->sysinfo_limit_iterator_init(privateOmrPortLibrary, (param1))
 #define omrsysinfo_limit_iterator_hasNext(param1) privateOmrPortLibrary->sysinfo_limit_iterator_hasNext(privateOmrPortLibrary, (param1))
 #define omrsysinfo_limit_iterator_next(param1,param2) privateOmrPortLibrary->sysinfo_limit_iterator_next(privateOmrPortLibrary, (param1), (param2))

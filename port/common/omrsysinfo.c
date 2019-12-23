@@ -588,6 +588,28 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 }
 
 /**
+ * Obtain the cumulative CPU utilization of all CPUs on the system as a double in the [0.0, 1.0] interval. A value of
+ * 0.0 means all of the CPUs were idle in the recent period of time observed, while a value of 1.0 means that all CPUs
+ * were actively utilized 100% of the time during the recent period of time observed.
+ *
+ * All values in the interval are possible.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[out] cpuLoad the cumulative CPU utilization of all CPUs on the system
+ *
+ * @return
+ * 	- 0 on success
+ *		- \arg OMRPORT_ERROR_OPFAILED on the first two invocations of this API
+ *		- \arg OMRPORT_ERROR_OPFAILED if less than 10ns have passed since the second call to this API
+ *		- negative portable error code on other failures
+ */
+intptr_t
+omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
+{
+	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+}
+
+/**
  * Initializes the iterator state to be used by @ref omrsysinfo_limit_iterator_next()
  *
  * Storage for state must be provided by the caller.

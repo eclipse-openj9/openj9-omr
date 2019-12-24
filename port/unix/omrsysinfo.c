@@ -3582,11 +3582,11 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 intptr_t
 omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 {
-#if (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX)
 	J9SysinfoCPUTime currentCPUTime;
 	J9SysinfoCPUTime *oldestCPUTime = &portLibrary->portGlobals->oldestCPUTime;
 	J9SysinfoCPUTime *latestCPUTime = &portLibrary->portGlobals->latestCPUTime;
 
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX)
 	intptr_t portLibraryStatus = omrsysinfo_get_CPU_utilization(portLibrary, &currentCPUTime);
 	
 	if (portLibraryStatus < 0) {
@@ -3623,7 +3623,36 @@ omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 
 	return OMRPORT_ERROR_OPFAILED;
 #elif defined(J9ZOS390) /* (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX) */
-	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+	currentCPUTime.timestamp = portLibrary->time_nano_time(portLibrary);
+
+	if (oldestCPUTime->timestamp == 0) {
+		*oldestCPUTime = currentCPUTime;
+		*latestCPUTime = currentCPUTime;
+		return OMRPORT_ERROR_OPFAILED;
+	}
+
+	/* Calculate using the most recent value in the history */
+	if ((currentCPUTime.timestamp - latestCPUTime->timestamp) >= 10000000) {
+		J9CVT* __ptr32 cvtp = ((J9PSA* __ptr32)0)->flccvt;
+		J9RMCT* __ptr32 rcmtp = cvtp->cvtopctp;
+		J9CCT* __ptr32 cctp = rcmtp->rmctcct;
+
+		*cpuLoad = (double)cctp->ccvutilp / 100.0;
+		*oldestCPUTime = *latestCPUTime;
+		*latestCPUTime = currentCPUTime;
+		return 0;
+	}
+
+	if ((currentCPUTime.timestamp - oldestCPUTime->timestamp) >= 10000000) {
+		J9CVT* __ptr32 cvtp = ((J9PSA* __ptr32)0)->flccvt;
+		J9RMCT* __ptr32 rcmtp = cvtp->cvtopctp;
+		J9CCT* __ptr32 cctp = rcmtp->rmctcct;
+
+		*cpuLoad = (double)cctp->ccvutilp / 100.0;
+		return 0;
+	}
+
+	return OMRPORT_ERROR_OPFAILED;
 #else /* (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX) || defined(J9ZOS390) */
 	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
 #endif

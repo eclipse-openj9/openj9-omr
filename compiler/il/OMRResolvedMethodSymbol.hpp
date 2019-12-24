@@ -271,8 +271,8 @@ public:
    bool hasSnapshots()                       { return _properties.testAny(HasSnapshots); }
    void setHasSnapshots(bool v=true)         { _properties.set(HasSnapshots,v); }
 
-   bool detectInternalCycles(TR::CFG *cfg, TR::Compilation *comp);
-   bool catchBlocksHaveRealPredecessors(TR::CFG *cfg, TR::Compilation *comp);
+   bool detectInternalCycles();
+   bool catchBlocksHaveRealPredecessors();
 
    void setCannotAttemptOSR(int32_t n);
    bool cannotAttemptOSRAt(TR_ByteCodeInfo &bci, TR::Block *blockToOSRAt, TR::Compilation *comp);

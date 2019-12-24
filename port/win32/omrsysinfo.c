@@ -1110,7 +1110,45 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 intptr_t
 omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 {
-	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+	J9SysinfoCPUTime currentCPUTime;
+	J9SysinfoCPUTime *oldestCPUTime = &portLibrary->portGlobals->oldestCPUTime;
+	J9SysinfoCPUTime *latestCPUTime = &portLibrary->portGlobals->latestCPUTime;
+
+	intptr_t portLibraryStatus = omrsysinfo_get_CPU_utilization(portLibrary, &currentCPUTime);
+	
+	if (portLibraryStatus < 0) {
+		return portLibraryStatus;
+	}
+
+	if (oldestCPUTime->timestamp == 0) {
+		*oldestCPUTime = currentCPUTime;
+		*latestCPUTime = currentCPUTime;
+		return OMRPORT_ERROR_OPFAILED;
+	}
+
+	/* Calculate using the most recent value in the history */
+	if (((currentCPUTime.timestamp - latestCPUTime->timestamp) >= 10000000) && (currentCPUTime.numberOfCpus != 0)) {
+		*cpuLoad = OMR_MIN((currentCPUTime.cpuTime - latestCPUTime->cpuTime) / ((double)currentCPUTime.numberOfCpus * (currentCPUTime.timestamp - latestCPUTime->timestamp)), 1.0);
+		if (*cpuLoad >= 0.0) {
+			*oldestCPUTime = *latestCPUTime;
+			*latestCPUTime = currentCPUTime;
+			return 0;
+		} else {
+			/* Either the latest or the current time are bogus, so discard the latest value and try with the oldest value */
+			*latestCPUTime = currentCPUTime;
+		}
+	}
+	
+	if (((currentCPUTime.timestamp - oldestCPUTime->timestamp) >= 10000000) && (currentCPUTime.numberOfCpus != 0)) {
+		*cpuLoad = OMR_MIN((currentCPUTime.cpuTime - oldestCPUTime->cpuTime) / ((double)currentCPUTime.numberOfCpus * (currentCPUTime.timestamp - oldestCPUTime->timestamp)), 1.0);
+		if (*cpuLoad >= 0.0) {
+			return 0;
+		} else {
+			*oldestCPUTime = currentCPUTime;
+		}
+	}
+
+	return OMRPORT_ERROR_OPFAILED;
 }
 
 int32_t

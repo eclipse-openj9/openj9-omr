@@ -1028,12 +1028,12 @@ int32_t OMR::Compilation::compile()
 
    if (_ilGenSuccess)
       {
-      _methodSymbol->detectInternalCycles(_methodSymbol->getFlowGraph(), self());
+      _methodSymbol->detectInternalCycles();
 
       //detect catch blocks that could have normal predecessors
       //if so, fail the compile
       //
-      if (_methodSymbol->catchBlocksHaveRealPredecessors(_methodSymbol->getFlowGraph(), self()))
+      if (_methodSymbol->catchBlocksHaveRealPredecessors())
          {
          self()->failCompilation<TR::CompilationException>("Catch blocks have real predecessors");
          }

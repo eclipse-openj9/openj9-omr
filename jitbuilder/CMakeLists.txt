@@ -141,6 +141,10 @@ if(OMR_JITBUILDER_TEST)
 	)
 endif()
 
+if(OMR_LLJB)
+	add_subdirectory(lljb)
+endif()
+
 # install(TARGETS jitbuilder
 #         ARCHIVE       DESTINATION ${CMAKE_BINARY_DIR}/jitbuilder_release
 #         PUBLIC_HEADER DESTINATION ${CMAKE_BINARY_DIR}/jitbuilder_release/include

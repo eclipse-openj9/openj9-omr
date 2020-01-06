@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -139,6 +139,7 @@ MM_MemoryPoolSegregated::allocateChunkedArray(MM_EnvironmentBase *env, MM_Alloca
 		fomrobject_t *arrayoidPtr = _extensions->indexableObjectModel.getArrayoidPointer(spine);
 		Assert_MM_true(totalBytes >= spineBytes);
 		uintptr_t bytesRemaining = totalBytes - spineBytes;
+		bool const compressed = compressObjectReferences();
 		for (uintptr_t i=0; i<numberArraylets; i++) {
 			uintptr_t* arraylet = NULL;
 			if (0 < bytesRemaining) {
@@ -148,7 +149,7 @@ MM_MemoryPoolSegregated::allocateChunkedArray(MM_EnvironmentBase *env, MM_Alloca
 					env->getAllocationContext()->flush(env);
 	
 					for (uintptr_t j=0; j<i; j++) {
-						GC_SlotObject slotObject(env->getOmrVM(), &arrayoidPtr[j]);
+						GC_SlotObject slotObject(env->getOmrVM(), GC_SlotObject::addToSlotAddress(arrayoidPtr, j, compressed));
 						arraylet = (uintptr_t*)slotObject.readReferenceFromSlot();
 						
 						MM_HeapRegionDescriptorSegregated *region = (MM_HeapRegionDescriptorSegregated *)regionManager->tableDescriptorForAddress(arraylet);
@@ -180,7 +181,7 @@ MM_MemoryPoolSegregated::allocateChunkedArray(MM_EnvironmentBase *env, MM_Alloca
 				 */
 				Assert_MM_true(i == numberArraylets - 1);
 			}
-			GC_SlotObject slotObject(env->getOmrVM(), &arrayoidPtr[i]);
+			GC_SlotObject slotObject(env->getOmrVM(), GC_SlotObject::addToSlotAddress(arrayoidPtr, i, compressed));
 			slotObject.writeReferenceToSlot((omrobjectptr_t)arraylet);
 			bytesRemaining = MM_Math::saturatingSubtract(bytesRemaining, arrayletLeafSize);
 		}

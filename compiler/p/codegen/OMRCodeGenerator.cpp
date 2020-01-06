@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -279,7 +279,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    if (self()->comp()->target().isSMP())
       self()->setEnforceStoreOrder();
 
-   if (TR::Compiler->vm.hasResumableTrapHandler(self()->comp()))
+   if (!self()->comp()->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(self()->comp()))
       self()->setHasResumableTrapHandler();
 
    /*

@@ -276,6 +276,13 @@ typedef enum {
 } CompactReason;
 
 typedef enum {
+	HEAP_RECONFIG_NONE = 0,
+	HEAP_RECONFIG_EXPAND = 1,
+	HEAP_RECONFIG_CONTRACT = 2,
+	HEAP_RECONFIG_SCAVENGER_TILT = 3
+} HeapReconfigReason;
+
+typedef enum {
 	COMPACT_PREVENTED_NONE = 0,
 	COMPACT_PREVENTED_CRITICAL_REGIONS
 } CompactPreventedReason;

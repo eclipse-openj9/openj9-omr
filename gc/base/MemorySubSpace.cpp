@@ -1380,16 +1380,16 @@ MM_MemorySubSpace::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace* s
  * 
  */
 void
-MM_MemorySubSpace::heapReconfigured(MM_EnvironmentBase* env)
+MM_MemorySubSpace::heapReconfigured(MM_EnvironmentBase* env, HeapReconfigReason reason, MM_MemorySubSpace *subspace, void *lowAddress, void *highAddress)
 {
 	if (!_usesGlobalCollector && (NULL != _collector)) {
-		_collector->heapReconfigured(env);
+		_collector->heapReconfigured(env, reason, subspace, lowAddress, highAddress);
 	}
 
 	if (_parent) {
-		_parent->heapReconfigured(env);
+		_parent->heapReconfigured(env, reason, subspace, lowAddress, highAddress);
 	} else if (_memorySpace) {
-		_memorySpace->heapReconfigured(env);
+		_memorySpace->heapReconfigured(env, reason, subspace, lowAddress, highAddress);
 	}
 }
 

@@ -1345,10 +1345,9 @@ MM_ParallelGlobalGC::heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace 
  * @see MM_GlobalCollector::heapReconfigured()
  */
 void
-MM_ParallelGlobalGC::heapReconfigured(MM_EnvironmentBase *env)
+MM_ParallelGlobalGC::heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason reason, MM_MemorySubSpace *subspace, void *lowAddress, void *highAddress)
 {
 	_sweepScheme->heapReconfigured(env);
-	
 }
 
 bool

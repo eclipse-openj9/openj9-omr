@@ -515,9 +515,9 @@ MM_MemorySpace::heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subs
  * 
  */
 void
-MM_MemorySpace::heapReconfigured(MM_EnvironmentBase *env)
+MM_MemorySpace::heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason reason, MM_MemorySubSpace *subspace, void *lowAddress, void *highAddress)
 {
-	_heap->heapReconfigured(env);
+	_heap->heapReconfigured(env, reason, subspace, lowAddress, highAddress);
 }
 
 /**

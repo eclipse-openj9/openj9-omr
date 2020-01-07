@@ -181,7 +181,7 @@ public:
 	 * moved from one subspace to another.
 	 * @param env[in] The thread which performed the change in heap geometry 
 	 */
-	void heapReconfigured(MM_EnvironmentBase *env);
+	void heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason reason, MM_MemorySubSpace *subspace, void *lowAddress, void *highAddress);
 
 	static MM_MemorySpace *getMemorySpace(void *memorySpace) { return (MM_MemorySpace *)memorySpace; }
 

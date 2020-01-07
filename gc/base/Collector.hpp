@@ -30,6 +30,7 @@
 
 #include "BaseVirtual.hpp"
 #include "EnvironmentBase.hpp"
+#include "ModronAssertions.h"
 
 class MM_AllocateDescription;
 class MM_AllocationContext;
@@ -194,7 +195,18 @@ public:
 	 * moved from one subspace to another.
 	 * @param env[in] The thread which performed the change in heap geometry 
 	 */
-	virtual void heapReconfigured(MM_EnvironmentBase* env) = 0;
+	virtual void heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason reason, MM_MemorySubSpace *subspace, void *lowAddress, void *highAddress)
+	{
+		heapReconfigured(env); /* Required temporarily to not break dependency with heapReconfigure API changes */
+	};
+	
+	/* Required temporarily to not break dependency with heapReconfigure API changes */
+	virtual void heapReconfigured(MM_EnvironmentBase *env) 
+	{
+		/* ALl collectors except Scavenger & Realtime should have their own implementation */
+		MM_GCPolicy gc_policy = env->getExtensions()->configurationOptions._gcPolicy;
+		Assert_MM_true(gc_policy == OMR_GC_POLICY_METRONOME || gc_policy == OMR_GC_POLICY_GENCON);
+	};
 
 	/**
 	 * Post collection broadcast event, indicating that the collection has been completed.

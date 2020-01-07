@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -200,6 +200,8 @@ public:
 	 * @param env The environment for the calling thread
 	 */
 	MMINLINE void completeMarking(MM_EnvironmentBase *env) { }
+
+	uintptr_t setupIndexableScanner(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MM_MarkingSchemeScanReason reason, uintptr_t *sizeToDo, uintptr_t *sizeInElementsToDo, fomrobject_t **basePtr, uintptr_t *flags) { return 0; }
 
 	/**
 	 * Constructor.

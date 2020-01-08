@@ -1214,7 +1214,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
             {
             if (!comp->isPeekingMethod())
                {
-               if (self()->catchBlocksHaveRealPredecessors(comp->getFlowGraph(), comp))
+               if (self()->catchBlocksHaveRealPredecessors())
                   {
                   comp->failCompilation<TR::CompilationException>("Catch blocks have real predecessors");
                   }
@@ -1235,7 +1235,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
             previousOptimizer = comp->getOptimizer();
             comp->setOptimizer(optimizer);
 
-            self()->detectInternalCycles(comp->getFlowGraph(), comp);
+            self()->detectInternalCycles();
 
             if (doOSR)
                {
@@ -2081,8 +2081,10 @@ OMR::ResolvedMethodSymbol::setFirstTreeTop(TR::TreeTop * tt)
    }
 
 bool
-OMR::ResolvedMethodSymbol::detectInternalCycles(TR::CFG *cfg, TR::Compilation *comp)
+OMR::ResolvedMethodSymbol::detectInternalCycles()
    {
+   TR::CFG *cfg = self()->getFlowGraph();
+   TR::Compilation *comp = self()->comp();
    if (cfg)
       {
       int32_t numNodesInCFG = 0;
@@ -2196,16 +2198,16 @@ OMR::ResolvedMethodSymbol::detectInternalCycles(TR::CFG *cfg, TR::Compilation *c
    }
 
 bool
-OMR::ResolvedMethodSymbol::catchBlocksHaveRealPredecessors(TR::CFG *cfg, TR::Compilation *comp)
+OMR::ResolvedMethodSymbol::catchBlocksHaveRealPredecessors()
    {
-   for (TR::CFGNode *node = cfg->getFirstNode(); node; node = node->getNext())
+   for (TR::CFGNode *node = self()->getFlowGraph()->getFirstNode(); node; node = node->getNext())
       {
       if (!node->getExceptionPredecessors().empty())
          {
          //catch block
          if (!node->getPredecessors().empty())
             {
-            dumpOptDetails(comp, "detected catch block_%d with real predecessors\n", node->getNumber());
+            dumpOptDetails(self()->comp(), "detected catch block_%d with real predecessors\n", node->getNumber());
             return true;
             }
          }

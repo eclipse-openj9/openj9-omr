@@ -2722,8 +2722,7 @@ void OMR::Compilation::invalidateAliasRegion()
    {
    if (self()->_aliasRegion.bytesAllocated() > (ALIAS_REGION_LOAD_FACTOR) * TR::Region::initialSize())
       {
-      self()->_aliasRegion.~Region();
-      new (&self()->_aliasRegion) TR::Region(_heapMemoryRegion);
+      TR::Region::reset(self()->_aliasRegion, _heapMemoryRegion);
       }
    }
 

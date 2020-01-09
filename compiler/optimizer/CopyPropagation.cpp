@@ -59,7 +59,6 @@
 #include "optimizer/TransformUtil.hpp"
 #include "ras/Debug.hpp"
 
-
 #define OPT_DETAILS "O^O COPY PROPAGATION: "
 
 
@@ -803,7 +802,6 @@ int32_t TR_CopyPropagation::perform()
 
          if (!useNode) continue;
          if (useNode->getReferenceCount() == 0) continue;
-         if (useNode->getOpCodeValue() == TR::loadaddr) continue;
 
          TR::Node *loadNode, *baseNode;
          int32_t regNumber;
@@ -2244,7 +2242,7 @@ bool TR_CopyPropagation::isCorrectToReplace(TR::Node *useNode, TR::Node *storeNo
 
 TR::Node * TR_CopyPropagation::isLoadVarWithConst(TR::Node *node)
    {
-   if (node->getOpCode().isLoadVarDirect() &&
+     if ((node->getOpCode().isLoadVarDirect() || (node->getOpCodeValue() == TR::loadaddr)) &&
        node->getSymbolReference()->getSymbol()->isAutoOrParm())
       {
       return node;

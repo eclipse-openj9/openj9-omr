@@ -4869,8 +4869,6 @@ readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer,
 			Trc_PRT_readCgroupFile_fgets_failed(cgroupFilePath, osErrCode);
 			rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "fgets failed to read %s file stream with errno=%d", cgroupFilePath, osErrCode);
 			goto _end;
-		} else if (NULL == buffer) {
-			break;
 		}
 		rc = sscanf(buffer, PROC_PID_CGROUP_ENTRY_FORMAT, &hierId, subsystems, cgroup);
 
@@ -5207,8 +5205,6 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 				Trc_PRT_isRunningInContainer_fgets_failed(OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
 				rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "fgets failed to read %s file stream with errno=%d", OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
 				goto _end;
-			} else if (NULL == buffer) {
-				break;
 			}
 			rc = sscanf(buffer, PROC_PID_CGROUP_ENTRY_FORMAT, &hierId, subsystems, cgroup);
 

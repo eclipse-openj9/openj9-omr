@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -257,6 +257,7 @@ public:
 	bool largePageWarnOnError;
 	bool largePageFailOnError;
 	bool largePageFailedToSatisfy;
+	bool isArrayletDoubleMapRequested;
 	uintptr_t requestedPageSize;
 	uintptr_t requestedPageFlags;
 	uintptr_t gcmetadataPageSize;
@@ -1354,6 +1355,7 @@ public:
 		, largePageWarnOnError(false)
 		, largePageFailOnError(false)
 		, largePageFailedToSatisfy(false)
+		, isArrayletDoubleMapRequested(false)
 		, requestedPageSize(0)
 		, requestedPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
 		, gcmetadataPageSize(0)

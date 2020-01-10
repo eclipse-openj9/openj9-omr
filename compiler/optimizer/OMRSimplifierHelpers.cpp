@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -120,6 +120,16 @@ void simplifyChildren(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          child = s->simplify(child, block);
          node->setChild(i, child);
+         }
+      // if simplification produced a PassThrough attach the child of the PassThrough here
+      // to keep the trees clean unless we are dealing with a node where a PassThrough is
+      // important - a null check or GlRegtDeps
+      if (!node->getOpCode().isNullCheck()
+          && node->getOpCodeValue() != TR::GlRegDeps
+          && child->getOpCodeValue() == TR::PassThrough)
+         {
+         node->setAndIncChild(i, child->getFirstChild());
+         child->recursivelyDecReferenceCount();
          }
       }
    }

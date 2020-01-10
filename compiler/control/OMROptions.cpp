@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -355,6 +355,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
                                           TR::Options::setRegex, offsetof(OMR::Options, _disabledIdiomPatterns), 0, "P"},
    {"disableIdiomRecognition",            "O\tdisable idiom recognition",                       TR::Options::disableOptimization, idiomRecognition, 0, "P"},
 #endif
+   {"disableImmutableFieldAliasing",      "O\tdisable special handling for immutable fields.", SET_OPTION_BIT(TR_DisableImmutableFieldAliasing), "P"},
    {"disableIncrementalCCR",              "O\tdisable incremental ccr",      SET_OPTION_BIT(TR_DisableIncrementalCCR), "F" ,NOT_IN_SUBSET},
 
    {DisableInlineCheckCastString,         "O\tdisable CheckCast    inline fast helper",        SET_OPTION_BIT(TR_DisableInlineCheckCast)   , "F"},

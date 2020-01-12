@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -58,7 +58,7 @@ static void loadRelocatableConstant(TR::Node *node,
 
    if (symbol->isStartPC())
       {
-      TR_UNIMPLEMENTED();
+      generateTrg1ImmSymInstruction(cg, TR::InstOpCode::adr, node, reg, addr, symbol);
       return;
       }
 

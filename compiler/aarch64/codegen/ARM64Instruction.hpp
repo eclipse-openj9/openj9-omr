@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -78,6 +78,16 @@ inline bool constantIsUnsignedImm12(uint64_t intValue)
 inline bool constantIsUnsignedImm16(uint64_t intValue)
    {
    return (intValue < (1<<16));  // 65536
+   }
+
+/*
+ * @brief Answers if the signed integer value can be placed in 21-bit field
+ * @param[in] intValue : signed integer value
+ * @return true if the value can be placed in 21-bit field, false otherwise
+ */
+inline bool constantIsSignedImm21(intptr_t intValue)
+   {
+   return (-0x100000 <= intValue && intValue < 0x100000);
    }
 
 /*
@@ -1168,7 +1178,7 @@ class ARM64Trg1ImmInstruction : public ARM64Trg1Instruction
 
 class ARM64Trg1ImmSymInstruction : public ARM64Trg1ImmInstruction
    {
-   TR::LabelSymbol *_symbol;
+   TR::Symbol *_symbol;
 
    public:
    /*
@@ -1177,11 +1187,11 @@ class ARM64Trg1ImmSymInstruction : public ARM64Trg1ImmInstruction
     * @param[in] node : node
     * @param[in] treg : target register
     * @param[in] imm : immediate value
-    * @param[in] sym : label symbol
+    * @param[in] sym : symbol
     * @param[in] cg : CodeGenerator
     */
    ARM64Trg1ImmSymInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
-                            uint32_t imm, TR::LabelSymbol *sym, TR::CodeGenerator *cg)
+                            uint32_t imm, TR::Symbol *sym, TR::CodeGenerator *cg)
       : ARM64Trg1ImmInstruction(op, node, treg, imm, cg), _symbol(sym)
       {
       }
@@ -1192,12 +1202,12 @@ class ARM64Trg1ImmSymInstruction : public ARM64Trg1ImmInstruction
     * @param[in] node : node
     * @param[in] treg : target register
     * @param[in] imm : immediate value
-    * @param[in] sym : label symbol
+    * @param[in] sym : symbol
     * @param[in] precedingInstruction : preceding instruction
     * @param[in] cg : CodeGenerator
     */
    ARM64Trg1ImmSymInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
-                            uint32_t imm, TR::LabelSymbol *sym,
+                            uint32_t imm, TR::Symbol *sym,
                             TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
       : ARM64Trg1ImmInstruction(op, node, treg, imm, precedingInstruction, cg), _symbol(sym)
       {
@@ -1211,10 +1221,10 @@ class ARM64Trg1ImmSymInstruction : public ARM64Trg1ImmInstruction
 
    /**
     *
-    * @brief Gets label symbol
-    * @return label symbol
+    * @brief Gets symbol
+    * @return symbol
     */
-   TR::LabelSymbol *getLabelSymbol() {return _symbol;}
+   TR::Symbol *getSymbol() {return _symbol;}
 
    /**
     * @brief Sets immediate field in binary encoding
@@ -1222,7 +1232,15 @@ class ARM64Trg1ImmSymInstruction : public ARM64Trg1ImmInstruction
     */
    void insertImmediateField(uint32_t *instruction)
       {
-      *instruction |= ((getSourceImmediate() & 0x7ffff) << 5);
+      TR::InstOpCode::Mnemonic op = getOpCodeValue();
+      if (op == TR::InstOpCode::adr || op == TR::InstOpCode::adrp)
+         {
+         *instruction |= ((getSourceImmediate() & 0x1ffffc) << 3) | ((getSourceImmediate() & 0x3) << 29);
+         }
+      else
+         {
+         *instruction |= ((getSourceImmediate() & 0x7ffff) << 5);
+         }
       }
 
    /**

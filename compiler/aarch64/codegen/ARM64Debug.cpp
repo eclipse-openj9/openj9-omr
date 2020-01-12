@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -816,12 +816,25 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmInstruction *instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_WordReg);
-   uint32_t imm = instr->getSourceImmediate() & 0xFFFF;
-   uint32_t shift = (instr->getSourceImmediate() & 0x30000) >> 12;
-   trfprintf(pOutFile, ", 0x%04x", imm);
-   if (shift != 0)
+   if ((instr->getOpCodeValue() == TR::InstOpCode::adr) ||
+       (instr->getOpCodeValue() == TR::InstOpCode::adrp))
       {
-      trfprintf(pOutFile, ", LSL #%d", shift);
+      int64_t offset = static_cast<int64_t>(static_cast<int32_t>(instr->getSourceImmediate()));
+      if (instr->getOpCodeValue() == TR::InstOpCode::adrp)
+         {
+         offset *= 4096;
+         }
+      trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT, (instr->getBinaryEncoding() + offset));
+      }
+   else
+      {
+      uint32_t imm = instr->getSourceImmediate() & 0xFFFF;
+      uint32_t shift = (instr->getSourceImmediate() & 0x30000) >> 12;
+      trfprintf(pOutFile, ", 0x%04x", imm);
+      if (shift != 0)
+         {
+         trfprintf(pOutFile, ", LSL #%d", shift);
+         }
       }
    trfflush(_comp->getOutFile());
    }
@@ -834,17 +847,31 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmSymInstruction *instr)
    print(pOutFile, instr->getTargetRegister(), TR_WordReg);
    trfprintf(pOutFile, ", ");
 
-   uint32_t imm = instr->getSourceImmediate() & 0x7FFFF;
-   TR::LabelSymbol *label = instr->getLabelSymbol();
-   TR::Snippet *snippet = label ? label->getSnippet() : NULL;
-   if (snippet)
+   auto sym = instr->getSymbol();
+   if ((sym != NULL) && sym->isLabel())
       {
+      auto label = sym->getLabelSymbol();
       print(pOutFile, label);
-      trfprintf(pOutFile, "(%s)", getName(snippet));
+      TR::Snippet *snippet = label->getSnippet();
+      if (snippet)
+         {
+         trfprintf(pOutFile, "(%s)", getName(snippet));
+         }
       }
    else
       {
-      trfprintf(pOutFile, POINTER_PRINTF_FORMAT, instr->getBinaryEncoding() + (imm << 2));
+      int64_t offset = static_cast<int64_t>(static_cast<int32_t>(instr->getSourceImmediate()));
+      if ((instr->getOpCodeValue() != TR::InstOpCode::adr) &&
+            (instr->getOpCodeValue() != TR::InstOpCode::adrp))
+         {
+         // ldr literal variants
+         offset *= 4;
+         }
+      if (instr->getOpCodeValue() == TR::InstOpCode::adrp)
+         {
+         offset *= 4096;
+         }
+      trfprintf(pOutFile, POINTER_PRINTF_FORMAT, (instr->getBinaryEncoding() + offset));
       }
 
    trfflush(_comp->getOutFile());

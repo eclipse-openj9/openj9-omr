@@ -26,6 +26,9 @@
  * @brief Sockets
  */
 
+#include <netdb.h>
+#include <string.h> 
+
 #include "omrcfg.h"
 #if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrport.h"
@@ -41,7 +44,33 @@ omrsock_startup(struct OMRPortLibrary *portLibrary)
 int32_t
 omrsock_getaddrinfo_create_hints(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t *hints, int32_t family, int32_t socktype, int32_t protocol, int32_t flags)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	*hints = NULL;
+	omrsock_ptb_t ptBuffer = NULL;
+	omr_os_addrinfo *ptbHints = NULL;
+
+	/* Initialized the pt buffers if necessary */
+	ptBuffer = omrsock_ptb_get(portLibrary);
+	if (NULL == ptBuffer) {
+		return OMRPORT_ERROR_SOCK_PTB_FAILED;
+	}
+    
+	ptbHints = (ptBuffer->addrInfoHints).addrInfo;
+	if (NULL == ptbHints) {
+		ptbHints = portLibrary->mem_allocate_memory(portLibrary, sizeof(omr_os_addrinfo), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+		if (NULL == ptbHints) {
+			return OMRPORT_ERROR_SOCK_SYSTEM_FULL;
+		}
+	}
+	memset(ptbHints, 0, sizeof(omr_os_addrinfo));
+
+	ptbHints->ai_flags = flags;
+	ptbHints->ai_family = family;
+	ptbHints->ai_socktype = socktype;
+	ptbHints->ai_protocol = protocol;
+
+	(ptBuffer->addrInfoHints).addrInfo = ptbHints;
+	*hints = &ptBuffer->addrInfoHints;
+	return 0;
 }
 
 int32_t

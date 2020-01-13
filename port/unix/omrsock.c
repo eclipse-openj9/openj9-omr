@@ -35,7 +35,7 @@
 int32_t
 omrsock_startup(struct OMRPortLibrary *portLibrary)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	return omrsock_ptb_init(portLibrary);
 }
 
 int32_t
@@ -143,7 +143,7 @@ omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock)
 int32_t
 omrsock_shutdown(struct OMRPortLibrary *portLibrary)
 {
-	return 0;
+	return omrsock_ptb_shutdown(portLibrary);
 }
 
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

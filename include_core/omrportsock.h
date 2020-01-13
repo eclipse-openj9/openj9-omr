@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,10 +26,12 @@
 /* Pointer to OMRAddInfoNode, a struct that contains addrinfo information. */
 typedef struct OMRAddrInfoNode *omrsock_addrinfo_t;
 
-/* Pointer to ip address. It has enough space for Ipv4 or IPv6 addresses. */
+/* Pointer to OMRSockAddrStorage, a struct that contains socket address
+ * information. It has enough space for Ipv4 or IPv6 addresses. 
+ */
 typedef struct OMRSockAddrStorage *omrsock_sockaddr_t;
 
-/* Pointer to a socket descriptor */
+/* Pointer to OMRSocket, a struct that contains socket descriptor. */
 typedef struct OMRSocket *omrsock_socket_t;
 
 #endif /* !defined(OMRPORTSOCK_H_) */

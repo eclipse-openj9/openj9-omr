@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,6 +23,7 @@
 #if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrport.h"
 #include "omrportsock.h"
+#include "omrportsocktypes.h"
 #include "testHelpers.hpp"
 
 /**
@@ -41,7 +42,7 @@
 int32_t
 start_server(struct OMRPortLibrary *portLibrary, const char *addrStr, const char *port, int32_t family, omrsock_socket_t *serverSocket, omrsock_sockaddr_t serverAddr) 
 {
-    return OMRPORT_ERROR_NOTEXIST;
+	return OMRPORT_ERROR_NOTEXIST;
 }
 
 /**
@@ -59,7 +60,7 @@ start_server(struct OMRPortLibrary *portLibrary, const char *addrStr, const char
 int32_t
 connect_client_to_server(struct OMRPortLibrary *portLibrary, const char *addrStr, const char *port, int32_t family, omrsock_socket_t *sessionClientSocket, omrsock_sockaddr_t sessionClientAddr) 
 {
-    return OMRPORT_ERROR_NOTEXIST;
+	return OMRPORT_ERROR_NOTEXIST;
 }
 
 /**
@@ -72,7 +73,24 @@ connect_client_to_server(struct OMRPortLibrary *portLibrary, const char *addrStr
  */
 TEST(PortSockTest, library_function_pointers_not_null)
 {
-    /* Unimplemented. */
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo_create_hints, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo_length, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo_family, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo_socktype, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo_protocol, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_freeaddrinfo, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_socket, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_bind, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_listen, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_accept, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_send, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_sendto, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_recv, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_recvfrom, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_close, (void *)NULL);
 }
 
 /**
@@ -83,7 +101,17 @@ TEST(PortSockTest, library_function_pointers_not_null)
  */
 TEST(PortSockTest, per_thread_buffer_functionality)
 {
-    /* Unimplemented. */
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	omrsock_addrinfo_t hints = NULL;
+	int32_t family = 0;
+	int32_t sockType = 1;
+	int32_t protocol = 1;
+	int32_t flags = 0;
+
+	OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, family, sockType, protocol, flags);
+	
+	ASSERT_NE(hints, (void *)NULL);
 }
 
 /**
@@ -104,7 +132,7 @@ TEST(PortSockTest, per_thread_buffer_functionality)
  */
 TEST(PortSockTest, getaddrinfo_creation_and_extraction)
 {
-    /* Unimplemented. */
+	/* Unimplemented. */
 }
 
 /**
@@ -122,7 +150,7 @@ TEST(PortSockTest, getaddrinfo_creation_and_extraction)
  */
 TEST(PortSockTest, two_socket_communication)
 {
-    /* Unimplemented. */
+	/* Unimplemented. */
 }
 
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,7 +42,8 @@ if(OMR_OPT_CUDA)
 	)
 endif()
 
-if(OMR_PORT_SOCKET_SUPPORT)
+# TODO: Remove AND (NOT OMR_HOST_OS STREQUAL "win") after OMRSOCK API is implemented on Windows.
+if((OMR_PORT_SOCKET_SUPPORT) AND (NOT OMR_HOST_OS STREQUAL "win"))
 	set(socketSources
 		omrsockTest.cpp
 	)

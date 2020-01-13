@@ -1229,12 +1229,6 @@ TR::VPClassType *TR::VPClassType::create(OMR::ValuePropagation *vp, const char *
    return TR::VPUnresolvedClass::create(vp, sig, len, method);
    }
 
-//Workaround for zOS V1R11 bug
-#if defined(J9ZOS390)
-#pragma noinline(TR::VPResolvedClass::VPResolvedClass(TR_OpaqueClassBlock *,TR::Compilation *))
-#pragma noinline(TR::VPResolvedClass::VPResolvedClass(TR_OpaqueClassBlock *, TR::Compilation *, int32_t))
-#endif
-
 TR::VPResolvedClass *TR::VPResolvedClass::create(OMR::ValuePropagation *vp, TR_OpaqueClassBlock *klass)
    {
    // If the class is final, we really want to make this a fixed class

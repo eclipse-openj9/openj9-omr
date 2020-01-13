@@ -114,6 +114,9 @@ typedef struct OMRPortLibraryGlobalData {
 	struct J9PortControlData control;
 	struct J9NLSDataCache nls_data;
 	omrthread_tls_key_t tls_key;
+#if defined(OMR_PORT_SOCKET_SUPPORT)
+	omrthread_tls_key_t socketTlsKey;
+#endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 	MUTEX tls_mutex;
 	void *buffer_list;
 	void *procSelfMap;

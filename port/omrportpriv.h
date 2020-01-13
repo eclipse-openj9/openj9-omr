@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -610,6 +610,8 @@ omrsl_shutdown(struct OMRPortLibrary *portLibrary);
 /* J9SourceJ9Sock*/
 #if defined(OMR_PORT_SOCKET_SUPPORT)
 extern J9_CFUNC int32_t
+omrsock_startup(struct OMRPortLibrary *portLibrary);
+extern J9_CFUNC int32_t
 omrsock_getaddrinfo_create_hints(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t *hints, int32_t family, int32_t socktype, int32_t protocol, int32_t flags);
 extern J9_CFUNC int32_t
 omrsock_getaddrinfo(struct OMRPortLibrary *portLibrary, char *node, char *service, omrsock_addrinfo_t hints, omrsock_addrinfo_t result);
@@ -643,6 +645,8 @@ extern J9_CFUNC int32_t
 omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags, omrsock_sockaddr_t addrHandle);
 extern J9_CFUNC int32_t
 omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock);
+extern J9_CFUNC int32_t
+omrsock_shutdown(struct OMRPortLibrary *portLibrary);
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 
 /* J9SourceJ9Str*/

@@ -2006,6 +2006,8 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrheap.c::omrheap_grow "omrheap_grow"*/
 	BOOLEAN (*heap_grow)(struct OMRPortLibrary *portLibrary, struct J9Heap *heap, uintptr_t growAmount) ;
 #if defined(OMR_PORT_SOCKET_SUPPORT)
+	/** see @ref omrsock.c::omrsock_startup "omrsock_startup"*/
+	int32_t (*sock_startup)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrsock.c::omrsock_getaddrinfo_create_hints "omrsock_getaddrinfo_create_hints"*/
 	int32_t (*sock_getaddrinfo_create_hints)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t *hints, int32_t family, int32_t socktype, int32_t protocol, int32_t flags) ;
 	/** see @ref omrsock.c::omrsock_getaddrinfo "omrsock_getaddrinfo"*/
@@ -2040,6 +2042,8 @@ typedef struct OMRPortLibrary {
 	int32_t (*sock_recvfrom)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags, omrsock_sockaddr_t addrHandle) ;
 	/** see @ref omrsock.c::omrsock_close "omrsock_close"*/
 	int32_t (*sock_close)(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock) ;
+	/** see @ref omrsock.c::omrsock_shutdown "omrsock_shutdown"*/
+	int32_t (*sock_shutdown)(struct OMRPortLibrary *portLibrary) ;
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 #if defined(OMR_OPT_CUDA)
 	/** CUDA configuration data */
@@ -2484,6 +2488,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrheap_query_size(param1,param2) privateOmrPortLibrary->heap_query_size(privateOmrPortLibrary, (param1), (param2))
 #define omrheap_grow(param1,param2) privateOmrPortLibrary->heap_grow(privateOmrPortLibrary, (param1), (param2))
 #if defined(OMR_PORT_SOCKET_SUPPORT)
+#define omrsock_startup() privateOmrPortLibrary->sock_startup(privateOmrPortLibrary)
 #define omrsock_getaddrinfo_create_hints(param1,param2,param3,param4,param5) privateOmrPortLibrary->sock_getaddrinfo_create_hints(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
 #define omrsock_getaddrinfo(param1,param2,param3,param4) privateOmrPortLibrary->sock_getaddrinfo(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrsock_getaddrinfo_length(param1,param2) privateOmrPortLibrary->sock_getaddrinfo_length(privateOmrPortLibrary, (param1), (param2))
@@ -2501,6 +2506,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsock_recv(param1,param2,param3,param4) privateOmrPortLibrary->sock_recv(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrsock_recvfrom(param1,param2,param3,param4,param5) privateOmrPortLibrary->sock_recvfrom(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
 #define omrsock_close(param1) privateOmrPortLibrary->sock_close(privateOmrPortLibrary, (param1))
+#define omrsock_shutdown() privateOmrPortLibrary->sock_shutdown(privateOmrPortLibrary)
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 
 #if defined(OMR_OPT_CUDA)

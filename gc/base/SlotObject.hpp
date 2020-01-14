@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -47,18 +47,6 @@ protected:
 public:
 
 private:
-	/* Inlined version of converting a compressed token to an actual pointer */
-	MMINLINE omrobjectptr_t
-	convertPointerFromToken(fomrobject_t token)
-	{
-		uintptr_t value = (uintptr_t)token;
-#if defined (OMR_GC_COMPRESSED_POINTERS)
-		if (compressObjectReferences()) {
-			value <<= _compressedPointersShift;
-		}
-#endif /* OMR_GC_COMPRESSED_POINTERS */
-		return (omrobjectptr_t)value;
-	}
 	/* Inlined version of converting a pointer to a compressed token */
 	MMINLINE fomrobject_t
 	convertTokenFromPointer(omrobjectptr_t pointer)
@@ -73,6 +61,44 @@ private:
 	}
 
 public:
+	/**
+	 * log2(size of an object to object reference)
+	 *
+	 * @param[in] compressed true if object to object references are compressed, false if not
+	 * @return the shift value
+	 */
+	MMINLINE static uintptr_t logReferenceSize(bool compressed) { return compressed ? 2 : OMR_LOG_POINTER_SIZE; }
+
+	/**
+	 * Calculate the difference between two object slot addresses, in slots
+	 *
+	 * @param[in] p1 the value to be subtracted from
+	 * @param[in] p2 the value to be subtracted
+	 * @param[in] compressed true if object to object references are compressed, false if not
+	 * @return p1 - p2 in slots
+	 */
+	MMINLINE static uintptr_t subtractSlotAddresses(fomrobject_t *p1, fomrobject_t *p2, bool compressed) { return ((uintptr_t)p1 - (uintptr_t)p2) >> logReferenceSize(compressed); }
+
+	/**
+	 * Calculate the addition of an integer to an object slot address
+	 *
+	 * @param[in] base the base slot pointer
+	 * @param[in] index the index to add
+	 * @param[in] compressed true if object to object references are compressed, false if not
+	 * @return the adjusted address
+	 */
+	MMINLINE static fomrobject_t *addToSlotAddress(fomrobject_t * base, uintptr_t index, bool compressed) { return (fomrobject_t*)((uintptr_t)base + (index << logReferenceSize(compressed))); }
+
+	/**
+	 * Calculate the subtraction of an integer from an object slot address
+	 *
+	 * @param[in] base the base slot pointer
+	 * @param[in] index the index to subtract
+	 * @param[in] compressed true if object to object references are compressed, false if not
+	 * @return the adjusted address
+	 */
+	MMINLINE static fomrobject_t *subtractFromSlotAddress(fomrobject_t * base, uintptr_t index, bool compressed) { return (fomrobject_t*)((uintptr_t)base - (index << logReferenceSize(compressed))); }
+
 	/**
 	 * Return back true if object references are compressed
 	 * @return true, if object references are compressed
@@ -95,7 +121,16 @@ public:
 	 */
 	MMINLINE omrobjectptr_t readReferenceFromSlot()
 	{
-		return convertPointerFromToken(*_slot);
+		omrobjectptr_t value = NULL;
+#if defined (OMR_GC_COMPRESSED_POINTERS)
+		if (compressObjectReferences()) {
+			value = (omrobjectptr_t)(((uintptr_t)*(uint32_t volatile *)_slot) << _compressedPointersShift);
+		} else
+#endif /* OMR_GC_COMPRESSED_POINTERS */
+		{
+			value = (omrobjectptr_t)*(uintptr_t volatile *)_slot;
+		}
+		return value;
 	}
 
 	/**
@@ -114,9 +149,13 @@ public:
 	 */
 	MMINLINE void writeReferenceToSlot(omrobjectptr_t reference)
 	{
-		fomrobject_t compressed = convertTokenFromPointer(reference);
-		if (compressed != *_slot) {
-			*_slot = compressed;
+#if defined (OMR_GC_COMPRESSED_POINTERS)
+		if (compressObjectReferences()) {
+			*(uint32_t volatile *)_slot = (uint32_t)((uintptr_t)reference >> _compressedPointersShift);
+		} else
+#endif /* OMR_GC_COMPRESSED_POINTERS */
+		{
+			*(uintptr_t volatile *)_slot = (uintptr_t)reference;
 		}
 	}
 
@@ -128,14 +167,19 @@ public:
 	MMINLINE bool atomicWriteReferenceToSlot(omrobjectptr_t oldReference, omrobjectptr_t newReference)
 	{
 		/* Caller should ensure oldReference != newReference */
-		fomrobject_t compressedOld = convertTokenFromPointer(oldReference);
-		fomrobject_t compressedNew = convertTokenFromPointer(newReference);
+		uintptr_t oldValue = (uintptr_t)oldReference;
+		uintptr_t newValue = (uintptr_t)newReference;
 		bool swapResult = false;
 
+#if defined (OMR_GC_COMPRESSED_POINTERS)
 		if (compressObjectReferences()) {
-			swapResult = ((uint32_t)(uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchangeU32((uint32_t *)_slot, (uint32_t)(uintptr_t)compressedOld, (uint32_t)(uintptr_t)compressedNew));
-		} else {
-			swapResult = ((uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchange((uintptr_t *)_slot, (uintptr_t)compressedOld, (uintptr_t)compressedNew));
+			uint32_t oldCompressed = (uint32_t)(oldValue >> _compressedPointersShift);
+			uint32_t newCompressed = (uint32_t)(newValue >> _compressedPointersShift);
+			swapResult = (oldCompressed == MM_AtomicOperations::lockCompareExchangeU32((uint32_t volatile *)_slot, oldCompressed, newCompressed));
+		} else
+#endif /* OMR_GC_COMPRESSED_POINTERS */
+		{
+			swapResult = (oldValue == MM_AtomicOperations::lockCompareExchange((uintptr_t volatile *)_slot, oldValue, newValue));
 		}
 
 		return swapResult;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -901,9 +901,6 @@ public:
 		: _delegate((fomrobject_t)OMR_OBJECT_METADATA_FLAGS_MASK)
 	{
 		_typeId = __FUNCTION__;
-#if defined(OBJECT_MODEL_MODRON_ASSERTIONS)
-		Assert_MM_true((8 * (sizeof(fomrobject_t) - 1)) >= _delegate.getObjectHeaderSlotFlagsShift());
-#endif /* defined(OBJECT_MODEL_MODRON_ASSERTIONS) */
 	}
 };
 #if defined(OMR_EXAMPLE)

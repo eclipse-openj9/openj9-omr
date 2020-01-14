@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2770,6 +2770,7 @@ MM_ConcurrentGC::localMark(MM_EnvironmentBase *env, uintptr_t sizeToTrace)
 {
 	omrobjectptr_t objectPtr;
 	uintptr_t gcCount = _extensions->globalGCStats.gcCount;
+	uint32_t const referenceSize = env->compressObjectReferences() ? sizeof(uint32_t) : sizeof(uintptr_t);
 
 	env->_workStack.reset(env, _markingScheme->getWorkPackets());
 	Assert_MM_true(env->_cycleState == NULL);
@@ -2785,7 +2786,7 @@ MM_ConcurrentGC::localMark(MM_EnvironmentBase *env, uintptr_t sizeToTrace)
 		} else 	if (((MM_ConcurrentCardTable *)_cardTable)->isObjectInActiveTLH(env,objectPtr)) {
 			env->_workStack.pushDefer(env,objectPtr);
 			/* We are deferring the tracing but get some "tracing credit" */
-			sizeTraced += sizeof(fomrobject_t);
+			sizeTraced += referenceSize;
 		} else if (((MM_ConcurrentCardTable *)_cardTable)->isObjectInUncleanedDirtyCard(env,objectPtr)) {
 			/* Dont need to trace this object now as we will re-visit it
 			 * later when we clean the card during concurrent card cleaning

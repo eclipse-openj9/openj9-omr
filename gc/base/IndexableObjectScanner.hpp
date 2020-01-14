@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -51,7 +51,7 @@ protected:
 	 * @param[in] scanPtr pointer to the array cell where scanning will start
 	 * @param[in] endPtr pointer to the array cell where scanning will stop
 	 * @param[in] scanMap first portion of bitmap for slots to scan
-	 * @param[in] elementSize array element size must be aligned to sizeof(fomrobject_t)
+	 * @param[in] elementSize array element size must be aligned to the size of an object to object reference
 	 * @param[in] flags scanning context flags
 	 */
 	GC_IndexableObjectScanner(

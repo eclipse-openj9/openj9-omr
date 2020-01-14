@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,46 +19,36 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-include(OmrAssert)
+cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
-omr_assert(TEST OMR_FVTEST)
+project(compunittest LANGUAGES C CXX)
 
-add_subdirectory(util)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_subdirectory(omrGtestGlue)
-add_subdirectory(algotest)
-add_subdirectory(coretest)
-add_subdirectory(porttest)
-add_subdirectory(rastest)
-add_subdirectory(sigtest)
-add_subdirectory(threadextendedtest)
-add_subdirectory(threadtest)
-add_subdirectory(utiltest)
-add_subdirectory(vmtest)
+set(COMPCGTEST_FILES
+	main.cpp
+)
 
-if(OMR_GC_TEST)
-	add_subdirectory(gctest)
+if(OMR_ARCH_POWER)
+	list(APPEND COMPCGTEST_FILES
+		p/BinaryEncoder.cpp
+	)
 endif()
 
-if(OMR_GC_API_TEST)
-	add_subdirectory(gc_api_test)
-endif()
+add_executable(compunittest ${COMPCGTEST_FILES})
 
-if(OMR_JITBUILDER_TEST)
-	add_subdirectory(jitbuildertest)
-endif()
+# For the time being, link against Tril even though we don't really need Tril itself. This is done
+# to avoid needing to duplicate the boilerplate in Tril's CMakeLists.txt.
+target_link_libraries(compunittest
+	omrGtestGlue
+	tril
+)
 
-if(OMR_TEST_COMPILER)
-	add_subdirectory(compilertest)
-endif()
+set_property(TARGET compunittest PROPERTY FOLDER fvtest)
 
-if(OMR_JITBUILDER_TEST)
-	add_subdirectory(tril)
-	add_subdirectory(compilertriltest)
-
-	# Currently, there are only unit tests for the Power codegen. To avoid unnecessarily compiling and running an
-	# executable with no tests, compilerunittest is thus disabled on other architectures.
-	if(OMR_ARCH_POWER)
-		add_subdirectory(compilerunittest)
-	endif()
-endif()
+add_test(
+	NAME compunittest
+	COMMAND compunittest --gtest_color=yes --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/compunittest-results.xml
+)

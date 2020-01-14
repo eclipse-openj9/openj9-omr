@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -104,4 +104,28 @@ function(_omr_toolchain_separate_debug_symbols tgt)
 			COMMAND "${CMAKE_OBJCOPY}" "--add-gnu-debuglink=${dbg_file}" "${exe_file}"
 		)
 	endif()
+endfunction()
+
+function(_omr_toolchain_process_exports TARGET_NAME)
+	# we only need to do something if we are dealing with a shared library
+	get_target_property(target_type ${TARGET_NAME} TYPE)
+	if(NOT target_type STREQUAL "SHARED_LIBRARY")
+		return()
+	endif()
+
+	# This does not work on osx
+	if(OMR_OS_OSX)
+		return()
+	endif()
+
+	set(exp_file "$<TARGET_PROPERTY:${TARGET_NAME},BINARY_DIR>/${TARGET_NAME}.exp")
+
+	omr_process_template(
+		"${omr_SOURCE_DIR}/cmake/modules/platform/toolcfg/gnu_exports.exp.in"
+		"${exp_file}"
+	)
+
+	target_link_libraries(${TARGET_NAME}
+		PRIVATE
+			"-Wl,--version-script,${exp_file}")
 endfunction()

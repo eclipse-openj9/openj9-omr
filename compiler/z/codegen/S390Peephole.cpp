@@ -1282,10 +1282,8 @@ TR_S390PostRAPeephole::LGFRReduction()
 bool
 TR_S390PostRAPeephole::ConditionalBranchReduction(TR::InstOpCode::Mnemonic branchOPReplacement)
    {
-   bool disabled = comp()->getOption(TR_DisableZ13) || comp()->getOption(TR_DisableZ13LoadImmediateOnCond);
-
    // This optimization relies on hardware instructions introduced in z13
-   if (!comp()->target().cpu.getSupportsArch(TR::CPU::z13) || disabled)
+   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
       return false;
 
    TR::S390RIEInstruction* branchInst = static_cast<TR::S390RIEInstruction*> (_cursor);
@@ -1450,10 +1448,8 @@ TR_S390PostRAPeephole::CompareAndBranchReduction()
 bool
 TR_S390PostRAPeephole::LoadAndMaskReduction(TR::InstOpCode::Mnemonic LZOpCode)
    {
-   bool disabled = comp()->getOption(TR_DisableZ13) || comp()->getOption(TR_DisableZ13LoadAndMask);
-
    // This optimization relies on hardware instructions introduced in z13
-   if (!comp()->target().cpu.getSupportsArch(TR::CPU::z13) || disabled)
+   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
       return false;
 
    if (_cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILL)

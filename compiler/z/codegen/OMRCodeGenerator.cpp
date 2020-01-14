@@ -552,13 +552,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    // Set up vector register support for machine after zEC12.
    // This should also happen before prepareForGRA
-
-   if(!(self()->comp()->target().cpu.getSupportsArch(TR::CPU::z13) && !comp->getOption(TR_DisableZ13)))
-     {
-     comp->setOption(TR_DisableZ13LoadAndMask);
-     comp->setOption(TR_DisableZ13LoadImmediateOnCond);
-     }
-
    if (comp->getOption(TR_DisableSIMD))
       {
       comp->setOption(TR_DisableAutoSIMD);

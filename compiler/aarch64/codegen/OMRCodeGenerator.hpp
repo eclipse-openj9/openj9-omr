@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -392,6 +392,13 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * @param[in] data : binary encoding data
     */
    void generateBinaryEncodingPrePrologue(TR_ARM64BinaryEncodingData &data);
+
+   /**
+    * @brief Generates nop
+    * @param[in] node: node
+    * @param[in] preced : preceding instruction
+    */
+   TR::Instruction *generateNop(TR::Node *node, TR::Instruction *preced = 0);
 
    private:
 

@@ -257,7 +257,9 @@ public:
 	bool largePageWarnOnError;
 	bool largePageFailOnError;
 	bool largePageFailedToSatisfy;
+#if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
 	bool isArrayletDoubleMapRequested;
+#endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
 	uintptr_t requestedPageSize;
 	uintptr_t requestedPageFlags;
 	uintptr_t gcmetadataPageSize;
@@ -1355,7 +1357,9 @@ public:
 		, largePageWarnOnError(false)
 		, largePageFailOnError(false)
 		, largePageFailedToSatisfy(false)
+#if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
 		, isArrayletDoubleMapRequested(false)
+#endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
 		, requestedPageSize(0)
 		, requestedPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
 		, gcmetadataPageSize(0)

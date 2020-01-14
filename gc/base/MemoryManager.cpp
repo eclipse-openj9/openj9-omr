@@ -96,7 +96,13 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 	}
 
 #if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
-	if(extensions->isVLHGC() && extensions->indexableObjectModel.isDoubleMappingEnabled()) {
+	/*
+	 * The decision to create a heap with a shared file descriptor is based on if double map was requested
+	 * or not, because we do not know at this point the actual heap page size (double map does not support
+	 * huge pages). Nonetheless, this is a safe operation because in case page size equals system's huge page
+	 * the mode flag OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN will be ignored.
+	 */
+	if(extensions->isVLHGC() && extensions->isArrayletDoubleMapRequested) {
 		mode |= OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN;
 	}
 #endif /* defined(OMR_GC_DOUBLE_MAP_ARRAYLETS) */

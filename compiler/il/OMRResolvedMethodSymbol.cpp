@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -976,7 +976,7 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
    // Create the OSR helper symbol reference
    TR::Node *vmThread = TR::Node::createWithSymRef(firstNode, TR::loadaddr, 0, new (self()->comp()->trHeapMemory()) TR::SymbolReference(symRefTab, TR::RegisterMappedSymbol::createMethodMetaDataSymbol(self()->comp()->trHeapMemory(), "vmThread")));
    TR::SymbolReference *osrHelper = symRefTab->findOrCreateRuntimeHelper(TR_prepareForOSR, false, false, true);
-#if defined(TR_TARGET_X86) || defined(TR_HOST_POWER) || defined(TR_HOST_S390) || defined(TR_HOST_ARM)
+#if defined(TR_TARGET_X86) || defined(TR_HOST_POWER) || defined(TR_HOST_S390) || defined(TR_HOST_ARM) || defined(TR_HOST_ARM64)
    osrHelper->getSymbol()->castToMethodSymbol()->setLinkage(TR_System);
 #else
    osrHelper->getSymbol()->castToMethodSymbol()->setPreservesAllRegisters();

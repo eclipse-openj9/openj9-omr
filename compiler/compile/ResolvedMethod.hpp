@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -138,6 +138,7 @@ public:
    virtual bool isConstantDynamic(int32_t cpIndex);
    virtual bool isUnresolvedConstantDynamic(int32_t cpIndex);
    virtual void *dynamicConstant(int32_t cpIndex);
+   virtual void *dynamicConstant(int32_t cpIndex, uintptrj_t *obj);
    virtual void *methodTypeConstant(int32_t cpIndex);
    virtual bool isUnresolvedMethodType(int32_t cpIndex);
    virtual void *methodHandleConstant(int32_t cpIndex);

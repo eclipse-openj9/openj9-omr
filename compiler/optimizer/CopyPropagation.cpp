@@ -59,7 +59,6 @@
 #include "optimizer/TransformUtil.hpp"
 #include "ras/Debug.hpp"
 
-
 #define OPT_DETAILS "O^O COPY PROPAGATION: "
 
 
@@ -1380,6 +1379,17 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                if (!origNode->getOpCode().isStore())
                   TR::Node::recreate(node, origNode->getOpCodeValue());
 
+               //Preserve flags for loadaddr
+               if (origNode->getOpCodeValue() == TR::loadaddr)
+                  {
+                  node->setPointsToNull(origNode->pointsToNull());
+                  node->setPointsToNonNull(origNode->pointsToNonNull());
+                  // The following flags are used by EA to determine if a local escapes
+                  node->setCannotTrackLocalUses(origNode->cannotTrackLocalUses());
+                  node->setEscapesInColdBlock(origNode->escapesInColdBlock());
+                  node->setCannotTrackLocalStringUses(origNode->cannotTrackLocalStringUses());
+                  }
+
                if (origNode->getOpCode().hasSymbolReference() && node->getOpCode().hasSymbolReference())
                   node->setSymbolReference(origNode->getSymbolReference());
                }
@@ -2244,7 +2254,7 @@ bool TR_CopyPropagation::isCorrectToReplace(TR::Node *useNode, TR::Node *storeNo
 
 TR::Node * TR_CopyPropagation::isLoadVarWithConst(TR::Node *node)
    {
-   if (node->getOpCode().isLoadVarDirect() &&
+     if ((node->getOpCode().isLoadVarDirect() || (node->getOpCodeValue() == TR::loadaddr)) &&
        node->getSymbolReference()->getSymbol()->isAutoOrParm())
       {
       return node;

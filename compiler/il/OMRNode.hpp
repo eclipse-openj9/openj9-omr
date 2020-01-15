@@ -1089,16 +1089,6 @@ public:
    bool isNonNull();
    void setIsNonNull(bool v);
 
-   bool pointsToNull();
-   void setPointsToNull(bool v);
-   bool chkPointsToNull();
-   const char * printPointsToNull();
-
-   bool pointsToNonNull();
-   void setPointsToNonNull(bool v);
-   bool chkPointsToNonNull();
-   const char * printPointsToNonNull();
-
    // Only used during local analysis
    bool containsCall();
    void setContainsCall(bool v);
@@ -1601,6 +1591,16 @@ public:
    void setIsAdjunct(bool v);
 
    // Flags used by TR::loadaddr
+   bool pointsToNull();
+   void setPointsToNull(bool v);
+   bool chkPointsToNull();
+   const char * printPointsToNull();
+
+   bool pointsToNonNull();
+   void setPointsToNonNull(bool v);
+   bool chkPointsToNonNull();
+   const char * printPointsToNonNull();
+
    bool cannotTrackLocalUses();
    void setCannotTrackLocalUses(bool v);
    bool chkCannotTrackLocalUses();

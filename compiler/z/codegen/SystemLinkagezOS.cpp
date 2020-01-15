@@ -488,9 +488,9 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
        callType = TR_XPLinkCallType_BRASL7;
        }
 
-    generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, returnFromJNICallLabel);
+    auto cursor = generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, returnFromJNICallLabel);
 
-    genCallNOPAndDescriptor(NULL, callNode, callNode, callType);
+    genCallNOPAndDescriptor(cursor, callNode, callNode, callType);
 
     // Append post-dependencies after NOP
     TR::LabelSymbol * afterNOP = generateLabelSymbol(cg());

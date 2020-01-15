@@ -1358,7 +1358,7 @@ public:
 		, largePageFailOnError(false)
 		, largePageFailedToSatisfy(false)
 #if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
-		, isArrayletDoubleMapRequested(false)
+		, isArrayletDoubleMapRequested(true)
 #endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
 		, requestedPageSize(0)
 		, requestedPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)

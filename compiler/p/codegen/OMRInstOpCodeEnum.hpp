@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -66,7 +66,6 @@
    andi_r,           // AND immediate
    andis_r,          // AND immediate shifted
    b,                // Unconditional branch
-   ba,               // Branch to absolute address
    bctr,             // Branch to count register
    bctrl,            // Branch to count register and link
    bdnz,             // Branch if CTR!=0 after decrementing it
@@ -83,7 +82,6 @@
    blel,             // Branch and link if less than or equal
    blt,              // Branch if less than
    bltl,             // Branch and link if less than
-   bla,              // Branch and link to absolute address
    blr,              // Branch to link register
    blrl,             // Branch to link register and link
    bne,              // Branch if not equal

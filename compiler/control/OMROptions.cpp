@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1987,8 +1987,8 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    if (_sampleInterval == 0) // sampleInterval==0 does make much sense
       _sampleInterval = 1;
 
-#if defined(TR_HOST_ARM) || defined(TR_HOST_ARM64)
-   // OSR is not available for ARM or AArch64 yet
+#if defined(TR_HOST_ARM)
+   // OSR is not available for ARM yet
    self()->setOption(TR_DisableOSR);
    self()->setOption(TR_EnableOSR, false);
    self()->setOption(TR_EnableOSROnGuardFailure, false);

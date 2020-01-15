@@ -256,6 +256,34 @@ static bool reversedConditionalBranchOpCode(TR::InstOpCode::Mnemonic op, TR::Ins
       }
    }
 
+
+void TR::PPCConditionalBranchInstruction::expandIntoFarBranch()
+   {
+   TR_ASSERT_FATAL(getLabelSymbol(), "Attempt to expand conditional branch %p without a label", self());
+
+   if (comp()->getOption(TR_TraceCG))
+      traceMsg(comp(), "Expanding conditional branch instruction %p into a far branch\n", self());
+
+   TR::InstOpCode::Mnemonic newOpCode;
+   bool wasLinkForm = reversedConditionalBranchOpCode(getOpCodeValue(), &newOpCode);
+
+   setOpCodeValue(newOpCode);
+
+   TR::LabelSymbol *skipBranchLabel = generateLabelSymbol(cg());
+   skipBranchLabel->setEstimatedCodeLocation(getEstimatedBinaryLocation() + 4);
+
+   TR::Instruction *branchInstr = generateLabelInstruction(cg(), wasLinkForm ? TR::InstOpCode::bl : TR::InstOpCode::b, getNode(), getLabelSymbol(), self());
+   branchInstr->setEstimatedBinaryLength(4);
+
+   TR::Instruction *labelInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, getNode(), skipBranchLabel, branchInstr);
+   labelInstr->setEstimatedBinaryLength(0);
+
+   setLabelSymbol(skipBranchLabel);
+   setEstimatedBinaryLength(4);
+   reverseLikeliness();
+   _farRelocation = true;
+   }
+
 uint8_t *TR::PPCConditionalBranchInstruction::generateBinaryEncoding()
    {
    uint8_t        *instructionStart = cg()->getBinaryBufferCursor();
@@ -264,63 +292,18 @@ uint8_t *TR::PPCConditionalBranchInstruction::generateBinaryEncoding()
    TR::Compilation *comp = cg()->comp();
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
    // bclr doesn't have a label
+   insertConditionRegister((uint32_t *)cursor);
    if (label)
       {
       if (label->getCodeLocation() != NULL)
-         {
-         if (!getFarRelocation())
-            {
-            insertConditionRegister((uint32_t *)cursor);
-            *(int32_t *)cursor |= ((label->getCodeLocation()-cursor) & 0xffff);
-            }
-         else // too far - need fix up
-            {
-            TR::InstOpCode::Mnemonic reversedOp;
-            bool  linkForm = reversedConditionalBranchOpCode(getOpCodeValue(), &reversedOp);
-            TR::InstOpCode reversedOpCode(reversedOp);
-            TR::InstOpCode extraOpCode(linkForm?TR::InstOpCode::bl:TR::InstOpCode::b);
-
-            cursor = reversedOpCode.copyBinaryToBuffer(cursor);
-            insertConditionRegister((uint32_t *)cursor);
-            *(int32_t *)cursor |= 0x0008;
-            cursor += 4;
-
-            cursor = extraOpCode.copyBinaryToBuffer(cursor);
-            *(int32_t *)cursor |= ((label->getCodeLocation() - cursor) & 0x03fffffc);
-            }
-         }
+         *(int32_t *)cursor |= ((label->getCodeLocation()-cursor) & 0xffff);
       else
-         {
-         if (!getFarRelocation())
-            {
-            insertConditionRegister((uint32_t *)cursor);
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, label));
-            }
-         else // too far - need fix up
-            {
-            TR::InstOpCode::Mnemonic reversedOp;
-            bool  linkForm = reversedConditionalBranchOpCode(getOpCodeValue(), &reversedOp);
-            TR::InstOpCode reversedOpCode(reversedOp);
-            TR::InstOpCode extraOpCode(linkForm?TR::InstOpCode::bl:TR::InstOpCode::b);
-
-            cursor = reversedOpCode.copyBinaryToBuffer(cursor);
-            insertConditionRegister((uint32_t *)cursor);
-            *(int32_t *)cursor |= 0x0008;
-            cursor += 4;
-
-            cursor = extraOpCode.copyBinaryToBuffer(cursor);
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
-            }
-         }
+         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, label));
       }
-   else
-      insertConditionRegister((uint32_t *)cursor);
 
    // set up prediction bits if there is any.
    if (haveHint())
       {
-      if (getFarRelocation())
-         reverseLikeliness();
       if (getOpCode().setsCTR())
          *(int32_t *)instructionStart |= (getLikeliness() ? PPCOpProp_BranchLikelyMaskCtr : PPCOpProp_BranchUnlikelyMaskCtr);
       else
@@ -336,7 +319,12 @@ uint8_t *TR::PPCConditionalBranchInstruction::generateBinaryEncoding()
 
 int32_t TR::PPCConditionalBranchInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH);
+   // Conditional branches can be expanded into a conditional branch around an unconditional branch if the target label
+   // is out of range for a simple bc instruction. This is done by expandFarConditionalBranches, which runs after binary
+   // length estimation but before binary encoding and will call PPCConditionalBranchInstruction::expandIntoFarBranch to
+   // expand the branch into two instructions. For this reason, we conservatively assume that any conditional branch
+   // could be expanded to ensure that the binary length estimates are correct.
+   setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 2);
    setEstimatedBinaryLocation(currentEstimate);
    return currentEstimate + getEstimatedBinaryLength();
    }

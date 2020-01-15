@@ -1371,6 +1371,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
             numIntArgs += (self()->cg()->comp()->target().is64Bit() ? 1 : 2);
             break;
          case TR::Float:
+         case TR::Double:
 #ifdef J9_PROJECT_SPECIFIC
          case TR::DecimalFloat:
 #endif
@@ -1380,15 +1381,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
                }
             numFloatArgs++;
             break;
-         case TR::Double:
 #ifdef J9_PROJECT_SPECIFIC
-         case TR::DecimalDouble:
-            if (numFloatArgs < self()->getNumFloatArgumentRegisters())
-               {
-               index = numFloatArgs;
-               }
-            numFloatArgs++;
-            break;
          case TR::DecimalLongDouble:
             // On zLinux Long Double is passed in memory using a pointer to buffer
             if(self()->cg()->comp()->target().isLinux())

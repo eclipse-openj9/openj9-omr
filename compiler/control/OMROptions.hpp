@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -271,7 +271,7 @@ enum TR_CompilationOptions
    // Option word 6
    //
    TR_EnableAggressiveLoopVersioning      = 0x00000020 + 6,
-   // Available                           = 0x00000040 + 6,
+   TR_DisableImmutableFieldAliasing       = 0x00000040 + 6,
    TR_CompileBit                          = 0x00000080 + 6,
    TR_WaitBit                             = 0x00000100 + 6,
    TR_DisableZ14                          = 0x00000200 + 6,

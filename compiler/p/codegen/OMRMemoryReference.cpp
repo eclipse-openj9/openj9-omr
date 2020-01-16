@@ -1377,7 +1377,8 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
          else if (displacement != 0)
             {
             *wcursor = 0x38000000 | (displacement & 0x0000ffff);
-            index->setRegisterFieldRT(wcursor);
+            base->setRegisterFieldRT(wcursor);
+            base->setRegisterFieldRA(wcursor);
             cursor += PPC_INSTRUCTION_LENGTH;
             wcursor++;                                  // addi Rb,Rb,disp
             }

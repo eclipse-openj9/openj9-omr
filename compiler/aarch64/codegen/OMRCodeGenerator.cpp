@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -533,4 +533,13 @@ OMR::ARM64::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress,
    return
       !self()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(targetAddress, sourceAddress) ||
       self()->comp()->getOption(TR_StressTrampolines);
+   }
+
+TR::Instruction *
+OMR::ARM64::CodeGenerator::generateNop(TR::Node *node, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (self()->trHeapMemory()) TR::Instruction(TR::InstOpCode::nop, node, preced, self());
+   else
+      return new (self()->trHeapMemory()) TR::Instruction(TR::InstOpCode::nop, node, self());
    }

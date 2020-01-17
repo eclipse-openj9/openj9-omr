@@ -117,6 +117,8 @@ JitBuilder::CodeCacheManager::freeCodeCacheSegment(TR::CodeCacheMemorySegment * 
    {
 #if defined(OMR_OS_WINDOWS)
    VirtualFree(memSegment->_base, 0, MEM_RELEASE); // second arg must be zero when calling with MEM_RELEASE
+#elif defined(J9ZOS390)
+   free(memSegment->_base);
 #else
    munmap(memSegment->_base, memSegment->_top - memSegment->_base + sizeof(TR::CodeCacheMemorySegment));
 #endif

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -153,6 +153,7 @@
 #define OMRPORT_RESOURCE_CORE_FILE ((uintptr_t) 3)
 #define OMRPORT_RESOURCE_CORE_FLAGS ((uintptr_t) 4)
 #define OMRPORT_RESOURCE_FILE_DESCRIPTORS ((uintptr_t) 5)
+#define OMRPORT_RESOURCE_DATA ((uintptr_t) 6)
 /** @} */
 
 /**

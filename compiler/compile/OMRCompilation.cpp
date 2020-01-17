@@ -88,7 +88,7 @@
 #include "infra/Stack.hpp"
 #include "infra/CfgEdge.hpp"
 #include "infra/Timer.hpp"
-#include "infra/ThreadLocal.h"
+#include "infra/ThreadLocal.hpp"
 #include "optimizer/DebuggingCounters.hpp"
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"

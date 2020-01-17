@@ -63,7 +63,7 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
 #include "infra/Link.hpp"
 #include "infra/List.hpp"
 #include "infra/Stack.hpp"
-#include "infra/ThreadLocal.h"
+#include "infra/ThreadLocal.hpp"
 #include "optimizer/Optimizations.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"

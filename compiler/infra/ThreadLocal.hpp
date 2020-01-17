@@ -27,7 +27,7 @@
 
 #if defined(OMRZTPF) && !defined(SUPPORTS_THREAD_LOCAL)
 /*
- * For this include file, ThreadLocal.h, and the z/TPF OS platform,
+ * For this include file, ThreadLocal.hpp, and the z/TPF OS platform,
  * say that tls is supported. The z/TPF platform should use
  * pthread _key_t variables and pthread functions for
  * the tls* functions that are defined here.

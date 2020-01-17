@@ -20,8 +20,8 @@
  *******************************************************************************/
 
 #include "compile/TLSCompilationManager.hpp"
-#include "infra/ThreadLocal.h"
 #include "compile/Compilation.hpp"
+#include "infra/ThreadLocal.hpp"
 
 TR::TLSCompilationManager::TLSCompilationManager(TR::Compilation &comp)
    {

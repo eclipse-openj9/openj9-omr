@@ -33,7 +33,7 @@
 #include "control/Recompilation.hpp"
 #include "env/TRMemory.hpp"
 #include "infra/Monitor.hpp"
-#include "infra/ThreadLocal.h"
+#include "infra/ThreadLocal.hpp"
 
 namespace TR { class CompilationInfo; }
 

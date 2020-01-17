@@ -73,7 +73,7 @@ protected:
 		, _elementSize(elementSize)
 	{
 		_typeId = __FUNCTION__;
-		if ((endPtr - scanPtr) <= _bitsPerScanMap) {
+		if (GC_SlotObject::subtractSlotAddresses(endPtr, scanPtr, env->compressObjectReferences()) <= _bitsPerScanMap) {
 			setNoMoreSlots();
 		}
 	}

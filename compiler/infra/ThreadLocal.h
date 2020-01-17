@@ -22,6 +22,9 @@
 #ifndef THREADLOCAL_INCL
 #define THREADLOCAL_INCL
 
+#include <errno.h>
+#include "infra/Assert.hpp"
+
 #if defined(OMRZTPF) && !defined(SUPPORTS_THREAD_LOCAL)
 /*
  * For this include file, ThreadLocal.h, and the z/TPF OS platform,
@@ -33,46 +36,99 @@
 #endif
 
 #if defined(SUPPORTS_THREAD_LOCAL)
+#if defined(OMR_OS_WINDOWS)
+   #include "windows.h"
 
-#if defined(OMR_OS_WINDOWS) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC)
- #if defined(OMR_OS_WINDOWS)
-  #include "windows.h"
-  #define tlsDeclare(type, variable) extern DWORD variable
-  #define tlsDefine(type, variable) DWORD variable = TLS_OUT_OF_INDEXES
-  #define tlsAlloc(variable) if ((variable) == TLS_OUT_OF_INDEXES) { (variable) = TlsAlloc();}
-  #define tlsFree(variable)  (TlsFree(variable))
-  #define tlsSet(variable, value) TlsSetValue((variable), value)
-  #define tlsGet(variable, type) ((type)TlsGetValue(variable))
- #else /* if defined(LINUX) || defined(AIXPPC) */
-  #define tlsDeclare(type, variable) extern __thread type variable
-  #define tlsDefine(type, variable) __thread type variable = NULL
-  #define tlsAlloc(variable) // not required on win, linux or AIX
-  #define tlsFree(variable)  // not required on win, linux or AIX
-  #define tlsSet(variable, value) variable = value
-  #define tlsGet(variable, type) (variable)
- #endif /* defined(OMR_OS_WINDOWS) */
-#else /* !(defined(OMR_OS_WINDOWS) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC)) */  /* Mainly for defined(OMRZTPF) or defined(J9ZOS390) */
- #include <pthread.h>
+   #define tlsDeclare(type, variable) \
+      extern DWORD variable
 
- #define tlsDeclare(type, variable) extern pthread_key_t variable
- #define tlsDefine(type, variable) pthread_key_t variable
- #define tlsAlloc(variable) pthread_key_create(&variable, NULL)   // allocates a new key, which will have initial value NULL for all threads
- #define tlsFree(variable) pthread_key_delete(variable)
- #define tlsSet(variable, value) pthread_setspecific(variable, value)
- #if defined(J9ZOS390)
-  #define tlsGet(variable, type) ((type) pthread_getspecific_d8_np(variable))
- #else
-  #define tlsGet(variable, type) ((type) pthread_getspecific(variable))
- #endif
-#endif /* defined(OMR_OS_WINDOWS) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC) */
+   #define tlsDefine(type, variable) \
+      DWORD variable = TLS_OUT_OF_INDEXES
 
-#else /* !defined(SUPPORTS_THREAD_LOCAL) */
- #define tlsDeclare(type, variable) extern type variable
- #define tlsDefine(type, variable) type variable = NULL
- #define tlsAlloc(variable)
- #define tlsFree(variable)
- #define tlsSet(variable, value) variable = value
- #define tlsGet(variable, type) (variable)
+   #define tlsAlloc(variable)                                                                                      \
+      {                                                                                                            \
+      (variable) = TlsAlloc();                                                                                     \
+      TR_ASSERT_FATAL((variable) != TLS_OUT_OF_INDEXES, "TlsAlloc failed with GetLastError = %d", GetLastError()); \
+      }
+
+   #define tlsFree(variable)                                                             \
+      {                                                                                  \
+      DWORD rc = TlsFree(variable);                                                      \
+      TR_ASSERT_FATAL(rc != 0, "TlsFree failed with GetLastError = %d", GetLastError()); \
+      }
+
+   #define tlsSet(variable, value)                                                           \
+      {                                                                                      \
+      BOOL rc = TlsSetValue((variable), value);                                              \
+      TR_ASSERT_FATAL(rc != 0, "TlsSetValue failed with GetLastError = %d", GetLastError()); \
+      }
+
+   #define tlsGet(variable, type) \
+      ((type)TlsGetValue(variable))
+#elif (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC)
+   #define tlsDeclare(type, variable) \
+      extern __thread type variable
+
+   #define tlsDefine(type, variable) \
+      __thread type variable = NULL
+
+   #define tlsAlloc(variable)
+   #define tlsFree(variable)
+
+   #define tlsSet(variable, value) \
+      variable = value
+
+   #define tlsGet(variable, type) \
+      (variable)
+#elif defined(OMRZTPF) || defined(J9ZOS390)
+   #include <pthread.h>
+   
+   #define tlsDeclare(type, variable) \
+      extern pthread_key_t variable
+
+   #define tlsDefine(type, variable) \
+      pthread_key_t variable
+
+   #define tlsAlloc(variable)                                                                                                     \
+      {                                                                                                                           \
+      int rc = pthread_key_create(&variable, NULL);                                                                               \
+      TR_ASSERT_FATAL(rc == 0, "pthread_key_create failed with rc = %d, errorno = %d, message = %s", rc, errno, strerror(errno)); \
+      }
+
+   #define tlsFree(variable)                                                                                                      \
+      {                                                                                                                           \
+      int rc = pthread_key_delete(variable);                                                                                      \
+      TR_ASSERT_FATAL(rc == 0, "pthread_key_delete failed with rc = %d, errorno = %d, message = %s", rc, errno, strerror(errno)); \
+      }
+
+   #define tlsSet(variable, value)                                                                                                 \
+      {                                                                                                                            \
+      int rc = pthread_setspecific(variable, value);                                                                               \
+      TR_ASSERT_FATAL(rc == 0, "pthread_setspecific failed with rc = %d, errorno = %d, message = %s", rc, errno, strerror(errno)); \
+      }
+
+   #if defined(J9ZOS390)
+      #define tlsGet(variable, type) \
+         ((type) pthread_getspecific_d8_np(variable))
+   #else
+      #define tlsGet(variable, type) \
+         ((type) pthread_getspecific(variable))
+   #endif
 #endif
+#else /* !defined(SUPPORTS_THREAD_LOCAL) */
+   #define tlsDeclare(type, variable) \
+      extern type variable
 
+   #define tlsDefine(type, variable) \
+      type variable = NULL
+
+   #define tlsAlloc(variable)
+   #define tlsFree(variable)
+
+   #define tlsSet(variable, value) \
+      variable = value
+
+   #define tlsGet(variable, type) \
+      (variable)
+#endif
 #endif /* THREADLOCAL_INCL */

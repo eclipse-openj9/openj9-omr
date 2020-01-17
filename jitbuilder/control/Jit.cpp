@@ -229,4 +229,6 @@ internal_shutdownJit()
 
    TR::CodeCacheManager &codeCacheManager = fe->codeCacheManager();
    codeCacheManager.destroy();
+
+   TR::CompilationController::shutdown();
    }

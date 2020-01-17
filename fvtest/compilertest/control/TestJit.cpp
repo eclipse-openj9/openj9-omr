@@ -199,6 +199,8 @@ shutdownJit()
 
    TR::CodeCacheManager &codeCacheManager = fe->codeCacheManager();
    codeCacheManager.destroy();
+
+   TR::CompilationController::shutdown();
    }
 
 extern "C"

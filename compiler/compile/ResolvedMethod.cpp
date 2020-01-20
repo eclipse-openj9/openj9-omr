@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -367,6 +367,7 @@ void *       TR_ResolvedMethod::getConstantDynamicTypeFromCP(int32_t cpIndex)   
 bool         TR_ResolvedMethod::isConstantDynamic(int32_t cpIndex)            { TR_UNIMPLEMENTED(); return false; }
 bool         TR_ResolvedMethod::isUnresolvedConstantDynamic(int32_t cpIndex)  { TR_UNIMPLEMENTED(); return false; }
 void *       TR_ResolvedMethod::dynamicConstant(int32_t cpIndex)              { TR_UNIMPLEMENTED(); return 0; }
+void *       TR_ResolvedMethod::dynamicConstant(int32_t cpIndex, uintptrj_t *obj)              { TR_UNIMPLEMENTED(); return 0; }
 void *       TR_ResolvedMethod::methodTypeConstant(int32_t)                { TR_UNIMPLEMENTED(); return 0; }
 bool         TR_ResolvedMethod::isUnresolvedMethodType(int32_t)            { TR_UNIMPLEMENTED(); return false; }
 void *       TR_ResolvedMethod::methodHandleConstant(int32_t)              { TR_UNIMPLEMENTED(); return 0; }

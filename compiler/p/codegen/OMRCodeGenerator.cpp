@@ -647,13 +647,11 @@ static bool isEBBTerminatingBranch(TR::Instruction *instr)
    switch (ppcInstr->getOpCodeValue())
       {
       case TR::InstOpCode::b:                // Unconditional branch
-      case TR::InstOpCode::ba:               // Branch to absolute address
       case TR::InstOpCode::bctr:             // Branch to count register
       case TR::InstOpCode::bctrl:            // Branch to count register and link
       case TR::InstOpCode::bfctr:            // Branch false to count register
       case TR::InstOpCode::btctr:            // Branch true to count register
       case TR::InstOpCode::bl:               // Branch and link
-      case TR::InstOpCode::bla:              // Branch and link to absolute address
       case TR::InstOpCode::blr:              // Branch to link register
       case TR::InstOpCode::blrl:             // Branch to link register and link
       case TR::InstOpCode::beql:             // Branch and link if equal

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -482,16 +482,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::ba,
-   /* .name        = */ "ba",
-   /* .description =    "Branch to absolute address", */
-   /* .opcode      = */ 0x48000002,
-   /* .format      = */ I_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_BranchOp,
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::bctr,
    /* .name        = */ "bctr",
    /* .description =    "Branch to count register", */
@@ -655,16 +645,6 @@
    /* .opcode      = */ 0x41800001,
    /* .format      = */ UNKNOWN_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_BranchOp,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::bla,
-   /* .name        = */ "bla",
-   /* .description =    "Branch and link to absolute address", */
-   /* .opcode      = */ 0x48000003,
-   /* .format      = */ I_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
 

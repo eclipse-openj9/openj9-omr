@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -246,6 +246,10 @@ static intptr_t omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLi
 static BOOLEAN omrsysinfo_test_stfle(struct OMRPortLibrary *portLibrary, uint64_t stfleBit);
 static intptr_t omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
 #endif /* defined(S390) || defined(J9ZOS390) || defined(J9ZTPF) */
+
+#if defined(RISCV)
+static intptr_t omrsysinfo_get_riscv_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
+#endif
 
 static const char getgroupsErrorMsgPrefix[] = "getgroups : ";
 
@@ -586,6 +590,8 @@ omrsysinfo_get_CPU_architecture(struct OMRPortLibrary *portLibrary)
 	return OMRPORT_ARCH_ARM;
 #elif defined(J9AARCH64)
 	return OMRPORT_ARCH_AARCH64;
+#elif defined(RISCV)
+	return OMRPORT_ARCH_RISCV;
 #else
 	return "unknown";
 #endif
@@ -608,6 +614,8 @@ omrsysinfo_get_processor_description(struct OMRPortLibrary *portLibrary, OMRProc
 		rc = omrsysinfo_get_aix_ppc_description(portLibrary, desc);
 #elif (defined(S390) || defined(J9ZOS390))
 		rc = omrsysinfo_get_s390_description(portLibrary, desc);
+#elif defined(RISCV)
+		rc = omrsysinfo_get_riscv_description(portLibrary, desc);
 #endif
 	}
 
@@ -1389,6 +1397,23 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 }
 
 #endif /* defined(S390) || defined(J9ZOS390) */
+
+#if defined(RISCV)
+static intptr_t
+omrsysinfo_get_riscv_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc)
+{
+#if defined(RISCV32)
+	desc->processor = OMR_PROCESOR_RISCV32_UNKNOWN;
+#elif defined(RISCV64)
+	desc->processor = OMR_PROCESOR_RISCV64_UNKNOWN;
+#elif
+	desc->processor = OMR_PROCESSOR_UNDEFINED;
+#endif
+	desc->physicalProcessor = desc->processor;
+	return 0;
+}
+#endif /* defined(RISCV) */
+
 intptr_t
 omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char *infoString, uintptr_t bufSize)
 {

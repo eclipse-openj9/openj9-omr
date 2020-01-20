@@ -85,6 +85,8 @@ omrsysinfo_get_CPU_architecture(struct OMRPortLibrary *portLibrary)
 	return OMRPORT_ARCH_S390;
 #elif defined(X86)
 	return OMRPORT_ARCH_X86;
+#elif defined(RISCV)
+	return OMRPORT_ARCH_RISCV;
 #else
 	return "unknown";
 #endif

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2018 IBM Corp. and others
+# Copyright (c) 2015, 2019 IBM Corp. and others
 # 
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -279,6 +279,15 @@ ifeq ($(OMR_HOST_OS),$(filter $(OMR_HOST_OS),linux linux_ztpf))
     endif
     vpath % $(PORT_SRCDIR)linux386
     MODULE_INCLUDES += $(PORT_SRCDIR)linux386
+  endif
+  
+  ifeq (riscv,$(OMR_HOST_ARCH))
+    ifeq (1,$(OMR_ENV_DATA64))
+      vpath % $(PORT_SRCDIR)linuxriscv64
+      MODULE_INCLUDES += $(PORT_SRCDIR)linuxriscv64
+    endif
+    vpath % $(PORT_SRCDIR)linuxriscv
+    MODULE_INCLUDES += $(PORT_SRCDIR)linuxriscv
   endif
 
   vpath % $(PORT_SRCDIR)linux

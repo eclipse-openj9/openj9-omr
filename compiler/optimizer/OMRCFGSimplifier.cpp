@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -714,6 +714,47 @@ bool OMR::CFGSimplifier::simplifyNullToException(bool needToDuplicateTree)
    return true;
    }
 
+static bool checkEquivalentIndirectLoadChain(TR::Node *lhs, TR::Node *rhs)
+   {
+   if (lhs->getOpCodeValue() != rhs->getOpCodeValue())
+      return false;
+
+   if (lhs->getNumChildren() != rhs->getNumChildren())
+      return false;
+
+   if (lhs->getOpCode().hasSymbolReference()
+       && lhs->getSymbolReference()->getReferenceNumber() != rhs->getSymbolReference()->getReferenceNumber())
+      return false;
+
+   if (lhs->getOpCode().isLoadDirect())
+      {
+      return true;
+      }
+   else if (lhs->getOpCode().isLoadIndirect()
+            && lhs->getNumChildren() == 1
+            && checkEquivalentIndirectLoadChain(lhs->getFirstChild(), rhs->getFirstChild()))
+      {
+      return true;
+      }
+   else if (lhs->getOpCodeValue() == TR::aladd
+            && lhs->getSecondChild()->getOpCodeValue() == rhs->getSecondChild()->getOpCodeValue()
+            && lhs->getSecondChild()->getOpCodeValue() == TR::lconst
+            && lhs->getSecondChild()->getConstValue() == rhs->getSecondChild()->getConstValue()
+            && checkEquivalentIndirectLoadChain(lhs->getFirstChild(), rhs->getFirstChild()))
+      {
+      return true;
+      }
+   else if (lhs->getOpCodeValue() == TR::aiadd
+            && lhs->getSecondChild()->getOpCodeValue() == rhs->getSecondChild()->getOpCodeValue()
+            && lhs->getSecondChild()->getOpCodeValue() == TR::iconst
+            && lhs->getSecondChild()->getConstValue() == rhs->getSecondChild()->getConstValue()
+            && checkEquivalentIndirectLoadChain(lhs->getFirstChild(), rhs->getFirstChild()))
+      {
+      return true;
+      }
+   return false;
+   }
+
 // Look for pattern of the form:
 //
 //    if (cond)
@@ -820,9 +861,8 @@ bool OMR::CFGSimplifier::simplifyBooleanStore(bool needToDuplicateTree)
       {
       TR::Node *base1 = store1->getFirstChild();
       TR::Node *base2 = store2->getFirstChild();
-      if (!base1->getOpCode().hasSymbolReference() || !base2->getOpCode().hasSymbolReference())
-         return false;
-      if (base1->getSymbolReference()->getReferenceNumber() != base2->getSymbolReference()->getReferenceNumber())
+      // accessing the same symbol
+      if (!checkEquivalentIndirectLoadChain(base1, base2))
          return false;
       if (trace())
          traceMsg(comp(), "   Indirect store base node opcode and symref checks out\n");

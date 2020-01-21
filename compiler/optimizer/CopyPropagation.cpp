@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2244,7 +2244,7 @@ bool TR_CopyPropagation::isCorrectToReplace(TR::Node *useNode, TR::Node *storeNo
 
 TR::Node * TR_CopyPropagation::isLoadVarWithConst(TR::Node *node)
    {
-     if ((node->getOpCode().isLoadVarDirect() || (node->getOpCodeValue() == TR::loadaddr)) &&
+   if (node->getOpCode().isLoadVarDirect() &&
        node->getSymbolReference()->getSymbol()->isAutoOrParm())
       {
       return node;

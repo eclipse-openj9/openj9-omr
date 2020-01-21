@@ -52,31 +52,6 @@ struct OMR_VMThread;
 #define OMR_MINIMUM_OBJECT_SIZE 			16		/* size of smallest possible object allocation, in bytes */
 
 /**
- * Bit geometry within header flags byte.
- *
- * NOTE: These are normalized to low-order byte. Object header flags must be right-shifted to low-order
- * byte (see GC_ObjectModelBase::getObjectHeaderSlotFlagsShift()) before applying these masks/shifts and
- * subsets of these masks must be left-shifted to align with object header flags.
- */
-#define OMR_OBJECT_METADATA_FLAGS_BIT_COUNT	8
-#define OMR_OBJECT_METADATA_FLAGS_MASK		0xFF
-#define OMR_OBJECT_METADATA_AGE_MASK		0xF0
-#define OMR_OBJECT_METADATA_AGE_SHIFT		4
-
-#if (0 != (OMR_OBJECT_METADATA_FLAGS_MASK & COPY_PROGRESS_INFO_MASK))
-#error "mask overlap: OMR_OBJECT_METADATA_FLAGS_MASK, COPY_PROGRESS_INFO_MASK"
-#endif
-
-/**
- * Remembered bit states overlay tenured header age flags. These are normalized to low-order byte, as above.
- */
-#define OMR_OBJECT_METADATA_REMEMBERED_BITS				OMR_OBJECT_METADATA_AGE_MASK
-#define STATE_NOT_REMEMBERED  							0x00
-#define STATE_REMEMBERED								0x10
-#define OMR_TENURED_STACK_OBJECT_RECENTLY_REFERENCED	(STATE_REMEMBERED + (1 << OMR_OBJECT_METADATA_AGE_SHIFT))
-#define OMR_TENURED_STACK_OBJECT_CURRENTLY_REFERENCED	(STATE_REMEMBERED + (2 << OMR_OBJECT_METADATA_AGE_SHIFT))
-
-/**
  * Provides information for a given object.
  * @ingroup GC_Base
  */

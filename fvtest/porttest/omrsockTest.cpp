@@ -22,6 +22,7 @@
 #include "omrcfg.h"
 #if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrport.h"
+#include "omrporterror.h"
 #include "omrportsock.h"
 #include "omrportsocktypes.h"
 #include "testHelpers.hpp"
@@ -110,14 +111,113 @@ TEST(PortSockTest, create_hints_and_element_extraction)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
 	omrsock_addrinfo_t hints = NULL;
+	uint32_t length = 0;
 	int32_t family = 0;
-	int32_t sockType = 1;
-	int32_t protocol = 1;
-	int32_t flags = 0;
+	int32_t sockType = 0;
+	int32_t protocol = 0;
 
-	OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, family, sockType, protocol, flags);
+	int32_t hintsFamily = 0;
+	int32_t hintsSockType = 1;
+	int32_t hintsProtocol = 1;
+	int32_t hintsFlags = 0;
+
+	OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, hintsFamily, hintsSockType, hintsProtocol, hintsFlags);
 	
 	ASSERT_NE(hints, (void *)NULL);
+
+	/* Testing invalid arguments: Pointer to OMRAddrInfoNode that is NULL */
+
+	int32_t rc;
+	rc = OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, NULL, &length);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, NULL, &family, 0);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, NULL, &sockType, 0);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, NULL, &protocol, 0);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	/* Testing invalid arguments: Index is bigger than the length when querying */
+
+	rc = OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, hints, &length);
+	EXPECT_EQ(rc, 0);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, hints, &family, length);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, hints, &sockType, length);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, length);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	/* Testing invalid arguments: Index is smaller than 0 when querying */
+
+	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, hints, &family, -1);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, hints, &sockType, -1);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, -1);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	/* Get and verify elements of the newly created hints. */
+
+	rc = OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, hints, &length);
+	EXPECT_EQ(rc, 0);
+	EXPECT_EQ(length, 1);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, hints, &family, 0);
+	EXPECT_EQ(rc, 0);
+	EXPECT_EQ(family, hintsFamily);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, hints, &sockType, 0);
+	EXPECT_EQ(rc, 0);
+	EXPECT_EQ(sockType, hintsSockType);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, 0);
+	EXPECT_EQ(rc, 0);
+	EXPECT_EQ(protocol, hintsProtocol);
+
+	/* Recreate hints with different parameters, see if hints elements are overwriten properly. */
+
+	hintsProtocol = 0;
+	hintsFlags = 6;
+
+	OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, hintsFamily, hintsSockType, hintsProtocol, hintsFlags);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, hints, &length);
+	EXPECT_EQ(rc, 0);
+	EXPECT_EQ(length, 1);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, hints, &family, 0);
+	EXPECT_EQ(rc, 0);
+	EXPECT_EQ(family, hintsFamily);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, hints, &sockType, 0);
+	EXPECT_EQ(rc, 0);
+	EXPECT_EQ(sockType, hintsSockType);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, 0);
+	EXPECT_EQ(rc, 0);
+	EXPECT_EQ(protocol, hintsProtocol);
+
+	/* Testing invalid arguments: User exposes API and changes length, then query. */
+
+	hints->length = 5;
+
+	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, hints, &family, 3);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, hints, &sockType, 3);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
+
+	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, 3);
+	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 }
 
 /**

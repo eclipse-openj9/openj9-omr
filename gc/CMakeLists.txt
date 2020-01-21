@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -295,7 +295,7 @@ if(OMR_GC_MODRON_STANDARD)
 				stats/ScavengerCopyScanRatio.cpp
 		)
 		if(OMR_GC_CONCURRENT_SCAVENGER)
-			ltarget_sources(omrgc
+			target_sources(omrgc
 				PRIVATE
 					base/standard/ConcurrentScavengeTask.cpp
 			)

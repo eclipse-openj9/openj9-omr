@@ -182,7 +182,7 @@ public:
 		bool const compressed = compressObjectReferences();
 		while (NULL != _scanPtr) {
 			/* while there is at least one bit-mapped slot, advance scan ptr to a non-NULL slot or end of map */
-			while ((0 != _scanMap) && ((0 == (1 & _scanMap)) || (0 == (compressed ? (uintptr_t)*(uint32_t*)_scanPtr : *(uintptr_t*)_scanPtr)))) {
+			while ((0 != _scanMap) && ((0 == (1 & _scanMap)) || (0 == GC_SlotObject::readSlot(_scanPtr, compressed)))) {
 				_scanPtr = GC_SlotObject::addToSlotAddress(_scanPtr, 1, compressed);
 				_scanMap >>= 1;
 			}
@@ -254,7 +254,7 @@ public:
 		bool const compressed = compressObjectReferences();
 		while (NULL != _scanPtr) {
 			/* while there is at least one bit-mapped slot, advance scan ptr to a non-NULL slot or end of map */
-			while ((0 != _scanMap) && ((0 == (1 & _scanMap)) || (0 == (compressed ? (uintptr_t)*(uint32_t*)_scanPtr : *(uintptr_t*)_scanPtr)))) {
+			while ((0 != _scanMap) && ((0 == (1 & _scanMap)) || (0 == GC_SlotObject::readSlot(_scanPtr, compressed)))) {
 				_scanPtr = GC_SlotObject::addToSlotAddress(_scanPtr, 1, compressed);
 				_scanMap >>= 1;
 				_leafMap >>= 1;

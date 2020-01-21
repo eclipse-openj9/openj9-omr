@@ -62,12 +62,20 @@ private:
 
 public:
 	/**
-	 * log2(size of an object to object reference)
+	 * Read the value of a slot.
 	 *
+	 * @param[in] slotPtr the slot address
 	 * @param[in] compressed true if object to object references are compressed, false if not
-	 * @return the shift value
+	 * @return the raw contents of the slot (NOT rebased/shifted for compressed references)
 	 */
-	MMINLINE static uintptr_t logReferenceSize(bool compressed) { return compressed ? 2 : OMR_LOG_POINTER_SIZE; }
+	MMINLINE static fomrobject_t readSlot(fomrobject_t *slotPtr, bool compressed)
+	{
+		if (compressed) {
+			return (fomrobject_t)*(uint32_t*)slotPtr;
+		} else {
+			return (fomrobject_t)*(uintptr_t*)slotPtr;
+		}
+	}
 
 	/**
 	 * Calculate the difference between two object slot addresses, in slots
@@ -77,27 +85,48 @@ public:
 	 * @param[in] compressed true if object to object references are compressed, false if not
 	 * @return p1 - p2 in slots
 	 */
-	MMINLINE static uintptr_t subtractSlotAddresses(fomrobject_t *p1, fomrobject_t *p2, bool compressed) { return ((uintptr_t)p1 - (uintptr_t)p2) >> logReferenceSize(compressed); }
+	MMINLINE static intptr_t subtractSlotAddresses(fomrobject_t *p1, fomrobject_t *p2, bool compressed)
+	{
+		if (compressed) {
+			return (uint32_t*)p1 - (uint32_t*)p2;
+		} else {
+			return (uintptr_t*)p1 - (uintptr_t*)p2;
+		}
+	}
 
 	/**
 	 * Calculate the addition of an integer to an object slot address
 	 *
-	 * @param[in] base the base slot pointer
+	 * @param[in] base the base slot address
 	 * @param[in] index the index to add
 	 * @param[in] compressed true if object to object references are compressed, false if not
 	 * @return the adjusted address
 	 */
-	MMINLINE static fomrobject_t *addToSlotAddress(fomrobject_t * base, uintptr_t index, bool compressed) { return (fomrobject_t*)((uintptr_t)base + (index << logReferenceSize(compressed))); }
+	MMINLINE static fomrobject_t *addToSlotAddress(fomrobject_t *base, intptr_t index, bool compressed)
+	{
+		if (compressed) {
+			return (fomrobject_t*)((uint32_t*)base + index);
+		} else {
+			return (fomrobject_t*)((uintptr_t*)base + index);
+		}
+	}
 
 	/**
 	 * Calculate the subtraction of an integer from an object slot address
 	 *
-	 * @param[in] base the base slot pointer
+	 * @param[in] base the base slot address
 	 * @param[in] index the index to subtract
 	 * @param[in] compressed true if object to object references are compressed, false if not
 	 * @return the adjusted address
 	 */
-	MMINLINE static fomrobject_t *subtractFromSlotAddress(fomrobject_t * base, uintptr_t index, bool compressed) { return (fomrobject_t*)((uintptr_t)base - (index << logReferenceSize(compressed))); }
+	MMINLINE static fomrobject_t *subtractFromSlotAddress(fomrobject_t *base, intptr_t index, bool compressed)
+	{
+		if (compressed) {
+			return (fomrobject_t*)((uint32_t*)base - index);
+		} else {
+			return (fomrobject_t*)((uintptr_t*)base - index);
+		}
+	}
 
 	/**
 	 * Return back true if object references are compressed

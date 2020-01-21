@@ -27,10 +27,8 @@
 bool
 OMR::Power::CPU::getPPCis64bit()
    {
-   TR_Processor p = id();
-   TR_ASSERT(p >= TR_FirstPPCProcessor && p <= TR_LastPPCProcessor, "Not a valid PPC Processor Type");
-
-   return (p >= TR_FirstPPC64BitProcessor)? true : false;
+   TR_ASSERT(self()->id() >= TR_FirstPPCProcessor && self()->id() <= TR_LastPPCProcessor, "Not a valid PPC Processor Type");
+   return (self()->id() >= TR_FirstPPC64BitProcessor)? true : false;
    }
 
 bool
@@ -45,4 +43,25 @@ OMR::Power::CPU::isTargetWithinIFormBranchRange(intptrj_t targetAddress, intptrj
    intptrj_t range = targetAddress - sourceAddress;
    return range <= self()->maxIFormBranchForwardOffset() &&
           range >= self()->maxIFormBranchBackwardOffset();
+   }
+
+bool 
+OMR::Power::CPU::getSupportsHardwareSQRT()
+   {
+   TR_ASSERT(self()->id() >= TR_FirstPPCProcessor && self()->id() <= TR_LastPPCProcessor, "Not a valid PPC Processor Type");
+   return self()->id() >= TR_FirstPPCHwSqrtProcessor;
+   }
+
+bool
+OMR::Power::CPU::getSupportsHardwareRound()
+   {
+   TR_ASSERT(self()->id() >= TR_FirstPPCProcessor && self()->id() <= TR_LastPPCProcessor, "Not a valid PPC Processor Type");
+   return self()->id() >= TR_FirstPPCHwRoundProcessor;
+   }
+   
+bool
+OMR::Power::CPU::getSupportsHardwareCopySign()
+   {
+   TR_ASSERT(self()->id() >= TR_FirstPPCProcessor && self()->id() <= TR_LastPPCProcessor, "Not a valid PPC Processor Type");
+   return self()->id() >= TR_FirstPPCHwCopySignProcessor;
    }

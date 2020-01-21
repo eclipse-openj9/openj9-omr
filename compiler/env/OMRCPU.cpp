@@ -29,6 +29,15 @@
 #include "env/defines.h"
 #include "omrcfg.h"
 
+
+TR::CPU TR::detect(OMRPortLibrary * const omrPortLib)
+   {
+   OMRPORT_ACCESS_FROM_OMRPORT(omrPortLib);
+   OMRProcessorDesc processorDescription;
+   omrsysinfo_get_processor_description(&processorDescription);
+   return TR::CPU(processorDescription);
+   }
+
 TR::CPU *
 OMR::CPU::self()
    {
@@ -87,4 +96,12 @@ OMR::CPU::initializeByHostQuery()
    _majorArch = TR::arch_unknown;
 #endif
 
+   }
+
+bool
+OMR::CPU::supportsFeature(uint32_t feature)
+   {
+   OMRPORT_ACCESS_FROM_OMRPORT(TR::Compiler->omrPortLib);
+   BOOLEAN supported = omrsysinfo_processor_has_feature(&_processorDescription, feature);
+   return (TRUE == supported);
    }

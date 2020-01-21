@@ -27,7 +27,6 @@
 #include "infra/Flags.hpp"
 #include "x/runtime/X86Runtime.hpp"
 
-
 TR_X86CPUIDBuffer *
 OMR::X86::CPU::queryX86TargetCPUID()
    {
@@ -126,3 +125,52 @@ OMR::X86::CPU::supportsTransactionalMemoryInstructions()
    flags32_t processorFeatureFlags8(self()->getX86ProcessorFeatureFlags8());
    return processorFeatureFlags8.testAny(TR_RTM);
    }
+
+bool
+OMR::X86::CPU::isGenuineIntel()
+   {
+   return self()->isAtLeast(OMR_PROCESSOR_X86_INTEL_FIRST) && self()->isAtMost(OMR_PROCESSOR_X86_INTEL_LAST);
+   }
+
+bool
+OMR::X86::CPU::isAuthenticAMD()
+   {
+   return self()->isAtLeast(OMR_PROCESSOR_X86_AMD_FIRST) && self()->isAtMost(OMR_PROCESSOR_X86_AMD_LAST);
+   }
+
+bool
+OMR::X86::CPU::requiresLFence()
+   {
+   return false;  /* Dummy for now, we may need LFENCE in future processors*/
+   }
+
+bool
+OMR::X86::CPU::supportsFCOMIInstructions()
+   {
+   return self()->supportsFeature(OMR_FEATURE_X86_FPU) || self()->supportsFeature(OMR_FEATURE_X86_CMOV);
+   }
+
+bool
+OMR::X86::CPU::supportsMFence()
+   {
+   return self()->supportsFeature(OMR_FEATURE_X86_SSE2);
+   }
+
+bool
+OMR::X86::CPU::supportsLFence()
+   {
+   return self()->supportsFeature(OMR_FEATURE_X86_SSE2);
+   }
+
+bool
+OMR::X86::CPU::supportsSFence()
+   {
+   return self()->supportsFeature(OMR_FEATURE_X86_SSE2) || self()->supportsFeature(OMR_FEATURE_X86_MMX);
+   }
+
+bool
+OMR::X86::CPU::prefersMultiByteNOP()
+   {
+   return self()->isGenuineIntel() && !self()->is(OMR_PROCESSOR_X86_INTELPENTIUM);
+   }
+

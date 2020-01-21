@@ -36,6 +36,7 @@ namespace OMR { typedef OMR::X86::CPU CPUConnector; }
 #include <stdint.h>
 #include "compiler/env/OMRCPU.hpp"
 #include "env/jittypes.h"
+#include "omrport.h"
 
 struct TR_X86CPUIDBuffer;
 namespace TR { class Compilation; }
@@ -47,11 +48,12 @@ namespace OMR
 namespace X86
 {
 
-class CPU : public OMR::CPU
+class OMR_EXTENSIBLE CPU : public OMR::CPU
    {
 protected:
 
    CPU() : OMR::CPU() {}
+   CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription) {}
 
 public:
 
@@ -88,9 +90,16 @@ public:
       {
       return targetAddress == sourceAddress + (int32_t)(targetAddress - sourceAddress);
       }
-
+   bool isGenuineIntel();
+   bool isAuthenticAMD();
+   
+   bool requiresLFence();
+   bool supportsFCOMIInstructions();
+   bool supportsMFence();
+   bool supportsLFence();
+   bool supportsSFence();
+   bool prefersMultiByteNOP();
    };
-
 }
 
 }

@@ -281,8 +281,8 @@ enum TR_DispatchType
    virtual void mapStack(TR::ResolvedMethodSymbol * symbol) = 0;
    virtual void mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t & stackIndex) = 0;
    virtual bool hasToBeOnStack(TR::ParameterSymbol * parm) = 0;
-   virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method);
-   virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol>&parmList);
+   virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method) = 0;
+   virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol>&parmList) = 0;
 
    virtual TR::Instruction * loadUpArguments(TR::Instruction * cursor);
    virtual void removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* sReg, int32_t stackOffset);

@@ -3170,6 +3170,15 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 		Trc_PRT_sysinfo_get_limit_Exit(rc);
 		return rc;
 #endif /* !defined(OMRZTPF) */
+	} else if (OMRPORT_RESOURCE_DATA == resourceRequested) {
+#if !defined(OMRZTPF)
+		resource = RLIMIT_DATA;
+#else /* !defined(OMRZTPF) */
+		/* Not implemented for z/TPF */
+		*limit = OMRPORT_LIMIT_UNKNOWN_VALUE;
+		Trc_PRT_sysinfo_get_limit_Exit(rc);
+		return rc;
+#endif /* !defined(OMRZTPF) */
 	}
 
 	switch (resourceRequested) {
@@ -3178,7 +3187,9 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 		break;
 	case OMRPORT_RESOURCE_ADDRESS_SPACE:
 		/* FALLTHROUGH */
-	case OMRPORT_RESOURCE_CORE_FILE: {
+	case OMRPORT_RESOURCE_CORE_FILE:
+		/* FALLTHROUGH */
+	case OMRPORT_RESOURCE_DATA: {
 #if !defined(OMRZTPF)
 	if (0 == getrlimit(resource, &lim)) {
 		*limit = (uint64_t)(hardLimitRequested ? lim.rlim_max : lim.rlim_cur);
@@ -3288,6 +3299,12 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 		rc = OMRPORT_LIMIT_UNKNOWN;
 #endif /* !defined(OMRZTPF) */
 		break;
+	case OMRPORT_RESOURCE_DATA:
+#if !defined(OMRZTPF)
+		resource = RLIMIT_DATA;
+#else /* !defined(OMRZTPF) */
+		rc = OMRPORT_LIMIT_UNKNOWN;
+#endif /* !defined(OMRZTPF) */
 	default:
 		break;
 	}
@@ -3298,7 +3315,9 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 			/* FALLTHROUGH */
 		case OMRPORT_RESOURCE_ADDRESS_SPACE:
 			/* FALLTHROUGH */
-		case OMRPORT_RESOURCE_CORE_FILE: {
+		case OMRPORT_RESOURCE_CORE_FILE:
+			/* FALLTHROUGH */
+		case OMRPORT_RESOURCE_DATA: {
 #if !defined(OMRZTPF)
 			rc = getrlimit(resource, &lim);
 			if (-1 == rc) {

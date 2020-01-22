@@ -153,6 +153,7 @@
 #define OMRPORT_RESOURCE_CORE_FILE ((uintptr_t) 3)
 #define OMRPORT_RESOURCE_CORE_FLAGS ((uintptr_t) 4)
 #define OMRPORT_RESOURCE_FILE_DESCRIPTORS ((uintptr_t) 5)
+#define OMRPORT_RESOURCE_DATA ((uintptr_t) 6)
 /** @} */
 
 /**

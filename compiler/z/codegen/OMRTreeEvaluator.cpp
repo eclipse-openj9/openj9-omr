@@ -2715,7 +2715,6 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
    bool isForward = true;
    TR::Node * secondChild = node->getSecondChild();
    TR::Node * firstChild = node->getFirstChild();
-   bool isUnsignedCmp = node->getOpCode().isUnsignedCompare();
    TR::InstOpCode::S390BranchCondition newBranchOpCond = TR::InstOpCode::COND_NOP;
    TR::Instruction * returnInstruction = NULL;
    bool isBranchGenerated = false;
@@ -2730,24 +2729,12 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
    else if (TR::PackedDecimal == dataType)
       return generateS390PackedCompareAndBranchOps(node, cg, fBranchOpCond, rBranchOpCond, retBranchOpCond, branchTarget);
 #endif
-
-   if (dataType == TR::Address)
-      {
-      isUnsignedCmp = true;
-      if(cg->comp()->target().is64Bit() && !cg->isCompressedClassPointerOfObjectHeader(firstChild))
-         {
-         dataType = TR::Int64;
-         }
-      else
-         {
-         dataType = TR::Int32;
-         }
-      }
    if (dataType == TR::Aggregate)
       {
       TR_ASSERT( 0, "unexpected data size for aggregate compare\n");
       }
 
+   bool isUnsignedCmp = node->getOpCode().isUnsignedCompare() || dataType == TR::Address;
    bool isAOTGuard = false;
    // If second node is aconst and it asks for relocation record for AOT, we should provide it even if not guarded.
    if (cg->profiledPointersRequireRelocation() &&
@@ -3135,62 +3122,49 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
    else
       {
       TR_S390BinaryCommutativeAnalyser temp(cg);
+      TR_ASSERT_FATAL(firstChild->getDataType() == secondChild->getDataType(), "Data type of firstChild (%s) and secondChild (%s) should match for generating compare and branch", firstChild->getDataType().toString(), secondChild->getDataType().toString());
 
-      // FIXME: Why are we doing this business with the secondChild's type
-      // here? How can the second child's type ever be different from the
-      // first child's type?
-      // Answer:The only case where it can be different is in the compressed refs
-      // build. an aload of a class pointer is 32-bits only.
+      // On 64-Bit platforms with compressed references it is possible that one (or both) of the children of the 
+      // compare is loading a class from the object (VFT symbol). This symbol is specially treated within the JIT at
+      // the moment because it is an `aloadi` which loads a 32-bit value (64-bit compressed references) and zero
+      // extends it to a 64-bit address. Unfortunately the generic analyzers used below are unaware of this fact
+      // and could end up generating an incorrect instruction to evaluate such a VFT load.
       //
-      TR::DataType childType = secondChild->getDataType();
-      if (childType == TR::Address)
+      // To prevent such logic leaking into the generic analyzers (which should remain generic) we force the evaluation
+      // of such VFT nodes here before calling out to the analyzer.
+      if (TR::Compiler->target.is64Bit())
          {
-         isUnsignedCmp = true;
-         if (cg->comp()->target().is64Bit() && !cg->isCompressedClassPointerOfObjectHeader(secondChild))
-            {
-            childType = TR::Int64;
-            }
-         else
-            {
-            childType = TR::Int32;
-            }
+         if (firstChild->getDataType() == TR::Address && cg->isCompressedClassPointerOfObjectHeader(firstChild))
+            cg->evaluate(firstChild);
+         if (secondChild->getDataType() == TR::Address && cg->isCompressedClassPointerOfObjectHeader(secondChild))
+            cg->evaluate(secondChild);
          }
 
-
-      if (childType == TR::Aggregate)
+      switch (TR::DataType::getSize(firstChild->getDataType()))
          {
-         TR_ASSERT( 0, "unexpected data size for aggregate compare\n");
-         }
-      switch (childType)
-         {
-         case TR::Int64:
-         case TR::Address: // FIXME: impossible to get here with TR::Address
+         case 8:
             temp.genericAnalyser (node, isUnsignedCmp ? TR::InstOpCode::CLGR : TR::InstOpCode::CGR,
-                                 isUnsignedCmp ? TR::InstOpCode::CLG : TR::InstOpCode::CG, TR::InstOpCode::LGR,
-                                 true, branchTarget, fBranchOpCond, rBranchOpCond);
+                                 isUnsignedCmp ? TR::InstOpCode::CLG : TR::InstOpCode::CG,
+                                 TR::InstOpCode::LGR, true, branchTarget, fBranchOpCond, rBranchOpCond);
             returnInstruction = cg->getAppendInstruction();
             isBranchGenerated = true;
             break;
-         case TR::Int32:
-            TR_ASSERT( dataType == TR::Int32 || comp->useCompressedPointers(), "First child, %p, and second child, %p, data types do not match. This is an issue when compression is disabled.", firstChild, secondChild);
+         case 4:
             temp.genericAnalyser (node, isUnsignedCmp ? TR::InstOpCode::CLR : TR::InstOpCode::CR,
-                                 isUnsignedCmp ? TR::InstOpCode::CL : TR::InstOpCode::C, TR::InstOpCode::LR, true, branchTarget, fBranchOpCond, rBranchOpCond);
+                                 isUnsignedCmp ? TR::InstOpCode::CL : TR::InstOpCode::C,
+                                 TR::InstOpCode::LR, true, branchTarget, fBranchOpCond, rBranchOpCond);
             returnInstruction = cg->getAppendInstruction();
             isBranchGenerated = true;
             break;
-         case TR::Int16:
-            temp.genericAnalyser(node, isUnsignedCmp ? TR::InstOpCode::CLR : TR::InstOpCode::CR, isUnsignedCmp ? TR::InstOpCode::CL : TR::InstOpCode::CH, TR::InstOpCode::LR, true, branchTarget, fBranchOpCond, rBranchOpCond);
+         case 2:
+            temp.genericAnalyser(node, isUnsignedCmp ? TR::InstOpCode::CLR : TR::InstOpCode::CR,
+                                 isUnsignedCmp ? TR::InstOpCode::CL : TR::InstOpCode::CH,
+                                 TR::InstOpCode::LR, true, branchTarget, fBranchOpCond, rBranchOpCond);
             returnInstruction = cg->getAppendInstruction();
             isBranchGenerated = true;
             break;
-         case TR::Int8:
-            temp.genericAnalyser(node, isUnsignedCmp ? TR::InstOpCode::CLR : TR::InstOpCode::CR, isUnsignedCmp ? TR::InstOpCode::CL : TR::InstOpCode::C, TR::InstOpCode::LR, true, branchTarget, fBranchOpCond, rBranchOpCond);
-            returnInstruction = cg->getAppendInstruction();
-            isBranchGenerated = true;
-            break;
-
          default:
-            TR_ASSERT( 0, "generateS390CompareOps: Unexpected Type\n");
+            TR_ASSERT_FATAL( 0, "generateS390CompareOps: Unexpected child type (%s) with size = %d\n", firstChild->getDataType().toString(), TR::DataType::getSize(firstChild->getDataType()));
             break;
          }
 

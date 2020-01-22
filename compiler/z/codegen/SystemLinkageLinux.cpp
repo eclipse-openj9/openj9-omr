@@ -317,6 +317,89 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
    }
 
 void
+TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method)
+   {
+   self()->setParameterLinkageRegisterIndex(method, method->getParameterList());
+   }
+
+void
+TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method, List<TR::ParameterSymbol> &parmList)
+   {
+   int32_t numGPRArgs = 0;
+   int32_t numFPRArgs = 0;
+   int32_t numVRFArgs = 0;
+
+   int32_t maxGPRArgs = self()->getNumIntegerArgumentRegisters();
+   int32_t maxFPRArgs = self()->getNumFloatArgumentRegisters();
+   int32_t maxVRFArgs = self()->getNumVectorArgumentRegisters();
+
+   ListIterator<TR::ParameterSymbol> paramIterator(&parmList);
+   for (TR::ParameterSymbol* paramCursor = paramIterator.getFirst(); paramCursor != NULL; paramCursor = paramIterator.getNext())
+      {
+      int32_t lri = -1;
+
+      switch (paramCursor->getDataType())
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Int64:
+         case TR::Address:
+            {
+            if (numGPRArgs < maxGPRArgs)
+               {
+               lri = numGPRArgs;
+               }
+
+            numGPRArgs++;
+            break;
+            }
+
+         case TR::Float:
+         case TR::Double:
+            {
+            if (numFPRArgs < self()->getNumFloatArgumentRegisters())
+               {
+               lri = numFPRArgs;
+               }
+            
+            numFPRArgs++;
+            break;
+            }
+
+         case TR::Aggregate:
+            {
+            TR_ASSERT_FATAL(false, "Support for aggregates is currently not implemented");
+            break;
+            }
+
+         case TR::VectorInt8:
+         case TR::VectorInt16:
+         case TR::VectorInt32:
+         case TR::VectorInt64:
+         case TR::VectorDouble:
+            {
+            if (numVRFArgs < self()->getNumVectorArgumentRegisters())
+               {
+               lri = numVRFArgs;
+               }
+
+            numVRFArgs++;
+            break;
+            }
+
+         default:
+            {
+            TR_ASSERT_FATAL(false, "Unknown data type %s", paramCursor->getDataType().toString());
+            break;
+            }
+         }
+
+      paramCursor->setLinkageRegisterIndex(lri);
+      }
+   }
+
+void
 TR::S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node* callNode, TR::RegisterDependencyConditions* deps, intptrj_t targetAddress, TR::Register* methodAddressReg, TR::Register* javaLitOffsetReg, TR::LabelSymbol* returnFromJNICallLabel, TR::S390JNICallDataSnippet* jniCallDataSnippet, bool isJNIGCPoint)
    {
    TR::CodeGenerator * codeGen = cg();

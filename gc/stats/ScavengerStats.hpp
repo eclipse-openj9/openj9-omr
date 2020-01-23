@@ -95,6 +95,7 @@ public:
 	uintptr_t _totalDeepStructures; /**<  The number of deep structures that are scanned with priority (number of deepScanOutline function calls) */
 	uintptr_t _totalObjsDeepScanned; /**< The total number of deep structure objects that are special treated (number of copyAndForward with priority)*/
 	uintptr_t _depthDeepestStructure; /**< Length of longest deep structure that is special treated */
+	uintptr_t _copyScanUpdates;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
 
 	/* Average (weighted) number of bytes free after a collection and

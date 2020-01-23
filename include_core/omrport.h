@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -755,7 +755,7 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_SIG_FLAG_IS_SYNC                ((uint32_t)0x08)
 #define OMRPORT_SIG_FLAG_CONTROL_BITS_MASK      ((uint32_t)0x0F)
 
-#if defined(OSX) || defined(LINUX) || defined(AIXPPC) || defined(J9ZOS390)
+#if defined(OSX) || defined(LINUX) && !defined(_TPF_SOURCE) || defined(AIXPPC) || defined(J9ZOS390)
 /* The below macros support the unix/omrsignal.c implementation, which is used on OSX, Linux, AIX and zOS. */
 
 /* All signal codes include exactly one of OMRPORT_SIG_FLAG_IS_SYNC or OMRPORT_SIG_FLAG_IS_ASYNC
@@ -817,7 +817,7 @@ typedef struct J9ProcessorInfos {
 	| OMRPORT_SIG_FLAG_SIGXCPU     | OMRPORT_SIG_FLAG_SIGVTALRM | OMRPORT_SIG_FLAG_SIGPROF | OMRPORT_SIG_FLAG_SIGPIPE \
 	| OMRPORT_SIG_FLAG_SIGSYS      | OMRPORT_SIG_FLAG_SIGTTIN   | OMRPORT_SIG_FLAG_SIGTTOU | OMRPORT_SIG_FLAG_SIGINFO \
 	| OMRPORT_SIG_FLAG_SIGIOT      | OMRPORT_SIG_FLAG_SIGPOLL)
-#else /* defined(OSX) || defined(LINUX) || defined(AIXPPC) || defined(J9ZOS390) */
+#else /* defined(OSX) || defined(LINUX) && !defined(_TPF_SOURCE) || defined(AIXPPC) || defined(J9ZOS390) */
 /* The below macros support the [win32|win64amd|ztpf]/omrsignal.c implementations, which are used on Windows and z/TPF. */
 
 #define OMRPORT_SIG_SMALLEST_SIGNAL_FLAG         0x4
@@ -859,7 +859,7 @@ typedef struct J9ProcessorInfos {
 	| OMRPORT_SIG_FLAG_SIGTSTP  | OMRPORT_SIG_FLAG_SIGUSR1   | OMRPORT_SIG_FLAG_SIGUSR2 | OMRPORT_SIG_FLAG_SIGURG \
 	| OMRPORT_SIG_FLAG_SIGXCPU  | OMRPORT_SIG_FLAG_SIGVTALRM | OMRPORT_SIG_FLAG_SIGPROF | OMRPORT_SIG_FLAG_SIGIO \
 	| OMRPORT_SIG_FLAG_SIGSYS )
-#endif /* defined(OSX) || defined(LINUX) || defined(AIXPPC) || defined(J9ZOS390) */
+#endif /* defined(OSX) || defined(LINUX) && !defined(_TPF_SOURCE) || defined(AIXPPC) || defined(J9ZOS390) */
 
 #if defined(J9ZOS390)
 #define OMRPORT_SIG_FLAG_SIGALLSYNC \

@@ -3268,23 +3268,6 @@ MM_ConcurrentGC::heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspa
 	/* Expand any superclass structures including mark bits*/
 	bool result = MM_ParallelGlobalGC::heapAddRange(env, subspace, size, lowAddress, highAddress);
 
-	if (result) {
-		/* If we are within a concurrent cycle we need to initialize the mark bits
-		 * for new region of heap now
-		 */
-		if (CONCURRENT_OFF < _stats.getExecutionMode()) {
-			/* If subspace is concurrently collectible then clear bits otherwise
-			 * set the bits on to stop tracing INTO this area during concurrent
-			 * mark cycle.
-			 */
-			if (subspace->isConcurrentCollectable()) {
-				_markingScheme->setMarkBitsInRange(env, lowAddress, highAddress, true);
-			} else {
-				_markingScheme->setMarkBitsInRange(env, lowAddress, highAddress, false);
-			}
-		}
-	}
-
 	_heapAlloc = _extensions->heap->getHeapTop();
 
 	Trc_MM_ConcurrentGC_heapAddRange_Exit(env->getLanguageVMThread());
@@ -3330,34 +3313,63 @@ MM_ConcurrentGC::heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *sub
  * @see MM_ParallelGlobalGC::heapReconfigured()
  */
 void
-MM_ConcurrentGC::heapReconfigured(MM_EnvironmentBase *env)
+MM_ConcurrentGC::heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason reason, MM_MemorySubSpace *subspace, void *lowAddress, void *highAddress)
 {
-	/* If called outside a global collection for a heap expand/contract..
+	Assert_MM_true(reason != HEAP_RECONFIG_NONE);
+
+	/* _rebuildInitWorkForAdd/_rebuildInitWorkForRemove are not sufficient for determining on how to proceed with headReconfigured
+	 * We end up here in the following scenarios:
+	 *  1) During heap expand - after heapAddRange
+	 *  2) During heap contact - after heapRemoveRange
+	 *  3) After Scavenger Tilt (no resize)
+	 *
+	 *  It is necessary that _rebuildInitWorkForAdd is set when we're here during an expand (after heapAddRange), or
+	 *  _rebuildInitWorkForRemove in the case of contract. However, it is not a sufficient check to ensure the reason we're
+	 *  here. For instance, when Concurent is on, _rebuildInitWorkForAdd will be set but not cleared.
+	 *  As a result, we can have multiple calls of expands interleaved with contracts, resulting in both flags being set.
+	 *  Similarly, we can end up here after scavenger tilt with any of the flags set.
 	 */
-	if (!_stwCollectionInProgress && (_rebuildInitWorkForAdd || _rebuildInitWorkForRemove)) {
-		/* ... and a concurrent cycle has not yet started then we
-		 *  tune to heap here to reflect new heap size
-		 *  Note: CMVC 153167 : Under gencon, there is a timing hole where
-		 *  if we are in the middle of initializing the heap ranges while a
-		 *  scavenge occurs, and if the scavenge causes the heap to contract,
-		 *  we will try to memset ranges that are now contracted (decommitted memory)
-		 *  when we resume the init work.
+
+	if ((lowAddress != NULL) && (highAddress != NULL)) {
+		Assert_MM_true(_rebuildInitWorkForAdd && (reason == HEAP_RECONFIG_EXPAND));
+		/* If we are within a concurrent cycle we need to initialize the mark bits
+		 * for new region of heap now
 		 */
-		if (_stats.getExecutionMode() < CONCURRENT_INIT_COMPLETE) {
-			tuneToHeap(env);
-		} else {
-			/* Heap expand/contract is during a concurrent cycle..we need to adjust the trace target so
-			 * that the trace rate is adjusted correctly on  subsequent allocates.
+		if (CONCURRENT_OFF < _stats.getExecutionMode()) {
+			/* If subspace is concurrently collectible then clear bits otherwise
+			 * set the bits on to stop tracing INTO this area during concurrent
+			 * mark cycle.
 			 */
-			adjustTraceTarget();
+			_markingScheme->setMarkBitsInRange(env, lowAddress, highAddress, subspace->isConcurrentCollectable());
 		}
 	}
 
-	/* Expand any superclass structures */
-	MM_ParallelGlobalGC::heapReconfigured(env);
+	/* If called outside a global collection for a heap expand/contract.. */
+	if((reason == HEAP_RECONFIG_CONTRACT) || (reason == HEAP_RECONFIG_EXPAND)) {
+		Assert_MM_true(_rebuildInitWorkForAdd || _rebuildInitWorkForRemove);
+		if (!_stwCollectionInProgress) {
+			/* ... and a concurrent cycle has not yet started then we
+			 *  tune to heap here to reflect new heap size
+			 *  Note: CMVC 153167 : Under gencon, there is a timing hole where
+			 *  if we are in the middle of initializing the heap ranges while a
+			 *  scavenge occurs, and if the scavenge causes the heap to contract,
+			 *  we will try to memset ranges that are now contracted (decommitted memory)
+			 *  when we resume the init work.
+			 */
+			if (_stats.getExecutionMode() < CONCURRENT_INIT_COMPLETE) {
+				tuneToHeap(env);
+			} else {
+				/* Heap expand/contract is during a concurrent cycle..we need to adjust the trace target so
+				 * that the trace rate is adjusted correctly on  subsequent allocates.
+				 */
+				adjustTraceTarget();
+			}
+		}
+	}
 
-	/* ...and then expand the card table */
-	((MM_ConcurrentCardTable *)_cardTable)->heapReconfigured(env);
+
+	/* Expand any superclass structures */
+	MM_ParallelGlobalGC::heapReconfigured(env, reason, subspace, lowAddress, highAddress);
 }
 
 /**

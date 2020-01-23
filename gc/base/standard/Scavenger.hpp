@@ -815,8 +815,6 @@ public:
 	virtual bool canCollectorExpand(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, uintptr_t expandSize);
 	virtual uintptr_t getCollectorExpandSize(MM_EnvironmentBase *env);
 
-	virtual void heapReconfigured(MM_EnvironmentBase *env);
-
 	MM_Scavenger(MM_EnvironmentBase *env, MM_HeapRegionManager *regionManager) :
 		MM_Collector()
 		, _delegate(env)

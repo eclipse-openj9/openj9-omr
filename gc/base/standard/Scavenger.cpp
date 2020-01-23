@@ -4426,19 +4426,6 @@ MM_Scavenger::percolateGarbageCollect(MM_EnvironmentBase *env,  MM_MemorySubSpac
 	return result;
 }
 
-
-/**
- * Re-size all structures which are dependent on the current size of the heap.
- * No new memory has been added to a heap reconfiguration.  This call typically is the result
- * of having segment range changes (memory redistributed between segments) or the meaning of
- * memory changed.
- *
- */
-void
-MM_Scavenger::heapReconfigured(MM_EnvironmentBase *env)
-{
-}
-
 void
 MM_Scavenger::globalCollectionStart(MM_EnvironmentBase *env)
 {

@@ -126,11 +126,6 @@ MM_SegregatedGC::heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *sub
 	return _markingScheme->heapRemoveRange(env, subspace, size, lowAddress, highAddress, lowValidAddress, highValidAddress);
 }
 
-void MM_SegregatedGC::heapReconfigured(MM_EnvironmentBase* env)
-{
-	/* OMRTODO implement proper heap resizing in segregated heaps */
-}
-
 bool
 MM_SegregatedGC::collectorStartup(MM_GCExtensionsBase* extensions)
 {

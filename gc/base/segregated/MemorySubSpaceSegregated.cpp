@@ -310,9 +310,9 @@ MM_MemorySubSpaceSegregated::heapRemoveRange(MM_EnvironmentBase *env, MM_MemoryS
 }
 
 void
-MM_MemorySubSpaceSegregated::heapReconfigured(MM_EnvironmentBase *env)
+MM_MemorySubSpaceSegregated::heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason reason, MM_MemorySubSpace *subspace, void *lowAddress, void *highAddress)
 {
-	MM_MemorySubSpaceUniSpace::heapReconfigured(env);
+	MM_MemorySubSpaceUniSpace::heapReconfigured(env, reason, subspace, lowAddress, highAddress);
 	if (_regionExpansionBase != _regionExpansionTop) {
 		expandRegionPool();
 	}

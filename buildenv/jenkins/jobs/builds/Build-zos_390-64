@@ -42,7 +42,7 @@ pipeline {
                 timestamps {
                     dir('build') {
                         echo "Sanity Test..."
-                        sh'''./gcexample && ./conditionals && ./isSupportedType && ./iterfib && ./nestedloop && ./pow2 && ./simple && ./worklist && ./omralgotest "-avltest:fvtest/algotest/avltest.lst" && ./TestBytes && ./TestIntrusiveList && ./TestTypeTraits && ./omrrastest && ./omrsubscribertest && ./omrtraceoptiontest && ./omrsigtest && ./omrthreadtest && ./omrthreadtest "--gtest_also_run_disabled_tests" "--gtest_filter=ThreadCreateTest.DISABLED_SetAttrThreadWeight" && ./omrthreadtest "--gtest_filter=ThreadCreateTest.*" "-realtime" && ./omrutiltest && ./omrvmtest && ./triltest && ./comptest'''
+                        sh'''ctest -V'''
                     }
                 }
             }

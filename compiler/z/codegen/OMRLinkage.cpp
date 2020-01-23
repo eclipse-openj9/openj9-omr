@@ -548,6 +548,14 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 
       int32_t slotSize = paramCursor->getSize();
 
+      if (self()->isSmallIntParmsAlignedRight())
+         {
+         // On both Linux and z/OS system linkages we spill both the clean and dirty bits of the incoming arguments to
+         // the stack if needed. The `initParamOffset` API will ensure the parameters within the method are initialized
+         // with offsets which point only to the clean data (no dirty bits loaded).
+         slotSize = gprSize;
+         }
+
       if (slotSize < 4)
          slotSize = 4;
 

@@ -89,6 +89,7 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator* cg)
       _ppa2Snippet(NULL)
    {
    setProperties(FirstParmAtFixedOffset);
+   setProperties(SmallIntParmsAlignedRight);
 
    setProperty(SplitLongParm);
    setProperty(SkipGPRsForFloatParms);

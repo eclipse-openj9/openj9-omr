@@ -82,6 +82,7 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
       TR::SystemLinkage(cg, TR_SystemLinux)
    {
    setProperties(FirstParmAtFixedOffset);
+   setProperties(SmallIntParmsAlignedRight);
 
    if (cg->comp()->target().is64Bit())
       {

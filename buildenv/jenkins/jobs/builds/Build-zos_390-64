@@ -13,7 +13,7 @@ def setBuildStatus(String message, String state, String sha) {
 pipeline {
     agent{label 'zOS && 390'}
     environment {
-        LIBPATH=".:$LIBPATH"
+        LIBPATH="/openzdk/jenkins/workspace/Build-zos_390-64/build:$LIBPATH"
     }
     stages {
         stage('Get Sources') {

@@ -1657,6 +1657,16 @@
                     {"name":"type","type":"IlType"}
                     ]
                 },
+		{ "name": "DefineGlobal"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"name","type":"constString"},
+                    {"name":"type","type":"IlType"},
+                    {"name":"location","type":"pointer"}
+                    ]
+                },
                 { "name": "DefineMemory"
                 , "overloadsuffix": ""
                 , "flags": []

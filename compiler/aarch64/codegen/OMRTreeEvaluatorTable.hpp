@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -63,7 +63,7 @@
     TR::TreeEvaluator::lstoreEvaluator, // TR::lstore		// store long integer
     TR::TreeEvaluator::fstoreEvaluator, // TR::fstore		// store float
     TR::TreeEvaluator::dstoreEvaluator, // TR::dstore		// store double
-    TR::TreeEvaluator::lstoreEvaluator, // TR::astore		// store address
+    TR::TreeEvaluator::astoreEvaluator, // TR::astore		// store address
     TR::TreeEvaluator::bstoreEvaluator, // TR::bstore		// store byte
     TR::TreeEvaluator::sstoreEvaluator, // TR::sstore		// store short integer
     TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iwrtbarEvaluator , //TR::iwrtbar
@@ -76,7 +76,7 @@
     TR::TreeEvaluator::lstoreEvaluator, // TR::lstorei		// store indirect long integer           (child1 a; child2 l)
     TR::TreeEvaluator::fstoreEvaluator, // TR::fstorei		// store indirect float                  (child1 a; child2 f)
     TR::TreeEvaluator::dstoreEvaluator, // TR::dstorei		// store indirect double                 (child1 a; child2 d)
-    TR::TreeEvaluator::lstoreEvaluator, // TR::astorei		// store indirect address                (child1 a dest; child2 a value)
+    TR::TreeEvaluator::astoreEvaluator, // TR::astorei		// store indirect address                (child1 a dest; child2 a value)
     TR::TreeEvaluator::bstoreEvaluator, // TR::bstorei		// store indirect byte                   (child1 a; child2 b)
     TR::TreeEvaluator::sstoreEvaluator, // TR::sstorei		// store indirect short integer          (child1 a; child2 s)
     TR::TreeEvaluator::istoreEvaluator, // TR::istorei		// store indirect integer                (child1 a; child2 i)

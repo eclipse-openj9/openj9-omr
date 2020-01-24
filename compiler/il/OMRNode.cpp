@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3679,9 +3679,9 @@ OMR::Node::exceptionsRaised()
       default:
        if (node->getOpCode().isCall() && !node->isOSRFearPointHelperCall())
             {
-            possibleExceptions |= TR::Block::CanCatchOSR;
-            if (node->getSymbolReference()->canGCandExcept()
-               )
+            if (!((TR::MethodSymbol*)node->getSymbolReference()->getSymbol())->functionCallDoesNotYieldOSR())
+               possibleExceptions |= TR::Block::CanCatchOSR;
+            if (!node->isPureCall() && node->getSymbolReference()->canGCandExcept())
                possibleExceptions |= TR::Block::CanCatchUserThrows;
             }
          break;

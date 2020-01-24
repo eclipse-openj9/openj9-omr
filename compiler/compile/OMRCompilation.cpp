@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -666,7 +666,8 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNo
             potentialOSRPoint = true;
             }
          else if (callSymRef->getReferenceNumber() >=
-             self()->getSymRefTab()->getNonhelperIndex(self()->getSymRefTab()->getLastCommonNonhelperSymbol()))
+             self()->getSymRefTab()->getNonhelperIndex(self()->getSymRefTab()->getLastCommonNonhelperSymbol())
+             && !((TR::MethodSymbol*)(callSymRef->getSymbol()))->functionCallDoesNotYieldOSR())
             {
             potentialOSRPoint = (disableGuardedCallOSR == NULL);
             }

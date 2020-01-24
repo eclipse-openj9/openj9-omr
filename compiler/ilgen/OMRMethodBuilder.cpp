@@ -612,7 +612,7 @@ OMR::MethodBuilder::getParameterTypes()
    if (_cachedParameterTypes)
       return _cachedParameterTypes;
 
-   TR_ASSERT_FATAL(_numParameters < 10, "too many parameters for parameter types array");
+   TR_ASSERT_FATAL(_numParameters < 18, "Too many parameters (%d) for parameter types array", _numParameters);
    TR::IlType **paramTypesArray = _cachedParameterTypesArray;
    for (int32_t p=0;p < _numParameters;p++)
       {

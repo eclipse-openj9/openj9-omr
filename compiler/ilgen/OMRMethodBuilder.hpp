@@ -351,7 +351,7 @@ class MethodBuilder : public TR::IlBuilder
    TR::IlType                ** _cachedParameterTypes;
    const char                * _definingFile;
    char                        _definingLine[MAX_LINE_NUM_LEN];
-   TR::IlType                * _cachedParameterTypesArray[10];
+   TR::IlType                * _cachedParameterTypesArray[18];
 
    bool                        _newSymbolsAreTemps;
    int32_t                     _nextValueID;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -173,7 +173,7 @@ class ASTstates {
         }
 
         void stateTransition(State oldState, int (*test)(int), State newState) {
-            for (int c = 0; c < 128; ++c) {
+            for (int c = 0; c < 256; ++c) {
                 if (test(c)) {
                     transitionFunction[oldState][c] = newState;
                 }
@@ -181,7 +181,7 @@ class ASTstates {
         }
 
         void stateTransition(State oldState, bool (*test)(char), State newState) {
-            for (int c = 0; c < 128; ++c) {
+            for (int c = 0; c < 256; ++c) {
                 if (test(c)) {
                     transitionFunction[oldState][c] = newState;
                 }
@@ -208,7 +208,7 @@ class ASTstates {
             acceptingStates.push_back(EQUALS);
             acceptingStates.push_back(COMMA);
             acceptingStates.push_back(HEXINT);
-            transitionFunction = std::vector<std::vector<State> > (LARGEST_STATE+1, std::vector<State> (128));
+            transitionFunction = std::vector<std::vector<State> > (LARGEST_STATE+1, std::vector<State> (256));
             // initialize the transitionFunction
             for (size_t i = 0; i < transitionFunction.size(); ++i) {
                 for (size_t j = 0; j < transitionFunction[0].size(); ++j) {

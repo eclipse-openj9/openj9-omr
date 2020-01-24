@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -71,7 +71,7 @@ FEBase<Derived>::allocateRelocationData(TR::Compilation* comp, uint32_t size)
    // ought to be using the port library to allocate such memory. This was the quickest "workaround" I could think
    // of to just get us off the ground.
    return reinterpret_cast<uint8_t *>(
-         malloc(size));
+         __malloc31(size));
 #else
    return reinterpret_cast<uint8_t *>(
          mmap(0,

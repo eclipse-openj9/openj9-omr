@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -547,6 +547,14 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
       bool secondStore = false;
 
       int32_t slotSize = paramCursor->getSize();
+
+      if (self()->isSmallIntParmsAlignedRight())
+         {
+         // On both Linux and z/OS system linkages we spill both the clean and dirty bits of the incoming arguments to
+         // the stack if needed. The `initParamOffset` API will ensure the parameters within the method are initialized
+         // with offsets which point only to the clean data (no dirty bits loaded).
+         slotSize = gprSize;
+         }
 
       if (slotSize < 4)
          slotSize = 4;
@@ -1325,121 +1333,6 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
    TR_ASSERT( numMoves<=0,"Circular argument register dependency can and should be avoided.");
 
    return cursor;
-   }
-
-void
-OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method)
-   {
-   self()->setParameterLinkageRegisterIndex(method, method->getParameterList());
-   }
-
-void
-OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method, List<TR::ParameterSymbol> &parmList)
-   {
-   ListIterator<TR::ParameterSymbol> paramIterator(&parmList);
-   TR::ParameterSymbol * paramCursor=paramIterator.getFirst();
-   int32_t numIntArgs = 0, numFloatArgs = 0, numVectorArgs = 0;
-
-   int32_t paramNum = -1;
-   while ((paramCursor != NULL) &&
-          (numIntArgs < self()->getNumIntegerArgumentRegisters() ||
-           numFloatArgs < self()->getNumFloatArgumentRegisters() ||
-           numVectorArgs < self()->getNumVectorArgumentRegisters()))
-      {
-      int32_t index = -1;
-      paramNum++;
-
-      TR::DataType dt = paramCursor->getDataType();
-
-      switch (dt)
-         {
-         case TR::Int8:
-         case TR::Int16:
-         case TR::Int32:
-         case TR::Address:
-            if (numIntArgs < self()->getNumIntegerArgumentRegisters())
-               {
-               index = numIntArgs;
-               }
-            numIntArgs++;
-            break;
-         case TR::Int64:
-            if(numIntArgs < self()->getNumIntegerArgumentRegisters())
-               {
-               index = numIntArgs;
-               }
-            numIntArgs += (self()->cg()->comp()->target().is64Bit() ? 1 : 2);
-            break;
-         case TR::Float:
-#ifdef J9_PROJECT_SPECIFIC
-         case TR::DecimalFloat:
-#endif
-            if (numFloatArgs < self()->getNumFloatArgumentRegisters())
-               {
-               index = numFloatArgs;
-               }
-            numFloatArgs++;
-            break;
-         case TR::Double:
-#ifdef J9_PROJECT_SPECIFIC
-         case TR::DecimalDouble:
-            if (numFloatArgs < self()->getNumFloatArgumentRegisters())
-               {
-               index = numFloatArgs;
-               }
-            numFloatArgs++;
-            break;
-         case TR::DecimalLongDouble:
-            // On zLinux Long Double is passed in memory using a pointer to buffer
-            if(self()->cg()->comp()->target().isLinux())
-               {
-               if(numIntArgs < self()->getNumIntegerArgumentRegisters())
-                  index = numIntArgs++;
-               break;
-               }
-            if ((numFloatArgs & 0x1) !=0)  // if there are odd number of fp args in before a long double arg, need to skip one
-               numFloatArgs++;
-            if (numFloatArgs < self()->getNumFloatArgumentRegisters())
-               {
-               index = numFloatArgs;
-               }
-            numFloatArgs +=2;
-            break;
-         case TR::PackedDecimal:
-         case TR::ZonedDecimal:
-         case TR::ZonedDecimalSignLeadingEmbedded:
-         case TR::ZonedDecimalSignLeadingSeparate:
-         case TR::ZonedDecimalSignTrailingSeparate:
-         case TR::UnicodeDecimal:
-         case TR::UnicodeDecimalSignLeading:
-         case TR::UnicodeDecimalSignTrailing:
-#endif
-         case TR::Aggregate:
-            break;
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
-         case TR::VectorDouble:
-            if (numVectorArgs < self()->getNumVectorArgumentRegisters())
-               {
-               index = numVectorArgs;
-               }
-            numVectorArgs++;
-            break;
-         }
-      paramCursor->setLinkageRegisterIndex(index);
-      paramCursor = paramIterator.getNext();
-
-      if (self()->isFastLinkLinkageType())
-         {
-         if ((numFloatArgs == 1) || (numIntArgs >= self()->getNumIntegerArgumentRegisters()))
-            {
-            // force fastlink ABI condition of only one float parameter for fastlink parameter and it must be within first slots
-            numFloatArgs = self()->getNumFloatArgumentRegisters();   // no more float args possible now
-            }
-         }
-      }
    }
 
 TR::InstOpCode::Mnemonic

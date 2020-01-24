@@ -23,8 +23,8 @@
 
 #include <cmath>
 
-typedef int64_t (FooFunction)(int64_t, double, int32_t, double,
-                              int64_t, double, int32_t, double);
+typedef int64_t (FooFunction)(int64_t, double, int32_t, double, int64_t, double, int32_t, double,
+                              int64_t, double, int32_t, double, int64_t, double, int32_t, double);
 
 DEFINE_BUILDER( FooBuilder,
                 Int64,
@@ -35,16 +35,32 @@ DEFINE_BUILDER( FooBuilder,
                 PARAM("arg4_int64", Int64),
                 PARAM("arg5_double", Double),
                 PARAM("arg6_int32", Int32),
-                PARAM("arg7_double", Double))
+                PARAM("arg7_double", Double),
+                PARAM("arg8_int64", Int64),
+                PARAM("arg9_double", Double),
+                PARAM("arg10_int32", Int32 ),
+                PARAM("arg11_double", Double),
+                PARAM("arg12_int64", Int64),
+                PARAM("arg13_double", Double),
+                PARAM("arg14_int32", Int32),
+                PARAM("arg15_double", Double))
    {
-   auto comp0 = EqualTo(Load("arg0_int64"), Load("arg4_int64"));
-   auto comp1 = EqualTo(Load("arg1_double"), Load("arg5_double"));
-   auto comp2 = EqualTo(Load("arg2_int32"), Load("arg6_int32"));
-   auto comp3 = EqualTo(Load("arg3_double"), Load("arg7_double"));
-   auto comp4 = And(comp0,
+   auto comp0 = EqualTo(Load("arg0_int64"), Load("arg8_int64"));
+   auto comp1 = EqualTo(Load("arg1_double"), Load("arg9_double"));
+   auto comp2 = EqualTo(Load("arg2_int32"), Load("arg10_int32"));
+   auto comp3 = EqualTo(Load("arg3_double"), Load("arg11_double"));
+   auto comp4 = EqualTo(Load("arg4_int64"), Load("arg12_int64"));
+   auto comp5 = EqualTo(Load("arg5_double"), Load("arg13_double"));
+   auto comp6 = EqualTo(Load("arg6_int32"), Load("arg14_int32"));
+   auto comp7 = EqualTo(Load("arg7_double"), Load("arg15_double"));
+   auto comp8 = And(comp0,
                     And(comp1,
-                        And(comp2,comp3)));
-   Return(comp4);
+                        And(comp2,
+                           And(comp3,
+                              And(comp4,
+                                 And(comp5,
+                                    And(comp6, comp7)))))));
+   Return(comp8);
 
    return true;
    }
@@ -53,9 +69,20 @@ class SystemLinkageTest : public JitBuilderTest {};
 
 TEST_F(SystemLinkageTest, FooTest)
    {
+#if defined(PPC)
+   // TODO (#4765): Fix the Power linkage and enable this test
+   // TODO (#4764): This is a poor man's SKIP_IF which is only available for Tril tests currently. We should find a
+   // nice home for this useful utility so we can use it in JitBuilder tests as well.
+   const ::testing::TestInfo* const test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+   ::testing::Test::RecordProperty("skipped", "Known Bug");
+   std::cout << "Known Bug" << ": Skipping test: " << test_info->name() << "\n    " << "Power system linkage cannot handle stack arguments (see issue #4765)" << "\n";
+   SUCCEED() << "Power system linkage cannot handle stack arguments (see issue #4765)";
+   return;
+#endif
+
    FooFunction *foo;
    ASSERT_COMPILE(OMR::JitBuilder::TypeDictionary, FooBuilder, foo);
 
-   ASSERT_TRUE(foo(200, 3.14159, -10, 6.67300 * pow(10, -11),
-                   200, 3.14159, -10, 6.67300 * pow(10, -11)));
+   ASSERT_TRUE(foo(200, 3.14159, -10, 6.67300 * pow(10, -11), -123, 0.9876, 999, 1.4142,
+                   200, 3.14159, -10, 6.67300 * pow(10, -11), -123, 0.9876, 999, 1.4142));
    }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -89,6 +89,7 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator* cg)
       _ppa2Snippet(NULL)
    {
    setProperties(FirstParmAtFixedOffset);
+   setProperties(SmallIntParmsAlignedRight);
 
    setProperty(SplitLongParm);
    setProperty(SkipGPRsForFloatParms);
@@ -280,6 +281,93 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
    cursor = reinterpret_cast<TR::Instruction*>(saveArguments(cursor, false));
 
    setLastPrologueInstruction(cursor);
+   }
+
+void
+TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method)
+   {
+   self()->setParameterLinkageRegisterIndex(method, method->getParameterList());
+   }
+
+void
+TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method, List<TR::ParameterSymbol> &parmList)
+   {
+   int32_t numGPRArgs = 0;
+   int32_t numFPRArgs = 0;
+   int32_t numVRFArgs = 0;
+
+   int32_t maxGPRArgs = self()->getNumIntegerArgumentRegisters();
+   int32_t maxFPRArgs = self()->getNumFloatArgumentRegisters();
+   int32_t maxVRFArgs = self()->getNumVectorArgumentRegisters();
+
+   ListIterator<TR::ParameterSymbol> paramIterator(&parmList);
+   for (TR::ParameterSymbol* paramCursor = paramIterator.getFirst(); paramCursor != NULL; paramCursor = paramIterator.getNext())
+      {
+      int32_t lri = -1;
+
+      switch (paramCursor->getDataType())
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Int64:
+         case TR::Address:
+            {
+            if (numGPRArgs < maxGPRArgs)
+               {
+               lri = numGPRArgs;
+               }
+
+            numGPRArgs++;
+            break;
+            }
+
+         case TR::Float:
+         case TR::Double:
+            {
+            if (numFPRArgs < self()->getNumFloatArgumentRegisters())
+               {
+               lri = numFPRArgs;
+               }
+            
+            // On 64-bit XPLINK floating point arguments leave "holes" in the GPR linkage registers, but not vice versa
+            numGPRArgs++;
+            numFPRArgs++;
+            break;
+            }
+
+         case TR::Aggregate:
+            {
+            TR_ASSERT_FATAL(false, "Support for aggregates is currently not implemented");
+            break;
+            }
+
+         case TR::VectorInt8:
+         case TR::VectorInt16:
+         case TR::VectorInt32:
+         case TR::VectorInt64:
+         case TR::VectorDouble:
+            {
+            if (numVRFArgs < self()->getNumVectorArgumentRegisters())
+               {
+               lri = numVRFArgs;
+               }
+            
+            // On 64-bit XPLINK floating point arguments leave "holes" in the GPR linkage registers, but not vice versa
+            numGPRArgs++;
+            numVRFArgs++;
+            break;
+            }
+
+         default:
+            {
+            TR_ASSERT_FATAL(false, "Unknown data type %s", paramCursor->getDataType().toString());
+            break;
+            }
+         }
+
+      paramCursor->setLinkageRegisterIndex(lri);
+      }
    }
 
 int32_t
@@ -488,9 +576,9 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
        callType = TR_XPLinkCallType_BRASL7;
        }
 
-    generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, returnFromJNICallLabel);
+    auto cursor = generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, returnFromJNICallLabel);
 
-    genCallNOPAndDescriptor(NULL, callNode, callNode, callType);
+    genCallNOPAndDescriptor(cursor, callNode, callNode, callType);
 
     // Append post-dependencies after NOP
     TR::LabelSymbol * afterNOP = generateLabelSymbol(cg());

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -143,9 +143,18 @@ endfunction()
 # Moves debug info from a  target to a separate file
 function(omr_split_debug target)
 	omr_assert(FATAL_ERROR TEST TARGET ${target} MESSAGE "omr_split_debug called on invalid target '${target}'")
+
+	# if we have already processed this target, skip it
+	get_target_property(is_split ${target} OMR_SPLIT_DEBUG_PROCESSED)
+	if(is_split)
+		return()
+	endif()
+
 	if(COMMAND _omr_toolchain_separate_debug_symbols)
 		_omr_toolchain_separate_debug_symbols("${target}")
 	endif()
+
+	set_target_properties(${target} PROPERTIES OMR_SPLIT_DEBUG_PROCESSED TRUE)
 endfunction()
 
 ###

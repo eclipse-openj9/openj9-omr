@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1780,6 +1780,13 @@ OMR::SymbolReferenceTable::findOrCreatePendingPushTemporary(
    TR::SymbolReference *tempSymRef = findOrCreateAutoSymbol(owningMethodSymbol, -(slot + 1), type, true, false, false, false, size);
    tempSymRef->getSymbol()->setIsPendingPush();
    return tempSymRef;
+   }
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::createNamedStatic(TR::ResolvedMethodSymbol *owningMethodSymbol, TR::DataType type, const char *name) 
+   {
+   TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(trHeapMemory(),type, name);
+   return new (trHeapMemory()) TR::SymbolReference(self(),sym,owningMethodSymbol->getResolvedMethodIndex(),owningMethodSymbol->incTempIndex(fe()));
    }
 
 TR::SymbolReference *

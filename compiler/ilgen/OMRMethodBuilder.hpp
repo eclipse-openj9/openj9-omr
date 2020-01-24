@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 IBM Corp. and others
+ * Copyright (c) 2016, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -121,6 +121,7 @@ class MethodBuilder : public TR::IlBuilder
    void DefineReturnType(TR::IlType *dt);
    void DefineLocal(const char *name, TR::IlType *dt);
    void DefineMemory(const char *name, TR::IlType *dt, void *location);
+   void DefineGlobal(const char *name, TR::IlType *dt, void *location);
    void DefineFunction(const char* const name,
                        const char* const fileName,
                        const char* const lineNumber,
@@ -343,6 +344,10 @@ class MethodBuilder : public TR::IlBuilder
    typedef TR::typed_allocator<std::pair<const char * const, void *>, TR::Region &> MemoryLocationMapAllocator;
    typedef std::map<const char *, void *, StrComparator, MemoryLocationMapAllocator> MemoryLocationMap;
    MemoryLocationMap           _memoryLocations;
+
+   typedef TR::typed_allocator<std::pair<const char * const, void *>, TR::Region &> GlobalMapAllocator;
+   typedef std::map<const char *, void *, StrComparator, GlobalMapAllocator> GlobalMap;
+   GlobalMap                   _globals;
 
    typedef TR::typed_allocator<std::pair<const char * const, TR::ResolvedMethod *>, TR::Region &> FunctionMapAllocator;
    typedef std::map<const char *, TR::ResolvedMethod *, StrComparator, FunctionMapAllocator> FunctionMap;

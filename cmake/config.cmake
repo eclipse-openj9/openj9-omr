@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -147,7 +147,6 @@ set(OMR_GC_VLHGC OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD OFF CACHE BOOL "Enable VLHGC concurrent copy forward")
 
 set(OMR_INTERP_HAS_SEMAPHORES ON CACHE BOOL "TODO: Document")
-set(OMR_INTERP_SMALL_MONITOR_SLOT OFF CACHE BOOL "TODO: Document")
 
 set(OMR_THR_ADAPTIVE_SPIN ON CACHE BOOL "TODO: Document")
 set(OMR_THR_JLM ON CACHE BOOL "TODO: Document")

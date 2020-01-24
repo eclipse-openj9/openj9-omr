@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2019, 2019 IBM Corp. and others
+# Copyright (c) 2019, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -71,9 +71,7 @@ endif
 
 ifneq (,$(findstring _cmprssptrs, $(SPEC)))
   CONFIGURE_ARGS += \
-    --enable-OMR_GC_COMPRESSED_POINTERS \
-    --enable-OMR_INTERP_COMPRESSED_OBJECT_HEADER \
-    --enable-OMR_INTERP_SMALL_MONITOR_SLOT
+    --enable-OMR_GC_COMPRESSED_POINTERS
 endif
 
 CONFIGURE_ARGS += libprefix=lib exeext= solibext=.so arlibext=.a objext=.o

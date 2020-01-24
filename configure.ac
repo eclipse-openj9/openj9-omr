@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2019 IBM Corp. and others
+# Copyright (c) 2015, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -434,8 +434,6 @@ OMRCFG_DEFINE_FLAG([OMR_ENV_DATA64],[],
 )
 
 OMRCFG_DEFINE_FLAG_OFF([OMR_GC_COMPRESSED_POINTERS])
-OMRCFG_DEFINE_FLAG_OFF([OMR_INTERP_COMPRESSED_OBJECT_HEADER])
-OMRCFG_DEFINE_FLAG_OFF([OMR_INTERP_SMALL_MONITOR_SLOT])
 
 OMRCFG_DEFINE_FLAG_OFF([OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS])
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -300,11 +300,11 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                {
                _info[block->getNumber()]._downwardExposedStoreAnalysisInfo->set(node->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "\n11Store Definition #%d is computed in block_%d\n",node->getLocalIndex(),block->getNumber());
+                  traceMsg(comp(), "\n11Store Definition #%d (n%dn) is computed in block_%d\n",node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
 
                _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "\n11Definition #%d is computed in block_%d\n",node->getLocalIndex(),block->getNumber());
+                  traceMsg(comp(), "\n11Definition #%d (n%dn) is computed in block_%d\n",node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
                }
             }
 
@@ -317,7 +317,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                {
                _info[block->getNumber()]._analysisInfo->set(node->getLocalIndex());
                if (trace())
-                   traceMsg(comp(), "\n11Definition #%d is locally anticipatable in block_%d\n",node->getLocalIndex(),block->getNumber());
+                   traceMsg(comp(), "\n11Definition #%d (n%dn) is locally anticipatable in block_%d\n",node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
                }
             }
          else if (storeTreeParticipatesInAnalysis)
@@ -325,7 +325,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
             _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
             killedExpressions->set(node->getLocalIndex());
             if (trace())
-               traceMsg(comp(), "\n11Definition #%d is NOT locally anticipatable in block_%d\n",node->getLocalIndex(),block->getNumber());
+               traceMsg(comp(), "\n11Definition #%d (n%dn) is NOT locally anticipatable in block_%d\n",node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
             }
 
          // Above we updated anticipatability info for the store; now we will
@@ -380,7 +380,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                {
                _info[block->getNumber()]._downwardExposedAnalysisInfo->set(treeTopNode->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "\n11Definition #%d is computed in block_%d\n",node->getLocalIndex(),block->getNumber());
+                  traceMsg(comp(), "\n11Definition #%d (n%dn) is computed in block_%d\n",node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
                }
 
             if (isCurrentTreeTopAnticipatable)
@@ -389,7 +389,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                   {
                   _info[block->getNumber()]._analysisInfo->set(treeTopNode->getLocalIndex());
                   if (trace())
-                     traceMsg(comp(), "\n11Definition #%d is locally anticipatable in block_%d\n",treeTopNode->getLocalIndex(),block->getNumber());
+                     traceMsg(comp(), "\n11Definition #%d (n%dn) is locally anticipatable in block_%d\n",treeTopNode->getLocalIndex(), treeTopNode->getGlobalIndex(), block->getNumber());
                   }
                }
             else
@@ -397,7 +397,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                killedExpressions->set(treeTopNode->getLocalIndex());
                _info[block->getNumber()]._analysisInfo->reset(treeTopNode->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "\n11Definition #%d is NOT locally anticipatable in block_%d\n",treeTopNode->getLocalIndex(),block->getNumber());
+                  traceMsg(comp(), "\n11Definition #%d (n%dn) is NOT locally anticipatable in block_%d\n",treeTopNode->getLocalIndex(), treeTopNode->getGlobalIndex(), block->getNumber());
                }
             }
          }
@@ -502,7 +502,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
             {
             _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getLocalIndex());
             if (trace())
-               traceMsg(comp(), "\n11Definition #%d is seen in block_%d\n",node->getLocalIndex(),block->getNumber());
+               traceMsg(comp(), "\n11Definition #%d (n%dn) is seen in block_%d\n",node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
             }
 
          if (isCurrentTreeTopAnticipatable)
@@ -511,13 +511,13 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                {
                _info[block->getNumber()]._analysisInfo->set(node->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "\n22Definition #%d is locally anticipatable in block_%d\n",node->getLocalIndex(),block->getNumber());
+                  traceMsg(comp(), "\n22Definition #%d (n%dn) is locally anticipatable in block_%d\n",node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
                }
             }
          else
             {
             if (trace())
-               traceMsg(comp(), "\n22Definition #%d is NOT locally anticipatable in block_%d\n",node->getLocalIndex(),block->getNumber());
+               traceMsg(comp(), "\n22Definition #%d (n%dn) is NOT locally anticipatable in block_%d\n",node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
             killedExpressions->set(node->getLocalIndex());
             _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
             }
@@ -553,7 +553,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                    !_localTransparency->getAnalysisInfo(block->getNumber())->get(node->getLocalIndex()))
                   {
                   if (trace())
-                     traceMsg(comp(), "\n55Definition #%d is NOT locally anticipatable in block_%d\n",node->getLocalIndex(),block->getNumber());
+                     traceMsg(comp(), "\n55Definition #%d (n%dn) is NOT locally anticipatable in block_%d\n",node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
                   killedExpressions->set(node->getLocalIndex());
                   _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
                   break;
@@ -736,7 +736,7 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
          {
          _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getLocalIndex());
          if (trace())
-            traceMsg(comp(), "\n33Definition #%d is seen in block_%d\n",node->getLocalIndex(),block->getNumber());
+            traceMsg(comp(), "\n33Definition #%d (n%dn) is seen in block_%d\n", node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
          }
 
       if (isCurrentTreeTopAnticipatable)
@@ -745,13 +745,13 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
             {
             _info[block->getNumber()]._analysisInfo->set(node->getLocalIndex());
             if (trace())
-               traceMsg(comp(), "\n33Definition #%d is locally anticipatable in block_%d\n", node->getLocalIndex(),block->getNumber());
+               traceMsg(comp(), "\n33Definition #%d (n%dn) is locally anticipatable in block_%d\n", node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
             }
          else if (!flag)
             {
             killedExpressions->set(node->getLocalIndex());
             if (trace())
-               traceMsg(comp(), "\n330Definition #%d is NOT locally anticipatable in block_%d\n", node->getLocalIndex(),block->getNumber());
+               traceMsg(comp(), "\n330Definition #%d (n%dn) is NOT locally anticipatable in block_%d\n", node->getLocalIndex(),block->getNumber());
             _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
             }
          }
@@ -760,7 +760,7 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
          flag = false;
          killedExpressions->set(node->getLocalIndex());
          if (trace())
-            traceMsg(comp(), "\n331Definition #%d is NOT locally anticipatable in block_%d\n", node->getLocalIndex(),block->getNumber());
+            traceMsg(comp(), "\n331Definition #%d (n%dn) is NOT locally anticipatable in block_%d\n", node->getLocalIndex(),block->getNumber());
          _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
          }
       }
@@ -820,8 +820,8 @@ bool TR_LocalAnticipatability::adjustInfoForAddressAdd(TR::Node *node, TR::Node 
          if (trace())
             (comp()->target().is64Bit()
              ) ?
-               traceMsg(comp(), "\n330Definition #%d (aladd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber())
-               : traceMsg(comp(), "\n330Definition #%d (aiadd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber());
+               traceMsg(comp(), "\n330Definition #%d (n%dn) (aladd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber())
+               : traceMsg(comp(), "\n330Definition #%d (n%dn) (aiadd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber());
          return false;
          }
       }
@@ -841,8 +841,8 @@ bool TR_LocalAnticipatability::adjustInfoForAddressAdd(TR::Node *node, TR::Node 
                if (trace())
                   (comp()->target().is64Bit()
                    ) ?
-                  traceMsg(comp(), "\n330Definition #%d (aladd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber())
-                  : traceMsg(comp(), "\n330Definition #%d (aiadd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber());
+                  traceMsg(comp(), "\n330Definition #%d (n%dn) (aladd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber())
+                  : traceMsg(comp(), "\n330Definition #%d (n%dn) (aiadd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber());
                return false;
                }
             }

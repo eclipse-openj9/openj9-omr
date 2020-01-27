@@ -781,6 +781,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"forceLoadAOT", "M\tForce loading of relocatable code outside of class load phase from the shared cache",
     SET_OPTION_BIT(TR_ForceLoadAOT), "P", NOT_IN_SUBSET},
    {"forceNonSMP",                           "D\tforce UniP code generation.", SET_OPTION_BIT(TR_ForceNonSMP), "F"},
+   {"forceReadOnlyCode", "M\tForce generation of read-only code (no self-modifying code)\t", SET_OPTION_BIT(TR_ForceGenerateReadOnlyCode), "F", NOT_IN_SUBSET },
    {"forceUsePreexistence", "D\tPretend methods are using pre-existence. RAS feature.", SET_OPTION_BIT(TR_ForceUsePreexistence), "F"},
    {"forceVSSStackCompaction", "O\tAlways compact VariableSizeSymbols on the stack", SET_OPTION_BIT(TR_ForceVSSStackCompaction), "F"},
    {"fullInliningUnderOSRDebug", "O\tDo full inlining under OSR based debug (new FSD)", SET_OPTION_BIT(TR_FullInlineUnderOSRDebug), "F"},

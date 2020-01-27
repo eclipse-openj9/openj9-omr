@@ -486,7 +486,7 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
    return NULL;
    }
 
-// also handles lstorei, astore, astorei
+// also handles lstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -519,6 +519,20 @@ OMR::ARM64::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg
       node->setStoreAlreadyEvaluated(true);
 
    return NULL;
+   }
+
+// also handles astore, astorei
+TR::Register *
+OMR::ARM64::TreeEvaluator::astoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Compilation *comp = cg->comp();
+   bool isCompressedClassPointerOfObjectHeader = TR::Compiler->om.generateCompressedObjectHeaders() &&
+         (node->getSymbol()->isClassObject() ||
+         (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef()));
+   auto sizeOfMR = isCompressedClassPointerOfObjectHeader ? 4 : 8;
+   TR::InstOpCode::Mnemonic op = isCompressedClassPointerOfObjectHeader ? TR::InstOpCode::strimmw : TR::InstOpCode::strimmx;
+
+   return commonStoreEvaluator(node, op, sizeOfMR, cg);
    }
 
 TR::Register *

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -82,7 +82,7 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
       TR::SystemLinkage(cg, TR_SystemLinux)
    {
    setProperties(FirstParmAtFixedOffset);
-   setProperties(SmallIntParmsAlignedRight);
+   setProperty(SmallIntParmsAlignedRight);
 
    if (cg->comp()->target().is64Bit())
       {

@@ -64,7 +64,7 @@ MM_LargeObjectAllocateStats::initialize(MM_EnvironmentBase *env, uint16_t maxAll
 	_maxAllocateSizes = maxAllocateSizes;
 	_largeObjectThreshold = largeObjectThreshold;
 	_sizeClassRatio = sizeClassRatio;
-	_sizeClassRatioLog = log(_sizeClassRatio);
+	_sizeClassRatioLog = logf(_sizeClassRatio);
 	_maxHeapSize = maxHeapSize;
 
 	/* To accurately maintain for stats for top _maxAllocateSizes different sizes,
@@ -93,13 +93,13 @@ MM_LargeObjectAllocateStats::initialize(MM_EnvironmentBase *env, uint16_t maxAll
 	 * but at the point where most of extension fields are initialized, maxHeapSize is not known yet
 	 */
 	if (0 == env->getExtensions()->freeMemoryProfileMaxSizeClasses) {
-		uintptr_t largestClassSizeIndex = (uintptr_t)(log((float)maxHeapSize)/log(_sizeClassRatio));
+		uintptr_t largestClassSizeIndex = (uintptr_t)(logf((float)maxHeapSize)/_sizeClassRatioLog);
 
 		/* initialize largeObjectAllocationProfilingVeryLargeObjectThreshold and largeObjectAllocationProfilingVeryLargeObjectSizeClass */
 		uintptr_t veryLargeEntrySizeClass;
 		if (env->getExtensions()->memoryMax > veryLargeObjectThreshold) {
-			veryLargeEntrySizeClass = (uintptr_t)(log((float)veryLargeObjectThreshold)/log(_sizeClassRatio));
-			env->getExtensions()->largeObjectAllocationProfilingVeryLargeObjectThreshold = (uintptr_t)pow((double)_sizeClassRatio, (double)veryLargeEntrySizeClass);
+			veryLargeEntrySizeClass = (uintptr_t)(logf((float)veryLargeObjectThreshold)/_sizeClassRatioLog);
+			env->getExtensions()->largeObjectAllocationProfilingVeryLargeObjectThreshold = (uintptr_t)powf(_sizeClassRatio, (float)veryLargeEntrySizeClass);
 		} else {
 			veryLargeEntrySizeClass = largestClassSizeIndex + 1;
 			env->getExtensions()->largeObjectAllocationProfilingVeryLargeObjectThreshold = UDATA_MAX;
@@ -117,7 +117,7 @@ MM_LargeObjectAllocateStats::initialize(MM_EnvironmentBase *env, uint16_t maxAll
 	_veryLargeEntrySizeClass = env->getExtensions()->largeObjectAllocationProfilingVeryLargeObjectSizeClass; 
 
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
-	uintptr_t largestTLHClassSizeIndex = (uintptr_t)(log((float)tlhMaximumSize)/log(_sizeClassRatio));
+	uintptr_t largestTLHClassSizeIndex = (uintptr_t)(logf((float)tlhMaximumSize)/_sizeClassRatioLog);
 	uintptr_t maxTLHSizeClasses = largestTLHClassSizeIndex + 1;
 
 	if (!_tlhAllocSizeClassStats.initialize(env, 0,  maxTLHSizeClasses, UDATA_MAX)) {
@@ -133,7 +133,7 @@ MM_LargeObjectAllocateStats::initialize(MM_EnvironmentBase *env, uint16_t maxAll
 
 	for (uintptr_t sizeClassIndex = 0; sizeClassIndex < _freeEntrySizeClassStats._maxSizeClasses; sizeClassIndex++) {
 		/* TODO: this is rather an approximation (at least due to insufficient precision of double math) */
-		_sizeClassSizes[sizeClassIndex] = (uintptr_t)pow((double)_sizeClassRatio, (double)sizeClassIndex);
+		_sizeClassSizes[sizeClassIndex] = (uintptr_t)powf(_sizeClassRatio, (float)sizeClassIndex);
 	}
 
 	return true;
@@ -214,7 +214,7 @@ MM_LargeObjectAllocateStats::allocateObject(uintptr_t allocateSize)
 		spaceSavingUpdate(_spaceSavingSizes, (void *)allocateSize, allocateSize);
 
 		/* find in which size class object belongs to and update the stats for the size class itself. */
-		uintptr_t sizeClass = (uintptr_t)(pow(_sizeClassRatio, (float)ceil(log((float)allocateSize) / _sizeClassRatioLog)));
+		uintptr_t sizeClass = (uintptr_t)(powf(_sizeClassRatio, (float)ceil(logf((float)allocateSize) / _sizeClassRatioLog)));
 		spaceSavingUpdate(_spaceSavingSizeClasses, (void *)sizeClass, sizeClass);
 	}
 }
@@ -1097,8 +1097,7 @@ MM_LargeObjectAllocateStats::decrementFreeEntrySizeClassStats(uintptr_t freeEntr
 uintptr_t
 MM_LargeObjectAllocateStats::getSizeClassIndex(uintptr_t size)
 {
-	double logValue = log((double)size);
-
+	float logValue = logf((float)size);
 	/*
 	 * We discovered a data corruption in this function
 	 * The reason for it is a corruption of float point registers at time of switching of context
@@ -1107,12 +1106,12 @@ MM_LargeObjectAllocateStats::getSizeClassIndex(uintptr_t size)
 	 */
 
 	/* the logarithm can not be negative! */
-	Assert_GC_true_with_message2(_env, (logValue >= 0.0), "Error calculation log(), passed %zu, returned %f\n", size, logValue);
+	Assert_GC_true_with_message2(_env, (logValue >= 0.0), "Error calculation logf(), passed %zu, returned %f\n", size, logValue);
 	Assert_GC_true_with_message(_env, (_sizeClassRatioLog > 0.0), "_sizeClassRatioLog is %f but must be larger then zero\n", _sizeClassRatioLog);
 
 	uintptr_t result = (uintptr_t)(logValue / _sizeClassRatioLog);
 
-	/* the logarithm value is larger then we can accept - probably larger then log(UDATA_MAX) */
+	/* the logarithm value is larger then we can accept - probably larger then logf(UDATA_MAX) */
 	Assert_GC_true_with_message2(_env, ((_freeEntrySizeClassStats._maxSizeClasses == 0) || (result < _freeEntrySizeClassStats._maxSizeClasses)),
 			"Calculated value of getSizeClassIndex() %zu can not be larger then maximum %zu\n", result, _freeEntrySizeClassStats._maxSizeClasses);
 

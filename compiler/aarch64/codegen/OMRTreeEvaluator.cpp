@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -511,7 +511,14 @@ OMR::ARM64::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg
 TR::Register *
 OMR::ARM64::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonStoreEvaluator(node, TR::InstOpCode::strimmw, 4, cg);
+   TR::Compilation *comp = cg->comp();
+
+   commonStoreEvaluator(node, TR::InstOpCode::strimmw, 4, cg);
+
+   if (comp->useCompressedPointers() && node->getOpCode().isIndirect())
+      node->setStoreAlreadyEvaluated(true);
+
+   return NULL;
    }
 
 TR::Register *

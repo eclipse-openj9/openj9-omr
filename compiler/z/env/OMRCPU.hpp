@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -204,6 +204,19 @@ class CPU : public OMR::CPU
     *     Determines whether the Vector Enhancement 2 facility is available (if \c true) or not (if \c false).
     */
    bool setSupportsVectorFacilityEnhancement2(bool value);
+
+   /** \brief
+    *     Determines whether the Vector Enhancement 1 facility is available on the current processor.
+    */
+   bool getSupportsVectorFacilityEnhancement1();
+   
+   /** \brief
+    *     Determines whether the Vector Enhancement 1 facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Vector Enhancement 1 facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsVectorFacilityEnhancement1(bool value);
    
    /** \brief
     *     Determines whether the Vector Packed Decimal facility is available on the current processor.
@@ -270,6 +283,7 @@ class CPU : public OMR::CPU
       S390SupportsMIE3                         = 0x00400000,
       S390SupportsVectorFacilityEnhancement2   = 0x00800000,
       S390SupportsVectorPDEnhancementFacility  = 0x01000000,
+      S390SupportsVectorFacilityEnhancement1   = 0x02000000,
       };
 
    Architecture _supportedArch;

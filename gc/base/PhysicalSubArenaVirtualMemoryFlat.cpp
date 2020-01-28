@@ -120,9 +120,9 @@ MM_PhysicalSubArenaVirtualMemoryFlat::inflate(MM_EnvironmentBase *env)
 			MM_MemorySubSpace *genericSubSpace = ((MM_MemorySubSpaceFlat *)_subSpace)->getChildSubSpace();
 			result = genericSubSpace->expanded(env, this, _region->getSize(), lowAddress, highAddress, false);
 			if (result) {
-				_subSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND, genericSubSpace, lowAddress, highAddress);
+				genericSubSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND, genericSubSpace, lowAddress, highAddress);
 			} else {
-				_subSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND);
+				genericSubSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND);
 			}
 		}
 	}
@@ -221,9 +221,9 @@ MM_PhysicalSubArenaVirtualMemoryFlat::expandNoCheck(MM_EnvironmentBase *env, uin
 
 		if(result) {
 			genericSubSpace->addExistingMemory(env, this, expandSize, lowExpandAddress, highExpandAddress, true);
-			_subSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND, genericSubSpace, lowExpandAddress, highExpandAddress);
+			genericSubSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND, genericSubSpace, lowExpandAddress, highExpandAddress);
 		} else {
-			_subSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND);
+			genericSubSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND);
 		}
 	}
 

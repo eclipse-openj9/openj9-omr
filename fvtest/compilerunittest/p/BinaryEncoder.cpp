@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -84,7 +84,7 @@ std::ostream& operator<<(std::ostream& os, const TR::RealRegister::RegNum& reg) 
     else if (reg >= TR::RealRegister::FirstCCR && reg <= TR::RealRegister::LastCCR)
         os << "cr" << (static_cast<int>(reg) - static_cast<int>(TR::RealRegister::FirstCCR));
     else
-        os << "???";
+        os << "?" << static_cast<int>(reg);
 
     return os;
 }
@@ -117,12 +117,12 @@ public:
     }
 
     BinaryInstruction getBlankEncoding(TR::InstOpCode opCode) {
-        reinterpret_cast<uint32_t*>(opCode.copyBinaryToBuffer(reinterpret_cast<uint8_t*>(&buf[0])));
+        opCode.copyBinaryToBuffer(reinterpret_cast<uint8_t*>(&buf[0]));
 
         return getEncodedInstruction(4);
     }
 
-    BinaryInstruction findFlippedBits(TR::InstOpCode op1, TR::InstOpCode op2) {
+    BinaryInstruction findDifferingBits(TR::InstOpCode op1, TR::InstOpCode op2) {
         return getBlankEncoding(op1) ^ getBlankEncoding(op2);
     }
 };
@@ -160,7 +160,7 @@ TEST_P(PPCRecordFormSanityTest, checkFlippedBit) {
 
     ASSERT_EQ(
         std::get<2>(GetParam()),
-        findFlippedBits(std::get<0>(GetParam()), std::get<1>(GetParam()))
+        findDifferingBits(std::get<0>(GetParam()), std::get<1>(GetParam()))
     );
 }
 
@@ -296,7 +296,7 @@ TEST_P(PPCImm2EncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateImm2Instruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -305,7 +305,7 @@ TEST_P(PPCImm2EncodingTest, encodeRecordForm) {
         std::get<2>(GetParam())
     );
 
-    ASSERT_EQ(std::get<3>(GetParam()) ^ flippedBits, encodeInstruction(instr));
+    ASSERT_EQ(std::get<3>(GetParam()) ^ differingBits, encodeInstruction(instr));
 }
 
 class PPCTrg1EncodingTest : public PowerBinaryEncoderTest, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, BinaryInstruction>> {};
@@ -331,7 +331,7 @@ TEST_P(PPCTrg1EncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateTrg1Instruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -340,7 +340,7 @@ TEST_P(PPCTrg1EncodingTest, encodeRecordForm) {
     );
 
     ASSERT_EQ(
-        std::get<2>(GetParam()) ^ flippedBits,
+        std::get<2>(GetParam()) ^ differingBits,
         encodeInstruction(instr)
     );
 }
@@ -369,7 +369,7 @@ TEST_P(PPCSrc1EncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateSrc1Instruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -379,7 +379,7 @@ TEST_P(PPCSrc1EncodingTest, encodeRecordForm) {
     );
 
     ASSERT_EQ(
-        (std::get<3>(GetParam()) ^ flippedBits),
+        (std::get<3>(GetParam()) ^ differingBits),
         encodeInstruction(instr)
     );
 }
@@ -408,7 +408,7 @@ TEST_P(PPCSrc2EncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateSrc2Instruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -418,7 +418,7 @@ TEST_P(PPCSrc2EncodingTest, encodeRecordForm) {
     );
 
     ASSERT_EQ(
-        (std::get<3>(GetParam()) ^ flippedBits),
+        (std::get<3>(GetParam()) ^ differingBits),
         encodeInstruction(instr)
     );
 }
@@ -447,7 +447,7 @@ TEST_P(PPCTrg1ImmEncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateTrg1ImmInstruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -457,7 +457,7 @@ TEST_P(PPCTrg1ImmEncodingTest, encodeRecordForm) {
     );
 
     ASSERT_EQ(
-        (std::get<3>(GetParam()) ^ flippedBits),
+        (std::get<3>(GetParam()) ^ differingBits),
         encodeInstruction(instr)
     );
 }
@@ -486,7 +486,7 @@ TEST_P(PPCTrg1Src1EncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateTrg1Src1Instruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -496,7 +496,7 @@ TEST_P(PPCTrg1Src1EncodingTest, encodeRecordForm) {
     );
 
     ASSERT_EQ(
-        (std::get<3>(GetParam()) ^ flippedBits),
+        (std::get<3>(GetParam()) ^ differingBits),
         encodeInstruction(instr)
     );
 }
@@ -526,7 +526,7 @@ TEST_P(PPCTrg1Src1ImmEncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateTrg1Src1ImmInstruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -537,7 +537,7 @@ TEST_P(PPCTrg1Src1ImmEncodingTest, encodeRecordForm) {
     );
 
     ASSERT_EQ(
-        std::get<4>(GetParam()) ^ flippedBits,
+        std::get<4>(GetParam()) ^ differingBits,
         encodeInstruction(instr)
     );
 }
@@ -568,7 +568,7 @@ TEST_P(PPCTrg1Src1Imm2EncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateTrg1Src1Imm2Instruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -580,7 +580,7 @@ TEST_P(PPCTrg1Src1Imm2EncodingTest, encodeRecordForm) {
     );
 
     ASSERT_EQ(
-        std::get<5>(GetParam()) ^ flippedBits,
+        std::get<5>(GetParam()) ^ differingBits,
         encodeInstruction(instr)
     );
 }
@@ -610,7 +610,7 @@ TEST_P(PPCTrg1Src2EncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateTrg1Src2Instruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -621,7 +621,7 @@ TEST_P(PPCTrg1Src2EncodingTest, encodeRecordForm) {
     );
 
     ASSERT_EQ(
-        std::get<4>(GetParam()) ^ flippedBits,
+        std::get<4>(GetParam()) ^ differingBits,
         encodeInstruction(instr)
     );
 }
@@ -652,7 +652,7 @@ TEST_P(PPCTrg1Src2ImmEncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateTrg1Src2ImmInstruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -664,7 +664,7 @@ TEST_P(PPCTrg1Src2ImmEncodingTest, encodeRecordForm) {
     );
 
     ASSERT_EQ(
-        std::get<5>(GetParam()) ^ flippedBits,
+        std::get<5>(GetParam()) ^ differingBits,
         encodeInstruction(instr)
     );
 }
@@ -695,7 +695,7 @@ TEST_P(PPCTrg1Src3EncodingTest, encodeRecordForm) {
         return;
 
     TR::InstOpCode recordOpCode = opCode.getRecordFormOpCodeValue();
-    auto flippedBits = findFlippedBits(opCode, recordOpCode);
+    auto differingBits = findDifferingBits(opCode, recordOpCode);
     auto instr = generateTrg1Src3Instruction(
         cg(),
         recordOpCode.getOpCodeValue(),
@@ -707,7 +707,7 @@ TEST_P(PPCTrg1Src3EncodingTest, encodeRecordForm) {
     );
 
     ASSERT_EQ(
-        std::get<5>(GetParam()) ^ flippedBits,
+        std::get<5>(GetParam()) ^ differingBits,
         encodeInstruction(instr)
     );
 }

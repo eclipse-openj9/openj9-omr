@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,6 +23,7 @@
 #define CODEGENTEST_HPP
 
 #include <gtest/gtest.h>
+#include <exception>
 
 #include "Jit.hpp"
 #include "codegen/CodeGenerator.hpp"
@@ -51,7 +52,7 @@ public:
         TR::Compilation *comp,
         TR::SymbolReferenceTable *symRefTab
     ) {
-        throw 0;
+        throw std::runtime_error("The mock JIT environment does not support calling TR::IlGenRequest::getIlGenerator");
     }
 
     virtual void print(TR_FrontEnd *fe, TR::FILE *file, const char *suffix) {}

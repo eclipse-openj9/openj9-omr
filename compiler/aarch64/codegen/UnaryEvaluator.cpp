@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -209,4 +209,41 @@ TR::Register *OMR::ARM64::TreeEvaluator::su2lEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::ARM64::TreeEvaluator::iu2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return extendToIntOrLongHelper(node, TR::InstOpCode::ubfmx, 31, cg);
+   }
+
+TR::Register *OMR::ARM64::TreeEvaluator::l2aEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Compilation *comp = cg->comp();
+
+   if (comp->useCompressedPointers())
+      {
+      // pattern match the sequence under the l2a
+      //    iaload f      l2a                       <- node
+      //       aload O       ladd
+      //                       lshl
+      //                          i2l
+      //                            iiload f        <- load
+      //                               aload O
+      //                          iconst shftKonst
+      //                       lconst HB
+      //
+      // -or- if the load is known to be null
+      //  l2a
+      //    i2l
+      //      iiload f
+      //         aload O
+      //
+      TR::Node *firstChild = node->getFirstChild();
+      TR::Register *source = cg->evaluate(firstChild);
+
+      if ((firstChild->containsCompressionSequence() || (TR::Compiler->om.compressedReferenceShift() == 0)) && !node->isl2aForCompressedArrayletLeafLoad())
+         source->setContainsCollectedReference();
+
+      node->setRegister(source);
+      cg->decReferenceCount(firstChild);
+
+      return source;
+      }
+   else
+      return TR::TreeEvaluator::passThroughEvaluator(node, cg);
    }

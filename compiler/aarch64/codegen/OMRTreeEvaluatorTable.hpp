@@ -188,7 +188,7 @@
     TR::TreeEvaluator::l2dEvaluator, // TR::l2d		// convert long integer to double
     TR::TreeEvaluator::l2iEvaluator, // TR::l2b		// convert long integer to byte
     TR::TreeEvaluator::l2iEvaluator, // TR::l2s		// convert long integer to short integer
-    TR::TreeEvaluator::passThroughEvaluator, // TR::l2a		// convert long integer to address
+    TR::TreeEvaluator::l2aEvaluator, // TR::l2a		// convert long integer to address
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lu2fEvaluator ,	// TR::lu2f		// convert unsigned long integer to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lu2dEvaluator ,	// TR::lu2d		// convert unsigned long integer to double
     TR::TreeEvaluator::passThroughEvaluator, // TR::lu2a		// convert unsigned long integer to address

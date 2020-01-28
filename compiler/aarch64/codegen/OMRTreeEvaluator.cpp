@@ -401,8 +401,23 @@ OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    node->setRegister(tempReg);
 
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::ldrimmx, node, tempReg, tempMR);
+   TR::InstOpCode::Mnemonic op;
+   int32_t sizeOfMR;
+
+   if (TR::Compiler->om.generateCompressedObjectHeaders() &&
+       (node->getSymbol()->isClassObject() ||
+        (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())))
+      {
+      op = TR::InstOpCode::ldrimmw;
+      sizeOfMR = 4;
+      }
+   else
+      {
+      op = TR::InstOpCode::ldrimmx;
+      sizeOfMR = 8;
+      }
+   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, sizeOfMR, cg);
+   generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
 
    if (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
       {

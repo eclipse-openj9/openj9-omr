@@ -391,6 +391,15 @@ void OMR::ARM64::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)
 
 void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::CodeGenerator *cg)
    {
+   if (cg->comp()->useCompressedPointers())
+      {
+      if (subTree->getOpCodeValue() == TR::l2a && subTree->getReferenceCount() == 1 && subTree->getRegister() == NULL)
+         {
+         cg->decReferenceCount(subTree);
+         subTree = subTree->getFirstChild();
+         }
+      }
+
    if (subTree->getReferenceCount() > 1 || subTree->getRegister() != NULL)
       {
       if (_baseRegister != NULL)

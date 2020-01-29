@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -323,9 +323,6 @@ TEST_P(Int16Arithmetic, UsingConst) {
     SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
         << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
-        << "smul/sdiv not yet implemented on x86 (see Issue #4408)";
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
@@ -361,9 +358,6 @@ TEST_P(Int16Arithmetic, UsingLoadParam) {
     SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
         << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
 
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
-        << "smul/sdiv not yet implemented on x86 (see Issue #4408)";
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
@@ -394,9 +388,6 @@ TEST_P(Int8Arithmetic, UsingConst) {
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
     SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
         << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
-
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
-        << "bmul/bdiv not yet implemented on x86 (see Issue #4408)";
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -432,8 +423,6 @@ TEST_P(Int8Arithmetic, UsingLoadParam) {
         << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
     SKIP_IF(OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC == arch, KnownBug)
         << "The Power code generator incorrectly spills sub-integer type arguments on big-endian machines (see issue #3525)";
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch, MissingImplementation)
-        << "bmul/bdiv not yet implemented on x86 (see Issue #4408)";
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};

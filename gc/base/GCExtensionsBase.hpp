@@ -379,7 +379,6 @@ public:
 
 	uintptr_t workpacketCount; /**< this value is ONLY set if -Xgcworkpackets is specified - otherwise the workpacket count is determined heuristically */
 	uintptr_t packetListSplit; /**< the number of ways to split packet lists, set by -XXgc:packetListLockSplit=, or determined heuristically based on the number of GC threads */
-	uintptr_t cacheListSplit; /**< the number of ways to split scanCache lists, set by -XXgc:cacheListLockSplit=, or determined heuristically based on the number of GC threads */
 	
 	uintptr_t markingArraySplitMaximumAmount; /**< maximum number of elements to split array scanning work in marking scheme */
 	uintptr_t markingArraySplitMinimumAmount; /**< minimum number of elements to split array scanning work in marking scheme */
@@ -456,6 +455,7 @@ public:
 	bool scvTenureStrategyHistory; /**< Flag for enabling the History scavenger tenure strategy. */
 	bool scavengerEnabled;
 	bool scavengerRsoScanUnsafe;
+	uintptr_t cacheListSplit; /**< the number of ways to split scanCache lists, set by -XXgc:cacheListLockSplit=, or determined heuristically based on the number of GC threads */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	bool softwareRangeCheckReadBarrier; /**< enable software read barrier instead of hardware guarded loads when running with CS */
 	bool concurrentScavenger; /**< CS enabled/disabled flag */
@@ -1450,7 +1450,6 @@ public:
 		, useGCStartupHints(true)	
 		, workpacketCount(0) /* only set if -Xgcworkpackets specified */
 		, packetListSplit(0)
-		, cacheListSplit(0)
 		, markingArraySplitMaximumAmount(DEFAULT_ARRAY_SPLIT_MAXIMUM_SIZE)
 		, markingArraySplitMinimumAmount(DEFAULT_ARRAY_SPLIT_MINIMUM_SIZE)
 		, rootScannerStatsEnabled(false)
@@ -1512,6 +1511,7 @@ public:
 		, scvTenureStrategyHistory(true)
 		, scavengerEnabled(false)
 		, scavengerRsoScanUnsafe(false)
+		, cacheListSplit(0)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, softwareRangeCheckReadBarrier(false)
 		, concurrentScavenger(false)

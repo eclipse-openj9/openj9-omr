@@ -73,6 +73,98 @@ TR_Debug::printMemoryReferenceComment(TR::FILE *pOutFile, TR::MemoryReference *m
    }
 
 void
+TR_Debug::print(TR::FILE *pOutFile, TR::RtypeInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+   trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg);
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ItypeInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+   trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   trfprintf(pOutFile, ", 0x%04x (%d)", instr->getSourceImmediate(), instr->getSourceImmediate());
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::StypeInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg);
+   trfprintf(pOutFile, ", 0x%04x (%d)", instr->getSourceImmediate(), instr->getSourceImmediate());
+   trfflush(_comp->getOutFile());
+   }
+void
+
+TR_Debug::print(TR::FILE *pOutFile, TR::BtypeInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg);
+   trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getLabelSymbol());
+   trfflush(_comp->getOutFile());
+   }
+void
+
+TR_Debug::print(TR::FILE *pOutFile, TR::UtypeInstruction *instr)
+   {
+printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+   trfprintf(pOutFile, ", 0x%08x (%d)", instr->getSourceImmediate(), instr->getSourceImmediate());
+   trfflush(_comp->getOutFile());
+   }
+void
+
+TR_Debug::print(TR::FILE *pOutFile, TR::JtypeInstruction *instr)
+   {
+   TR_Debug::print(pOutFile, (TR::UtypeInstruction*)instr);
+   //printPrefix(pOutFile, instr);
+   //trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   //trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::LoadInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+   trfprintf(pOutFile, " <- ");
+   print(pOutFile, instr->getMemoryReference());
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::StoreInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   trfprintf(pOutFile, " -> ");
+   print(pOutFile, instr->getMemoryReference());
+   trfflush(_comp->getOutFile());
+   }
+
+
+void
 TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
    {
    if (pOutFile == NULL)
@@ -85,6 +177,30 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
          break;
       case OMR::Instruction::IsAdmin:
          print(pOutFile, (TR::AdminInstruction *)instr);
+         break;
+      case OMR::Instruction::IsRTYPE:
+         print(pOutFile, (TR::RtypeInstruction *)instr);
+         break;
+      case OMR::Instruction::IsITYPE:
+         print(pOutFile, (TR::ItypeInstruction *)instr);
+         break;
+      case OMR::Instruction::IsSTYPE:
+         print(pOutFile, (TR::StypeInstruction *)instr);
+         break;
+      case OMR::Instruction::IsBTYPE:
+         print(pOutFile, (TR::BtypeInstruction *)instr);
+         break;
+      case OMR::Instruction::IsUTYPE:
+         print(pOutFile, (TR::UtypeInstruction *)instr);
+         break;
+      case OMR::Instruction::IsJTYPE:
+         print(pOutFile, (TR::JtypeInstruction *)instr);
+         break;
+      case OMR::Instruction::IsLOAD:
+         print(pOutFile, (TR::LoadInstruction *)instr);
+         break;
+      case OMR::Instruction::IsSTORE:
+         print(pOutFile, (TR::StoreInstruction *)instr);
          break;
       default:
          {

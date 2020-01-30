@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2803,6 +2803,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * inst, const char *title)
       }
 #endif
 
+#if defined(TR_TARGET_RISCV)
+   if (TR::Compiler->target.cpu.isRISCV())
+      {
+      print(pOutFile, inst);
+      return;
+      }
+#endif      
+
 #if defined(TR_TARGET_S390)
    if (_comp->target().cpu.isZ())
       {
@@ -2855,6 +2863,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCRegisterMap * map)
    if (_comp->target().cpu.isARM64())
       {
       printARM64GCRegisterMap(pOutFile, map);
+      return;
+      }
+#endif
+
+#if defined(TR_TARGET_RISCV)
+   if (TR::Compiler->target.cpu.isRISCV())
+      {
+      printRVGCRegisterMap(pOutFile, map);
       return;
       }
 #endif
@@ -3003,6 +3019,11 @@ TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
       if (_comp->target().cpu.isARM64())
          return getName((TR::RealRegister *)reg, size);
 #endif
+#if defined(TR_TARGET_RISCV)
+      if (TR::Compiler->target.cpu.isRISCV())
+         return getName((TR::RealRegister *)reg, size);
+#endif
+
       TR_ASSERT(0, "TR_Debug::getName() ==> unknown target platform for given real register\n");
       }
 
@@ -3179,6 +3200,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Register * reg, TR_RegisterSizes size)
 #endif
 #if defined(TR_TARGET_ARM64)
       if (_comp->target().cpu.isARM64())
+         {
+         print(pOutFile, (TR::RealRegister *)reg, size);
+         return;
+         }
+#endif
+#if defined(TR_TARGET_RISCV)
+      if (TR::Compiler->target.cpu.isRISCV())
          {
          print(pOutFile, (TR::RealRegister *)reg, size);
          return;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -372,6 +372,16 @@ namespace TR { class ARM64CallSnippet; }
 namespace TR { class ARM64UnresolvedCallSnippet; }
 namespace TR { class ARM64VirtualUnresolvedSnippet; }
 #endif
+
+
+namespace TR { class RtypeInstruction; }
+namespace TR { class ItypeInstruction; }
+namespace TR { class StypeInstruction; }
+namespace TR { class BtypeInstruction; }
+namespace TR { class UtypeInstruction; }
+namespace TR { class JtypeInstruction; }
+namespace TR { class LoadInstruction;  }
+namespace TR { class StoreInstruction; }
 
 TR_Debug *createDebugObject(TR::Compilation *);
 
@@ -1156,6 +1166,15 @@ public:
 
    void print(TR::FILE *, TR::LabelInstruction *);
    void print(TR::FILE *, TR::AdminInstruction *);
+
+   void print(TR::FILE *, TR::RtypeInstruction *);
+   void print(TR::FILE *, TR::ItypeInstruction *);
+   void print(TR::FILE *, TR::StypeInstruction *);
+   void print(TR::FILE *, TR::BtypeInstruction *);
+   void print(TR::FILE *, TR::UtypeInstruction *);
+   void print(TR::FILE *, TR::JtypeInstruction *);
+   void print(TR::FILE *, TR::LoadInstruction * );
+   void print(TR::FILE *, TR::StoreInstruction *);
 
    void print(TR::FILE *, TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
    void print(TR::FILE *, TR::RegisterDependency *);

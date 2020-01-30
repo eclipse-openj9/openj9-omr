@@ -3534,8 +3534,8 @@ TR::Register *addConstantToLong(TR::Node *node, TR::Register *srcReg,
    else if (((int32_t)value == value) && ((value & 0x8000) == 0))
       {
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, srcReg, value >> 16);
-      if (value & 0xffff)
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, trgReg, value);
+      if (value & 0x7fff)
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, trgReg, value & 0x7fff);
       }
    else
       {
@@ -3595,12 +3595,13 @@ TR::Register *addConstantToInteger(TR::Node * node, TR::Register *trgReg, TR::Re
       }
    else
       {
-      int32_t upperLit = localVal.getHighBits();
-      int32_t lowerLit = localVal.getLowBits();
-      if (localVal.getLowSign())
+      int32_t upperLit = localVal.getHighBitsSigned();
+      int32_t lowerLit = localVal.getLowBitsSigned();
+      if (lowerLit < 0)
          {
          upperLit++;
-         lowerLit += 0xffff0000;
+         if (upperLit == 0x8000)
+            upperLit = -upperLit;
          }
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, srcReg, upperLit);
       if (lowerLit != 0)

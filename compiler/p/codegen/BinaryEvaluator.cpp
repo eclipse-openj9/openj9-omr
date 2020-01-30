@@ -2056,7 +2056,7 @@ strengthReducingLongDivideOrRemainder32BitMode(TR::Node *node,      TR::CodeGene
       {
       TR::LabelSymbol *callLabel = generateLabelSymbol(cg);
 
-      if (secondChild->getOpCode().isLoadConst() && drConst<=(int64_t)TR::getMaxSigned<TR::Int32>() && drConst>=(int64_t)TR::getMinSigned<TR::Int32>() && drConst!=-1)
+      if (secondChild->getOpCode().isLoadConst() && drConst<=(int64_t)TR::getMaxSigned<TR::Int32>() && drConst>=(int64_t)TR::getMinSigned<TR::Int32>() && drConst!=-1 && drConst!=0)
          {
          // 32bit magic sequence is applicable if dividend is a signed 32bit value
 

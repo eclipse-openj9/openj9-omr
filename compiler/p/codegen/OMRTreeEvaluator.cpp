@@ -175,7 +175,7 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int32_t va
       }
    else
       {
-      ulit = localVal.getHighBits();
+      ulit = localVal.getHighBitsSigned();
       llit = localVal.getLowBits();
       cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, trgReg, ulit, cursor);
       if (llit != 0 || isPicSite)
@@ -250,12 +250,12 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t va
       if ((hhval == -1 && (hlval & 0x8000) != 0) ||
           (hhval == 0 && (hlval & 0x8000) == 0))
          {
-         cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, hlval, cursor);
+         cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, static_cast<int16_t>(hlval), cursor);
          }
       else
          {
          // lis trgReg, upper 16-bits
-         cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, trgReg, hhval , cursor);
+         cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, trgReg, static_cast<int16_t>(hhval) , cursor);
          // ori trgReg, trgReg, next 16-bits
          if (hlval != 0)
             cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, trgReg, trgReg, hlval, cursor);
@@ -4990,7 +4990,7 @@ static TR::Register *inlineIntegerHighestOneBit(TR::Node *node, TR::CodeGenerato
    TR::Register    *tempRegister = cg->allocateRegister();
 
    generateTrg1Src1Instruction(cg, TR::InstOpCode::cntlzw, node, tempRegister, srcRegister);
-   generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, targetRegister, 0x8000);
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, targetRegister, 0xffff8000u);
    generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, targetRegister, targetRegister, tempRegister);
 
    cg->stopUsingRegister(tempRegister);
@@ -5014,7 +5014,7 @@ static TR::Register *inlineLongHighestOneBit(TR::Node *node, TR::CodeGenerator *
       TR::Register    *tempRegister = cg->allocateRegister();
 
       generateTrg1Src1Instruction(cg, TR::InstOpCode::cntlzd, node, tempRegister, srcRegister);
-      generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, targetRegister, 0x8000);
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, targetRegister, 0xffff8000u);
       generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicr, node, targetRegister, targetRegister, 32, CONSTANT64(0x8000000000000000));
       generateTrg1Src2Instruction(cg, TR::InstOpCode::srd, node, targetRegister, targetRegister, tempRegister);
 
@@ -5036,13 +5036,13 @@ static TR::Register *inlineLongHighestOneBit(TR::Node *node, TR::CodeGenerator *
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, srcRegister->getHighOrder(), 0);
       generateTrg1Src1Instruction(cg, TR::InstOpCode::cntlzw, node, tempRegister, srcRegister->getHighOrder());
       generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, jumpLabel, condReg);
-      generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, targetRegister->getHighOrder(), 0x8000);
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, targetRegister->getHighOrder(), 0xffff8000u);
       generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, targetRegister->getLowOrder(), 0);
       generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, targetRegister->getHighOrder(), targetRegister->getHighOrder(), tempRegister);
       generateLabelInstruction(cg, TR::InstOpCode::b, node, doneLabel);
       generateLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabel);
       generateTrg1Src1Instruction(cg, TR::InstOpCode::cntlzw, node, tempRegister, srcRegister->getLowOrder());
-      generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, targetRegister->getLowOrder(), 0x8000);
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, targetRegister->getLowOrder(), 0xffff8000u);
       generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, targetRegister->getHighOrder(), 0);
       generateTrg1Src2Instruction(cg, TR::InstOpCode::srw, node, targetRegister->getLowOrder(), targetRegister->getLowOrder(), tempRegister);
       generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel);

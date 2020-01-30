@@ -1117,8 +1117,6 @@ bool OMR::CodeGenerator::profiledPointersRequireRelocation() { return self()->co
 
 bool OMR::CodeGenerator::needGuardSitesEvenWhenGuardRemoved() { return self()->comp()->compileRelocatableCode(); }
 
-bool OMR::CodeGenerator::supportVMInternalNatives() { return !self()->comp()->compileRelocatableCode(); }
-
 bool OMR::CodeGenerator::supportsInternalPointers()
    {
    if (_disableInternalPointers)

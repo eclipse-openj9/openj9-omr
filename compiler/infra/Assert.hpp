@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -75,6 +75,9 @@
 
 namespace TR
    {
+   class Node;
+   class Instruction;
+
    void OMR_NORETURN trap();
 
    // Don't use these directly.
@@ -82,6 +85,40 @@ namespace TR
    // Use the TR_ASSERT* macros instead as they control the string
    // contents in production builds.
    void OMR_NORETURN fatal_assertion(const char *file, int line, const char *condition, const char *format, ...);
+
+   class AssertionContext
+      {
+      public:
+      virtual void printContext() const = 0;
+      };
+
+   class NullAssertionContext : public AssertionContext
+      {
+      public:
+      virtual void printContext() const {}
+      };
+
+   class NodeAssertionContext : public AssertionContext
+      {
+      TR::Node *_node;
+
+      public:
+      NodeAssertionContext(TR::Node *node) : _node(node) {}
+
+      virtual void printContext() const;
+      };
+
+   class InstructionAssertionContext : public AssertionContext
+      {
+      TR::Instruction *_instruction;
+
+      public:
+      InstructionAssertionContext(TR::Instruction *instruction) : _instruction(instruction) {}
+
+      virtual void printContext() const;
+      };
+
+   void OMR_NORETURN fatal_assertion_with_detail(const AssertionContext& ctx, const char *file, int line, const char *condition, const char *format, ...);
 
    // Non fatal assertions may in some circumstances return, so do not mark them as
    // no-return.
@@ -97,7 +134,6 @@ namespace TR
       virtual const char* what() const throw() { return "Assertion Failure"; }
       };
 
-
    }
 
 
@@ -106,6 +142,41 @@ namespace TR
 
 #define TR_ASSERT_FATAL(condition, format, ...) \
          do { (condition) ? (void)0 : TR::fatal_assertion(__FILE__, __LINE__, #condition, format, ##__VA_ARGS__); } while(0)
+
+#define TR_ASSERT_FATAL_WITH_DETAIL(ctx, condition, format, ...) \
+   do { \
+      if (!(condition)) \
+         TR::fatal_assertion_with_detail(ctx, __FILE__, __LINE__, #condition, format, ##__VA_ARGS__); \
+   } while (0)
+
+#define TR_ASSERT_FATAL_WITH_NODE(node, condition, format, ...) \
+   do { \
+      TR::Node *nodeVal = (node); \
+      TR_ASSERT_FATAL_WITH_DETAIL( \
+         TR::NodeAssertionContext(nodeVal), \
+         condition, \
+         "Node %p [%s]: " format, \
+         nodeVal, \
+         nodeVal ? nodeVal->getOpCode().getName() : "null", \
+         ##__VA_ARGS__ \
+      ); \
+   } while (0)
+
+#define TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, condition, format, ...) \
+   do { \
+      TR::Instruction *instrVal = (instr); \
+      TR::Node *instrNode = instrVal ? instrVal->getNode() : NULL; \
+      TR_ASSERT_FATAL_WITH_DETAIL( \
+         TR::InstructionAssertionContext(instrVal), \
+         condition, \
+         "Instruction %p [%s] (generated from node %p [%s]): " format, \
+         instrVal, \
+         instrVal ? instrVal->getOpCode().getMnemonicName() : "null", \
+         instrNode, \
+         instrNode ? instrNode->getOpCode().getName() : "null", \
+         ##__VA_ARGS__ \
+      ); \
+   } while (0)
 
 #define TR_UNIMPLEMENTED() \
          ::TR::fatal_assertion(__FILE__, __LINE__, NULL, "Unimplemented function: %s", __FUNCTION__)

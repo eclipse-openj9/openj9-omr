@@ -1095,6 +1095,7 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
 #endif
    output.append(format, node->printIsHeapificationStore());
    output.append(format, node->printIsHeapificationAlloc());
+   output.append(format, node->printIsIdentityless());
    output.append(format, node->printIsLiveMonitorInitStore());
    output.append(format, node->printIsMethodEnterExitGuard());
    output.append(format, node->printReturnIsDummy());

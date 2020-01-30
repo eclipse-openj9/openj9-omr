@@ -3616,11 +3616,7 @@ TR::Register *addConstantToLong(TR::Node * node, TR::Register *srcHighReg, TR::R
    TR::Register *highReg = cg->allocateRegister();
    TR::RegisterPair *trgReg = cg->allocateRegisterPair(lowReg, highReg);
 
-   if (lowValue >= 0 && lowValue <= UPPER_IMMED)
-      {
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, lowReg, srclowReg, lowValue);
-      }
-   else if (lowValue >= LOWER_IMMED && lowValue < 0)
+   if (lowValue >= LOWER_IMMED && lowValue <= UPPER_IMMED)
       {
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, lowReg, srclowReg, lowValue);
       }

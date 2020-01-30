@@ -211,14 +211,14 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
    setGPRSaveAreaEndOffset(160);
 
    // x'1c0' see ICST_PAR in tpf/icstk.h
-   setOffsetToFirstParm(448);
+   self()->setOffsetToFirstParm(448);
 #else
    if (cg->comp()->target().is64Bit())
       {
       setOffsetToRegSaveArea(16);
       setGPRSaveAreaBeginOffset(48);
       setGPRSaveAreaEndOffset(128);
-      setOffsetToFirstParm(160);
+      self()->setOffsetToFirstParm(160);
       setOffsetToLongDispSlot(8);
       }
    else
@@ -226,13 +226,13 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
       setOffsetToRegSaveArea(8);
       setGPRSaveAreaBeginOffset(24);
       setGPRSaveAreaEndOffset(64);
-      setOffsetToFirstParm(96);
+      self()->setOffsetToFirstParm(96);
       setOffsetToLongDispSlot(4);
       }
 #endif /* defined(OMRZTPF) */
 
    setOffsetToFirstLocal(0);
-   setOutgoingParmAreaBeginOffset(getOffsetToFirstParm());
+   setOutgoingParmAreaBeginOffset(self()->getOffsetToFirstParm());
    setOutgoingParmAreaEndOffset(0);
    setStackFrameSize(0);
    setNumberOfDependencyGPRegisters(32);
@@ -267,7 +267,7 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
    //
    // TODO: We should be using OMR::align here once mapStack is fixed so we don't pass negative offsets
    size_t localSize = ((-1 * static_cast<int32_t>(bodySymbol->getLocalMappingCursor())) + (8 - 1)) & ~(8 - 1);
-   setStackFrameSize(((getOffsetToFirstParm() + argSize + localSize) + (8 - 1)) & ~(8 - 1));
+   setStackFrameSize(((self()->getOffsetToFirstParm() + argSize + localSize) + (8 - 1)) & ~(8 - 1));
 
    int32_t stackFrameSize = getStackFrameSize();
 
@@ -275,7 +275,7 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    if (comp()->getOption(TR_TraceCG))
       {
-      traceMsg(comp(), "Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, getOffsetToFirstParm(), argSize, localSize);
+      traceMsg(comp(), "Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, self()->getOffsetToFirstParm(), argSize, localSize);
       }
 
    // Now that we know the stack frame size, map the stack backwards

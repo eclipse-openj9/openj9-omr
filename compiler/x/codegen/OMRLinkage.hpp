@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -128,7 +128,6 @@ struct X86LinkageProperties
    uint32_t                 _preservedRegisterMapForGC;
    TR::RealRegister::RegNum _framePointerRegister;
    TR::RealRegister::RegNum _methodMetaDataRegister;
-   int8_t                   _offsetToFirstParm;
    int8_t                   _offsetToFirstLocal;           // Points immediately after the local with highest address
 
    uint8_t                 _numScratchRegisters;
@@ -207,8 +206,6 @@ struct X86LinkageProperties
    TR::RealRegister::RegNum getDoubleReturnRegister()   const {return _returnRegisters[1];}
    TR::RealRegister::RegNum getFramePointerRegister()   const {return _framePointerRegister;}
    TR::RealRegister::RegNum getMethodMetaDataRegister() const {return _methodMetaDataRegister;}
-
-   int32_t getOffsetToFirstParm() const {return _offsetToFirstParm;}
 
    int32_t getOffsetToFirstLocal() const {return _offsetToFirstLocal;}
 

@@ -786,7 +786,7 @@ TR::X86SystemLinkage::mapIncomingParms(TR::ResolvedMethodSymbol *method)
    int32_t sizeOfOutGoingArgs = 0;
    uint16_t numIntArgs = 0, numFloatArgs = 0;
    ListIterator<TR::ParameterSymbol> parameterIterator(&method->getParameterList());
-   uint32_t bump = getProperties().getOffsetToFirstParm();
+   uint32_t bump = self()->getOffsetToFirstParm();
 
    for (TR::ParameterSymbol *parmCursor = parameterIterator.getFirst(); parmCursor; parmCursor = parameterIterator.getNext())
       {

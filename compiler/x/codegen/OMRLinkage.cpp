@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -85,7 +85,7 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    ListIterator<TR::AutomaticSymbol>  automaticIterator(&method->getAutomaticList());
    TR::AutomaticSymbol               *localCursor       = automaticIterator.getFirst();
    const TR::X86LinkageProperties&    linkage           = self()->getProperties();
-   int32_t                           offsetToFirstParm = linkage.getOffsetToFirstParm();
+   int32_t                           offsetToFirstParm = self()->getOffsetToFirstParm();
    uint32_t                          stackIndex        = linkage.getOffsetToFirstLocal();
    TR::GCStackAtlas                  *atlas             = self()->cg()->getStackAtlas();
    int32_t                           i;
@@ -344,7 +344,7 @@ void OMR::X86::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
    ListIterator<TR::AutomaticSymbol>  automaticIterator(&method->getAutomaticList());
    TR::AutomaticSymbol               *localCursor       = automaticIterator.getFirst();
    const TR::X86LinkageProperties&    linkage           = self()->getProperties();
-   int32_t                           offsetToFirstParm = linkage.getOffsetToFirstParm();
+   int32_t                           offsetToFirstParm = self()->getOffsetToFirstParm();
    uint32_t                          stackIndex        = linkage.getOffsetToFirstLocal();
    TR::GCStackAtlas                  *atlas             = self()->cg()->getStackAtlas();
 
@@ -459,7 +459,7 @@ void OMR::X86::Linkage::mapIncomingParms(TR::ResolvedMethodSymbol *method)
    {
    ListIterator<TR::ParameterSymbol> parameterIterator(&method->getParameterList());
    TR::ParameterSymbol              *parmCursor   = parameterIterator.getFirst();
-   int32_t                          offsetToFirstParm = self()->getProperties().getOffsetToFirstParm();
+   int32_t                          offsetToFirstParm = self()->getOffsetToFirstParm();
    if (self()->getProperties().passArgsRightToLeft())
       {
       int32_t currentOffset = offsetToFirstParm;

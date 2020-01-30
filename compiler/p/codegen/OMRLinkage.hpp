@@ -119,7 +119,6 @@ struct PPCLinkageProperties
    TR::RealRegister::RegNum _vtableIndexArgumentRegister; // for icallVMprJavaSendPatchupVirtual
    TR::RealRegister::RegNum _j9methodArgumentRegister;    // for icallVMprJavaSendStatic
    uint8_t _numberOfDependencyGPRegisters;
-   int8_t _offsetToFirstParm;
    int8_t _offsetToFirstLocal;
 
    uint32_t getNumIntArgRegs() const {return _numIntegerArgumentRegisters;}
@@ -348,8 +347,6 @@ struct PPCLinkageProperties
       {
       return _j9methodArgumentRegister;
       }
-
-   int32_t getOffsetToFirstParm() const {return _offsetToFirstParm;}
 
    int32_t getOffsetToFirstLocal() const {return _offsetToFirstLocal;}
 

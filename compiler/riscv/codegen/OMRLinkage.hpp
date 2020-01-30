@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -117,7 +117,6 @@ struct RVLinkageProperties
    TR::RealRegister::RegNum _stackPointerRegister;
    TR::RealRegister::RegNum _framePointerRegister;
    uint8_t _numberOfDependencyGPRegisters;
-   int8_t _offsetToFirstParm;
    int8_t _offsetToFirstLocal;
 
    uint32_t getNumIntArgRegs() const {return _numIntegerArgumentRegisters;}
@@ -254,8 +253,6 @@ struct RVLinkageProperties
       {
       return _framePointerRegister;
       }
-
-   int32_t getOffsetToFirstParm() const {return _offsetToFirstParm;}
 
    int32_t getOffsetToFirstLocal() const {return _offsetToFirstLocal;}
 

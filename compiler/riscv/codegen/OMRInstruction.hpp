@@ -94,6 +94,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
     * @return description string
     */
    virtual char *description() { return "RV"; }
+
    /**
     * @brief Gets instruction kind
     * @return instruction kind

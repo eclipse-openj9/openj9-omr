@@ -81,6 +81,12 @@ class RtypeInstruction : public TR::Instruction
       }
 
    /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsRTYPE; }
+
+   /**
     * @brief Gets target register
     * @return target register
     */
@@ -205,6 +211,12 @@ class ItypeInstruction : public TR::Instruction
       }
 
    /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsITYPE; }
+
+   /**
     * @brief Gets target register
     * @return target register
     */
@@ -314,6 +326,12 @@ class LoadInstruction : public TR::Instruction
       // This is how it's done in Aarch64. but could be wrong. Investigate.
       //mr->incRegisterTotalUseCounts(codeGen);
       }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsLOAD; }
 
    /**
     * @brief Gets target register
@@ -433,6 +451,12 @@ class StypeInstruction : public TR::Instruction
       }
 
    /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsSTYPE; }
+
+   /**
     * @brief Gets source register 1
     * @return source register
     */
@@ -538,6 +562,12 @@ class StoreInstruction : public TR::Instruction
       useRegister(sreg);
       mr->bookKeepingRegisterUses(this, codeGen);
       }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsSTORE; }
 
    /**
     * @brief Gets source register
@@ -647,6 +677,12 @@ class BtypeInstruction : public StypeInstruction
      {
      }
 
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsBTYPE; }
+
    uint32_t setSourceImmediate(uint32_t si)
       {
       TR_ASSERT(false, "Should not be used with B-type instructions, use setLabelSymbol()!");
@@ -734,6 +770,11 @@ class UtypeInstruction : public TR::Instruction
       useRegister(treg);
       }
 
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsUTYPE; }
 
    /**
     * @brief Gets target register
@@ -882,6 +923,12 @@ class JtypeInstruction : public UtypeInstruction
         _symbol(label)
       {
       }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsJTYPE; }
 
    /**
     * @brief Gets label symbol

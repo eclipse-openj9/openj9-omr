@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -18,6 +18,12 @@
 #
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
+
+if(OMR_OS_AIX)
+	# Ideally we could just set BUILD_RPATH but that is not available on cmake 3.4
+	set(CMAKE_INSTALL_RPATH ".")
+	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+endif()
 
 add_tracegen(omr_test.tdf)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

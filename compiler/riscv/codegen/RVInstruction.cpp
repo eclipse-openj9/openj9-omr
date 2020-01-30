@@ -260,12 +260,6 @@ uint8_t *TR::LoadInstruction::generateBinaryEncoding() {
 }
 
 
-int32_t TR::LoadInstruction::estimateBinaryLength(int32_t currentEstimate)
-   {
-   setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH);
-   return currentEstimate + self()->getEstimatedBinaryLength();
-   }
-
 // TR::StypeInstruction:: member functions
 
 bool TR::StypeInstruction::refsRegister(TR::Register *reg)
@@ -386,13 +380,6 @@ uint8_t *TR::StoreInstruction::generateBinaryEncoding() {
    setBinaryEncoding(instructionStart);
    return cursor;
 }
-
-int32_t TR::StoreInstruction::estimateBinaryLength(int32_t currentEstimate)
-   {
-   setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH);
-   return currentEstimate + self()->getEstimatedBinaryLength();
-   }
-
 
 // TR::BtypeInstruction:: member functions
 

@@ -10502,7 +10502,8 @@
    /* .opcode      = */ 0xF0000318,
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_DoubleFP |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp,
@@ -10512,14 +10513,10 @@
    /* .mnemonic    = */ OMR::InstOpCode::xvcmpeqdp_r,
    /* .name        = */ "xvcmpeqdp.",
    /* .description =    "VSX Vector Compare Equal To Double-Precision", */
-   /* .opcode      = */ 0xF0000718,
-   /* .format      = */ XX3_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpeqdp].opcode | 0x400,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpeqdp].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpeqdp].minimumALS,
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpeqdp].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -10529,7 +10526,8 @@
    /* .opcode      = */ 0xF0000398,
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_DoubleFP |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp,
@@ -10539,14 +10537,10 @@
    /* .mnemonic    = */ OMR::InstOpCode::xvcmpgedp_r,
    /* .name        = */ "xvcmpgedp.",
    /* .description =    "VSX Vector Compare Greater Than Or Equal To Double-Precision", */
-   /* .opcode      = */ 0xF0000798,
-   /* .format      = */ XX3_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgedp].opcode | 0x400,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgedp].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgedp].minimumALS,
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgedp].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -10556,7 +10550,8 @@
    /* .opcode      = */ 0xF0000358,
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_DoubleFP |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp,
@@ -10566,14 +10561,10 @@
    /* .mnemonic    = */ OMR::InstOpCode::xvcmpgtdp_r,
    /* .name        = */ "xvcmpgtdp.",
    /* .description =    "VSX Vector Compare Greater Than Double-Precision", */
-   /* .opcode      = */ 0xF0000758,
-   /* .format      = */ XX3_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgtdp].opcode | 0x400,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgtdp].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgtdp].minimumALS,
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgtdp].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    /* { */
@@ -11474,7 +11465,8 @@
    /* .opcode      = */ 0xF0000218,
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_IsVSX |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp,
    },
@@ -11483,13 +11475,10 @@
    /* .mnemonic    = */ OMR::InstOpCode::xvcmpeqsp_r,
    /* .name        = */ "xvcmpeqsp.",
    /* .description =    "Vector Compare Equal To Single-Precision & record CR6", */
-   /* .opcode      = */ 0xF0000618,
-   /* .format      = */ XX3_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpeqsp].opcode | 0x400,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpeqsp].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpeqsp].minimumALS,
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpeqsp].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -11499,7 +11488,8 @@
    /* .opcode      = */ 0xF0000298,
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_IsVSX |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp,
    },
@@ -11508,13 +11498,10 @@
    /* .mnemonic    = */ OMR::InstOpCode::xvcmpgesp_r,
    /* .name        = */ "xvcmpgesp.",
    /* .description =    "Vector Compare Greater Than or Equal To Single-Precision & record CR6", */
-   /* .opcode      = */ 0xF0000698,
-   /* .format      = */ XX3_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgesp].opcode | 0x400,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgesp].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgesp].minimumALS,
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgesp].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {
@@ -11524,7 +11511,8 @@
    /* .opcode      = */ 0xF0000258,
    /* .format      = */ XX3_FORMAT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_IsVSX |
+   /* .properties  = */ PPCOpProp_HasRecordForm |
+                        PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |
                         PPCOpProp_CompareOp,
    },
@@ -11533,13 +11521,10 @@
    /* .mnemonic    = */ OMR::InstOpCode::xvcmpgtsp_r,
    /* .name        = */ "xvcmpgtsp.",
    /* .description =    "Vector Compare Greater Than Single-Precision & record CR6", */
-   /* .opcode      = */ 0xF0000658,
-   /* .format      = */ XX3_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree |
-                        PPCOpProp_CompareOp |
-                        PPCOpProp_IsRecordForm,
+   /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgtsp].opcode | 0x400,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgtsp].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgtsp].minimumALS,
+   /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::xvcmpgtsp].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
    {

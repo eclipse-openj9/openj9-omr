@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -87,9 +87,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
          print(pOutFile, (TR::AdminInstruction *)instr);
          break;
       default:
-         TR_ASSERT(false, "unexpected instruction kind");
-            // fall through
-      case OMR::Instruction::IsNotExtended:
          {
          printPrefix(pOutFile, instr);
          trfprintf(pOutFile, "%s", getOpCodeName(&instr->getOpCode()));

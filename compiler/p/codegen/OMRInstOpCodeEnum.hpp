@@ -769,35 +769,26 @@
 // vcmpeqfp_r,       // Vector Compare Equal To Floating-Point Rc=1
    vcmpequb,         // vector compare equal unsigned byte
    vcmpequb_r,       // vector compare equal unsigned byte with record
-   vcmpeubr = vcmpequb_r,
 // vcmpequd,         // Vector Compare Equal Unsigned Dword
 // vcmpequd_r,       // Vector Compare Equal Unsigned Dword Rc=1
    vcmpequh,         // vector compare equal unsigned halfword
    vcmpequh_r,       // vector compare equal unsigned halfword with record
-   vcmpeuhr = vcmpequh_r,
    vcmpequw,         // vector compare equal unsigned word
    vcmpequw_r,       // vector compare equal unsigned word with record
-   vcmpeuwr = vcmpequw_r,
    vcmpgtsb,         // vector compare greater than signed byte
    vcmpgtsb_r,       // vector compare greater than signed byte with record
-   vcmpgsbr = vcmpgtsb_r,
 // vcmpgtsd,         // Vector Compare Greater Than Signed Dword
 // vcmpgtsd_r,       // Vector Compare Greater Than Signed Dword Rc=1
    vcmpgtsh,         // vector compare greater than signed halfword
    vcmpgtsh_r,       // vector compare greater than signed halfword with record
-   vcmpgshr = vcmpgtsh_r,
    vcmpgtsw,         // vector compare greater than signed word
    vcmpgtsw_r,       // vector compare greater than signed word with record
-   vcmpgswr = vcmpgtsw_r,
    vcmpgtub,         // vector compare greater than unsigned byte
    vcmpgtub_r,       // vector compare greater than unsigned byte with record
-   vcmpgubr = vcmpgtub_r,
    vcmpgtuh,         // vector compare greater than unsigned halfword
    vcmpgtuh_r,       // vector compare greater than unsigned halfword with record
-   vcmpguhr = vcmpgtuh_r,
    vcmpgtuw,         // vector compare greater than unsigned word
    vcmpgtuw_r,       // vector compare greater than unsigned word with record
-   vcmpguwr = vcmpgtuw_r,
 // vcmpneb,          // vector compare not equal Byte
 // vcmpneb_r,        // vector compare not equal Byte Rc=1
 // vcmpneh,          // vector compare not equal Hword

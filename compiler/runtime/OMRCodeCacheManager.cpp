@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,7 +56,9 @@ TR::CodeCacheSymbolContainer * OMR::CodeCacheManager::_symbolContainer = NULL;
 OMR::CodeCacheManager::CodeCacheManager(TR::RawAllocator rawAllocator) :
    _rawAllocator(rawAllocator),
    _initialized(false),
-   _codeCacheFull(false)
+   _codeCacheFull(false),
+   _currTotalUsedInBytes(0),
+   _maxUsedInBytes(0)
    {
    }
 
@@ -78,6 +80,10 @@ OMR::CodeCacheManager::RepositoryMonitorCriticalSection::RepositoryMonitorCritic
    {
    }
 
+OMR::CodeCacheManager::UsageMonitorCriticalSection::UsageMonitorCriticalSection(TR::CodeCacheManager *mgr)
+   : CriticalSection(mgr->_usageMonitor)
+   {
+   }
 
 TR::CodeCache *
 OMR::CodeCacheManager::initialize(
@@ -139,6 +145,9 @@ OMR::CodeCacheManager::initialize(
    _codeCacheList._head = NULL;
    _codeCacheList._mutex = TR::Monitor::create("JIT-CodeCacheListMutex");
    if (_codeCacheList._mutex == NULL)
+      return NULL;
+
+   if (!(_usageMonitor = TR::Monitor::create("CodeCacheUsageMonitor")))
       return NULL;
 
 #if defined(TR_HOST_POWER)
@@ -955,6 +964,31 @@ OMR::CodeCacheManager::chooseCacheStartAddress(size_t repositorySize)
    {
    // default: NULL means don't try to pick a starting address
    return NULL;
+   }
+
+
+void
+OMR::CodeCacheManager::increaseCurrTotalUsedInBytes(size_t size)
+   {
+   self()->decreaseFreeSpaceInCodeCacheRepository(size);
+
+      {
+      UsageMonitorCriticalSection updateCodeCacheUsage(self());
+      _currTotalUsedInBytes += size;
+      _maxUsedInBytes = std::max(_maxUsedInBytes, _currTotalUsedInBytes);
+      }
+   }
+
+
+void
+OMR::CodeCacheManager::decreaseCurrTotalUsedInBytes(size_t size)
+   {
+   self()->increaseFreeSpaceInCodeCacheRepository(size);
+
+      {
+      UsageMonitorCriticalSection updateCodeCacheUsage(self());
+      _currTotalUsedInBytes = (size < _currTotalUsedInBytes) ? (_currTotalUsedInBytes - size) : 0;
+      }
    }
 
 

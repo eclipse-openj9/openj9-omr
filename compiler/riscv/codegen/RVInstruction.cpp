@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -248,8 +248,6 @@ uint8_t *TR::LoadInstruction::generateBinaryEncoding() {
    uint8_t        *cursor           = instructionStart;
    uint32_t *iPtr = (uint32_t*)instructionStart;
 
-   TR_ASSERT(getMemoryIndex() == nullptr, "Unsupported addressing mode");
-
    *iPtr = TR_RISCV_ITYPE ((uint32_t)(getOpCode().getOpCodeBinaryEncoding()),
                          toRealRegister(getTargetRegister())->binaryRegCode(),
                          toRealRegister(getMemoryBase())->binaryRegCode(),
@@ -377,8 +375,6 @@ uint8_t *TR::StoreInstruction::generateBinaryEncoding() {
    uint8_t        *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t        *cursor           = instructionStart;
    uint32_t *iPtr = (uint32_t*)instructionStart;
-
-   TR_ASSERT(getMemoryIndex() == nullptr, "Unsupported addressing mode");
 
    *iPtr = TR_RISCV_STYPE ((uint32_t)(getOpCode().getOpCodeBinaryEncoding()),
                          toRealRegister(getMemoryBase())->binaryRegCode(),

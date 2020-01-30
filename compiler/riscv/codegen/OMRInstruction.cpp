@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -79,14 +79,6 @@ void OMR::RV::Instruction::RVNeedsGCMap(TR::CodeGenerator *cg, uint32_t mask)
    if (cg->comp()->useRegisterMaps())
       self()->setNeedsGCMap(mask);
    }
-
-
-TR::Register *
-OMR::RV::Instruction::getMemoryDataRegister()
-   {
-   return NULL;
-   }
-
 
 bool
 OMR::RV::Instruction::refsRegister(TR::Register * reg)

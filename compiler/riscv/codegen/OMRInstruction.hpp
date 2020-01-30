@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -131,22 +131,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual bool isLabel() { return _opcode.getMnemonic() == TR::InstOpCode::label; }
 
    /**
-    * @brief Gets the base register of memory access
-    * @return base register
-    */
-   virtual TR::Register *getMemoryBase() {return NULL;}
-   /**
-    * @brief Gets the index register of memory access
-    * @return index register
-    */
-   virtual TR::Register *getMemoryIndex() {return NULL;}
-   /**
-    * @brief Gets the offset of memory access
-    * @return offset
-    */
-   virtual int32_t getOffset() {return 0;}
-
-   /**
     * @brief Gets the register dependency conditions
     * @return register dependency conditions
     */
@@ -182,12 +166,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
     * @param[in] mask : GCMap mask
     */
    void RVNeedsGCMap(TR::CodeGenerator *cg, uint32_t mask);
-
-   /**
-    * @brief Gets the memory data register
-    * @return memory data register
-    */
-   virtual TR::Register *getMemoryDataRegister();
 
    /**
     * @brief Assigns registers

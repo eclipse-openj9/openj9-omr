@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -178,12 +178,20 @@ void OMR::RV::MemoryReference::addToOffset(TR::Node *node, intptrj_t amount, TR:
 
    if (amount == 0)
       {
+      if (_baseRegister == NULL)
+         {
+         _baseRegister = cg->machine()->getRealRegister(TR::RealRegister::zero);
+         }
       return;
       }
 
    if (_baseRegister != NULL)
       {
       self()->consolidateRegisters(NULL, NULL, false, cg);
+      }
+   else
+      {
+      _baseRegister = cg->machine()->getRealRegister(TR::RealRegister::zero);
       }
 
    intptrj_t displacement = self()->getOffset() + amount;
@@ -381,8 +389,6 @@ void OMR::RV::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::Co
 void OMR::RV::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::Node *srcTree, bool srcModifiable, TR::CodeGenerator *cg)
    {
    TR::Register *tempTargetRegister;
-
-   TR_ASSERT(false, "This method needs revision");
 
    if (self()->getUnresolvedSnippet() != NULL)
       {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -390,12 +390,6 @@ class LoadInstruction : public TR::Instruction
     */
    virtual uint8_t *generateBinaryEncoding();
 
-   /**
-    * @brief Estimates binary length
-    * @param[in] currentEstimate : current estimated length
-    * @return estimated binary length
-    */
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 
@@ -619,12 +613,6 @@ class StoreInstruction : public TR::Instruction
     */
    virtual uint8_t *generateBinaryEncoding();
 
-   /**
-    * @brief Estimates binary length
-    * @param[in] currentEstimate : current estimated length
-    * @return estimated binary length
-    */
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 class BtypeInstruction : public StypeInstruction

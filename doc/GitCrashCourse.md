@@ -274,7 +274,7 @@ git branch new-branch
 *Figure 5: Creating a new branch*
 
 You will now have a new branch named `new-branch`, and since you created
-a new branch off of your current branch (`master`), you both the branches
+a new branch off of your current branch (`master`), both the branches
 will be pointing to the same commit.
 
 At this point, you simply created a new branch, but you are still on

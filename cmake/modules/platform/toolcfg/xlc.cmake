@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -217,7 +217,7 @@ else()
 			TARGET "${tgt}"
 			POST_BUILD
 			COMMAND "${CMAKE_COMMAND}" -E copy ${exe_file} ${dbg_file}
-			COMMAND "${CMAKE_STRIP}" -X32_64 -t ${dbg_file}
+			COMMAND "${CMAKE_STRIP}" -X32_64 -t ${exe_file}
 		)
 	endfunction()
 endif()

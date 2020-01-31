@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2019 IBM Corp. and others
+Copyright (c) 2016, 2020 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,6 +27,9 @@ Thanks for your interest in this project.
 We welcome and encourage all kinds of contribution to the project, not only code.
 This includes bug reports, user experience feedback, assistance in reproducing
 issues and more.
+
+If you are new to working with `git`, you may use our [Git Crash Course](doc/GitCrashCourse.md)
+to help you get started.
 
 ## Issues
 

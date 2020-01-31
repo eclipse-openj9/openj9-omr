@@ -22,7 +22,14 @@
 #ifndef TR_PPCOPSDEFINES_INCL
 #define TR_PPCOPSDEFINES_INCL
 
-#define FORMAT_UNKNOWN 0
+enum PPCInstructionFormat : uint8_t
+{
+
+// Placeholder format for instructions that should not appear in the instruction stream during the
+// binary encoding phase.
+FORMAT_UNKNOWN
+
+};
 
 #define PPCOpProp_None              0x00000000
 #define PPCOpProp_HasRecordForm     0x00000001

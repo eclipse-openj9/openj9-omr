@@ -366,7 +366,6 @@ bool         TR_ResolvedMethod::isUnresolvedString(int32_t, bool optimizeForAOT)
 void *       TR_ResolvedMethod::getConstantDynamicTypeFromCP(int32_t cpIndex)   { TR_UNIMPLEMENTED(); return 0; }
 bool         TR_ResolvedMethod::isConstantDynamic(int32_t cpIndex)            { TR_UNIMPLEMENTED(); return false; }
 bool         TR_ResolvedMethod::isUnresolvedConstantDynamic(int32_t cpIndex)  { TR_UNIMPLEMENTED(); return false; }
-void *       TR_ResolvedMethod::dynamicConstant(int32_t cpIndex)              { TR_UNIMPLEMENTED(); return 0; }
 void *       TR_ResolvedMethod::dynamicConstant(int32_t cpIndex, uintptrj_t *obj)              { TR_UNIMPLEMENTED(); return 0; }
 void *       TR_ResolvedMethod::methodTypeConstant(int32_t)                { TR_UNIMPLEMENTED(); return 0; }
 bool         TR_ResolvedMethod::isUnresolvedMethodType(int32_t)            { TR_UNIMPLEMENTED(); return false; }

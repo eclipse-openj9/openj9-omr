@@ -137,7 +137,6 @@ public:
    virtual bool isUnresolvedString(int32_t cpIndex, bool optimizeForAOT = false);
    virtual bool isConstantDynamic(int32_t cpIndex);
    virtual bool isUnresolvedConstantDynamic(int32_t cpIndex);
-   virtual void *dynamicConstant(int32_t cpIndex);
    virtual void *dynamicConstant(int32_t cpIndex, uintptrj_t *obj);
    virtual void *methodTypeConstant(int32_t cpIndex);
    virtual bool isUnresolvedMethodType(int32_t cpIndex);

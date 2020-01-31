@@ -384,13 +384,6 @@ bool TR::PPCSrc1Instruction::usesRegister(TR::Register *reg)
    return false;
    }
 
-// TR::PPCDepImmInstruction:: member functions
-
-TR::PPCDepImmInstruction *TR::PPCDepImmInstruction::getPPCDepImmInstruction()
-   {
-   return this;
-   }
-
 // TR::PPCTrg1Instruction:: member functions
 
 bool TR::PPCTrg1Instruction::refsRegister(TR::Register *reg)

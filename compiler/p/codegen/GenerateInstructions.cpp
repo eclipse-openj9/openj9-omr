@@ -584,14 +584,6 @@ TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, TR::InstOpCode:
    return new (cg->trHeapMemory()) TR::PPCAdminInstruction(op, n, fenceNode, cg);
    }
 
-TR::Instruction *generateDepImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
-   uint32_t imm, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
-   {
-   if (preced)
-      return new (cg->trHeapMemory()) TR::PPCDepImmInstruction(op, n, imm, cond, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCDepImmInstruction(op, n, imm, cond, cg);
-   }
-
 TR::Instruction *generateDepImmSymInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    uintptr_t imm, TR::RegisterDependencyConditions *cond, TR::SymbolReference *sr, TR::Snippet *s, TR::Instruction *preced)
    {

@@ -353,14 +353,6 @@ TR::Instruction *generateAdminInstruction(
                    TR::Node        *fenceNode=NULL,
                    TR::Instruction *preced = 0);
 
-TR::Instruction *generateDepImmInstruction(
-                   TR::CodeGenerator      *cg,
-                   TR::InstOpCode::Mnemonic                       op,
-                   TR::Node                            *n,
-                   uint32_t                            imm,
-                   TR::RegisterDependencyConditions *cond,
-                   TR::Instruction                     *preced = 0);
-
 TR::Instruction *generateDepImmSymInstruction(
                    TR::CodeGenerator      *cg,
                    TR::InstOpCode::Mnemonic                       op,

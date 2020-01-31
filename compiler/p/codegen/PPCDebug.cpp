@@ -124,9 +124,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * instr)
       case OMR::Instruction::IsDep:
          print(pOutFile, (TR::PPCDepInstruction *)instr);
          break;
-      case OMR::Instruction::IsDepImm:
-         print(pOutFile, (TR::PPCDepImmInstruction *)instr);
-         break;
       case OMR::Instruction::IsDepImmSym:
          print(pOutFile, (TR::PPCDepImmSymInstruction *)instr);
          break;
@@ -378,16 +375,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCSrc1Instruction * instr)
    if (!(instr->getOpCodeValue() == TR::InstOpCode::mtlr || instr->getOpCodeValue() == TR::InstOpCode::mtctr))
       trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT, (intptr_t)(int32_t)instr->getSourceImmediate());
 
-   trfflush(_comp->getOutFile());
-   }
-
-void
-TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmInstruction * instr)
-   {
-   printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT, getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
-   if (instr->getDependencyConditions())
-      print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }
 

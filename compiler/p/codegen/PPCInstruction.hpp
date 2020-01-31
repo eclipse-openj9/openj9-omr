@@ -707,41 +707,6 @@ class PPCAdminInstruction : public TR::Instruction
    virtual uint8_t *generateBinaryEncoding();
    };
 
-class PPCDepImmInstruction : public PPCDepInstruction
-   {
-   uint32_t _sourceImmediate;
-
-   public:
-
-   PPCDepImmInstruction(TR::InstOpCode::Mnemonic                      op,
-                            TR::Node                            *n,
-                            uint32_t                            imm,
-                            TR::RegisterDependencyConditions *cond, TR::CodeGenerator *codeGen)
-      : PPCDepInstruction(op, n, cond, codeGen), _sourceImmediate(imm)
-      {
-      }
-
-   PPCDepImmInstruction(
-                            TR::InstOpCode::Mnemonic                       op,
-                            TR::Node                            *n,
-                            uint32_t                            imm,
-                            TR::RegisterDependencyConditions *cond,
-                            TR::Instruction           *precedingInstruction, TR::CodeGenerator *codeGen)
-      : PPCDepInstruction(op, n, cond, precedingInstruction, codeGen),
-        _sourceImmediate(imm)
-      {
-      }
-
-   virtual Kind getKind() { return IsDepImm; }
-
-   uint32_t getSourceImmediate()            {return _sourceImmediate;}
-   uint32_t setSourceImmediate(uint32_t si) {return (_sourceImmediate = si);}
-
-   virtual PPCDepImmInstruction *getPPCDepImmInstruction();
-
-   virtual uint8_t *generateBinaryEncoding();
-   };
-
 class PPCDepImmSymInstruction : public PPCDepInstruction
    {
 

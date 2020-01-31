@@ -37,7 +37,6 @@
 #include "runtime/CodeCacheManager.hpp"
 
 namespace TR { class PPCConditionalBranchInstruction; }
-namespace TR { class PPCDepImmInstruction;            }
 namespace TR { class PPCImmInstruction;               }
 namespace TR { class Register; }
 
@@ -124,12 +123,6 @@ bool
 OMR::Power::Instruction::dependencyRefsRegister(TR::Register * reg)
    {
    return OMR::Power::Instruction::getDependencyConditions() ? OMR::Power::Instruction::getDependencyConditions()->refsRegister(reg) : false;
-   }
-
-TR::PPCDepImmInstruction *
-OMR::Power::Instruction::getPPCDepImmInstruction()
-   {
-   return NULL;
    }
 
 TR::PPCConditionalBranchInstruction *

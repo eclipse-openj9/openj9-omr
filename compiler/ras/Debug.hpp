@@ -178,7 +178,6 @@ namespace TR { class PPCDepConditionalBranchInstruction; }
 namespace TR { class PPCAdminInstruction;                }
 namespace TR { class PPCImmInstruction;                  }
 namespace TR { class PPCSrc1Instruction;                 }
-namespace TR { class PPCDepImmInstruction;               }
 namespace TR { class PPCDepImmSymInstruction;            }
 namespace TR { class PPCTrg1Instruction;                 }
 namespace TR { class PPCTrg1Src1Instruction;             }
@@ -892,7 +891,6 @@ public:
    void print(TR::FILE *, TR::PPCAdminInstruction *);
    void print(TR::FILE *, TR::PPCImmInstruction *);
    void print(TR::FILE *, TR::PPCSrc1Instruction *);
-   void print(TR::FILE *, TR::PPCDepImmInstruction *);
    void print(TR::FILE *, TR::PPCDepImmSymInstruction *);
    void print(TR::FILE *, TR::PPCTrg1Instruction *);
    void print(TR::FILE *, TR::PPCTrg1Src1Instruction *);

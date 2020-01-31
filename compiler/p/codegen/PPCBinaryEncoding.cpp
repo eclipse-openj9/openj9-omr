@@ -488,18 +488,6 @@ uint8_t *TR::PPCSrc1Instruction::generateBinaryEncoding()
    return cursor;
    }
 
-uint8_t *TR::PPCDepImmInstruction::generateBinaryEncoding()
-   {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   *(int32_t *)cursor = (int32_t)getSourceImmediate();
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
-   }
-
 uint8_t *TR::PPCTrg1Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();

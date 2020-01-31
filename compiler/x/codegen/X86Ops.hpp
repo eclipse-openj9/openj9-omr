@@ -169,6 +169,8 @@ inline TR_X86OpCodes SizeParameterizedOpCode(bool is64Bit =
 // Floating-point
 #define MOVSMemReg     SizeParameterizedOpCode<MOVSDMemReg     , MOVSSMemReg     >
 #define MOVSRegMem     SizeParameterizedOpCode<MOVSDRegMem     , MOVSSRegMem     >
+// FMA
+#define VFMADD231SRegRegReg  SizeParameterizedOpCode<VFMADD231SDRegRegReg, VFMADD231SSRegRegReg>
 
 // Size and carry-parameterized opcodes
 //

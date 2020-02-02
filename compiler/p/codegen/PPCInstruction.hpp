@@ -571,13 +571,6 @@ class PPCConditionalBranchInstruction : public PPCLabelInstruction
    bool isExceptBranchOp() { return _exceptBranch; }
    bool setExceptBranchOp() { return _exceptBranch = true; }
 
-
-   void insertConditionRegister(uint32_t *instruction)
-      {
-      TR::RealRegister *condRegister = toRealRegister(_conditionRegister);
-      condRegister->setRegisterFieldBI(instruction);
-      }
-
    virtual PPCConditionalBranchInstruction *getPPCConditionalBranchInstruction();
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
@@ -590,8 +583,7 @@ class PPCConditionalBranchInstruction : public PPCLabelInstruction
 
    virtual bool usesRegister(TR::Register *reg);
 
-   virtual uint8_t *generateBinaryEncoding();
-
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 

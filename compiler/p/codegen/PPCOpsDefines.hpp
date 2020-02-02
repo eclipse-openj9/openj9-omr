@@ -41,13 +41,35 @@ FORMAT_DIRECT,
 // OMRInstOpCodeProperties.hpp, but they are omitted as they are generally not important to the
 // format of an opcode.
 
+// Note also that the formats of instructions with condition register fields here may not exactly
+// match what appears in the Power ISA, as the bottom two bits generally indicate which field in a
+// CCR should be used. These bits are often part of the instruction itself, since we generally use
+// the extended mnemonics.
+
 // Format for I-Form instructions (see Power ISA):
 //
 // +------+-------------------------------------------------+-----+
 // |      | LI                                              |     |
 // | 0    | 6                                               | 30  |
 // +------+-------------------------------------------------+-----+
-FORMAT_I_FORM
+FORMAT_I_FORM,
+
+// Format for B-Form instructions (see Power ISA):
+//
+// +------+-----+-----+-----+-------------------------------+-----+
+// |      | BO  | BI  |     | BD                            |     |
+// | 0    | 6   | 11  | 14  | 16                            | 30  |
+// +------+-----+-----+-----+-------------------------------+-----+
+FORMAT_B_FORM,
+
+// Format for XL-Form conditional branch instructions, with the BI field controlled by the condition
+// register and the BO field controlled by the branch hint:
+//
+// +------+-----+-----+-------------------------------------------+
+// |      | BO  | BI  |                                           |
+// | 0    | 6   | 11  | 14                                        |
+// +------+-----+-----+-------------------------------------------+
+FORMAT_XL_FORM_BRANCH
 
 };
 

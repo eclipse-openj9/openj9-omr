@@ -508,7 +508,7 @@
    /* .name        = */ "bdnz",
    /* .description =    "Branch if CTR!=0 after decrementing it", */
    /* .opcode      = */ 0x42000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp |
                         PPCOpProp_UsesCtr |
@@ -520,7 +520,7 @@
    /* .name        = */ "bdz",
    /* .description =    "Branch if CTR==0 after decrementing it", */
    /* .opcode      = */ 0x42400000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp |
                         PPCOpProp_UsesCtr |
@@ -532,7 +532,7 @@
    /* .name        = */ "beq",
    /* .description =    "Branch if equal", */
    /* .opcode      = */ 0x41820000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -542,7 +542,7 @@
    /* .name        = */ "beql",
    /* .description =    "Branch and link if equal", */
    /* .opcode      = */ 0x41820001,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -563,7 +563,7 @@
    /* .name        = */ "bge",
    /* .description =    "Branch if greater than or equal", */
    /* .opcode      = */ 0x40800000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -573,7 +573,7 @@
    /* .name        = */ "bgel",
    /* .description =    "Branch and link if greater than or equal", */
    /* .opcode      = */ 0x40800001,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -583,7 +583,7 @@
    /* .name        = */ "bgt",
    /* .description =    "Branch if greater than", */
    /* .opcode      = */ 0x41810000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -593,7 +593,7 @@
    /* .name        = */ "bgtl",
    /* .description =    "Branch and link if greater than", */
    /* .opcode      = */ 0x41810001,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -613,7 +613,7 @@
    /* .name        = */ "ble",
    /* .description =    "Branch if less than or equal", */
    /* .opcode      = */ 0x40810000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -623,7 +623,7 @@
    /* .name        = */ "blel",
    /* .description =    "Branch and link if less than or equal", */
    /* .opcode      = */ 0x40810001,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -633,7 +633,7 @@
    /* .name        = */ "blt",
    /* .description =    "Branch if less than", */
    /* .opcode      = */ 0x41800000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -643,7 +643,7 @@
    /* .name        = */ "bltl",
    /* .description =    "Branch and link if less than", */
    /* .opcode      = */ 0x41800001,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -673,7 +673,7 @@
    /* .name        = */ "bne",
    /* .description =    "Branch if not equal", */
    /* .opcode      = */ 0x40820000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -683,7 +683,7 @@
    /* .name        = */ "bnel",
    /* .description =    "Branch and link if not equal", */
    /* .opcode      = */ 0x40820001,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -693,7 +693,7 @@
    /* .name        = */ "bnu",
    /* .description =    "Branch if not unordered", */
    /* .opcode      = */ 0x40830000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -714,7 +714,7 @@
    /* .name        = */ "bun",
    /* .description =    "Branch if unordered", */
    /* .opcode      = */ 0x41830000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_B_FORM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -724,7 +724,7 @@
    /* .name        = */ "beqlr",
    /* .description =    "Branch to link register if equal", */
    /* .opcode      = */ 0x4D820020,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XL_FORM_BRANCH,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -734,7 +734,7 @@
    /* .name        = */ "bgelr",
    /* .description =    "Branch to link register if greater than or equal", */
    /* .opcode      = */ 0x4C800020,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XL_FORM_BRANCH,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -744,7 +744,7 @@
    /* .name        = */ "bgtlr",
    /* .description =    "Branch to link register if greater than", */
    /* .opcode      = */ 0x4D810020,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XL_FORM_BRANCH,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -754,7 +754,7 @@
    /* .name        = */ "blelr",
    /* .description =    "Branch to link register if less than or equal", */
    /* .opcode      = */ 0x4C810020,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XL_FORM_BRANCH,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -764,7 +764,7 @@
    /* .name        = */ "bltlr",
    /* .description =    "Branch to link register if less than", */
    /* .opcode      = */ 0x4D800020,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XL_FORM_BRANCH,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -774,7 +774,7 @@
    /* .name        = */ "bnelr",
    /* .description =    "Branch to link register if not equal", */
    /* .opcode      = */ 0x4C820020,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XL_FORM_BRANCH,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },

@@ -77,6 +77,13 @@ static void fillFieldRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldRA(cursor);
    }
 
+static void fillFieldBI(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BI field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_CCR, "Attempt to fill BI field with %s, which is not a CCR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldBI(cursor);
+   }
+
 uint8_t *
 OMR::Power::Instruction::generateBinaryEncoding()
    {
@@ -224,6 +231,7 @@ int32_t TR::PPCLabelInstruction::estimateBinaryLength(int32_t currentEstimate)
    return self()->TR::Instruction::estimateBinaryLength(currentEstimate);
    }
 
+// TODO This should probably be refactored and moved onto OMR::Power::InstOpCode
 static bool reversedConditionalBranchOpCode(TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic *rop)
    {
    switch (op)
@@ -283,10 +291,9 @@ static bool reversedConditionalBranchOpCode(TR::InstOpCode::Mnemonic op, TR::Ins
       }
    }
 
-
 void TR::PPCConditionalBranchInstruction::expandIntoFarBranch()
    {
-   TR_ASSERT_FATAL(getLabelSymbol(), "Attempt to expand conditional branch %p without a label", self());
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), getLabelSymbol(), "Cannot expand conditional branch without a label");
 
    if (comp()->getOption(TR_TraceCG))
       traceMsg(comp(), "Expanding conditional branch instruction %p into a far branch\n", self());
@@ -311,41 +318,44 @@ void TR::PPCConditionalBranchInstruction::expandIntoFarBranch()
    _farRelocation = true;
    }
 
-uint8_t *TR::PPCConditionalBranchInstruction::generateBinaryEncoding()
+void TR::PPCConditionalBranchInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t        *instructionStart = cg()->getBinaryBufferCursor();
-   TR::LabelSymbol *label            = getLabelSymbol();
-   uint8_t        *cursor           = instructionStart;
-   TR::Compilation *comp = cg()->comp();
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   // bclr doesn't have a label
-   insertConditionRegister((uint32_t *)cursor);
-   if (label)
+   switch (getOpCode().getFormat())
       {
-      if (label->getCodeLocation() != NULL)
-         *(int32_t *)cursor |= ((label->getCodeLocation()-cursor) & 0xffff);
-      else
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, label));
+      case FORMAT_B_FORM:
+         {
+         TR::LabelSymbol *label = getLabelSymbol();
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), label, "B-form conditional branch has no label");
+
+         if (label->getCodeLocation())
+            cg()->apply16BitLabelRelativeRelocation(reinterpret_cast<int32_t*>(cursor), label);
+         else
+            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(reinterpret_cast<uint8_t*>(cursor), label));
+         break;
+         }
+
+      case FORMAT_XL_FORM_BRANCH:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !getLabelSymbol(), "XL-form conditional branch has a label");
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCConditionalBranchInstruction", getOpCode().getFormat());
       }
 
-   // set up prediction bits if there is any.
+   fillFieldBI(self(), cursor, toRealRegister(_conditionRegister));
    if (haveHint())
       {
       if (getOpCode().setsCTR())
-         *(int32_t *)instructionStart |= (getLikeliness() ? PPCOpProp_BranchLikelyMaskCtr : PPCOpProp_BranchUnlikelyMaskCtr);
+         *cursor |= (getLikeliness() ? PPCOpProp_BranchLikelyMaskCtr : PPCOpProp_BranchUnlikelyMaskCtr);
       else
-         *(int32_t *)instructionStart |= (getLikeliness() ? PPCOpProp_BranchLikelyMask : PPCOpProp_BranchUnlikelyMask) ;
+         *cursor |= (getLikeliness() ? PPCOpProp_BranchLikelyMask : PPCOpProp_BranchUnlikelyMask);
       }
-
-   cursor += 4;
-   setBinaryLength(cursor - instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   setBinaryEncoding(instructionStart);
-   return cursor;
    }
 
 int32_t TR::PPCConditionalBranchInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), getOpCode().getMaxBinaryLength() == PPC_INSTRUCTION_LENGTH, "Format %d cannot be binary encoded by PPCConditionalBranchInstruction", getOpCode().getFormat());
+
    // Conditional branches can be expanded into a conditional branch around an unconditional branch if the target label
    // is out of range for a simple bc instruction. This is done by expandFarConditionalBranches, which runs after binary
    // length estimation but before binary encoding and will call PPCConditionalBranchInstruction::expandIntoFarBranch to
@@ -353,6 +363,7 @@ int32_t TR::PPCConditionalBranchInstruction::estimateBinaryLength(int32_t curren
    // could be expanded to ensure that the binary length estimates are correct.
    setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 2);
    setEstimatedBinaryLocation(currentEstimate);
+
    return currentEstimate + getEstimatedBinaryLength();
    }
 

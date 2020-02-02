@@ -445,22 +445,19 @@ TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
    }
 
-
-uint8_t *TR::PPCImmInstruction::generateBinaryEncoding()
+void TR::PPCImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   TR::Compilation *comp = cg()->comp();
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   *(int32_t *)cursor = (int32_t)getSourceImmediate();
+   addMetaDataForCodeAddress(reinterpret_cast<uint8_t*>(cursor));
 
-   addMetaDataForCodeAddress(cursor);
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_DD:
+         *cursor = getSourceImmediate();
+         break;
 
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCImmInstruction", getOpCode().getFormat());
+      }
    }
 
 uint8_t *TR::PPCImm2Instruction::generateBinaryEncoding()

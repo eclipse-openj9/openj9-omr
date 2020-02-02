@@ -36,6 +36,9 @@ FORMAT_NONE,
 // without filling in any fields.
 FORMAT_DIRECT,
 
+// Format for the dd instruction, which is simply a single word placed into the instruction stream.
+FORMAT_DD,
+
 // IMPORTANT: The diagrams for instruction fields below only include fields which are filled in by
 // the binary encoder. Some fields are filled in by the instruction opcode itself, as defined in
 // OMRInstOpCodeProperties.hpp, but they are omitted as they are generally not important to the

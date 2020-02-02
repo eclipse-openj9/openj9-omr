@@ -160,7 +160,7 @@ public:
       return (_symbolReference = sr);
       }
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    void insertImmediateField(uint32_t *instruction)
       {

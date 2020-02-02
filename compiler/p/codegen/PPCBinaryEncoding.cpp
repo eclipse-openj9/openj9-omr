@@ -368,49 +368,23 @@ int32_t TR::PPCConditionalBranchInstruction::estimateBinaryLength(int32_t curren
    return currentEstimate + getEstimatedBinaryLength();
    }
 
-uint8_t *TR::PPCAdminInstruction::generateBinaryEncoding()
+void TR::PPCAdminInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t  *instructionStart = cg()->getBinaryBufferCursor();
-   int i;
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), getOpCode().getFormat() == FORMAT_NONE, "Format %d cannot be binary encoded by PPCAdminInstruction", getOpCode().getFormat());
 
-   if (_fenceNode != NULL)    // must be TR::InstOpCode::fence
+   if (getOpCodeValue() == TR::InstOpCode::fence)
       {
-      uint32_t rtype = _fenceNode->getRelocationType();
-      if (rtype == TR_AbsoluteAddress)
-         {
-         for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
-            {
-            uint8_t **target = (uint8_t **)_fenceNode->getRelocationDestination(i);
-            *target = instructionStart;
-            }
-         }
-      else if (rtype == TR_EntryRelative32Bit)
-	 {
-         for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
-	    {
-            *(uint32_t *)(_fenceNode->getRelocationDestination(i)) = cg()->getCodeLength();
-	    }
-	 }
-      else // entryrelative16bit
-         {
-         for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
-            {
-            *(uint16_t *)(_fenceNode->getRelocationDestination(i)) = (uint16_t)cg()->getCodeLength();
-            }
-         }
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), _fenceNode, "Fence instruction is missing a fence node");
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), _fenceNode->getRelocationType() == TR_EntryRelative32Bit, "Unhandled relocation type %u", _fenceNode->getRelocationType());
+
+      for (int i = 0; i < _fenceNode->getNumRelocations(); i++)
+         *static_cast<uint32_t*>(_fenceNode->getRelocationDestination(i)) = cg()->getCodeLength();
       }
-   setBinaryLength(0);
-   setBinaryEncoding(instructionStart);
-
-   return instructionStart;
+   else
+      {
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !_fenceNode, "Non-fence instruction has a fence node %p", _fenceNode);
+      }
    }
-
-int32_t TR::PPCAdminInstruction::estimateBinaryLength(int32_t currentEstimate)
-   {
-   setEstimatedBinaryLength(0);
-   return currentEstimate;
-   }
-
 
 void
 TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)

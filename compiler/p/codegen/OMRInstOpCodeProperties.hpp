@@ -5790,7 +5790,7 @@
    /* .name        = */ "fence",
    /* .description =    "Fence", */
    /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_NONE,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -5810,7 +5810,7 @@
    /* .name        = */ "ret",
    /* .description =    "Return", */
    /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_NONE,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_None,
    },
@@ -5841,7 +5841,7 @@
    /* .name        = */ "proc",
    /* .description =    "Entry to the method", */
    /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_NONE,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_None,
    },

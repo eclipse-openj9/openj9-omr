@@ -702,9 +702,7 @@ class PPCAdminInstruction : public TR::Instruction
 
    TR::Node * getFenceNode() { return _fenceNode; }
 
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
-
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
    };
 
 class PPCDepImmSymInstruction : public PPCDepInstruction

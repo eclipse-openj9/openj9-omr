@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -205,4 +205,17 @@ macro(omr_detect_system_information)
 	message(STATUS "OMR: The target data size is ${OMR_ENV_TARGET_DATASIZE}")
 
 	omr_find_semaphore_implementation()
+
+	# Check if we are a multi config generator
+	# CMake 3.10 adds GENERATOR_IS_MULTI_CONFIG property
+	# otherwise Visual Studio and XCode are the only multi config generators
+	if(CMAKE_VERSION VERSION_LESS 3.10)
+		get_property(OMR_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+	else()
+		if(CMAKE_GENERATOR MATCHES "^Visual Studio|^Xcode")
+			set(OMR_MULTI_CONFIG TRUE)
+		else()
+			set(OMR_MULTI_CONFIG FALSE)
+		endif()
+	endif()
 endmacro(omr_detect_system_information)

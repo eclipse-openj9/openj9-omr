@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2018, 2019 IBM Corp. and others
+# Copyright (c) 2018, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,16 +38,19 @@ set(DDR_INFO_DIR "${CMAKE_BINARY_DIR}/ddr_info")
 set(OMR_SEPARATE_DEBUG_INFO OFF CACHE BOOL "Maintain debug info in a separate file")
 
 function(make_ddr_set set_name)
-	# if DDR is not enabled, just skip
-	# Also skip if we are on windows since it is unsupported at the moment
-	if((OMR_HOST_OS STREQUAL "win") OR (NOT OMR_DDR))
-		return()
-	endif()
 	set(DDR_TARGET_NAME "${set_name}")
 	set(DDR_BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/${DDR_TARGET_NAME}")
 	set(DDR_MACRO_INPUTS_FILE "${DDR_BIN_DIR}/macros.list")
 	set(DDR_TOOLS_EXPORT "${omr_BINARY_DIR}/ddr/tools/DDRTools.cmake")
 	set(DDR_CONFIG_STAMP "${DDR_BIN_DIR}/config.stamp")
+
+	# if DDR is not enabled, just skip
+	# Also skip if we are on a multi config generator since it is unsupported at the moment
+	if(OMR_MULTI_CONFIG OR (NOT OMR_DDR))
+		# create a dummy target to avoid potential errors if ddr disabled
+		add_custom_target("${DDR_TARGET_NAME}")
+		return()
+	endif()
 
 	add_custom_command(
 		OUTPUT  "${DDR_CONFIG_STAMP}"
@@ -73,7 +76,7 @@ function(make_ddr_set set_name)
 endfunction(make_ddr_set)
 
 function(ddr_set_add_targets ddr_set)
-	if((OMR_HOST_OS STREQUAL "win") OR (NOT OMR_DDR))
+	if(OMR_MULTI_CONFIG OR (NOT OMR_DDR))
 		return()
 	endif()
 
@@ -93,7 +96,7 @@ function(ddr_set_add_targets ddr_set)
 endfunction(ddr_set_add_targets)
 
 function(target_enable_ddr tgt)
-	if((OMR_HOST_OS STREQUAL "win") OR (NOT OMR_DDR))
+	if(OMR_MULTI_CONFIG OR (NOT OMR_DDR))
 		return()
 	endif()
 

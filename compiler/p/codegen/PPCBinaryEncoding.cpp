@@ -193,49 +193,37 @@ uint8_t TR::PPCAlignmentNopInstruction::getBinaryLengthLowerBound()
    return 0;
    }
 
-uint8_t *TR::PPCLabelInstruction::generateBinaryEncoding()
+void TR::PPCLabelInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t        *instructionStart = cg()->getBinaryBufferCursor();
-   TR::LabelSymbol *label            = getLabelSymbol();
-   uint8_t        *cursor           = instructionStart;
+   TR::LabelSymbol *label = getLabelSymbol();
 
-   if (getOpCode().isBranchOp())
+   switch (getOpCode().getFormat())
       {
-          cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-          if (label->getCodeLocation() != NULL)
-             {
-             *(int32_t *)cursor |= ((label->getCodeLocation()-cursor) &
-                                    0x03fffffc);
-             }
-          else
-             {
-             cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
-             }
-          cursor += 4;
+      case FORMAT_NONE:
+         if (getOpCodeValue() == TR::InstOpCode::label)
+            label->setCodeLocation(reinterpret_cast<uint8_t*>(cursor));
+         break;
+
+      case FORMAT_I_FORM:
+         if (label->getCodeLocation())
+            cg()->apply24BitLabelRelativeRelocation(reinterpret_cast<int32_t*>(cursor), label);
+         else
+            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(reinterpret_cast<uint8_t*>(cursor), label));
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCLabelInstruction", getOpCode().getFormat());
       }
-   else // regular LABEL
-      {
-      label->setCodeLocation(instructionStart);
-      }
-   setBinaryLength(cursor - instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   setBinaryEncoding(instructionStart);
-   return cursor;
    }
 
 int32_t TR::PPCLabelInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   if (getOpCode().isBranchOp())
-      {
-      setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH);
-      }
-   else
-      {
-      setEstimatedBinaryLength(0);
+   if (getOpCodeValue() == TR::InstOpCode::label)
       getLabelSymbol()->setEstimatedCodeLocation(currentEstimate);
-      }
-   return currentEstimate + getEstimatedBinaryLength();
+
+   return self()->TR::Instruction::estimateBinaryLength(currentEstimate);
    }
+
 static bool reversedConditionalBranchOpCode(TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic *rop)
    {
    switch (op)

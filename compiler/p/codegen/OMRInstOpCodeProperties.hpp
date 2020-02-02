@@ -476,7 +476,7 @@
    /* .name        = */ "b",
    /* .description =    "Unconditional branch", */
    /* .opcode      = */ 0x48000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_I_FORM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -603,7 +603,7 @@
    /* .name        = */ "bl",
    /* .description =    "Branch and link", */
    /* .opcode      = */ 0x48000001,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_I_FORM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -12166,7 +12166,7 @@
    /* .name        = */ "label",
    /* .description =    "Destination of a jump", */
    /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_NONE,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_None,
    },

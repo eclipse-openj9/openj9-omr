@@ -34,7 +34,20 @@ FORMAT_NONE,
 
 // Format for instructions whose binary encoding is copied directly into the instruction stream
 // without filling in any fields.
-FORMAT_DIRECT
+FORMAT_DIRECT,
+
+// IMPORTANT: The diagrams for instruction fields below only include fields which are filled in by
+// the binary encoder. Some fields are filled in by the instruction opcode itself, as defined in
+// OMRInstOpCodeProperties.hpp, but they are omitted as they are generally not important to the
+// format of an opcode.
+
+// Format for I-Form instructions (see Power ISA):
+//
+// +------+-------------------------------------------------+-----+
+// |      | LI                                              |     |
+// | 0    | 6                                               | 30  |
+// +------+-------------------------------------------------+-----+
+FORMAT_I_FORM
 
 };
 

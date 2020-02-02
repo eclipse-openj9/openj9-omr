@@ -427,7 +427,7 @@ class PPCLabelInstruction : public TR::Instruction
 
    virtual TR::Snippet *getSnippetForGC() {return getLabelSymbol()->getSnippet();}
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);

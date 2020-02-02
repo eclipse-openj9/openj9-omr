@@ -3213,7 +3213,7 @@
    /* .name        = */ "mtfsfi",
    /* .description =    "Move to FPSCR field immediate", */
    /* .opcode      = */ 0xFC00010C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_MTFSFI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_HasRecordForm |

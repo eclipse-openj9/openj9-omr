@@ -905,14 +905,13 @@ INSTANTIATE_TEST_CASE_P(Branch, PPCRecordFormSanityTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::bun,   TR::InstOpCode::bad, BinaryInstruction())
 ));
 
-// TODO: Disabled due to known issue with encoding mtfsfi. instructions
-/*INSTANTIATE_TEST_CASE_P(SprMove, PPCImm2EncodingTest, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(SprMove, PPCImm2EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::mtfsfi, 0x0, 0x0, 0xfc01010cu),
     std::make_tuple(TR::InstOpCode::mtfsfi, 0xf, 0x0, 0xfc01f10cu),
     std::make_tuple(TR::InstOpCode::mtfsfi, 0x0, 0xf, 0xff80010cu),
     std::make_tuple(TR::InstOpCode::mtfsfi, 0x0, 0x7, 0xff81010cu),
     std::make_tuple(TR::InstOpCode::mtfsfi, 0x0, 0x8, 0xfc00010cu)
-));*/
+));
 
 INSTANTIATE_TEST_CASE_P(SprMove, PPCTrg1EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::mfcr,      TR::RealRegister::gr0,  0x7c000026u),

@@ -72,7 +72,16 @@ FORMAT_B_FORM,
 // |      | BO  | BI  |                                           |
 // | 0    | 6   | 11  | 14                                        |
 // +------+-----+-----+-------------------------------------------+
-FORMAT_XL_FORM_BRANCH
+FORMAT_XL_FORM_BRANCH,
+
+// Format for the mtfsfi X-form instruction, with the U field controlled by imm1 and the BF and W
+// fields controlled by imm2:
+//
+// +------+-----+-----+----+-----+--------------------------------+
+// |      | BF  |     | W  | U   |                                |
+// | 0    | 6   | 9   | 15 | 16  | 20                             |
+// +------+-----+-----+----+-----+--------------------------------+
+FORMAT_MTFSFI
 
 };
 

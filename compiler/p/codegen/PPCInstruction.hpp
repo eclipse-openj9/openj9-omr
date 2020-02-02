@@ -225,38 +225,7 @@ class PPCImm2Instruction : public PPCImmInstruction
    uint32_t getSourceImmediate2()               {return _sourceImmediate2;}
    uint32_t setSourceImmediate2(uint32_t si)    {return (_sourceImmediate2 = si);}
 
-   virtual uint8_t *generateBinaryEncoding();
-
-   void insertImmediateField2(uint32_t *instruction)
-      {
-      // populate 3-bit BF field at bit 6
-      TR_ASSERT(getOpCodeValue() == TR::InstOpCode::mtfsfi, "Only configured for mtsfi");
-
-      // encode BF and W fields
-      uint32_t bf = 0;
-      if (_sourceImmediate2 <= 7) //W = 1, BF = 3-bit immediate
-         {
-         *instruction |= (1 << 16);
-         *instruction |= (_sourceImmediate2 << 23);
-         }
-      else if (_sourceImmediate2 > 7 && _sourceImmediate2 <= 15) //W = 0, BF = immediate-8
-         {
-         // W is already 0 in the instruction encoding
-         *instruction |= ((_sourceImmediate2 - 8) << 23);
-         }
-      }
-
-   void updateImmediateField2(uint32_t imm)
-         {
-         _sourceImmediate2 = imm;
-         insertImmediateField2((uint32_t*)getBinaryEncoding());
-         }
-
-// The following safe virtual downcast method is used under debug only
-// for assertion checking
-#if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-   virtual PPCImm2Instruction *getPPCImm2Instruction();
-#endif
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
    };
 
 class PPCSrc1Instruction : public PPCImmInstruction

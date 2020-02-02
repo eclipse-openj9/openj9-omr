@@ -84,6 +84,19 @@ static void fillFieldBI(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldBI(cursor);
    }
 
+static void fillFieldU(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xfu) == val, "0x%x is out-of-range for U field", val);
+   *cursor |= val << 12;
+   }
+
+static void fillFieldBFW(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xfu) == val, "0x%x is out-of-range for BF/W field", val);
+   *cursor |= ((val ^ 0x8) & 0x8) << 13;
+   *cursor |= (val & 0x7) << 23;
+   }
+
 uint8_t *
 OMR::Power::Instruction::generateBinaryEncoding()
    {
@@ -460,18 +473,21 @@ void TR::PPCImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
       }
    }
 
-uint8_t *TR::PPCImm2Instruction::generateBinaryEncoding()
+void TR::PPCImm2Instruction::fillBinaryEncodingFields(uint32_t* cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertImmediateField(toPPCCursor(cursor));
-   insertImmediateField2(toPPCCursor(cursor));
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
+   uint32_t imm1 = getSourceImmediate();
+   uint32_t imm2 = getSourceImmediate2();
+
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_MTFSFI:
+         fillFieldU(self(), cursor, imm1);
+         fillFieldBFW(self(), cursor, imm2);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCImm2Instruction", getOpCode().getFormat());
+      }
    }
 
 uint8_t *TR::PPCSrc1Instruction::generateBinaryEncoding()

@@ -194,6 +194,10 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    bool      willBePatched() {return (_index & WillBePatched) != 0; }
    void      setWillBePatched(bool v = true) { v? _index |= WillBePatched : _index &= ~WillBePatched; }
 
+   protected:
+
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
+
 
    private:
     //  TR::InstOpCode   _opcode;

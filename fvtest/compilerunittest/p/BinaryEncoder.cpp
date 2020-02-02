@@ -119,7 +119,7 @@ public:
     BinaryInstruction getBlankEncoding(TR::InstOpCode opCode) {
         opCode.copyBinaryToBuffer(reinterpret_cast<uint8_t*>(&buf[0]));
 
-        return getEncodedInstruction(4);
+        return getEncodedInstruction(opCode.getBinaryLength());
     }
 
     BinaryInstruction findDifferingBits(TR::InstOpCode op1, TR::InstOpCode op2) {

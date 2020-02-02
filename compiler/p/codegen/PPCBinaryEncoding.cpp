@@ -56,44 +56,83 @@ namespace TR { class Register; }
 
 static bool reversedConditionalBranchOpCode(TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic *rop);
 
+static bool isValidInSignExtendedField(uint32_t value, uint32_t mask)
+   {
+   uint32_t signMask = ~(mask >> 1);
+
+   return (value & signMask) == 0 || (value & signMask) == signMask;
+   }
+
+static void fillFieldRS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RS field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RS field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRS(cursor);
+   }
+
+static void fillFieldRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RA field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RA field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRA(cursor);
+   }
+
 uint8_t *
 OMR::Power::Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = self()->cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   if (self()->getOpCodeValue() == TR::InstOpCode::assocreg)
-      {
-      }
-   else
-      {
-      cursor = self()->getOpCode().copyBinaryToBuffer(instructionStart);
-      if (self()->getOpCodeValue() == TR::InstOpCode::genop)
-         {
-         TR::RealRegister::RegNum nopreg = self()->cg()->comp()->target().cpu.id() > TR_PPCp6 ? TR::RealRegister::gr2 : TR::RealRegister::gr1;
-         TR::RealRegister *r = self()->cg()->machine()->getRealRegister(nopreg);
-         r->setRegisterFieldRS((uint32_t *) cursor);
-         r->setRegisterFieldRA((uint32_t *) cursor);
-         }
-       cursor += PPC_INSTRUCTION_LENGTH;
-      }
+   uint8_t *cursor = instructionStart;
+   TR::InstOpCode& opCode = self()->getOpCode();
+
+   cursor = opCode.copyBinaryToBuffer(cursor);
+   self()->fillBinaryEncodingFields(reinterpret_cast<uint32_t*>(cursor));
+
+   cursor += opCode.getBinaryLength();
+
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(
+      self(),
+      (cursor - instructionStart) <= getEstimatedBinaryLength(),
+      "Estimated binary length was %u bytes, but actual length was %u bytes",
+      getEstimatedBinaryLength(),
+      static_cast<uint32_t>(cursor - instructionStart)
+   );
+
    self()->setBinaryLength(cursor - instructionStart);
    self()->setBinaryEncoding(instructionStart);
+
    return cursor;
+   }
+
+void
+OMR::Power::Instruction::fillBinaryEncodingFields(uint32_t *cursor)
+   {
+   switch (self()->getOpCode().getFormat())
+      {
+      case FORMAT_NONE:
+         break;
+
+      case FORMAT_DIRECT:
+         // TODO: Split genop into two instructions depending on version of Power in use
+         if (self()->getOpCodeValue() == TR::InstOpCode::genop)
+            {
+            TR::RealRegister *r = self()->cg()->machine()->getRealRegister(TR::Compiler->target.cpu.id() > TR_PPCp6 ? TR::RealRegister::gr2 : TR::RealRegister::gr1);
+            fillFieldRA(self(), cursor, r);
+            fillFieldRS(self(), cursor, r);
+            }
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by Instruction", self()->getOpCode().getFormat());
+      }
    }
 
 int32_t
 OMR::Power::Instruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   if (self()->getOpCodeValue() == TR::InstOpCode::assocreg)
-      {
-      self()->setEstimatedBinaryLength(0);
-      return currentEstimate;
-      }
-   else
-      {
-      self()->setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH);
-      return currentEstimate + self()->getEstimatedBinaryLength();
-      }
+   int8_t maxLength = self()->getOpCode().getMaxBinaryLength();
+
+   self()->setEstimatedBinaryLength(maxLength);
+   return currentEstimate + maxLength;
    }
 
 uint8_t *TR::PPCAlignmentNopInstruction::generateBinaryEncoding()

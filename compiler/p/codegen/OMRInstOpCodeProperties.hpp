@@ -30,7 +30,7 @@
    /* .name        = */ "bad",
    /* .description =    "Illegal Opcode", */
    /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_None,
    },
@@ -486,7 +486,7 @@
    /* .name        = */ "bctr",
    /* .description =    "Branch to count register", */
    /* .opcode      = */ 0x4E800420,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp |
                         PPCOpProp_UsesCtr,
@@ -497,7 +497,7 @@
    /* .name        = */ "bctrl",
    /* .description =    "Branch to count register and link", */
    /* .opcode      = */ 0x4E800421,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp |
                         PPCOpProp_UsesCtr,
@@ -653,7 +653,7 @@
    /* .name        = */ "blr",
    /* .description =    "Branch to link register", */
    /* .opcode      = */ 0x4E800020,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -663,7 +663,7 @@
    /* .name        = */ "blrl",
    /* .description =    "Branch to link register and link", */
    /* .opcode      = */ 0x4E800021,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_BranchOp,
    },
@@ -2291,7 +2291,7 @@
    /* .name        = */ "isync",
    /* .description =    "Instruction synchronize", */
    /* .opcode      = */ 0x4C00012C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsSync,
    },
@@ -2784,7 +2784,7 @@
    /* .name        = */ "lwsync",
    /* .description =    "Lightweight Synchronize", */
    /* .opcode      = */ 0x7C2004AC,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_IsSync,
    },
@@ -4764,7 +4764,7 @@
    /* .name        = */ "sync",
    /* .description =    "Synchronize", */
    /* .opcode      = */ 0x7C0004AC,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsSync,
    },
@@ -4774,7 +4774,7 @@
    /* .name        = */ "tabort.",
    /* .description =    "Transactional Memory abort", */
    /* .opcode      = */ 0x7C00071D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5245,7 +5245,7 @@
    /* .name        = */ "tbegin.",
    /* .description =    "Begin transaction", */
    /* .opcode      = */ 0x7C00051D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsRecordForm,
    },
@@ -5255,7 +5255,7 @@
    /* .name        = */ "tbeginro.",
    /* .description =    "Begin roll-back only transaction", */
    /* .opcode      = */ 0x7C20051D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_IsRecordForm,
    },
@@ -5265,7 +5265,7 @@
    /* .name        = */ "tend.",
    /* .description =    "End transaction (supports nesting)", */
    /* .opcode      = */ 0x7C00055D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsRecordForm,
    },
@@ -5505,7 +5505,7 @@
    /* .name        = */ "trap",
    /* .description =    "Unconditional trap", */
    /* .opcode      = */ 0x7FE00008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5770,7 +5770,7 @@
    /* .name        = */ "nop",
    /* .description =    "NoOp (ori)", */
    /* .opcode      = */ 0x60000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -5780,7 +5780,7 @@
    /* .name        = */ "genop",
    /* .description =    "Group Ending NoOp (ori)", */
    /* .opcode      = */ 0x60000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -5861,7 +5861,7 @@
    /* .name        = */ "assocreg",
    /* .description =    "Associate real registers with Virtual registers.", */
    /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_NONE,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },

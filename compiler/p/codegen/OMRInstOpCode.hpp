@@ -167,11 +167,36 @@ class InstOpCode: public OMR::InstOpCode
    const uint32_t getOpCodeBinaryEncoding()
       {return getOpCodeBinaryEncoding(_mnemonic);}
 
-   const char* getMnemonicName() { return metadata[_mnemonic].name; }
+   const OpCodeMetaData& getMetaData() { return metadata[_mnemonic]; }
+   PPCInstructionFormat getFormat() { return getMetaData().format; }
+   const char* getMnemonicName() { return getMetaData().name; }
+
+   int8_t getBinaryLength()
+      {
+      switch (getFormat())
+         {
+         case FORMAT_NONE:
+            return 0;
+         default:
+            return 4;
+         }
+      }
+
+   int8_t getMaxBinaryLength()
+      {
+      return getBinaryLength();
+      }
 
    uint8_t *copyBinaryToBuffer(uint8_t *cursor)
       {
-      *reinterpret_cast<uint32_t*>(cursor) = metadata[_mnemonic].opcode;
+      switch (getFormat())
+         {
+         case FORMAT_NONE:
+            break;
+         default:
+            *reinterpret_cast<uint32_t*>(cursor) = metadata[_mnemonic].opcode;
+            break;
+         }
       return cursor;
       }
    };

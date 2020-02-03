@@ -2716,8 +2716,7 @@ INSTANTIATE_TEST_CASE_P(DFP, PPCTrg1Src1EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::dxex,    TR::RealRegister::fp0,  TR::RealRegister::fp31, 0xec00fac4u)
 ));
 
-// TODO: Disabled due to assert failures encoding dqua/drrnd instructions with 0 immediates
-/*INSTANTIATE_TEST_CASE_P(DFP, PPCTrg1Src2ImmEncodingTest, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(DFP, PPCTrg1Src2ImmEncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::dqua,  TR::RealRegister::fp31, TR::RealRegister::fp0,  TR::RealRegister::fp0,  0x0u, 0xefe00006u),
     std::make_tuple(TR::InstOpCode::dqua,  TR::RealRegister::fp0,  TR::RealRegister::fp31, TR::RealRegister::fp0,  0x0u, 0xec1f0006u),
     std::make_tuple(TR::InstOpCode::dqua,  TR::RealRegister::fp0,  TR::RealRegister::fp0,  TR::RealRegister::fp31, 0x0u, 0xec00f806u),
@@ -2730,7 +2729,7 @@ INSTANTIATE_TEST_CASE_P(DFP, PPCTrg1Src1EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::drrnd, TR::RealRegister::fp0,  TR::RealRegister::fp0,  TR::RealRegister::fp0,  0x3u, 0xec000646u),
     std::make_tuple(TR::InstOpCode::drrnd, TR::RealRegister::fp0,  TR::RealRegister::fp0,  TR::RealRegister::fp0,  0x2u, 0xec000446u),
     std::make_tuple(TR::InstOpCode::drrnd, TR::RealRegister::fp0,  TR::RealRegister::fp0,  TR::RealRegister::fp0,  0x1u, 0xec000246u)
-));*/
+));
 
 INSTANTIATE_TEST_CASE_P(DFP, PPCRecordFormSanityTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::dcffix,  TR::InstOpCode::dcffix_r,  0x00000001u),

@@ -474,7 +474,93 @@ FORMAT_RLDICR,
 // |      | RS       | RA       | SH    | MB      | ME       |    |
 // | 0    | 6        | 11       | 16    | 21      | 26       | 31 |
 // +------+----------+----------+-------+---------+----------+----+
-FORMAT_RLWINM
+FORMAT_RLWINM,
+
+// Format for instructions with a BF field encoding the target condition register, RA and RB fields
+// encoding the source registers, and an L field encoding the 1-bit immediate:
+//
+// +------+-----+----+----+----------+----------+-----------------+
+// |      | BF  |    | L  | RA       | RB       |                 |
+// | 0    | 6   | 9  | 10 | 11       | 16       | 21              |
+// +------+-----+----+----+----------+----------+-----------------+
+//
+// TODO This format really shouldn't exist. It's only used by the cmprb instruction, which should
+//      really be split into cmprb and cmprb_l instructions to avoid needing to encode the L field
+//      as an immediate.
+FORMAT_BF_RA_RB_L,
+
+// Format for instructions with a BT field encoding the target condition register bit and BA and BB
+// fields encoding the source condition register bits:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | BT       | BA       | BB       |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+//
+// TODO Currently, instructions of this type use PPCTrg1Src2ImmInstruction to encode which bits of
+//      each condition register should be modified. This is obviously suboptimal, as it does not
+//      actually encode the semantics of these instructions. At some point, a new class should be
+//      added specifically for CR logical instructions.
+FORMAT_BT_BA_BB,
+
+// Format for instructions with an FRT field encoding the target FP register, FRA and FRB encoding
+// the source FP registers, and an RMC field encoding the rounding mode specified by the 2-bit
+// unsigned immediate:
+//
+// +------+----------+----------+----------+-----+----------------+
+// |      | FRT      | FRA      | FRB      | RMC |                |
+// | 0    | 6        | 11       | 16       | 21  | 23             |
+// +------+----------+----------+----------+-----+----------------+
+FORMAT_FRT_FRA_FRB_RMC,
+
+// Format for rldcl-like instructions. The RA field encodes the target register and the RS and RB
+// fields encode the source registers. The immediate encodes the mask that should actually end up
+// being used by the instruction: it must have a contiguous group of 1 bits from some position MB(6)
+// to 63 and 0 bits everywhere else.
+//
+// +------+---------+---------+---------+---------+---------------+
+// |      | RS      | RA      | RB      | MB      |               |
+// | 0    | 6       | 11      | 16      | 21      | 27            |
+// +------+---------+---------+---------+---------+---------------+
+FORMAT_RLDCL,
+
+// Format for rlwnm-like instructions. The RA field encodes the target register and the RS and RB
+// fields encode the source registers. The immediate encodes the mask that should actually end up
+// being used by the instruction: it must have a contiguous group of 1 bits from some position
+// 32+MB(5) to some position 32+ME(5) and 0 bits everywhere else.
+//
+// +------+---------+---------+---------+---------+----------+----+
+// |      | RS      | RA      | RB      | MB      | ME       |    |
+// | 0    | 6       | 11      | 16      | 21      | 26       | 31 |
+// +------+---------+---------+---------+---------+----------+----+
+FORMAT_RLWNM,
+
+// Format for instructions with a VRT field encoding the target vector register, VRA and VRB fields
+// encoding the source vector registers, and an SHB field encoding an unsigned 4-bit immediate:
+//
+// +------+----------+----------+----------+----+-----+-----------+
+// |      | VRT      | VRA      | VRB      |    | SHB |           |
+// | 0    | 6        | 11       | 16       | 21 | 22  | 26        |
+// +------+----------+----------+----------+----+-----+-----------+
+FORMAT_VRT_VRA_VRB_SHB,
+
+// Format for instructions with an XT field encoding the target VSX register, XA and XB fields
+// encoding the source VSX registers, and a DM field encoding an unsigned 2-bit immediate:
+//
+// +-----+-------+-------+-------+----+-----+------+----+----+----+
+// |     | XT    | XA    | XB    |    | DM  |      | XA | XB | XT |
+// | 0   | 6     | 11    | 16    | 21 | 22  | 24   | 29 | 30 | 31 |
+// +-----+-------+-------+-------+----+-----+------+----+----+----+
+FORMAT_XT_XA_XB_DM,
+
+// Format for instructions with an XT field encoding the target VSX register, XA and XB fields
+// encoding the source VSX registers, and an SHW field encoding an unsigned 2-bit immediate:
+//
+// +-----+-------+-------+-------+----+-----+------+----+----+----+
+// |     | XT    | XA    | XB    |    | SHW |      | XA | XB | XT |
+// | 0   | 6     | 11    | 16    | 21 | 22  | 24   | 29 | 30 | 31 |
+// +-----+-------+-------+-------+----+-----+------+----+----+----+
+FORMAT_XT_XA_XB_SHW
 
 };
 

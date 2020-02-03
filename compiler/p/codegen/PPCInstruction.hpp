@@ -1337,7 +1337,7 @@ class PPCTrg1Src2ImmInstruction : public PPCTrg1Src2Instruction
    int64_t getLongMask()            {return _mask;}
    int64_t setLongMask(uint64_t mi) {return _mask = mi;}
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
    };
 
 class PPCTrg1Src3Instruction : public PPCTrg1Src2Instruction

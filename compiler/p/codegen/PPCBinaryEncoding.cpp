@@ -210,6 +210,13 @@ static void fillFieldBFA(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    *cursor |= val << 18;
    }
 
+static void fillFieldBFB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BFB field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_CCR, "Attempt to fill BFB field with %s, which is not a CCR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRB(cursor);
+   }
+
 static void fillFieldU(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xfu) == val, "0x%x is out-of-range for U field", val);
@@ -312,6 +319,30 @@ static void fillFieldME5(TR::Instruction *instr, uint32_t *cursor, int32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for ME(5) field", val);
    *cursor |= val << 1;
+   }
+
+static void fillFieldRMC(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3) == val, "0x%llx is out-of-range for RMC field", val);
+   *cursor |= static_cast<uint32_t>(val << 9);
+   }
+
+static void fillFieldSHB(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xf) == val, "0x%llx is out-of-range for SHB field", val);
+   *cursor |= static_cast<uint32_t>(val << 6);
+   }
+
+static void fillFieldDM(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3) == val, "0x%llx is out-of-range for DM field", val);
+   *cursor |= static_cast<uint32_t>(val << 8);
+   }
+
+static void fillFieldSHW(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3) == val, "0x%llx is out-of-range for SHW field", val);
+   *cursor |= static_cast<uint32_t>(val << 8);
    }
 
 uint8_t *
@@ -974,118 +1005,6 @@ void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
       }
    }
 
-static void insertMaskField(uint32_t *instruction, TR::InstOpCode::Mnemonic op, int64_t lmask)
-   {
-   int32_t encoding;
-   // A mask is is a string of 1 bits surrounded by a string of 0 bits.
-   // For word instructions it is specified through its start and stop bit
-   // numbers.  Note - the mask is considered circular so the start bit
-   // number may be greater than the stop bit number.
-   // Examples:     input     start   stop
-   //              00FFFF00      8     23
-   //              00000001     31     31
-   //              80000001     31      0
-   //              FFFFFFFF      0     31  (somewhat arbitrary)
-   //              00000000      ?      ?  (illegal)
-   //
-   // For doubleword instructions only one of the start bit or stop bit is
-   // specified and the other is implicit in the instruction.  The bit
-   // number is strangely encoded in that the low order bit 5 comes first
-   // and the high order bits after.  The field is in bit positions 21-26.
-
-   // For these instructions the immediate is not a mask but a 1-bit immediate operand
-   if (op == TR::InstOpCode::cmprb)
-      {
-      // populate 1-bit L field
-      encoding = (((uint32_t)lmask) & 0x1) << 21;
-      *instruction |= encoding;
-      return;
-      }
-
-   // For these instructions the immediate is not a mask but a 2-bit immediate operand
-   if (op == TR::InstOpCode::xxpermdi ||
-       op == TR::InstOpCode::xxsldwi)
-      {
-      encoding = (((uint32_t)lmask) & 0x3) << 8;
-      *instruction |= encoding;
-      return;
-      }
-
-   if (op == TR::InstOpCode::addex ||
-       op == TR::InstOpCode::addex_r)
-      {
-      encoding = (((uint32_t)lmask) & 0x3) << 9;
-      *instruction |= encoding;
-      return;
-      }
-
-   // For these instructions the immediate is not a mask but a 4-bit immediate operand
-   if (op == TR::InstOpCode::vsldoi)
-      {
-      encoding = (((uint32_t)lmask) & 0xf)<< 6;
-      *instruction |= encoding;
-      return;
-      }
-
-   TR::InstOpCode       opCode(op);
-
-   if (opCode.isCRLogical())
-      {
-      encoding = (((uint32_t) lmask) & 0xffffffff);
-      *instruction |= encoding;
-      return;
-      }
-
-   TR_ASSERT(lmask, "A mask of 0 cannot be encoded");
-
-   if (opCode.isDoubleWord())
-      {
-      int bitnum;
-
-      if (opCode.useMaskEnd())
-	 {
-         TR_ASSERT(contiguousBits(lmask) &&
-		((lmask & CONSTANT64(0x8000000000000000)) != 0) &&
-		((lmask == -1) || ((lmask & 0x1) == 0)),
-		"Bad doubleword mask for ME encoding");
-         bitnum = leadingOnes(lmask) - 1;
-	 }
-      else
-	 {
-         bitnum = leadingZeroes(lmask);
-	 // assert on cases like 0xffffff00000000ff
-         TR_ASSERT((bitnum != 0) || (lmask == -1) || ((lmask & 0x1) == 0) ||
-                             (op!=TR::InstOpCode::rldic   &&
-                              op!=TR::InstOpCode::rldimi  &&
-                              op!=TR::InstOpCode::rldic_r &&
-                              op!=TR::InstOpCode::rldimi_r),
-                "Cannot handle wrap-around, check mask for correctness");
-	 }
-      encoding = ((bitnum&0x1f)<<6) | ((bitnum&0x20));
-
-      }
-   else // single word
-      {
-      // special case the 3-bit rounding mode fields
-      if (op == TR::InstOpCode::drrnd || op == TR::InstOpCode::dqua)
-         {
-         encoding = (lmask << 9) & 0x600;
-         }
-      else
-         {
-         int32_t mask = lmask&0xffffffff;
-         int32_t maskBegin;
-         int32_t maskEnd;
-
-         maskBegin = leadingZeroes(~mask & (2*mask));
-         maskBegin = (maskBegin + (maskBegin != 32)) & 0x1f;
-         maskEnd  = leadingZeroes(mask & ~(2*mask));
-         encoding = 32*maskBegin + maskEnd << 1; // shift encrypted mask into position
-         }
-      }
-   *instruction |= encoding;
-   }
-
 static std::pair<int32_t, int32_t> getMaskEnds64(TR::Instruction *instr, uint64_t mask)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask != 0, "Cannot encode a mask of 0");
@@ -1260,20 +1179,94 @@ void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
       }
    }
 
-uint8_t *TR::PPCTrg1Src2ImmInstruction::generateBinaryEncoding()
+void TR::PPCTrg1Src2ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   insertSource1Register(toPPCCursor(cursor));
-   insertSource2Register(toPPCCursor(cursor));
-   insertMaskField(toPPCCursor(cursor), getOpCodeValue(), getLongMask());
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src1 = toRealRegister(getSource1Register());
+   TR::RealRegister *src2 = toRealRegister(getSource2Register());
+   uint64_t imm = getLongMask();
 
-   return cursor;
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_BF_RA_RB_L:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), (imm & 1) == imm, "0x%llx is out-of-range for L field");
+         *cursor |= imm << 21;
+
+         break;
+
+      case FORMAT_BT_BA_BB:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldBFA(self(), cursor, src1);
+         fillFieldBFB(self(), cursor, src2);
+
+         // TODO The API for specifying which CCR fields to use should be improved
+         *cursor |= imm;
+
+         break;
+
+      case FORMAT_FRT_FRA_FRB_RMC:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src1);
+         fillFieldFRB(self(), cursor, src2);
+         fillFieldRMC(self(), cursor, imm);
+
+         break;
+
+      case FORMAT_RLDCL:
+         {
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+
+         auto maskEnds = getMaskEnds64(self(), imm);
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.second == 63 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldcl-form", imm);
+
+         fillFieldM6(self(), cursor, maskEnds.first);
+
+         break;
+         }
+
+      case FORMAT_RLWNM:
+         {
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+
+         auto maskEnds = getMaskEnds32(self(), imm);
+         fillFieldMB5(self(), cursor, maskEnds.first);
+         fillFieldME5(self(), cursor, maskEnds.second);
+
+         break;
+         }
+
+      case FORMAT_VRT_VRA_VRB_SHB:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRA(self(), cursor, src1);
+         fillFieldVRB(self(), cursor, src2);
+         fillFieldSHB(self(), cursor, imm);
+         break;
+
+      case FORMAT_XT_XA_XB_DM:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXA(self(), cursor, src1);
+         fillFieldXB(self(), cursor, src2);
+         fillFieldDM(self(), cursor, imm);
+         break;
+
+      case FORMAT_XT_XA_XB_SHW:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXA(self(), cursor, src1);
+         fillFieldXB(self(), cursor, src2);
+         fillFieldSHW(self(), cursor, imm);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src2ImmInstruction", getOpCode().getFormat());
+      }
    }
 
 uint8_t *TR::PPCTrg1Src3Instruction::generateBinaryEncoding()

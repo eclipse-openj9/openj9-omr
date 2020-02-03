@@ -876,7 +876,7 @@
    /* .name        = */ "cmprb",
    /* .description =    "Compare Ranged Byte", */
    /* .opcode      = */ 0x7C000180,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_RA_RB_L,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_CompareOp |
                         PPCOpProp_SyncSideEffectFree,
@@ -987,7 +987,7 @@
    /* .name        = */ "crand",
    /* .description =    "Condition register AND", */
    /* .opcode      = */ 0x4C000202,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
                         PPCOpProp_SyncSideEffectFree,
@@ -998,7 +998,7 @@
    /* .name        = */ "crandc",
    /* .description =    "Condition register AND with complement", */
    /* .opcode      = */ 0x4C000102,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
                         PPCOpProp_SyncSideEffectFree,
@@ -1009,7 +1009,7 @@
    /* .name        = */ "creqv",
    /* .description =    "Condition register equivalent", */
    /* .opcode      = */ 0x4C000242,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
                         PPCOpProp_SyncSideEffectFree,
@@ -1020,7 +1020,7 @@
    /* .name        = */ "crnand",
    /* .description =    "Condition register NAND", */
    /* .opcode      = */ 0x4C0001C2,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
                         PPCOpProp_SyncSideEffectFree,
@@ -1031,7 +1031,7 @@
    /* .name        = */ "crnor",
    /* .description =    "Condition register NOR", */
    /* .opcode      = */ 0x4C000042,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
                         PPCOpProp_SyncSideEffectFree,
@@ -1042,7 +1042,7 @@
    /* .name        = */ "cror",
    /* .description =    "Condition register OR", */
    /* .opcode      = */ 0x4C000382,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
                         PPCOpProp_SyncSideEffectFree,
@@ -1053,7 +1053,7 @@
    /* .name        = */ "crorc",
    /* .description =    "Condition register OR with complement", */
    /* .opcode      = */ 0x4C000342,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
                         PPCOpProp_SyncSideEffectFree,
@@ -1064,7 +1064,7 @@
    /* .name        = */ "crxor",
    /* .description =    "Condition register XOR", */
    /* .opcode      = */ 0x4C000182,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_CRLogical |
                         PPCOpProp_SyncSideEffectFree,
@@ -1538,7 +1538,7 @@
    /* .name        = */ "dqua",
    /* .description =    "Quantize (DFP64)", */
    /* .opcode      = */ 0xEC000006,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB_RMC,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1562,7 +1562,7 @@
    /* .name        = */ "drrnd",
    /* .description =    "Reround (DFP64)", */
    /* .opcode      = */ 0xEC000046,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB_RMC,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -3721,7 +3721,7 @@
    /* .name        = */ "rldcl",
    /* .description =    "Rotate left dword then clear left", */
    /* .opcode      = */ 0x78000010,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RLDCL,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -3915,7 +3915,7 @@
    /* .name        = */ "rlwnm",
    /* .description =    "Rotate left word then AND with mask", */
    /* .opcode      = */ 0x5C000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RLWNM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -7266,7 +7266,7 @@
    /* .name        = */ "vsldoi",
    /* .description =    "vector shift left double by octet immediate", */
    /* .opcode      = */ 0x1000002C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB_SHB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -10150,7 +10150,7 @@
    /* .name        = */ "xxsldwi",
    /* .description =    "VSX Shift Left Double by Word Immediate", */
    /* .opcode      = */ 0xF0000010,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB_SHW,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10196,7 +10196,7 @@
    /* .name        = */ "xxpermdi",
    /* .description =    "VSX Permute Doubleword Immediate", */
    /* .opcode      = */ 0xF0000050,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB_DM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |

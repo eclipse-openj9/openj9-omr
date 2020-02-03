@@ -1216,7 +1216,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
                {
                if (self()->catchBlocksHaveRealPredecessors())
                   {
-                  comp->failCompilation<TR::CompilationException>("Catch blocks have real predecessors");
+                  comp->failCompilation<TR::NoRecompilationRecoverableILGenException>("Catch blocks have real predecessors");
                   }
                }
 

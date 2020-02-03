@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -436,6 +436,23 @@ TR::PPCSystemLinkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    }
 
 
+static bool
+hasParmsPassedOnStack(List<TR::ParameterSymbol> &parmList)
+   {
+   ListIterator<TR::ParameterSymbol> parmIt(&parmList);
+   TR::ParameterSymbol *parmCursor = parmIt.getFirst();
+
+   while (parmCursor)
+      {
+      if (parmCursor->getLinkageRegisterIndex() < 0)
+         return true;
+
+      parmCursor = parmIt.getNext();
+      }
+
+   return false;
+   }
+
 void
 TR::PPCSystemLinkage::mapParameters(
       TR::ResolvedMethodSymbol *method,
@@ -449,14 +466,8 @@ TR::PPCSystemLinkage::mapParameters(
    int32_t                          offsetToFirstParm = linkage.getOffsetToFirstParm();
    int32_t offset_from_top = 0;
    int32_t slot_size = sizeof(uintptrj_t);
-#ifdef __LITTLE_ENDIAN__
-   // XXX: This hack fixes ppc64le by saving params in the current stack frame, rather than the caller's parameter save area, which may not exist
-   //      This code needs to be refactored to accomodate ABIs that don't guarantee a parameter save area
-   // XXX: Also, for some reason all these system linkages are marked passing parms right-to-left when they should be left-to-right
-   const bool saveParmsInLocalArea = true;
-#else
-   const bool saveParmsInLocalArea = false;
-#endif
+
+   bool saveParmsInLocalArea = comp()->target().bitness() == TR::endian_little && !hasParmsPassedOnStack(parmList);
 
    if (linkage.getRightToLeft())
       {

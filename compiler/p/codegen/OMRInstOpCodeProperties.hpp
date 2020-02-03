@@ -3770,7 +3770,7 @@
    /* .name        = */ "rldic",
    /* .description =    "Rotate left dword immediate then clear", */
    /* .opcode      = */ 0x78000008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RLDIC,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -3794,7 +3794,7 @@
    /* .name        = */ "rldicl",
    /* .description =    "Rotate left dword immediate then clear left", */
    /* .opcode      = */ 0x78000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RLDICL,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -3818,7 +3818,7 @@
    /* .name        = */ "rldicr",
    /* .description =    "Rotate left dword immediate then clear right", */
    /* .opcode      = */ 0x78000004,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RLDICR,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -3843,7 +3843,7 @@
    /* .name        = */ "rldimi",
    /* .description =    "Rotate left dword immediate then mask insert", */
    /* .opcode      = */ 0x7800000C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RLDIC,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -3868,7 +3868,7 @@
    /* .name        = */ "rlwimi",
    /* .description =    "Rotate left word immediate then mask insert", */
    /* .opcode      = */ 0x50000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RLWINM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -3892,7 +3892,7 @@
    /* .name        = */ "rlwinm",
    /* .description =    "Rotate left word immediate then AND with mask", */
    /* .opcode      = */ 0x54000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RLWINM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |

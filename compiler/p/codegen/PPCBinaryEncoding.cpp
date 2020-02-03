@@ -295,6 +295,25 @@ static void fillFieldUI(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    *cursor |= val & 0xffff;
    }
 
+static void fillFieldM6(TR::Instruction *instr, uint32_t *cursor, int32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3f) == val, "0x%x is out-of-range for ME(6)/MB(6) field", val);
+   *cursor |= (val & 0x1f) << 6;
+   *cursor |= (val & 0x20);
+   }
+
+static void fillFieldMB5(TR::Instruction *instr, uint32_t *cursor, int32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for MB(5) field", val);
+   *cursor |= val << 6;
+   }
+
+static void fillFieldME5(TR::Instruction *instr, uint32_t *cursor, int32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for ME(5) field", val);
+   *cursor |= val << 1;
+   }
+
 uint8_t *
 OMR::Power::Instruction::generateBinaryEncoding()
    {
@@ -1067,21 +1086,112 @@ static void insertMaskField(uint32_t *instruction, TR::InstOpCode::Mnemonic op, 
    *instruction |= encoding;
    }
 
-uint8_t *TR::PPCTrg1Src1Imm2Instruction::generateBinaryEncoding()
+static std::pair<int32_t, int32_t> getMaskEnds64(TR::Instruction *instr, uint64_t mask)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   insertSource1Register(toPPCCursor(cursor));
-   insertShiftAmount(toPPCCursor(cursor));
-   insertMaskField(toPPCCursor(cursor), getOpCodeValue(), getLongMask());
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask != 0, "Cannot encode a mask of 0");
+
+   int32_t lead = leadingZeroes(mask);
+   int32_t trail = trailingZeroes(mask);
+
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask == ((0xffffffffffffffffuLL >> lead) & (0xffffffffffffffffuLL << trail)), "Mask of 0x%llx has more than one group of 1 bits", mask);
+
+   return std::make_pair(lead, 63 - trail);
    }
 
+static std::pair<int32_t, int32_t> getMaskEnds32(TR::Instruction *instr, uint64_t mask)
+   {
+   // TODO While it would be nice to enable this assert, there are numerous false positives at the
+   //      moment due to use of int32_t for masks. When converted to int64_t to generate an rlwinm
+   //      instruction, this causes the mask to be improperly sign-extended. We *should* be using
+   //      unsigned integers instead, but this assert needs to remain disabled until that can be
+   //      fixed.
+   // TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (mask & 0xffffffff) == mask, "Invalid 32-bit mask 0x%llx", mask);
+   mask &= 0xffffffff;
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask != 0, "Cannot encode a mask of 0");
+
+   uint32_t mask32 = static_cast<uint32_t>(mask);
+
+   if (mask32 != 0xffffffffu && (mask32 & 0x80000001u) == 0x80000001u)
+      {
+      int32_t lead = leadingZeroes(~mask32);
+      int32_t trail = trailingZeroes(~mask32);
+
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask32 == ~((0xffffffffu >> lead) & (0xffffffffu << trail)), "Mask of 0x%x has more than one group of 1 bits", mask32);
+
+      return std::make_pair(32 - trail, lead - 1);
+      }
+   else
+      {
+      int32_t lead = leadingZeroes(mask32);
+      int32_t trail = trailingZeroes(mask32);
+
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask32 == ((0xffffffffu >> lead) & (0xffffffffu << trail)), "Mask of 0x%x has more than one group of 1 bits", mask32);
+
+      return std::make_pair(lead, 31 - trail);
+      }
+   }
+
+void TR::PPCTrg1Src1Imm2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
+   {
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src = toRealRegister(getSource1Register());
+   uint32_t imm1 = getSourceImmediate();
+   uint64_t imm2 = getLongMask();
+
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RLDIC:
+         {
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH6(self(), cursor, imm1);
+
+         auto maskEnds = getMaskEnds64(self(), imm2);
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.second == 63 - imm1 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldic-form for shift by %u", imm2, imm1);
+         fillFieldM6(self(), cursor, maskEnds.first);
+         break;
+         }
+
+      case FORMAT_RLDICL:
+         {
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH6(self(), cursor, imm1);
+
+         auto maskEnds = getMaskEnds64(self(), imm2);
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.second == 63 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldicl-form", imm2);
+         fillFieldM6(self(), cursor, maskEnds.first);
+         break;
+         }
+
+      case FORMAT_RLDICR:
+         {
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH6(self(), cursor, imm1);
+
+         auto maskEnds = getMaskEnds64(self(), imm2);
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.first == 0 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldicr-form", imm2);
+         fillFieldM6(self(), cursor, maskEnds.second);
+         break;
+         }
+
+      case FORMAT_RLWINM:
+         {
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH5(self(), cursor, imm1);
+
+         auto maskEnds = getMaskEnds32(self(), imm2);
+         fillFieldMB5(self(), cursor, maskEnds.first);
+         fillFieldME5(self(), cursor, maskEnds.second);
+         break;
+         }
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src1Imm2Instruction", getOpCode().getFormat());
+      }
+   }
 
 void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {

@@ -1164,7 +1164,7 @@ class PPCTrg1Src1Imm2Instruction : public PPCTrg1Src1ImmInstruction
    int64_t getLongMask()            {return _mask;}
    int64_t setLongMask(uint64_t mi) {return _mask = mi;}
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
       {

@@ -90,6 +90,9 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    {
    int i = 0;
    _properties._properties = IntegersInRegisters|FloatsInRegisters|RightToLeft;
+   if (comp()->target().cpu.isBigEndian())
+      _properties._properties |= SmallIntParmsAlignedRight;
+
    _properties._registerFlags[TR::RealRegister::NoReg] = 0;
    _properties._registerFlags[TR::RealRegister::gr0]   = 0;
    _properties._registerFlags[TR::RealRegister::gr1]   = Preserved|PPC_Reserved; // system sp
@@ -467,7 +470,11 @@ TR::PPCSystemLinkage::mapParameters(
    int32_t offset_from_top = 0;
    int32_t slot_size = sizeof(uintptrj_t);
 
-   bool saveParmsInLocalArea = comp()->target().bitness() == TR::endian_little && !hasParmsPassedOnStack(parmList);
+   // The 64-bit ELF V2 ABI Specification makes having a parameter save area optional if all parameters can be passed in
+   // registers. As a result, we cannot use the caller's parameter save area on 64-bit Linux if all parameters were
+   // passed in registers. However, we *must* use the caller's parameter save area if one or more parameters were passed
+   // on the stack to load those values correctly.
+   bool saveParmsInLocalArea = comp()->target().isLinux() && comp()->target().is64Bit() && !hasParmsPassedOnStack(parmList);
 
    if (linkage.getRightToLeft())
       {
@@ -477,6 +484,10 @@ TR::PPCSystemLinkage::mapParameters(
             parmCursor->setParameterOffset(offset_from_top + stackIndex);
          else
             parmCursor->setParameterOffset(offset_from_top + offsetToFirstParm + stackIndex);
+
+         if (linkage.getSmallIntParmsAlignedRight() && parmCursor->getType().isIntegral() && parmCursor->getSize() < slot_size)
+            parmCursor->setParameterOffset(parmCursor->getParameterOffset() + slot_size - parmCursor->getSize());
+
          offset_from_top += (parmCursor->getSize() + slot_size - 1) & (~(slot_size - 1));
          parmCursor = parameterIterator.getNext();
          }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,11 +68,12 @@ class PPCMemoryArgument
 
 
 // linkage properties
-#define CallerCleanup       0x01
-#define RightToLeft         0x02
-#define IntegersInRegisters 0x04
-#define LongsInRegisters    0x08
-#define FloatsInRegisters   0x10
+#define CallerCleanup             0x01
+#define RightToLeft               0x02
+#define IntegersInRegisters       0x04
+#define LongsInRegisters          0x08
+#define FloatsInRegisters         0x10
+#define SmallIntParmsAlignedRight 0x20
 
 // register flags
 #define Preserved                   0x01
@@ -138,6 +139,8 @@ struct PPCLinkageProperties
    uint32_t getLongsInRegisters() const {return (_properties & LongsInRegisters);}
 
    uint32_t getFloatsInRegisters() const {return (_properties & FloatsInRegisters);}
+
+   uint32_t getSmallIntParmsAlignedRight() const { return (_properties & SmallIntParmsAlignedRight); }
 
    uint32_t getRegisterFlags(TR::RealRegister::RegNum regNum) const
       {

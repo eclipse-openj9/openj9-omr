@@ -3096,11 +3096,21 @@
    /* }, */
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::mtcrf,
-   /* .name        = */ "mtcrf",
-   /* .description =    "Move to condition register fields from gpr", */
-   /* .opcode      = */ 0x7C000120,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .mnemonic    = */ OMR::InstOpCode::mtocrf,
+   /* .name        = */ "mtocrf",
+   /* .description =    "Move to one condition register field from gpr", */
+   /* .opcode      = */ 0x7C100120,
+   /* .format      = */ FORMAT_RS_FXM1,
+   /* .minimumALS  = */ TR_Processor::TR_PPCgp,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::mtcr,
+   /* .name        = */ "mtcr",
+   /* .description =    "Move to condition register from gpr", */
+   /* .opcode      = */ 0x7C0FF120,
+   /* .format      = */ FORMAT_RS,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -3110,7 +3120,7 @@
    /* .name        = */ "mtctr",
    /* .description =    "Move to count register from gpr", */
    /* .opcode      = */ 0x7C0903A6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_AltFormat |
                         PPCOpProp_SetsCtr |
@@ -3141,10 +3151,10 @@
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::mtfsfl,
-   /* .name        = */ "mtfsf",
+   /* .name        = */ "mtfsfl",
    /* .description =    "Move to FPSCR fields L=1", */
    /* .opcode      = */ 0xFE00058E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_MTFSF,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_HasRecordForm |
@@ -3154,7 +3164,7 @@
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::mtfsfl_r,
-   /* .name        = */ "mtfsf.",
+   /* .name        = */ "mtfsfl.",
    /* .description =    "Move to FPSCR fields L=1 Rc=1", */
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfl].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfl].format,
@@ -3167,7 +3177,7 @@
    /* .name        = */ "mtfsf",
    /* .description =    "Move to FPSCR fields L=0/W=0", */
    /* .opcode      = */ 0xFC00058E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_MTFSF,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_HasRecordForm |
@@ -3187,10 +3197,10 @@
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::mtfsfw,
-   /* .name        = */ "mtfsf",
+   /* .name        = */ "mtfsfw",
    /* .description =    "Move to FPSCR fields L=0/W=1", */
    /* .opcode      = */ 0xFC01058E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_MTFSF,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_HasRecordForm |
@@ -3200,7 +3210,7 @@
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::mtfsfw_r,
-   /* .name        = */ "mtfsf.",
+   /* .name        = */ "mtfsfw.",
    /* .description =    "Move to FPSCR fields L=0/W=1 Rc=1", */
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfw].opcode + 1,
    /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::mtfsfw].format,
@@ -3236,7 +3246,7 @@
    /* .name        = */ "mtlr",
    /* .description =    "Move to link register from gpr", */
    /* .opcode      = */ 0x7C0803A6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree,
@@ -4797,7 +4807,7 @@
    /* .name        = */ "tabortdeqi.",
    /* .description =    "Transactional Memory abort dword if equal to immediate value", */
    /* .opcode      = */ 0x7C8006DD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
@@ -4821,7 +4831,7 @@
    /* .name        = */ "tabortdgei.",
    /* .description =    "Transactional Memory abort dword if greater than or equal to immediate", */
    /* .opcode      = */ 0x7D8006DD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
@@ -4845,7 +4855,7 @@
    /* .name        = */ "tabortdgti.",
    /* .description =    "Transactional Memory abort dword if greater than immediate", */
    /* .opcode      = */ 0x7D0006DD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
@@ -4869,7 +4879,7 @@
    /* .name        = */ "tabortdlei.",
    /* .description =    "Transactional Memory abort dword if less than or equal to immediate", */
    /* .opcode      = */ 0x7E8006DD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
@@ -4893,7 +4903,7 @@
    /* .name        = */ "tabortdlgei.",
    /* .description =    "Transactional Memory abort dword if logically greater than or equal to immediate", */
    /* .opcode      = */ 0x7CA006DD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
@@ -4917,7 +4927,7 @@
    /* .name        = */ "tabortdlgti.",
    /* .description =    "Transactional Memory abort dword if logically greater than immediate", */
    /* .opcode      = */ 0x7C2006DD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
@@ -4941,7 +4951,7 @@
    /* .name        = */ "tabortdllei.",
    /* .description =    "Transactional Memory abort dword if logically less than or equal to immediate", */
    /* .opcode      = */ 0x7CC006DD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
@@ -4965,7 +4975,7 @@
    /* .name        = */ "tabortdllti.",
    /* .description =    "Transactional Memory abort dword if logically less than immediate", */
    /* .opcode      = */ 0x7C4006DD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
@@ -4989,7 +4999,7 @@
    /* .name        = */ "tabortdlti.",
    /* .description =    "Transactional Memory abort dword if less than immediate", */
    /* .opcode      = */ 0x7E0006DD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
@@ -5013,7 +5023,7 @@
    /* .name        = */ "tabortdneqi.",
    /* .description =    "Transactional Memory abort dword if not equal to immediate", */
    /* .opcode      = */ 0x7F0006DD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm |
@@ -5036,7 +5046,7 @@
    /* .name        = */ "tabortweqi.",
    /* .description =    "Transactional Memory abort if equal to immediate value", */
    /* .opcode      = */ 0x7C80069D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5058,7 +5068,7 @@
    /* .name        = */ "tabortwgei.",
    /* .description =    "Transactional Memory abort if greater than or equal to immediate", */
    /* .opcode      = */ 0x7D80069D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5080,7 +5090,7 @@
    /* .name        = */ "tabortwgti.",
    /* .description =    "Transactional Memory abort if greater than immediate", */
    /* .opcode      = */ 0x7D00069D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5102,7 +5112,7 @@
    /* .name        = */ "tabortwlei.",
    /* .description =    "Transactional Memory abort if less than or equal to immediate", */
    /* .opcode      = */ 0x7E80069D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5124,7 +5134,7 @@
    /* .name        = */ "tabortwlgei.",
    /* .description =    "Transactional Memory abort if logically greater than or equal to immediate", */
    /* .opcode      = */ 0x7CA0069D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5146,7 +5156,7 @@
    /* .name        = */ "tabortwlgti.",
    /* .description =    "Transactional Memory abort if logically greater than immediate", */
    /* .opcode      = */ 0x7C20069D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5168,7 +5178,7 @@
    /* .name        = */ "tabortwllei.",
    /* .description =    "Transactional Memory abort if logically less than or equal to immediate", */
    /* .opcode      = */ 0x7CC0069D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5190,7 +5200,7 @@
    /* .name        = */ "tabortwllti.",
    /* .description =    "Transactional Memory abort if logically less than immediate", */
    /* .opcode      = */ 0x7C40069D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5212,7 +5222,7 @@
    /* .name        = */ "tabortwlti.",
    /* .description =    "Transactional Memory abort if less than immediate", */
    /* .opcode      = */ 0x7E00069D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5234,7 +5244,7 @@
    /* .name        = */ "tabortwneqi.",
    /* .description =    "Transactional Memory abort if not equal to immediate", */
    /* .opcode      = */ 0x7F00069D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI5,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_TMAbort |
                         PPCOpProp_IsRecordForm,
@@ -5296,7 +5306,7 @@
    /* .name        = */ "tdeqi",
    /* .description =    "Trap dword if equal to immediate value", */
    /* .opcode      = */ 0x08800000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5318,7 +5328,7 @@
    /* .name        = */ "tdgei",
    /* .description =    "Trap dword if greater than or equal to immediate value", */
    /* .opcode      = */ 0x09800000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5340,7 +5350,7 @@
    /* .name        = */ "tdgti",
    /* .description =    "Trap dword if greater than immediate value", */
    /* .opcode      = */ 0x09000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5362,7 +5372,7 @@
    /* .name        = */ "tdlei",
    /* .description =    "Trap dword if less than or equal to immediate value", */
    /* .opcode      = */ 0x0A800000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5384,7 +5394,7 @@
    /* .name        = */ "tdlgei",
    /* .description =    "Trap dword if logically greater than or equal to immediate value", */
    /* .opcode      = */ 0x08A00000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5406,7 +5416,7 @@
    /* .name        = */ "tdlgti",
    /* .description =    "Trap dword if logically greater than immediate value", */
    /* .opcode      = */ 0x08200000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5428,7 +5438,7 @@
    /* .name        = */ "tdllei",
    /* .description =    "Trap dword if logically less than or equal to immediate value", */
    /* .opcode      = */ 0x08C00000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5450,7 +5460,7 @@
    /* .name        = */ "tdllti",
    /* .description =    "Trap dword if logically less than immediate value", */
    /* .opcode      = */ 0x08400000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5472,7 +5482,7 @@
    /* .name        = */ "tdlti",
    /* .description =    "Trap dword if less than immediate value", */
    /* .opcode      = */ 0x0A000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5494,7 +5504,7 @@
    /* .name        = */ "tdneqi",
    /* .description =    "Trap dword if not equal to immediate value", */
    /* .opcode      = */ 0x0B000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5525,7 +5535,7 @@
    /* .name        = */ "tweqi",
    /* .description =    "Trap word if equal to immediate value", */
    /* .opcode      = */ 0x0C800000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5545,7 +5555,7 @@
    /* .name        = */ "twgei",
    /* .description =    "Trap word if greater than or equal to immediate value", */
    /* .opcode      = */ 0x0D800000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5565,7 +5575,7 @@
    /* .name        = */ "twgti",
    /* .description =    "Trap word if greater than immediate value", */
    /* .opcode      = */ 0x0D000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5585,7 +5595,7 @@
    /* .name        = */ "twlei",
    /* .description =    "Trap word if less than or equal to immediate value", */
    /* .opcode      = */ 0x0E800000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5605,7 +5615,7 @@
    /* .name        = */ "twlgei",
    /* .description =    "Trap word if logically greater than or equal to immediate value", */
    /* .opcode      = */ 0x0CA00000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5625,7 +5635,7 @@
    /* .name        = */ "twlgti",
    /* .description =    "Trap word if logically greater than immediate value", */
    /* .opcode      = */ 0x0C200000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5645,7 +5655,7 @@
    /* .name        = */ "twllei",
    /* .description =    "Trap word if logically less than or equal to immediate value", */
    /* .opcode      = */ 0x0CC00000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5665,7 +5675,7 @@
    /* .name        = */ "twllti",
    /* .description =    "Trap word if logically less than immediate value", */
    /* .opcode      = */ 0x0C400000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5685,7 +5695,7 @@
    /* .name        = */ "twlti",
    /* .description =    "Trap word if less than immediate value", */
    /* .opcode      = */ 0x0E000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5705,7 +5715,7 @@
    /* .name        = */ "twneqi",
    /* .description =    "Trap word if not equal to immediate value", */
    /* .opcode      = */ 0x0F000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },

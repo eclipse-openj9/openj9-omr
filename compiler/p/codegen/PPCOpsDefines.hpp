@@ -81,7 +81,54 @@ FORMAT_XL_FORM_BRANCH,
 // |      | BF  |     | W  | U   |                                |
 // | 0    | 6   | 9   | 15 | 16  | 20                             |
 // +------+-----+-----+----+-----+--------------------------------+
-FORMAT_MTFSFI
+FORMAT_MTFSFI,
+
+// Format for the mtfsf XFL-form instruction, with the FRB field encoding the source register and
+// the FLM field controlled by the unsigned immediate:
+//
+// +------+---------+-----+-------+-------------------------------+
+// |      | FLM     |     | FRB   |                               |
+// | 0    | 7       | 15  | 16    | 21                            |
+// +------+---------+-----+-------+-------------------------------+
+FORMAT_MTFSF,
+
+// Format for instructions with an RS field encoding the source register:
+//
+// +------+-------+-----------------------------------------------+
+// |      | RS    |                                               |
+// | 0    | 6     | 11                                            |
+// +------+-------+-----------------------------------------------+
+FORMAT_RS,
+
+// Format for instructions with an RA field encoding the source register and an SI field encoding
+// the signed immediate:
+//
+// +-----------------+----------+---------------------------------+
+// |                 | RA       | SI                              |
+// | 0               | 11       | 16                              |
+// +-----------------+----------+---------------------------------+
+FORMAT_RA_SI,
+
+// Format for instructions with an RA field encoding the source register and a 5-bit SI field
+// encoding the signed immediate:
+//
+// +-----------------+----------+----------+----------------------+
+// |                 | RA       | SI       |                      |
+// | 0               | 11       | 16       | 21                   |
+// +-----------------+----------+----------+----------------------+
+FORMAT_RA_SI5,
+
+// Format for instructions with an RS field encoding the source register and a FXM field encoding an
+// unsigned immediate mask:
+//
+// +------+----------+----+----------+----------------------------+
+// |      | RT       |    | FXM      |                            |
+// | 0    | 6        | 11 | 12       | 20                         |
+// +------+----------+----+----------+----------------------------+
+//
+// Note: The "1" variant of this format asserts that only one bit in FXM should be set.
+FORMAT_RS_FXM,
+FORMAT_RS_FXM1
 
 };
 

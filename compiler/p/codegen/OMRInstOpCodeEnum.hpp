@@ -301,7 +301,8 @@
    modsw,            // Modulo signed word
    mr,               // Register copy
 // msgsync,          // Message synchronize
-   mtcrf,            // Move to condition register fields from gpr
+   mtocrf,           // Move to one condition register field from gpr
+   mtcr,             // Move to condition register from gpr
    mtctr,            // Move to count register from gpr
    mtfsb0,           // Move to FPSCR bit 0
    mtfsb1,           // Move to FPSCR bit 1

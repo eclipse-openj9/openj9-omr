@@ -275,7 +275,7 @@ class PPCSrc1Instruction : public PPCImmInstruction
          }
       }
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 

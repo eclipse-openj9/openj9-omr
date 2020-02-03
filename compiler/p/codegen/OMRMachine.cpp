@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -744,7 +744,7 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction     *cur
       else
          crtemp->setHasBeenAssignedInMethod(true);
       crtemp_state = crtemp->getState();
-      TR::Instruction *ccrInstr = generateTrg1ImmInstruction(self()->cg(), TR::InstOpCode::mtcrf, currentNode, crtemp, 1<<(7-toPPCCRBackingStore(location)->getCcrFieldIndex()), currentInstruction);
+      TR::Instruction *ccrInstr = generateSrc1Instruction(self()->cg(), TR::InstOpCode::mtocrf, currentNode, crtemp, 1<<(7-toPPCCRBackingStore(location)->getCcrFieldIndex()), currentInstruction);
       self()->cg()->traceRAInstruction(ccrInstr);
       }
 

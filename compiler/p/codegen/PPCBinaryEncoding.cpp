@@ -77,6 +77,13 @@ static void fillFieldRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldRA(cursor);
    }
 
+static void fillFieldFRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRB field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_FPR, "Attempt to fill FRB field with %s, which is not an FPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldFRB(cursor);
+   }
+
 static void fillFieldBI(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BI field with null register");
@@ -95,6 +102,36 @@ static void fillFieldBFW(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xfu) == val, "0x%x is out-of-range for BF/W field", val);
    *cursor |= ((val ^ 0x8) & 0x8) << 13;
    *cursor |= (val & 0x7) << 23;
+   }
+
+static void fillFieldFLM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xffu) == val, "0x%x is out-of-range for FLM field", val);
+   *cursor |= val << 17;
+   }
+
+static void fillFieldFXM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xffu) == val, "0x%x is out-of-range for FXM field", val);
+   *cursor |= val << 12;
+   }
+
+static void fillFieldFXM1(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, populationCount(val), "0x%x is invalid for FXM field, expecting exactly 1 bit set", val);
+   fillFieldFXM(instr, cursor, val);
+   }
+
+static void fillFieldSI(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffu), "0x%x is out-of-range for SI field", val);
+   *cursor |= val & 0xffff;
+   }
+
+static void fillFieldSI5(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0x1fu), "0x%x is out-of-range for SI(5) field", val);
+   *cursor |= (val & 0x1f) << 11;
    }
 
 uint8_t *
@@ -490,27 +527,45 @@ void TR::PPCImm2Instruction::fillBinaryEncodingFields(uint32_t* cursor)
       }
    }
 
-uint8_t *TR::PPCSrc1Instruction::generateBinaryEncoding()
+void TR::PPCSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertSource1Register(toPPCCursor(cursor));
-   if (getOpCodeValue() == TR::InstOpCode::mtfsf |
-       getOpCodeValue() == TR::InstOpCode::mtfsfl ||
-       getOpCodeValue() == TR::InstOpCode::mtfsfw)
+   TR::RealRegister *src = toRealRegister(getSource1Register());
+   uint32_t imm = getSourceImmediate();
+
+   switch (getOpCode().getFormat())
       {
-      insertMaskField(toPPCCursor(cursor));
+      case FORMAT_MTFSF:
+         fillFieldFRB(self(), cursor, src);
+         fillFieldFLM(self(), cursor, imm);
+         break;
+
+      case FORMAT_RS:
+         fillFieldRS(self(), cursor, src);
+         break;
+
+      case FORMAT_RA_SI:
+         fillFieldRA(self(), cursor, src);
+         fillFieldSI(self(), cursor, imm);
+         break;
+
+      case FORMAT_RA_SI5:
+         fillFieldRA(self(), cursor, src);
+         fillFieldSI5(self(), cursor, imm);
+         break;
+
+      case FORMAT_RS_FXM:
+         fillFieldRS(self(), cursor, src);
+         fillFieldFXM(self(), cursor, imm);
+         break;
+
+      case FORMAT_RS_FXM1:
+         fillFieldRS(self(), cursor, src);
+         fillFieldFXM1(self(), cursor, imm);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCSrc1Instruction", getOpCode().getFormat());
       }
-   else
-      {
-      insertImmediateField(toPPCCursor(cursor));
-      }
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength()) ;
-   return cursor;
    }
 
 uint8_t *TR::PPCTrg1Instruction::generateBinaryEncoding()
@@ -585,8 +640,7 @@ uint8_t *TR::PPCTrg1ImmInstruction::generateBinaryEncoding()
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
    insertTargetRegister(toPPCCursor(cursor));
 
-   if (getOpCodeValue() == TR::InstOpCode::mtcrf ||
-       getOpCodeValue() == TR::InstOpCode::mfocrf)
+   if (getOpCodeValue() == TR::InstOpCode::mfocrf)
       {
       *((int32_t *)cursor) |= (getSourceImmediate()<<12);
       if ((cg()->comp()->target().cpu.id() >= TR_PPCgp) &&

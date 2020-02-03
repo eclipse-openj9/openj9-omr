@@ -483,19 +483,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1ImmInstruction * instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
-   if (instr->getOpCodeValue() ==  TR::InstOpCode::mtcrf)
-      {
-      trfprintf(pOutFile, POINTER_PRINTF_FORMAT ", ", (intptr_t)(int32_t)instr->getSourceImmediate());
-      print(pOutFile, instr->getTargetRegister(), TR_WordReg);
-      }
-   else
-      {
-      print(pOutFile, instr->getTargetRegister(), TR_WordReg);
-      if (instr->getOpCodeValue() !=  TR::InstOpCode::mfcr)
-         {
-         trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT, (intptr_t)(int32_t)instr->getSourceImmediate());
-         }
-      }
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+   trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT, (intptr_t)(int32_t)instr->getSourceImmediate());
 
    trfflush(_comp->getOutFile());
    }

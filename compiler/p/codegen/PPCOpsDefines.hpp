@@ -389,7 +389,46 @@ FORMAT_VRT_VRB_UIM2,
 // Note: The exact size of the usable part of the UIM field differs between instructions, with upper
 //       bits beyond the size of the UIM field being undefined. These formats are differentiated
 //       only for the purposes of checking that the UIM field is in range.
-FORMAT_XT_XB_UIM2
+FORMAT_XT_XB_UIM2,
+
+// Format for instructions with an RT field encoding the target register and an SI field encoding a
+// signed immediate:
+//
+// +------+----------+----------+---------------------------------+
+// |      | RT       |          | SI                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RT_SI,
+
+// Format for instructions with a BF field encoding the target CC register and a BFA field encoding
+// an unsigned immediate:
+//
+// +------+-----+-----+-----+-------------------------------------+
+// |      | BF  |     | BFA |                                     |
+// | 0    | 6   | 9   | 11  | 14                                  |
+// +------+-----+-----+-----+-------------------------------------+
+FORMAT_BF_BFAI,
+
+// Format for instructions with an RT field encoding the target register and a FXM field encoding an
+// unsigned immediate mask:
+//
+// +------+----------+----+----------+----------------------------+
+// |      | RT       |    | FXM      |                            |
+// | 0    | 6        | 11 | 12       | 20                         |
+// +------+----------+----+----------+----------------------------+
+//
+// Note: The "1" variant of this format asserts that only one bit in FXM should be set.
+FORMAT_RT_FXM,
+FORMAT_RT_FXM1,
+
+// Formats for instructions with a VRT field encoding the target vector register and an SIM field
+// encoding a signed immediate:
+//
+// +------+----------+----------+---------------------------------+
+// |      | VRT      | SIM      |                                 |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_VRT_SIM
 
 };
 

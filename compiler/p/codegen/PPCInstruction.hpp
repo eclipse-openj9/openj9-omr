@@ -803,9 +803,7 @@ class PPCTrg1ImmInstruction : public PPCTrg1Instruction
          insertImmediateField((uint32_t*)getBinaryEncoding());
          }
 
-   virtual uint8_t *generateBinaryEncoding();
-
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    void insertImmediateField(uint32_t *instruction)
       {

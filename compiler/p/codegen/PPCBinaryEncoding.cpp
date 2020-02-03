@@ -204,6 +204,12 @@ static void fillFieldBFA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldRA(cursor);
    }
 
+static void fillFieldBFA(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x7) == val, "0x%x is out-of-range for BFA field", val);
+   *cursor |= val << 18;
+   }
+
 static void fillFieldU(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xfu) == val, "0x%x is out-of-range for U field", val);
@@ -252,6 +258,12 @@ static void fillFieldSH6(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3fu) == val, "0x%x is out-of-range for SH(6) field", val);
    *cursor |= (val & 0x1fu) << 11;
    *cursor |= (val & 0x20u) >> 4;
+   }
+
+static void fillFieldSIM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0x1fu), "0x%x is out-of-range for SIM field", val);
+   *cursor |= (val & 0x1f) << 16;
    }
 
 static void fillFieldSI(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
@@ -789,18 +801,6 @@ void TR::PPCTrg1Src1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
       }
    }
 
-int32_t TR::PPCTrg1ImmInstruction::estimateBinaryLength(int32_t currentEstimate)
-   {
-   setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH);
-   return currentEstimate + getEstimatedBinaryLength();
-   }
-
-static TR::Instruction *loadReturnAddress(TR::Node * node, uintptr_t value, TR::Register *trgReg, TR::Instruction *cursor)
-   {
-   return cursor->cg()->loadAddressConstantFixed(node, value, trgReg, cursor);
-   }
-
-
 void
 TR::PPCTrg1ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
    {
@@ -819,45 +819,45 @@ TR::PPCTrg1ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       }
    }
 
-
-uint8_t *TR::PPCTrg1ImmInstruction::generateBinaryEncoding()
+void
+TR::PPCTrg1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   uint32_t imm = getSourceImmediate();
 
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
+   addMetaDataForCodeAddress(reinterpret_cast<uint8_t*>(cursor));
 
-   if (getOpCodeValue() == TR::InstOpCode::mfocrf)
+   switch (getOpCode().getFormat())
       {
-      *((int32_t *)cursor) |= (getSourceImmediate()<<12);
-      if ((cg()->comp()->target().cpu.id() >= TR_PPCgp) &&
-          ((getSourceImmediate() & (getSourceImmediate() - 1)) == 0))
-         // convert to PPC AS single field form
-         *((int32_t *)cursor) |= 0x00100000;
-      }
-   else if (getOpCodeValue() == TR::InstOpCode::mfcr)
-      {
-      if ((cg()->comp()->target().cpu.id() >= TR_PPCgp) &&
-          ((getSourceImmediate() & (getSourceImmediate() - 1)) == 0))
-         // convert to PPC AS single field form
-         *((int32_t *)cursor) |= (getSourceImmediate()<<12) | 0x00100000;
-      else
-         TR_ASSERT(getSourceImmediate() == 0xFF, "Bad field mask on mfcr");
-      }
-   else
-      {
-      insertImmediateField(toPPCCursor(cursor));
-      }
+      case FORMAT_RT_SI:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldSI(self(), cursor, imm);
+         break;
 
-   addMetaDataForCodeAddress(cursor);
+      case FORMAT_BF_BFAI:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldBFA(self(), cursor, imm);
+         break;
 
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+      case FORMAT_RT_FXM:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldFXM(self(), cursor, imm);
+         break;
+
+      case FORMAT_RT_FXM1:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldFXM1(self(), cursor, imm);
+         break;
+
+      case FORMAT_VRT_SIM:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldSIM(self(), cursor, imm);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1ImmInstruction", getOpCode().getFormat());
+      }
    }
-
 
 void
 TR::PPCTrg1Src1ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)

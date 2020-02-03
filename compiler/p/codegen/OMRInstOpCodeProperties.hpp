@@ -2666,7 +2666,7 @@
    /* .name        = */ "li",
    /* .description =    "Load immediate", */
    /* .opcode      = */ 0x38000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -2676,7 +2676,7 @@
    /* .name        = */ "lis",
    /* .description =    "Load immediate shifted", */
    /* .opcode      = */ 0x3C000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -2878,7 +2878,7 @@
    /* .name        = */ "mcrfs",
    /* .description =    "Move to condition register field from FPSCR", */
    /* .opcode      = */ 0xFC000080,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_BFAI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsFPSCR |
                         PPCOpProp_SyncSideEffectFree,
@@ -2920,7 +2920,7 @@
    /* .name        = */ "mfocrf",
    /* .description =    "Move from one condition register field to gpr (XFX-form)", */
    /* .opcode      = */ 0x7C100026,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_FXM1,
    /* .minimumALS  = */ TR_Processor::TR_PPCgr,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -7209,7 +7209,7 @@
    /* .name        = */ "vspltisb",
    /* .description =    "vector splat immediate signed byte", */
    /* .opcode      = */ 0x1000030C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_SIM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7220,7 +7220,7 @@
    /* .name        = */ "vspltish",
    /* .description =    "vector splat immediate signed halfword", */
    /* .opcode      = */ 0x1000034C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_SIM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7231,7 +7231,7 @@
    /* .name        = */ "vspltisw",
    /* .description =    "vector splat immediate signed word", */
    /* .opcode      = */ 0x1000038C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_SIM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,

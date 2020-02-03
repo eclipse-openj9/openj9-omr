@@ -596,7 +596,15 @@ FORMAT_VRT_VRA_VRB_VRC,
 // |      | XT   | XA   | XB   | XC   |     | XC | XA | XB | XT |
 // | 0    | 6    | 11   | 16   | 21   | 26  | 28 | 29 | 30 | 31 |
 // +------+------+------+------+------+-----+----+----+----+----+
-FORMAT_XT_XA_XB_XC
+FORMAT_XT_XA_XB_XC,
+
+// Format for instructions with RA and RB fields encoding the source registers:
+//
+// +-----------------+----------+----------+----------------------+
+// |                 | RA       | RB       |                      |
+// | 0               | 11       | 16       | 21                   |
+// +-----------------+----------+----------+----------------------+
+FORMAT_RA_RB
 
 };
 

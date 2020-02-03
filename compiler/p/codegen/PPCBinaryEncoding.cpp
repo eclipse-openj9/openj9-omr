@@ -1332,20 +1332,22 @@ void TR::PPCTrg1Src3Instruction::fillBinaryEncodingFields(uint32_t *cursor)
       }
    }
 
-uint8_t *TR::PPCSrc2Instruction::generateBinaryEncoding()
+void TR::PPCSrc2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertSource1Register(toPPCCursor(cursor));
-   insertSource2Register(toPPCCursor(cursor));
+   TR::RealRegister *src1 = toRealRegister(getSource1Register());
+   TR::RealRegister *src2 = toRealRegister(getSource2Register());
 
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RA_RB:
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCSrc2Instruction", getOpCode().getFormat());
+      }
    }
-
 
 uint8_t *TR::PPCMemSrc1Instruction::generateBinaryEncoding()
    {

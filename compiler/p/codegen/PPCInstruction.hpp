@@ -882,19 +882,7 @@ class PPCSrc2Instruction : public TR::Instruction
    virtual TR::Register *getSourceRegister(uint32_t i) {if      (i==0) return _source1Register;
                                                        else if (i==1) return _source2Register; return NULL;}
 
-   void insertSource1Register(uint32_t *instruction)
-      {
-      TR::RealRegister *source2 = toRealRegister(_source1Register);
-      source2->setRegisterFieldRA(instruction);
-      }
-
-   void insertSource2Register(uint32_t *instruction)
-      {
-      TR::RealRegister *source2 = toRealRegister(_source2Register);
-      source2->setRegisterFieldRB(instruction);
-      }
-
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 

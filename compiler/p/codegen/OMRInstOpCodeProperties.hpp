@@ -5295,7 +5295,7 @@
    /* .name        = */ "tdeq",
    /* .description =    "Trap dword if equal", */
    /* .opcode      = */ 0x7C800088,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5317,7 +5317,7 @@
    /* .name        = */ "tdge",
    /* .description =    "Trap dword if greater than or equal to", */
    /* .opcode      = */ 0x7D800088,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5339,7 +5339,7 @@
    /* .name        = */ "tdgt",
    /* .description =    "Trap dword if greater than", */
    /* .opcode      = */ 0x7D000088,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5361,7 +5361,7 @@
    /* .name        = */ "tdle",
    /* .description =    "Trap dword if less than or equal to", */
    /* .opcode      = */ 0x7E800088,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5383,7 +5383,7 @@
    /* .name        = */ "tdlge",
    /* .description =    "Trap dword if logically greater than or equal to", */
    /* .opcode      = */ 0x7CA00088,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5405,7 +5405,7 @@
    /* .name        = */ "tdlgt",
    /* .description =    "Trap dword if logically greater than", */
    /* .opcode      = */ 0x7C200088,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5427,7 +5427,7 @@
    /* .name        = */ "tdlle",
    /* .description =    "Trap dword if logically less than or equal to", */
    /* .opcode      = */ 0x7CC00088,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5449,7 +5449,7 @@
    /* .name        = */ "tdllt",
    /* .description =    "Trap dword if logically less than", */
    /* .opcode      = */ 0x7C400088,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5471,7 +5471,7 @@
    /* .name        = */ "tdlt",
    /* .description =    "Trap dword if less than", */
    /* .opcode      = */ 0x7E000088,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5493,7 +5493,7 @@
    /* .name        = */ "tdneq",
    /* .description =    "Trap dword if not equal", */
    /* .opcode      = */ 0x7F000088,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5525,7 +5525,7 @@
    /* .name        = */ "tweq",
    /* .description =    "Trap word if equal", */
    /* .opcode      = */ 0x7C800008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5545,7 +5545,7 @@
    /* .name        = */ "twge",
    /* .description =    "Trap word if greater than or equal to", */
    /* .opcode      = */ 0x7D800008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5565,7 +5565,7 @@
    /* .name        = */ "twgt",
    /* .description =    "Trap word if greater than", */
    /* .opcode      = */ 0x7D000008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5585,7 +5585,7 @@
    /* .name        = */ "twle",
    /* .description =    "Trap word if less than or equal to", */
    /* .opcode      = */ 0x7E800008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5605,7 +5605,7 @@
    /* .name        = */ "twlge",
    /* .description =    "Trap word if logically greater than or equal to", */
    /* .opcode      = */ 0x7CA00008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5625,7 +5625,7 @@
    /* .name        = */ "twlgt",
    /* .description =    "Trap word if logically greater than", */
    /* .opcode      = */ 0x7C200008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5645,7 +5645,7 @@
    /* .name        = */ "twlle",
    /* .description =    "Trap word if logically less than or equal to", */
    /* .opcode      = */ 0x7CC00008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5665,7 +5665,7 @@
    /* .name        = */ "twllt",
    /* .description =    "Trap word if logically less than", */
    /* .opcode      = */ 0x7C400008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5685,7 +5685,7 @@
    /* .name        = */ "twlt",
    /* .description =    "Trap word if less than", */
    /* .opcode      = */ 0x7E000008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5705,7 +5705,7 @@
    /* .name        = */ "twneq",
    /* .description =    "Trap word if not equal", */
    /* .opcode      = */ 0x7F000008,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },

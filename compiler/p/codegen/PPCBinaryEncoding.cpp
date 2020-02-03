@@ -176,11 +176,32 @@ static void fillFieldXB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldXB(cursor);
    }
 
+static void fillFieldRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RC field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RC field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRC(cursor);
+   }
+
 static void fillFieldFRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRC field with null register");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_FPR, "Attempt to fill FRC field with %s, which is not an FPR", reg->getRegisterName(instr->cg()->comp()));
    reg->setRegisterFieldFRC(cursor);
+   }
+
+static void fillFieldVRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRC field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_VRF, "Attempt to fill VRC field with %s, which is not a VR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRC(cursor);
+   }
+
+static void fillFieldXC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XC field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XC field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldXC(cursor);
    }
 
 static void fillFieldBI(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
@@ -1269,19 +1290,46 @@ void TR::PPCTrg1Src2ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
       }
    }
 
-uint8_t *TR::PPCTrg1Src3Instruction::generateBinaryEncoding()
+void TR::PPCTrg1Src3Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   insertSource1Register(toPPCCursor(cursor));
-   insertSource2Register(toPPCCursor(cursor));
-   insertSource3Register(toPPCCursor(cursor));
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src1 = toRealRegister(getSource1Register());
+   TR::RealRegister *src2 = toRealRegister(getSource2Register());
+   TR::RealRegister *src3 = toRealRegister(getSource3Register());
+
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RT_RA_RB_RC:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         fillFieldRC(self(), cursor, src3);
+         break;
+
+      case FORMAT_FRT_FRA_FRC_FRB:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src1);
+         fillFieldFRC(self(), cursor, src2);
+         fillFieldFRB(self(), cursor, src3);
+         break;
+
+      case FORMAT_VRT_VRA_VRB_VRC:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRA(self(), cursor, src1);
+         fillFieldVRB(self(), cursor, src2);
+         fillFieldVRC(self(), cursor, src3);
+         break;
+
+      case FORMAT_XT_XA_XB_XC:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXA(self(), cursor, src1);
+         fillFieldXB(self(), cursor, src2);
+         fillFieldXC(self(), cursor, src3);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src3Instruction", getOpCode().getFormat());
+      }
    }
 
 uint8_t *TR::PPCSrc2Instruction::generateBinaryEncoding()

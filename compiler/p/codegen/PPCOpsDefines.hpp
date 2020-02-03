@@ -560,7 +560,43 @@ FORMAT_XT_XA_XB_DM,
 // |     | XT    | XA    | XB    |    | SHW |      | XA | XB | XT |
 // | 0   | 6     | 11    | 16    | 21 | 22  | 24   | 29 | 30 | 31 |
 // +-----+-------+-------+-------+----+-----+------+----+----+----+
-FORMAT_XT_XA_XB_SHW
+FORMAT_XT_XA_XB_SHW,
+
+// Format for instructions with an FRT field encoding the target register, and RA, RB, and RC
+// fields encoding the source registers:
+//
+// +------+--------+--------+--------+--------+-------------------+
+// |      | RT     | RA     | RB     | RC     |                   |
+// | 0    | 6      | 11     | 16     | 21     | 26                |
+// +------+--------+--------+--------+--------+-------------------+
+FORMAT_RT_RA_RB_RC,
+
+// Format for instructions with an FRT field encoding the target FP register, and FRA, FRC, and FRB
+// fields encoding the source FP registers:
+//
+// +------+--------+--------+--------+--------+-------------------+
+// |      | FRT    | FRA    | FRB    | FRC    |                   |
+// | 0    | 6      | 11     | 16     | 21     | 26                |
+// +------+--------+--------+--------+--------+-------------------+
+FORMAT_FRT_FRA_FRC_FRB,
+
+// Format for instructions with a VRT field encoding the target vector register, and VRA, VRB, and
+// VRC fields encoding the source vector registers:
+//
+// +------+--------+--------+--------+--------+-------------------+
+// |      | VRT    | VRA    | VRB    | VRC    |                   |
+// | 0    | 6      | 11     | 16     | 21     | 26                |
+// +------+--------+--------+--------+--------+-------------------+
+FORMAT_VRT_VRA_VRB_VRC,
+
+// Format for instructions with an XT field encoding the target VSX register, and XA, XB, and XC
+// fields encoding the source VSX registers:
+//
+// +------+------+------+------+------+-----+----+----+----+----+
+// |      | XT   | XA   | XB   | XC   |     | XC | XA | XB | XT |
+// | 0    | 6    | 11   | 16   | 21   | 26  | 28 | 29 | 30 | 31 |
+// +------+------+------+------+------+-----+----+----+----+----+
+FORMAT_XT_XA_XB_XC
 
 };
 

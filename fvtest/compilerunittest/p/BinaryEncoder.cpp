@@ -2237,8 +2237,7 @@ INSTANTIATE_TEST_CASE_P(VSXVectorFixed, PPCTrg1Src2ImmEncodingTest, ::testing::V
     std::make_tuple(TR::InstOpCode::xxsldwi,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,     3, 0xf0000310u)
 ));
 
-// TODO: Disabled due to known issues encoding xxsel instructions
-/*INSTANTIATE_TEST_CASE_P(VSXVectorFixed, PPCTrg1Src3EncodingTest, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(VSXVectorFixed, PPCTrg1Src3EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr31, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  0xf3e00030u),
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr63, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  0xf3e00031u),
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr0,  TR::RealRegister::vsr31, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  0xf01f0030u),
@@ -2247,7 +2246,7 @@ INSTANTIATE_TEST_CASE_P(VSXVectorFixed, PPCTrg1Src2ImmEncodingTest, ::testing::V
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr63, TR::RealRegister::vsr0,  0xf000f832u),
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr31, 0xf00007f0u),
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr63, 0xf00007f8u)
-));*/
+));
 
 INSTANTIATE_TEST_CASE_P(VSXVectorFixed, PPCRecordFormSanityTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::xxland,   TR::InstOpCode::bad, BinaryInstruction()),

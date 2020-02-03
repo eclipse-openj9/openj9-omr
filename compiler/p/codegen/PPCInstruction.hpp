@@ -1379,51 +1379,7 @@ class PPCTrg1Src3Instruction : public PPCTrg1Src2Instruction
                                                else if (i==1) return getSource2Register();
                                                else if (i==2) return _source3Register; return NULL;}
 
-   void insertTargetRegister(uint32_t *instruction)
-      {
-      TR::RealRegister *target = toRealRegister(getTargetRegister());
-      if (getOpCode().useAlternateFormatx())
-         {
-         target->setRegisterFieldRA(instruction);
-         }
-      else
-         {
-         target->setRegisterFieldFRD(instruction);
-         }
-      }
-
-   void insertSource1Register(uint32_t *instruction)
-      {
-      TR::RealRegister *source1 = toRealRegister(getSource1Register());
-      if (getOpCode().useAlternateFormatx())
-         {
-         source1->setRegisterFieldRS(instruction);
-         }
-      else
-         {
-         source1->setRegisterFieldFRA(instruction);
-         }
-      }
-
-   void insertSource2Register(uint32_t *instruction)
-      {
-      TR::RealRegister *source2 = toRealRegister(getSource2Register());
-      if (isFloat())
-          source2->setRegisterFieldFRC(instruction);
-      else
-         source2->setRegisterFieldFRB(instruction);
-      }
-
-   void insertSource3Register(uint32_t *instruction)
-      {
-      TR::RealRegister *source3 = toRealRegister(_source3Register);
-      if (isFloat())
-         source3->setRegisterFieldFRB(instruction);
-      else
-         source3->setRegisterFieldFRC(instruction);
-      }
-
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 

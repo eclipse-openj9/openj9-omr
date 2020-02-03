@@ -2009,7 +2009,7 @@
    /* .name        = */ "fmadd",
    /* .description =    "Floating multiply add double", */
    /* .opcode      = */ 0xFC00003A,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -2020,7 +2020,7 @@
    /* .name        = */ "fmadds",
    /* .description =    "Floating multiply add single", */
    /* .opcode      = */ 0xEC00003A,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -2045,7 +2045,7 @@
    /* .name        = */ "fmsub",
    /* .description =    "Floating multiply subtract double", */
    /* .opcode      = */ 0xFC000038,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -2056,7 +2056,7 @@
    /* .name        = */ "fmsubs",
    /* .description =    "Floating multiply subtract single", */
    /* .opcode      = */ 0xEC000038,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -2117,7 +2117,7 @@
    /* .name        = */ "fnmadd",
    /* .description =    "Floating negative multiply add double", */
    /* .opcode      = */ 0xFC00003E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -2128,7 +2128,7 @@
    /* .name        = */ "fnmadds",
    /* .description =    "Floating negative multiply add single", */
    /* .opcode      = */ 0xEC00003E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -2139,7 +2139,7 @@
    /* .name        = */ "fnmsub",
    /* .description =    "Floating negative multiply subtract double", */
    /* .opcode      = */ 0xFC00003C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -2150,7 +2150,7 @@
    /* .name        = */ "fnmsubs",
    /* .description =    "Floating negative multiply subtract single", */
    /* .opcode      = */ 0xEC00003C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -2233,7 +2233,7 @@
    /* .name        = */ "fsel",
    /* .description =    "Floating select", */
    /* .opcode      = */ 0xFC00002E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -2858,7 +2858,7 @@
    /* .name        = */ "maddld",
    /* .description =    "Multiply-Add Low Dword", */
    /* .opcode      = */ 0x10000033,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_RC,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -6958,7 +6958,7 @@
    /* .name        = */ "vperm",
    /* .description =    "vector permute", */
    /* .opcode      = */ 0x1000002B,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB_VRC,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7025,7 +7025,7 @@
    /* .name        = */ "vsel",
    /* .description =    "vector conditional select", */
    /* .opcode      = */ 0x1000002A,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB_VRC,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8204,7 +8204,7 @@
    /* .name        = */ "vmsumuhm",
    /* .description =    "vector multiply-sum unsigned halfword word modulo", */
    /* .opcode      = */ 0x10000026,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB_VRC,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -10136,9 +10136,9 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::xxsel,
    /* .name        = */ "xxsel",
-   /* .description =    "VSX Select (Operands usage are diffent than fsel)", */
+   /* .description =    "VSX Select", */
    /* .opcode      = */ 0xF0000030,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB_XC,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |

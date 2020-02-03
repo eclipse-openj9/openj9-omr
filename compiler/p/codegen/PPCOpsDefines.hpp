@@ -128,7 +128,15 @@ FORMAT_RA_SI5,
 //
 // Note: The "1" variant of this format asserts that only one bit in FXM should be set.
 FORMAT_RS_FXM,
-FORMAT_RS_FXM1
+FORMAT_RS_FXM1,
+
+// Format for instructions with an RT field encoding the target register:
+//
+// +------+-------+-----------------------------------------------+
+// |      | RT    |                                               |
+// | 0    | 6     | 11                                            |
+// +------+-------+-----------------------------------------------+
+FORMAT_RT
 
 };
 

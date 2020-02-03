@@ -700,7 +700,7 @@ TR::PPCSystemLinkage::createPrologue(
         machine->getRealRegister(TR::RealRegister::cr3)->getHasBeenAssignedInMethod() ||
         machine->getRealRegister(TR::RealRegister::cr4)->getHasBeenAssignedInMethod() )
       {
-      cursor = generateTrg1ImmInstruction(cg(), TR::InstOpCode::mfcr, firstNode, gr0, 0xff, cursor);
+      cursor = generateTrg1Instruction(cg(), TR::InstOpCode::mfcr, firstNode, gr0, cursor);
       cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_st, firstNode, new (trHeapMemory()) TR::MemoryReference(sp, TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress(), cg()), gr0, cursor);
       }
 

@@ -2910,7 +2910,7 @@
    /* .name        = */ "mfcr",
    /* .description =    "Move from condition register to gpr", */
    /* .opcode      = */ 0x7C000026,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -2930,7 +2930,7 @@
    /* .name        = */ "mfctr",
    /* .description =    "Move from count register to gpr", */
    /* .opcode      = */ 0x7C0902A6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_UsesCtr |
                         PPCOpProp_SyncSideEffectFree,
@@ -2954,7 +2954,7 @@
    /* .name        = */ "mffs",
    /* .description =    "Move from FPSCR to gpr", */
    /* .opcode      = */ 0xFC00048E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -2964,7 +2964,7 @@
    /* .name        = */ "mflr",
    /* .description =    "Move from link register to gpr", */
    /* .opcode      = */ 0x7C0802A6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -2994,7 +2994,7 @@
    /* .name        = */ "mftexasr",
    /* .description =    "Move from transaction exception and summary register to gpr", */
    /* .opcode      = */ 0x7C0222A6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -3004,7 +3004,7 @@
    /* .name        = */ "mftexasru",
    /* .description =    "Move from upper 32 bits of transaction exception and summary register to gpr", */
    /* .opcode      = */ 0x7C0322A6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },

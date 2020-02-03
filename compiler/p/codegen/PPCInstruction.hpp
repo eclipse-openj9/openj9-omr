@@ -752,7 +752,7 @@ class PPCTrg1Instruction : public TR::Instruction
          target->setRegisterFieldRT(instruction);
       }
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 

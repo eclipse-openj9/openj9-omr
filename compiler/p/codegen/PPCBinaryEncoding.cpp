@@ -63,6 +63,13 @@ static bool isValidInSignExtendedField(uint32_t value, uint32_t mask)
    return (value & signMask) == 0 || (value & signMask) == signMask;
    }
 
+static void fillFieldRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RT field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RT field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRT(cursor);
+   }
+
 static void fillFieldRS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RS field with null register");
@@ -568,16 +575,19 @@ void TR::PPCSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
       }
    }
 
-uint8_t *TR::PPCTrg1Instruction::generateBinaryEncoding()
+void TR::PPCTrg1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RT:
+         fillFieldRT(self(), cursor, trg);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Instruction", getOpCode().getFormat());
+      }
    }
 
 uint8_t *TR::PPCTrg1Src1Instruction::generateBinaryEncoding()

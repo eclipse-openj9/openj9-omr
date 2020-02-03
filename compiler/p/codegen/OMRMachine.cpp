@@ -1108,7 +1108,7 @@ TR::RealRegister *OMR::Power::Machine::reverseSpillState(TR::Instruction      *c
             sindex = (tindex - sindex) * 4;
          self()->cg()->traceRAInstruction(generateTrg1Src1Imm2Instruction(self()->cg(), TR::InstOpCode::rlwinm, currentNode, crtemp, crtemp, sindex, 0xFFFFFFFF, currentInstruction));
          }
-      self()->cg()->traceRAInstruction(generateTrg1ImmInstruction(self()->cg(), TR::InstOpCode::mfcr, currentNode, crtemp, 0xFF, currentInstruction));
+      self()->cg()->traceRAInstruction(generateTrg1Instruction(self()->cg(), TR::InstOpCode::mfcr, currentNode, crtemp, currentInstruction));
       }
 
    return targetRegister;

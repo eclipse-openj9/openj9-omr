@@ -1615,11 +1615,10 @@ INSTANTIATE_TEST_CASE_P(BitCounting, PPCRecordFormSanityTest, ::testing::Values(
 ));
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotate, PPCTrg1Src1ImmEncodingTest, ::testing::Values(
-    // TODO: Disabled due to known issues with encoding extswsli and extswsli. instructions
-    /*std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr1,  TR::RealRegister::gr2,   0u, 0x7c4106f4u),
+    std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr1,  TR::RealRegister::gr2,   0u, 0x7c4106f4u),
     std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr31, TR::RealRegister::gr0,  20u, 0x7c1fa6f4u),
     std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr0,  TR::RealRegister::gr31, 63u, 0x7fe0fef6u),
-    std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr15, TR::RealRegister::gr16, 32u, 0x7e0f06f6u),*/
+    std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr15, TR::RealRegister::gr16, 32u, 0x7e0f06f6u),
     std::make_tuple(TR::InstOpCode::sradi,    TR::RealRegister::gr1,  TR::RealRegister::gr2,   0u, 0x7c410674u),
     std::make_tuple(TR::InstOpCode::sradi,    TR::RealRegister::gr31, TR::RealRegister::gr0,  20u, 0x7c1fa674u),
     std::make_tuple(TR::InstOpCode::sradi,    TR::RealRegister::gr0,  TR::RealRegister::gr31, 63u, 0x7fe0fe76u),
@@ -2690,11 +2689,10 @@ INSTANTIATE_TEST_CASE_P(FloatRound, PPCRecordFormSanityTest, ::testing::Values(
 ));
 
 INSTANTIATE_TEST_CASE_P(DFP, PPCTrg1Src1ImmEncodingTest, ::testing::Values(
-    // TODO: Disabled due to known issues encoding dtstdc instructions
-    /*std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr0, TR::RealRegister::fp31, 0x3fu, 0xec1ffd84u),
+    std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr0, TR::RealRegister::fp31, 0x3fu, 0xec1ffd84u),
     std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr7, TR::RealRegister::fp0,  0x3fu, 0xef80fd84u),
     std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr0, TR::RealRegister::fp31, 0x00u, 0xec1f0184u),
-    std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr7, TR::RealRegister::fp0,  0x00u, 0xef800184u),*/
+    std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr7, TR::RealRegister::fp0,  0x00u, 0xef800184u),
     std::make_tuple(TR::InstOpCode::dtstdg, TR::RealRegister::cr0, TR::RealRegister::fp31, 0x3fu, 0xec1ffdc4u),
     std::make_tuple(TR::InstOpCode::dtstdg, TR::RealRegister::cr7, TR::RealRegister::fp0,  0x3fu, 0xef80fdc4u),
     std::make_tuple(TR::InstOpCode::dtstdg, TR::RealRegister::cr0, TR::RealRegister::fp31, 0x00u, 0xec1f01c4u),

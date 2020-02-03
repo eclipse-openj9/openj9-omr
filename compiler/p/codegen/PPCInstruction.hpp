@@ -1098,7 +1098,7 @@ class PPCTrg1Src1ImmInstruction : public PPCTrg1Src1Instruction
 
    void addMetaDataForCodeAddress(uint8_t *cursor);
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
       {

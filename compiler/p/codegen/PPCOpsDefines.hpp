@@ -298,7 +298,98 @@ FORMAT_XT_XA_XB,
 // |      | FRT      | FRA      |       | FRC      |              |
 // | 0    | 6        | 11       | 16    | 21       | 26           |
 // +------+----------+----------+-------+----------+--------------+
-FORMAT_FRT_FRA_FRC
+FORMAT_FRT_FRA_FRC,
+
+// Format for instructions with an RT field encoding the target register, an RA field encoding the
+// source register, and an SI field encoding a signed immediate:
+//
+// +------+----------+----------+---------------------------------+
+// |      | RT       | RA       | SI                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RT_RA_SI,
+
+// Format for instructions with an RA field encoding the target register, an RS field encoding the
+// source register, and a UI field encoding an unsigned immediate:
+//
+// +------+----------+----------+---------------------------------+
+// |      | RS       | RA       | UI                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RA_RS_UI,
+
+// Format for instructions with a BF field encoding the target CC register, an RA field encoding the
+// source register, and an SI field encoding a signed immediate:
+//
+// +------+-----+----+----------+---------------------------------+
+// |      | BF  |    | RA       | SI                              |
+// | 0    | 6   | 9  | 11       | 16                              |
+// +------+-----+----+----------+---------------------------------+
+FORMAT_BF_RA_SI,
+
+// Format for instructions with a BF field encoding the target CC register, an RA field encoding the
+// source register, and a UI field encoding an unsigned immediate:
+//
+// +------+-----+----+----------+---------------------------------+
+// |      | BF  |    | RA       | UI                              |
+// | 0    | 6   | 9  | 11       | 16                              |
+// +------+-----+----+----------+---------------------------------+
+FORMAT_BF_RA_UI,
+
+// Format for instructions with a BF field encoding the target CC register, an FRA field encoding
+// the source FP register, and a DM field encoding an unsigned immediate mask:
+//
+// +------+-----+----+----------+--------+------------------------+
+// |      | BF  |    | FRA      | DM     |                        |
+// | 0    | 6   | 9  | 11       | 16     | 22                     |
+// +------+-----+----+----------+--------+------------------------+
+FORMAT_BF_FRA_DM,
+
+// Format for instructions with an RA field encoding the target register, an RS field encoding the
+// source register, and a 5-bit SH field encoding a shift amount:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | RS       | RA       | SH       |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_RA_RS_SH5,
+
+// Format for instructions with an RA field encoding the target register, an RS field encoding the
+// source register, and a 6-bit SH field encoding a shift amount:
+//
+// +------+----------+----------+----------+------------+----+----+
+// |      | RS       | RA       | SH       |            | SH |    |
+// | 0    | 6        | 11       | 16       | 21         | 30 | 31 |
+// +------+----------+----------+----------+------------+----+----+
+FORMAT_RA_RS_SH6,
+
+// Formats for instructions with a VRT field encoding the target vector register, a VRB field
+// encoding the source vector register, and a UIM field encoding an unsigned immediate:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | VRT      | UIM      | VRB      |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+//
+// Note: The exact size of the usable part of the UIM field differs between instructions, with upper
+//       bits beyond the size of the UIM field being undefined. These formats are differentiated
+//       only for the purposes of checking that the UIM field is in range.
+FORMAT_VRT_VRB_UIM4,
+FORMAT_VRT_VRB_UIM3,
+FORMAT_VRT_VRB_UIM2,
+
+// Formats for instructions with an XT field encoding the target VSX register, an XB field encoding
+// the source VSX register, and a UIM field encoding an unsigned immediate:
+//
+// +------+----------+----------+----------+------------+----+----+
+// |      | XT       | UIM      | XB       |            | XB | XT |
+// | 0    | 6        | 11       | 16       | 21         | 30 | 31 |
+// +------+----------+----------+----------+------------+----+----+
+//
+// Note: The exact size of the usable part of the UIM field differs between instructions, with upper
+//       bits beyond the size of the UIM field being undefined. These formats are differentiated
+//       only for the purposes of checking that the UIM field is in range.
+FORMAT_XT_XB_UIM2
 
 };
 

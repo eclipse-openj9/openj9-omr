@@ -498,12 +498,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src1ImmInstruction * instr)
    print(pOutFile, instr->getSource1Register(), TR_WordReg);
    TR::InstOpCode::Mnemonic op =  instr->getOpCodeValue();
 
-   if (op == TR::InstOpCode::subfic || op == TR::InstOpCode::addi || op == TR::InstOpCode::addi2 ||
-       op == TR::InstOpCode::addic  || op == TR::InstOpCode::addic_r ||
-       op == TR::InstOpCode::addis  || op == TR::InstOpCode::mulli)
-      trfprintf(pOutFile, ", %d", (signed short)instr->getSourceImmediate());
-   else
-      trfprintf(pOutFile, ", " "%d", (intptr_t)(int32_t)instr->getSourceImmediate());
+   trfprintf(pOutFile, ", " "%d", (intptr_t)(int32_t)instr->getSourceImmediate());
 
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());

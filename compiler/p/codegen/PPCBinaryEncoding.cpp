@@ -235,6 +235,25 @@ static void fillFieldFXM1(TR::Instruction *instr, uint32_t *cursor, uint32_t val
    fillFieldFXM(instr, cursor, val);
    }
 
+static void fillFieldDCM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3fu) == val, "0x%x is out-of-range for DCM/DQM field", val);
+   *cursor |= val << 10;
+   }
+
+static void fillFieldSH5(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1fu) == val, "0x%x is out-of-range for SH(5) field", val);
+   *cursor |= val << 11;
+   }
+
+static void fillFieldSH6(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3fu) == val, "0x%x is out-of-range for SH(6) field", val);
+   *cursor |= (val & 0x1fu) << 11;
+   *cursor |= (val & 0x20u) >> 4;
+   }
+
 static void fillFieldSI(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffu), "0x%x is out-of-range for SI field", val);
@@ -245,6 +264,23 @@ static void fillFieldSI5(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0x1fu), "0x%x is out-of-range for SI(5) field", val);
    *cursor |= (val & 0x1f) << 11;
+   }
+
+static void fillFieldUIM(TR::Instruction *instr, uint32_t *cursor, int32_t numBits, uint32_t val)
+   {
+   uint32_t fieldMask = (1u << numBits) - 1;
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & fieldMask) == val, "0x%x is out-of-range for UIM(%d) field", val, numBits);
+   *cursor |= val << 16;
+   }
+
+static void fillFieldUI(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   // TODO: This is a hack until PIC sites are reworked. Currently, the PIC site handling code
+   // assumes that the entire address is in the immediate of the instruction, so we can't chop it to
+   // 16 bits like we should.
+   if (!instr->cg()->comp()->isPICSite(instr))
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xffffu) == val, "0x%x is out-of-range for UI field", val);
+   *cursor |= val & 0xffff;
    }
 
 uint8_t *
@@ -838,39 +874,86 @@ TR::PPCTrg1Src1ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       }
    }
 
-
-uint8_t *TR::PPCTrg1Src1ImmInstruction::generateBinaryEncoding()
+void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src = toRealRegister(getSource1Register());
+   uint32_t imm = getSourceImmediate();
 
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   insertSource1Register(toPPCCursor(cursor));
-   if (getOpCodeValue() == TR::InstOpCode::srawi || getOpCodeValue() == TR::InstOpCode::srawi_r ||
-       getOpCodeValue() == TR::InstOpCode::sradi || getOpCodeValue() == TR::InstOpCode::sradi_r ||
-       getOpCodeValue() == TR::InstOpCode::extswsli)
-      {
-      insertShiftAmount(toPPCCursor(cursor));
-      }
-   else if (getOpCodeValue() == TR::InstOpCode::dtstdg)
-      {
-      setSourceImmediate(getSourceImmediate() << 10);
-      insertImmediateField(toPPCCursor(cursor));
-      }
-   else
-      {
-      insertImmediateField(toPPCCursor(cursor));
-      }
+   addMetaDataForCodeAddress(reinterpret_cast<uint8_t*>(cursor));
 
-   addMetaDataForCodeAddress(cursor);
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RT_RA_SI:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         fillFieldSI(self(), cursor, imm);
+         break;
 
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+      case FORMAT_RA_RS_UI:
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldUI(self(), cursor, imm);
+         break;
+
+      case FORMAT_BF_RA_SI:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         fillFieldSI(self(), cursor, imm);
+         break;
+
+      case FORMAT_BF_RA_UI:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         fillFieldUI(self(), cursor, imm);
+         break;
+
+      case FORMAT_BF_FRA_DM:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src);
+         fillFieldDCM(self(), cursor, imm);
+         break;
+
+      case FORMAT_RA_RS_SH5:
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH5(self(), cursor, imm);
+         break;
+
+      case FORMAT_RA_RS_SH6:
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH6(self(), cursor, imm);
+         break;
+
+      case FORMAT_VRT_VRB_UIM4:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRB(self(), cursor, src);
+         fillFieldUIM(self(), cursor, 4, imm);
+         break;
+
+      case FORMAT_VRT_VRB_UIM3:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRB(self(), cursor, src);
+         fillFieldUIM(self(), cursor, 3, imm);
+         break;
+
+      case FORMAT_VRT_VRB_UIM2:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRB(self(), cursor, src);
+         fillFieldUIM(self(), cursor, 2, imm);
+         break;
+
+      case FORMAT_XT_XB_UIM2:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXB(self(), cursor, src);
+         fillFieldUIM(self(), cursor, 2, imm);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src1ImmInstruction", getOpCode().getFormat());
+      }
    }
-
 
 static void insertMaskField(uint32_t *instruction, TR::InstOpCode::Mnemonic op, int64_t lmask)
    {

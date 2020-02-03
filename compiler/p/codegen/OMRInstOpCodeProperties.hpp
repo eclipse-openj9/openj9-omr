@@ -186,7 +186,7 @@
    /* .name        = */ "addi",
    /* .description =    "Add immediate", */
    /* .opcode      = */ 0x38000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -196,7 +196,7 @@
    /* .name        = */ "addic",
    /* .description =    "Add immediate carrying", */
    /* .opcode      = */ 0x30000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
@@ -218,7 +218,7 @@
    /* .name        = */ "addi",
    /* .description =    "Add imm (carry bit set only if record form)", */
    /* .opcode      = */ 0x38000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
@@ -240,7 +240,7 @@
    /* .name        = */ "addis",
    /* .description =    "Add immediate shifted", */
    /* .opcode      = */ 0x3C000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -452,7 +452,7 @@
    /* .name        = */ "andi.",
    /* .description =    "AND immediate", */
    /* .opcode      = */ 0x70000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_UI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRecordForm |
                         PPCOpProp_AltFormatx |
@@ -464,7 +464,7 @@
    /* .name        = */ "andis.",
    /* .description =    "AND immediate shifted", */
    /* .opcode      = */ 0x74000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_UI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRecordForm |
                         PPCOpProp_AltFormatx |
@@ -807,7 +807,7 @@
    /* .name        = */ "cmpwi",
    /* .description =    "Compare word immediate algebraic", */
    /* .opcode      = */ 0x2C000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_CompareOp |
                         PPCOpProp_SyncSideEffectFree,
@@ -818,7 +818,7 @@
    /* .name        = */ "cmpdi",
    /* .description =    "Compare dword immediate algebraic", */
    /* .opcode      = */ 0x2C200000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DWord |
                         PPCOpProp_CompareOp |
@@ -853,7 +853,7 @@
    /* .name        = */ "cmplwi",
    /* .description =    "Compare word immediate logical", */
    /* .opcode      = */ 0x28000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_RA_UI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_CompareOp |
                         PPCOpProp_SyncSideEffectFree,
@@ -864,7 +864,7 @@
    /* .name        = */ "cmpldi",
    /* .description =    "Compare dword immediate logical", */
    /* .opcode      = */ 0x28200000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_RA_UI,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DWord |
                         PPCOpProp_CompareOp |
@@ -1632,7 +1632,7 @@
    /* .name        = */ "dtstdc",
    /* .description =    "Test Data Class (DFP64)", */
    /* .opcode      = */ 0xEC000184,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_FRA_DM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -1643,7 +1643,7 @@
    /* .name        = */ "dtstdg",
    /* .description =    "Test Data Group (DFP64)", */
    /* .opcode      = */ 0xEC0001C4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_FRA_DM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -1796,7 +1796,7 @@
    /* .name        = */ "extswsli",
    /* .description =    "Extend Sign Word & Shift Left Immediate", */
    /* .opcode      = */ 0x7C0006F4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_SH6,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -3484,7 +3484,7 @@
    /* .name        = */ "mulli",
    /* .description =    "Multiply low immediate", */
    /* .opcode      = */ 0x1C000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -3666,7 +3666,7 @@
    /* .name        = */ "ori",
    /* .description =    "OR immediate", */
    /* .opcode      = */ 0x60000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_UI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree,
@@ -3677,7 +3677,7 @@
    /* .name        = */ "oris",
    /* .description =    "OR immediate shifted", */
    /* .opcode      = */ 0x64000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_UI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree,
@@ -4030,7 +4030,7 @@
    /* .name        = */ "sradi",
    /* .description =    "Shift right algebraic dword immediate", */
    /* .opcode      = */ 0x7C000674,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_SH6,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -4079,7 +4079,7 @@
    /* .name        = */ "srawi",
    /* .description =    "Shift right algebraic word immediate", */
    /* .opcode      = */ 0x7C000670,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_SH5,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -4669,7 +4669,7 @@
    /* .name        = */ "subfic",
    /* .description =    "Subtract from immediate carrying", */
    /* .opcode      = */ 0x20000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_SI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree,
@@ -5758,7 +5758,7 @@
    /* .name        = */ "xori",
    /* .description =    "XOR immediate", */
    /* .opcode      = */ 0x68000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_UI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree,
@@ -5769,7 +5769,7 @@
    /* .name        = */ "xoris",
    /* .description =    "XOR immediate shifted", */
    /* .opcode      = */ 0x6C000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_UI,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree,
@@ -7173,7 +7173,7 @@
    /* .name        = */ "vspltb",
    /* .description =    "vector splat byte", */
    /* .opcode      = */ 0x1000020C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRB_UIM4,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree |
@@ -7185,7 +7185,7 @@
    /* .name        = */ "vsplth",
    /* .description =    "vector splat halfword", */
    /* .opcode      = */ 0x1000024C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRB_UIM3,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree |
@@ -7197,7 +7197,7 @@
    /* .name        = */ "vspltw",
    /* .description =    "vector splat word", */
    /* .opcode      = */ 0x1000028C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRB_UIM2,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree |
@@ -10162,7 +10162,7 @@
    /* .name        = */ "xxspltw",
    /* .description =    "VSX Splat Word", */
    /* .opcode      = */ 0xF0000290,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB_UIM2,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |

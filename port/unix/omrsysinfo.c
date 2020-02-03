@@ -631,7 +631,7 @@ omrsysinfo_processor_has_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 
 #if defined(J9OS_I5)
 #if defined(J9OS_I5_V5R4)
-	if ((OMR_FEATURE_PPC_HAS_VSX == feature) || (OMRPORT_PPC_FEATURE_HAS_ALTIVEC == feature) || (OMRPORT_PPC_FEATURE_HTM == feature)) {
+	if ((OMR_FEATURE_PPC_HAS_VSX == feature) || (OMR_FEATURE_PPC_HAS_ALTIVEC == feature) || (OMR_FEATURE_PPC_HTM == feature)) {
 		Trc_PRT_sysinfo_processor_has_feature_Exit((UDATA)rc);
 		return rc;
 	}

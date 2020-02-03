@@ -127,6 +127,34 @@ static void fillFieldRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldRA(cursor);
    }
 
+static void fillFieldFRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRA field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_FPR, "Attempt to fill FRA field with %s, which is not an FPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldFRA(cursor);
+   }
+
+static void fillFieldVRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRA field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_VRF, "Attempt to fill VRA field with %s, which is not a VR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRA(cursor);
+   }
+
+static void fillFieldXA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XA field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XA field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldXA(cursor);
+   }
+
+static void fillFieldRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RB field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RB field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRB(cursor);
+   }
+
 static void fillFieldFRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRB field with null register");
@@ -146,6 +174,13 @@ static void fillFieldXB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XB field with null register");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XB field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
    reg->setRegisterFieldXB(cursor);
+   }
+
+static void fillFieldFRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRC field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_FPR, "Attempt to fill FRC field with %s, which is not an FPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldFRC(cursor);
    }
 
 static void fillFieldBI(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
@@ -965,19 +1000,71 @@ uint8_t *TR::PPCTrg1Src1Imm2Instruction::generateBinaryEncoding()
    }
 
 
-uint8_t *TR::PPCTrg1Src2Instruction::generateBinaryEncoding()
+void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src1 = toRealRegister(getSource1Register());
+   TR::RealRegister *src2 = toRealRegister(getSource2Register());
 
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   insertSource1Register(toPPCCursor(cursor));
-   insertSource2Register(toPPCCursor(cursor));
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RT_RA_RB:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_RA_RS_RB:
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_BF_RA_RB:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_BF_FRA_FRB:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src1);
+         fillFieldFRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_FRT_FRA_FRB:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src1);
+         fillFieldFRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_VRT_RA_RB:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_VRT_VRA_VRB:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRA(self(), cursor, src1);
+         fillFieldVRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_XT_XA_XB:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXA(self(), cursor, src1);
+         fillFieldXB(self(), cursor, src2);
+         break;
+
+      case FORMAT_FRT_FRA_FRC:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src1);
+         fillFieldFRC(self(), cursor, src2);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src2Instruction", getOpCode().getFormat());
+      }
    }
 
 uint8_t *TR::PPCTrg1Src2ImmInstruction::generateBinaryEncoding()

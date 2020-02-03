@@ -217,7 +217,88 @@ FORMAT_VRT_VRB,
 // |      | XT       |          | XB       |            | XB | XT |
 // | 0    | 6        | 11       | 16       | 21         | 30 | 31 |
 // +------+----------+----------+----------+------------+----+----+
-FORMAT_XT_XB
+FORMAT_XT_XB,
+
+// Format for instructions with an RT field encoding the target register and RA and RB fields
+// encoding the source registers:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | RT       | RA       | RB       |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_RT_RA_RB,
+
+// Format for instructions with an RA field encoding the target register and RS and RB fields
+// encoding the source registers:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | RS       | RA       | RB       |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_RA_RS_RB,
+
+// Format for instructions with a BF field encoding the target CC register and RA and RB fields
+// encoding the source registers:
+//
+// +------+-----+----+----------+----------+----------------------+
+// |      | BF  |    | RA       | RB       |                      |
+// | 0    | 6   | 9  | 11       | 16       | 21                   |
+// +------+-----+----+----------+----------+----------------------+
+FORMAT_BF_RA_RB,
+
+// Format for instructions with a BF field encoding the target CC register and FRA and FRB fields
+// encoding the source FP registers:
+//
+// +------+-----+----+----------+----------+----------------------+
+// |      | BF  |    | FRA      | FRB      |                      |
+// | 0    | 6   | 9  | 11       | 16       | 21                   |
+// +------+-----+----+----------+----------+----------------------+
+FORMAT_BF_FRA_FRB,
+
+// Format for instructions with an FRT field encoding the target FP register and FRA and FRB fields
+// encoding the source registers:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | FRT      | FRA      | FRB      |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_FRT_FRA_FRB,
+
+// Format for instructions with an RT field encoding the target vector register and RA and RB fields
+// encoding the source registers:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | VRT      | RA       | RB       |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_VRT_RA_RB,
+
+// Format for instructions with a VRT field encoding the target vector register and VRA and VRB
+// fields encoding the source registers:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | VRT      | VRA      | VRB      |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_VRT_VRA_VRB,
+
+// Format for instructions with an XT field encoding the target VSX register and XA and XB fields
+// encoding the two source VSX registers:
+//
+// +------+----------+----------+----------+-------+----+----+----+
+// |      | XT       | XA       | XB       |       | XA | XB | XT |
+// | 0    | 6        | 11       | 16       | 21    | 29 | 30 | 31 |
+// +------+----------+----------+----------+-------+----+----+----+
+FORMAT_XT_XA_XB,
+
+// Format for instructions with an FRT field encoding the target FP register and FRA and FRC fields
+// encoding the source registers:
+//
+// +------+----------+----------+-------+----------+--------------+
+// |      | FRT      | FRA      |       | FRC      |              |
+// | 0    | 6        | 11       | 16    | 21       | 26           |
+// +------+----------+----------+-------+----------+--------------+
+FORMAT_FRT_FRA_FRC
 
 };
 

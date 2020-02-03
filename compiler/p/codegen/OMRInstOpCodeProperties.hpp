@@ -73,7 +73,7 @@
    /* .name        = */ "add",
    /* .description =    "Add", */
    /* .opcode      = */ 0x7C000214,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,
@@ -94,7 +94,7 @@
    /* .name        = */ "addc",
    /* .description =    "Add carrying", */
    /* .opcode      = */ 0x7C000014,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
@@ -116,7 +116,7 @@
    /* .name        = */ "addco",
    /* .description =    "Add carrying setting overflow", */
    /* .opcode      = */ 0x7C000414,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SetsOverflowFlag |
@@ -139,7 +139,7 @@
    /* .name        = */ "adde",
    /* .description =    "Add extended", */
    /* .opcode      = */ 0x7C000114,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
@@ -162,7 +162,7 @@
    /* .name        = */ "addeo",
    /* .description =    "Add extended setting overflow", */
    /* .opcode      = */ 0x7C000514,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
@@ -297,7 +297,7 @@
    /* .name        = */ "addo",
    /* .description =    "Add setting overflow", */
    /* .opcode      = */ 0x7C000614,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsOverflowFlag |
                         PPCOpProp_HasRecordForm |
@@ -376,7 +376,7 @@
    /* .name        = */ "and",
    /* .description =    "AND", */
    /* .opcode      = */ 0x7C000038,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -398,7 +398,7 @@
    /* .name        = */ "andc",
    /* .description =    "AND with complement", */
    /* .opcode      = */ 0x7C000078,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -442,8 +442,8 @@
    /* .name        = */ "addex.",
    /* .description =    "Add Extended using alternate carry bits Rc=1", */
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].opcode + 1,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].minimumALS,
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addex].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
@@ -784,7 +784,7 @@
    /* .name        = */ "cmpw",
    /* .description =    "Compare word algebraic", */
    /* .opcode      = */ 0x7C000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_CompareOp |
                         PPCOpProp_SyncSideEffectFree,
@@ -795,7 +795,7 @@
    /* .name        = */ "cmpd",
    /* .description =    "Compare dword algebraic", */
    /* .opcode      = */ 0x7C200000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DWord |
                         PPCOpProp_CompareOp |
@@ -830,7 +830,7 @@
    /* .name        = */ "cmplw",
    /* .description =    "Compare word logical", */
    /* .opcode      = */ 0x7C000040,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_CompareOp |
                         PPCOpProp_SyncSideEffectFree,
@@ -841,7 +841,7 @@
    /* .name        = */ "cmpld",
    /* .description =    "Compare dword logical", */
    /* .opcode      = */ 0x7C200040,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DWord |
                         PPCOpProp_CompareOp |
@@ -887,7 +887,7 @@
    /* .name        = */ "cmpeqb",
    /* .description =    "Compare Equal Byte", */
    /* .opcode      = */ 0x7C0001C0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_CompareOp |
                         PPCOpProp_SyncSideEffectFree,
@@ -1075,7 +1075,7 @@
    /* .name        = */ "dadd",
    /* .description =    "Add (DFP64)", */
    /* .opcode      = */ 0xEC000004,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1211,7 +1211,7 @@
    /* .name        = */ "dcmpu",
    /* .description =    "Unordered Compare (DFP64)", */
    /* .opcode      = */ 0xEC000504,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_CompareOp |
@@ -1270,7 +1270,7 @@
    /* .name        = */ "ddiv",
    /* .description =    "Divide (DFP64)", */
    /* .opcode      = */ 0xEC000444,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1317,7 +1317,7 @@
    /* .name        = */ "divd",
    /* .description =    "Divide dword", */
    /* .opcode      = */ 0x7C0003D2,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
@@ -1339,7 +1339,7 @@
    /* .name        = */ "diex",
    /* .description =    "Insert Biased Exponent (DFP64)", */
    /* .opcode      = */ 0xEC0006C4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1361,7 +1361,7 @@
    /* .name        = */ "divdo",
    /* .description =    "Divide dword setting overflow", */
    /* .opcode      = */ 0x7C0007D2,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
@@ -1384,7 +1384,7 @@
    /* .name        = */ "divdu",
    /* .description =    "Divide dword unsigned", */
    /* .opcode      = */ 0x7C000392,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
@@ -1406,7 +1406,7 @@
    /* .name        = */ "divduo",
    /* .description =    "Divide dword unsigned setting overflow", */
    /* .opcode      = */ 0x7C000792,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
@@ -1429,7 +1429,7 @@
    /* .name        = */ "divw",
    /* .description =    "Divide word", */
    /* .opcode      = */ 0x7C0003D6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,
@@ -1450,7 +1450,7 @@
    /* .name        = */ "divwo",
    /* .description =    "Divide word setting overflow", */
    /* .opcode      = */ 0x7C0007D6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
@@ -1472,7 +1472,7 @@
    /* .name        = */ "divwu",
    /* .description =    "Divide word unsigned", */
    /* .opcode      = */ 0x7C000396,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,
@@ -1493,7 +1493,7 @@
    /* .name        = */ "divwuo",
    /* .description =    "Divide word unsigned setting overflow", */
    /* .opcode      = */ 0x7C000796,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
@@ -1515,7 +1515,7 @@
    /* .name        = */ "dmul",
    /* .description =    "Multiply (DFP64)", */
    /* .opcode      = */ 0xEC000044,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1609,7 +1609,7 @@
    /* .name        = */ "dsub",
    /* .description =    "Subtract (DFP64)", */
    /* .opcode      = */ 0xEC000404,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1709,7 +1709,7 @@
    /* .name        = */ "eqv",
    /* .description =    "Equivalent", */
    /* .opcode      = */ 0x7C000238,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx,
@@ -1831,7 +1831,7 @@
    /* .name        = */ "fadd",
    /* .description =    "Floating add", */
    /* .opcode      = */ 0xFC00002A,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -1842,7 +1842,7 @@
    /* .name        = */ "fadds",
    /* .description =    "Floating add single", */
    /* .opcode      = */ 0xEC00002A,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -1897,7 +1897,7 @@
    /* .name        = */ "fcmpo",
    /* .description =    "Floating compare ordered", */
    /* .opcode      = */ 0xFC000040,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -1910,7 +1910,7 @@
    /* .name        = */ "fcmpu",
    /* .description =    "Floating compare unordered", */
    /* .opcode      = */ 0xFC000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -1923,7 +1923,7 @@
    /* .name        = */ "fcpsgn",
    /* .description =    "Floating copy sign", */
    /* .opcode      = */ 0xFC000010,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -1987,7 +1987,7 @@
    /* .name        = */ "fdiv",
    /* .description =    "Floating divide double", */
    /* .opcode      = */ 0xFC000024,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -1998,7 +1998,7 @@
    /* .name        = */ "fdivs",
    /* .description =    "Floating divide single", */
    /* .opcode      = */ 0xEC000024,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -2067,7 +2067,7 @@
    /* .name        = */ "fmul",
    /* .description =    "Floating multiply double", */
    /* .opcode      = */ 0xFC000032,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
@@ -2079,7 +2079,7 @@
    /* .name        = */ "fmuls",
    /* .description =    "Floating multiply single", */
    /* .opcode      = */ 0xEC000032,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRC,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
@@ -2269,7 +2269,7 @@
    /* .name        = */ "fsub",
    /* .description =    "Floating subtract double", */
    /* .opcode      = */ 0xFC000028,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -2280,7 +2280,7 @@
    /* .name        = */ "fsubs",
    /* .description =    "Floating subtract single", */
    /* .opcode      = */ 0xEC000028,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRA_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_SyncSideEffectFree,
@@ -3038,7 +3038,7 @@
    /* .name        = */ "modud",
    /* .description =    "Modulo unsigned DWord", */
    /* .opcode      = */ 0x7C000212,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -3048,7 +3048,7 @@
    /* .name        = */ "modsd",
    /* .description =    "Modulo signed DWord", */
    /* .opcode      = */ 0x7C000612,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -3058,7 +3058,7 @@
    /* .name        = */ "moduw",
    /* .description =    "Modulo unsigned word", */
    /* .opcode      = */ 0x7C000216,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -3068,7 +3068,7 @@
    /* .name        = */ "modsw",
    /* .description =    "Modulo signed word", */
    /* .opcode      = */ 0x7C000616,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -3354,7 +3354,7 @@
    /* .name        = */ "mulhd",
    /* .description =    "Multiply high dword", */
    /* .opcode      = */ 0x7C000092,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
@@ -3376,7 +3376,7 @@
    /* .name        = */ "mulhdu",
    /* .description =    "Multiply high dword unsigned", */
    /* .opcode      = */ 0x7C000012,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
@@ -3398,7 +3398,7 @@
    /* .name        = */ "mulhw",
    /* .description =    "Multiply high word", */
    /* .opcode      = */ 0x7C000096,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,
@@ -3419,7 +3419,7 @@
    /* .name        = */ "mulhwu",
    /* .description =    "Multiply high word unsigned", */
    /* .opcode      = */ 0x7C000016,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,
@@ -3440,7 +3440,7 @@
    /* .name        = */ "mulld",
    /* .description =    "Multiply low dword", */
    /* .opcode      = */ 0x7C0001D2,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
@@ -3462,7 +3462,7 @@
    /* .name        = */ "mulldo",
    /* .description =    "Multiply low dword setting overflow", */
    /* .opcode      = */ 0x7C0005D2,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DWord |
@@ -3494,7 +3494,7 @@
    /* .name        = */ "mullw",
    /* .description =    "Multiply low word", */
    /* .opcode      = */ 0x7C0001D6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,
@@ -3515,7 +3515,7 @@
    /* .name        = */ "mullwo",
    /* .description =    "Multiply low word setting overflow", */
    /* .opcode      = */ 0x7C0005D6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,
@@ -3536,7 +3536,7 @@
    /* .name        = */ "nand",
    /* .description =    "NAND", */
    /* .opcode      = */ 0x7C0003B8,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -3600,7 +3600,7 @@
    /* .name        = */ "nor",
    /* .description =    "NOR", */
    /* .opcode      = */ 0x7C0000F8,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -3622,7 +3622,7 @@
    /* .name        = */ "or",
    /* .description =    "OR", */
    /* .opcode      = */ 0x7C000378,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -3644,7 +3644,7 @@
    /* .name        = */ "orc",
    /* .description =    "OR with complement", */
    /* .opcode      = */ 0x7C000338,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -3958,7 +3958,7 @@
    /* .name        = */ "sld",
    /* .description =    "Shift left dword", */
    /* .opcode      = */ 0x7C000036,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -3982,7 +3982,7 @@
    /* .name        = */ "slw",
    /* .description =    "Shift left word", */
    /* .opcode      = */ 0x7C000030,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -4005,7 +4005,7 @@
    /* .name        = */ "srad",
    /* .description =    "Shift right algebraic dword", */
    /* .opcode      = */ 0x7C000634,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -4055,7 +4055,7 @@
    /* .name        = */ "sraw",
    /* .description =    "Shift right algebraic word", */
    /* .opcode      = */ 0x7C000630,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -4103,7 +4103,7 @@
    /* .name        = */ "srd",
    /* .description =    "Shift right dword", */
    /* .opcode      = */ 0x7C000436,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -4127,7 +4127,7 @@
    /* .name        = */ "srw",
    /* .description =    "Shift right word", */
    /* .opcode      = */ 0x7C000430,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_HasRecordForm |
@@ -4556,7 +4556,7 @@
    /* .name        = */ "subf",
    /* .description =    "Subtract from", */
    /* .opcode      = */ 0x7C000050,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,
@@ -4577,7 +4577,7 @@
    /* .name        = */ "subfc",
    /* .description =    "Subtract from carrying", */
    /* .opcode      = */ 0x7C000010,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsCarryFlag |
@@ -4599,7 +4599,7 @@
    /* .name        = */ "subfco",
    /* .description =    "Subtract from carrying setting overflow", */
    /* .opcode      = */ 0x7C000410,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
@@ -4622,7 +4622,7 @@
    /* .name        = */ "subfe",
    /* .description =    "Subtract from extended", */
    /* .opcode      = */ 0x7C000110,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsCarryFlag |
@@ -4645,7 +4645,7 @@
    /* .name        = */ "subfeo",
    /* .description =    "Subtract from extended setting overflow", */
    /* .opcode      = */ 0x7C000510,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
@@ -5725,7 +5725,7 @@
    /* .name        = */ "xor",
    /* .description =    "XOR", */
    /* .opcode      = */ 0x7C000278,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -6204,7 +6204,7 @@
    /* .name        = */ "lvsl",
    /* .description =    "Load vector for shift left", */
    /* .opcode      = */ 0x7C00000C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVMX,
@@ -6215,7 +6215,7 @@
    /* .name        = */ "lvsr",
    /* .description =    "Load vector for shift right", */
    /* .opcode      = */ 0x7C00004C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVMX,
@@ -6370,7 +6370,7 @@
    /* .name        = */ "vand",
    /* .description =    "vector logical and", */
    /* .opcode      = */ 0x10000404,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -6381,7 +6381,7 @@
    /* .name        = */ "vandc",
    /* .description =    "vector logical and with complement", */
    /* .opcode      = */ 0x10000444,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -6698,7 +6698,7 @@
    /* .name        =    "vmaxud", */
    /* .description =    "Vector Maximum Unsigned Dword", */
    /* .opcode      =    0x100000C2, */
-   /* .format      =    FORMAT_UNKNOWN, */
+   /* .format      =    FORMAT_VRT_VRA_VRB, */
    /* .minimumALS  =    TR_Processor::TR_PPCp8, */
    /* .properties  =    PPCOpProp_IsVMX | */
    /*                   PPCOpProp_SyncSideEffectFree, */
@@ -6709,7 +6709,7 @@
    /* .name        =    "vminsd", */
    /* .description =    "Vector Minimum Signed Dword", */
    /* .opcode      =    0x100003C2, */
-   /* .format      =    FORMAT_UNKNOWN, */
+   /* .format      =    FORMAT_VRT_VRA_VRB, */
    /* .minimumALS  =    TR_Processor::TR_PPCp8, */
    /* .properties  =    PPCOpProp_IsVMX | */
    /*                   PPCOpProp_SyncSideEffectFree, */
@@ -6881,7 +6881,7 @@
    /* .name        = */ "vor",
    /* .description =    "vector or", */
    /* .opcode      = */ 0x10000484,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -6892,7 +6892,7 @@
    /* .name        =    "vorc", */
    /* .description =    "Vector Logical OR with Complement", */
    /* .opcode      =    0x10000544, */
-   /* .format      =    FORMAT_UNKNOWN, */
+   /* .format      =    FORMAT_VRT_VRA_VRB, */
    /* .minimumALS  =    TR_Processor::TR_PPCp8, */
    /* .properties  =    PPCOpProp_IsVMX | */
    /*                   PPCOpProp_SyncSideEffectFree, */
@@ -6903,7 +6903,7 @@
    /* .name        = */ "vxor",
    /* .description =    "vector xor", */
    /* .opcode      = */ 0x100004C4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -6947,7 +6947,7 @@
    /* .name        = */ "vnor",
    /* .description =    "vector nor", */
    /* .opcode      = */ 0x10000504,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -6991,7 +6991,7 @@
    /* .name        = */ "vbpermq",
    /* .description =    "Vector Bit Permute Qword", */
    /* .opcode      = */ 0x1000054C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7036,7 +7036,7 @@
    /* .name        =    "vsld", */
    /* .description =    "Vector Shift Left Dword", */
    /* .opcode      =    0x100005C4, */
-   /* .format      =    FORMAT_UNKNOWN, */
+   /* .format      =    FORMAT_VRT_VRA_VRB, */
    /* .minimumALS  =    TR_Processor::TR_PPCp8, */
    /* .properties  =    PPCOpProp_IsRotateOrShift | */
    /*                   PPCOpProp_IsVMX | */
@@ -7242,7 +7242,7 @@
    /* .name        = */ "vsl",
    /* .description =    "vector shift left", */
    /* .opcode      = */ 0x100001C4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7254,7 +7254,7 @@
    /* .name        = */ "vslb",
    /* .description =    "vector shift left byte", */
    /* .opcode      = */ 0x10000104,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7278,7 +7278,7 @@
    /* .name        = */ "vslh",
    /* .description =    "vector shift left halfword", */
    /* .opcode      = */ 0x10000144,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7290,7 +7290,7 @@
    /* .name        = */ "vslo",
    /* .description =    "vector shift left by octet", */
    /* .opcode      = */ 0x1000040C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7302,7 +7302,7 @@
    /* .name        = */ "vslw",
    /* .description =    "vector shift left word", */
    /* .opcode      = */ 0x10000184,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7314,7 +7314,7 @@
    /* .name        = */ "vsr",
    /* .description =    "vector shift right", */
    /* .opcode      = */ 0x100002C4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7326,7 +7326,7 @@
    /* .name        = */ "vsrab",
    /* .description =    "vector shift right algebraic byte", */
    /* .opcode      = */ 0x10000304,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7338,7 +7338,7 @@
    /* .name        = */ "vsrah",
    /* .description =    "vector shift right algebraic halfword", */
    /* .opcode      = */ 0x10000344,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7350,7 +7350,7 @@
    /* .name        = */ "vsraw",
    /* .description =    "vector shift right algebraic word", */
    /* .opcode      = */ 0x10000384,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7362,7 +7362,7 @@
    /* .name        = */ "vsrb",
    /* .description =    "vector shift right byte", */
    /* .opcode      = */ 0x10000204,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7374,7 +7374,7 @@
    /* .name        = */ "vsrh",
    /* .description =    "vector shift right halfword", */
    /* .opcode      = */ 0x10000244,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7386,7 +7386,7 @@
    /* .name        = */ "vsro",
    /* .description =    "vector shift right by octet", */
    /* .opcode      = */ 0x1000044C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7398,7 +7398,7 @@
    /* .name        = */ "vsrw",
    /* .description =    "vector shift right word", */
    /* .opcode      = */ 0x10000284,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7434,7 +7434,7 @@
    /* .name        = */ "vrlb",
    /* .description =    "vector rotate left byte", */
    /* .opcode      = */ 0x10000004,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7446,7 +7446,7 @@
    /* .name        = */ "vrlh",
    /* .description =    "vector rotate left halfword", */
    /* .opcode      = */ 0x10000044,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7458,7 +7458,7 @@
    /* .name        = */ "vrlw",
    /* .description =    "vector rotate left word", */
    /* .opcode      = */ 0x10000084,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsRotateOrShift |
                         PPCOpProp_IsVMX |
@@ -7565,7 +7565,7 @@
    /* .name        = */ "vaddsbs",
    /* .description =    "vector add signed byte saturate", */
    /* .opcode      = */ 0x10000300,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7576,7 +7576,7 @@
    /* .name        = */ "vaddshs",
    /* .description =    "vector add signed halfword saturate", */
    /* .opcode      = */ 0x10000340,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7587,7 +7587,7 @@
    /* .name        = */ "vaddsws",
    /* .description =    "vector add signed word saturate", */
    /* .opcode      = */ 0x10000380,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7598,7 +7598,7 @@
    /* .name        = */ "vaddubm",
    /* .description =    "vector add unsigned byte modulo", */
    /* .opcode      = */ 0x10000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7609,7 +7609,7 @@
    /* .name        = */ "vaddubs",
    /* .description =    "vector add unsigned byte saturate", */
    /* .opcode      = */ 0x10000200,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7620,7 +7620,7 @@
    /* .name        = */ "vaddudm",
    /* .description =    "Vector Add Unsigned Dword Modulo", */
    /* .opcode      = */ 0x100000C0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7631,7 +7631,7 @@
    /* .name        = */ "vadduhm",
    /* .description =    "vector add unsigned halfword modulo", */
    /* .opcode      = */ 0x10000040,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7642,7 +7642,7 @@
    /* .name        = */ "vadduhs",
    /* .description =    "vector add unsigned halfword saturate", */
    /* .opcode      = */ 0x10000240,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7653,7 +7653,7 @@
    /* .name        = */ "vadduwm",
    /* .description =    "vector add unsigned word modulo", */
    /* .opcode      = */ 0x10000080,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7664,7 +7664,7 @@
    /* .name        = */ "vadduws",
    /* .description =    "vector add unsigned word saturate", */
    /* .opcode      = */ 0x10000280,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7764,7 +7764,7 @@
    /* .name        = */ "vsubsbs",
    /* .description =    "vector subtract signed byte saturate", */
    /* .opcode      = */ 0x10000700,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7775,7 +7775,7 @@
    /* .name        = */ "vsubshs",
    /* .description =    "vector subtract signed halfword saturate", */
    /* .opcode      = */ 0x10000740,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7786,7 +7786,7 @@
    /* .name        = */ "vsubsws",
    /* .description =    "vector subtract signed word saturate", */
    /* .opcode      = */ 0x10000780,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7797,7 +7797,7 @@
    /* .name        = */ "vsububm",
    /* .description =    "vector subtract unsigned byte modulo", */
    /* .opcode      = */ 0x10000400,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7808,7 +7808,7 @@
    /* .name        = */ "vsububs",
    /* .description =    "vector subtract unsigned byte saturate", */
    /* .opcode      = */ 0x10000600,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7819,7 +7819,7 @@
    /* .name        = */ "vsubudm",
    /* .description =    "vector subtract unsigned Dword modulo", */
    /* .opcode      = */ 0x100004C0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7830,7 +7830,7 @@
    /* .name        = */ "vsubuhm",
    /* .description =    "vector subtract unsigned halfword modulo", */
    /* .opcode      = */ 0x10000440,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7841,7 +7841,7 @@
    /* .name        = */ "vsubuhs",
    /* .description =    "vector subtract unsigned halfword saturate", */
    /* .opcode      = */ 0x10000640,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7852,7 +7852,7 @@
    /* .name        = */ "vsubuwm",
    /* .description =    "vector subtract unsigned word modulo", */
    /* .opcode      = */ 0x10000480,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7863,7 +7863,7 @@
    /* .name        = */ "vsubuws",
    /* .description =    "vector subtract unsigned word saturate", */
    /* .opcode      = */ 0x10000680,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8017,7 +8017,7 @@
    /* .name        = */ "vmulesh",
    /* .description =    "vector multiply even signed halfword", */
    /* .opcode      = */ 0x10000348,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8028,7 +8028,7 @@
    /* .name        = */ "vmulosh",
    /* .description =    "vector multiply odd signed halfword", */
    /* .opcode      = */ 0x10000148,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8039,7 +8039,7 @@
    /* .name        = */ "vmulouh",
    /* .description =    "vector multiply odd unsigned halfword", */
    /* .opcode      = */ 0x10000048,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8050,7 +8050,7 @@
    /* .name        = */ "vmuluwm",
    /* .description =    "vector multiply unsigned word modulo", */
    /* .opcode      = */ 0x10000089,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8061,7 +8061,7 @@
    /* .name        = */ "vminsb",
    /* .description =    "vector minimum signed byte", */
    /* .opcode      = */ 0x10000302,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8072,7 +8072,7 @@
    /* .name        = */ "vminsh",
    /* .description =    "vector minimum signed halfword", */
    /* .opcode      = */ 0x10000342,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8083,7 +8083,7 @@
    /* .name        = */ "vminsw",
    /* .description =    "vector minimum signed word", */
    /* .opcode      = */ 0x10000382,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8094,7 +8094,7 @@
    /* .name        = */ "vminub",
    /* .description =    "vector minimum unsigned byte", */
    /* .opcode      = */ 0x10000202,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8105,7 +8105,7 @@
    /* .name        = */ "vminuh",
    /* .description =    "vector minimum unsigned halfword", */
    /* .opcode      = */ 0x10000242,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8116,7 +8116,7 @@
    /* .name        = */ "vminuw",
    /* .description =    "vector minimum unsigned word", */
    /* .opcode      = */ 0x10000282,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8127,7 +8127,7 @@
    /* .name        = */ "vmaxsb",
    /* .description =    "vector maximum signed byte", */
    /* .opcode      = */ 0x10000102,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8138,7 +8138,7 @@
    /* .name        = */ "vmaxsh",
    /* .description =    "vector maximum signed halfword", */
    /* .opcode      = */ 0x10000142,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8149,7 +8149,7 @@
    /* .name        = */ "vmaxsw",
    /* .description =    "vector maximum signed word", */
    /* .opcode      = */ 0x10000182,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8160,7 +8160,7 @@
    /* .name        = */ "vmaxub",
    /* .description =    "vector maximum unsigned byte", */
    /* .opcode      = */ 0x10000002,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8171,7 +8171,7 @@
    /* .name        = */ "vmaxuh",
    /* .description =    "vector maximum unsigned halfword", */
    /* .opcode      = */ 0x10000042,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8182,7 +8182,7 @@
    /* .name        = */ "vmaxuw",
    /* .description =    "vector maximum unsigned word", */
    /* .opcode      = */ 0x10000082,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -8331,7 +8331,7 @@
    /* .name        = */ "vcmpequb",
    /* .description =    "vector compare equal unsigned byte", */
    /* .opcode      = */ 0x10000006,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
@@ -8377,7 +8377,7 @@
    /* .name        = */ "vcmpequh",
    /* .description =    "vector compare equal unsigned halfword", */
    /* .opcode      = */ 0x10000046,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
@@ -8400,7 +8400,7 @@
    /* .name        = */ "vcmpequw",
    /* .description =    "vector compare equal unsigned word", */
    /* .opcode      = */ 0x10000086,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
@@ -8423,7 +8423,7 @@
    /* .name        = */ "vcmpgtsb",
    /* .description =    "vector compare greater than signed byte", */
    /* .opcode      = */ 0x10000306,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
@@ -8469,7 +8469,7 @@
    /* .name        = */ "vcmpgtsh",
    /* .description =    "vector compare greater than signed halfword", */
    /* .opcode      = */ 0x10000346,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
@@ -8492,7 +8492,7 @@
    /* .name        = */ "vcmpgtsw",
    /* .description =    "vector compare greater than signed word", */
    /* .opcode      = */ 0x10000386,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
@@ -8515,7 +8515,7 @@
    /* .name        = */ "vcmpgtub",
    /* .description =    "vector compare greater than unsigned byte", */
    /* .opcode      = */ 0x10000206,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
@@ -8538,7 +8538,7 @@
    /* .name        = */ "vcmpgtuh",
    /* .description =    "vector compare greater than unsigned halfword", */
    /* .opcode      = */ 0x10000246,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
@@ -8561,7 +8561,7 @@
    /* .name        = */ "vcmpgtuw",
    /* .description =    "vector compare greater than unsigned word", */
    /* .opcode      = */ 0x10000286,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_CompareOp |
@@ -10114,7 +10114,7 @@
    /* .name        = */ "xxlor",
    /* .description =    "VSX Logical OR", */
    /* .opcode      = */ 0xF0000490,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10126,7 +10126,7 @@
    /* .name        = */ "xxlnor",
    /* .description =    "VSX Logical NOR", */
    /* .opcode      = */ 0xF0000510,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10418,7 +10418,7 @@
    /* .name        = */ "xvadddp",
    /* .description =    "VSX Vector Add Double-Precision", */
    /* .opcode      = */ 0xF0000300,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10476,7 +10476,7 @@
    /* .name        = */ "xvmindp",
    /* .description =    "VSX Vector Min Double-Precision", */
    /* .opcode      = */ 0xF0000740,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10488,7 +10488,7 @@
    /* .name        = */ "xvmaxdp",
    /* .description =    "VSX Vector Max Double-Precision", */
    /* .opcode      = */ 0xF0000700,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10500,7 +10500,7 @@
    /* .name        = */ "xvcmpeqdp",
    /* .description =    "VSX Vector Compare Equal To Double-Precision", */
    /* .opcode      = */ 0xF0000318,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DoubleFP |
@@ -10524,7 +10524,7 @@
    /* .name        = */ "xvcmpgedp",
    /* .description =    "VSX Vector Compare Greater Than Or Equal To Double-Precision", */
    /* .opcode      = */ 0xF0000398,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DoubleFP |
@@ -10548,7 +10548,7 @@
    /* .name        = */ "xvcmpgtdp",
    /* .description =    "VSX Vector Compare Greater Than Double-Precision", */
    /* .opcode      = */ 0xF0000358,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_DoubleFP |
@@ -10596,7 +10596,7 @@
    /* .name        = */ "xvdivdp",
    /* .description =    "VSX Vector Divide Double-Precision", */
    /* .opcode      = */ 0xF00003C0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10630,7 +10630,7 @@
    /* .name        = */ "xvmuldp",
    /* .description =    "VSX Vector Multiply Double-Precision", */
    /* .opcode      = */ 0xF0000380,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10655,7 +10655,7 @@
    /* .name        = */ "xvnmsubadp",
    /* .description =    "VSX Vector Negative Multiply-Subtract Type-A Double-Precision", */
    /* .opcode      = */ 0xF0000788,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10668,7 +10668,7 @@
    /* .name        = */ "xvnmsubmdp",
    /* .description =    "VSX Vector Negative Multiply-Subtract Type-M Double-Precision", */
    /* .opcode      = */ 0xF00007C8,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10681,7 +10681,7 @@
    /* .name        = */ "xvsubdp",
    /* .description =    "VSX Vector Subtract Double-Precision", */
    /* .opcode      = */ 0xF0000340,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10693,7 +10693,7 @@
    /* .name        = */ "xvmaddadp",
    /* .description =    "VSX Vector Multiply-Add Type-A Double-Precision", */
    /* .opcode      = */ 0xF0000308,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10706,7 +10706,7 @@
    /* .name        = */ "xvmaddmdp",
    /* .description =    "VSX Vector Multiply-Add Type-M Double-Precision", */
    /* .opcode      = */ 0xF0000348,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10719,7 +10719,7 @@
    /* .name        = */ "xvmsubadp",
    /* .description =    "VSX Vector Multiply-Sub Type-A Double-Precision", */
    /* .opcode      = */ 0xF0000388,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10732,7 +10732,7 @@
    /* .name        = */ "xvmsubmdp",
    /* .description =    "VSX Vector Multiply-Sub Type-M Double-Precision", */
    /* .opcode      = */ 0xF00003C8,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -11317,7 +11317,7 @@
    /* .name        = */ "xxland",
    /* .description =    "Logical AND", */
    /* .opcode      = */ 0xF0000410,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11328,7 +11328,7 @@
    /* .name        = */ "xxlandc",
    /* .description =    "Logical AND with Complement", */
    /* .opcode      = */ 0xF0000450,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11339,7 +11339,7 @@
    /* .name        = */ "xxleqv",
    /* .description =    "Logical Equivalence", */
    /* .opcode      = */ 0xF00005D0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11350,7 +11350,7 @@
    /* .name        = */ "xxlnand",
    /* .description =    "Logical NAND", */
    /* .opcode      = */ 0xF0000590,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11361,7 +11361,7 @@
    /* .name        = */ "xxlorc",
    /* .description =    "Logical OR with Complement", */
    /* .opcode      = */ 0xF0000550,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11372,7 +11372,7 @@
    /* .name        = */ "xxlxor",
    /* .description =    "Logical XOR", */
    /* .opcode      = */ 0xF00004D0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11383,7 +11383,7 @@
    /* .name        = */ "xxmrghw",
    /* .description =    "Merge High Word", */
    /* .opcode      = */ 0xF0000090,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11394,7 +11394,7 @@
    /* .name        = */ "xxmrglw",
    /* .description =    "Merge Low Word", */
    /* .opcode      = */ 0xF0000190,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11452,7 +11452,7 @@
    /* .name        = */ "xvaddsp",
    /* .description =    "Vector Add Single-Precision", */
    /* .opcode      = */ 0xF0000200,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11463,7 +11463,7 @@
    /* .name        = */ "xvcmpeqsp",
    /* .description =    "Vector Compare Equal To Single-Precision", */
    /* .opcode      = */ 0xF0000218,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_IsVSX |
@@ -11486,7 +11486,7 @@
    /* .name        = */ "xvcmpgesp",
    /* .description =    "Vector Compare Greater Than or Equal To Single-Precision", */
    /* .opcode      = */ 0xF0000298,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_IsVSX |
@@ -11509,7 +11509,7 @@
    /* .name        = */ "xvcmpgtsp",
    /* .description =    "Vector Compare Greater Than Single-Precision", */
    /* .opcode      = */ 0xF0000258,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_IsVSX |
@@ -11785,7 +11785,7 @@
    /* .name        = */ "xvdivsp",
    /* .description =    "Vector Divide Single-Precision", */
    /* .opcode      = */ 0xF00002C0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11796,7 +11796,7 @@
    /* .name        = */ "xvmaddasp",
    /* .description =    "Vector Multiply-Add Type-A Single-Precision", */
    /* .opcode      = */ 0xF0000208,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11807,7 +11807,7 @@
    /* .name        = */ "xvmaddmsp",
    /* .description =    "Vector Multiply-Add Type-M Single-Precision", */
    /* .opcode      = */ 0xF0000248,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11818,7 +11818,7 @@
    /* .name        = */ "xvmaxsp",
    /* .description =    "Vector Maximum Single-Precision", */
    /* .opcode      = */ 0xF0000600,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11829,7 +11829,7 @@
    /* .name        = */ "xvminsp",
    /* .description =    "Vector Minimum Single-Precision", */
    /* .opcode      = */ 0xF0000640,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11840,7 +11840,7 @@
    /* .name        = */ "xvmsubasp",
    /* .description =    "Vector Multiply-Subtract Type-A Single-Precision", */
    /* .opcode      = */ 0xF0000288,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11851,7 +11851,7 @@
    /* .name        = */ "xvmsubmsp",
    /* .description =    "Vector Multiply-Subtract Type-M Single-Precision", */
    /* .opcode      = */ 0xF00002C8,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11862,7 +11862,7 @@
    /* .name        = */ "xvmulsp",
    /* .description =    "Vector Multiply Single-Precision", */
    /* .opcode      = */ 0xF0000280,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11910,7 +11910,7 @@
    /* .name        = */ "xvnmaddadp",
    /* .description =    "Vector Negative Multiply-Add Type-A Double-Precision", */
    /* .opcode      = */ 0xF0000708,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
@@ -11922,7 +11922,7 @@
    /* .name        = */ "xvnmaddasp",
    /* .description =    "Vector Negative Multiply-Add Type-A Single-Precision", */
    /* .opcode      = */ 0xF0000608,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11933,7 +11933,7 @@
    /* .name        = */ "xvnmaddmdp",
    /* .description =    "Vector Negative Multiply-Add Type-M Double-Precision", */
    /* .opcode      = */ 0xF0000748,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
@@ -11945,7 +11945,7 @@
    /* .name        = */ "xvnmaddmsp",
    /* .description =    "Vector Negative Multiply-Add Type-M Single-Precision", */
    /* .opcode      = */ 0xF0000648,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11956,7 +11956,7 @@
    /* .name        = */ "xvnmsubasp",
    /* .description =    "Vector Negative Multiply-Subtract Type-A Single-Precision", */
    /* .opcode      = */ 0xF0000688,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -11967,7 +11967,7 @@
    /* .name        = */ "xvnmsubmsp",
    /* .description =    "Vector Negative Multiply-Subtract Type-M Single-Precision", */
    /* .opcode      = */ 0xF00006C8,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -12165,7 +12165,7 @@
    /* .name        = */ "xvsubsp",
    /* .description =    "Vector Subtract Single-Precision", */
    /* .opcode      = */ 0xF0000240,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,

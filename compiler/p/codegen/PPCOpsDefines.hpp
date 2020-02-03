@@ -136,7 +136,88 @@ FORMAT_RS_FXM1,
 // |      | RT    |                                               |
 // | 0    | 6     | 11                                            |
 // +------+-------+-----------------------------------------------+
-FORMAT_RT
+FORMAT_RT,
+
+// Format for instructions with an RA field encoding the target register and an RS field encoding
+// the only source register:
+//
+// +------+----------+----------+---------------------------------+
+// |      | RS       | RA       |                                 |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RA_RS,
+
+// Format for instructions with an RT field encoding the target register and an RA field encoding
+// the only source register:
+//
+// +------+----------+----------+---------------------------------+
+// |      | RT       | RA       |                                 |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RT_RA,
+
+// Format for instructions with an FRT field encoding the target FP register and an FRB field
+// encoding the only source FP register:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | FRT      |          | FRB      |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_FRT_FRB,
+
+// Format for instructions with a BF field encoding the target CC register and a BFA field encoding
+// the only source CC register:
+//
+// +------+-----+-----+-----+-------------------------------------+
+// |      | BF  |     | BFA |                                     |
+// | 0    | 6   | 9   | 11  | 14                                  |
+// +------+-----+-----+-----+-------------------------------------+
+FORMAT_BF_BFA,
+
+// Format for instructions with an RA field encoding the target register and an XS field encoding
+// the only VSX source register:
+//
+// +------+----------+----------+----------------------------+----+
+// |      | XS       | RA       |                            | XS |
+// | 0    | 6        | 11       | 16                         | 31 |
+// +------+----------+----------+----------------------------+----+
+FORMAT_RA_XS,
+
+// Format for instructions with an XT field encoding the target VSX target register and an RA field
+// encoding the only source register:
+//
+// +------+----------+----------+----------------------------+----+
+// |      | XT       | RA       |                            | XT |
+// | 0    | 6        | 11       | 16                         | 31 |
+// +------+----------+----------+----------------------------+----+
+FORMAT_XT_RA,
+
+// Format for instructions with an RT field encoding the target register and an BFA field encoding
+// the only source CC register:
+//
+// +------+----------+-----+--------------------------------------+
+// |      | RT       | BFA |                                      |
+// | 0    | 6        | 11  | 14                                   |
+// +------+----------+-----+--------------------------------------+
+FORMAT_RT_BFA,
+
+// Format for instructions with an VRT field encoding the target vector register and a VRB field
+// encoding the only source vector register:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | VRT      |          | VRB      |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_VRT_VRB,
+
+// Format for instructions with an XT field encoding the target VSX register and an XB field
+// encoding the only source VSX register:
+//
+// +------+----------+----------+----------+------------+----+----+
+// |      | XT       |          | XB       |            | XB | XT |
+// | 0    | 6        | 11       | 16       | 21         | 30 | 31 |
+// +------+----------+----------+----------+------------+----+----+
+FORMAT_XT_XB
 
 };
 

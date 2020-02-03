@@ -979,7 +979,7 @@ class PPCTrg1Src1Instruction : public PPCTrg1Instruction
          }
       }
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 

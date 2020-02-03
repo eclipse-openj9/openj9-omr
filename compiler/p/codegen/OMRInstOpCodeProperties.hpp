@@ -250,7 +250,7 @@
    /* .name        = */ "addme",
    /* .description =    "Add to minus one extended", */
    /* .opcode      = */ 0x7C0001D4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
@@ -273,7 +273,7 @@
    /* .name        = */ "addmeo",
    /* .description =    "Add to minus one extended setting overflow", */
    /* .opcode      = */ 0x7C0005D4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
@@ -329,7 +329,7 @@
    /* .name        = */ "addze",
    /* .description =    "Add to zero extended", */
    /* .opcode      = */ 0x7C000194,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
@@ -352,7 +352,7 @@
    /* .name        = */ "addzeo",
    /* .description =    "Add to zero extended setting overflow", */
    /* .opcode      = */ 0x7C000594,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_ReadsCarryFlag |
                         PPCOpProp_SetsCarryFlag |
@@ -898,7 +898,7 @@
    /* .name        = */ "cntlzd",
    /* .description =    "Count leading zeros dword", */
    /* .opcode      = */ 0x7C000074,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -921,7 +921,7 @@
    /* .name        = */ "cntlzw",
    /* .description =    "Count leading zeros word", */
    /* .opcode      = */ 0x7C000034,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -1163,7 +1163,7 @@
    /* .name        = */ "dcffix",
    /* .description =    "Convert From Fixed (DFP64)", */
    /* .opcode      = */ 0xEC000644,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1187,7 +1187,7 @@
    /* .name        = */ "dcffixq",
    /* .description =    "Convert From Fixed (DFP128)", */
    /* .opcode      = */ 0xFC000644,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1223,7 +1223,7 @@
    /* .name        = */ "dctfix",
    /* .description =    "Convert to Fixed (DFP64)", */
    /* .opcode      = */ 0xEC000244,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1247,7 +1247,7 @@
    /* .name        = */ "ddedpd",
    /* .description =    "Decode DPD to BCD (DFP64)", */
    /* .opcode      = */ 0xEC000284,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1294,7 +1294,7 @@
    /* .name        = */ "denbcdu",
    /* .description =    "Encode Unsigned BCD to DFP (DFP64)", */
    /* .opcode      = */ 0xEC000684,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1307,8 +1307,8 @@
    /* .name        = */ "denbcdu.",
    /* .description =    "Encode Unsigned BCD to DFP (DFP64) Rc=1", */
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].opcode + 1,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
+   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].format,
+   /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].minimumALS,
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::denbcdu].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
 
@@ -1585,7 +1585,7 @@
    /* .name        = */ "drdpq",
    /* .description =    "Round To DFP64 (DFP128)", */
    /* .opcode      = */ 0xFC000604,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1676,7 +1676,7 @@
    /* .name        = */ "dxex",
    /* .description =    "Extract Biased Exponent (DFP64)", */
    /* .opcode      = */ 0xEC0002C4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_HasRecordForm |
@@ -1730,7 +1730,7 @@
    /* .name        = */ "extsb",
    /* .description =    "Extend sign byte", */
    /* .opcode      = */ 0x7C000774,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -1752,7 +1752,7 @@
    /* .name        = */ "extsh",
    /* .description =    "Extend sign half word", */
    /* .opcode      = */ 0x7C000734,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -1774,7 +1774,7 @@
    /* .name        = */ "extsw",
    /* .description =    "Extend sign word", */
    /* .opcode      = */ 0x7C0007B4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_AltFormatx |
@@ -1818,7 +1818,7 @@
    /* .name        = */ "fabs",
    /* .description =    "Floating absolute value", */
    /* .opcode      = */ 0xFC000210,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -1853,7 +1853,7 @@
    /* .name        = */ "fcfid",
    /* .description =    "Floating convert from integer dword", */
    /* .opcode      = */ 0xFC00069C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree,
@@ -1864,7 +1864,7 @@
    /* .name        = */ "fcfidu",
    /* .description =    "Floating convert from integer dword unsigned", */
    /* .opcode      = */ 0xFC00079C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree,
@@ -1875,7 +1875,7 @@
    /* .name        = */ "fcfids",
    /* .description =    "Floating convert from integer dword single", */
    /* .opcode      = */ 0xEC00069C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree,
@@ -1886,7 +1886,7 @@
    /* .name        = */ "fcfidus",
    /* .description =    "Floating convert from integer dword unsigned single", */
    /* .opcode      = */ 0xEC00079C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_AltFormat |
                         PPCOpProp_SyncSideEffectFree,
@@ -1935,7 +1935,7 @@
    /* .name        = */ "fctid",
    /* .description =    "Floating convert to integer dword", */
    /* .opcode      = */ 0xFC00065C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -1948,7 +1948,7 @@
    /* .name        = */ "fctidz",
    /* .description =    "Floating convert to integer dword round toward zero", */
    /* .opcode      = */ 0xFC00065E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -1961,7 +1961,7 @@
    /* .name        = */ "fctiw",
    /* .description =    "Floating convert to integer word", */
    /* .opcode      = */ 0xFC00001C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios2,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -1974,7 +1974,7 @@
    /* .name        = */ "fctiwz",
    /* .description =    "Floating convert to integer word round toward zero", */
    /* .opcode      = */ 0xFC00001E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios2,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -2031,7 +2031,7 @@
    /* .name        = */ "fmr",
    /* .description =    "Floating move register", */
    /* .opcode      = */ 0xFC000090,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -2091,7 +2091,7 @@
    /* .name        = */ "fnabs",
    /* .description =    "Floating negative absolute value", */
    /* .opcode      = */ 0xFC000110,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -2104,7 +2104,7 @@
    /* .name        = */ "fneg",
    /* .description =    "Floating negate", */
    /* .opcode      = */ 0xFC000050,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_SingleFP |
@@ -2173,7 +2173,7 @@
    /* .name        = */ "frim",
    /* .description =    "Floating round to minus (floor) double", */
    /* .opcode      = */ 0xFC0003D0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCgr,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
@@ -2185,7 +2185,7 @@
    /* .name        = */ "frin",
    /* .description =    "Floating round to nearest double", */
    /* .opcode      = */ 0xFC000310,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCgr,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
@@ -2197,7 +2197,7 @@
    /* .name        = */ "frip",
    /* .description =    "Floating round to plus (ceil) double", */
    /* .opcode      = */ 0xFC000390,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCgr,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
@@ -2209,7 +2209,7 @@
    /* .name        = */ "frsp",
    /* .description =    "Floating round to single", */
    /* .opcode      = */ 0xFC000018,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
@@ -2245,7 +2245,7 @@
    /* .name        = */ "fsqrt",
    /* .description =    "Floating square root double", */
    /* .opcode      = */ 0xFC00002C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios2,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_AltFormat |
@@ -2257,7 +2257,7 @@
    /* .name        = */ "fsqrts",
    /* .description =    "Floating square root single", */
    /* .opcode      = */ 0xEC00002C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_FRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_AltFormat |
@@ -2868,7 +2868,7 @@
    /* .name        = */ "mcrf",
    /* .description =    "Move condition register field", */
    /* .opcode      = */ 0x4C000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_BF_BFA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -3078,7 +3078,7 @@
    /* .name        = */ "ori",
    /* .description =    "Register copy", */
    /* .opcode      = */ 0x60000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_IsRegCopy |
@@ -3277,7 +3277,7 @@
    /* .name        = */ "mfvsrd",
    /* .description =    "Move From VSR Doubleword", */
    /* .opcode      = */ 0x7C000066,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_XS,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_AltFormatx |
@@ -3289,7 +3289,7 @@
    /* .name        = */ "mfvsrwz",
    /* .description =    "Move From VSR Word and Zero", */
    /* .opcode      = */ 0x7C0000E6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_XS,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_AltFormatx |
@@ -3301,7 +3301,7 @@
    /* .name        = */ "mtvsrd",
    /* .description =    "Move To VSR Doubleword", */
    /* .opcode      = */ 0x7C000166,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -3312,7 +3312,7 @@
    /* .name        = */ "mtvsrwz",
    /* .description =    "Move To VSR Word and Zero", */
    /* .opcode      = */ 0x7C0001E6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -3323,7 +3323,7 @@
    /* .name        = */ "mtvsrwa",
    /* .description =    "Move To VSR Word and Zero Sign-Extend", */
    /* .opcode      = */ 0x7C0001A6,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -3558,7 +3558,7 @@
    /* .name        = */ "neg",
    /* .description =    "Negate", */
    /* .opcode      = */ 0x7C0000D0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,
@@ -3579,7 +3579,7 @@
    /* .name        = */ "nego",
    /* .description =    "Negate setting overflow", */
    /* .opcode      = */ 0x7C0004D0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,
@@ -3688,7 +3688,7 @@
    /* .name        = */ "popcntd",
    /* .description =    "Population count dword", */
    /* .opcode      = */ 0x7C0003F4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_DWord |
@@ -3700,7 +3700,7 @@
    /* .name        = */ "popcntw",
    /* .description =    "Population count word", */
    /* .opcode      = */ 0x7C0002F4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RS,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree,
@@ -3938,7 +3938,7 @@
    /* .name        = */ "setb",
    /* .description =    "Set Boolean", */
    /* .opcode      = */ 0x7C000100,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_BFA,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -4680,7 +4680,7 @@
    /* .name        = */ "subfme",
    /* .description =    "Subtract from minus one extended", */
    /* .opcode      = */ 0x7C0001D0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsCarryFlag |
@@ -4703,7 +4703,7 @@
    /* .name        = */ "subfmeo",
    /* .description =    "Subtract from minus one extended setting overflow", */
    /* .opcode      = */ 0x7C0005D0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
@@ -4727,7 +4727,7 @@
    /* .name        = */ "subfze",
    /* .description =    "Subtract from zero extended", */
    /* .opcode      = */ 0x7C000190,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_ReadsCarryFlag |
@@ -4750,7 +4750,7 @@
    /* .name        = */ "subfzeo",
    /* .description =    "Subtract from zero extended setting overflow", */
    /* .opcode      = */ 0x7C000590,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SetsOverflowFlag |
@@ -8745,7 +8745,7 @@
    /* .name        = */ "vupkhsb",
    /* .description =    "vector unpack high signed byte", */
    /* .opcode      = */ 0x1000020E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_AltFormat |
@@ -8757,7 +8757,7 @@
    /* .name        = */ "vupkhsh",
    /* .description =    "vector unpack high signed halfword", */
    /* .opcode      = */ 0x1000024E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_AltFormat |
@@ -8769,7 +8769,7 @@
    /* .name        = */ "vupklsb",
    /* .description =    "vector unpack low signed byte", */
    /* .opcode      = */ 0x1000028E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_AltFormat |
@@ -8781,7 +8781,7 @@
    /* .name        = */ "vupklsh",
    /* .description =    "vector unpack low signed halfword", */
    /* .opcode      = */ 0x100002CE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_AltFormat |
@@ -10330,7 +10330,7 @@
    /* .name        = */ "xscvdpsp",
    /* .description =    "VSX Scalar Convert From Double-Precision to Single-Precision", */
    /* .opcode      = */ 0xF0000424,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10642,7 +10642,7 @@
    /* .name        = */ "xvnegdp",
    /* .description =    "VSX Vector Negate Double-Precision", */
    /* .opcode      = */ 0xF00007E4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10745,7 +10745,7 @@
    /* .name        = */ "xvsqrtdp",
    /* .description =    "VSX Vector Square Root Double-Precision", */
    /* .opcode      = */ 0xF000032C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsVSX |
@@ -10968,7 +10968,7 @@
    /* .name        = */ "xscvdpspn",
    /* .description =    "Scalar Convert Double-Precision to Single-Precision format Non-signalling", */
    /* .opcode      = */ 0xF000042C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
@@ -11007,7 +11007,7 @@
    /* .name        = */ "xscvspdp",
    /* .description =    "Scalar Convert Single-Precision to Double-Precision (p=1)", */
    /* .opcode      = */ 0xF0000524,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
@@ -11020,7 +11020,7 @@
    /* .name        = */ "xscvspdpn",
    /* .description =    "Convert Single-Precision to Double-Precision format Non-signalling", */
    /* .opcode      = */ 0xF000052C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
@@ -11683,7 +11683,7 @@
    /* .name        = */ "xvcvsxddp",
    /* .description =    "Vector Convert Signed Fixed-Point Doubleword to Double-Precision", */
    /* .opcode      = */ 0xF00007E0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
@@ -11696,7 +11696,7 @@
    /* .name        = */ "xvcvsxdsp",
    /* .description =    "Vector Convert Signed Fixed-Point Doubleword to Single-Precision", */
    /* .opcode      = */ 0xF00006E0,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
@@ -11898,7 +11898,7 @@
    /* .name        = */ "xvnegsp",
    /* .description =    "Vector Negate Single-Precision", */
    /* .opcode      = */ 0xF00006E4,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree |

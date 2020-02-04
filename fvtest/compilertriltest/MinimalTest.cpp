@@ -313,9 +313,13 @@ typename M::FunctionPtr compile()
 
 TEST_F(MinimalTest, MeaningOfLife)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
-        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+   SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
+   SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
+   SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
    auto entry = compile<MeaningOfLifeMethod>();
 
@@ -324,9 +328,13 @@ TEST_F(MinimalTest, MeaningOfLife)
 
 TEST_F(MinimalTest, ReturnArgI32)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
-        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+   SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
+   SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
+   SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
    auto entry = compile<ReturnArgI32Method>();
 
@@ -337,8 +345,13 @@ TEST_F(MinimalTest, ReturnArgI32)
 TEST_F(MinimalTest, MaxIfThen)
    {
    std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
-        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+   SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
+   SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
+   SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
    auto entry = compile<MaxIfThenMethod>();
 
@@ -350,9 +363,13 @@ TEST_F(MinimalTest, MaxIfThen)
 
 TEST_F(MinimalTest, AddArgConst)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
-        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+   SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
+   SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
+   SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
    auto entry = compile<AddArgConstMethod>();
 
@@ -362,9 +379,13 @@ TEST_F(MinimalTest, AddArgConst)
 
 TEST_F(MinimalTest, SubArgArg)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
-        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+   SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
+   SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
+   SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
    auto entry = compile<SubArgArgMethod>();
 
@@ -376,9 +397,13 @@ TEST_F(MinimalTest, SubArgArg)
 
 TEST_F(MinimalTest, Factorial)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
-        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+   SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
+   SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
+   SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
    auto entry = compile<FactorialMethod>();
 
@@ -395,9 +420,13 @@ RecursiveFibonnaci(int32_t n)
 
 TEST_F(MinimalTest, RecursiveFibonnaci)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
-        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+   SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
+   SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
+   SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
    auto entry = compile<RecursiveFibonnaciMethod>();
 

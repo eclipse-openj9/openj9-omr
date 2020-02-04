@@ -189,9 +189,9 @@ INSTANTIATE_TEST_CASE_P(MaxMin, Int64MaxMin, ::testing::Combine(
 class FloatMaxMin : public TRTest::BinaryOpTest<float> {};
 
 TEST_P(FloatMaxMin, UsingConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
-        << "The " << arch << " code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    
     auto param = TRTest::to_struct(GetParam());
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -218,9 +218,9 @@ TEST_P(FloatMaxMin, UsingConst) {
 }
 
 TEST_P(FloatMaxMin, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
-        << "The " << arch << " code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
+ 
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
@@ -256,9 +256,9 @@ INSTANTIATE_TEST_CASE_P(MaxMin, FloatMaxMin, ::testing::Combine(
 class DoubleMaxMin : public TRTest::BinaryOpTest<double> {};
 
 TEST_P(DoubleMaxMin, UsingConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
-        << "The " << arch << " code generator currently doesn't support dmax/dmin (see issue #4276)";
+    SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
@@ -286,9 +286,9 @@ TEST_P(DoubleMaxMin, UsingConst) {
 }
 
 TEST_P(DoubleMaxMin, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
-        << "The " << arch << " code generator currently doesn't support dmax/dmin (see issue #4276)";
+    SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};

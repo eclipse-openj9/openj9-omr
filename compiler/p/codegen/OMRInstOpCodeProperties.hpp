@@ -5877,16 +5877,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::depend,
-   /* .name        = */ "depend",
-   /* .description =    "Instruction to hang dependency on", */
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ UNKNOWN_FORMAT,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::probenop,
    /* .name        = */ "nop",
    /* .description =    "Probe NOP (for RI)", */

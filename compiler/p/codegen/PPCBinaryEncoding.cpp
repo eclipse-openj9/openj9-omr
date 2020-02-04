@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -61,7 +61,7 @@ OMR::Power::Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = self()->cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   if (self()->getOpCodeValue() == TR::InstOpCode::depend || self()->getOpCodeValue() == TR::InstOpCode::assocreg)
+   if (self()->getOpCodeValue() == TR::InstOpCode::assocreg)
       {
       }
    else
@@ -84,7 +84,7 @@ OMR::Power::Instruction::generateBinaryEncoding()
 int32_t
 OMR::Power::Instruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   if (self()->getOpCodeValue() == TR::InstOpCode::depend || self()->getOpCodeValue() == TR::InstOpCode::assocreg)
+   if (self()->getOpCodeValue() == TR::InstOpCode::assocreg)
       {
       self()->setEstimatedBinaryLength(0);
       return currentEstimate;

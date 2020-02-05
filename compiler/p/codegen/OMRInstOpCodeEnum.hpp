@@ -551,7 +551,6 @@
    dd,               // define word
    assocreg,         // Associate real registers with Virtual registers.
    vgdnop,           // Virtual Guard NOP instruction
-   depend,           // Instruction to hang dependency on
    probenop,         // Probe NOP (for RI)
    iflong,           // compare and branch long
    setblong,         // compare long and set boolean

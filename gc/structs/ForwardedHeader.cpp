@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,6 +28,7 @@
 #endif /* defined(FORWARDEDHEADER_DEBUG) */
 #include <string.h>
 #include "AtomicOperations.hpp"
+#include "ModronAssertions.h"
 
 #if defined(FORWARDEDHEADER_DEBUG)
 void
@@ -256,6 +257,7 @@ MM_ForwardedHeader::copyOrWaitOutline(omrobjectptr_t destinationObjectPtr)
 
 			if (0 == remainingSizeToCopy) {
 				if (participatingInCopy) {
+					Assert_MM_true(outstandingCopies > 0);
 					MM_AtomicOperations::storeSync();
 					uintptr_t newValue = ((outstandingCopies - 1) << OUTSTANDING_COPIES_SHIFT) | _beingCopiedTag;
 					if (oldValue != lockCompareExchangeObjectHeader(destinationObjectPtr, oldValue, newValue)) {

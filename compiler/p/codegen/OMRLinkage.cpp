@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -166,7 +166,6 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
       TR::DataType type = paramCursor->getType();
       int32_t dtype = type.getDataType();
 
-
       // TODO: Is there an accurate assume to insert here ?
       if (lri >= 0)
          {
@@ -191,6 +190,9 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                {
                case TR::Int8:
                case TR::Int16:
+                  if (properties.getSmallIntParmsAlignedRight())
+                     offset &= ~3;
+
                case TR::Int32:
                   op = TR::InstOpCode::stw;
                   length = 4;

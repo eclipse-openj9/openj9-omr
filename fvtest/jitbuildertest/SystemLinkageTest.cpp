@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -69,17 +69,6 @@ class SystemLinkageTest : public JitBuilderTest {};
 
 TEST_F(SystemLinkageTest, FooTest)
    {
-#if defined(PPC)
-   // TODO (#4765): Fix the Power linkage and enable this test
-   // TODO (#4764): This is a poor man's SKIP_IF which is only available for Tril tests currently. We should find a
-   // nice home for this useful utility so we can use it in JitBuilder tests as well.
-   const ::testing::TestInfo* const test_info = ::testing::UnitTest::GetInstance()->current_test_info();
-   ::testing::Test::RecordProperty("skipped", "Known Bug");
-   std::cout << "Known Bug" << ": Skipping test: " << test_info->name() << "\n    " << "Power system linkage cannot handle stack arguments (see issue #4765)" << "\n";
-   SUCCEED() << "Power system linkage cannot handle stack arguments (see issue #4765)";
-   return;
-#endif
-
    FooFunction *foo;
    ASSERT_COMPILE(OMR::JitBuilder::TypeDictionary, FooBuilder, foo);
 

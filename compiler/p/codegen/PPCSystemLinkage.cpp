@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -90,6 +90,9 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    {
    int i = 0;
    _properties._properties = IntegersInRegisters|FloatsInRegisters|RightToLeft;
+   if (comp()->target().cpu.isBigEndian())
+      _properties._properties |= SmallIntParmsAlignedRight;
+
    _properties._registerFlags[TR::RealRegister::NoReg] = 0;
    _properties._registerFlags[TR::RealRegister::gr0]   = 0;
    _properties._registerFlags[TR::RealRegister::gr1]   = Preserved|PPC_Reserved; // system sp
@@ -436,6 +439,23 @@ TR::PPCSystemLinkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    }
 
 
+static bool
+hasParmsPassedOnStack(List<TR::ParameterSymbol> &parmList)
+   {
+   ListIterator<TR::ParameterSymbol> parmIt(&parmList);
+   TR::ParameterSymbol *parmCursor = parmIt.getFirst();
+
+   while (parmCursor)
+      {
+      if (parmCursor->getLinkageRegisterIndex() < 0)
+         return true;
+
+      parmCursor = parmIt.getNext();
+      }
+
+   return false;
+   }
+
 void
 TR::PPCSystemLinkage::mapParameters(
       TR::ResolvedMethodSymbol *method,
@@ -449,14 +469,12 @@ TR::PPCSystemLinkage::mapParameters(
    int32_t                          offsetToFirstParm = linkage.getOffsetToFirstParm();
    int32_t offset_from_top = 0;
    int32_t slot_size = sizeof(uintptrj_t);
-#ifdef __LITTLE_ENDIAN__
-   // XXX: This hack fixes ppc64le by saving params in the current stack frame, rather than the caller's parameter save area, which may not exist
-   //      This code needs to be refactored to accomodate ABIs that don't guarantee a parameter save area
-   // XXX: Also, for some reason all these system linkages are marked passing parms right-to-left when they should be left-to-right
-   const bool saveParmsInLocalArea = true;
-#else
-   const bool saveParmsInLocalArea = false;
-#endif
+
+   // The 64-bit ELF V2 ABI Specification makes having a parameter save area optional if all parameters can be passed in
+   // registers. As a result, we cannot use the caller's parameter save area on 64-bit Linux if all parameters were
+   // passed in registers. However, we *must* use the caller's parameter save area if one or more parameters were passed
+   // on the stack to load those values correctly.
+   bool saveParmsInLocalArea = comp()->target().isLinux() && comp()->target().is64Bit() && !hasParmsPassedOnStack(parmList);
 
    if (linkage.getRightToLeft())
       {
@@ -466,6 +484,10 @@ TR::PPCSystemLinkage::mapParameters(
             parmCursor->setParameterOffset(offset_from_top + stackIndex);
          else
             parmCursor->setParameterOffset(offset_from_top + offsetToFirstParm + stackIndex);
+
+         if (linkage.getSmallIntParmsAlignedRight() && parmCursor->getType().isIntegral() && parmCursor->getSize() < slot_size)
+            parmCursor->setParameterOffset(parmCursor->getParameterOffset() + slot_size - parmCursor->getSize());
+
          offset_from_top += (parmCursor->getSize() + slot_size - 1) & (~(slot_size - 1));
          parmCursor = parameterIterator.getNext();
          }

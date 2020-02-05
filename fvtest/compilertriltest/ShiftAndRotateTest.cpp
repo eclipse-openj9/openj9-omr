@@ -336,10 +336,6 @@ TEST_P(Int8ShiftAndRotate, UsingConst) {
 TEST_P(Int8ShiftAndRotate, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
-
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int8]"
@@ -366,10 +362,6 @@ TEST_P(Int8ShiftAndRotate, UsingRhsConst) {
 TEST_P(Int8ShiftAndRotate, UsingLhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
-
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int32]"
@@ -395,10 +387,6 @@ TEST_P(Int8ShiftAndRotate, UsingLhsConst) {
 
 TEST_P(Int8ShiftAndRotate, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
-
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -458,11 +446,7 @@ TEST_P(Int16ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(Int16ShiftAndRotate, UsingRhsConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
     auto param = TRTest::to_struct(GetParam());
-
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -488,11 +472,7 @@ TEST_P(Int16ShiftAndRotate, UsingRhsConst) {
 }
 
 TEST_P(Int16ShiftAndRotate, UsingLhsConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
     auto param = TRTest::to_struct(GetParam());
-
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -518,11 +498,7 @@ TEST_P(Int16ShiftAndRotate, UsingLhsConst) {
 }
 
 TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
     auto param = TRTest::to_struct(GetParam());
-
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -798,10 +774,6 @@ TEST_P(UInt8ShiftAndRotate, UsingConst) {
 TEST_P(UInt8ShiftAndRotate, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
-
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int8]"
@@ -828,10 +800,6 @@ TEST_P(UInt8ShiftAndRotate, UsingRhsConst) {
 TEST_P(UInt8ShiftAndRotate, UsingLhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
-
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int32]"
@@ -856,10 +824,6 @@ TEST_P(UInt8ShiftAndRotate, UsingLhsConst) {
 }
 
 TEST_P(UInt8ShiftAndRotate, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -919,11 +883,7 @@ TEST_P(UInt16ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(UInt16ShiftAndRotate, UsingRhsConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
     auto param = TRTest::to_struct(GetParam());
-
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -949,11 +909,7 @@ TEST_P(UInt16ShiftAndRotate, UsingRhsConst) {
 }
 
 TEST_P(UInt16ShiftAndRotate, UsingLhsConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
     auto param = TRTest::to_struct(GetParam());
-
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -979,10 +935,6 @@ TEST_P(UInt16ShiftAndRotate, UsingLhsConst) {
 }
 
 TEST_P(UInt16ShiftAndRotate, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -1330,10 +1282,6 @@ class UInt16MaskThenShift : public MaskThenShiftArithmetic<uint16_t> {};
 TEST_P(UInt16MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
-
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int16 args=[Int16]"
@@ -1369,10 +1317,6 @@ class Int16MaskThenShift : public MaskThenShiftArithmetic<int16_t> {};
 
 TEST_P(Int16MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
-
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -1410,10 +1354,6 @@ class UInt8MaskThenShift : public MaskThenShiftArithmetic<uint8_t> {};
 TEST_P(UInt8MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
-
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int8]"
@@ -1449,10 +1389,6 @@ class Int8MaskThenShift : public MaskThenShiftArithmetic<int8_t> {};
 
 TEST_P(Int8MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
-
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),

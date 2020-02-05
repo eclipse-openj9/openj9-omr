@@ -340,9 +340,6 @@ class sBitPermuteTest : public BitPermuteTest<uint16_t> {};
 
 TEST_P(sBitPermuteTest, ConstAddressLengthTest)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-      << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
    auto param = to_struct(GetParam());
 
    uint8_t maskedIndices[16];
@@ -380,9 +377,6 @@ TEST_P(sBitPermuteTest, ConstAddressLengthTest)
 
 TEST_P(sBitPermuteTest, ConstAddressTest)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-      << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
    auto param = to_struct(GetParam());
 
    uint8_t maskedIndices[16];
@@ -419,9 +413,6 @@ TEST_P(sBitPermuteTest, ConstAddressTest)
 
 TEST_P(sBitPermuteTest, NoConstTest)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-      << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
    auto param = to_struct(GetParam());
 
    uint8_t maskedIndices[16];
@@ -459,9 +450,6 @@ class bBitPermuteTest : public BitPermuteTest<uint8_t> {};
 
 TEST_P(bBitPermuteTest, ConstAddressLengthTest)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-      << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
    auto param = to_struct(GetParam());
 
    uint8_t maskedIndices[8];
@@ -499,9 +487,6 @@ TEST_P(bBitPermuteTest, ConstAddressLengthTest)
 
 TEST_P(bBitPermuteTest, ConstAddressTest)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-      << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
    auto param = to_struct(GetParam());
 
    uint8_t maskedIndices[8];
@@ -538,9 +523,6 @@ TEST_P(bBitPermuteTest, ConstAddressTest)
 
 TEST_P(bBitPermuteTest, NoConstTest)
    {
-   std::string arch = omrsysinfo_get_CPU_architecture();
-   SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-      << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
    auto param = to_struct(GetParam());
 
    uint8_t maskedIndices[8];

@@ -2388,6 +2388,42 @@ OMR::Z::TreeEvaluator::caddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    return generic32BitAddEvaluator(node, cg);
    }
 
+TR::Register *
+OMR::Z::TreeEvaluator::bsubEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* lhsChild = node->getChild(0);
+   TR::Node* rhsChild = node->getChild(1);
+
+   // We don't have an instruction which adds a source register with a target memory reference, so force the
+   // evaluation of both chlidren here and pass the BAD mnemonic for the register-to-memory operand to the generic
+   // analyzer to ensure it is never generated
+   cg->evaluate(lhsChild);
+   cg->evaluate(rhsChild);
+
+   TR_S390BinaryCommutativeAnalyser temp(cg);
+   temp.genericAnalyser(node, TR::InstOpCode::SR, TR::InstOpCode::BAD, TR::InstOpCode::LR);
+
+   cg->decReferenceCount(lhsChild);
+   cg->decReferenceCount(rhsChild);
+
+   return node->getRegister();
+   }
+
+TR::Register *
+OMR::Z::TreeEvaluator::ssubEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* lhsChild = node->getChild(0);
+   TR::Node* rhsChild = node->getChild(1);
+
+   TR_S390BinaryCommutativeAnalyser temp(cg);
+   temp.genericAnalyser(node, TR::InstOpCode::SR, TR::InstOpCode::SH, TR::InstOpCode::LR);
+
+   cg->decReferenceCount(lhsChild);
+   cg->decReferenceCount(rhsChild);
+
+   return node->getRegister();
+   }
+
 /**
  * isubEvaluator - subtract 2 integers or subtract a short from an integer
  * (child1 - child2)
@@ -2413,27 +2449,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::lsubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    return lsubHelper64(node, cg);
-   }
-
-
-/**
- * bsubEvaluator - subtract 2 bytes
- * (child1 - child2)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::bsubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   return generic32BitSubEvaluator(node, cg);
-   }
-
-/**
- * ssubEvaluator - subtract 2 short integers
- * (child1 - child2)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::ssubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   return generic32BitSubEvaluator(node, cg);
    }
 
 /**

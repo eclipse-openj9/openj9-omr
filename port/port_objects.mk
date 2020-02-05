@@ -147,7 +147,8 @@ ifneq (win,$(OMR_HOST_OS))
   OBJECTS += omrsignal_context
 endif
 ifeq (1, $(OMR_PORT_SOCKET_SUPPORT))
-OBJECTS += omrsock
+  OBJECTS += omrsock
+  OBJECTS += omrsockptb
 endif
 OBJECTS += omrsl
 OBJECTS += omrstr

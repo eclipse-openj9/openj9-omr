@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,18 +20,31 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#if !defined(OMRPORTSOCK_H_)
-#define OMRPORTSOCK_H_
+/* Per-thread buffer functions for socket information */
 
-/* Pointer to OMRAddInfoNode, a struct that contains addrinfo information. */
-typedef struct OMRAddrInfoNode *omrsock_addrinfo_t;
+#ifndef OMRSOCKPTB_H_
+#define OMRSOCKPTB_H_
 
-/* Pointer to OMRSockAddrStorage, a struct that contains socket address
- * information. It has enough space for Ipv4 or IPv6 addresses. 
- */
-typedef struct OMRSockAddrStorage *omrsock_sockaddr_t;
+#include <stdio.h>
+#include <string.h>
 
-/* Pointer to OMRSocket, a struct that contains socket descriptor. */
-typedef struct OMRSocket *omrsock_socket_t;
+#include "omrport.h"
+#include "omrporterror.h"
+#include "omrportpriv.h"
+#include "omrportsock.h"
+#include "omrportsocktypes.h"
+#include "thread_api.h"
 
-#endif /* !defined(OMRPORTSOCK_H_) */
+/* Per-thread buffer for socket information */
+typedef struct OMRSocketPTB {
+	OMRAddrInfoNode addrInfoHints;
+	struct OMRPortLibrary *portLibrary;
+} OMRSocketPTB;
+
+typedef OMRSocketPTB *omrsock_ptb_t;
+
+omrsock_ptb_t omrsock_ptb_get(struct OMRPortLibrary *portLibrary);
+int32_t omrsock_ptb_init(struct OMRPortLibrary *portLibrary);
+int32_t omrsock_ptb_shutdown(struct OMRPortLibrary *portLibrary);
+
+#endif /* OMRSOCKPTB_H_ */

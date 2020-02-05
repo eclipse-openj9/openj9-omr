@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,6 +31,21 @@
 #include "omrport.h"
 #include "omrporterror.h"
 #include "omrportsock.h"
+
+/**
+ * Set up omrsock per thread buffer.
+ *
+ * Pass in user preference of IPv6 Support in omrsock_startup: TODO.
+ *
+ * @param[in] portLibrary The port library.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_startup(struct OMRPortLibrary *portLibrary)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
 
 /**
  * Returns hints as a double pointer to an OMRAddInfoNode structure.
@@ -367,6 +382,19 @@ int32_t
 omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Shut down omrsock per thread buffer.
+ *
+ * @param[in] portLibrary The port library.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_shutdown(struct OMRPortLibrary *portLibrary)
+{
+	return 0;
 }
 
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

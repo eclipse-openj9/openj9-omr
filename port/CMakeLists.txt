@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -183,7 +183,7 @@ list(APPEND OBJECTS
 )
 
 if(OMR_PORT_SOCKET_SUPPORT)
-	list(APPEND OBJECTS omrsock.c)
+	list(APPEND OBJECTS omrsock.c omrsockptb.c)
 endif()
 
 if(NOT OMR_HOST_OS STREQUAL "win")

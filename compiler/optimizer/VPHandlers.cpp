@@ -8885,6 +8885,7 @@ static void addDelayedConvertedGuard (TR::Node* node,
                                        TR_VirtualGuard* oldVirtualGuard,
                                        OMR::ValuePropagation* vp,
                                        TR_VirtualGuardKind guardKind,
+                                       TR_VirtualGuardTestType testType,
                                        TR_OpaqueClassBlock* objectClass)
    {
 
@@ -8901,7 +8902,21 @@ static void addDelayedConvertedGuard (TR::Node* node,
 
 
    TR::Node *newReceiver=TR::Node::createLoad(callNode, callNode->getSecondChild()->getSymbolReference());
-   TR::Node* newGuardNode = TR_VirtualGuard::createMethodGuardWithReceiver
+   TR::Node* newGuardNode = NULL;
+   if (testType == TR_VftTest)
+      {
+      newGuardNode = TR_VirtualGuard::createVftGuardWithReceiver
+                       (guardKind,
+                       vp->comp(),
+                       oldVirtualGuard->getCalleeIndex(),
+                       callNode,
+                       node->getBranchDestination(),
+                       objectClass /*oldVirtualGuard->getThisClass()*/,
+                       newReceiver);
+      }
+   else
+      {
+      newGuardNode = TR_VirtualGuard::createMethodGuardWithReceiver
                        (guardKind,
                        vp->comp(),
                        oldVirtualGuard->getCalleeIndex(),
@@ -8909,7 +8924,8 @@ static void addDelayedConvertedGuard (TR::Node* node,
                        node->getBranchDestination(),
                        methodSymbol,
                        objectClass /*oldVirtualGuard->getThisClass()*/,
-             newReceiver);
+                       newReceiver);
+      }
 
    if (vp->trace())
       {
@@ -9860,7 +9876,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                       methodSymbol->isInterface()  ? TR_InterfaceGuard :
                       TR::Compiler->cls.isAbstractClass(vp->comp(), objectClass) ? TR_AbstractGuard : TR_HierarchyGuard;
 
-                   addDelayedConvertedGuard(node, callNode, cMethodSymbol, vGuard, vp, guardKind, objectClass);
+                   addDelayedConvertedGuard(node, callNode, cMethodSymbol, vGuard, vp, guardKind, TR_VftTest, objectClass);
                    }
                 }
              }

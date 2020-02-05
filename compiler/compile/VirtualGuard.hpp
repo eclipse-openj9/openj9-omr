@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -105,6 +105,15 @@ class TR_VirtualGuard
          TR::Node *,
          TR::TreeTop *,
          TR_OpaqueClassBlock *);
+
+   static TR::Node *createVftGuardWithReceiver(
+         TR_VirtualGuardKind,
+         TR::Compilation *,
+         int16_t calleeIndex,
+         TR::Node *,
+         TR::TreeTop *,
+         TR_OpaqueClassBlock *,
+         TR::Node* receiverNode);
 
    static TR::Node *createMethodGuard(
          TR_VirtualGuardKind,

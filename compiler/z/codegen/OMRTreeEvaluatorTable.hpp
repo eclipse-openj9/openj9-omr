@@ -120,8 +120,8 @@
    TR::TreeEvaluator::lmulEvaluator,        // TR::lmul
    TR::TreeEvaluator::fmulEvaluator,        // TR::fmul
    TR::TreeEvaluator::dmulEvaluator,        // TR::dmul
-   TR::TreeEvaluator::unImpOpEvaluator,        // TR::bmul
-   TR::TreeEvaluator::unImpOpEvaluator,        // TR::smul
+   TR::TreeEvaluator::bmulEvaluator,        // TR::bmul
+   TR::TreeEvaluator::smulEvaluator,        // TR::smul
    TR::TreeEvaluator::idivEvaluator,        // TR::idiv
    TR::TreeEvaluator::ldivEvaluator,        // TR::ldiv
    TR::TreeEvaluator::fdivEvaluator,        // TR::fdiv

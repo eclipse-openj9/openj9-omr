@@ -2190,20 +2190,27 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
           (node->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
          {
          TR_OpaqueClassBlock *clazz = NULL;
+         TR::VPClassType *type = NULL;
          if (base->isClassObject() == TR_yes)
             {
             // base can only be an instance of java/lang/Class, since
             // we can't load <vft> relative to a J9Class.
             clazz = vp->comp()->getClassClassPointer();
+            if (clazz != NULL)
+               type = TR::VPFixedClass::create(vp, clazz);
             }
          else if (base->isFixedClass())
             {
             clazz = base->getClass();
+            if (clazz != NULL)
+               type = TR::VPFixedClass::create(vp, clazz);
             }
-
-         TR::VPClassType *type = NULL;
-         if (clazz != NULL)
-            type = TR::VPFixedClass::create(vp, clazz);
+         else if (base->getClass() &&
+                  base->getClassType() &&
+                  base->getClassType()->asResolvedClass())
+            {
+            type = TR::VPResolvedClass::create(vp, base->getClass());
+            }
 
          TR::VPClassPresence *nonnull = TR::VPNonNullObject::create(vp);
          TR::VPObjectLocation *loc =

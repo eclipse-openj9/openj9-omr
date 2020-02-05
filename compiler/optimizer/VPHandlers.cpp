@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -10748,8 +10748,7 @@ static TR::Node *constrainCmplessthan(OMR::ValuePropagation *vp, TR::Node *node,
           performTransformation(vp->comp(), "%sChanging node [%p] %s into constant %d\n", OPT_DETAILS, node, node->getOpCode().getName(), result))
          {
          vp->removeChildren(node);
-         TR::ILOpCodes op = /*isUnsigned ? TR::iuconst : */TR::iconst;
-         TR::Node::recreate(node, op);
+         TR::Node::recreate(node, TR::iconst);
          node->setInt(result);
          vp->invalidateValueNumberInfo();
          return node;

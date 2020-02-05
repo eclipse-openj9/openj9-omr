@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -677,15 +677,11 @@ OMR::Node::getIntegerNodeValue()
       }
    switch(opcode)
       {
-      case TR::buconst:
       case TR::bconst: length = (T)self()->getUnsignedByte(); break;
-      case TR::cconst: length = (T)self()->getConst<uint16_t>(); break;
       case TR::sconst: length = (T)self()->getShortInt(); break;
       case TR::iconst:
-      case TR::iuconst:
          length = (T)self()->getUnsignedInt(); break;
       case TR::lconst:
-      case TR::luconst:
          length = (T)self()->getUnsignedLongInt(); break;
       case TR::iloadi:
          TR_ASSERT(false, "Invalid type for length node."); break;

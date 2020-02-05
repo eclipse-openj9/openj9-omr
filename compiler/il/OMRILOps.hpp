@@ -1324,7 +1324,6 @@ public:
          case TR::ddiv:
             return TR::vdiv;
          case TR::bconst:
-         case TR::cconst:
          case TR::sconst:
          case TR::iconst:
          case TR::lconst:

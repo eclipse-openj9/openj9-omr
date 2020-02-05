@@ -649,7 +649,7 @@ OMR::Node::create(TR::Node * originatingByteCodeNode, TR::ILOpCodes op, uint16_t
 TR::Node *
 OMR::Node::create(TR::Node * originatingByteCodeNode, TR::ILOpCodes op, uint16_t numChildren, int32_t intValue, TR::TreeTop * dest)
    {
-   TR_ASSERT(op != TR::bconst && op != TR::cconst && op != TR::sconst, "Invalid constructor for 8/16-bit constants");
+   TR_ASSERT(op != TR::bconst && op != TR::sconst, "Invalid constructor for 8/16-bit constants");
    TR::Node * node = TR::Node::create(originatingByteCodeNode, op, numChildren, dest);
    if (op == TR::lconst)
       {
@@ -1375,24 +1375,6 @@ OMR::Node::sconst(int16_t val)
    {
    return TR::Node::sconst(0, val);
    }
-
-
-
-TR::Node *
-OMR::Node::cconst(TR::Node *originatingByteCodeNode, uint16_t val)
-   {
-   TR::Node *r = TR::Node::create(originatingByteCodeNode, TR::sconst);
-   r->setUnsignedShortInt(val);
-   return r;
-   }
-
-TR::Node *
-OMR::Node::cconst(uint16_t val)
-   {
-   return TR::Node::cconst(0, val);
-   }
-
-
 
 TR::Node *
 OMR::Node::iconst(TR::Node *originatingByteCodeNode, int32_t val)

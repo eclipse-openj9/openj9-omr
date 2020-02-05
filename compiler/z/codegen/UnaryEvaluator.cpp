@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -117,13 +117,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::bconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
-   if (node->getOpCodeValue() == TR::buconst)
-      generateLoad32BitConstant(cg, node, node->getByte() & 0xFF, tempReg, true);
-   else
-      {
-      TR_ASSERT(1, "Should not have bconst node in the final il-tree!\n");
-      generateLoad32BitConstant(cg, node, node->getByte(), tempReg, true);
-      }
+   generateLoad32BitConstant(cg, node, node->getByte(), tempReg, true);
    return tempReg;
    }
 

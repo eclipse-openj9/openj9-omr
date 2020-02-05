@@ -1252,49 +1252,49 @@ TR::Register *OMR::X86::TreeEvaluator::caddEvaluator(TR::Node *node, TR::CodeGen
       }
 
    TR::Register * testRegister = secondChild->getRegister();
-   if (secondChild->getOpCodeValue() == TR::cconst &&
-       testRegister == NULL         &&
-       performTransformation(comp, "O^O CaddEvaluator: checking that the store has not happened yet. Target register:  %x\n", testRegister))
+   if (secondChild->getOpCodeValue() == TR::sconst &&
+      testRegister == NULL         &&
+      performTransformation(comp, "O^O CaddEvaluator: checking that the store has not happened yet. Target register:  %x\n", testRegister))
+   {
+   int32_t value  = secondChild->getConst<uint16_t>();
+   if (!isMemOp)
+      targetRegister = cg->evaluate(firstChild);
+   if (targetRegister && firstChild->getReferenceCount() > 1)
       {
-      int32_t value  = secondChild->getConst<uint16_t>();
-      if (!isMemOp)
-         targetRegister = cg->evaluate(firstChild);
-      if (targetRegister && firstChild->getReferenceCount() > 1)
+      TR::MemoryReference  *tempMR = generateX86MemoryReference(targetRegister, value, cg);
+      targetRegister = cg->allocateRegister();
+      generateRegMemInstruction(LEA4RegMem, node, targetRegister, tempMR, cg);
+      }
+   else
+      {
+      if (value >= 0 && value <= 127)
          {
-         TR::MemoryReference  *tempMR = generateX86MemoryReference(targetRegister, value, cg);
-         targetRegister = cg->allocateRegister();
-         generateRegMemInstruction(LEA4RegMem, node, targetRegister, tempMR, cg);
-         }
-      else
-         {
-         if (value >= 0 && value <= 127)
+         if (value == 1)
             {
-            if (value == 1)
-               {
-               if (isMemOp)
-                  instr = generateMemInstruction(INC2Mem, node, tempMR, cg);
-               else
-                  instr = generateRegInstruction(INC4Reg, node, targetRegister, cg);
-               }
+            if (isMemOp)
+               instr = generateMemInstruction(INC2Mem, node, tempMR, cg);
             else
-               {
-               if (isMemOp)
-                  instr = generateMemImmInstruction(ADD2MemImms, node, tempMR, value, cg);
-               else
-                  instr = generateRegImmInstruction(ADD4RegImms, node, targetRegister, value, cg);
-               }
+               instr = generateRegInstruction(INC4Reg, node, targetRegister, cg);
             }
          else
             {
             if (isMemOp)
-               instr = generateMemImmInstruction(ADD2MemImm2, node, tempMR, value, cg);
+               instr = generateMemImmInstruction(ADD2MemImms, node, tempMR, value, cg);
             else
-               instr = generateRegImmInstruction(ADD2RegImm2, node, targetRegister, value, cg);
+               instr = generateRegImmInstruction(ADD4RegImms, node, targetRegister, value, cg);
             }
-         if (debug("traceMemOp"))
-            diagnostic("\n*** Node [" POINTER_PRINTF_FORMAT "] inc by const %d", node, value);
          }
+      else
+         {
+         if (isMemOp)
+            instr = generateMemImmInstruction(ADD2MemImm2, node, tempMR, value, cg);
+         else
+            instr = generateRegImmInstruction(ADD2RegImm2, node, targetRegister, value, cg);
+         }
+      if (debug("traceMemOp"))
+         diagnostic("\n*** Node [" POINTER_PRINTF_FORMAT "] inc by const %d", node, value);
       }
+   }
    else if (isMemOp)
       {
       instr = generateMemRegInstruction(ADD2MemReg, node, tempMR, cg->evaluate(secondChild), cg);
@@ -1784,7 +1784,7 @@ TR::Register *OMR::X86::TreeEvaluator::csubEvaluator(TR::Node *node, TR::CodeGen
       }
 
    TR::Register * testRegister = secondChild->getRegister();
-   if (secondChild->getOpCodeValue() == TR::cconst &&
+   if (secondChild->getOpCodeValue() == TR::sconst &&
        testRegister == NULL         &&
        performTransformation(comp, "O^O CSubEvaluator: checking that the store has not happened yet. Target register: %x\n", testRegister))
       {
@@ -3439,7 +3439,7 @@ TR::Register *OMR::X86::TreeEvaluator::bushrEvaluator(TR::Node *node, TR::CodeGe
          tempMR = generateX86MemoryReference(firstChild, cg, false);
          }
       }
-   else if ((testOpcode1 == TR::bconst || testOpcode1 == TR::buconst) &&
+   else if (testOpcode1 == TR::bconst &&
             performTransformation(comp, "O^O BUSHREvaluator: first child is not an 8-bit signed two's complement, or an 8 bit unsigned %x\n", testOpcode1))
       {
       targetRegister = cg->allocateRegister();
@@ -3451,7 +3451,7 @@ TR::Register *OMR::X86::TreeEvaluator::bushrEvaluator(TR::Node *node, TR::CodeGe
       targetRegister = cg->intClobberEvaluate(firstChild);
       }
 
-   if ((testOpcode2 == TR::bconst || testOpcode2 == TR::buconst) &&
+   if (testOpcode2 == TR::bconst &&
        performTransformation(comp, "O^O BUSHREvaluator: first child is not an 8-bit signed two's complement, or an 8 bit unsigned %x\n", testOpcode2))
       {
       int32_t value = secondChild->get64bitIntegralValue();

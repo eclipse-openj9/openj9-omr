@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -78,7 +78,7 @@ static inline TR::Register *iorTypeEvaluator(TR::Node *node,
    if (secondChild->getOpCode().isLoadConst() &&
        secondChild->getRegister() == NULL)
       {
-      if (secondOp == TR::lconst || secondOp == TR::luconst)
+      if (secondOp == TR::lconst)
          immValue = (int32_t)secondChild->getLongInt(); // upper 32 bits known to be zero
       else
          immValue = secondChild->get64bitIntegralValue();
@@ -291,8 +291,7 @@ static void genericLongAnalyzer(
          {
          if (firstOp == TR::iu2l || firstOp == TR::su2l ||
              (firstOp == TR::lushr &&
-              (child->getSecondChild()->getOpCodeValue() == TR::iconst ||
-               child->getSecondChild()->getOpCodeValue() == TR::iuconst) &&
+              (child->getSecondChild()->getOpCodeValue() == TR::iconst) &&
               (child->getSecondChild()->getInt() & LONG_SHIFT_MASK) == 32))
             {
             child = child->getFirstChild();
@@ -449,7 +448,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
 
    if (cg->comp()->target().is32Bit())
       {
-      if (!setsOrReadsCC && (secondOp == TR::lconst || secondOp == TR::luconst) &&
+      if (!setsOrReadsCC && secondOp == TR::lconst &&
           secondChild->getRegister() == NULL)
          {
          src1Reg = cg->evaluate(firstChild);
@@ -531,7 +530,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
          src1Reg = cg->evaluate(firstChild);
 
          if (!setsOrReadsCC &&
-             (secondOp == TR::lconst || secondOp == TR::luconst) &&
+             secondOp == TR::lconst &&
              secondChild->getRegister() == NULL)
             {
             trgReg = addConstantToLong(node, src1Reg, secondChild->getLongInt(), trgReg, cg);
@@ -539,7 +538,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
          // might not be true for aladd, since secondchild of the ladd is made
          // to be an lconst
          else if (!setsOrReadsCC &&
-                  (secondOp == TR::iconst || secondOp == TR::iuconst) && // may be true if aladd?
+                  (secondOp == TR::iconst) && // may be true if aladd?
                   secondChild->getRegister() == NULL)
             {
             trgReg = addConstantToLong(node, src1Reg, (int64_t)secondChild->getInt(), trgReg, cg);
@@ -854,7 +853,7 @@ TR::Register *OMR::Power::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeG
    bool setsOrReadsCC = NEED_CC(node) || (node->getOpCodeValue() == TR::lusubb);
    TR::InstOpCode::Mnemonic regToRegOpCode = TR::InstOpCode::subfc;
 
-   if (!setsOrReadsCC && (secondChild->getOpCodeValue() == TR::lconst || secondChild->getOpCodeValue() == TR::luconst) &&
+   if (!setsOrReadsCC && secondChild->getOpCodeValue() == TR::lconst &&
        secondChild->getRegister() == NULL)
       {
       TR::Register *src1Reg   = cg->evaluate(firstChild);
@@ -870,7 +869,7 @@ TR::Register *OMR::Power::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeG
       {
       TR::Register *lowReg  = cg->allocateRegister();
       TR::Register *highReg = cg->allocateRegister();
-      if (!setsOrReadsCC && (firstChild->getOpCodeValue() == TR::lconst || firstChild->getOpCodeValue() == TR::luconst) &&
+      if (!setsOrReadsCC && firstChild->getOpCodeValue() == TR::lconst &&
          firstChild->getRegister() == NULL)
          {
          TR::Register *src2Reg   = cg->evaluate(secondChild);
@@ -1258,7 +1257,7 @@ TR::Register *OMR::Power::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeG
    if (cg->comp()->target().is64Bit())
       {
       TR::Register *trgReg;
-      if (secondChild->getOpCodeValue() == TR::lconst || secondChild->getOpCodeValue() == TR::luconst)
+      if (secondChild->getOpCodeValue() == TR::lconst)
          {
          int64_t value = secondChild->getLongInt();
          if (value > 0 && cg->convertMultiplyToShift(node))
@@ -1299,7 +1298,7 @@ TR::Register *OMR::Power::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeG
    TR::Register *highReg;
    TR::RegisterPair *trgReg;
 
-   if ((secondChild->getOpCodeValue() == TR::lconst || secondChild->getOpCodeValue() == TR::luconst) &&
+   if (secondChild->getOpCodeValue() == TR::lconst &&
        secondChild->getRegister() == NULL)
       {
       TR::Register *src1Low = cg->evaluate(firstChild)->getLowOrder();
@@ -1454,7 +1453,7 @@ TR::Register *OMR::Power::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::Code
 
    // imulh is generated for constant idiv and the second child is the magic number
    // assume magic number is usually a large odd number with little optimization opportunity
-   if (secondChild->getOpCodeValue() == TR::iconst || secondChild->getOpCodeValue() == TR::iuconst)
+   if (secondChild->getOpCodeValue() == TR::iconst)
       {
       int32_t value = secondChild->get64bitIntegralValue();
       TR::Register *tempReg = cg->allocateRegister();
@@ -1494,7 +1493,7 @@ TR::Register *OMR::Power::TreeEvaluator::lmulhEvaluator(TR::Node *node, TR::Code
       {
       TR::Register *src1Reg = cg->evaluate(firstChild);
       TR::Register *trgReg = cg->allocateRegister();
-      if (secondChild->getOpCodeValue() == TR::lconst  || secondChild->getOpCodeValue() == TR::luconst )
+      if (secondChild->getOpCodeValue() == TR::lconst )
          {
          int64_t value = secondChild->getLongInt();
          TR::Register *tempReg = cg->allocateRegister();
@@ -1528,7 +1527,7 @@ TR::Register *OMR::Power::TreeEvaluator::lmulhEvaluator(TR::Node *node, TR::Code
    TR::Register *lowReg = cg->allocateRegister();
    TR::Register *highReg = cg->allocateRegister();
 
-   if (secondChild->getOpCodeValue() == TR::lconst || secondChild->getOpCodeValue() == TR::luconst)
+   if (secondChild->getOpCodeValue() == TR::lconst)
       {
       int64_t value =  secondChild->getLongInt();
       int32_t lowValue = (int32_t)value;
@@ -1555,7 +1554,7 @@ TR::Register *OMR::Power::TreeEvaluator::lmulhEvaluator(TR::Node *node, TR::Code
    generateTrg1Src1Instruction(cg, TR::InstOpCode::addze, node, highReg, highReg);
    generateTrg1Src2Instruction(cg, TR::InstOpCode::addc, node, lowReg, lowReg, temp3Reg);
    generateTrg1Src1Instruction(cg, TR::InstOpCode::addze, node, highReg, highReg);
-   if (secondChild->getOpCodeValue() == TR::lconst || secondChild->getOpCodeValue() == TR::luconst)
+   if (secondChild->getOpCodeValue() == TR::lconst)
       {
       cg->stopUsingRegister(second_highReg);
       cg->stopUsingRegister(second_lowReg);
@@ -3211,7 +3210,7 @@ TR::Register *OMR::Power::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeG
       TR::Register *src1Reg = cg->evaluate(firstChild);
       trgReg  = cg->allocateRegister();
 
-      if ((secondOp == TR::lconst || secondOp == TR::luconst) &&
+      if (secondOp == TR::lconst &&
           secondChild->getRegister() == NULL)
          {
          simplifyANDRegImm(node, trgReg, src1Reg, secondChild->getLongInt(), cg, secondChild);
@@ -3224,7 +3223,7 @@ TR::Register *OMR::Power::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeG
       }
    else // 32 bit target
       {
-      if ((secondOp == TR::lconst || secondOp == TR::luconst) &&
+      if (secondOp == TR::lconst &&
           secondChild->getRegister() == NULL)
          {
          TR::Register *src1Reg = cg->evaluate(firstChild);
@@ -3274,7 +3273,7 @@ static inline TR::Register *lorTypeEvaluator(TR::Node *node,
 
    if (cg->comp()->target().is64Bit())
       {
-      if ((secondOp == TR::lconst || secondOp == TR::luconst) &&
+      if (secondOp == TR::lconst &&
          secondChild->getRegister() == NULL)
          {
          uint64_t longConst = secondChild->getLongInt();
@@ -3303,7 +3302,7 @@ static inline TR::Register *lorTypeEvaluator(TR::Node *node,
                                                              cg->allocateRegister());
       TR::Register *src1Reg = cg->evaluate(firstChild);
 
-      if ((secondOp == TR::lconst || secondOp == TR::luconst) &&
+      if (secondOp == TR::lconst &&
           secondChild->getRegister() == NULL)
          {
          intParts localVal(secondChild->getLongIntLow());
@@ -3380,8 +3379,9 @@ TR::Register *OMR::Power::TreeEvaluator::lorEvaluator(TR::Node *node, TR::CodeGe
    TR::ILOpCodes secondOp = node->getSecondChild()->getOpCodeValue();
 
    if ((node->getFirstChild()->isHighWordZero() || node->getSecondChild()->isHighWordZero()) &&
-       !((secondOp == TR::lconst || secondOp == TR::luconst) && node->getSecondChild()->getRegister() == NULL) &&
+       !(secondOp == TR::lconst && node->getSecondChild()->getRegister() == NULL) &&
        !(cg->comp()->target().is64Bit()))
+
       {
       return carrylessLongEvaluatorWithAnalyser(node, cg,
                                                     TR::InstOpCode::OR,
@@ -3399,7 +3399,7 @@ TR::Register *OMR::Power::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeG
    TR::ILOpCodes secondOp = node->getSecondChild()->getOpCodeValue();
 
    if ((node->getFirstChild()->isHighWordZero() || node->getSecondChild()->isHighWordZero()) &&
-       !((secondOp == TR::lconst || secondOp == TR::luconst) && node->getSecondChild()->getRegister() == NULL) &&
+       !(secondOp == TR::lconst && node->getSecondChild()->getRegister() == NULL) &&
        !(cg->comp()->target().is64Bit()))
       {
       return carrylessLongEvaluatorWithAnalyser(node, cg,

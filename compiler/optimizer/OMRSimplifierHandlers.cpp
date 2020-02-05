@@ -2346,10 +2346,11 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
          {
          if (firstOp == TR::su2l)
             {
-            if (secondOp == TR::cconst || secondOp == TR::su2l ||
-                (secondOp == TR::lconst               &&
-                 secondChild->getLongInt() >= 0 &&
-                 secondChild->getLongInt() <= USHRT_MAX))
+            if ( secondOp == TR::sconst || 
+                 secondOp == TR::su2l ||
+                  (secondOp == TR::lconst &&
+                  secondChild->getLongInt() >= 0 &&
+                  secondChild->getLongInt() <= USHRT_MAX))
                {
                node->setAndIncChild(0, firstChild->getFirstChild());
                TR::Node::recreate(node, charOp);
@@ -4323,7 +4324,7 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
       if (firstOp == TR::su2i && firstChild->getReferenceCount()==1)
          {
          if (secondOp == TR::su2i ||
-             (secondOp == TR::iuconst               &&
+             (secondOp == TR::iconst               &&
               secondChild->getUnsignedInt() <= USHRT_MAX))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
@@ -4338,7 +4339,7 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
                   dumpOptDetails(s->comp(), "Integer Compare Narrower: found both children c2i in method %s\n", s->comp()->signature());
                   }
                }
-            else if (secondOp == TR::iuconst)
+            else if (secondOp == TR::iconst)
                {
                if (secondChild->getReferenceCount() > 1)
                   {
@@ -4407,7 +4408,7 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
       else if (firstOp == TR::b2i && firstChild->getReferenceCount() == 1)
          {
          if (secondOp == TR::b2i ||
-             (secondOp == TR::iuconst               &&
+             (secondOp == TR::iconst               &&
               secondChild->getUnsignedInt() <= SCHAR_MAX))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
@@ -4422,7 +4423,7 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
                   dumpOptDetails(s->comp(), "Integer Compare Narrower: found both children b2i in method %s\n", s->comp()->signature());
                   }
                }
-            else if (secondOp == TR::iuconst)
+            else if (secondOp == TR::iconst)
                {
                if (secondChild->getReferenceCount() > 1)
                   {
@@ -10539,7 +10540,7 @@ TR::Node *iandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          TR::Node * lrChild = firstChild->getSecondChild();
          if (lrChild->getOpCodeValue() == TR::iconst)
             {
-            if (secondChildOp == TR::iconst || (secondChildOp == TR::iuconst && lrChild->chkUnsigned()))
+            if (secondChildOp == TR::iconst )
                {
                if (performTransformation(s->comp(), "%sFound iand of iconst with iand of x and iconst in node [%s]\n", s->optDetailString(), node->getName(s->getDebug())))
                   {

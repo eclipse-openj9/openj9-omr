@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1716,10 +1716,10 @@ TR_Arraytranslate::checkStore(TR::Node * storeNode)
 
       if (shrinkNode->getOpCodeValue() != TR::i2s &&
           shrinkNode->getOpCodeValue() != TR::i2b &&
-          shrinkNode->getOpCodeValue() != TR::cconst &&
+          shrinkNode->getOpCodeValue() != TR::sconst &&
           shrinkNode->getOpCodeValue() != TR::bconst)
          {
-         dumpOptDetails(comp(), "...store tree does not have i2c/i2b/cconst/bconst - no arraytranslate reduction\n");
+         dumpOptDetails(comp(), "...store tree does not have i2c/i2b/sconst/bconst - no arraytranslate reduction\n");
          return false;
          }
 
@@ -1811,7 +1811,7 @@ TR_Arraytranslate::checkBreak(TR::Block * breakBlock, TR::Node * breakNode, TR::
       //      we also conservatively ensure the range is inside the represented ranges such that we can
       //      add or subtract 1 from the value and still represent it in 2**16 bits for a default value
       //      if we need to generate a table.
-      dumpOptDetails(comp(), "...break tree does not have bconst/cconst/iconst, or not in range - no arraytranslate reduction\n");
+      dumpOptDetails(comp(), "...break tree does not have iconst, or not in range - no arraytranslate reduction\n");
       return false;
       }
 

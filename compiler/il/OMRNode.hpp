@@ -328,9 +328,6 @@ public:
    static TR::Node *sconst(TR::Node *originatingByteCodeNode, int16_t val);
    static TR::Node *sconst(int16_t val);
 
-   static TR::Node *cconst(TR::Node *originatingByteCodeNode, uint16_t val);
-   static TR::Node *cconst(uint16_t val);
-
    static TR::Node *iconst(TR::Node *originatingByteCodeNode, int32_t val);
    static TR::Node *iconst(int32_t val);
 

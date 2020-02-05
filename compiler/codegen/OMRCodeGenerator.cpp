@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1784,7 +1784,7 @@ OMR::CodeGenerator::convertMultiplyToShift(TR::Node * node)
    //
    int32_t multiplier = 0;
    int32_t shiftAmount = 0;
-   if (secondChild->getOpCodeValue() == TR::lconst || secondChild->getOpCodeValue() == TR::luconst)
+   if (secondChild->getOpCodeValue() == TR::lconst)
       {
       int64_t longMultiplier = secondChild->getLongInt();
       if (longMultiplier == 0)
@@ -2698,10 +2698,6 @@ OMR::CodeGenerator::isMaterialized(TR::Node * node)
       value = (int64_t) node->getInt();
    else if (node->getOpCodeValue() == TR::lconst)
       value = node->getLongInt();
-   else if (node->getOpCodeValue() == TR::iuconst)
-      value = (int64_t) node->getUnsignedInt();
-   else if (node->getOpCodeValue() == TR::luconst)
-      value = node->getUnsignedLongInt();
    else
       return false;
 

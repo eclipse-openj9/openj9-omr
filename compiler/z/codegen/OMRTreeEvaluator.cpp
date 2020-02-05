@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -380,16 +380,10 @@ getIntegralValue(TR::Node * node)
       switch (node->getDataType())
          {
          case TR::Int8:
-            if (node->getOpCodeValue()==TR::buconst)
-               value = node->getUnsignedByte();
-            else
-               value = node->getByte();
+            value = node->getByte();
             break;
          case TR::Int16:
-            if (node->getOpCodeValue()==TR::cconst)
-               value = node->getConst<uint16_t>();
-            else
-               value = node->getShortInt();
+            value = node->getShortInt();
             break;
          case TR::Int32:
             value = node->getInt();
@@ -6153,8 +6147,7 @@ OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    // Use MVI when we can
    if (valueChild->getRegister()==NULL &&
-      (valueChild->getOpCodeValue() == TR::buconst ||
-      valueChild->getOpCodeValue() == TR::bconst    ) )
+      valueChild->getOpCodeValue() == TR::bconst)
       {
       TR::MemoryReference * tempMR = generateS390MemoryReference(node, cg);
       generateSIInstruction(cg, TR::InstOpCode::MVI, node, tempMR, valueChild->getByte()&0xFF);

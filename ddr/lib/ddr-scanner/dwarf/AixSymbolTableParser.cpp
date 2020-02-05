@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,8 +68,6 @@ static int populateBuiltInTypeDies(Dwarf_Error *error);
 static void populateNestedClasses();
 static void removeUselessStubs();
 static int setDieAttributes(const string & dieName, unsigned int dieSize, Dwarf_Die currentDie, Dwarf_Error *error);
-
-using std::getline;
 
 int
 dwarf_finish(Dwarf_Debug dbg, Dwarf_Error *error)
@@ -1945,40 +1943,45 @@ setDieAttributes(const string & dieName,
 }
 
 /**
- * Splits the string 'data' on delimeters in argument 'delim' and writes the output to
- * elements.
+ * Splits the string 'data' on delimiter in argument 'delim' and writes non-empty
+ * segments to elements.
  *
- * @param[in]  data   : string that needs to be split
- * @param[in]  delimeters: what the string needs to be seperated on
- * @param[out] elements  : string vector to write out the strings after doing the split to
+ * @param[in]  data : string that needs to be split
+ * @param[in]  delim : what the string needs to be separated on
+ * @param[out] elements : vector to receive the non-empty segments
  */
 void
-split(const string & data, char delimeters, str_vect *elements)
+split(const string & data, char delim, str_vect *elements)
 {
-	stringstream ss;
-	ss.str(data);
-	string item;
-	while (getline(ss, item, delimeters)) {
-		if (!item.empty()) {
-			elements->push_back(item);
+	for (size_t start = 0; start < data.length();) {
+		size_t end = data.find(delim, start);
+
+		if (string::npos != end) {
+			if (start < end) {
+				elements->push_back(data.substr(start, end - start));
+			}
+			start = end + 1;
+		} else {
+			elements->push_back(data.substr(start));
+			break;
 		}
 	}
 }
 
 /**
- * Splits the string data on delimeters in argument delimeters and writes the output to
- * elements.
+ * Splits the string 'data' on delimiter in argument 'delim' and returns a vector
+ * of non-empty segments.
  *
- * @param[in]  data   : string that needs to be split
- * @param[in]  delimeters: what the string needs to be seperated on
+ * @param[in]  data : string that needs to be split
+ * @param[in]  delim : what the string needs to be separated on
  *
- * @return string vector containing the strings after resulting from the split operation
+ * @return vector containing the strings resulting from the split operation
  */
 str_vect
-split(const string & data, char delimeters)
+split(const string & data, char delim)
 {
 	str_vect elements;
-	split(data, delimeters, &elements);
+	split(data, delim, &elements);
 	return elements;
 }
 

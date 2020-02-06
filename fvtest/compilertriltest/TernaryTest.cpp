@@ -112,10 +112,6 @@ static std::vector<std::tuple<T, T>> resultInputs()
 class Int32TernaryInt32CompareTest : public TernaryTest<int32_t, int32_t> {};
 
 TEST_P(Int32TernaryInt32CompareTest, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
-        << "The Z code generator implementation is missing currently (see issue #3796)";
-
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -144,10 +140,6 @@ TEST_P(Int32TernaryInt32CompareTest, UsingLoadParam) {
 }
 
 TEST_P(Int32TernaryInt32CompareTest, UsingConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
-        << "The Z code generator implementation is missing currently (see issue #3796)";
-
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -188,10 +180,6 @@ INSTANTIATE_TEST_CASE_P(TernaryTest, Int32TernaryInt32CompareTest,
 class Int64TernaryInt64CompareTest : public TernaryTest<int64_t, int64_t> {};
 
 TEST_P(Int64TernaryInt64CompareTest, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
-        << "The Z code generator implementation is missing currently (see issue #3796)";
-
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -220,10 +208,6 @@ TEST_P(Int64TernaryInt64CompareTest, UsingLoadParam) {
 }
 
 TEST_P(Int64TernaryInt64CompareTest, UsingConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
-        << "The Z code generator implementation is missing currently (see issue #3796)";
-
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -265,10 +249,6 @@ INSTANTIATE_TEST_CASE_P(TernaryTest, Int64TernaryInt64CompareTest,
 class Int64TernaryDoubleCompareTest : public TernaryTest<double, int64_t> {};
 
 TEST_P(Int64TernaryDoubleCompareTest, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
-        << "The Z code generator implementation is missing currently (see issue #3796)";
-
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -297,10 +277,6 @@ TEST_P(Int64TernaryDoubleCompareTest, UsingLoadParam) {
 }
 
 TEST_P(Int64TernaryDoubleCompareTest, UsingConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
-        << "The Z code generator implementation is missing currently (see issue #3796)";
-
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -339,10 +315,6 @@ INSTANTIATE_TEST_CASE_P(TernaryTest, Int64TernaryDoubleCompareTest,
 class Int32TernaryDoubleCompareTest : public TernaryTest<double, int32_t> {};
 
 TEST_P(Int32TernaryDoubleCompareTest, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
-        << "The Z code generator implementation is missing currently (see issue #3796)";
-
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -371,10 +343,6 @@ TEST_P(Int32TernaryDoubleCompareTest, UsingLoadParam) {
 }
 
 TEST_P(Int32TernaryDoubleCompareTest, UsingConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
-        << "The Z code generator implementation is missing currently (see issue #3796)";
-
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -414,10 +382,6 @@ INSTANTIATE_TEST_CASE_P(TernaryTest, Int32TernaryDoubleCompareTest,
 class ShortTernaryDoubleCompareTest : public TernaryTest<double, int16_t> {};
 
 TEST_P(ShortTernaryDoubleCompareTest, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
-        << "The Z code generator implementation is missing currently (see issue #3796)";
-
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -447,10 +411,6 @@ TEST_P(ShortTernaryDoubleCompareTest, UsingLoadParam) {
 }
 
 TEST_P(ShortTernaryDoubleCompareTest, UsingConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, MissingImplementation)
-        << "The Z code generator implementation is missing currently (see issue #3796)";
-
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -486,5 +446,3 @@ INSTANTIATE_TEST_CASE_P(TernaryTest, ShortTernaryDoubleCompareTest,
             ::testing::ValuesIn(compareInputs<double>()),
             ::testing::ValuesIn(resultInputs<int16_t>()),
             ::testing::Values((xternaryOracle<double, int16_t>))));
-
-

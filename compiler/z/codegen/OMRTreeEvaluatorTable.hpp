@@ -794,15 +794,15 @@
    TR::TreeEvaluator::maxEvaluator,         // TR::iumax
    TR::TreeEvaluator::maxEvaluator,         // TR::lmax
    TR::TreeEvaluator::maxEvaluator,         // TR::lumax
-   TR::TreeEvaluator::unImpOpEvaluator,     // TR::fmax
-   TR::TreeEvaluator::unImpOpEvaluator,     // TR::dmax
+   TR::TreeEvaluator::fmaxEvaluator,     // TR::fmax
+   TR::TreeEvaluator::dmaxEvaluator,     // TR::dmax
 
    TR::TreeEvaluator::minEvaluator,         // TR::imin
    TR::TreeEvaluator::minEvaluator,         // TR::iumin
    TR::TreeEvaluator::minEvaluator,         // TR::lmin
    TR::TreeEvaluator::minEvaluator,         // TR::lumin
-   TR::TreeEvaluator::unImpOpEvaluator,     // TR::fmin
-   TR::TreeEvaluator::unImpOpEvaluator,     // TR::dmin
+   TR::TreeEvaluator::fminEvaluator,     // TR::fmin
+   TR::TreeEvaluator::dminEvaluator,     // TR::dmin
    TR::TreeEvaluator::trtEvaluator,         // TR::trt
    TR::TreeEvaluator::trtEvaluator,         // TR::trtSimple
 

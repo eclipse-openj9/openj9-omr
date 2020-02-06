@@ -462,12 +462,155 @@ OMR::Z::TreeEvaluator::maxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return maxMinHelper(node, cg, true);
    }
 
+TR::Register*
+OMR::Z::TreeEvaluator::fmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* lhsNode = node->getChild(0);
+   TR::Node* rhsNode = node->getChild(1);
+
+   TR::Register* lhsReg = cg->gprClobberEvaluate(lhsNode);
+   TR::Register* rhsReg = cg->evaluate(rhsNode);
+
+   TR::LabelSymbol* cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol* cFlowRegionEnd = generateLabelSymbol(cg);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+   cFlowRegionStart->setStartInternalControlFlow();
+
+   generateRRInstruction(cg, TR::InstOpCode::CEBR, node, lhsReg, rhsReg);
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BHR, node, cFlowRegionEnd);
+
+   generateRRInstruction(cg, TR::InstOpCode::LER, node, lhsReg, rhsReg);
+
+   TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+
+   deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
+   deps->addPostConditionIfNotAlreadyInserted(rhsReg, TR::RealRegister::AssignAny);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+   cFlowRegionEnd->setEndInternalControlFlow();
+
+   node->setRegister(lhsReg);
+
+   cg->decReferenceCount(lhsNode);
+   cg->decReferenceCount(rhsNode);
+
+   return lhsReg;
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::dmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* lhsNode = node->getChild(0);
+   TR::Node* rhsNode = node->getChild(1);
+
+   TR::Register* lhsReg = cg->gprClobberEvaluate(lhsNode);
+   TR::Register* rhsReg = cg->evaluate(rhsNode);
+
+   TR::LabelSymbol* cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol* cFlowRegionEnd = generateLabelSymbol(cg);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+   cFlowRegionStart->setStartInternalControlFlow();
+
+   generateRRInstruction(cg, TR::InstOpCode::CDBR, node, lhsReg, rhsReg);
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BHR, node, cFlowRegionEnd);
+
+   generateRRInstruction(cg, TR::InstOpCode::LDR, node, lhsReg, rhsReg);
+
+   TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+
+   deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
+   deps->addPostConditionIfNotAlreadyInserted(rhsReg, TR::RealRegister::AssignAny);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+   cFlowRegionEnd->setEndInternalControlFlow();
+
+   node->setRegister(lhsReg);
+
+   cg->decReferenceCount(lhsNode);
+   cg->decReferenceCount(rhsNode);
+
+   return lhsReg;
+   }
+
 TR::Register *
 OMR::Z::TreeEvaluator::minEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return maxMinHelper(node, cg, false);
    }
 
+TR::Register*
+OMR::Z::TreeEvaluator::fminEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* lhsNode = node->getChild(0);
+   TR::Node* rhsNode = node->getChild(1);
+
+   TR::Register* lhsReg = cg->gprClobberEvaluate(lhsNode);
+   TR::Register* rhsReg = cg->evaluate(rhsNode);
+
+   TR::LabelSymbol* cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol* cFlowRegionEnd = generateLabelSymbol(cg);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+   cFlowRegionStart->setStartInternalControlFlow();
+
+   generateRRInstruction(cg, TR::InstOpCode::CEBR, node, lhsReg, rhsReg);
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BLR, node, cFlowRegionEnd);
+
+   generateRRInstruction(cg, TR::InstOpCode::LER, node, lhsReg, rhsReg);
+
+   TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+
+   deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
+   deps->addPostConditionIfNotAlreadyInserted(rhsReg, TR::RealRegister::AssignAny);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+   cFlowRegionEnd->setEndInternalControlFlow();
+
+   node->setRegister(lhsReg);
+
+   cg->decReferenceCount(lhsNode);
+   cg->decReferenceCount(rhsNode);
+
+   return lhsReg;
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::dminEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* lhsNode = node->getChild(0);
+   TR::Node* rhsNode = node->getChild(1);
+
+   TR::Register* lhsReg = cg->gprClobberEvaluate(lhsNode);
+   TR::Register* rhsReg = cg->evaluate(rhsNode);
+
+   TR::LabelSymbol* cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol* cFlowRegionEnd = generateLabelSymbol(cg);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+   cFlowRegionStart->setStartInternalControlFlow();
+
+   generateRRInstruction(cg, TR::InstOpCode::CDBR, node, lhsReg, rhsReg);
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BLR, node, cFlowRegionEnd);
+
+   generateRRInstruction(cg, TR::InstOpCode::LDR, node, lhsReg, rhsReg);
+
+   TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+
+   deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
+   deps->addPostConditionIfNotAlreadyInserted(rhsReg, TR::RealRegister::AssignAny);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+   cFlowRegionEnd->setEndInternalControlFlow();
+
+   node->setRegister(lhsReg);
+
+   cg->decReferenceCount(lhsNode);
+   cg->decReferenceCount(rhsNode);
+
+   return lhsReg;
+   }
 
 /**
  * 64bit version lcmpEvaluator Helper: long compare (1 if child1 > child2, 0 if child1 == child2,

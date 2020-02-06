@@ -65,6 +65,7 @@ TYPED_TEST(LinkageTest, InvalidLinkageTest) {
     SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
     SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
     SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
+    SKIP_ON_RISCV(MissingImplementation) << "Test is skipped on RISC-V because calls are not fully supported (see issue #1645)";
 
     char inputTrees[200] = {0};
     const auto format_string = "(method return=Int32  args=[Int32] (block (ireturn (icall address=0x%jX args=[Int32] linkage=noexist  (iload parm=0)) )  ))";
@@ -87,6 +88,7 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingSingleArg) {
     SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
     SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
     SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
+    SKIP_ON_RISCV(MissingImplementation) << "Test is skipped on RISC-V because calls are not fully supported (see issue #1645)";
 
     char inputTrees[200] = {0};
     const auto format_string = "(method return=%s args=[%s] (block (%sreturn (%scall address=0x%jX args=[%s] linkage=system (%sload parm=0)) )  ))";
@@ -128,6 +130,7 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
     SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
     SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
     SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
+    SKIP_ON_RISCV(MissingImplementation) << "Test is skipped on RISC-V because calls are not fully supported (see issue #1645)";
 
     char inputTrees[400] = {0};
     const auto format_string = "(method return=%s args=[%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s] linkage=system"
@@ -209,6 +212,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitedToJitedParameterPassingFourArg) {
     SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
     SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
     SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
+    SKIP_ON_RISCV(MissingImplementation) << "Test is skipped on RISC-V because calls are not fully supported (see issue #1645)";
 
     char inputTrees[400] = {0};
 
@@ -277,6 +281,7 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArg) {
     SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
     SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
     SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
+    SKIP_ON_RISCV(MissingImplementation) << "Test is skipped on RISC-V because calls are not fully supported (see issue #1645)";
 
     char inputTrees[400] = {0};
     const auto format_string = "(method return=%s args=[%s,%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s,%s] linkage=system"
@@ -356,6 +361,7 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArgToStackUser) {
     SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
     SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
     SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
+    SKIP_ON_RISCV(MissingImplementation) << "Test is skipped on RISC-V because calls are not fully supported (see issue #1645)";
 
     char inputTrees[400] = {0};
     const auto format_string = "(method return=%s args=[%s,%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s,%s] linkage=system"
@@ -422,6 +428,7 @@ TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFourArgWithMixedT
     SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
     SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
     SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
+    SKIP_ON_RISCV(MissingImplementation) << "Test is skipped on RISC-V because calls are not fully supported (see issue #1645)";
 
     char inputTrees[400] = {0};
     const auto format_string = "(method return=Int32 args=[Double,Int32,Double,Int32]"
@@ -463,6 +470,7 @@ TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFiveArgWithMixedT
     SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
     SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
     SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
+    SKIP_ON_RISCV(MissingImplementation) << "Test is skipped on RISC-V because calls are not fully supported (see issue #1645)";
 
     char inputTrees[400] = {0};
     const auto format_string = "(method return=Double args=[Double,Int32,Double,Int32,Double]"

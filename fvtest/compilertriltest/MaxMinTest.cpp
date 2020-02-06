@@ -67,6 +67,7 @@ bool smallFp_filter(std::tuple<T, T> a)
 class Int32MaxMin : public TRTest::BinaryOpTest<int32_t> {};
 
 TEST_P(Int32MaxMin, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[150] = {0};
@@ -94,6 +95,8 @@ TEST_P(Int32MaxMin, UsingConst) {
 }
 
 TEST_P(Int32MaxMin, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[150] = {0};
@@ -128,6 +131,8 @@ INSTANTIATE_TEST_CASE_P(MaxMin, Int32MaxMin, ::testing::Combine(
 class Int64MaxMin : public TRTest::BinaryOpTest<int64_t> {};
 
 TEST_P(Int64MaxMin, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[150] = {0};
@@ -155,6 +160,8 @@ TEST_P(Int64MaxMin, UsingConst) {
 }
 
 TEST_P(Int64MaxMin, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[150] = {0};
@@ -191,6 +198,7 @@ class FloatMaxMin : public TRTest::BinaryOpTest<float> {};
 TEST_P(FloatMaxMin, UsingConst) {
     SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_RISCV(MissingImplementation) << "The RISC-V code generator currently doesn't support fmax/fmin (see issue #4276)";
     
     auto param = TRTest::to_struct(GetParam());
     char inputTrees[1024] = {0};
@@ -220,6 +228,7 @@ TEST_P(FloatMaxMin, UsingConst) {
 TEST_P(FloatMaxMin, UsingLoadParam) {
     SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_RISCV(MissingImplementation) << "The RISC-V code generator currently doesn't support fmax/fmin (see issue #4276)";
  
     auto param = TRTest::to_struct(GetParam());
 
@@ -258,6 +267,7 @@ class DoubleMaxMin : public TRTest::BinaryOpTest<double> {};
 TEST_P(DoubleMaxMin, UsingConst) {
     SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_RISCV(MissingImplementation) << "The RISC-V code generator currently doesn't support fmax/fmin (see issue #4276)";
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -288,6 +298,7 @@ TEST_P(DoubleMaxMin, UsingConst) {
 TEST_P(DoubleMaxMin, UsingLoadParam) {
     SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_RISCV(MissingImplementation) << "The RISC-V code generator currently doesn't support fmax/fmin (see issue #4276)";
 
     auto param = TRTest::to_struct(GetParam());
 

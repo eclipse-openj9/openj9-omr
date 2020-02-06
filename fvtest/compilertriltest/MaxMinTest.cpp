@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -190,7 +190,7 @@ class FloatMaxMin : public TRTest::BinaryOpTest<float> {};
 
 TEST_P(FloatMaxMin, UsingConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
+    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
         << "The " << arch << " code generator currently doesn't support fmax/fmin (see issue #4276)";
     auto param = TRTest::to_struct(GetParam());
     char inputTrees[1024] = {0};
@@ -219,7 +219,7 @@ TEST_P(FloatMaxMin, UsingConst) {
 
 TEST_P(FloatMaxMin, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
+    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
         << "The " << arch << " code generator currently doesn't support fmax/fmin (see issue #4276)";
     auto param = TRTest::to_struct(GetParam());
 
@@ -257,7 +257,7 @@ class DoubleMaxMin : public TRTest::BinaryOpTest<double> {};
 
 TEST_P(DoubleMaxMin, UsingConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
+    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
         << "The " << arch << " code generator currently doesn't support dmax/dmin (see issue #4276)";
     auto param = TRTest::to_struct(GetParam());
 
@@ -287,7 +287,7 @@ TEST_P(DoubleMaxMin, UsingConst) {
 
 TEST_P(DoubleMaxMin, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
+    SKIP_IF(OMRPORT_ARCH_X86 == arch || OMRPORT_ARCH_HAMMER == arch || OMRPORT_ARCH_AARCH64 == arch, KnownBug)
         << "The " << arch << " code generator currently doesn't support dmax/dmin (see issue #4276)";
     auto param = TRTest::to_struct(GetParam());
 

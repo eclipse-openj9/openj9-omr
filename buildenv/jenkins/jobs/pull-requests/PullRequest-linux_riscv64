@@ -30,6 +30,17 @@ pipeline {
                 }
             }
         }
+        stage('Test') {
+            steps {
+                timestamps {
+                    dir('build') {
+                        echo "Sanity Test..."
+                        sh'''ctest -V'''
+                        junit '**/*results.xml'
+                    }
+                }
+            }
+        }
     }
     post {
         always {

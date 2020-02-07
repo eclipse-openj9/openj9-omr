@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -134,9 +134,17 @@ TR_VirtualGuard::createVftGuard
 (TR_VirtualGuardKind kind, TR::Compilation * comp, int16_t calleeIndex,
  TR::Node* callNode, TR::TreeTop * destination, TR_OpaqueClassBlock *thisClass)
    {
+   return createVftGuardWithReceiver(kind, comp, calleeIndex, callNode, destination, thisClass, callNode->getFirstArgument());
+   }
+
+TR::Node*
+TR_VirtualGuard::createVftGuardWithReceiver
+(TR_VirtualGuardKind kind, TR::Compilation * comp, int16_t calleeIndex,
+ TR::Node* callNode, TR::TreeTop * destination, TR_OpaqueClassBlock *thisClass, TR::Node* receiverNode)
+   {
    TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
 
-   TR::Node* vft = TR::Node::createWithSymRef(TR::aloadi, 1, 1, callNode->getSecondChild(), symRefTab->findOrCreateVftSymbolRef());
+   TR::Node* vft = TR::Node::createWithSymRef(TR::aloadi, 1, 1, receiverNode, symRefTab->findOrCreateVftSymbolRef());
    TR::Node* aconstNode = TR::Node::aconst(callNode, (uintptrj_t)thisClass);
    aconstNode->setIsClassPointerConstant(true);
    aconstNode->setInlinedSiteIndex(calleeIndex);
@@ -159,7 +167,7 @@ TR_VirtualGuard::createMethodGuard
 (TR_VirtualGuardKind kind, TR::Compilation * comp, int16_t calleeIndex,
  TR::Node* callNode, TR::TreeTop * destination, TR::ResolvedMethodSymbol * calleeSymbol, TR_OpaqueClassBlock *thisClass)
    {
-   return createMethodGuardWithReceiver (kind, comp, calleeIndex, callNode, destination, calleeSymbol, thisClass, callNode->getSecondChild());
+   return createMethodGuardWithReceiver (kind, comp, calleeIndex, callNode, destination, calleeSymbol, thisClass, callNode->getFirstArgument());
    }
 
 /*

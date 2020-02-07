@@ -2190,20 +2190,27 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
           (node->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
          {
          TR_OpaqueClassBlock *clazz = NULL;
+         TR::VPClassType *type = NULL;
          if (base->isClassObject() == TR_yes)
             {
             // base can only be an instance of java/lang/Class, since
             // we can't load <vft> relative to a J9Class.
             clazz = vp->comp()->getClassClassPointer();
+            if (clazz != NULL)
+               type = TR::VPFixedClass::create(vp, clazz);
             }
          else if (base->isFixedClass())
             {
             clazz = base->getClass();
+            if (clazz != NULL)
+               type = TR::VPFixedClass::create(vp, clazz);
             }
-
-         TR::VPClassType *type = NULL;
-         if (clazz != NULL)
-            type = TR::VPFixedClass::create(vp, clazz);
+         else if (base->getClass() &&
+                  base->getClassType() &&
+                  base->getClassType()->asResolvedClass())
+            {
+            type = TR::VPResolvedClass::create(vp, base->getClass());
+            }
 
          TR::VPClassPresence *nonnull = TR::VPNonNullObject::create(vp);
          TR::VPObjectLocation *loc =
@@ -8878,6 +8885,7 @@ static void addDelayedConvertedGuard (TR::Node* node,
                                        TR_VirtualGuard* oldVirtualGuard,
                                        OMR::ValuePropagation* vp,
                                        TR_VirtualGuardKind guardKind,
+                                       TR_VirtualGuardTestType testType,
                                        TR_OpaqueClassBlock* objectClass)
    {
 
@@ -8894,7 +8902,21 @@ static void addDelayedConvertedGuard (TR::Node* node,
 
 
    TR::Node *newReceiver=TR::Node::createLoad(callNode, callNode->getSecondChild()->getSymbolReference());
-   TR::Node* newGuardNode = TR_VirtualGuard::createMethodGuardWithReceiver
+   TR::Node* newGuardNode = NULL;
+   if (testType == TR_VftTest)
+      {
+      newGuardNode = TR_VirtualGuard::createVftGuardWithReceiver
+                       (guardKind,
+                       vp->comp(),
+                       oldVirtualGuard->getCalleeIndex(),
+                       callNode,
+                       node->getBranchDestination(),
+                       objectClass /*oldVirtualGuard->getThisClass()*/,
+                       newReceiver);
+      }
+   else
+      {
+      newGuardNode = TR_VirtualGuard::createMethodGuardWithReceiver
                        (guardKind,
                        vp->comp(),
                        oldVirtualGuard->getCalleeIndex(),
@@ -8902,7 +8924,8 @@ static void addDelayedConvertedGuard (TR::Node* node,
                        node->getBranchDestination(),
                        methodSymbol,
                        objectClass /*oldVirtualGuard->getThisClass()*/,
-             newReceiver);
+                       newReceiver);
+      }
 
    if (vp->trace())
       {
@@ -9853,7 +9876,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                       methodSymbol->isInterface()  ? TR_InterfaceGuard :
                       TR::Compiler->cls.isAbstractClass(vp->comp(), objectClass) ? TR_AbstractGuard : TR_HierarchyGuard;
 
-                   addDelayedConvertedGuard(node, callNode, cMethodSymbol, vGuard, vp, guardKind, objectClass);
+                   addDelayedConvertedGuard(node, callNode, cMethodSymbol, vGuard, vp, guardKind, TR_VftTest, objectClass);
                    }
                 }
              }

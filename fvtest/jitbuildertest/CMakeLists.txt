@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,4 +56,8 @@ target_link_libraries(jitbuildertest
 
 set_property(TARGET jitbuildertest PROPERTY FOLDER fvtest)
 
-add_test(NAME JitBuilderTest COMMAND jitbuildertest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/jitbuildertest-results.xml)
+# Disable JitBuilder tests on RISC-V. This is essentially a workaround
+# until #4764 is addressed. Once done, tests should be properly skipped.
+if(NOT OMR_HOST_ARCH STREQUAL "riscv")
+	add_test(NAME JitBuilderTest COMMAND jitbuildertest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/jitbuildertest-results.xml)
+endif()

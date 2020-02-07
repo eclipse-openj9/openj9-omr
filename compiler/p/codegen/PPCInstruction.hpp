@@ -553,7 +553,7 @@ class PPCConditionalBranchInstruction : public PPCLabelInstruction
 
    virtual Kind getKind() { return IsConditionalBranch; }
 
-
+   void expandIntoFarBranch();
 
    TR::Register    *getConditionRegister()              {return _conditionRegister;}
    TR::Register    *setConditionRegister(TR::Register *cr) {return (_conditionRegister = cr);}
@@ -564,7 +564,6 @@ class PPCConditionalBranchInstruction : public PPCLabelInstruction
    int32_t setEstimatedBinaryLocation(int32_t l) {return (_estimatedBinaryLocation = l);}
 
    bool            getFarRelocation() {return _farRelocation;}
-   bool            setFarRelocation(bool b) {return (_farRelocation = b);}
 
    bool       reverseLikeliness() {return (_likeliness = !_likeliness);}
    bool       getLikeliness()    {return _likeliness;}

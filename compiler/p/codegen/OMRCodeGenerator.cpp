@@ -106,14 +106,6 @@
 #include <sys/debug.h>
 #endif
 
-static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg);
-
-
-
-
-
-
-
 OMR::Power::CodeGenerator::CodeGenerator() :
    OMR::CodeGenerator(),
      _stackPtrRegister(NULL),
@@ -1711,6 +1703,22 @@ void OMR::Power::CodeGenerator::generateBinaryEncodingPrologue(
    self()->getLinkage()->createPrologue(data->cursorInstruction);
    }
 
+static void expandFarConditionalBranches(TR::CodeGenerator *cg)
+   {
+   for (TR::Instruction *instr = cg->getFirstInstruction(); instr; instr = instr->getNext())
+      {
+      TR::PPCConditionalBranchInstruction *branch = instr->getPPCConditionalBranchInstruction();
+
+      if (branch && branch->getLabelSymbol())
+         {
+         int32_t distance = branch->getLabelSymbol()->getEstimatedCodeLocation() - branch->getEstimatedBinaryLocation();
+
+         if (distance < (int32_t)TR::getMinSigned<TR::Int16>() || distance > (int32_t)TR::getMaxSigned<TR::Int16>())
+            branch->expandIntoFarBranch();
+         }
+      }
+   }
+
 void OMR::Power::CodeGenerator::doBinaryEncoding()
    {
    TR_PPCBinaryEncodingData data;
@@ -1742,9 +1750,7 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
 
    data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);
    if (data.estimate > 32768)
-      {
-      data.estimate = identifyFarConditionalBranches(data.estimate, self());
-      }
+      expandFarConditionalBranches(self());
 
    self()->setEstimatedCodeLength(data.estimate);
 
@@ -1876,74 +1882,6 @@ TR::Register *OMR::Power::CodeGenerator::gprClobberEvaluate(TR::Node *node)
       {
       return resultReg;
       }
-   }
-
-
-static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg)
-   {
-   TR_Array<TR::PPCConditionalBranchInstruction *> candidateBranches(cg->trMemory(), 256);
-   TR::Instruction *cursorInstruction = cg->getFirstInstruction();
-
-   while (cursorInstruction)
-      {
-      TR::PPCConditionalBranchInstruction *branch = cursorInstruction->getPPCConditionalBranchInstruction();
-      if (branch != NULL)
-         {
-         if (abs(branch->getEstimatedBinaryLocation() - branch->getLabelSymbol()->getEstimatedCodeLocation()) > 16384)
-            {
-            candidateBranches.add(branch);
-            }
-         }
-      cursorInstruction = cursorInstruction->getNext();
-      }
-
-   // The following heuristic algorithm penalizes backward branches in
-   // estimation, since it should be rare that a backward branch needs
-   // a far relocation.
-
-   for (int32_t i=candidateBranches.lastIndex(); i>=0; i--)
-      {
-      int32_t myLocation=candidateBranches[i]->getEstimatedBinaryLocation();
-      int32_t targetLocation=candidateBranches[i]->getLabelSymbol()->getEstimatedCodeLocation();
-      int32_t  j;
-
-      if (targetLocation >= myLocation)
-         {
-         for (j=i+1; j<candidateBranches.size() &&
-                     targetLocation>candidateBranches[j]->getEstimatedBinaryLocation();
-              j++)
-            ;
-
-         // We might be branching to a Interface snippet which might contain a 4
-         // byte alignment in 64bit. This means we need to add 4 to the target
-         // in order to be conservatively correct for the offset calculation
-         // We could improve this by only adding 4 when the target is a Interface Call Snippet
-         if (cg->comp()->target().is64Bit())
-            targetLocation+=4;
-         if ((targetLocation-myLocation + (j-i-1)*4) >= 32768)
-            {
-            candidateBranches[i]->setFarRelocation(true);
-            }
-         else
-            {
-            candidateBranches.remove(i);
-            }
-         }
-      else    // backward branch
-         {
-         for (j=i-1; j>=0 && targetLocation<=candidateBranches[j]->getEstimatedBinaryLocation(); j--)
-            ;
-         if ((myLocation-targetLocation + (i-j-1)*4) > 32768)
-            {
-            candidateBranches[i]->setFarRelocation(true);
-            }
-         else
-            {
-            candidateBranches.remove(i);
-            }
-         }
-      }
-      return(estimate+4*candidateBranches.size());
    }
 
 bool OMR::Power::CodeGenerator::canTransformUnsafeSetMemory()

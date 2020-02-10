@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -79,15 +79,6 @@ class MM_ForwardedHeader
 public:
 protected:
 private:
-struct MutableHeaderFields {
-		/* first slot must be always aligned as for an object slot */
-		fomrobject_t slot;
-
-#if defined (OMR_GC_COMPRESSED_POINTERS)
-		/* this field must be here to reserve space if slots are 4 bytes long (extend to 8 bytes starting from &MutableHeaderFields.clazz) */
-		uint32_t overlap;
-#endif /* defined (OMR_GC_COMPRESSED_POINTERS) */
-};
 	omrobjectptr_t _objectPtr;					/**< the object on which to act */
 	uintptr_t _preserved; 						/**< a backup copy of the header fields which may be modified by this class */
 #if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
@@ -216,9 +207,9 @@ private:
 	{
 		uintptr_t value = 0;
 		if (compressObjectReferences()) {
-			value = *(uint32_t*)destinationObjectPtr;
+			value = *(volatile uint32_t*)destinationObjectPtr;
 		} else {
-			value = *(uintptr_t*)destinationObjectPtr;
+			value = *(volatile uintptr_t*)destinationObjectPtr;
 		}
 		return value;
 	}

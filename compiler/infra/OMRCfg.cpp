@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -286,7 +286,12 @@ OMR::CFG::addSuccessorEdges(TR::Block * block)
             addEdge(block, block->getExit()->getNextTreeTop()->getNode()->getBlock());
          break;
       default:
-         addEdge(block, block->getExit()->getNextTreeTop()->getNode()->getBlock());
+         {
+         if (block->getExit()->getNextTreeTop())
+            addEdge(block, block->getExit()->getNextTreeTop()->getNode()->getBlock());
+         else
+            addEdge(block, getEnd());
+         }
       }
    }
 

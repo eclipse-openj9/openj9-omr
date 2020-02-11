@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -120,8 +120,8 @@
    TR::TreeEvaluator::lmulEvaluator,        // TR::lmul
    TR::TreeEvaluator::fmulEvaluator,        // TR::fmul
    TR::TreeEvaluator::dmulEvaluator,        // TR::dmul
-   TR::TreeEvaluator::unImpOpEvaluator,        // TR::bmul
-   TR::TreeEvaluator::unImpOpEvaluator,        // TR::smul
+   TR::TreeEvaluator::bmulEvaluator,        // TR::bmul
+   TR::TreeEvaluator::smulEvaluator,        // TR::smul
    TR::TreeEvaluator::idivEvaluator,        // TR::idiv
    TR::TreeEvaluator::ldivEvaluator,        // TR::ldiv
    TR::TreeEvaluator::fdivEvaluator,        // TR::fdiv

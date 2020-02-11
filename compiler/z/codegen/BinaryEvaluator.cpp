@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2343,23 +2343,40 @@ lmulHelper64(TR::Node * node, TR::CodeGenerator * cg)
    return targetRegister;
    }
 
-
-/**
- * baddEvaluator - add 2 bytes
- */
 TR::Register *
-OMR::Z::TreeEvaluator::baddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
+OMR::Z::TreeEvaluator::baddEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
-   return generic32BitAddEvaluator(node, cg);
+   TR::Node* lhsChild = node->getChild(0);
+   TR::Node* rhsChild = node->getChild(1);
+
+   // We don't have an instruction which adds a source register with a target memory reference, so force the
+   // evaluation of both chlidren here and pass the BAD mnemonic for the register-to-memory operand to the generic
+   // analyzer to ensure it is never generated
+   cg->evaluate(lhsChild);
+   cg->evaluate(rhsChild);
+
+   TR_S390BinaryCommutativeAnalyser temp(cg);
+   temp.genericAnalyser(node, TR::InstOpCode::AR, TR::InstOpCode::BAD, TR::InstOpCode::LR);
+
+   cg->decReferenceCount(lhsChild);
+   cg->decReferenceCount(rhsChild);
+
+   return node->getRegister();
    }
 
-/**
- * saddEvaluator - add 2 short integers
- */
 TR::Register *
-OMR::Z::TreeEvaluator::saddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
+OMR::Z::TreeEvaluator::saddEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
-   return generic32BitAddEvaluator(node, cg);
+   TR::Node* lhsChild = node->getChild(0);
+   TR::Node* rhsChild = node->getChild(1);
+
+   TR_S390BinaryCommutativeAnalyser temp(cg);
+   temp.genericAnalyser(node, TR::InstOpCode::AR, TR::InstOpCode::AH, TR::InstOpCode::LR);
+
+   cg->decReferenceCount(lhsChild);
+   cg->decReferenceCount(rhsChild);
+
+   return node->getRegister();
    }
 
 /**
@@ -2369,6 +2386,42 @@ TR::Register *
 OMR::Z::TreeEvaluator::caddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    return generic32BitAddEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::Z::TreeEvaluator::bsubEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* lhsChild = node->getChild(0);
+   TR::Node* rhsChild = node->getChild(1);
+
+   // We don't have an instruction which adds a source register with a target memory reference, so force the
+   // evaluation of both chlidren here and pass the BAD mnemonic for the register-to-memory operand to the generic
+   // analyzer to ensure it is never generated
+   cg->evaluate(lhsChild);
+   cg->evaluate(rhsChild);
+
+   TR_S390BinaryCommutativeAnalyser temp(cg);
+   temp.genericAnalyser(node, TR::InstOpCode::SR, TR::InstOpCode::BAD, TR::InstOpCode::LR);
+
+   cg->decReferenceCount(lhsChild);
+   cg->decReferenceCount(rhsChild);
+
+   return node->getRegister();
+   }
+
+TR::Register *
+OMR::Z::TreeEvaluator::ssubEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* lhsChild = node->getChild(0);
+   TR::Node* rhsChild = node->getChild(1);
+
+   TR_S390BinaryCommutativeAnalyser temp(cg);
+   temp.genericAnalyser(node, TR::InstOpCode::SR, TR::InstOpCode::SH, TR::InstOpCode::LR);
+
+   cg->decReferenceCount(lhsChild);
+   cg->decReferenceCount(rhsChild);
+
+   return node->getRegister();
    }
 
 /**
@@ -2396,27 +2449,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::lsubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    return lsubHelper64(node, cg);
-   }
-
-
-/**
- * bsubEvaluator - subtract 2 bytes
- * (child1 - child2)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::bsubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   return generic32BitSubEvaluator(node, cg);
-   }
-
-/**
- * ssubEvaluator - subtract 2 short integers
- * (child1 - child2)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::ssubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   return generic32BitSubEvaluator(node, cg);
    }
 
 /**
@@ -2558,6 +2590,42 @@ OMR::Z::TreeEvaluator::mulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    return targetRegister;
    }
 
+TR::Register *
+OMR::Z::TreeEvaluator::bmulEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* lhsChild = node->getChild(0);
+   TR::Node* rhsChild = node->getChild(1);
+
+   // We don't have an instruction which multiplies a source register with a target memory reference, so force the
+   // evaluation of both chlidren here and pass the BAD mnemonic for the register-to-memory operand to the generic
+   // analyzer to ensure it is never generated
+   cg->evaluate(lhsChild);
+   cg->evaluate(rhsChild);
+
+   TR_S390BinaryCommutativeAnalyser temp(cg);
+   temp.genericAnalyser(node, TR::InstOpCode::MSR, TR::InstOpCode::BAD, TR::InstOpCode::LR);
+
+   cg->decReferenceCount(lhsChild);
+   cg->decReferenceCount(rhsChild);
+
+   return node->getRegister();
+   }
+
+TR::Register *
+OMR::Z::TreeEvaluator::smulEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* lhsChild = node->getChild(0);
+   TR::Node* rhsChild = node->getChild(1);
+
+   TR_S390BinaryCommutativeAnalyser temp(cg);
+   temp.genericAnalyser(node, TR::InstOpCode::MSR, TR::InstOpCode::MH, TR::InstOpCode::LR);
+
+   cg->decReferenceCount(lhsChild);
+   cg->decReferenceCount(rhsChild);
+
+   return node->getRegister();
+   }
+
 /**
  * imulEvaluator - multiply 2 integers
  */
@@ -2686,26 +2754,6 @@ OMR::Z::TreeEvaluator::lmulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       }
 
    return lmulHelper64(node, cg);
-   }
-
-/**
- * bmulEvaluator - multiply 2 bytes
- */
-TR::Register *
-OMR::Z::TreeEvaluator::bmulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR_UNIMPLEMENTED();
-   return NULL;
-   }
-
-/**
- * smulEvaluator - multiply 2 short integers
- */
-TR::Register *
-OMR::Z::TreeEvaluator::smulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR_UNIMPLEMENTED();
-   return NULL;
    }
 
 /**

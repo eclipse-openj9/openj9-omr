@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3058,8 +3058,8 @@ void generateShiftAndKeepSelected64Bit(TR::Node * node, TR::CodeGenerator *cg,
       }
    else
       {
-      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, aFirstRegister, aSecondRegister, (63 - aToBit) + aShiftAmount);
-      generateRSInstruction(cg, TR::InstOpCode::SLLG, node, aFirstRegister, aFirstRegister, (63 - aToBit) + aShiftAmount + aFromBit);
+      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, aFirstRegister, aSecondRegister, (63 - aToBit) - aShiftAmount);
+      generateRSInstruction(cg, TR::InstOpCode::SLLG, node, aFirstRegister, aFirstRegister, (63 - aToBit) + aFromBit);
       generateRSInstruction(cg, TR::InstOpCode::SRLG, node, aFirstRegister, aFirstRegister, aFromBit);
       }
    }
@@ -3080,8 +3080,8 @@ generateShiftAndKeepSelected31Bit(TR::Node * node, TR::CodeGenerator *cg,
    else
       {
       generateRRInstruction(cg, TR::InstOpCode::LR, node, aFirstRegister, aSecondRegister);
-      generateRSInstruction(cg, TR::InstOpCode::SRL, node, aFirstRegister, (31 - aToBit) + aShiftAmount);
-      generateRSInstruction(cg, TR::InstOpCode::SLL, node, aFirstRegister, (31 - aToBit) + aShiftAmount + aFromBit);
+      generateRSInstruction(cg, TR::InstOpCode::SRL, node, aFirstRegister, (31 - aToBit) - aShiftAmount);
+      generateRSInstruction(cg, TR::InstOpCode::SLL, node, aFirstRegister, (31 - aToBit) + aFromBit);
       generateRSInstruction(cg, TR::InstOpCode::SRL, node, aFirstRegister, aFromBit);
       }
    }

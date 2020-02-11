@@ -367,21 +367,19 @@ imaximinHelper(TR::Node* node, TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic c
       TR::Node* lhsNode = node->getChild(0);
       TR::Node* rhsNode = node->getChild(1);
 
-      TR::Register* lhsReg = cg->allocateRegister();
+      TR::Register* resultReg = cg->allocateRegister();
+      TR::Register* lhsReg = cg->evaluate(lhsNode);
       TR::Register* rhsReg = cg->evaluate(rhsNode);
 
-      // Load into a tmp instead of clobberEvaluating into lhsReg to avoid an extra register shuffle
-      TR::Register* tmpRegister = cg->evaluate(lhsNode);
+      generateRRInstruction(cg, TR::InstOpCode::CR, node, lhsReg, rhsReg);
+      generateRRFInstruction(cg, TR::InstOpCode::SELR, node, resultReg, rhsReg, lhsReg, getMaskForBranchCondition(getReverseBranchCondition(branchCond)));
 
-      generateRRInstruction(cg, TR::InstOpCode::CR, node, tmpRegister, rhsReg);
-      generateRRFInstruction(cg, TR::InstOpCode::SELR, node, lhsReg, rhsReg, tmpRegister, getMaskForBranchCondition(getReverseBranchCondition(branchCond)));
-
-      node->setRegister(lhsReg);
+      node->setRegister(resultReg);
 
       cg->decReferenceCount(lhsNode);
       cg->decReferenceCount(rhsNode);
 
-      return lhsReg;
+      return resultReg;
       }
    else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
@@ -415,21 +413,19 @@ lmaxlminHelper(TR::Node* node, TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic c
       TR::Node* lhsNode = node->getChild(0);
       TR::Node* rhsNode = node->getChild(1);
 
-      TR::Register* lhsReg = cg->allocateRegister();
+      TR::Register* resultReg = cg->allocateRegister();
+      TR::Register* lhsReg = cg->evaluate(lhsNode);
       TR::Register* rhsReg = cg->evaluate(rhsNode);
 
-      // Load into a tmp instead of clobberEvaluating into lhsReg to avoid an extra register shuffle
-      TR::Register* tmpRegister = cg->evaluate(lhsNode);
+      generateRREInstruction(cg, TR::InstOpCode::CGR, node, lhsReg, rhsReg);
+      generateRRFInstruction(cg, TR::InstOpCode::SELGR, node, resultReg, rhsReg, lhsReg, getMaskForBranchCondition(getReverseBranchCondition(branchCond)));
 
-      generateRREInstruction(cg, TR::InstOpCode::CGR, node, tmpRegister, rhsReg);
-      generateRRFInstruction(cg, TR::InstOpCode::SELGR, node, lhsReg, rhsReg, tmpRegister, getMaskForBranchCondition(getReverseBranchCondition(branchCond)));
-
-      node->setRegister(lhsReg);
+      node->setRegister(resultReg);
 
       cg->decReferenceCount(lhsNode);
       cg->decReferenceCount(rhsNode);
 
-      return lhsReg;
+      return resultReg;
       }
    else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {

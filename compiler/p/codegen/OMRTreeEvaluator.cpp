@@ -4574,7 +4574,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
       // inlineArrayCopy is not currently capable of handling very long lengths correctly. Under some circumstances, it
       // will generate an li instruction with an out-of-bounds immediate, which triggers an assert in the binary
       // encoder.
-      if (len>=0 && (!simpleCopy || len < MAX_PPC_ARRAYCOPY_INLINE) && len < 0x100000000LL)
+      if (len>=0 && len < MAX_PPC_ARRAYCOPY_INLINE)
          {
          inlineArrayCopy(node, len, srcAddrReg, dstAddrReg, cg);
          if (!simpleCopy)

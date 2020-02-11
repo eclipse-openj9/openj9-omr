@@ -69,6 +69,7 @@ omrsock_getaddrinfo_create_hints(struct OMRPortLibrary *portLibrary, omrsock_add
 	ptbHints->ai_protocol = protocol;
 
 	(ptBuffer->addrInfoHints).addrInfo = ptbHints;
+	(ptBuffer->addrInfoHints).length = 1;
 	*hints = &ptBuffer->addrInfoHints;
 	return 0;
 }

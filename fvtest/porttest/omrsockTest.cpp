@@ -94,12 +94,18 @@ TEST(PortSockTest, library_function_pointers_not_null)
 }
 
 /**
- * Test the omrsock per thread buffer.
+ * Test the omrsock per thread buffer using @ref omrsock_getaddrinfo_create_hints
+ * and all functions that extract details from the per thread buffer.
  * 
  * In this test, per thread buffer related functions set up a buffer to store
- * information such as the hints structures created in @ref omrsock_getaddrinfo_create_hints.
+ * information such as the hints structures created in 
+ * @ref omrsock_getaddrinfo_create_hints. Since the per thread buffer can't be easily 
+ * directly tested, it will be tested with @ref omrsock_getaddrinfo_create_hints.
+ *
+ * @note Errors such as invalid arguments, and/or returning the wrong family or 
+ * socket type from hints compared to the ones passed into hints, will be reported.
  */
-TEST(PortSockTest, per_thread_buffer_functionality)
+TEST(PortSockTest, create_hints_and_element_extraction)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -115,9 +121,8 @@ TEST(PortSockTest, per_thread_buffer_functionality)
 }
 
 /**
- * Test @ref omrsock_getaddrinfo_create_hints, @ref omrsock_getaddrinfo, 
- * @ref omrsock_freeaddrinfo and all functions that extract details from
- * @ref omrsock_getaddrinfo results.
+ * Test @ref omrsock_getaddrinfo, @ref omrsock_freeaddrinfo and all functions 
+ * that extract details from @ref omrsock_getaddrinfo results.
  * 
  * In this test, the relevant variables are passed into  
  * @ref omrsock_getaddrinfo_create_hints. The generated hints are passed into 
@@ -130,7 +135,7 @@ TEST(PortSockTest, per_thread_buffer_functionality)
  * socket type from @ref omrsock_getaddrinfo compared to the ones passed into hints, 
  * will be reported.
  */
-TEST(PortSockTest, getaddrinfo_creation_and_extraction)
+TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 {
 	/* Unimplemented. */
 }

@@ -763,6 +763,13 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 						OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT | OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN,
 						pageSize, OMRMEM_CATEGORY_PORT_LIBRARY);
 
+		/* In order for double map to work, the system must have the appropriate API. The existance of such API is checked dynamically. In a normal application,
+		 * if the API is not available, we fall back to disabling double mapping, which turns this test useless. Because of that, we must check if such API is
+		 * available. We do so by checking if we found the API call or not. */
+		if (0 == (OMRPORT_VMEM_MEMORY_MODE_DOUBLE_MAP_AVAILABLE & vmemID.mode)) {
+			portTestEnv->log(LEVEL_ERROR, "Double map API not available. Skipping test...\n");
+			goto exit;
+		}
 
 		/* did we get any memory? */
 		if (memPtr == NULL) {

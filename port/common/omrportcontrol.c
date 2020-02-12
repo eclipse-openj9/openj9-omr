@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -281,6 +281,14 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 
 	if (0 == strcmp(OMRPORT_CTLDATA_VMEM_ADVISE_OS_ONFREE, key)) {
 		portLibrary->portGlobals->vmemAdviseOSonFree = value;
+		return 0;
+	}
+
+	if (0 == strcmp(OMRPORT_CTLDATA_VMEM_HUGE_PAGES_MMAP_ENABLED, key)) {
+#if defined(LINUX)
+		Assert_PRT_true((0 == value) || (1 == value));
+		PPG_huge_pages_mmap_enabled = value;
+#endif /* defined(LINUX) */
 		return 0;
 	}
 

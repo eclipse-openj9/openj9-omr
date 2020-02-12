@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,10 +68,10 @@ public:
    typedef int32_t Index;
    static const Index UNKNOWN = -1;
 
-   TR_FrontEnd *fe() { return _fe; }
+   TR_FrontEnd *fe() const { return _fe; }
    void setFe(TR_FrontEnd *fe) { _fe = fe; }
 
-   TR::Compilation *comp() { return _comp; }
+   TR::Compilation *comp() const { return _comp; }
    void setComp(TR::Compilation *comp) { _comp = comp; }
 
    virtual Index getEndIndex();                      // Highest index assigned so far + 1
@@ -92,7 +92,8 @@ public:
    Index getExistingIndexAt(uintptrj_t *objectReferenceLocation);
 
    uintptrj_t getPointer(Index index);
-   uintptrj_t *getfPointerLocationAt(uintptrj_t *objectReferenceLocation);
+
+   void updateKnownObjectTableAtServer(Index index, uintptrj_t *objectReferenceLocation);
 
 protected:
    void addArrayWithConstantElements(Index index);

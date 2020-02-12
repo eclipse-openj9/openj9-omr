@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1313,12 +1313,12 @@ TR::VPKnownObject *TR::VPKnownObject::create(OMR::ValuePropagation *vp, TR::Know
 
       if (vpKnownObjectCriticalSection.hasVMAccess())
          {
-         TR_OpaqueClassBlock *clazz = TR::Compiler->cls.objectClass(vp->comp(), *vp->comp()->getKnownObjectTable()->getPointerLocation(index));
+         TR_OpaqueClassBlock *clazz = TR::Compiler->cls.objectClass(vp->comp(), knot->getPointer(index));
          TR_OpaqueClassBlock *jlClass = vp->fe()->getClassClassPointer(clazz);
          if (isJavaLangClass)
             {
             TR_ASSERT(clazz == jlClass, "Use createForJavaLangClass only for instances of java/lang/Class");
-            clazz = TR::Compiler->cls.classFromJavaLangClass(vp->comp(), *vp->comp()->getKnownObjectTable()->getPointerLocation(index));
+            clazz = TR::Compiler->cls.classFromJavaLangClass(vp->comp(), knot->getPointer(index));
             }
          else
             {

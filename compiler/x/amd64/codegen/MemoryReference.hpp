@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -95,11 +95,17 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
       TR_ScratchRegisterManager *srm = NULL) :
          OMR::MemoryReferenceConnector(symRef, cg, srm) {}
 
+   MemoryReference(TR::SymbolReference *symRef, TR::CodeGenerator *cg, bool forceRIPRelative, TR_ScratchRegisterManager *srm = NULL) :
+      OMR::MemoryReferenceConnector(symRef, cg, forceRIPRelative, srm) {}
+
    MemoryReference(TR::SymbolReference *symRef,
       intptrj_t displacement,
       TR::CodeGenerator *cg,
       TR_ScratchRegisterManager *srm = NULL) :
          OMR::MemoryReferenceConnector(symRef, displacement, cg, srm) {}
+
+   MemoryReference(TR::SymbolReference *symRef, intptrj_t displacement, TR::CodeGenerator *cg, bool forceRIPRelative, TR_ScratchRegisterManager *srm = NULL) :
+      OMR::MemoryReferenceConnector(symRef, displacement, cg, forceRIPRelative, srm) {}
 
    MemoryReference(MemoryReference& mr,
       intptrj_t n,

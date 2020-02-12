@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1499,12 +1499,26 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
 
    TR::Symbol *sym = mr->getSymbolReference().getSymbol();
 
-      if (sym != NULL || mr->getSymbolReference().getOffset() != 0)
+   if (sym != NULL || mr->getSymbolReference().getOffset() != 0)
       {
       intptrj_t disp32 = mr->getDisplacement();
 
       if (!hasPrecedingTerm)
          {
+         // Annotate the constant emitted to indicate it is an absolute address,
+         // and further annotate to indicate RIP-relative addressability.
+         //
+#ifdef TR_TARGET_64BIT
+         if (mr->getForceRIPRelative())
+            {
+            trfprintf(pOutFile, "rip $");
+            }
+         else
+#endif
+            {
+            trfprintf(pOutFile, "$");
+            }
+
          // Treat this as an absolute reference and display in base16.
          //
          printIntConstant(pOutFile, disp32, 16, addressSize, true);

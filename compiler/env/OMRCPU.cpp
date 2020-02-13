@@ -29,21 +29,20 @@
 #include "env/defines.h"
 #include "omrcfg.h"
 
-
-TR::CPU TR::detect(OMRPortLibrary * const omrPortLib)
-   {
-   OMRPORT_ACCESS_FROM_OMRPORT(omrPortLib);
-   OMRProcessorDesc processorDescription;
-   omrsysinfo_get_processor_description(&processorDescription);
-   return TR::CPU(processorDescription);
-   }
-
 TR::CPU *
 OMR::CPU::self()
    {
    return static_cast<TR::CPU*>(this);
    }
 
+TR::CPU
+OMR::CPU::detect(OMRPortLibrary * const omrPortLib)
+   {
+   OMRPORT_ACCESS_FROM_OMRPORT(omrPortLib);
+   OMRProcessorDesc processorDescription;
+   omrsysinfo_get_processor_description(&processorDescription);
+   return TR::CPU(processorDescription);
+   }
 
 void
 OMR::CPU::initializeByHostQuery()
@@ -105,3 +104,4 @@ OMR::CPU::supportsFeature(uint32_t feature)
    BOOLEAN supported = omrsysinfo_processor_has_feature(&_processorDescription, feature);
    return (TRUE == supported);
    }
+

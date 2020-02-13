@@ -75,14 +75,6 @@ enum MinorArchitecture
    m_arch_riscv64
    };
 
-
-/** 
- * @brief Detects the underlying processor type and features using the port library and constructs a TR::CPU object 
- * @param[in] omrPortLib : the port library
- * @return TR::CPU
- */
-TR::CPU detect(OMRPortLibrary * const omrPortLib);
-
 }
 
 
@@ -116,6 +108,13 @@ protected:
 public:
 
    TR::CPU *self();
+
+   /** 
+    * @brief Detects the underlying processor type and features using the port library and constructs a TR::CPU object 
+    * @param[in] omrPortLib : the port library
+    * @return TR::CPU
+    */
+   static TR::CPU detect(OMRPortLibrary * const omrPortLib);
 
    // Initialize CPU info by querying the host processor at compile-time
    //

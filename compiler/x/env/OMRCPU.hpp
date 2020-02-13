@@ -57,6 +57,8 @@ protected:
 
 public:
 
+   static TR::CPU detect(OMRPortLibrary * const omrPortLib);
+
    TR_X86CPUIDBuffer *queryX86TargetCPUID();
    const char *getX86ProcessorVendorId();
    uint32_t getX86ProcessorSignature();

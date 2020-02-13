@@ -59,15 +59,3 @@ OMR::Linkage::argumentRegisterKind(TR::Node *argumentNode)
    else
       return TR_GPR;
    }
-
-int32_t
-OMR::Linkage::getOffsetToFirstParm() const
-   { 
-   return _offsetToFirstParm;
-   }
-
-int32_t
-OMR::Linkage::setOffsetToFirstParm(int32_t offset)
-   {
-   return _offsetToFirstParm = offset;
-   }

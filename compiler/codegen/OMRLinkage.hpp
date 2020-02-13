@@ -159,13 +159,13 @@ class OMR_EXTENSIBLE Linkage
     *    order) passed by the caller on the stack. It is up to the linkage to make use of this function to initialize
     *    parameter offsets depending on the order in which the caller passes the arguments to the callee.
     */
-   virtual int32_t getOffsetToFirstParm() const;
+   inline int32_t getOffsetToFirstParm() const;
 
    /** @brief
     *    Sets the offset (in number of bytes) from the stack frame pointer to the location on the stack where the first
     *    (closest to the frame pointer) parameter is located. 
     */
-   virtual int32_t setOffsetToFirstParm(int32_t offset);
+   inline int32_t setOffsetToFirstParm(int32_t offset);
 
    /**
     * @brief Provides the entry point in a method to use when that method is invoked

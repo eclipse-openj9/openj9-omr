@@ -115,7 +115,7 @@ omrsysinfo_get_processor_description(struct OMRPortLibrary *portLibrary, OMRProc
  *
  * @param[in] portLibrary The port library.
  * @param[in] desc The struct that will contain the CPU type and features.
- * @param[in] feature The feature to check (see j9port.h for list of features J9PORT_{PPC,S390,PPC}_FEATURE_*)
+ * @param[in] feature The feature to check (see omrport.h for list of features OMRPORT_FEATURE_{PPC,S390,PPC}_*)
  *
  * @return TRUE if feature is present, FALSE otherwise.
  */
@@ -125,6 +125,24 @@ omrsysinfo_processor_has_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 	Trc_PRT_sysinfo_processor_has_feature_Entered(desc, feature);
 	BOOLEAN rc = FALSE;
 	Trc_PRT_sysinfo_processor_has_feature_Exit((uintptr_t)rc);
+	return rc;
+}
+
+/**
+ * Disable provided CPU feature.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] desc The struct that will contain the CPU type and features.
+ * @param[in] feature The feature to check (see omrport.h for list of features OMRPORT_FEATURE_{PPC,S390,PPC}_*)
+ *
+ * @return 0 on success, -1 on failure
+ */
+intptr_t
+omrsysinfo_processor_disable_feature(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature)
+{
+	Trc_PRT_sysinfo_processor_disable_feature_Entered(desc, feature);
+	intptr_t rc = OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	Trc_PRT_sysinfo_processor_disable_feature_Exit(rc);
 	return rc;
 }
 /**
@@ -877,7 +895,7 @@ omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, struct OMROSDesc *
 		uint32_t featureIndex = feature / 32;
 		uint32_t featureShift = feature % 32;
 
-		rc = OMR_ARE_ALL_BITS_SET(desc->features[featureIndex], 1 << featureShift);
+		rc = OMR_ARE_ALL_BITS_SET(desc->features[featureIndex], 1u << featureShift);
 	}
 
 	Trc_PRT_sysinfo_os_has_feature_Exit((uintptr_t)rc);

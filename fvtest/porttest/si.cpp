@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -120,6 +120,26 @@ validate_executable_name(const char *expected, const char *found)
 		}
 	}
 	return FALSE;
+}
+
+#define CPU_BURNER_BUFF_SIZE 10000
+static uintptr_t
+cpuBurner(OMRPortLibrary *portLibrary, const char *myText)
+{
+	/* burn up CPU */
+	uintptr_t counter = 0;
+	char buffer[CPU_BURNER_BUFF_SIZE];
+	char *result = NULL;
+	for (counter = 0; counter < CPU_BURNER_BUFF_SIZE; ++counter) {
+		buffer[counter] = 0;
+	}
+	for (counter = 0; (strlen(buffer) + strlen(myText) + 1) < CPU_BURNER_BUFF_SIZE; ++counter) {
+		result = strcat(buffer, myText);
+		if (NULL != strstr(result, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab")) {
+			return 0;
+		}
+	}
+	return 1;
 }
 
 TEST(PortSysinfoTest, sysinfo_test0)
@@ -1323,25 +1343,6 @@ onlineProcessorCount(const struct J9ProcessorInfos *procInfo)
 	return n_onln;
 }
 
-#define CPU_BURNER_BUFF_SIZE 10000
-static uintptr_t
-cpuBurner(OMRPortLibrary *portLibrary, const char *myText)
-{
-	/* burn up CPU */
-	uintptr_t counter = 0;
-	char buffer[CPU_BURNER_BUFF_SIZE];
-	char *result = NULL;
-	for (counter = 0; counter < CPU_BURNER_BUFF_SIZE; ++counter) {
-		buffer[counter] = 0;
-	}
-	for (counter = 0; (strlen(buffer) + strlen(myText) + 1) < CPU_BURNER_BUFF_SIZE; ++counter) {
-		result = strcat(buffer, myText);
-		if (NULL != strstr(result, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab")) {
-			return 0;
-		}
-	}
-	return 1;
-}
 /**
  * Test for omrsysinfo_get_processor_info() port library API. Ensure that we are
  * able to obtain processor usage data as also, that it is consistent.
@@ -1641,6 +1642,34 @@ TEST(PortSysinfoTest, sysinfo_test_get_CPU_utilization)
 
 #endif /* !defined(J9ZOS390) */
 
+TEST(PortSysinfoTest, sysinfo_test_get_CPU_load)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	/* As per the API specification the first two calls to this API will return a negative portable error code. However
+	 * for the purposes of this test we will not be testing this. This is because the test infrastructure is setup such
+	 * that we cannot guarantee that no other test has called omrsysinfo_get_CPU_utlization or omrsysinfo_get_CPU_load
+	 * up to this point. If some other test did call these APIs then the internal buffers would have been populated and
+	 * as such the omrsysinfo_get_CPU_load could return a zero return code on the very first invocation within this
+	 * test.
+	 *
+	 * To avoid inter-test dependencies we do not assert on the return value of the first two calls here, and only test
+	 * that the API returns valid numbers within the range outlined in the API specification.
+	 */
+	double cpuLoad;
+	omrsysinfo_get_CPU_load(&cpuLoad);
+	omrsysinfo_get_CPU_load(&cpuLoad);
+	
+	/* Sleep for 100ms before re-sampling processor usage stats. This allows other processes and the operating system to
+	 * use the CPU and drive up the user and kernel utilization. The call to cpuBurner probably won't be optimized out,
+	 * but use the result to make absolutely sure that it isn't.
+	 */
+	omrthread_sleep(100 + cpuBurner(OMRPORTLIB, "a"));
+
+	ASSERT_EQ(omrsysinfo_get_CPU_load(&cpuLoad), 0);
+	ASSERT_GE(cpuLoad, 0.0);
+	ASSERT_LE(cpuLoad, 1.0);
+}
 
 /*
  * Test omrsysinfo_get_tmp when the buffer size == 0

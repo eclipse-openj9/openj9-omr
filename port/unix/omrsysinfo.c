@@ -3579,6 +3579,85 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 #endif
 }
 
+intptr_t
+omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
+{
+	J9SysinfoCPUTime currentCPUTime;
+	J9SysinfoCPUTime *oldestCPUTime = &portLibrary->portGlobals->oldestCPUTime;
+	J9SysinfoCPUTime *latestCPUTime = &portLibrary->portGlobals->latestCPUTime;
+
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX)
+	intptr_t portLibraryStatus = omrsysinfo_get_CPU_utilization(portLibrary, &currentCPUTime);
+	
+	if (portLibraryStatus < 0) {
+		return portLibraryStatus;
+	}
+
+	if (oldestCPUTime->timestamp == 0) {
+		*oldestCPUTime = currentCPUTime;
+		*latestCPUTime = currentCPUTime;
+		return OMRPORT_ERROR_OPFAILED;
+	}
+
+	/* Calculate using the most recent value in the history */
+	if (((currentCPUTime.timestamp - latestCPUTime->timestamp) >= 10000000) && (currentCPUTime.numberOfCpus != 0)) {
+		*cpuLoad = OMR_MIN((currentCPUTime.cpuTime - latestCPUTime->cpuTime) / ((double)currentCPUTime.numberOfCpus * (currentCPUTime.timestamp - latestCPUTime->timestamp)), 1.0);
+		if (*cpuLoad >= 0.0) {
+			*oldestCPUTime = *latestCPUTime;
+			*latestCPUTime = currentCPUTime;
+			return 0;
+		} else {
+			/* Either the latest or the current time are bogus, so discard the latest value and try with the oldest value */
+			*latestCPUTime = currentCPUTime;
+		}
+	}
+	
+	if (((currentCPUTime.timestamp - oldestCPUTime->timestamp) >= 10000000) && (currentCPUTime.numberOfCpus != 0)) {
+		*cpuLoad = OMR_MIN((currentCPUTime.cpuTime - oldestCPUTime->cpuTime) / ((double)currentCPUTime.numberOfCpus * (currentCPUTime.timestamp - oldestCPUTime->timestamp)), 1.0);
+		if (*cpuLoad >= 0.0) {
+			return 0;
+		} else {
+			*oldestCPUTime = currentCPUTime;
+		}
+	}
+
+	return OMRPORT_ERROR_OPFAILED;
+#elif defined(J9ZOS390) /* (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX) */
+	currentCPUTime.timestamp = portLibrary->time_nano_time(portLibrary);
+
+	if (oldestCPUTime->timestamp == 0) {
+		*oldestCPUTime = currentCPUTime;
+		*latestCPUTime = currentCPUTime;
+		return OMRPORT_ERROR_OPFAILED;
+	}
+
+	/* Calculate using the most recent value in the history */
+	if ((currentCPUTime.timestamp - latestCPUTime->timestamp) >= 10000000) {
+		J9CVT* __ptr32 cvtp = ((J9PSA* __ptr32)0)->flccvt;
+		J9RMCT* __ptr32 rcmtp = cvtp->cvtopctp;
+		J9CCT* __ptr32 cctp = rcmtp->rmctcct;
+
+		*cpuLoad = (double)cctp->ccvutilp / 100.0;
+		*oldestCPUTime = *latestCPUTime;
+		*latestCPUTime = currentCPUTime;
+		return 0;
+	}
+
+	if ((currentCPUTime.timestamp - oldestCPUTime->timestamp) >= 10000000) {
+		J9CVT* __ptr32 cvtp = ((J9PSA* __ptr32)0)->flccvt;
+		J9RMCT* __ptr32 rcmtp = cvtp->cvtopctp;
+		J9CCT* __ptr32 cctp = rcmtp->rmctcct;
+
+		*cpuLoad = (double)cctp->ccvutilp / 100.0;
+		return 0;
+	}
+
+	return OMRPORT_ERROR_OPFAILED;
+#else /* (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX) || defined(J9ZOS390) */
+	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+#endif
+}
+
 int32_t
 omrsysinfo_limit_iterator_init(struct OMRPortLibrary *portLibrary, J9SysinfoLimitIteratorState *state)
 {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -194,7 +194,6 @@ public:
    virtual int32_t getArraySpineShift(int32_t);
    virtual int32_t getArrayletMask(int32_t);
    virtual int32_t getArrayletLeafIndex(int32_t, int32_t);
-   virtual int32_t getObjectAlignmentInBytes();
    virtual uintptrj_t getOffsetOfContiguousArraySizeField();
    virtual uintptrj_t getOffsetOfDiscontiguousArraySizeField();
    virtual uintptrj_t getObjectHeaderSizeInBytes();

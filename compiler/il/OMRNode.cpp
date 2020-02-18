@@ -3191,13 +3191,6 @@ OMR::Node::getFirstArgumentIndex()
    if (self()->getOpCodeValue() == TR::ZEROCHK)
       return 1; // First argument is the int to compare with zero, not an arg to the helper
 
-   // commented out because a fair amount of code has assumptions on this function returning 0 for
-   // static JNI
-   //
-   //TR::MethodSymbol * methodSymbol = getSymbol()->castToMethodSymbol();
-   //if (isPreparedForDirectJNI() && methodSymbol->isStatic())
-   //   return 1;
-
    return 0;
    }
 
@@ -8136,7 +8129,7 @@ OMR::Node::printCanSkipZeroInitialization()
 bool
 OMR::Node::isAdjunct()
    {
-   return (self()->getOpCodeValue() == TR::lmul || self()->getOpCodeValue() == TR::luadd || self()->getOpCodeValue() == TR::lusub 
+   return (self()->getOpCodeValue() == TR::lmul || self()->getOpCodeValue() == TR::luadd || self()->getOpCodeValue() == TR::lusub
    || self()->getOpCodeValue() == TR::ladd || self()->getOpCodeValue() == TR::lsub) && _flags.testAny(adjunct);
    }
 

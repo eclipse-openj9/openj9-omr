@@ -282,10 +282,6 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    if (self()->comp()->target().cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
       self()->setSupportsTM();
 
-   // enable LM if hardware supports instructions and running the reduced-pause GC policy
-   if (self()->comp()->target().cpu.getPPCSupportsLM())
-      self()->setSupportsLM();
-
    if (self()->comp()->target().cpu.getPPCSupportsVMX() && self()->comp()->target().cpu.getPPCSupportsVSX())
       self()->setSupportsAutoSIMD();
 

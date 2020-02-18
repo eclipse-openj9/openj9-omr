@@ -2363,28 +2363,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::ldmx,
-   /* .name        = */ "ldmx",
-   /* .description =    "Load dword monitored indexed", */
-   /* .opcode      = */ 0x7C00026A,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::lwzmx,
-   /* .name        = */ "lwzmx",
-   /* .description =    "Load word and zero monitored indexed", */
-   /* .opcode      = */ 0x7C000268,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_AltFormat,
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::ldu,
    /* .name        = */ "ldu",
    /* .description =    "Load dword with update", */

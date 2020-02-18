@@ -398,16 +398,7 @@ TR::Register *OMR::Power::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::Code
       }
    else
       {
-      // For compr refs caseL if monitored loads is supported and we are loading an address, use monitored loads instruction
-      if (node->getOpCodeValue() == TR::iloadi && cg->getSupportsLM() && node->getSymbolReference()->getSymbol()->getDataType() == TR::Address)
-         {
-         tempMR->forceIndexedForm(node, cg);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwzmx, node, tempReg, tempMR);
-         }
-      else
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tempReg, tempMR);
-         }
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tempReg, tempMR);
       }
 
    cg->insertPrefetchIfNecessary(node, tempReg);
@@ -553,37 +544,12 @@ TR::Register *OMR::Power::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::Code
          }
       else
          {
-	     // if monitored loads is supported and we are loading an address, use monitored loads instruction
-	     if (node->getOpCodeValue() == TR::aloadi && cg->getSupportsLM() && node->getSymbolReference()->getSymbol()->getDataType() == TR::Address)
-		    {
-		    tempMR->forceIndexedForm(node, cg);
-		    generateTrg1MemInstruction(cg, TR::InstOpCode::ldmx, node, tempReg, tempMR);
-		    }
-	     else
-		    {
-	    	generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, tempReg, tempMR);
-		    }
+         generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, tempReg, tempMR);
          }
       }
    else
       {
-      if (node->getSymbol()->isClassObject() || (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef()))
-		 {
-    	 generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tempReg, tempMR);
-		 }
-      else
-         {
-	     // if monitored loads is supported and we are loading an address, use monitored loads instruction
-	     if (node->getOpCodeValue() == TR::aloadi && cg->getSupportsLM() && node->getSymbolReference()->getSymbol()->getDataType() == TR::Address)
-		    {
-		    tempMR->forceIndexedForm(node, cg);
-		    generateTrg1MemInstruction(cg, TR::InstOpCode::lwzmx, node, tempReg, tempMR);
-		    }
-	     else
-		    {
-	    	 generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tempReg, tempMR);
-		    }
-         }
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tempReg, tempMR);
       }
 
 #ifdef J9_PROJECT_SPECIFIC

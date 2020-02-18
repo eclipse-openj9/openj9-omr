@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -507,8 +507,66 @@ OMR::ARM64::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg
 TR::Register *
 OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   // Only temporary (#3963 implements this)
-   cg->comp()->failCompilation<TR::AssertionFailure>("lookupEvaluator");
+   int32_t numChildren = node->getNumChildren();
+   TR::Node *selectorNode = node->getFirstChild();
+   TR::Register *selectorReg = cg->evaluate(selectorNode);
+   TR::Node *defaultChild = node->getSecondChild();
+   TR::RegisterDependencyConditions *conditions;
+   TR::Register *tmpRegister = NULL;
+
+   if (!constantIsUnsignedImm12(node->getChild(2)->getCaseConstant())
+       || !constantIsUnsignedImm12(node->getChild(numChildren-1)->getCaseConstant()))
+      {
+      conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      tmpRegister = cg->allocateRegister();
+      TR::addDependency(conditions, tmpRegister, TR::RealRegister::NoReg, TR_GPR, cg);
+      }
+   else
+      {
+      conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+      }
+   TR::addDependency(conditions, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
+
+   for (int32_t i = 2; i < numChildren; i++)
+      {
+      TR::Node *child = node->getChild(i);
+      int32_t caseValue = child->getCaseConstant();
+
+      if (!constantIsUnsignedImm12(caseValue))
+         {
+         loadConstant32(cg, node, caseValue, tmpRegister);
+         generateCompareInstruction(cg, node, selectorReg, tmpRegister);
+         }
+      else
+         {
+         generateCompareImmInstruction(cg, node, selectorReg, caseValue);
+         }
+
+      TR::RegisterDependencyConditions *cond = conditions;
+      if (child->getNumChildren() > 0)
+         {
+         // GRA
+         cg->evaluate(child->getFirstChild());
+         cond = cond->clone(cg, generateRegisterDependencyConditions(cg, child->getFirstChild(), 0));
+         }
+      generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, child->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ, cond);
+      }
+
+   // Branch to default
+   if (defaultChild->getNumChildren() > 0)
+      {
+      // GRA
+      cg->evaluate(defaultChild->getFirstChild());
+      conditions = conditions->clone(cg, generateRegisterDependencyConditions(cg, defaultChild->getFirstChild(), 0));
+      }
+   generateLabelInstruction(cg, TR::InstOpCode::b, node, defaultChild->getBranchDestination()->getNode()->getLabel(), conditions);
+
+   if (tmpRegister)
+      {
+      cg->stopUsingRegister(tmpRegister);
+      }
+
+   cg->decReferenceCount(selectorNode);
    return NULL;
    }
 

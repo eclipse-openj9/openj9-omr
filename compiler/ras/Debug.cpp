@@ -2109,6 +2109,7 @@ static const char *commonNonhelperSymbolNames[] =
    "<j9methodConstantPoolField>",
    "<startPCLinkageInfo>",
    "<instanceShapeFromROMClass>",
+   "<objectEqualityComparison>",
    "<synchronizedFieldLoad>",
    "<atomicAdd>",
    "<atomicFetchAndAdd>",

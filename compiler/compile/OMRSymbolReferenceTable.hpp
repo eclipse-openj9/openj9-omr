@@ -206,6 +206,13 @@ class SymbolReferenceTable
       startPCLinkageInfoSymbol,
       instanceShapeFromROMClassSymbol,
 
+      /** \brief Performs an equality comparison between two objects.
+       *
+       * The comparison takes two references to objects as arguments.
+       * It is up to users to define to define and implement the semantics of this operation.
+       */
+      objectEqualityComparisonSymbol,
+
       /** \brief
        *
        *  This symbol is used by the code generator to recognize and inline a call which emulates the following

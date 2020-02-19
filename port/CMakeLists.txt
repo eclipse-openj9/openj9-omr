@@ -22,7 +22,11 @@
 
 include(OmrFindFiles)
 
-if (OMR_HOST_OS STREQUAL "zos")
+if(OMR_OPT_CUDA)
+	find_package(OmrCuda REQUIRED)
+endif()
+
+if(OMR_HOST_OS STREQUAL "zos")
 	include(OmrMetalC)
 endif()
 
@@ -44,10 +48,10 @@ target_include_directories(omrport_obj
 		$<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-if (OMR_OPT_CUDA)
+if(OMR_OPT_CUDA)
 	target_include_directories(omrport_obj
 		PRIVATE
-			${CUDA_INCLUDE_DIRS}
+			${OmrCuda_INCLUDE_DIRS}
 	)
 endif()
 

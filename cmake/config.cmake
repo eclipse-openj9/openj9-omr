@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -202,6 +202,6 @@ set(OMR_NOTIFY_POLICY_CONTROL OFF CACHE BOOL "TODO: Document")
 
 set(OMR_ENV_GCC OFF CACHE BOOL "TODO: Document")
 
-set(OMR_OPT_CUDA ${CUDA_FOUND} CACHE BOOL "Enable CUDA support in OMR")
+set(OMR_OPT_CUDA OFF CACHE BOOL "Enable CUDA support in OMR. See also: OMR_CUDA_HOME in FindOmrCuda.cmake")
 
 set(OMR_SANITIZE OFF CACHE STRING "Sanitizer selection. Only has an effect on GNU or Clang")

@@ -47,6 +47,21 @@
  *                              failure. Used to indicate that a function has not been
  *                              implemented and may not be called.
  *
+ * A number of helper macros are also provided for printing more detailed contextual
+ * information on fatal assertion failures to assist with debugging.
+ *
+ * \def TR_ASSERT_FATAL_WITH_DETAIL
+ * a fatal assertion which will print the provided contextual information upon failure
+ * in addition to the provided message.
+ *
+ * \def TR_ASSERT_FATAL_WITH_NODE
+ * a fatal assertion which will print NodeAssertionContext for the provided node upon
+ * failure in addition to the provided message.
+ *
+ * \def TR_ASSERT_FATAL_WITH_INSTRUCTION
+ * a fatal assertion which will print InstructionAssertionContext for the provided
+ * instruction upon failure in addition to the provided message.
+ *
  * We also provide Expect and Ensure, based on the developing C++ Core guidelines [1].
  *
  * \def Expect                  Precondition macro, only defined for DEBUG and
@@ -80,24 +95,40 @@ namespace TR
 
    void OMR_NORETURN trap();
 
-   // Don't use these directly.
-   //
-   // Use the TR_ASSERT* macros instead as they control the string
-   // contents in production builds.
-   void OMR_NORETURN fatal_assertion(const char *file, int line, const char *condition, const char *format, ...);
-
+   /**
+    * Represents context to be printed alongside an assertion failure message.
+    *
+    * After printing the message and stack trace associated with an assertion failure, the relevant context will be
+    * printed to stderr by calling its printContext function. Contextual information generally includes relevant details
+    * about the state of the compiler at the time of the failure, such as the tree containing a node which resulted in
+    * an assertion failure.
+    */
    class AssertionContext
       {
       public:
+
+      /**
+       * Prints contextual information about the assertion for debugging purposes.
+       *
+       * It is valid for this function to itself result in an assertion failure (potentially with its own context)
+       * during the process of printing. To prevent boundless recursion, the context of such an assertion failure will
+       * not be printed.
+       */
       virtual void printContext() const = 0;
       };
 
+   /**
+    * An assertion context which does not print any information.
+    */
    class NullAssertionContext : public AssertionContext
       {
       public:
       virtual void printContext() const {}
       };
 
+   /**
+    * An assertion context which prints the treetop containing a particular node.
+    */
    class NodeAssertionContext : public AssertionContext
       {
       TR::Node *_node;
@@ -108,6 +139,9 @@ namespace TR
       virtual void printContext() const;
       };
 
+   /**
+    * An assertion context which prints instructions surrounding a particular instructions.
+    */
    class InstructionAssertionContext : public AssertionContext
       {
       TR::Instruction *_instruction;
@@ -118,6 +152,11 @@ namespace TR
       virtual void printContext() const;
       };
 
+   // Don't use these directly.
+   //
+   // Use the TR_ASSERT* macros instead as they control the string
+   // contents in production builds.
+   void OMR_NORETURN fatal_assertion(const char *file, int line, const char *condition, const char *format, ...);
    void OMR_NORETURN fatal_assertion_with_detail(const AssertionContext& ctx, const char *file, int line, const char *condition, const char *format, ...);
 
    // Non fatal assertions may in some circumstances return, so do not mark them as

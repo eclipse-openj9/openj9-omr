@@ -2400,7 +2400,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::ldux,
    /* .name        = */ "ldux",
    /* .description =    "Load dword with update indexed", */
-   /* .opcode      = */ 0x7C00006C,
+   /* .opcode      = */ 0x7C00006A,
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |

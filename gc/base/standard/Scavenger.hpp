@@ -148,12 +148,13 @@ public:
 	 */
 private:
 	/**
-	 * Flush the threads reference and remembered set caches before waiting in getNextScanCache.
+	 * Flush copy/scan count updates, the threads reference and remembered set caches before waiting in getNextScanCache.
 	 * This removes the requirement of a synchronization point after calls to completeScan when
 	 * it is followed by reference or remembered set processing.
 	 * @param env - current thread environment
+	 * @param finalFlush - lets the copy/scan flush know if it's the last thread performing the flush
 	 */
-	void flushBuffersForGetNextScanCache(MM_EnvironmentStandard *env);
+	void flushBuffersForGetNextScanCache(MM_EnvironmentStandard *env, bool finalFlush = false);
 	
 	void saveMasterThreadTenureTLHRemainders(MM_EnvironmentStandard *env);
 	void restoreMasterThreadTenureTLHRemainders(MM_EnvironmentStandard *env);
@@ -250,7 +251,11 @@ public:
 	MMINLINE bool copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_t *objectPtrIndirect);
 
 	MMINLINE omrobjectptr_t copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHeader);
-
+	
+	/* Flush remaining Copy Scan updates which would otherwise be discarded 
+	 * @param majorFlush last thread to flush updates should perform a major flush (push accumulated updates to history record) 
+	 */ 
+	MMINLINE void flushCopyScanCounts(MM_EnvironmentBase* env, bool majorFlush);
 	MMINLINE void updateCopyScanCounts(MM_EnvironmentBase* env, uint64_t slotsScanned, uint64_t slotsCopied);
 	bool splitIndexableObjectScanner(MM_EnvironmentStandard *env, GC_ObjectScanner *objectScanner, uintptr_t startIndex, omrobjectptr_t *rememberedSetSlot);
 

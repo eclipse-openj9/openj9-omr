@@ -32,43 +32,77 @@
 #include "portnls.h"
 
 #include <string.h>
-#if defined(WIN32)
+
+#if (defined(J9X86) || defined(J9HAMMER))
+#if defined(OMR_OS_WINDOWS)
 #include <intrin.h>
-#endif /* defined(WIN32) */
+#define cpuid(CPUInfo, EAXValue)             __cpuid(CPUInfo, EAXValue)
+#define cpuidex(CPUInfo, EAXValue, ECXValue) __cpuidex(CPUInfo, EAXValue, ECXValue)
+#else
+#include <cpuid.h>
+#include <emmintrin.h>
+#define cpuid(CPUInfo, EAXValue)             __cpuid(EAXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3])
+#define cpuidex(CPUInfo, EAXValue, ECXValue) __cpuid_count(EAXValue, ECXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3])
+inline unsigned long long _xgetbv(unsigned int ecx)
+{
+	unsigned int eax, edx;
+	__asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(ecx));
+	return ((unsigned long long)edx << 32) | eax;
+}
+#endif /* defined(OMR_OS_WINDOWS) */
 
 /* defines for the CPUID instruction */
-#define CPUID_VENDOR_INFO                   0
-#define CPUID_FAMILY_INFO                   1
+#define CPUID_EAX                                         0
+#define CPUID_EBX                                         1
+#define CPUID_ECX                                         2
+#define CPUID_EDX                                         3
 
-#define CPUID_VENDOR_INTEL                  "GenuineIntel"
-#define CPUID_VENDOR_AMD                    "AuthenticAMD"
-#define CPUID_VENDOR_LENGTH                 12
+#define CPUID_VENDOR_INFO                                 0
+#define CPUID_FAMILY_INFO                                 1
 
-#define CPUID_SIGNATURE_FAMILY              0x00000F00
-#define CPUID_SIGNATURE_MODEL               0x000000F0
-#define CPUID_SIGNATURE_EXTENDEDMODEL       0x000F0000
+#define CPUID_VENDOR_INTEL                                "GenuineIntel"
+#define CPUID_VENDOR_AMD                                  "AuthenticAMD"
+#define CPUID_VENDOR_LENGTH                               12
 
-#define CPUID_SIGNATURE_FAMILY_SHIFT        8
-#define CPUID_SIGNATURE_MODEL_SHIFT         4
-#define CPUID_SIGNATURE_EXTENDEDMODEL_SHIFT 12
+#define CPUID_SIGNATURE_STEPPING                          0x0000000F
+#define CPUID_SIGNATURE_MODEL                             0x000000F0
+#define CPUID_SIGNATURE_FAMILY                            0x00000F00
+#define CPUID_SIGNATURE_PROCESSOR                         0x00003000
+#define CPUID_SIGNATURE_EXTENDEDMODEL                     0x000F0000
+#define CPUID_SIGNATURE_EXTENDEDFAMILY                    0x0FF00000
 
-#define CPUID_FAMILYCODE_INTELPENTIUM       0x05
-#define CPUID_FAMILYCODE_INTELCORE          0x06
-#define CPUID_FAMILYCODE_INTELPENTIUM4      0x0F
+#define CPUID_SIGNATURE_STEPPING_SHIFT                    0
+#define CPUID_SIGNATURE_MODEL_SHIFT                       4
+#define CPUID_SIGNATURE_FAMILY_SHIFT                      8
+#define CPUID_SIGNATURE_PROCESSOR_SHIFT                   12
+#define CPUID_SIGNATURE_EXTENDEDMODEL_SHIFT               16
+#define CPUID_SIGNATURE_EXTENDEDFAMILY_SHIFT              20
 
-#define CPUID_MODELCODE_INTELHASWELL        0x3A
-#define CPUID_MODELCODE_SANDYBRIDGE         0x2A
-#define CPUID_MODELCODE_INTELWESTMERE       0x25
-#define CPUID_MODELCODE_INTELNEHALEM        0x1E
-#define CPUID_MODELCODE_INTELCORE2          0x0F
+#define CPUID_FAMILYCODE_INTELPENTIUM                     0x05
+#define CPUID_FAMILYCODE_INTELCORE                        0x06
+#define CPUID_FAMILYCODE_INTELPENTIUM4                    0x0F
 
-#define CPUID_FAMILYCODE_AMDKSERIES         0x05
-#define CPUID_FAMILYCODE_AMDATHLON          0x06
-#define CPUID_FAMILYCODE_AMDOPTERON         0x0F
+#define CPUID_MODELCODE_INTELSKYLAKE                      0x55
+#define CPUID_MODELCODE_INTELBROADWELL                    0x4F
+#define CPUID_MODELCODE_INTELHASWELL_1                    0x3F
+#define CPUID_MODELCODE_INTELHASWELL_2                    0x3C
+#define CPUID_MODELCODE_INTELIVYBRIDGE_1                  0x3E
+#define CPUID_MODELCODE_INTELIVYBRIDGE_2                  0x3A
+#define CPUID_MODELCODE_INTELSANDYBRIDGE                  0x2A
+#define CPUID_MODELCODE_INTELSANDYBRIDGE_EP               0x2D
+#define CPUID_MODELCODE_INTELWESTMERE_EP                  0x2C
+#define CPUID_MODELCODE_INTELWESTMERE_EX                  0x2F
+#define CPUID_MODELCODE_INTELNEHALEM                      0x1A
+#define CPUID_MODELCODE_INTELCORE2_HARPERTOWN             0x17
+#define CPUID_MODELCODE_INTELCORE2_WOODCREST_CLOVERTOWN   0x0F
 
-#define CPUID_MODELCODE_AMDK5               0x04
+#define CPUID_FAMILYCODE_AMDKSERIES                       0x05
+#define CPUID_FAMILYCODE_AMDATHLON                        0x06
+#define CPUID_FAMILYCODE_AMDOPTERON                       0x0F
 
-static void omrsysinfo_get_x86_cpuid(uint32_t leaf, uint32_t *cpuInfo);
+#define CPUID_MODELCODE_AMDK5                             0x04
+
+#define CUPID_EXTENDEDFAMILYCODE_AMDOPTERON               0x06
 
 /**
  * @internal
@@ -89,14 +123,14 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 	desc->processor = OMR_PROCESSOR_X86_UNKNOWN;
 
 	/* vendor */
-	omrsysinfo_get_x86_cpuid(CPUID_VENDOR_INFO, CPUInfo);
-	memcpy(vendor + 0, &CPUInfo[1], sizeof(uint32_t));
-	memcpy(vendor + 4, &CPUInfo[3], sizeof(uint32_t));
-	memcpy(vendor + 8, &CPUInfo[2], sizeof(uint32_t));
+	cpuid(CPUInfo, CPUID_VENDOR_INFO);
+	memcpy(vendor + 0, &CPUInfo[CPUID_EBX], sizeof(uint32_t));
+	memcpy(vendor + 4, &CPUInfo[CPUID_EDX], sizeof(uint32_t));
+	memcpy(vendor + 8, &CPUInfo[CPUID_ECX], sizeof(uint32_t));
 
 	/* family and model */
-	omrsysinfo_get_x86_cpuid(CPUID_FAMILY_INFO, CPUInfo);
-	processorSignature = CPUInfo[0];
+	cpuid(CPUInfo, CPUID_FAMILY_INFO);
+	processorSignature = CPUInfo[CPUID_EAX];
 	familyCode = (processorSignature & CPUID_SIGNATURE_FAMILY) >> CPUID_SIGNATURE_FAMILY_SHIFT;
 	if (0 == strncmp(vendor, CPUID_VENDOR_INTEL, CPUID_VENDOR_LENGTH)) {
 		switch (familyCode) {
@@ -107,20 +141,41 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 		{
 			uint32_t modelCode  = (processorSignature & CPUID_SIGNATURE_MODEL) >> CPUID_SIGNATURE_MODEL_SHIFT;
 			uint32_t extendedModelCode = (processorSignature & CPUID_SIGNATURE_EXTENDEDMODEL) >> CPUID_SIGNATURE_EXTENDEDMODEL_SHIFT;
-			uint32_t totalModelCode = modelCode + extendedModelCode;
+			uint32_t totalModelCode = modelCode + (extendedModelCode << 4);
 
-			if (totalModelCode > CPUID_MODELCODE_INTELHASWELL) {
+			switch (totalModelCode) {
+			case CPUID_MODELCODE_INTELSKYLAKE:
+				desc->processor = OMR_PROCESSOR_X86_INTELSKYLAKE;
+				break;
+			case CPUID_MODELCODE_INTELBROADWELL:
+				desc->processor = OMR_PROCESSOR_X86_INTELBROADWELL;
+				break;
+			case CPUID_MODELCODE_INTELHASWELL_1:
+			case CPUID_MODELCODE_INTELHASWELL_2:
 				desc->processor = OMR_PROCESSOR_X86_INTELHASWELL;
-			} else if (totalModelCode >= CPUID_MODELCODE_SANDYBRIDGE) {
+				break;
+			case CPUID_MODELCODE_INTELIVYBRIDGE_1:
+			case CPUID_MODELCODE_INTELIVYBRIDGE_2:
+				desc->processor = OMR_PROCESSOR_X86_INTELIVYBRIDGE;
+				break;
+			case CPUID_MODELCODE_INTELSANDYBRIDGE:
+			case CPUID_MODELCODE_INTELSANDYBRIDGE_EP:
 				desc->processor = OMR_PROCESSOR_X86_INTELSANDYBRIDGE;
-			} else if (totalModelCode >= CPUID_MODELCODE_INTELWESTMERE) {
+				break;
+			case CPUID_MODELCODE_INTELWESTMERE_EP:
+			case CPUID_MODELCODE_INTELWESTMERE_EX:
 				desc->processor = OMR_PROCESSOR_X86_INTELWESTMERE;
-			} else if (totalModelCode >= CPUID_MODELCODE_INTELNEHALEM) {
+				break;
+			case CPUID_MODELCODE_INTELNEHALEM:
 				desc->processor = OMR_PROCESSOR_X86_INTELNEHALEM;
-			} else if (totalModelCode == CPUID_MODELCODE_INTELCORE2) {
+				break;
+			case CPUID_MODELCODE_INTELCORE2_HARPERTOWN:
+			case CPUID_MODELCODE_INTELCORE2_WOODCREST_CLOVERTOWN:
 				desc->processor = OMR_PROCESSOR_X86_INTELCORE2;
-			} else {
+				break;
+			default:
 				desc->processor = OMR_PROCESSOR_X86_INTELP6;
+				break;
 			}
 			break;
 		}
@@ -136,79 +191,37 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 			if (modelCode < CPUID_MODELCODE_AMDK5) {
 				desc->processor = OMR_PROCESSOR_X86_AMDK5;
 			}
-			desc->processor = OMR_PROCESSOR_X86_AMDK6;
+			else {
+				desc->processor = OMR_PROCESSOR_X86_AMDK6;
+			}
 			break;
 		}
 		case CPUID_FAMILYCODE_AMDATHLON:
 			desc->processor = OMR_PROCESSOR_X86_AMDATHLONDURON;
 			break;
 		case CPUID_FAMILYCODE_AMDOPTERON:
-			desc->processor = OMR_PROCESSOR_X86_AMDOPTERON;
+		{
+			uint32_t extendedFamilyCode  = (processorSignature & CPUID_SIGNATURE_EXTENDEDFAMILY) >> CPUID_SIGNATURE_EXTENDEDFAMILY_SHIFT;
+			if (extendedFamilyCode < CUPID_EXTENDEDFAMILYCODE_AMDOPTERON) {
+				desc->processor = OMR_PROCESSOR_X86_AMDOPTERON;
+			}
+			else {
+				desc->processor = OMR_PROCESSOR_X86_AMDFAMILY15H;
+			}
 			break;
+		}
 		}
 	}
 
 	desc->physicalProcessor = desc->processor;
 
 	/* features */
-	desc->features[0] = CPUInfo[3];
-	desc->features[1] = CPUInfo[2];
-	desc->features[2] = 0; /* reserved for future expansion */
+	desc->features[0] = CPUInfo[CPUID_EDX];
+	desc->features[1] = CPUInfo[CPUID_ECX];
+
+	cpuidex(CPUInfo, 7, 0);
+	desc->features[2] = CPUInfo[CPUID_EBX];
 
 	return 0;
 }
-
-/**
- * Assembly code to get the register data from CPUID instruction
- * This function executes the CPUID instruction based on which we can detect
- * if the environment is virtualized or not, and also get the Hypervisor Vendor
- * Name based on the same instruction. The leaf value specifies what information
- * to return.
- *
- * @param[in] 	leaf The leaf value to the CPUID instruction.
- * @param[out]	cpuInfo 	Reference to the an integer array which holds the data
- *                          of EAX,EBX,ECX and EDX registers.
- *              cpuInfo[0]  To hold the EAX register data, value in this register at
- *                          the time of CPUID tells what information to return
- *                          EAX=0x1,returns the processor Info and feature bits
- *                          in EBX,ECX,EDX registers.
- *                          EAX=0x40000000 returns the Hypervisor Vendor Names
- *                          in the EBX,ECX,EDX registers.
- *              cpuInfo[1]  For EAX = 0x40000000 hold first 4 characters of the
- *                          Hypervisor Vendor String
- *              cpuInfo[2]  For EAX = 0x1, the 31st bit of ECX tells if its
- *                          running on Hypervisor or not,For EAX = 0x40000000 holds the second
- *                          4 characters of the the Hypervisor Vendor String
- *              cpuInfo[3]  For EAX = 0x40000000 hold the last 4 characters of the
- *                          Hypervisor Vendor String
- *
- */
-
-static void
-omrsysinfo_get_x86_cpuid(uint32_t leaf, uint32_t *cpuInfo)
-{
-	cpuInfo[0] = leaf;
-
-/* Implemented for x86 & x86_64 bit platforms */
-#if defined(WIN32)
-	/* Specific CPUID instruction available in Windows */
-	__cpuid(cpuInfo, cpuInfo[0]);
-
-#elif defined(LINUX) || defined(OSX)
-#if defined(J9X86)
-	__asm volatile
-	("mov %%ebx, %%edi;"
-			"cpuid;"
-			"mov %%ebx, %%esi;"
-			"mov %%edi, %%ebx;"
-			:"+a" (cpuInfo[0]), "=S" (cpuInfo[1]), "=c" (cpuInfo[2]), "=d" (cpuInfo[3])
-			 : :"edi");
-
-#elif defined(J9HAMMER)
-  __asm volatile(
-     "cpuid;"
-     :"+a" (cpuInfo[0]), "=b" (cpuInfo[1]), "=c" (cpuInfo[2]), "=d" (cpuInfo[3])
-        );
-#endif
-#endif
-}
+#endif /* (defined(J9X86) || defined(J9HAMMER)) */

@@ -47,6 +47,35 @@ class InstOpCode: public OMR::InstOpCodeConnector
                "Invalid RISC-V opcode (AArch64 opcode, perhaps?)");
 #endif
       }
+
+   /**
+    * @brief For given branch opcode, return 'reversed' opcode. For example, for BEQ return
+    * BNE, for BLT return BGE and so on. Assumes passed opcode is a branch opcode.
+    *
+    * @param[in] opcode : opcode to be reversed
+    * @return Reversed opcode
+    */
+   static TR::InstOpCode::Mnemonic reversedBranchOpCode(TR::InstOpCode::Mnemonic opcode)
+      {
+      switch (opcode)
+         {
+         case TR::InstOpCode::_beq:
+            return TR::InstOpCode::_bne;
+         case TR::InstOpCode::_bne:
+            return TR::InstOpCode::_beq;
+         case TR::InstOpCode::_blt:
+            return TR::InstOpCode::_bge;
+         case TR::InstOpCode::_bltu:
+            return TR::InstOpCode::_bgeu;
+         case TR::InstOpCode::_bge:
+            return TR::InstOpCode::_blt;
+         case TR::InstOpCode::_bgeu:
+            return TR::InstOpCode::_bltu;
+         default:
+            TR_ASSERT_FATAL(false, "Not a branch opcode: %d", opcode);
+            return TR::InstOpCode::bad;
+         }
+      }
    };
 
 }

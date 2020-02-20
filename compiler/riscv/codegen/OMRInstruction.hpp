@@ -44,6 +44,7 @@ namespace TR { class Instruction; }
 namespace TR { class Node; }
 namespace TR { class Register; }
 namespace TR { class RegisterDependencyConditions; }
+namespace TR { class BtypeInstruction; }
 
 namespace OMR
 {
@@ -222,11 +223,19 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
     * @return true when WillBePatched flag is set
     */
    bool willBePatched() {return (_index & WillBePatched) != 0; }
+
    /**
     * @brief Sets WillBePatched flag
     * @param[in] v : flag status
     */
    void setWillBePatched(bool v = true) { v ? _index |= WillBePatched : _index &= ~WillBePatched; }
+
+   /**
+    * @brief: It this is a B-type instruction, return it. Otherwise return NULL.
+    *
+    * @return: B-type instruction or NULL
+    */
+   virtual TR::BtypeInstruction *getBtypeInstruction();
 
    private:
       int32_t _blockIndex;

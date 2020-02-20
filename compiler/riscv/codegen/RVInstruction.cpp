@@ -47,6 +47,7 @@
 #include "il/Node.hpp"                            // for Node
 #include "infra/Assert.hpp"                       // for TR_ASSERT
 #include "codegen/RVOutOfLineCodeSection.hpp"
+#include "codegen/GenerateInstructions.hpp"
 
 #define TR_RISCV_RTYPE(insn, rd, rs1, rs2) \
   ((insn) | ((rd) << OP_SH_RD) | ((rs1) << OP_SH_RS1) | ((rs2) << OP_SH_RS2))
@@ -410,6 +411,50 @@ uint8_t *TR::BtypeInstruction::generateBinaryEncoding()
    return cursor;
    }
 
+
+int32_t TR::BtypeInstruction::estimateBinaryLength(int32_t currentEstimate)
+   {
+   // Conditional branches can be expanded into a conditional branch around an unconditional branch if the target label
+   // is out of range for a simple b-type instruction. This is done by expandFarConditionalBranches, which runs after binary
+   // length estimation but before binary encoding and will call BtypeInstruction::expandIntoFarBranch to
+   // expand the branch into two instructions. For this reason, we conservatively assume that any conditional branch
+   // could be expanded to ensure that the binary length estimates are correct.
+   setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH * 2);
+   setEstimatedBinaryLocation(currentEstimate);
+   return currentEstimate + self()->getEstimatedBinaryLength();
+   }
+
+TR::BtypeInstruction *TR::BtypeInstruction::getBtypeInstruction()
+   {
+   return this;
+   }
+
+
+void TR::BtypeInstruction::expandIntoFarBranch()
+   {
+   TR_ASSERT_FATAL(getLabelSymbol(), "Attempt to expand conditional branch %p without a label", self());
+
+   if (comp()->getOption(TR_TraceCG))
+      traceMsg(comp(), "Expanding conditional branch instruction %p into a far branch\n", self());
+
+   TR::RealRegister *zero = cg()->machine()->getRealRegister(TR::RealRegister::zero);
+
+   TR::InstOpCode::Mnemonic newOpCode = TR::InstOpCode::reversedBranchOpCode(getOpCodeValue());
+
+   setOpCodeValue(newOpCode);
+
+   TR::LabelSymbol *skipBranchLabel = generateLabelSymbol(cg());
+   skipBranchLabel->setEstimatedCodeLocation(getEstimatedBinaryLocation() + RISCV_INSTRUCTION_LENGTH);
+
+   TR::Instruction *branchInstr = generateJTYPE(TR::InstOpCode::_jal, getNode(), zero, getLabelSymbol(), cg(), self());
+   branchInstr->setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH);
+
+   TR::Instruction *labelInstr = generateLABEL(cg(), TR::InstOpCode::label, getNode(), skipBranchLabel, branchInstr);
+   labelInstr->setEstimatedBinaryLength(0);
+
+   setLabelSymbol(skipBranchLabel);
+   setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH);
+   }
 
 // TR::UtypeInstruction:: member functions
 

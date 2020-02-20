@@ -210,6 +210,23 @@ OMR::RV::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       }
    }
 
+static void
+expandFarConditionalBranches(TR::CodeGenerator *cg)
+   {
+   for (TR::Instruction *instr = cg->getFirstInstruction(); instr; instr = instr->getNext())
+      {
+      TR::BtypeInstruction *branch = instr->getBtypeInstruction();
+
+      if (branch)
+         {
+         int32_t distance = branch->getLabelSymbol()->getEstimatedCodeLocation() - branch->getEstimatedBinaryLocation();
+
+         if (!VALID_SBTYPE_IMM(distance))
+            branch->expandIntoFarBranch();
+         }
+      }
+   }
+
 void
 OMR::RV::CodeGenerator::doBinaryEncoding()
    {
@@ -241,6 +258,12 @@ OMR::RV::CodeGenerator::doBinaryEncoding()
       }
 
    estimate = self()->setEstimatedLocationsForSnippetLabels(estimate);
+
+   // RISCV_BRANCH_REACH is defined as 8 KiB since the range is from -4KiB
+   // to +4KiB, however at any point the maximum distance one can branch is
+   // 4KiB (both directions). Hence `RISCV_BRANCH_REACH / 2` in the test below.
+   if (estimate > RISCV_BRANCH_REACH / 2)
+      expandFarConditionalBranches(self());
 
    self()->setEstimatedCodeLength(estimate);
 

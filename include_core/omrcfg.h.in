@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -265,6 +265,10 @@
 #define OMR_USE_OSX_SEMAPHORES
 #elif defined(J9ZOS390)
 #define OMR_USE_ZOS_SEMAPHORES
+#endif
+
+#if defined(LINUX) || defined(OSX)
+#define OMR_HAS_DLADDR
 #endif
 
 /**

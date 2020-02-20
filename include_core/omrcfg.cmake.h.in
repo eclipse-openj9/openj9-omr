@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -248,6 +248,7 @@
 #cmakedefine OMR_USE_POSIX_SEMAPHORES
 #cmakedefine OMR_USE_OSX_SEMAPHORES
 #cmakedefine OMR_USE_ZOS_SEMAPHORES
+#cmakedefine OMR_HAS_DLADDR
 
 /**
  * This flag enables the usage of OMR socket API. The API contains functions for

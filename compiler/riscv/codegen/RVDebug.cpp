@@ -125,7 +125,7 @@ void
 
 TR_Debug::print(TR::FILE *pOutFile, TR::UtypeInstruction *instr)
    {
-printPrefix(pOutFile, instr);
+   printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_WordReg);
    trfprintf(pOutFile, ", 0x%08x (%d)", instr->getSourceImmediate(), instr->getSourceImmediate());
@@ -135,10 +135,23 @@ void
 
 TR_Debug::print(TR::FILE *pOutFile, TR::JtypeInstruction *instr)
    {
-   TR_Debug::print(pOutFile, (TR::UtypeInstruction*)instr);
-   //printPrefix(pOutFile, instr);
-   //trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
-   //trfflush(_comp->getOutFile());
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+   trfprintf(pOutFile, ", ");
+   if (instr->getLabelSymbol())
+      {
+      print(pOutFile, instr->getLabelSymbol());
+      }
+   else if (instr->getSymbolReference())
+      {
+      print(pOutFile, instr->getSymbolReference());
+      }
+   else
+      {
+      trfprintf(pOutFile, "0x%08x (%d)", instr->getSourceImmediate(), instr->getSourceImmediate());
+      }
+   trfflush(_comp->getOutFile());
    }
 
 void

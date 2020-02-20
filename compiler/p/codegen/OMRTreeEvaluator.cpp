@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -4570,8 +4570,11 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
       {
       int64_t len = (lengthNode->getType().isInt32() ?
                      lengthNode->getInt() : lengthNode->getLongInt());
-      // for simple arraycopies the helper is better if length is long
-      if (len>=0 && (!simpleCopy || len < MAX_PPC_ARRAYCOPY_INLINE))
+
+      // inlineArrayCopy is not currently capable of handling very long lengths correctly. Under some circumstances, it
+      // will generate an li instruction with an out-of-bounds immediate, which triggers an assert in the binary
+      // encoder.
+      if (len>=0 && len < MAX_PPC_ARRAYCOPY_INLINE)
          {
          inlineArrayCopy(node, len, srcAddrReg, dstAddrReg, cg);
          if (!simpleCopy)

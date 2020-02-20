@@ -78,7 +78,7 @@ macro(omr_detect_system_information)
 
 	set(OMR_TEMP_DATA_SIZE "unknown")
 
-	if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+	if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|amd64")
 		set(OMR_HOST_ARCH "x86")
 		set(OMR_ARCH_X86 ON)
 		set(OMR_ENV_LITTLE_ENDIAN ON)

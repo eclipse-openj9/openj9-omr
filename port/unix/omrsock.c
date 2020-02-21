@@ -69,6 +69,7 @@ omrsock_getaddrinfo_create_hints(struct OMRPortLibrary *portLibrary, omrsock_add
 	ptbHints->ai_protocol = protocol;
 
 	(ptBuffer->addrInfoHints).addrInfo = ptbHints;
+	(ptBuffer->addrInfoHints).length = 1;
 	*hints = &ptBuffer->addrInfoHints;
 	return 0;
 }
@@ -80,27 +81,77 @@ omrsock_getaddrinfo(struct OMRPortLibrary *portLibrary, char *node, char *servic
 }
 
 int32_t
-omrsock_getaddrinfo_length(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t hints, uint32_t *length)
+omrsock_getaddrinfo_length(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t *length)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if (NULL == handle) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	*length = handle->length;
+	return 0;
 }
 
 int32_t
 omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, int32_t index)
-{
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+{	
+	if ((NULL == handle) || (NULL == handle->addrInfo) || (index < 0) || (index >= handle->length)) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	omr_os_addrinfo *info = handle->addrInfo;
+	int32_t i = 0;
+
+	for (i = 0; i < index; i++) {
+		info = info->ai_next;
+		if (NULL == info) {
+			return OMRPORT_ERROR_INVALID_ARGUMENTS;
+		}
+	}
+
+	*family = info->ai_family;
+	return 0;
 }
 
 int32_t
 omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, int32_t index)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if ((NULL == handle) || (NULL == handle->addrInfo) || (index < 0) || (index >= handle->length)) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	omr_os_addrinfo *info = handle->addrInfo;
+	int32_t i = 0;
+	
+	for (i = 0; i < index; i++) {
+		info = info->ai_next;
+		if (NULL == info) {
+			return OMRPORT_ERROR_INVALID_ARGUMENTS;
+		}
+	}
+
+	*socktype = info->ai_socktype;
+	return 0;
 }
 
 int32_t
 omrsock_getaddrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *protocol, int32_t index)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if ((NULL == handle) || (NULL == handle->addrInfo) || (index < 0) || (index >= handle->length)) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	omr_os_addrinfo *info = handle->addrInfo;
+	int32_t i = 0;
+
+	for (i = 0; i < index; i++) {
+		info = info->ai_next;
+		if (NULL == info) {
+			return OMRPORT_ERROR_INVALID_ARGUMENTS;
+		}
+	}
+
+	*protocol = info->ai_protocol;
+	return 0;
 }
 
 int32_t

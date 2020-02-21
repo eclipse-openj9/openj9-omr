@@ -33,7 +33,7 @@
 
 #include <string.h>
 
-#if (defined(J9X86) || defined(J9HAMMER))
+#if defined(OMR_OS_WINDOWS) || defined(J9X86) || defined(J9HAMMER)
 #if defined(OMR_OS_WINDOWS)
 #include <intrin.h>
 #define cpuid(CPUInfo, EAXValue)             __cpuid(CPUInfo, EAXValue)
@@ -224,4 +224,4 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 
 	return 0;
 }
-#endif /* (defined(J9X86) || defined(J9HAMMER)) */
+#endif /* defined(OMR_OS_WINDOWS) || defined(J9X86) || defined(J9HAMMER) */

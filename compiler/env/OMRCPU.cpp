@@ -159,6 +159,12 @@ OMR::CPU::detect(OMRPortLibrary * const omrPortLib)
    return TR::CPU(processorDescription);
    }
 
+TR::CPU
+OMR::CPU::detectRelocatable(OMRPortLibrary * const omrPortLib)
+   {
+   return TR::CPU::detect(omrPortLib);
+   }
+
 bool
 OMR::CPU::supportsFeature(uint32_t feature)
    {

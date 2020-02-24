@@ -236,7 +236,6 @@ OMR::X86::CPU::prefersMultiByteNOP()
    {
    if (TR::Compiler->omrPortLib == NULL)
       return TR::CodeGenerator::getX86ProcessorInfo().prefersMultiByteNOP();
-   TR_ASSERT_FATAL(TR::CodeGenerator::getX86ProcessorInfo().prefersMultiByteNOP() == (self()->isGenuineIntel() && !self()->is(OMR_PROCESSOR_X86_INTELPENTIUM)), "prefersMultiByteNOP");
 
    return self()->isGenuineIntel() && !self()->is(OMR_PROCESSOR_X86_INTELPENTIUM);
    }
@@ -246,7 +245,6 @@ OMR::X86::CPU::supportsAVX()
    {
    if (TR::Compiler->omrPortLib == NULL)
       return TR::CodeGenerator::getX86ProcessorInfo().supportsAVX();
-   TR_ASSERT_FATAL(TR::CodeGenerator::getX86ProcessorInfo().supportsAVX() == (self()->supportsFeature(OMR_FEATURE_X86_AVX) && self()->supportsFeature(OMR_FEATURE_X86_OSXSAVE)), "supportsAVX");
 
    return self()->supportsFeature(OMR_FEATURE_X86_AVX) && self()->supportsFeature(OMR_FEATURE_X86_OSXSAVE);
    }

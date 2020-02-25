@@ -1998,11 +1998,13 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    self()->setOption(TR_DisableNextGenHCR);
 #endif
 
-   static const char *ccr = feGetEnv("TR_DisableCCR");
-   if (ccr)
+   static const bool disableCCREnv = feGetEnv("TR_DisableCCR") != NULL;
+   if (self()->getOption(TR_PerfTool) || disableCCREnv)
       {
+      fprintf(stderr, "WARNING: Disabling code cache reclamation due to due to -Xjit:perfTool or TR_DisableCCR environment variable\n");
       self()->setOption(TR_DisableCodeCacheReclamation);
       }
+
    static const char *disableCCCF = feGetEnv("TR_DisableClearCodeCacheFullFlag");
    if (disableCCCF)
       {

@@ -4073,7 +4073,7 @@ OMR::Options::setCounts()
             }
          else // Use higher count
             {
-            _initialCount = TR_DEFAULT_INITIAL_COUNT;
+            _initialCount = TR::Compiler->target.numberOfProcessors() >= TR_NUMPROC_FOR_LARGE_SMP ? TR_LARGE_SMP_INITIAL_COUNT : TR_DEFAULT_INITIAL_COUNT;
             }
          }
       else
@@ -4096,7 +4096,7 @@ OMR::Options::setCounts()
                }
             else
                {
-               _initialBCount = TR_DEFAULT_INITIAL_BCOUNT;
+               _initialBCount = TR::Compiler->target.numberOfProcessors() >= TR_NUMPROC_FOR_LARGE_SMP ? TR_LARGE_SMP_INITIAL_BCOUNT: TR_DEFAULT_INITIAL_BCOUNT;
                }
             _initialBCount = std::min(_initialBCount, _initialCount);
             }

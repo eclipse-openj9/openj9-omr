@@ -1192,6 +1192,10 @@ enum TR_ProcessOptionsFlags
 #define TR_DEFAULT_INITIAL_BCOUNT        3000
 #define TR_DEFAULT_INITIAL_MILCOUNT       250
 
+#define TR_LARGE_SMP_INITIAL_COUNT       2000
+#define TR_LARGE_SMP_INITIAL_BCOUNT      1000
+#define TR_NUMPROC_FOR_LARGE_SMP            4 // Minimum number of CPUs to declare this environment as a "large SMP"
+
 #define TR_QUICKSTART_INITIAL_COUNT      1000
 #define TR_QUICKSTART_INITIAL_BCOUNT      250
 #define TR_QUICKSTART_INITIAL_MILCOUNT      1

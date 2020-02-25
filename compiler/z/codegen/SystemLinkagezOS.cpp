@@ -175,17 +175,17 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator* cg)
 
    if (cg->comp()->target().is64Bit())
       {
-      self()->setOffsetToFirstParm(XPLINK_STACK_FRAME_BIAS + 128);
+      setOffsetToFirstParm(XPLINK_STACK_FRAME_BIAS + 128);
       }
    else
       {
-      self()->setOffsetToFirstParm(XPLINK_STACK_FRAME_BIAS + 64);
+      setOffsetToFirstParm(XPLINK_STACK_FRAME_BIAS + 64);
       }
 
    setOffsetToRegSaveArea(2048);
    setOffsetToLongDispSlot(0);
    setOffsetToFirstLocal(0);
-   setOutgoingParmAreaBeginOffset(self()->getOffsetToFirstParm() - XPLINK_STACK_FRAME_BIAS);
+   setOutgoingParmAreaBeginOffset(getOffsetToFirstParm() - XPLINK_STACK_FRAME_BIAS);
    setOutgoingParmAreaEndOffset(0);
    setStackFrameSize(0);
    setNumberOfDependencyGPRegisters(32);

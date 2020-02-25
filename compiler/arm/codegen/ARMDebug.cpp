@@ -1118,7 +1118,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMCallSnippet * snippet)
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet), getName(methodSymRef));
 
    TR::Machine *machine = _cg->machine();
-   TR::Linkage* linkage = _cg->getLinkage(methodSymbol->getLinkageConvention());
+   TR::Linkage *linkage = _cg->getLinkage(methodSymbol->getLinkageConvention());
    const TR::ARMLinkageProperties &linkageProperties = linkage->getProperties();
 
    uint32_t numIntArgs   = 0;

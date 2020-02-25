@@ -178,7 +178,7 @@ TR::ARMLinkageProperties TR::ARMSystemLinkage::properties =
 TR::ARMSystemLinkage::ARMSystemLinkage(TR::CodeGenerator *cg)
    : TR::Linkage(cg)
    {
-   self()->setOffsetToFirstParm(0);
+   setOffsetToFirstParm(0);
    }
 
 void TR::ARMSystemLinkage::initARMRealRegisterLinkage()

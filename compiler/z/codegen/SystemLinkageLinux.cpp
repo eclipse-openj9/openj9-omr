@@ -211,14 +211,14 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
    setGPRSaveAreaEndOffset(160);
 
    // x'1c0' see ICST_PAR in tpf/icstk.h
-   self()->setOffsetToFirstParm(448);
+   setOffsetToFirstParm(448);
 #else
    if (cg->comp()->target().is64Bit())
       {
       setOffsetToRegSaveArea(16);
       setGPRSaveAreaBeginOffset(48);
       setGPRSaveAreaEndOffset(128);
-      self()->setOffsetToFirstParm(160);
+      setOffsetToFirstParm(160);
       setOffsetToLongDispSlot(8);
       }
    else
@@ -226,13 +226,13 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator* cg)
       setOffsetToRegSaveArea(8);
       setGPRSaveAreaBeginOffset(24);
       setGPRSaveAreaEndOffset(64);
-      self()->setOffsetToFirstParm(96);
+      setOffsetToFirstParm(96);
       setOffsetToLongDispSlot(4);
       }
 #endif /* defined(OMRZTPF) */
 
    setOffsetToFirstLocal(0);
-   setOutgoingParmAreaBeginOffset(self()->getOffsetToFirstParm());
+   setOutgoingParmAreaBeginOffset(getOffsetToFirstParm());
    setOutgoingParmAreaEndOffset(0);
    setStackFrameSize(0);
    setNumberOfDependencyGPRegisters(32);

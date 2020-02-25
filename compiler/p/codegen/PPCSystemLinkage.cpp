@@ -339,7 +339,7 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
 
       // Volatile GPR (0,2-12) + FPR (0-13) + CCR (0-1,5-7) + VR (0-19) + FPR (14-31) if used as vector
       _properties._numberOfDependencyGPRegisters = 12 + 14 + 5 + 20 + 18;
-      self()->setOffsetToFirstParm(isBE ? 48 : 32);
+      setOffsetToFirstParm(isBE ? 48 : 32);
       _properties._offsetToFirstLocal            = isBE?48:32;
       }
    else
@@ -348,14 +348,14 @@ TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
          {
          // Volatile GPR (0,2-12) + FPR (0-13) + CCR (0-1,5-7) + VR (0-19) + FPR (14-31) if used as vector
          _properties._numberOfDependencyGPRegisters = 12 + 14 + 5 + 20 + 18;
-         self()->setOffsetToFirstParm(24);
+         setOffsetToFirstParm(24);
          _properties._offsetToFirstLocal            = 24;
          }
       else
          {
          // Volatile GPR (0,3-12) + FPR (0-13) + CCR (0-1,5-7) + VR (0-19) + FPR (14-31) if used as vector
          _properties._numberOfDependencyGPRegisters = 11 + 14 + 5 + 20 + 18;
-         self()->setOffsetToFirstParm(8);
+         setOffsetToFirstParm(8);
          _properties._offsetToFirstLocal            = 8;
          }
       }

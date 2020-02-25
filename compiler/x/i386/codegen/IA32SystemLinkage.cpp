@@ -127,7 +127,7 @@ TR::IA32SystemLinkage::IA32SystemLinkage(
    _properties._numberOfVolatileXMMRegisters = p - _properties._numberOfVolatileGPRegisters;
    _properties._numVolatileRegisters = p;
 
-   self()->setOffsetToFirstParm(RETURN_ADDRESS_SIZE);
+   setOffsetToFirstParm(RETURN_ADDRESS_SIZE);
    _properties._offsetToFirstLocal = _properties.getAlwaysDedicateFramePointerRegister() ? -GPR_REG_WIDTH : 0;
    _properties._OutgoingArgAlignment = IA32_DEFAULT_STACK_ALIGNMENT;
 

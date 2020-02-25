@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2331,7 +2331,7 @@ OMR::Z::TreeEvaluator::inlineIfBifEvaluator(TR::Node * ifNode, TR::CodeGenerator
    }
 
 /**
- * Ternary Evaluator - evaluates all types of ternary opcodes
+ * Select Evaluator - evaluates all types of select opcodes
  */
 TR::InstOpCode::S390BranchCondition OMR::Z::TreeEvaluator::getBranchConditionFromCompareOpCode(TR::ILOpCodes opCode)
    {
@@ -2385,7 +2385,7 @@ TR::InstOpCode::S390BranchCondition OMR::Z::TreeEvaluator::getBranchConditionFro
          break;
       default:
          {
-         TR_ASSERT_FATAL(0, "Unsupported compare type under ternary");
+         TR_ASSERT_FATAL(0, "Unsupported compare type under select");
          return TR::InstOpCode::COND_BE;      //not a valid return value.  We should never ever get here.
          }
          break;
@@ -2496,7 +2496,7 @@ int32_t OMR::Z::TreeEvaluator::countReferencesInTree(TR::Node *treeNode, TR::Nod
 bool
 OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::Node *node)
    {
-   static const char *x = feGetEnv("disableTernaryEvaluatorImprovement");
+   static const char *x = feGetEnv("disableSelectEvaluatorImprovement");
    if (x)
       {
       return false;
@@ -2519,7 +2519,7 @@ OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::N
    }
 
 TR::Register *
-OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+OMR::Z::TreeEvaluator::selectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
 
@@ -2529,7 +2529,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node *falseVal   = node->getThirdChild();
 
    if (comp->getOption(TR_TraceCG))
-      traceMsg(comp, "Starting evaluation of ternary node %p condition %p (in reg %p) trueVal %p (in reg %p) falseVal %p (in reg %p)\n",node,condition,condition->getRegister(), trueVal, trueVal->getRegister(), falseVal, falseVal->getRegister());
+      traceMsg(comp, "Starting evaluation of select node %p condition %p (in reg %p) trueVal %p (in reg %p) falseVal %p (in reg %p)\n",node,condition,condition->getRegister(), trueVal, trueVal->getRegister(), falseVal, falseVal->getRegister());
 
   TR::Register *trueReg = 0;
   if(TR::TreeEvaluator::treeContainsAllOtherUsesForNode(condition,trueVal) &&
@@ -2689,9 +2689,9 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return trueReg;
 }
 
-// Take advantage of VRF/FPR overlap and use vector compare and select instructions to implement dternary
+// Take advantage of VRF/FPR overlap and use vector compare and select instructions to implement dselect
 TR::Register *
-OMR::Z::TreeEvaluator::dternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+OMR::Z::TreeEvaluator::dselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *conditionNode = node->getFirstChild();
    TR::Node *trueValueNode = node->getSecondChild();

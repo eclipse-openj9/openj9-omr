@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -133,7 +133,7 @@ class OpIlInjector : public TR::IlInjector
 
    TR::ILOpCodes _opCode;
    TR::DataType _dataType; // datatype of OpCode child/children
-   TR::DataType _conditionalDataType; // return type of Ternary opcodes
+   TR::DataType _conditionalDataType; // return type of Select opcodes
 
    ParmNode **_optArgs;  // holds args that are not on stack params
    uint32_t _numOptArgs;

@@ -204,7 +204,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
     self()->setSupportsVirtualGuardNOPing();
     self()->setSupportsPrimitiveArrayCopy();
     self()->setSupportsReferenceArrayCopy();
-    self()->setSupportsTernary();
+    self()->setSupportsSelect();
 
     // disabled for now
     //

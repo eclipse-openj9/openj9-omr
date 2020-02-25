@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -499,16 +499,16 @@ TR::ILOpCodes OMR::IL::opCodesForIfCompareGreaterOrEquals[] =
    TR::BadILOp,   // TR::Aggregate
    };
 
-TR::ILOpCodes OMR::IL::opCodesForTernarySelect [] =
+TR::ILOpCodes OMR::IL::opCodesForSelect [] =
    {
    TR::BadILOp,  // NoType
-   TR::bternary, // Int8
-   TR::sternary, // Int16
-   TR::iternary, // Int32
-   TR::lternary, // Int64
-   TR::fternary, // Float
-   TR::dternary, // Double
-   TR::aternary, // Address
+   TR::bselect,  // Int8
+   TR::sselect,  // Int16
+   TR::iselect,  // Int32
+   TR::lselect,  // Int64
+   TR::fselect,  // Float
+   TR::dselect,  // Double
+   TR::aselect,  // Address
    TR::BadILOp,   // TR::VectorInt8
    TR::BadILOp,   // TR::VectorInt16
    TR::BadILOp,   // TR::VectorInt32
@@ -660,9 +660,17 @@ OMR::IL::opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode)
 TR::ILOpCodes
 OMR::IL::opCodeForTernarySelect(TR::DataType dt)
    {
-   TR_ASSERT(dt < TR::NumOMRTypes, "unexpcted opcode");
+   TR_ASSERT(dt < TR::NumOMRTypes, "Unexpected data type");
 
-   return OMR::IL::opCodesForTernarySelect[dt];
+   return OMR::IL::opCodesForSelect[dt];
+   }
+
+TR::ILOpCodes
+OMR::IL::opCodeForSelect(TR::DataType dt)
+   {
+   TR_ASSERT(dt < TR::NumOMRTypes, "Unexpected data type");
+
+   return OMR::IL::opCodesForSelect[dt];
    }
 
 TR::ILOpCodes

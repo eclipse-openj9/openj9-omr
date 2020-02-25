@@ -565,7 +565,7 @@
    lrem,             // long remainder for 64 bit target
    d2i,              // converts from double to integer
    d2l,              // converts from double to long
-   iternary,         // ternary evaluator
+   iselect,          // select evaluator
 // bcdcpsgn_r,       // Decimal copySign & record
 // bcdcfn_r,         // Decimal convert from national & record
 // bcdcfsq_r,        // Decimal convert from signed qword & record

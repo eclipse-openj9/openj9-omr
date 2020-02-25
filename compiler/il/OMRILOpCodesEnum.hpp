@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -457,13 +457,14 @@
    sRegStore, // Store short global register
    bRegStore, // Store byte global register
    GlRegDeps, // Global Register Dependency List
-   iternary,   // Ternary Operator:  Based on the result of the first child, take the value of the
-   lternary,   //   second (first child evaluates to true) or third(first child evaluates to false) child
-   bternary,   //
-   sternary,   //
-   aternary,   //
-   fternary,   //
-   dternary,   //
+   iselect,   // Select Operator:  Based on the result of the first child, take the value of the
+   lselect,   //   second (first child evaluates to true) or third(first child evaluates to false) child
+   bselect,   //
+   sselect,   //
+   aselect,   //
+   aternary = aselect,   //
+   fselect,   //
+   dselect,   //
    treetop,  // tree top to anchor subtrees with side-effects
    MethodEnterHook, // called after a frame is built, temps initialized, and monitor acquired (if necessary)
    MethodExitHook,  // called immediately before returning, frame not yet collapsed, monitor released (if necessary)
@@ -500,7 +501,7 @@
    vicmpanyle,       // vector integer any less equal
 
    vnot,          // vector boolean not
-   vselect,       // vector select
+   vbitselect,       // vector bit select
    vperm,         // vector permute
 
    vsplats,       // vector splats
@@ -574,7 +575,7 @@
    vreturn,    // return a vector
    vcall,      // direct call returning a vector
    vcalli,     // indirect call returning a vector
-   vternary,   // vector ternary operator
+   vselect,    // vector select operator
    v2v,        // vector to vector conversion. preserves bit pattern (noop), only changes datatype
    vl2vd,      // vector to vector conversion. converts each long element to double
    vconst,     // vector constant

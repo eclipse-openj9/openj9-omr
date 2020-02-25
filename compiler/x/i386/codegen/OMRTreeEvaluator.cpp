@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3608,7 +3608,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpleEvaluator(TR::Node *node, T
    }
 
 
-TR::Register *OMR::X86::I386::TreeEvaluator::lternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *condition = node->getChild(0);
    TR::Node *trueVal   = node->getChild(1);

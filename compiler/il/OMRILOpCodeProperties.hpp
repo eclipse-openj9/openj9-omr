@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -6198,10 +6198,10 @@
    },
 
    {
-   /* .opcode               = */ TR::iternary,
-   /* .name                 = */ "iternary",
+   /* .opcode               = */ TR::iselect,
+   /* .name                 = */ "iselect",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Ternary,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Int32,
@@ -6214,10 +6214,10 @@
    },
 
    {
-   /* .opcode               = */ TR::lternary,
-   /* .name                 = */ "lternary",
+   /* .opcode               = */ TR::lselect,
+   /* .name                 = */ "lselect",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Ternary,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Int64,
@@ -6230,10 +6230,10 @@
    },
 
    {
-   /* .opcode               = */ TR::bternary,
-   /* .name                 = */ "bternary",
+   /* .opcode               = */ TR::bselect,
+   /* .name                 = */ "bselect",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Ternary,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Int8,
@@ -6246,10 +6246,10 @@
    },
 
    {
-   /* .opcode               = */ TR::sternary,
-   /* .name                 = */ "sternary",
+   /* .opcode               = */ TR::sselect,
+   /* .name                 = */ "sselect",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Ternary,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Int16,
@@ -6262,10 +6262,10 @@
    },
 
    {
-   /* .opcode               = */ TR::aternary,
-   /* .name                 = */ "aternary",
+   /* .opcode               = */ TR::aselect,
+   /* .name                 = */ "aselect",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Ternary,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Address,
@@ -6278,10 +6278,10 @@
    },
 
    {
-   /* .opcode               = */ TR::fternary,
-   /* .name                 = */ "fternary",
+   /* .opcode               = */ TR::fselect,
+   /* .name                 = */ "fselect",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Ternary,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Float,
@@ -6294,10 +6294,10 @@
    },
 
    {
-   /* .opcode               = */ TR::dternary,
-   /* .name                 = */ "dternary",
+   /* .opcode               = */ TR::dselect,
+   /* .name                 = */ "dselect",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Ternary,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Double,
@@ -6842,8 +6842,8 @@
    },
 
    {
-   /* .opcode               = */ TR::vselect,
-   /* .name                 = */ "vselect",
+   /* .opcode               = */ TR::vbitselect,
+   /* .name                 = */ "vbitselect",
    /* .properties1          = */ 0,
    /* .properties2          = */ 0,
    /* .properties3          = */ 0,
@@ -7913,10 +7913,10 @@
    },
 
    {
-   /* .opcode               = */ TR::vternary,
-   /* .name                 = */ "vternary",
+   /* .opcode               = */ TR::vselect,
+   /* .name                 = */ "vselect",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Ternary,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::NoType,
@@ -10543,7 +10543,7 @@
    /* .opcode               = */ TR::iuaddc,
    /* .name                 = */ "iuaddc",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::TernaryAdd,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectAdd,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Int32,
@@ -10559,7 +10559,7 @@
    /* .opcode               = */ TR::luaddc,
    /* .name                 = */ "luaddc",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::TernaryAdd,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectAdd,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Int64,
@@ -10575,7 +10575,7 @@
    /* .opcode               = */ TR::iusubb,
    /* .name                 = */ "iusubb",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::TernarySub,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectSub,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Int32,
@@ -10591,7 +10591,7 @@
    /* .opcode               = */ TR::lusubb,
    /* .name                 = */ "lusubb",
    /* .properties1          = */ 0,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::TernarySub,
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectSub,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Int64,

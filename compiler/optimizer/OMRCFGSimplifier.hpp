@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -89,7 +89,7 @@ class CFGSimplifier : public TR::Optimization
    /**
     * \brief
     *    This function tries to match a simple diamond or traigle that performs conditional store in a temp 
-    *    and repalce with an appropriate ternary node.
+    *    and repalce with an appropriate select node.
     *
     * \parm needToDuplicateTree
     *    Boolean to indicate whether or not to duplicate node.
@@ -101,7 +101,7 @@ class CFGSimplifier : public TR::Optimization
    /**
     * \brief
     *    This function tries to match diamond or traigle that performs conditional stores in temps 
-    *    and repalce with seqeunce of appropriate ternary nodes.
+    *    and repalce with seqeunce of appropriate select nodes.
     *
     * \parm needToDuplicateTree
     *    Boolean to indicate whether or not to duplicate node.

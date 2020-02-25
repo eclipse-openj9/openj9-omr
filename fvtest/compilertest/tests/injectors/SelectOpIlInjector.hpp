@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,8 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TEST_TERNARYOPILINJECTOR_INCL
-#define TEST_TERNARYOPILINJECTOR_INCL
+#ifndef TEST_SELECTOPILINJECTOR_INCL
+#define TEST_SELECTOPILINJECTOR_INCL
 
 #include "tests/injectors/OpIlInjector.hpp"
 
@@ -28,10 +28,10 @@ namespace TR { class TypeDictionary; }
 
 namespace TestCompiler
 {
-class TernaryOpIlInjector : public OpIlInjector
+class SelectOpIlInjector : public OpIlInjector
    {
    public:
-   TernaryOpIlInjector(TR::TypeDictionary *types, TestDriver *test, TR::ILOpCodes opCode)
+   SelectOpIlInjector(TR::TypeDictionary *types, TestDriver *test, TR::ILOpCodes opCode)
       : OpIlInjector(types, test, opCode)
       {
       initOptArgs(3);
@@ -44,4 +44,4 @@ class TernaryOpIlInjector : public OpIlInjector
 
 } /* namespace TestCompiler */
 
-#endif // !define (TEST_TERNARYOPILINJECTOR_INCL)
+#endif // !define (TEST_SELECTOPILINJECTOR_INCL)

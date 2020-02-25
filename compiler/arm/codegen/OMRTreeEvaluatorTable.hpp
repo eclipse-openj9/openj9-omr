@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -519,13 +519,13 @@
    TR::TreeEvaluator::iRegStoreEvaluator,   // TR::sRegStore
    TR::TreeEvaluator::iRegStoreEvaluator,   // TR::bRegStore
    TR::TreeEvaluator::GlRegDepsEvaluator,   // TR::GlRegDeps
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::iternary
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::lternary
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::bternary
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::sternary
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::aternary
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::fternary
-   TR::TreeEvaluator::badILOpEvaluator,     // TR::dternary
+   TR::TreeEvaluator::badILOpEvaluator,     // TR::iselect
+   TR::TreeEvaluator::badILOpEvaluator,     // TR::lselect
+   TR::TreeEvaluator::badILOpEvaluator,     // TR::bselect
+   TR::TreeEvaluator::badILOpEvaluator,     // TR::sselect
+   TR::TreeEvaluator::badILOpEvaluator,     // TR::aselect
+   TR::TreeEvaluator::badILOpEvaluator,     // TR::fselect
+   TR::TreeEvaluator::badILOpEvaluator,     // TR::dselect
    TR::TreeEvaluator::treetopEvaluator,     // TR::treetop
    TR::TreeEvaluator::badILOpEvaluator,     // TR::MethodEnterHook
    TR::TreeEvaluator::badILOpEvaluator,     // TR::MethodExitHook
@@ -560,7 +560,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,         //  TR::vicmpanylt
    TR::TreeEvaluator::unImpOpEvaluator,         //  TR::vicmpanyle
    TR::TreeEvaluator::unImpOpEvaluator,         //  TR::vnot
-   TR::TreeEvaluator::unImpOpEvaluator,         //  TR::vselect
+   TR::TreeEvaluator::unImpOpEvaluator,         //  TR::vbitselect
    TR::TreeEvaluator::unImpOpEvaluator,         //  TR::vperm
    TR::TreeEvaluator::unImpOpEvaluator,         //  TR::vsplats
    TR::TreeEvaluator::unImpOpEvaluator,         //  TR::vdmergel
@@ -628,7 +628,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vreturn
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vcall
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vcalli
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vternary
+   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vselect
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::v2v
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vl2vd
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vconst

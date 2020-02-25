@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -557,7 +557,7 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
    // Lower trees
    //
-   void rematerializeCmpUnderTernary(TR::Node*node);
+   void rematerializeCmpUnderSelect(TR::Node*node);
    bool yankIndexScalingOp() {return false;}
 
    void cleanupFlags(TR::Node*node);
@@ -1495,8 +1495,9 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsArrayTranslateTRxx() {return _flags2.testAny(SupportsArrayTranslate);}
    void setSupportsArrayTranslateTRxx() {_flags2.set(SupportsArrayTranslate);}
 
-   bool getSupportsTernary() {return _flags2.testAny(SupportsTernary);}
-   void setSupportsTernary() {_flags2.set(SupportsTernary);}
+   bool getSupportsTernary() {return _flags2.testAny(SupportsSelect);}
+   bool getSupportsSelect() {return _flags2.testAny(SupportsSelect);}
+   void setSupportsSelect() {_flags2.set(SupportsSelect);}
 
    bool getSupportsArrayTranslateTRTO255() {return _flags4.testAny(SupportsArrayTranslateTRTO255);}
    void setSupportsArrayTranslateTRTO255() {_flags4.set(SupportsArrayTranslateTRTO255);}
@@ -1750,7 +1751,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsReadOnlyLocks                               = 0x00000400,
       SupportsArrayTranslateAndTest                       = 0x00000800,
       SupportsDynamicANewArray                            = 0x00001000,
-      SupportsTernary                                     = 0x00002000,
+      SupportsSelect                                      = 0x00002000,
       // AVAILABLE                                        = 0x00004000,
       SupportsPostProcessArrayCopy                        = 0x00008000,
       // AVAILABLE                                        = 0x00010000,

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -422,13 +422,13 @@
    dftSimplifier,           // TR::bRegStore
    dftSimplifier,           // TR::GlRegDeps
 
-   ternarySimplifier,       // TR::iternary
-   ternarySimplifier,       // TR::lternary
-   ternarySimplifier,       // TR::bternary
-   ternarySimplifier,       // TR::sternary
-   ternarySimplifier,       // TR::aternary
-   ternarySimplifier,       // TR::fternary
-   ternarySimplifier,       // TR::dternary
+   selectSimplifier,       // TR::iselect
+   selectSimplifier,       // TR::lselect
+   selectSimplifier,       // TR::bselect
+   selectSimplifier,       // TR::sselect
+   selectSimplifier,       // TR::aselect
+   selectSimplifier,       // TR::fselect
+   selectSimplifier,       // TR::dselect
    treetopSimplifier,       // TR::treetop
    lowerTreeSimplifier,     // TR::MethodEnterHook
    lowerTreeSimplifier,     // TR::MethodExitHook
@@ -465,7 +465,7 @@
    dftSimplifier,           // TR::vicmpanyle
 
    dftSimplifier,           // TR::vnot
-   dftSimplifier,           // TR::vselect
+   dftSimplifier,           // TR::vbitselect
    dftSimplifier,           // TR::vperm
 
    dftSimplifier,           // TR::vsplats
@@ -536,7 +536,7 @@
    dftSimplifier,           // TR::vreturn
    dftSimplifier,           // TR::vcall
    dftSimplifier,           // TR::vcalli
-   dftSimplifier,           // TR::vternary
+   dftSimplifier,           // TR::vselect
    v2vSimplifier,           // TR::v2v
    dftSimplifier,           // TR::vl2vd
    dftSimplifier,           // TR::vconst

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2670,13 +2670,13 @@ int32_t childTypes[] =
    TR::Int16,                      // TR::sRegStore
    TR::Int8,                       // TR::bRegStore
    TR::NoType,                     // TR::GlRegDeps
-   TR::Int32 | (TR::Int32<<8),    // TR::iternary
-   TR::Int64 | (TR::Int32<<8),    // TR::lternary
-   TR::Int8  | (TR::Int32<<8),    // TR::bternary
-   TR::Int16 | (TR::Int32<<8),    // TR::sternary
-   TR::Address | (TR::Int32<<8),   // TR::aternary
-   TR::Float | (TR::Int32<<8),     // TR::fternary
-   TR::Double | (TR::Int32<<8),    // TR::dternary
+   TR::Int32 | (TR::Int32<<8),    // TR::iselect
+   TR::Int64 | (TR::Int32<<8),    // TR::lselect
+   TR::Int8  | (TR::Int32<<8),    // TR::bselect
+   TR::Int16 | (TR::Int32<<8),    // TR::sselect
+   TR::Address | (TR::Int32<<8),   // TR::aselect
+   TR::Float | (TR::Int32<<8),     // TR::fselect
+   TR::Double | (TR::Int32<<8),    // TR::dselect
    TR::NoType,                     // TR::treetop
    TR::NoType,                     // TR::MethodEnterHook
    TR::NoType,                     // TR::MethodExitHook
@@ -2710,7 +2710,7 @@ int32_t childTypes[] =
    TR::VectorInt32,                     // TR_vianylt
    TR::VectorInt32,                     // TR_vianyle
    TR::VectorInt32,                     // TR::vnot
-   TR::VectorInt32,                     // TR::vselect
+   TR::VectorInt32,                     // TR::vbitselect
    TR::VectorInt32,                     // TR::vperm
 
    TR::VectorDouble | (TR::Address<<8),   // TR::dloadi
@@ -2781,7 +2781,7 @@ int32_t childTypes[] =
    TR::NoType,                           //TR::vreturn
    TR::NoType,                           //TR::vcall
    TR::NoType,                           //TR::vcalli
-   TR::NoType,                           //TR::vternary
+   TR::NoType,                           //TR::vselect
    TR::NoType,                           //TR::v2v
    TR::NoType,                           //TR::vl2vd
    TR::NoType,                           //TR::vconst
@@ -3274,9 +3274,9 @@ int32_t childTypes[] =
    TR::DecimalDouble,                                        // TR::ddRegStore
    TR::DecimalLongDouble,                                    // TR::deRegStore
 
-   TR::DecimalDouble | (TR::Int32<<8),                       // TR::dfternary
-   TR::DecimalFloat | (TR::Int32<<8),                        // TR::ddternary
-   TR::DecimalLongDouble | (TR::Int32<<8),                   // TR::deternary
+   TR::DecimalDouble | (TR::Int32<<8),                       // TR::dfselect
+   TR::DecimalFloat | (TR::Int32<<8),                        // TR::ddselect
+   TR::DecimalLongDouble | (TR::Int32<<8),                   // TR::deselect
 
    TR::DecimalFloat,                                         // TR::dfexp
    TR::DecimalDouble,                                        // TR::ddexp

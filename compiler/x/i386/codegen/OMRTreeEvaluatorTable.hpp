@@ -408,13 +408,13 @@
    TR::TreeEvaluator::iRegStoreEvaluator,                              // TR::sRegStore
    TR::TreeEvaluator::iRegStoreEvaluator,                              // TR::bRegStore
    TR::TreeEvaluator::GlRegDepsEvaluator,                              // TR::GlRegDeps
-   TR::TreeEvaluator::iternaryEvaluator,                               // TR::iternary
-   TR::TreeEvaluator::lternaryEvaluator,                               // TR::lternary
-   TR::TreeEvaluator::iternaryEvaluator,                               // TR::bternary
-   TR::TreeEvaluator::iternaryEvaluator,                               // TR::sternary
-   TR::TreeEvaluator::iternaryEvaluator,                               // TR::aternary
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::fternary
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::dternary
+   TR::TreeEvaluator::iselectEvaluator,                                // TR::iselect
+   TR::TreeEvaluator::lselectEvaluator,                                // TR::lselect
+   TR::TreeEvaluator::iselectEvaluator,                                // TR::bselect
+   TR::TreeEvaluator::iselectEvaluator,                                // TR::sselect
+   TR::TreeEvaluator::iselectEvaluator,                                // TR::aselect
+   TR::TreeEvaluator::badILOpEvaluator,                                // TR::fselect
+   TR::TreeEvaluator::badILOpEvaluator,                                // TR::dselect
    TR::TreeEvaluator::treetopEvaluator,                                // TR::treetop
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::MethodEnterHook (J9)
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::MethodExitHook (J9)
@@ -447,7 +447,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpanylt
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpanyle
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vnot
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vselect
+   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vbitselect
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vperm
    TR::TreeEvaluator::SIMDsplatsEvaluator,                             // TR::vsplats
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdmergel
@@ -514,7 +514,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vreturn
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcall
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcalli
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vternary
+   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vselect
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::v2v
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vl2vd
    TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vconst

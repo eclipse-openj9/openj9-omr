@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -141,7 +141,8 @@ inline uint32_t getFeatureFlags2Mask()
          | TR_POPCNT
          | TR_AESNI
          | TR_OSXSAVE
-         | TR_AVX;
+         | TR_AVX
+         | TR_FMA;
    }
 
 enum TR_X86ProcessorFeatures8

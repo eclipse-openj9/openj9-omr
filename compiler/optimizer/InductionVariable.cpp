@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1639,7 +1639,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
             (!parent->getOpCode().isShift() || node != parent->getSecondChild()) &&
             !parent->getOpCode().isCall() &&
             !parent->getOpCode().isConversion() &&
-            parent->getOpCodeValue() != TR::lternary)
+            parent->getOpCodeValue() != TR::lselect)
             {
             TR::Node *i2lNode = TR::Node::create(TR::i2l, 1, node);
             node->decReferenceCount();

@@ -408,13 +408,13 @@
     TR::TreeEvaluator::iRegStoreEvaluator, // TR::sRegStore		// Store short global register
     TR::TreeEvaluator::iRegStoreEvaluator, // TR::bRegStore		// Store byte global register
     TR::TreeEvaluator::GlRegDepsEvaluator, // TR::GlRegDeps		// Global Register Dependency List
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iternaryEvaluator ,	// TR::iternary		// Ternary Operator:  Based on the result of the first child; take the value of the
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lternaryEvaluator ,	// TR::lternary		//   second (first child evaluates to true) or third(first child evaluates to false) child
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bternaryEvaluator ,	// TR::bternary   
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sternaryEvaluator ,	// TR::sternary   
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::aternaryEvaluator ,	// TR::aternary   
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fternaryEvaluator ,	// TR::fternary   
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dternaryEvaluator ,	// TR::dternary   
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iselectEvaluator ,	// TR::iselect		// Select Operator:  Based on the result of the first child; take the value of the
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lselectEvaluator ,	// TR::lselect		//   second (first child evaluates to true) or third(first child evaluates to false) child
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bselectEvaluator ,	// TR::bselect   
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sselectEvaluator ,	// TR::sselect   
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::aselectEvaluator ,	// TR::aselect   
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fselectEvaluator ,	// TR::fselect   
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dselectEvaluator ,	// TR::dselect   
     TR::TreeEvaluator::treetopEvaluator, // TR::treetop		// tree top to anchor subtrees with side-effects
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::MethodEnterHookEvaluator ,	// TR::MethodEnterHook	// called after a frame is built; temps initialized; and monitor acquired (if necessary)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::MethodExitHookEvaluator ,	// TR::MethodExitHook	// called immediately before returning; frame not yet collapsed; monitor released (if necessary)
@@ -447,7 +447,7 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vicmpanyltEvaluator ,	// TR::vicmpanylt	// vector integer any less than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vicmpanyleEvaluator ,	// TR::vicmpanyle	// vector integer any less equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vnotEvaluator ,	// TR::vnot		// vector boolean not
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vselectEvaluator ,	// TR::vselect		// vector select
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vbitselectEvaluator ,	// TR::vbitselect		// vector bit select
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vpermEvaluator ,	// TR::vperm		// vector permute
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vsplatsEvaluator ,	// TR::vsplats		// vector splats
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vdmergelEvaluator ,	// TR::vdmergel		// vector double merge low
@@ -514,7 +514,7 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vreturnEvaluator ,	// TR::vreturn		// return a vector
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vcallEvaluator ,	// TR::vcall		// direct call returning a vector
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vcalliEvaluator ,	// TR::vcalli		// indirect call returning a vector
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vternaryEvaluator ,	// TR::vternary		// vector ternary operator
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vselectEvaluator ,	// TR::vselect		// vector select operator
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::v2vEvaluator ,	// TR::v2v		// vector to vector conversion. preserves bit pattern (noop); only changes datatype
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vl2vdEvaluator ,	// TR::vl2vd		// vector to vector conversion. converts each long element to double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vconstEvaluator ,	// TR::vconst		// vector constant

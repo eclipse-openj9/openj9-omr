@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -335,9 +335,9 @@ OMR::CodeGenerator::lowerTreeIfNeeded(
        node->getSymbol()->isParm() && node->getSymbol()->isCollectedReference())
       node->getSymbol()->setParmHasToBeOnStack();
 
-   if (node->getOpCode().isTernary())
+   if (node->getOpCode().isSelect())
       {
-      self()->rematerializeCmpUnderTernary(node);
+      self()->rematerializeCmpUnderSelect(node);
       }
 
    }
@@ -708,7 +708,7 @@ OMR::CodeGenerator::insertDebugCounters()
 
 
 
-void OMR::CodeGenerator::rematerializeCmpUnderTernary(TR::Node *node)
+void OMR::CodeGenerator::rematerializeCmpUnderSelect(TR::Node *node)
    {
    if (node->getFirstChild()->getOpCode().isBooleanCompare() && node->getFirstChild()->getReferenceCount() > 1)
       {

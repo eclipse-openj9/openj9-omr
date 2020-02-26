@@ -345,7 +345,7 @@ static bool containsIndirectOperationImpl(TR::Node *node, TR::NodeChecklist *vis
 
    if (!(node->getOpCode().isArithmetic() && !node->getOpCode().isDiv())
        && !node->getOpCode().isLoadVarDirect()
-       && !node->getOpCode().isTernary()
+       && !node->getOpCode().isSelect()
        && !node->getOpCode().isLoadConst())
       return true;
 
@@ -369,7 +369,7 @@ static bool containsIndirectOperation(TR::Compilation *comp, TR::TreeTop *treeto
 
 bool OMR::CFGSimplifier::simplifyCondStoreSequence(bool needToDuplicateTree)
    {
-   if (!(comp()->cg()->getSupportsTernary()))
+   if (!(comp()->cg()->getSupportsSelect()))
       return false;
 
    if (trace())
@@ -415,7 +415,7 @@ bool OMR::CFGSimplifier::simplifyCondStoreSequence(bool needToDuplicateTree)
    if (treeCursor->getNode()->getOpCodeValue() != TR::BBEnd || count < 2)
       return false;
 
-   if (!performTransformation(comp(), "%sReplace conditional stores in block_%d with stores of appropriate ternary at nodes\n", OPT_DETAILS, toCheck->getNumber()))
+   if (!performTransformation(comp(), "%sReplace conditional stores in block_%d with stores of appropriate select at nodes\n", OPT_DETAILS, toCheck->getNumber()))
       return false;
 
    _cfg->invalidateStructure();
@@ -432,9 +432,9 @@ bool OMR::CFGSimplifier::simplifyCondStoreSequence(bool needToDuplicateTree)
       TR::Node *trueValue = triangle1 ? TR::Node::createWithSymRef(comp()->il.opCodeForDirectLoad(storeNode->getDataType()), 0, storeNode->getSymbolReference()) : (needToDuplicateTree ? storeNode->getFirstChild()->duplicateTree() : storeNode->getFirstChild());
       TR::Node *falseValue = triangle1 ? (needToDuplicateTree ? storeNode->getFirstChild()->duplicateTree() : storeNode->getFirstChild()) : TR::Node::createWithSymRef(comp()->il.opCodeForDirectLoad(storeNode->getDataType()), 0, storeNode->getSymbolReference());
 
-      TR::Node *select = TR::Node::create(storeNode, comp()->il.opCodeForTernarySelect(storeNode->getDataType()), 3);
+      TR::Node *select = TR::Node::create(storeNode, comp()->il.opCodeForSelect(storeNode->getDataType()), 3);
       if (trace())
-         traceMsg(comp(), "Created ternary node n%dn\n", select->getGlobalIndex());
+         traceMsg(comp(), "Created select node n%dn\n", select->getGlobalIndex());
 
       select->setAndIncChild(0, condition);
       select->setAndIncChild(1, trueValue);
@@ -474,7 +474,7 @@ bool OMR::CFGSimplifier::simplifyCondStoreSequence(bool needToDuplicateTree)
 
 bool OMR::CFGSimplifier::simplifySimpleStore(bool needToDuplicateTree)
    {
-   if (!(comp()->cg()->getSupportsTernary()))
+   if (!(comp()->cg()->getSupportsSelect()))
       return false;
 
    if (trace())
@@ -586,12 +586,12 @@ bool OMR::CFGSimplifier::simplifySimpleStore(bool needToDuplicateTree)
    if (trace())
       traceMsg(comp(), "   StoreNode symRef checks out\n");
 
-   if (!performTransformation(comp(), "%sReplace conditional store with store of an appropriate ternary at node [%p]\n", OPT_DETAILS, compareNode))
+   if (!performTransformation(comp(), "%sReplace conditional store with store of an appropriate select at node [%p]\n", OPT_DETAILS, compareNode))
       return false;
 
    _cfg->invalidateStructure();
 
-   TR::Node *select = TR::Node::create(storeNode, comp()->il.opCodeForTernarySelect(storeNode->getDataType()), 3);
+   TR::Node *select = TR::Node::create(storeNode, comp()->il.opCodeForSelect(storeNode->getDataType()), 3);
    select->setAndIncChild(0,
       TR::Node::create(compareNode, compareNode->getOpCode().convertIfCmpToCmp(), 2,
          compareNode->getFirstChild(),
@@ -606,7 +606,7 @@ bool OMR::CFGSimplifier::simplifySimpleStore(bool needToDuplicateTree)
       cmov->getNode()->setHeapificationStore(true);
 
    if (trace())
-      traceMsg(comp(), "End simplifySimpleStore. New ternary node is n%dn\n", select->getGlobalIndex());
+      traceMsg(comp(), "End simplifySimpleStore. New select node is n%dn\n", select->getGlobalIndex());
 
    TR::Block *dest;
    if (diamond) {
@@ -777,7 +777,7 @@ static bool checkEquivalentIndirectLoadChain(TR::Node *lhs, TR::Node *rhs)
 //
 bool OMR::CFGSimplifier::simplifyBooleanStore(bool needToDuplicateTree)
    {
-   if (!(comp()->cg()->getSupportsTernary()))
+   if (!(comp()->cg()->getSupportsSelect()))
       return false;
 
    if (trace())

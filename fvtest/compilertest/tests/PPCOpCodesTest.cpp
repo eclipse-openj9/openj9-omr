@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -77,11 +77,11 @@ PPCOpCodesTest::compileMemoryOperationTestMethods()
    }
 
 void
-PPCOpCodesTest::compileTernaryTestMethods()
+PPCOpCodesTest::compileSelectTestMethods()
    {
    int32_t rc = 0;
-   compileOpCodeMethod(_bternary, _numberOfTernaryArgs, TR::bternary, "bTernary", _argTypesTernaryByte, TR::Int8, rc);
-   compileOpCodeMethod(_sternary, _numberOfTernaryArgs, TR::sternary, "sTernary", _argTypesTernaryShort, TR::Int16, rc);
+   compileOpCodeMethod(_bselect, _numberOfSelectArgs, TR::bselect, "bselect", _argTypesSelectByte, TR::Int8, rc);
+   compileOpCodeMethod(_sselect, _numberOfSelectArgs, TR::sselect, "sselect", _argTypesSelectShort, TR::Int16, rc);
    }
 
 void
@@ -156,7 +156,7 @@ PPCOpCodesTest::compileAddressTestMethods()
    compileOpCodeMethod(_ifacmpge, _numberOfBinaryArgs, TR::ifacmpge, "ifacmpge", _argTypesBinaryAddress, TR::Int32, rc);
    compileOpCodeMethod(_ifacmple, _numberOfBinaryArgs, TR::ifacmple, "ifacmple", _argTypesBinaryAddress, TR::Int32, rc);
    compileOpCodeMethod(_ifacmpgt, _numberOfBinaryArgs, TR::ifacmpgt, "ifacmpgt", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_aternary, _numberOfTernaryArgs, TR::aternary, "aternary", _argTypesTernaryAddress, TR::Address, rc);
+   compileOpCodeMethod(_aselect, _numberOfSelectArgs, TR::aselect, "aselect", _argTypesSelectAddress, TR::Address, rc);
 
    }
 
@@ -1452,7 +1452,7 @@ PPCOpCodesTest::invokeAddressTests()
       (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
       };
 
-   int32_t aternaryChild1Arr[] =
+   int32_t aselectChild1Arr[] =
       {
       INT_MAXIMUM,
       INT_MAXIMUM,
@@ -1470,7 +1470,7 @@ PPCOpCodesTest::invokeAddressTests()
       INT_ZERO,
       INT_ZERO
       };
-   uintptrj_t aternaryArr[][2] =
+   uintptrj_t aselectArr[][2] =
       {
       (uintptrj_t) &INT_MAXIMUM, (uintptrj_t) &INT_ZERO,
       (uintptrj_t) &INT_POS,     (uintptrj_t) &INT_MAXIMUM,
@@ -1501,7 +1501,7 @@ PPCOpCodesTest::invokeAddressTests()
    unsignedSignatureCharJ_L_testMethodType *lu2aConst = 0;
 
    signatureCharLL_I_testMethodType *aCompareConst = 0;
-   signatureCharILL_L_testMethodType *aTernaryConst = 0;
+   signatureCharILL_L_testMethodType *aSelectConst = 0;
 
 
 
@@ -1847,61 +1847,61 @@ PPCOpCodesTest::invokeAddressTests()
       OMR_CT_EXPECT_EQ(aCompareConst, compareLE(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]), aCompareConst(ifacmpleDataArr[i][0], ADDRESS_PLACEHOLDER_2));
       }
 
-   TR_ASSERT((sizeof(aternaryChild1Arr) / sizeof(aternaryChild1Arr[0])) == sizeof(aternaryArr) / sizeof(aternaryArr[0]),
+   TR_ASSERT((sizeof(aselectChild1Arr) / sizeof(aselectChild1Arr[0])) == sizeof(aselectArr) / sizeof(aselectArr[0]),
          "Child1 array size is not equal to Child2 and Child3 array");
-   testCaseNum = sizeof(aternaryChild1Arr) / sizeof(aternaryChild1Arr[0]);
+   testCaseNum = sizeof(aselectChild1Arr) / sizeof(aselectChild1Arr[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_aternary, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), _aternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]));
+      OMR_CT_EXPECT_EQ(_aselect, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), _aselect(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]));
 
-      sprintf(resolvedMethodName, "aTernaryConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst,
-            _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 6, 1, &aternaryChild1Arr[i], 2, &aternaryArr[i][0], 3, &aternaryArr[i][1]);
-      OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(INT_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2, ADDRESS_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "aSelectConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aSelectConst,
+            _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 6, 1, &aselectChild1Arr[i], 2, &aselectArr[i][0], 3, &aselectArr[i][1]);
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(INT_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2, ADDRESS_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "aTernaryConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst,
-            _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 4, 1, &aternaryChild1Arr[i], 2, &aternaryArr[i][0]);
-      OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(INT_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2, aternaryArr[i][1]));
+      sprintf(resolvedMethodName, "aSelectConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aSelectConst,
+            _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 4, 1, &aselectChild1Arr[i], 2, &aselectArr[i][0]);
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(INT_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2, aselectArr[i][1]));
 
-      sprintf(resolvedMethodName, "aTernaryConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst,
-            _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 4, 1, &aternaryChild1Arr[i], 3, &aternaryArr[i][1]);
-      OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(INT_PLACEHOLDER_1, aternaryArr[i][0], ADDRESS_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "aSelectConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aSelectConst,
+            _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 4, 1, &aselectChild1Arr[i], 3, &aselectArr[i][1]);
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(INT_PLACEHOLDER_1, aselectArr[i][0], ADDRESS_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "aTernaryConst4_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst,
-            _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 4, 2, &aternaryArr[i][0], 3, &aternaryArr[i][1]);
-      OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(aternaryChild1Arr[i], ADDRESS_PLACEHOLDER_2, ADDRESS_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "aSelectConst4_TestCase%d", i + 1);
+      compileOpCodeMethod(aSelectConst,
+            _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 4, 2, &aselectArr[i][0], 3, &aselectArr[i][1]);
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(aselectChild1Arr[i], ADDRESS_PLACEHOLDER_2, ADDRESS_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "aTernaryConst5_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst,
-            _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 2, 1, &aternaryChild1Arr[i]);
-      OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(INT_PLACEHOLDER_1, aternaryArr[i][0], aternaryArr[i][1]));
+      sprintf(resolvedMethodName, "aSelectConst5_TestCase%d", i + 1);
+      compileOpCodeMethod(aSelectConst,
+            _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 2, 1, &aselectChild1Arr[i]);
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(INT_PLACEHOLDER_1, aselectArr[i][0], aselectArr[i][1]));
 
-      sprintf(resolvedMethodName, "aTernaryConst6_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst,
-            _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 2, 2, &aternaryArr[i][0]);
-      OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(aternaryChild1Arr[i], ADDRESS_PLACEHOLDER_1, aternaryArr[i][1]));
+      sprintf(resolvedMethodName, "aSelectConst6_TestCase%d", i + 1);
+      compileOpCodeMethod(aSelectConst,
+            _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 2, 2, &aselectArr[i][0]);
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(aselectChild1Arr[i], ADDRESS_PLACEHOLDER_1, aselectArr[i][1]));
 
-      sprintf(resolvedMethodName, "aTernaryConst7_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst,
-            _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 2, 3, &aternaryArr[i][1]);
-      OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(aternaryChild1Arr[i], aternaryArr[i][0], ADDRESS_PLACEHOLDER_1));
+      sprintf(resolvedMethodName, "aSelectConst7_TestCase%d", i + 1);
+      compileOpCodeMethod(aSelectConst,
+            _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 2, 3, &aselectArr[i][1]);
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(aselectChild1Arr[i], aselectArr[i][0], ADDRESS_PLACEHOLDER_1));
       }
 
    }
 
 void
-PPCOpCodesTest::invokeTernaryTests()
+PPCOpCodesTest::invokeSelectTests()
    {
    int32_t rc = 0;
-   int32_t bternaryChild1Arr[] =
+   int32_t bselectChild1Arr[] =
       {
       INT_MAXIMUM, INT_POS, INT_MAXIMUM, INT_MINIMUM, INT_ZERO, INT_ZERO, INT_MINIMUM, INT_POS, INT_NEG,
       INT_NEG, INT_NEG, INT_ZERO, INT_POS, INT_MAXIMUM, INT_NEG, INT_ZERO, INT_MINIMUM, INT_POS
       };
-   int32_t sternaryChild1Arr[] =
+   int32_t sselectChild1Arr[] =
       {
       INT_MAXIMUM, INT_MINIMUM, INT_POS, INT_ZERO, INT_NEG, INT_MINIMUM, INT_POS, INT_MAXIMUM, INT_ZERO,
       INT_NEG, INT_NEG, INT_ZERO, INT_POS, INT_NEG, INT_ZERO, INT_MINIMUM, INT_MAXIMUM, INT_POS
@@ -1955,93 +1955,93 @@ PPCOpCodesTest::invokeTernaryTests()
    uint32_t testCaseNumCheck = 0;
    uint32_t testCaseNum = 0;
 
-   signatureCharIBB_B_testMethodType * bTernaryConst = 0;
-   signatureCharISS_S_testMethodType * sTernaryConst = 0;
+   signatureCharIBB_B_testMethodType * bSelectConst = 0;
+   signatureCharISS_S_testMethodType * sSelectConst = 0;
 
-   testCaseNum = sizeof(bternaryChild1Arr) / sizeof(bternaryChild1Arr[0]);
+   testCaseNum = sizeof(bselectChild1Arr) / sizeof(bselectChild1Arr[0]);
    testCaseNumCheck = sizeof(byteDataArr) / sizeof(byteDataArr[0]);
-   TR_ASSERT( (testCaseNum > 0) && (testCaseNum == testCaseNumCheck), "There is problem in bternary input array");
+   TR_ASSERT( (testCaseNum > 0) && (testCaseNum == testCaseNumCheck), "There is problem in bselect input array");
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_bternary, ternary(bternaryChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), _bternary(bternaryChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(_bselect, select(bselectChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), _bselect(bselectChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "bTernaryConst1_Testcase%d", i + 1);
-      compileOpCodeMethod(bTernaryConst, _numberOfTernaryArgs, TR::bternary,
-            resolvedMethodName, _argTypesTernaryByte, TR::Int8, rc, 6, 1, &bternaryChild1Arr[i], 2, &byteDataArr[i][0], 3, &byteDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(bTernaryConst, ternary(bternaryChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bTernaryConst(BYTE_PLACEHOLDER_1, BYTE_PLACEHOLDER_2, BYTE_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "bSelectConst1_Testcase%d", i + 1);
+      compileOpCodeMethod(bSelectConst, _numberOfSelectArgs, TR::bselect,
+            resolvedMethodName, _argTypesSelectByte, TR::Int8, rc, 6, 1, &bselectChild1Arr[i], 2, &byteDataArr[i][0], 3, &byteDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(bSelectConst, select(bselectChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bSelectConst(BYTE_PLACEHOLDER_1, BYTE_PLACEHOLDER_2, BYTE_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "bTernaryConst2_Testcase%d", i + 1);
-      compileOpCodeMethod(bTernaryConst, _numberOfTernaryArgs, TR::bternary,
-            resolvedMethodName, _argTypesTernaryByte, TR::Int8, rc, 4, 1, &bternaryChild1Arr[i], 2, &byteDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(bTernaryConst, ternary(bternaryChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bTernaryConst(BYTE_PLACEHOLDER_1, BYTE_PLACEHOLDER_2, byteDataArr[i][1]));
+      sprintf(resolvedMethodName, "bSelectConst2_Testcase%d", i + 1);
+      compileOpCodeMethod(bSelectConst, _numberOfSelectArgs, TR::bselect,
+            resolvedMethodName, _argTypesSelectByte, TR::Int8, rc, 4, 1, &bselectChild1Arr[i], 2, &byteDataArr[i][0]);
+      OMR_CT_EXPECT_EQ(bSelectConst, select(bselectChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bSelectConst(BYTE_PLACEHOLDER_1, BYTE_PLACEHOLDER_2, byteDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "bTernaryConst3_Testcase%d", i + 1);
-      compileOpCodeMethod(bTernaryConst, _numberOfTernaryArgs, TR::bternary,
-            resolvedMethodName, _argTypesTernaryByte, TR::Int8, rc, 4, 1, &bternaryChild1Arr[i], 3, &byteDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(bTernaryConst, ternary(bternaryChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bTernaryConst(BYTE_PLACEHOLDER_1, byteDataArr[i][0], BYTE_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "bSelectConst3_Testcase%d", i + 1);
+      compileOpCodeMethod(bSelectConst, _numberOfSelectArgs, TR::bselect,
+            resolvedMethodName, _argTypesSelectByte, TR::Int8, rc, 4, 1, &bselectChild1Arr[i], 3, &byteDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(bSelectConst, select(bselectChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bSelectConst(BYTE_PLACEHOLDER_1, byteDataArr[i][0], BYTE_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "bTernaryConst4_Testcase%d", i + 1);
-      compileOpCodeMethod(bTernaryConst, _numberOfTernaryArgs, TR::bternary,
-            resolvedMethodName, _argTypesTernaryByte, TR::Int8, rc, 4, 2, &byteDataArr[i][0], 3, &byteDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(bTernaryConst, ternary(bternaryChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bTernaryConst(bternaryChild1Arr[i], BYTE_PLACEHOLDER_2, BYTE_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "bSelectConst4_Testcase%d", i + 1);
+      compileOpCodeMethod(bSelectConst, _numberOfSelectArgs, TR::bselect,
+            resolvedMethodName, _argTypesSelectByte, TR::Int8, rc, 4, 2, &byteDataArr[i][0], 3, &byteDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(bSelectConst, select(bselectChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bSelectConst(bselectChild1Arr[i], BYTE_PLACEHOLDER_2, BYTE_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "bTernaryConst5_Testcase%d", i + 1);
-      compileOpCodeMethod(bTernaryConst, _numberOfTernaryArgs, TR::bternary,
-            resolvedMethodName, _argTypesTernaryByte, TR::Int8, rc, 2, 1, &bternaryChild1Arr[i]);
-      OMR_CT_EXPECT_EQ(bTernaryConst, ternary(bternaryChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bTernaryConst(BYTE_PLACEHOLDER_1, byteDataArr[i][0], byteDataArr[i][1]));
+      sprintf(resolvedMethodName, "bSelectConst5_Testcase%d", i + 1);
+      compileOpCodeMethod(bSelectConst, _numberOfSelectArgs, TR::bselect,
+            resolvedMethodName, _argTypesSelectByte, TR::Int8, rc, 2, 1, &bselectChild1Arr[i]);
+      OMR_CT_EXPECT_EQ(bSelectConst, select(bselectChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bSelectConst(BYTE_PLACEHOLDER_1, byteDataArr[i][0], byteDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "bTernaryConst6_Testcase%d", i + 1);
-      compileOpCodeMethod(bTernaryConst, _numberOfTernaryArgs, TR::bternary,
-            resolvedMethodName, _argTypesTernaryByte, TR::Int8, rc, 2, 2, &byteDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(bTernaryConst, ternary(bternaryChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bTernaryConst(bternaryChild1Arr[i], BYTE_PLACEHOLDER_1, byteDataArr[i][1]));
+      sprintf(resolvedMethodName, "bSelectConst6_Testcase%d", i + 1);
+      compileOpCodeMethod(bSelectConst, _numberOfSelectArgs, TR::bselect,
+            resolvedMethodName, _argTypesSelectByte, TR::Int8, rc, 2, 2, &byteDataArr[i][0]);
+      OMR_CT_EXPECT_EQ(bSelectConst, select(bselectChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bSelectConst(bselectChild1Arr[i], BYTE_PLACEHOLDER_1, byteDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "bTernaryConst7_Testcase%d", i + 1);
-      compileOpCodeMethod(bTernaryConst, _numberOfTernaryArgs, TR::bternary,
-            resolvedMethodName, _argTypesTernaryByte, TR::Int8, rc, 2, 3, &byteDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(bTernaryConst, ternary(bternaryChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bTernaryConst(bternaryChild1Arr[i], byteDataArr[i][0], BYTE_PLACEHOLDER_1));
+      sprintf(resolvedMethodName, "bSelectConst7_Testcase%d", i + 1);
+      compileOpCodeMethod(bSelectConst, _numberOfSelectArgs, TR::bselect,
+            resolvedMethodName, _argTypesSelectByte, TR::Int8, rc, 2, 3, &byteDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(bSelectConst, select(bselectChild1Arr[i], byteDataArr[i][0], byteDataArr[i][1]), bSelectConst(bselectChild1Arr[i], byteDataArr[i][0], BYTE_PLACEHOLDER_1));
       }
 
-   testCaseNum = sizeof(sternaryChild1Arr) / sizeof(sternaryChild1Arr[0]);
+   testCaseNum = sizeof(sselectChild1Arr) / sizeof(sselectChild1Arr[0]);
    testCaseNumCheck = sizeof(shortDataArr) / sizeof(shortDataArr[0]);
-   TR_ASSERT( (testCaseNum > 0) && (testCaseNum == testCaseNumCheck), "There is problem in sternary input array");
+   TR_ASSERT( (testCaseNum > 0) && (testCaseNum == testCaseNumCheck), "There is problem in sselect input array");
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_sternary, ternary(sternaryChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), _sternary(sternaryChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(_sselect, select(sselectChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), _sselect(sselectChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "sTernaryConst1_Testcase%d", i + 1);
-      compileOpCodeMethod(sTernaryConst, _numberOfTernaryArgs, TR::sternary,
-            resolvedMethodName, _argTypesTernaryShort, TR::Int16, rc, 6, 1, &sternaryChild1Arr[i], 2, &shortDataArr[i][0], 3, &shortDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(sTernaryConst, ternary(sternaryChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sTernaryConst(SHORT_PLACEHOLDER_1, SHORT_PLACEHOLDER_2, SHORT_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "sSelectConst1_Testcase%d", i + 1);
+      compileOpCodeMethod(sSelectConst, _numberOfSelectArgs, TR::sselect,
+            resolvedMethodName, _argTypesSelectShort, TR::Int16, rc, 6, 1, &sselectChild1Arr[i], 2, &shortDataArr[i][0], 3, &shortDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(sSelectConst, select(sselectChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sSelectConst(SHORT_PLACEHOLDER_1, SHORT_PLACEHOLDER_2, SHORT_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "sTernaryConst2_Testcase%d", i + 1);
-      compileOpCodeMethod(sTernaryConst, _numberOfTernaryArgs, TR::sternary,
-            resolvedMethodName, _argTypesTernaryShort, TR::Int16, rc, 4, 1, &sternaryChild1Arr[i], 2, &shortDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(sTernaryConst, ternary(sternaryChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sTernaryConst(SHORT_PLACEHOLDER_1, SHORT_PLACEHOLDER_2, shortDataArr[i][1]));
+      sprintf(resolvedMethodName, "sSelectConst2_Testcase%d", i + 1);
+      compileOpCodeMethod(sSelectConst, _numberOfSelectArgs, TR::sselect,
+            resolvedMethodName, _argTypesSelectShort, TR::Int16, rc, 4, 1, &sselectChild1Arr[i], 2, &shortDataArr[i][0]);
+      OMR_CT_EXPECT_EQ(sSelectConst, select(sselectChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sSelectConst(SHORT_PLACEHOLDER_1, SHORT_PLACEHOLDER_2, shortDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "sTernaryConst3_Testcase%d", i + 1);
-      compileOpCodeMethod(sTernaryConst, _numberOfTernaryArgs, TR::sternary,
-            resolvedMethodName, _argTypesTernaryShort, TR::Int16, rc, 4, 1, &sternaryChild1Arr[i], 3, &shortDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(sTernaryConst, ternary(sternaryChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sTernaryConst(SHORT_PLACEHOLDER_1, shortDataArr[i][0], SHORT_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "sSelectConst3_Testcase%d", i + 1);
+      compileOpCodeMethod(sSelectConst, _numberOfSelectArgs, TR::sselect,
+            resolvedMethodName, _argTypesSelectShort, TR::Int16, rc, 4, 1, &sselectChild1Arr[i], 3, &shortDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(sSelectConst, select(sselectChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sSelectConst(SHORT_PLACEHOLDER_1, shortDataArr[i][0], SHORT_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "sTernaryConst4_Testcase%d", i + 1);
-      compileOpCodeMethod(sTernaryConst, _numberOfTernaryArgs, TR::sternary,
-            resolvedMethodName, _argTypesTernaryShort, TR::Int16, rc, 4, 2, &shortDataArr[i][0], 3, &shortDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(sTernaryConst, ternary(sternaryChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sTernaryConst(sternaryChild1Arr[i], SHORT_PLACEHOLDER_2, SHORT_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "sSelectConst4_Testcase%d", i + 1);
+      compileOpCodeMethod(sSelectConst, _numberOfSelectArgs, TR::sselect,
+            resolvedMethodName, _argTypesSelectShort, TR::Int16, rc, 4, 2, &shortDataArr[i][0], 3, &shortDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(sSelectConst, select(sselectChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sSelectConst(sselectChild1Arr[i], SHORT_PLACEHOLDER_2, SHORT_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "sTernaryConst5_Testcase%d", i + 1);
-      compileOpCodeMethod(sTernaryConst, _numberOfTernaryArgs, TR::sternary,
-            resolvedMethodName, _argTypesTernaryShort, TR::Int16, rc, 2, 1, &sternaryChild1Arr[i]);
-      OMR_CT_EXPECT_EQ(sTernaryConst, ternary(sternaryChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sTernaryConst(SHORT_PLACEHOLDER_1, shortDataArr[i][0], shortDataArr[i][1]));
+      sprintf(resolvedMethodName, "sSelectConst5_Testcase%d", i + 1);
+      compileOpCodeMethod(sSelectConst, _numberOfSelectArgs, TR::sselect,
+            resolvedMethodName, _argTypesSelectShort, TR::Int16, rc, 2, 1, &sselectChild1Arr[i]);
+      OMR_CT_EXPECT_EQ(sSelectConst, select(sselectChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sSelectConst(SHORT_PLACEHOLDER_1, shortDataArr[i][0], shortDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "sTernaryConst6_Testcase%d", i + 1);
-      compileOpCodeMethod(sTernaryConst, _numberOfTernaryArgs, TR::sternary,
-            resolvedMethodName, _argTypesTernaryShort, TR::Int16, rc, 2, 2, &shortDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(sTernaryConst, ternary(sternaryChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sTernaryConst(sternaryChild1Arr[i], SHORT_PLACEHOLDER_1, shortDataArr[i][1]));
+      sprintf(resolvedMethodName, "sSelectConst6_Testcase%d", i + 1);
+      compileOpCodeMethod(sSelectConst, _numberOfSelectArgs, TR::sselect,
+            resolvedMethodName, _argTypesSelectShort, TR::Int16, rc, 2, 2, &shortDataArr[i][0]);
+      OMR_CT_EXPECT_EQ(sSelectConst, select(sselectChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sSelectConst(sselectChild1Arr[i], SHORT_PLACEHOLDER_1, shortDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "sTernaryConst7_Testcase%d", i + 1);
-      compileOpCodeMethod(sTernaryConst, _numberOfTernaryArgs, TR::sternary,
-            resolvedMethodName, _argTypesTernaryShort, TR::Int16, rc, 2, 3, &shortDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(sTernaryConst, ternary(sternaryChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sTernaryConst(sternaryChild1Arr[i], shortDataArr[i][0], SHORT_PLACEHOLDER_1));
+      sprintf(resolvedMethodName, "sSelectConst7_Testcase%d", i + 1);
+      compileOpCodeMethod(sSelectConst, _numberOfSelectArgs, TR::sselect,
+            resolvedMethodName, _argTypesSelectShort, TR::Int16, rc, 2, 3, &shortDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(sSelectConst, select(sselectChild1Arr[i], shortDataArr[i][0], shortDataArr[i][1]), sSelectConst(sselectChild1Arr[i], shortDataArr[i][0], SHORT_PLACEHOLDER_1));
       }
    }
 
@@ -4431,32 +4431,32 @@ PPCOpCodesTest::invokeDisabledBitwiseTests()
    }
 
 void
-PPCOpCodesTest::compileDisabledTernaryTestMethods()
+PPCOpCodesTest::compileDisabledSelectTestMethods()
    {
    int32_t rc = 0;
    //Jazz103 Work Item 109979
-   compileOpCodeMethod(_fternary, _numberOfTernaryArgs, TR::fternary, "fTernary", _argTypesTernaryFloat, TR::Float, rc);
-   compileOpCodeMethod(_dternary, _numberOfTernaryArgs, TR::dternary, "dTernary", _argTypesTernaryDouble, TR::Double, rc);
-   compileOpCodeMethod(_lternary, _numberOfTernaryArgs, TR::lternary, "lTernary", _argTypesTernaryLong, TR::Int64, rc);
+   compileOpCodeMethod(_fselect, _numberOfSelectArgs, TR::fselect, "fSelect", _argTypesSelectFloat, TR::Float, rc);
+   compileOpCodeMethod(_dselect, _numberOfSelectArgs, TR::dselect, "dSelect", _argTypesSelectDouble, TR::Double, rc);
+   compileOpCodeMethod(_lselect, _numberOfSelectArgs, TR::lselect, "lSelect", _argTypesSelectLong, TR::Int64, rc);
 
    }
 
 void
-PPCOpCodesTest::invokeDisabledTernaryTest()
+PPCOpCodesTest::invokeDisabledSelectTest()
    {
 
    int32_t rc = 0;
-   int32_t fternaryChild1Arr[] =
+   int32_t fselectChild1Arr[] =
       {
       INT_MAXIMUM, INT_POS, INT_MAXIMUM, INT_MINIMUM, INT_ZERO, INT_MINIMUM, INT_POS, INT_ZERO, INT_NEG,
       INT_NEG, INT_ZERO, INT_POS, INT_NEG, INT_POS, INT_NEG, INT_ZERO, INT_MINIMUM, INT_MAXIMUM
       };
-   int32_t dternaryChild1Arr[] =
+   int32_t dselectChild1Arr[] =
       {
       INT_MAXIMUM, INT_ZERO, INT_MAXIMUM, INT_MINIMUM, INT_MINIMUM, INT_POS, INT_ZERO, INT_POS, INT_NEG,
       INT_NEG, INT_ZERO, INT_POS, INT_NEG, INT_ZERO, INT_MAXIMUM, INT_MINIMUM, INT_NEG, INT_POS
       };
-   int32_t lternaryChild1Arr[] =
+   int32_t lselectChild1Arr[] =
       {
       INT_ZERO,INT_MINIMUM,INT_NEG,INT_MAXIMUM,INT_POS,INT_MINIMUM,
       INT_MAXIMUM,INT_POS,INT_ZERO,INT_MAXIMUM,INT_MAXIMUM
@@ -4525,132 +4525,132 @@ PPCOpCodesTest::invokeDisabledTernaryTest()
    uint32_t testCaseNumCheck = 0;
    uint32_t testCaseNum = 0;
 
-   signatureCharIJJ_J_testMethodType * lTernaryConst = 0;
-   signatureCharIFF_F_testMethodType * fTernaryConst = 0;
-   signatureCharIDD_D_testMethodType * dTernaryConst = 0;
+   signatureCharIJJ_J_testMethodType * lSelectConst = 0;
+   signatureCharIFF_F_testMethodType * fSelectConst = 0;
+   signatureCharIDD_D_testMethodType * dSelectConst = 0;
 
 
-   testCaseNum = sizeof(fternaryChild1Arr) / sizeof(fternaryChild1Arr[0]);
+   testCaseNum = sizeof(fselectChild1Arr) / sizeof(fselectChild1Arr[0]);
    testCaseNumCheck = sizeof(floatDataArr) / sizeof(floatDataArr[0]);
-   TR_ASSERT( (testCaseNum > 0) && (testCaseNum == testCaseNumCheck), "There is problem in fternary input array");
+   TR_ASSERT( (testCaseNum > 0) && (testCaseNum == testCaseNumCheck), "There is problem in fselect input array");
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_fternary, ternary(fternaryChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), _fternary(fternaryChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(_fselect, select(fselectChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), _fselect(fselectChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "fTernaryConst1_Testcase%d", i + 1);
-      compileOpCodeMethod(fTernaryConst, _numberOfTernaryArgs, TR::fternary,
-            resolvedMethodName, _argTypesTernaryFloat, TR::Float, rc, 6, 1, &fternaryChild1Arr[i], 2, &floatDataArr[i][0], 3, &floatDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(fTernaryConst, ternary(fternaryChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fTernaryConst(FLOAT_PLACEHOLDER_1, FLOAT_PLACEHOLDER_2, FLOAT_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "fSelectConst1_Testcase%d", i + 1);
+      compileOpCodeMethod(fSelectConst, _numberOfSelectArgs, TR::fselect,
+            resolvedMethodName, _argTypesSelectFloat, TR::Float, rc, 6, 1, &fselectChild1Arr[i], 2, &floatDataArr[i][0], 3, &floatDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(fSelectConst, select(fselectChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fSelectConst(FLOAT_PLACEHOLDER_1, FLOAT_PLACEHOLDER_2, FLOAT_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "fTernaryConst2_Testcase%d", i + 1);
-      compileOpCodeMethod(fTernaryConst, _numberOfTernaryArgs, TR::fternary,
-            resolvedMethodName, _argTypesTernaryFloat, TR::Float, rc, 4, 1, &fternaryChild1Arr[i], 2, &floatDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(fTernaryConst, ternary(fternaryChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fTernaryConst(FLOAT_PLACEHOLDER_1, FLOAT_PLACEHOLDER_2, floatDataArr[i][1]));
+      sprintf(resolvedMethodName, "fSelectConst2_Testcase%d", i + 1);
+      compileOpCodeMethod(fSelectConst, _numberOfSelectArgs, TR::fselect,
+            resolvedMethodName, _argTypesSelectFloat, TR::Float, rc, 4, 1, &fselectChild1Arr[i], 2, &floatDataArr[i][0]);
+      OMR_CT_EXPECT_EQ(fSelectConst, select(fselectChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fSelectConst(FLOAT_PLACEHOLDER_1, FLOAT_PLACEHOLDER_2, floatDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "fTernaryConst3_Testcase%d", i + 1);
-      compileOpCodeMethod(fTernaryConst, _numberOfTernaryArgs, TR::fternary,
-            resolvedMethodName, _argTypesTernaryFloat, TR::Float, rc, 4, 1, &fternaryChild1Arr[i], 3, &floatDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(fTernaryConst, ternary(fternaryChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fTernaryConst(FLOAT_PLACEHOLDER_1, floatDataArr[i][0], FLOAT_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "fSelectConst3_Testcase%d", i + 1);
+      compileOpCodeMethod(fSelectConst, _numberOfSelectArgs, TR::fselect,
+            resolvedMethodName, _argTypesSelectFloat, TR::Float, rc, 4, 1, &fselectChild1Arr[i], 3, &floatDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(fSelectConst, select(fselectChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fSelectConst(FLOAT_PLACEHOLDER_1, floatDataArr[i][0], FLOAT_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "fTernaryConst4_Testcase%d", i + 1);
-      compileOpCodeMethod(fTernaryConst, _numberOfTernaryArgs, TR::fternary,
-            resolvedMethodName, _argTypesTernaryFloat, TR::Float, rc, 4, 2, &floatDataArr[i][0], 3, &floatDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(fTernaryConst, ternary(fternaryChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fTernaryConst(fternaryChild1Arr[i], FLOAT_PLACEHOLDER_2, FLOAT_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "fSelectConst4_Testcase%d", i + 1);
+      compileOpCodeMethod(fSelectConst, _numberOfSelectArgs, TR::fselect,
+            resolvedMethodName, _argTypesSelectFloat, TR::Float, rc, 4, 2, &floatDataArr[i][0], 3, &floatDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(fSelectConst, select(fselectChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fSelectConst(fselectChild1Arr[i], FLOAT_PLACEHOLDER_2, FLOAT_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "fTernaryConst5_Testcase%d", i + 1);
-      compileOpCodeMethod(fTernaryConst, _numberOfTernaryArgs, TR::fternary,
-            resolvedMethodName, _argTypesTernaryFloat, TR::Float, rc, 2, 1, &fternaryChild1Arr[i]);
-      OMR_CT_EXPECT_EQ(fTernaryConst, ternary(fternaryChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fTernaryConst(FLOAT_PLACEHOLDER_1, floatDataArr[i][0], floatDataArr[i][1]));
+      sprintf(resolvedMethodName, "fSelectConst5_Testcase%d", i + 1);
+      compileOpCodeMethod(fSelectConst, _numberOfSelectArgs, TR::fselect,
+            resolvedMethodName, _argTypesSelectFloat, TR::Float, rc, 2, 1, &fselectChild1Arr[i]);
+      OMR_CT_EXPECT_EQ(fSelectConst, select(fselectChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fSelectConst(FLOAT_PLACEHOLDER_1, floatDataArr[i][0], floatDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "fTernaryConst6_Testcase%d", i + 1);
-      compileOpCodeMethod(fTernaryConst, _numberOfTernaryArgs, TR::fternary,
-            resolvedMethodName, _argTypesTernaryFloat, TR::Float, rc, 2, 2, &floatDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(fTernaryConst, ternary(fternaryChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fTernaryConst(fternaryChild1Arr[i], FLOAT_PLACEHOLDER_1, floatDataArr[i][1]));
+      sprintf(resolvedMethodName, "fSelectConst6_Testcase%d", i + 1);
+      compileOpCodeMethod(fSelectConst, _numberOfSelectArgs, TR::fselect,
+            resolvedMethodName, _argTypesSelectFloat, TR::Float, rc, 2, 2, &floatDataArr[i][0]);
+      OMR_CT_EXPECT_EQ(fSelectConst, select(fselectChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fSelectConst(fselectChild1Arr[i], FLOAT_PLACEHOLDER_1, floatDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "fTernaryConst7_Testcase%d", i + 1);
-      compileOpCodeMethod(fTernaryConst, _numberOfTernaryArgs, TR::fternary,
-            resolvedMethodName, _argTypesTernaryFloat, TR::Float, rc, 2, 3, &floatDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(fTernaryConst, ternary(fternaryChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fTernaryConst(fternaryChild1Arr[i], floatDataArr[i][0], FLOAT_PLACEHOLDER_1));
+      sprintf(resolvedMethodName, "fSelectConst7_Testcase%d", i + 1);
+      compileOpCodeMethod(fSelectConst, _numberOfSelectArgs, TR::fselect,
+            resolvedMethodName, _argTypesSelectFloat, TR::Float, rc, 2, 3, &floatDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(fSelectConst, select(fselectChild1Arr[i], floatDataArr[i][0], floatDataArr[i][1]), fSelectConst(fselectChild1Arr[i], floatDataArr[i][0], FLOAT_PLACEHOLDER_1));
       }
 
-   testCaseNum = sizeof(dternaryChild1Arr) / sizeof(dternaryChild1Arr[0]);
+   testCaseNum = sizeof(dselectChild1Arr) / sizeof(dselectChild1Arr[0]);
    testCaseNumCheck = sizeof(doubleDataArr) / sizeof(doubleDataArr[0]);
-   TR_ASSERT( (testCaseNum > 0) && (testCaseNum == testCaseNumCheck), "There is problem in dternary input array");
+   TR_ASSERT( (testCaseNum > 0) && (testCaseNum == testCaseNumCheck), "There is problem in dselect input array");
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_dternary, ternary(dternaryChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), _dternary(dternaryChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(_dselect, select(dselectChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), _dselect(dselectChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "dTernaryConst1_Testcase%d", i + 1);
-      compileOpCodeMethod(dTernaryConst, _numberOfTernaryArgs, TR::dternary,
-            resolvedMethodName, _argTypesTernaryDouble, TR::Double, rc, 6, 1, &dternaryChild1Arr[i], 2, &doubleDataArr[i][0], 3, &doubleDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(dTernaryConst, ternary(dternaryChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dTernaryConst(DOUBLE_PLACEHOLDER_1, DOUBLE_PLACEHOLDER_2, DOUBLE_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "dSelectConst1_Testcase%d", i + 1);
+      compileOpCodeMethod(dSelectConst, _numberOfSelectArgs, TR::dselect,
+            resolvedMethodName, _argTypesSelectDouble, TR::Double, rc, 6, 1, &dselectChild1Arr[i], 2, &doubleDataArr[i][0], 3, &doubleDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(dSelectConst, select(dselectChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dSelectConst(DOUBLE_PLACEHOLDER_1, DOUBLE_PLACEHOLDER_2, DOUBLE_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "dTernaryConst2_Testcase%d", i + 1);
-      compileOpCodeMethod(dTernaryConst, _numberOfTernaryArgs, TR::dternary,
-            resolvedMethodName, _argTypesTernaryDouble, TR::Double, rc, 4, 1, &dternaryChild1Arr[i], 2, &doubleDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(dTernaryConst, ternary(dternaryChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dTernaryConst(DOUBLE_PLACEHOLDER_1, DOUBLE_PLACEHOLDER_2, doubleDataArr[i][1]));
+      sprintf(resolvedMethodName, "dSelectConst2_Testcase%d", i + 1);
+      compileOpCodeMethod(dSelectConst, _numberOfSelectArgs, TR::dselect,
+            resolvedMethodName, _argTypesSelectDouble, TR::Double, rc, 4, 1, &dselectChild1Arr[i], 2, &doubleDataArr[i][0]);
+      OMR_CT_EXPECT_EQ(dSelectConst, select(dselectChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dSelectConst(DOUBLE_PLACEHOLDER_1, DOUBLE_PLACEHOLDER_2, doubleDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "dTernaryConst3_Testcase%d", i + 1);
-      compileOpCodeMethod(dTernaryConst, _numberOfTernaryArgs, TR::dternary,
-            resolvedMethodName, _argTypesTernaryDouble, TR::Double, rc, 4, 1, &dternaryChild1Arr[i], 3, &doubleDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(dTernaryConst, ternary(dternaryChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dTernaryConst(DOUBLE_PLACEHOLDER_1, doubleDataArr[i][0], DOUBLE_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "dSelectConst3_Testcase%d", i + 1);
+      compileOpCodeMethod(dSelectConst, _numberOfSelectArgs, TR::dselect,
+            resolvedMethodName, _argTypesSelectDouble, TR::Double, rc, 4, 1, &dselectChild1Arr[i], 3, &doubleDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(dSelectConst, select(dselectChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dSelectConst(DOUBLE_PLACEHOLDER_1, doubleDataArr[i][0], DOUBLE_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "dTernaryConst4_Testcase%d", i + 1);
-      compileOpCodeMethod(dTernaryConst, _numberOfTernaryArgs, TR::dternary,
-            resolvedMethodName, _argTypesTernaryDouble, TR::Double, rc, 4, 2, &doubleDataArr[i][0], 3, &doubleDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(dTernaryConst, ternary(dternaryChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dTernaryConst(dternaryChild1Arr[i], DOUBLE_PLACEHOLDER_2, DOUBLE_PLACEHOLDER_3));
+      sprintf(resolvedMethodName, "dSelectConst4_Testcase%d", i + 1);
+      compileOpCodeMethod(dSelectConst, _numberOfSelectArgs, TR::dselect,
+            resolvedMethodName, _argTypesSelectDouble, TR::Double, rc, 4, 2, &doubleDataArr[i][0], 3, &doubleDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(dSelectConst, select(dselectChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dSelectConst(dselectChild1Arr[i], DOUBLE_PLACEHOLDER_2, DOUBLE_PLACEHOLDER_3));
 
-      sprintf(resolvedMethodName, "dTernaryConst5_Testcase%d", i + 1);
-      compileOpCodeMethod(dTernaryConst, _numberOfTernaryArgs, TR::dternary,
-            resolvedMethodName, _argTypesTernaryDouble, TR::Double, rc, 2, 1, &dternaryChild1Arr[i]);
-      OMR_CT_EXPECT_EQ(dTernaryConst, ternary(dternaryChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dTernaryConst(DOUBLE_PLACEHOLDER_1, doubleDataArr[i][0], doubleDataArr[i][1]));
+      sprintf(resolvedMethodName, "dSelectConst5_Testcase%d", i + 1);
+      compileOpCodeMethod(dSelectConst, _numberOfSelectArgs, TR::dselect,
+            resolvedMethodName, _argTypesSelectDouble, TR::Double, rc, 2, 1, &dselectChild1Arr[i]);
+      OMR_CT_EXPECT_EQ(dSelectConst, select(dselectChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dSelectConst(DOUBLE_PLACEHOLDER_1, doubleDataArr[i][0], doubleDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "dTernaryConst6_Testcase%d", i + 1);
-      compileOpCodeMethod(dTernaryConst, _numberOfTernaryArgs, TR::dternary,
-            resolvedMethodName, _argTypesTernaryDouble, TR::Double, rc, 2, 2, &doubleDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(dTernaryConst, ternary(dternaryChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dTernaryConst(dternaryChild1Arr[i], DOUBLE_PLACEHOLDER_1, doubleDataArr[i][1]));
+      sprintf(resolvedMethodName, "dSelectConst6_Testcase%d", i + 1);
+      compileOpCodeMethod(dSelectConst, _numberOfSelectArgs, TR::dselect,
+            resolvedMethodName, _argTypesSelectDouble, TR::Double, rc, 2, 2, &doubleDataArr[i][0]);
+      OMR_CT_EXPECT_EQ(dSelectConst, select(dselectChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dSelectConst(dselectChild1Arr[i], DOUBLE_PLACEHOLDER_1, doubleDataArr[i][1]));
 
-      sprintf(resolvedMethodName, "dTernaryConst7_Testcase%d", i + 1);
-      compileOpCodeMethod(dTernaryConst, _numberOfTernaryArgs, TR::dternary,
-            resolvedMethodName, _argTypesTernaryDouble, TR::Double, rc, 2, 3, &doubleDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(dTernaryConst, ternary(dternaryChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dTernaryConst(dternaryChild1Arr[i], doubleDataArr[i][0], DOUBLE_PLACEHOLDER_1));
+      sprintf(resolvedMethodName, "dSelectConst7_Testcase%d", i + 1);
+      compileOpCodeMethod(dSelectConst, _numberOfSelectArgs, TR::dselect,
+            resolvedMethodName, _argTypesSelectDouble, TR::Double, rc, 2, 3, &doubleDataArr[i][1]);
+      OMR_CT_EXPECT_EQ(dSelectConst, select(dselectChild1Arr[i], doubleDataArr[i][0], doubleDataArr[i][1]), dSelectConst(dselectChild1Arr[i], doubleDataArr[i][0], DOUBLE_PLACEHOLDER_1));
       }
 
-   testCaseNum = sizeof(lternaryChild1Arr) / sizeof(lternaryChild1Arr[0]);
+   testCaseNum = sizeof(lselectChild1Arr) / sizeof(lselectChild1Arr[0]);
    testCaseNumCheck = sizeof(longArr) / sizeof(longArr[0]);
-   TR_ASSERT( (testCaseNum > 0) && (testCaseNum == testCaseNumCheck), "There is problem in lternary input array");
+   TR_ASSERT( (testCaseNum > 0) && (testCaseNum == testCaseNumCheck), "There is problem in lselect input array");
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      sprintf(resolvedMethodName, "lTernaryConst%d", i + 1);
-      OMR_CT_EXPECT_EQ(_lternary, ternary(lternaryChild1Arr[i], longArr[i][0], longArr[i][1]), _lternary(lternaryChild1Arr[i], longArr[i][0], longArr[i][1]));
+      sprintf(resolvedMethodName, "lSelectConst%d", i + 1);
+      OMR_CT_EXPECT_EQ(_lselect, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), _lselect(lselectChild1Arr[i], longArr[i][0], longArr[i][1]));
 
-      compileOpCodeMethod(lTernaryConst, _numberOfTernaryArgs, TR::lternary,
-            resolvedMethodName, _argTypesTernaryLong, TR::Int64, rc, 6, 1, &lternaryChild1Arr[i], 2, &longArr[i][0], 3, &longArr[i][1]);
-      OMR_CT_EXPECT_EQ(lTernaryConst, ternary(lternaryChild1Arr[i], longArr[i][0], longArr[i][1]), lTernaryConst(LONG_PLACEHOLDER_1, LONG_PLACEHOLDER_2, LONG_PLACEHOLDER_3));
+      compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
+            resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 6, 1, &lselectChild1Arr[i], 2, &longArr[i][0], 3, &longArr[i][1]);
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, LONG_PLACEHOLDER_2, LONG_PLACEHOLDER_3));
 
-      compileOpCodeMethod(lTernaryConst, _numberOfTernaryArgs, TR::lternary,
-            resolvedMethodName, _argTypesTernaryLong, TR::Int64, rc, 4, 1, &lternaryChild1Arr[i], 2, &longArr[i][0]);
-      OMR_CT_EXPECT_EQ(lTernaryConst, ternary(lternaryChild1Arr[i], longArr[i][0], longArr[i][1]), lTernaryConst(LONG_PLACEHOLDER_1, LONG_PLACEHOLDER_2, longArr[i][1]));
+      compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
+            resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 4, 1, &lselectChild1Arr[i], 2, &longArr[i][0]);
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, LONG_PLACEHOLDER_2, longArr[i][1]));
 
-      compileOpCodeMethod(lTernaryConst, _numberOfTernaryArgs, TR::lternary,
-            resolvedMethodName, _argTypesTernaryLong, TR::Int64, rc, 4, 1, &lternaryChild1Arr[i], 3, &longArr[i][1]);
-      OMR_CT_EXPECT_EQ(lTernaryConst, ternary(lternaryChild1Arr[i], longArr[i][0], longArr[i][1]), lTernaryConst(LONG_PLACEHOLDER_1, longArr[i][0], LONG_PLACEHOLDER_3));
+      compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
+            resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 4, 1, &lselectChild1Arr[i], 3, &longArr[i][1]);
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, longArr[i][0], LONG_PLACEHOLDER_3));
 
-      compileOpCodeMethod(lTernaryConst, _numberOfTernaryArgs, TR::lternary,
-            resolvedMethodName, _argTypesTernaryLong, TR::Int64, rc, 4, 2, &longArr[i][0], 3, &longArr[i][1]);
-      OMR_CT_EXPECT_EQ(lTernaryConst, ternary(lternaryChild1Arr[i], longArr[i][0], longArr[i][1]), lTernaryConst(lternaryChild1Arr[i], LONG_PLACEHOLDER_2, LONG_PLACEHOLDER_3));
+      compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
+            resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 4, 2, &longArr[i][0], 3, &longArr[i][1]);
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(lselectChild1Arr[i], LONG_PLACEHOLDER_2, LONG_PLACEHOLDER_3));
 
-      compileOpCodeMethod(lTernaryConst, _numberOfTernaryArgs, TR::lternary,
-            resolvedMethodName, _argTypesTernaryLong, TR::Int64, rc, 2, 1, &lternaryChild1Arr[i]);
-      OMR_CT_EXPECT_EQ(lTernaryConst, ternary(lternaryChild1Arr[i], longArr[i][0], longArr[i][1]), lTernaryConst(LONG_PLACEHOLDER_1, longArr[i][0], longArr[i][1]));
+      compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
+            resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 2, 1, &lselectChild1Arr[i]);
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, longArr[i][0], longArr[i][1]));
 
-      compileOpCodeMethod(lTernaryConst, _numberOfTernaryArgs, TR::lternary,
-            resolvedMethodName, _argTypesTernaryLong, TR::Int64, rc, 2, 2, &longArr[i][0]);
-      OMR_CT_EXPECT_EQ(lTernaryConst, ternary(lternaryChild1Arr[i], longArr[i][0], longArr[i][1]), lTernaryConst(lternaryChild1Arr[i], LONG_PLACEHOLDER_1, longArr[i][1]));
+      compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
+            resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 2, 2, &longArr[i][0]);
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(lselectChild1Arr[i], LONG_PLACEHOLDER_1, longArr[i][1]));
 
-      compileOpCodeMethod(lTernaryConst, _numberOfTernaryArgs, TR::lternary,
-            resolvedMethodName, _argTypesTernaryLong, TR::Int64, rc, 2, 3, &longArr[i][1]);
-      OMR_CT_EXPECT_EQ(lTernaryConst, ternary(lternaryChild1Arr[i], longArr[i][0], longArr[i][1]), lTernaryConst(lternaryChild1Arr[i], longArr[i][0], LONG_PLACEHOLDER_1));
+      compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
+            resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 2, 3, &longArr[i][1]);
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(lselectChild1Arr[i], longArr[i][0], LONG_PLACEHOLDER_1));
       }
    }
 
@@ -4710,11 +4710,11 @@ TEST(JITPPCOpCodesTest, MemoryOperationTest)
    PPCMemoryOperationTest.invokeMemoryOperationTests();
    }
 
-TEST(JITPPCOpCodesTest, TernaryTest)
+TEST(JITPPCOpCodesTest, SelectTest)
    {
-   ::TestCompiler::PPCOpCodesTest PPCTernaryTest;
-   PPCTernaryTest.compileTernaryTestMethods();
-   PPCTernaryTest.invokeTernaryTests();
+   ::TestCompiler::PPCOpCodesTest PPCSelectTest;
+   PPCSelectTest.compileSelectTestMethods();
+   PPCSelectTest.invokeSelectTests();
    }
 
 TEST(JITPPCOpCodesTest, CompareTest)
@@ -4805,12 +4805,12 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLEBitwiseTest)
    disabledPPCLEBitwiseTest.invokeDisabledBitwiseTests();
    }
 
-TEST(JITPPCOpCodesTest, DISABLED_PPCLETernaryTest)
+TEST(JITPPCOpCodesTest, DISABLED_PPCLESelectTest)
    {
    //Jazz103 Work Item 109979
-   ::TestCompiler::PPCOpCodesTest disabledPPCLETernaryTest;
-   disabledPPCLETernaryTest.compileDisabledTernaryTestMethods();
-   disabledPPCLETernaryTest.invokeDisabledTernaryTest();
+   ::TestCompiler::PPCOpCodesTest disabledPPCLESelectTest;
+   disabledPPCLESelectTest.compileDisabledSelectTestMethods();
+   disabledPPCLESelectTest.invokeDisabledSelectTest();
    }
 
 TEST(JITPPCOpCodesTest, DISABLED_PPCLEDirectCallTest)

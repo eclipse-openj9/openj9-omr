@@ -1711,7 +1711,7 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorBinaryOp(TR::Node *node, TR
    return resReg;
 }
 
-TR::Register *OMR::Power::TreeEvaluator::inlineVectorTernaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op) {
+TR::Register *OMR::Power::TreeEvaluator::inlineVectorBitSelectOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op) {
    TR::Node *firstChild  = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
    TR::Node *thirdChild  = node->getThirdChild();
@@ -2391,22 +2391,22 @@ TR::Register *OMR::Power::TreeEvaluator::vimergeEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::vdmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorTernaryOp(node, cg, TR::InstOpCode::xvmaddadp);
+   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::xvmaddadp);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vdnmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorTernaryOp(node, cg, TR::InstOpCode::xvnmsubadp);
+   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::xvnmsubadp);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vdmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorTernaryOp(node, cg, TR::InstOpCode::xvmsubadp);
+   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::xvmsubadp);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vdselEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorTernaryOp(node, cg, TR::InstOpCode::xxsel);
+   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::xxsel);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vdcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2803,14 +2803,14 @@ TR::Register *OMR::Power::TreeEvaluator::vicmpleEvaluator(TR::Node *node, TR::Co
    return TR::TreeEvaluator::vicmpgeEvaluator(node, cg);
    }
 
-TR::Register *OMR::Power::TreeEvaluator::vselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::Power::TreeEvaluator::vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorTernaryOp(node, cg, TR::InstOpCode::vsel);
+   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::vsel);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vpermEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorTernaryOp(node, cg, TR::InstOpCode::vperm);
+   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::vperm);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vdmergeEvaluator(TR::Node *node, TR::CodeGenerator *cg)

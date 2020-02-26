@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -563,13 +563,13 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::bRegStore
    constrainChildren,        // TR::GlRegDeps
 
-   constrainChildrenFirstToLast,        // TR::iternary
-   constrainChildrenFirstToLast,        // TR::lternary
-   constrainChildrenFirstToLast,        // TR::bternary
-   constrainChildrenFirstToLast,        // TR::sternary
-   constrainChildrenFirstToLast,        // TR::aternary
-   constrainChildrenFirstToLast,        // TR::fternary
-   constrainChildrenFirstToLast,        // TR::dternary
+   constrainChildrenFirstToLast,        // TR::iselect
+   constrainChildrenFirstToLast,        // TR::lselect
+   constrainChildrenFirstToLast,        // TR::bselect
+   constrainChildrenFirstToLast,        // TR::sselect
+   constrainChildrenFirstToLast,        // TR::aselect
+   constrainChildrenFirstToLast,        // TR::fselect
+   constrainChildrenFirstToLast,        // TR::dselect
    constrainChildren,        // TR::treetop
    constrainChildren,        // TR::MethodEnterHook
    constrainChildren,        // TR::MethodExitHook
@@ -606,7 +606,7 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::vicmpanyle
 
    constrainChildren,        // TR::vnot
-   constrainChildren,        // TR::vselect
+   constrainChildren,        // TR::vbitselect
    constrainChildren,        // TR::vperm
 
    constrainChildren,        // TR::vsplats
@@ -675,7 +675,7 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainReturn,          // TR::vreturn
    constrainCall,            // TR::vcall
    constrainCall,            // TR::vcalli
-   constrainChildrenFirstToLast,        // TR::vternary
+   constrainChildrenFirstToLast,        // TR::vselect
    constrainChildren,        // TR::v2v
    constrainChildren,        // TR::vl2vd
    constrainChildren,        // TR::vconst
@@ -1176,9 +1176,9 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,           // TR::ddRegStore
    constrainChildren,           // TR::deRegStore
 
-   constrainChildrenFirstToLast,        // TR::dfternary
-   constrainChildrenFirstToLast,        // TR::ddternary
-   constrainChildrenFirstToLast,        // TR::deternary
+   constrainChildrenFirstToLast,        // TR::dfselect
+   constrainChildrenFirstToLast,        // TR::ddselect
+   constrainChildrenFirstToLast,        // TR::deselect
 
    constrainChildren,           // TR::dfexp
    constrainChildren,           // TR::ddexp

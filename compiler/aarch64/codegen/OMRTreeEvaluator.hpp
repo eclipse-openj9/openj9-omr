@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -436,13 +436,13 @@ public:
 	static TR::Register *sRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *GlRegDepsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *bternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *sternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *aternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *fternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *lselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *bselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *sselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *aselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *fselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *dselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *MethodEnterHookEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *MethodExitHookEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -474,7 +474,7 @@ public:
 	static TR::Register *vicmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vicmpanyleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *vselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vpermEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vdmergelEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -541,7 +541,7 @@ public:
 	static TR::Register *vreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vcallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vcalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *vternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *vselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *v2vEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);

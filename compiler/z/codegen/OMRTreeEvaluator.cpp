@@ -14391,9 +14391,9 @@ OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *
    }
 
 TR::Register *
-OMR::Z::TreeEvaluator::inlineVectorTernaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
+OMR::Z::TreeEvaluator::inlineVectorBitSelectOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
    {
-   TR_ASSERT(node->getNumChildren() >= 3,"Ternary Node must contain 3 or more children");
+   TR_ASSERT(node->getNumChildren() >= 3,"Select Node must contain 3 or more children");
    // TODO Bullet proof this code better and handle more children better.
    TR::Node *firstChild  = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -14424,7 +14424,7 @@ OMR::Z::TreeEvaluator::inlineVectorTernaryOp(TR::Node * node, TR::CodeGenerator 
          breakInst = generateVRReInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, sourceReg3, 3, mask5);
          break;
       default:
-         TR_ASSERT(false, "Ternary Vector IL evaluation unimplemented for node : %s", cg->getDebug()->getName(node));
+         TR_ASSERT(false, "Select Vector IL evaluation unimplemented for node : %s", cg->getDebug()->getName(node));
       }
 
    cg->decReferenceCount(firstChild);
@@ -14531,7 +14531,7 @@ OMR::Z::TreeEvaluator::vdremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vdmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorTernaryOp(node, cg, TR::InstOpCode::VFMA);
+   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::VFMA);
    }
 
 TR::Register *

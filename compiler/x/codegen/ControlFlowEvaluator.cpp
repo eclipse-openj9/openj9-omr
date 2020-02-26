@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1290,8 +1290,8 @@ TR::Register *OMR::X86::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeG
    return NULL;
    }
 
-// also handles lternary, aternary
-TR::Register *OMR::X86::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+// also handles lselect, aselect
+TR::Register *OMR::X86::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *condition = node->getChild(0);
    TR::Node *trueVal   = node->getChild(1);
@@ -1331,7 +1331,7 @@ TR::Register *OMR::X86::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::Cod
       generateRegRegInstruction(CMOVERegReg(trueValIs64Bit), node, trueReg, falseReg, cg);
       }
 
-   if (node->getOpCodeValue() == TR::bternary &&
+   if (node->getOpCodeValue() == TR::bselect &&
        cg->enableRegisterInterferences())
       cg->getLiveRegisters(TR_GPR)->setByteRegisterAssociation(trueReg);
 

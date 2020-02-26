@@ -25,19 +25,19 @@
 
 // C++11 upgrade (Issue #1916).
 template <typename CompareType, typename ValType>
-class TernaryTest : public TRTest::JitTest, public ::testing::WithParamInterface<std::tuple<std::tuple<CompareType, CompareType>, std::tuple<ValType, ValType>, ValType (*)(CompareType, CompareType, ValType, ValType)>> {};
+class SelectTest : public TRTest::JitTest, public ::testing::WithParamInterface<std::tuple<std::tuple<CompareType, CompareType>, std::tuple<ValType, ValType>, ValType (*)(CompareType, CompareType, ValType, ValType)>> {};
 
 /** \brief
- *     Struct equivalent of the TernaryTestParamStruct tuple.
+ *     Struct equivalent of the SelectTestParamStruct tuple.
  *
  *  \tparam CompareType
- *     The type of the compare child of the ternary opcode.
+ *     The type of the compare child of the select opcode.
  *
  *  \tparam ValType
- *     The type that the ternary opcode returns.
+ *     The type that the select opcode returns.
  */
 template <typename CompareType, typename ValType>
-struct TernaryTestParamStruct
+struct SelectTestParamStruct
    {
    CompareType c1;
    CompareType c2;
@@ -47,12 +47,12 @@ struct TernaryTestParamStruct
    };
 
 /** \brief
- *     Given an instance of TernaryTestParamStruct, returns an equivalent instance of TernaryTestParamStruct.
+ *     Given an instance of SelectTestParamStruct, returns an equivalent instance of SelectTestParamStruct.
  */
 template <typename CompareType, typename ValType>
-TernaryTestParamStruct<CompareType, ValType> to_struct(std::tuple<std::tuple<CompareType, CompareType>, std::tuple<ValType, ValType>, ValType (*)(CompareType, CompareType, ValType, ValType)> param)
+SelectTestParamStruct<CompareType, ValType> to_struct(std::tuple<std::tuple<CompareType, CompareType>, std::tuple<ValType, ValType>, ValType (*)(CompareType, CompareType, ValType, ValType)> param)
    {
-   TernaryTestParamStruct<CompareType, ValType> s;
+   SelectTestParamStruct<CompareType, ValType> s;
 
    s.c1 = std::get<0>(std::get<0>(param));
    s.c2 = std::get<1>(std::get<0>(param));
@@ -63,7 +63,7 @@ TernaryTestParamStruct<CompareType, ValType> to_struct(std::tuple<std::tuple<Com
    }
 
 /** \brief
- *     The oracle function which computes the expected result of the ternary test.
+ *     The oracle function which computes the expected result of the select test.
  *
  *  \tparam CompareType
  *     The type of the values compared by oracle function.
@@ -71,7 +71,7 @@ TernaryTestParamStruct<CompareType, ValType> to_struct(std::tuple<std::tuple<Com
  *     The return type of the oracle function.
  */
 template <typename CompareType, typename ValType>
-static ValType xternaryOracle(CompareType c1, CompareType c2, ValType v1, ValType v2)
+static ValType xselectOracle(CompareType c1, CompareType c2, ValType v1, ValType v2)
    {
    return ((c1 < c2) ? v1 : v2);
    }
@@ -96,7 +96,7 @@ static std::vector<std::tuple<T, T>> compareInputs()
    }
 
 /** \brief
- *     The function computes the true/false result vector of pairs for the ternary node.
+ *     The function computes the true/false result vector of pairs for the select node.
  */
 template <typename T>
 static std::vector<std::tuple<T, T>> resultInputs()
@@ -109,9 +109,9 @@ static std::vector<std::tuple<T, T>> resultInputs()
    return std::vector<std::tuple<T, T>>(inputArray, inputArray + sizeof(inputArray)/sizeof(std::tuple<T, T>));
    }
 
-class Int32TernaryInt32CompareTest : public TernaryTest<int32_t, int32_t> {};
+class Int32SelectInt32CompareTest : public SelectTest<int32_t, int32_t> {};
 
-TEST_P(Int32TernaryInt32CompareTest, UsingLoadParam) {
+TEST_P(Int32SelectInt32CompareTest, UsingLoadParam) {
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -119,7 +119,7 @@ TEST_P(Int32TernaryInt32CompareTest, UsingLoadParam) {
         "(method return=Int32 args=[Int32, Int32, Int32, Int32]"
         "  (block"
         "    (ireturn"
-        "      (iternary"
+        "      (iselect"
         "        (icmplt"
         "          (iload parm=0)"
         "          (iload parm=1))"
@@ -139,7 +139,7 @@ TEST_P(Int32TernaryInt32CompareTest, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point(param.c1, param.c2, param.v1, param.v2));
 }
 
-TEST_P(Int32TernaryInt32CompareTest, UsingConst) {
+TEST_P(Int32SelectInt32CompareTest, UsingConst) {
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -147,7 +147,7 @@ TEST_P(Int32TernaryInt32CompareTest, UsingConst) {
         "(method return=Int32"
         "  (block"
         "    (ireturn"
-        "      (iternary"
+        "      (iselect"
         "        (icmplt"
         "          (iconst %d)"
         "          (iconst %d))"
@@ -171,15 +171,15 @@ TEST_P(Int32TernaryInt32CompareTest, UsingConst) {
     ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point());
 }
 
-INSTANTIATE_TEST_CASE_P(TernaryTest, Int32TernaryInt32CompareTest,
+INSTANTIATE_TEST_CASE_P(SelectTest, Int32SelectInt32CompareTest,
         ::testing::Combine(
             ::testing::ValuesIn(compareInputs<int32_t>()),
             ::testing::ValuesIn(resultInputs<int32_t>()),
-            ::testing::Values(xternaryOracle<int32_t, int32_t>)));
+            ::testing::Values(xselectOracle<int32_t, int32_t>)));
 
-class Int64TernaryInt64CompareTest : public TernaryTest<int64_t, int64_t> {};
+class Int64SelectInt64CompareTest : public SelectTest<int64_t, int64_t> {};
 
-TEST_P(Int64TernaryInt64CompareTest, UsingLoadParam) {
+TEST_P(Int64SelectInt64CompareTest, UsingLoadParam) {
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -187,7 +187,7 @@ TEST_P(Int64TernaryInt64CompareTest, UsingLoadParam) {
         "(method return=Int64 args=[Int64, Int64, Int64, Int64]"
         "  (block"
         "    (lreturn"
-        "      (lternary"
+        "      (lselect"
         "        (lcmplt"
         "          (lload parm=0)"
         "          (lload parm=1))"
@@ -207,7 +207,7 @@ TEST_P(Int64TernaryInt64CompareTest, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point(param.c1, param.c2, param.v1, param.v2));
 }
 
-TEST_P(Int64TernaryInt64CompareTest, UsingConst) {
+TEST_P(Int64SelectInt64CompareTest, UsingConst) {
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -215,7 +215,7 @@ TEST_P(Int64TernaryInt64CompareTest, UsingConst) {
         "(method return=Int64"
         "  (block"
         "    (lreturn"
-        "      (lternary"
+        "      (lselect"
         "        (lcmplt"
         "          (lconst %" OMR_PRId64 ")"
         "          (lconst %" OMR_PRId64 "))"
@@ -239,16 +239,16 @@ TEST_P(Int64TernaryInt64CompareTest, UsingConst) {
     ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point());
 }
 
-INSTANTIATE_TEST_CASE_P(TernaryTest, Int64TernaryInt64CompareTest,
+INSTANTIATE_TEST_CASE_P(SelectTest, Int64SelectInt64CompareTest,
         ::testing::Combine(
             ::testing::ValuesIn(compareInputs<int64_t>()),
             ::testing::ValuesIn(resultInputs<int64_t>()),
-            ::testing::Values(xternaryOracle<int64_t, int64_t>)));
+            ::testing::Values(xselectOracle<int64_t, int64_t>)));
 
 
-class Int64TernaryDoubleCompareTest : public TernaryTest<double, int64_t> {};
+class Int64SelectDoubleCompareTest : public SelectTest<double, int64_t> {};
 
-TEST_P(Int64TernaryDoubleCompareTest, UsingLoadParam) {
+TEST_P(Int64SelectDoubleCompareTest, UsingLoadParam) {
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -256,7 +256,7 @@ TEST_P(Int64TernaryDoubleCompareTest, UsingLoadParam) {
         "(method return=Int64 args=[Double, Double, Int64, Int64]"
         "  (block"
         "    (lreturn"
-        "      (lternary"
+        "      (lselect"
         "        (dcmplt"
         "          (dload parm=0)"
         "          (dload parm=1))"
@@ -276,7 +276,7 @@ TEST_P(Int64TernaryDoubleCompareTest, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point(param.c1, param.c2, param.v1, param.v2));
 }
 
-TEST_P(Int64TernaryDoubleCompareTest, UsingConst) {
+TEST_P(Int64SelectDoubleCompareTest, UsingConst) {
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -284,7 +284,7 @@ TEST_P(Int64TernaryDoubleCompareTest, UsingConst) {
         "(method return=Int64 args=[Double, Double]"
         "  (block"
         "    (lreturn"
-        "      (lternary"
+        "      (lselect"
         "        (dcmplt"
         "          (dload parm=0)"
         "          (dload parm=1))"
@@ -306,15 +306,15 @@ TEST_P(Int64TernaryDoubleCompareTest, UsingConst) {
     ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point(param.c1, param.c2));
 }
 
-INSTANTIATE_TEST_CASE_P(TernaryTest, Int64TernaryDoubleCompareTest,
+INSTANTIATE_TEST_CASE_P(SelectTest, Int64SelectDoubleCompareTest,
         ::testing::Combine(
             ::testing::ValuesIn(compareInputs<double>()),
             ::testing::ValuesIn(resultInputs<int64_t>()),
-            ::testing::Values(xternaryOracle<double, int64_t>)));
+            ::testing::Values(xselectOracle<double, int64_t>)));
 
-class Int32TernaryDoubleCompareTest : public TernaryTest<double, int32_t> {};
+class Int32SelectDoubleCompareTest : public SelectTest<double, int32_t> {};
 
-TEST_P(Int32TernaryDoubleCompareTest, UsingLoadParam) {
+TEST_P(Int32SelectDoubleCompareTest, UsingLoadParam) {
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -322,7 +322,7 @@ TEST_P(Int32TernaryDoubleCompareTest, UsingLoadParam) {
         "(method return=Int32 args=[Double, Double, Int32, Int32]"
         "  (block"
         "    (ireturn"
-        "      (iternary"
+        "      (iselect"
         "        (dcmplt"
         "          (dload parm=0)"
         "          (dload parm=1))"
@@ -342,7 +342,7 @@ TEST_P(Int32TernaryDoubleCompareTest, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point(param.c1, param.c2, param.v1, param.v2));
 }
 
-TEST_P(Int32TernaryDoubleCompareTest, UsingConst) {
+TEST_P(Int32SelectDoubleCompareTest, UsingConst) {
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -350,7 +350,7 @@ TEST_P(Int32TernaryDoubleCompareTest, UsingConst) {
         "(method return=Int32 args=[Double, Double]"
         "  (block"
         "    (ireturn"
-        "      (iternary"
+        "      (iselect"
         "        (dcmplt"
         "          (dload parm=0)"
         "          (dload parm=1))"
@@ -372,16 +372,16 @@ TEST_P(Int32TernaryDoubleCompareTest, UsingConst) {
     ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point(param.c1, param.c2));
 }
 
-INSTANTIATE_TEST_CASE_P(TernaryTest, Int32TernaryDoubleCompareTest,
+INSTANTIATE_TEST_CASE_P(SelectTest, Int32SelectDoubleCompareTest,
         ::testing::Combine(
             ::testing::ValuesIn(compareInputs<double>()),
             ::testing::ValuesIn(resultInputs<int32_t>()),
-            ::testing::Values(xternaryOracle<double, int32_t>)));
+            ::testing::Values(xselectOracle<double, int32_t>)));
 
 
-class ShortTernaryDoubleCompareTest : public TernaryTest<double, int16_t> {};
+class ShortSelectDoubleCompareTest : public SelectTest<double, int16_t> {};
 
-TEST_P(ShortTernaryDoubleCompareTest, UsingLoadParam) {
+TEST_P(ShortSelectDoubleCompareTest, UsingLoadParam) {
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -390,7 +390,7 @@ TEST_P(ShortTernaryDoubleCompareTest, UsingLoadParam) {
         "  (block"
         "    (ireturn"
         "      (s2i"
-        "        (sternary"
+        "        (sselect"
         "          (dcmplt"
         "            (dload parm=0)"
         "            (dload parm=1))"
@@ -410,7 +410,7 @@ TEST_P(ShortTernaryDoubleCompareTest, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point(param.c1, param.c2, param.v1, param.v2));
 }
 
-TEST_P(ShortTernaryDoubleCompareTest, UsingConst) {
+TEST_P(ShortSelectDoubleCompareTest, UsingConst) {
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -419,7 +419,7 @@ TEST_P(ShortTernaryDoubleCompareTest, UsingConst) {
         "  (block"
         "    (ireturn"
         "      (s2i"
-        "        (sternary"
+        "        (sselect"
         "          (dcmplt"
         "            (dload parm=0)"
         "            (dload parm=1))"
@@ -441,8 +441,8 @@ TEST_P(ShortTernaryDoubleCompareTest, UsingConst) {
     ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point(param.c1, param.c2));
 }
 
-INSTANTIATE_TEST_CASE_P(TernaryTest, ShortTernaryDoubleCompareTest,
+INSTANTIATE_TEST_CASE_P(SelectTest, ShortSelectDoubleCompareTest,
         ::testing::Combine(
             ::testing::ValuesIn(compareInputs<double>()),
             ::testing::ValuesIn(resultInputs<int16_t>()),
-            ::testing::Values((xternaryOracle<double, int16_t>))));
+            ::testing::Values((xselectOracle<double, int16_t>))));

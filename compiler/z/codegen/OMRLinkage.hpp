@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -157,7 +157,7 @@ enum TR_S390LinkageConventions
  *      i.e (i >= TR::RealRegister::FirstFPR)/    <<-----
  *          ...                                             | Notice the equal indentation
  *          FPREGINDEX(i)                            <<-----
- * 4. REGINDEX(i) is the default i.e GPR index, and so lacks a matching ternary condition.
+ * 4. REGINDEX(i) is the default i.e GPR index, and so lacks a matching select condition.
  * 5. Each unrelated condition or answer to a condition is separated by TR indentation rule i.e 3 spaces
  *
  * Feel free to refactor this into if/else conditions :)

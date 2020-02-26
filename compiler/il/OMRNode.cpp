@@ -2033,7 +2033,7 @@ OMR::Node::isDualHigh()
    }
 
 /**
- * Whether this node is high part of a ternary subtract or addition, like a dual this
+ * Whether this node is high part of a select subtract or addition, like a dual this
  * is a composite operator, made from a high order part and its adjunct operator
  * which is the first child of its third child. It returns true if the node has the form:
  *
@@ -2048,7 +2048,7 @@ OMR::Node::isDualHigh()
  * and the opcodes for highOp/adjunctOp are luaddc/luadd, or lusubb/lusub.
  */
 bool
-OMR::Node::isTernaryHigh()
+OMR::Node::isSelectHigh()
    {
    if (((self()->getOpCodeValue() == TR::luaddc) || (self()->getOpCodeValue() == TR::lusubb))
        && (self()->getNumChildren() == 3) && self()->getChild(2)
@@ -2064,6 +2064,15 @@ OMR::Node::isTernaryHigh()
          return true;
       }
    return false;
+   }
+
+/**
+ * isTernaryHigh is now deprecated. Use isSelectHigh instead.
+ */
+bool
+OMR::Node::isTernaryHigh()
+   {
+   return self()->isSelectHigh();
    }
 
 /**
@@ -2405,20 +2414,20 @@ OMR::Node::computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesColl
 
    // In order to prevent from walking the same node repeatedly when
    // one is referenced multiple times in a very deep tree structure
-   // (e.g. ternary whose child is a ternary and so on),
+   // (e.g. select whose child is a select and so on),
    // Use 2 checklists to record following states:
    // -- The node is not contained in either collected or uncollected checklists - first time encounter, process the node
    //    and add it to the appropriate checklist(s) based on the result.
    // -- Node is seen in both checklitsts - previously processed with result of TR_maybe
    // -- Node is seen in processedNodesCollected - previously processed with result of TR_yes
    // -- Node is seen in processedNodesNotCollected - previously processed with result of TR_no
-   bool ternarySeenCollected = processedNodesCollected.contains(receiverNode);
-   bool ternarySeenNotCollected = processedNodesNotCollected.contains(receiverNode);
-   if (ternarySeenCollected && ternarySeenNotCollected)
+   bool selectSeenCollected = processedNodesCollected.contains(receiverNode);
+   bool selectSeenNotCollected = processedNodesNotCollected.contains(receiverNode);
+   if (selectSeenCollected && selectSeenNotCollected)
       return TR_maybe;
-   else if (ternarySeenCollected)
+   else if (selectSeenCollected)
       return TR_yes;
-   else if (ternarySeenNotCollected)
+   else if (selectSeenNotCollected)
       return TR_no;
 
    while (curNode)
@@ -2444,7 +2453,7 @@ OMR::Node::computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesColl
          continue;
          }
 
-      if (op.isTernary())
+      if (op.isSelect())
          {
          TR_YesNoMaybe secondChildResult = curNode->getSecondChild()->computeIsCollectedReferenceImpl(processedNodesCollected, processedNodesNotCollected);
          if (TR_maybe == secondChildResult)
@@ -2498,7 +2507,7 @@ OMR::Node::computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesColl
             else
                {
                // null constant under aladd, return false.
-               // Null constant under ternary (i.e. we reached here via recursive calls), return maybe
+               // Null constant under select (i.e. we reached here via recursive calls), return maybe
                // to indicate need to check the other child.
                if (self() != curNode)
                   return recordProcessedNodeResult(receiverNode, TR_no, processedNodesCollected, processedNodesNotCollected);

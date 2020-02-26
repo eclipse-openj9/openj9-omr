@@ -925,7 +925,7 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
       case TR::InstOpCode::setbool:
       case TR::InstOpCode::idiv:
       case TR::InstOpCode::ldiv:
-      case TR::InstOpCode::iternary:
+      case TR::InstOpCode::iselect:
          if (useRegPairForResult())
             {
             if (!useRegPairForCond())

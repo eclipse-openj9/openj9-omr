@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,7 +41,7 @@
 #include "tests/injectors/IndirectLoadIlInjector.hpp"
 #include "tests/injectors/IndirectStoreIlInjector.hpp"
 #include "tests/injectors/StoreOpIlInjector.hpp"
-#include "tests/injectors/TernaryOpIlInjector.hpp"
+#include "tests/injectors/SelectOpIlInjector.hpp"
 #include "tests/injectors/UnaryOpIlInjector.hpp"
 
 #if defined(J9ZOS390) || defined(AIXPPC)
@@ -175,7 +175,7 @@ class OpCodesTest : public TestDriver
    virtual void compileUnaryTestMethods();
    virtual void compileBitwiseMethods();
    virtual void compileCompareTestMethods();
-   virtual void compileTernaryTestMethods();
+   virtual void compileSelectTestMethods();
    virtual void compileAddressTestMethods();
    virtual void compileDisabledOpCodesTests();
 
@@ -184,7 +184,7 @@ class OpCodesTest : public TestDriver
    virtual void invokeUnaryTests();
    virtual void invokeBitwiseTests();
    virtual void invokeCompareTests();
-   virtual void invokeTernaryTests();
+   virtual void invokeSelectTests();
    virtual void invokeAddressTests();
    virtual void invokeDisabledOpCodesTests();
 
@@ -221,7 +221,7 @@ class OpCodesTest : public TestDriver
    CmpBranchOpIlInjector        cmpBranchIlInjector(&types, this, opCode);
    BinaryOpIlInjector           opCodeBinaryIlInjector(&types, this, opCode);
    UnaryOpIlInjector            opCodeUnaryInjector(&types, this, opCode);
-   TernaryOpIlInjector          ternaryOpIlInjector(&types, this, opCode);
+   SelectOpIlInjector          selectOpIlInjector(&types, this, opCode);
    ChildlessUnaryOpIlInjector   childlessUnaryOpIlInjector(&types, this, opCode);
    StoreOpIlInjector            storeOpIlInjector(&types, this, opCode);
    IndirectLoadIlInjector       indirectLoadIlInjector(&types, this, opCode);
@@ -231,9 +231,9 @@ class OpCodesTest : public TestDriver
       {
       opCodeInjector = &cmpBranchIlInjector;
       }
-   else if (op.isTernary())
+   else if (op.isSelect())
       {
-      opCodeInjector = &ternaryOpIlInjector;
+      opCodeInjector = &selectOpIlInjector;
       }
    else if (op.isStoreIndirect())
       {
@@ -421,7 +421,7 @@ class OpCodesTest : public TestDriver
    static const int32_t RESOLVED_METHOD_NAME_LENGTH = 50;
    static const int32_t _numberOfUnaryArgs = 1;
    static const int32_t _numberOfBinaryArgs = 2;
-   static const int32_t _numberOfTernaryArgs = 3;
+   static const int32_t _numberOfSelectArgs = 3;
 
    //commonly used variables
    static const int64_t LONG_NEG;
@@ -793,13 +793,13 @@ class OpCodesTest : public TestDriver
    static unsignedCompareSignatureCharSS_I_testMethodType *_ifSuCmpgt;
    static unsignedCompareSignatureCharSS_I_testMethodType *_ifSuCmple;
 
-   //Ternary operators
-   static signatureCharIBB_B_testMethodType *_bternary;
-   static signatureCharISS_S_testMethodType *_sternary;
-   static signatureCharIII_I_testMethodType *_iternary;
-   static signatureCharIJJ_J_testMethodType *_lternary;
-   static signatureCharIFF_F_testMethodType *_fternary;
-   static signatureCharIDD_D_testMethodType *_dternary;
+   //Select operators
+   static signatureCharIBB_B_testMethodType *_bselect;
+   static signatureCharISS_S_testMethodType *_sselect;
+   static signatureCharIII_I_testMethodType *_iselect;
+   static signatureCharIJJ_J_testMethodType *_lselect;
+   static signatureCharIFF_F_testMethodType *_fselect;
+   static signatureCharIDD_D_testMethodType *_dselect;
 
    static signatureCharI_I_testMethodType *_int32CompiledMethod;
    static signatureCharJ_J_testMethodType *_int64CompiledMethod;
@@ -862,7 +862,7 @@ class OpCodesTest : public TestDriver
    static signatureCharLL_I_testMethodType *_ifacmpge;
    static signatureCharLL_I_testMethodType *_ifacmple;
    static signatureCharLL_I_testMethodType *_ifacmpgt;
-   static signatureCharILL_L_testMethodType *_aternary;
+   static signatureCharILL_L_testMethodType *_aselect;
 
    static TR::DataType _argTypesUnaryByte[_numberOfUnaryArgs];
    static TR::DataType _argTypesUnaryShort[_numberOfUnaryArgs];
@@ -880,13 +880,13 @@ class OpCodesTest : public TestDriver
    static TR::DataType _argTypesBinaryDouble[_numberOfBinaryArgs];
    static TR::DataType _argTypesBinaryAddress[_numberOfBinaryArgs];
 
-   static TR::DataType _argTypesTernaryByte[_numberOfTernaryArgs];
-   static TR::DataType _argTypesTernaryShort[_numberOfTernaryArgs];
-   static TR::DataType _argTypesTernaryInt[_numberOfTernaryArgs];
-   static TR::DataType _argTypesTernaryLong[_numberOfTernaryArgs];
-   static TR::DataType _argTypesTernaryFloat[_numberOfTernaryArgs];
-   static TR::DataType _argTypesTernaryDouble[_numberOfTernaryArgs];
-   static TR::DataType _argTypesTernaryAddress[_numberOfTernaryArgs];
+   static TR::DataType _argTypesSelectByte[_numberOfSelectArgs];
+   static TR::DataType _argTypesSelectShort[_numberOfSelectArgs];
+   static TR::DataType _argTypesSelectInt[_numberOfSelectArgs];
+   static TR::DataType _argTypesSelectLong[_numberOfSelectArgs];
+   static TR::DataType _argTypesSelectFloat[_numberOfSelectArgs];
+   static TR::DataType _argTypesSelectDouble[_numberOfSelectArgs];
+   static TR::DataType _argTypesSelectAddress[_numberOfSelectArgs];
 
    static TR::DataType _argTypesBinaryAddressByte[_numberOfBinaryArgs];
    static TR::DataType _argTypesBinaryAddressShort[_numberOfBinaryArgs];
@@ -956,7 +956,7 @@ class OpCodesTest : public TestDriver
    template <typename T> static int32_t compareLE(T a, T b) { return a <= b;}
    template <typename T> static int32_t comparel(T a, T b) { return std::isnan(static_cast<long double>(a)) ? -1 : std::isnan(static_cast<long double>(b)) ? -1 : a > b ? 1 : a == b ? 0 : -1 ; }
    template <typename T> static int32_t compareg(T a, T b) { return std::isnan(static_cast<long double>(a)) ? 1 :  std::isnan(static_cast<long double>(b)) ? 1 : a > b ? 1 : a == b ? 0 : -1 ; }
-   template <typename C, typename T> static T ternary(C a, T b, T c) {return a ? b : c;}
+   template <typename C, typename T> static T select(C a, T b, T c) {return a ? b : c;}
    };
 
 } // namespace TestCompiler

@@ -15446,10 +15446,10 @@ TR::Node *endBlockSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    }
 
 //---------------------------------------------------------------------
-// Ternary
+// Select
 //
 
-TR::Node *ternarySimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
+TR::Node *selectSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    simplifyChildren(node, block, s);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -413,8 +413,8 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::InstOpCode::S390BranchCondition getBranchConditionFromCompareOpCode(TR::ILOpCodes opCode);
    static TR::InstOpCode::S390BranchCondition mapBranchConditionToLOCRCondition(TR::InstOpCode::S390BranchCondition incomingBc);
    static TR::InstOpCode::Mnemonic getCompareOpFromNode(TR::CodeGenerator *cg, TR::Node *node);
-   static TR::Register *ternaryEvaluator(TR::Node * node, TR::CodeGenerator * cg);
-   static TR::Register *dternaryEvaluator(TR::Node * node, TR::CodeGenerator * cg);
+   static TR::Register *selectEvaluator(TR::Node * node, TR::CodeGenerator * cg);
+   static TR::Register *dselectEvaluator(TR::Node * node, TR::CodeGenerator * cg);
    static bool treeContainsAllOtherUsesForNode(TR::Node *condition, TR::Node *trueVal);
    static int32_t countReferencesInTree(TR::Node *treeNode, TR::Node *node);
    static TR::Register *NOPEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -462,7 +462,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *inlineVectorUnaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
    static TR::Register *inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
-   static TR::Register *inlineVectorTernaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
+   static TR::Register *inlineVectorBitSelectOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
 
    static TR::Register *bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    

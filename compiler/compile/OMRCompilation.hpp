@@ -971,6 +971,23 @@ public:
       return _flags.testAny(HasColdBlocks);
       }
 
+   /**
+    * @brief Specify that the code cache should only contain read only code.
+    */
+   void setGenerateReadOnlyCode()
+      {
+      _flags.set(GenerateReadOnlyCode);
+      }
+
+   /**
+    * @brief Query whether the code cache should only contain read only code.
+    * @return true if generating read only code; false otherwise.
+    */
+   bool getGenerateReadOnlyCode()
+      {
+      return _flags.testAny(GenerateReadOnlyCode);
+      }
+
    TR::ResolvedMethodSymbol *createJittedMethodSymbol(TR_ResolvedMethod *resolvedMethod);
 
    bool isGPUCompilation() { return _flags.testAny(IsGPUCompilation);}
@@ -1060,12 +1077,12 @@ public:
    void invalidateAliasRegion();
 
    /** \brief
-    *	    Requests the layout of a type. The layout here means how the fields 
+    *	    Requests the layout of a type. The layout here means how the fields
     *     are laid out in an object of the given type.
-    * 
+    *
     *  \param clazz
     *     Class of the type whose layout is requested.
-    * 
+    *
     *  \return
     *     Returns a TypeLayout object pointer.
     */
@@ -1136,7 +1153,7 @@ protected:
       HasMethodHandleInvoke             = 0x0080000, // JSR292
       HasSuperColdBlock                 = 0x0100000,
       HasColdBlocks                     = 0x0200000,
-      // AVAILABLE                      = 0x0400000,
+      GenerateReadOnlyCode              = 0x0400000,
       // AVAILABLE                      = 0x0800000,
       // AVAILABLE                      = 0x1000000,
       // AVAILABLE                      = 0x2000000,

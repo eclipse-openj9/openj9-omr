@@ -869,19 +869,68 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
          }
       else
          {
-         // loadaddrEvaluator() uses addimmx in generateTrgMemInstruction
+         // loadaddrEvaluator() uses addimmx in generateTrg1MemInstruction
          TR_ASSERT(index == NULL, "MemoryReference with unexpected indexed form");
-
-         base->setRegisterFieldRN(wcursor);
 
          if (constantIsUnsignedImm12(displacement))
             {
             *wcursor |= (displacement & 0xfff) << 10; /* imm12 */
+            base->setRegisterFieldRN(wcursor);
             cursor += ARM64_INSTRUCTION_LENGTH;
             }
          else
             {
-            TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
+            TR_ASSERT(currentInstruction->getKind() == OMR::Instruction::IsTrg1Mem, "unexpected instruction kind");
+            TR::RealRegister *treg = toRealRegister(((TR::ARM64Trg1MemInstruction *)currentInstruction)->getTargetRegister());
+            uint32_t lower = displacement & 0xffff;
+            uint32_t upper = (displacement >> 16) & 0xffff;
+            bool needSpill = (treg->getRegisterNumber() == base->getRegisterNumber());
+            TR::RealRegister *immreg;
+            TR::RealRegister *stackPtr;
+
+            if (needSpill)
+               {
+               immreg = cg->machine()->getRealRegister(
+                           (base->getRegisterNumber() == TR::RealRegister::x12) ? TR::RealRegister::x11 : TR::RealRegister::x12
+                        );
+               stackPtr = cg->getStackPointerRegister();
+               // stur immreg, [sp, -8]
+               *wcursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::sturx) | (0x1F8 << 12);
+               immreg->setRegisterFieldRT(wcursor);
+               stackPtr->setRegisterFieldRN(wcursor);
+               wcursor++;
+               cursor += ARM64_INSTRUCTION_LENGTH;
+               }
+            else
+               {
+               immreg = treg;
+               }
+
+            // movzw immreg, low16bit
+            // movkw immreg, high16bit, LSL #16
+            // addx treg, basereg, immreg, SXTW
+            *wcursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::movzw) | (lower << 5);
+            immreg->setRegisterFieldRD(wcursor);
+            wcursor++;
+            *wcursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::movkw) | ((upper | TR::MOV_LSL16) << 5);
+            immreg->setRegisterFieldRD(wcursor);
+            wcursor++;
+            *wcursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::addx) | (TR::EXT_SXTW << 13);
+            base->setRegisterFieldRN(wcursor);
+            immreg->setRegisterFieldRM(wcursor);
+            treg->setRegisterFieldRD(wcursor);
+            wcursor++;
+            cursor += ARM64_INSTRUCTION_LENGTH * 3;
+
+            if (needSpill)
+               {
+               // ldur immreg, [sp, -8]
+               *wcursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::ldurx) | (0x1F8 << 12);
+               immreg->setRegisterFieldRT(wcursor);
+               stackPtr->setRegisterFieldRN(wcursor);
+               wcursor++;
+               cursor += ARM64_INSTRUCTION_LENGTH;
+               }
             }
          }
       }
@@ -972,7 +1021,7 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
             }
          else
             {
-            TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
+            return ARM64_INSTRUCTION_LENGTH*5;
             }
          }
       }

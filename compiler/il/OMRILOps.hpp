@@ -1286,7 +1286,6 @@ public:
          case TR::dstorei:
             return TR::vstorei;
          case TR::badd:
-         case TR::cadd:
          case TR::sadd:
          case TR::iadd:
          case TR::ladd:
@@ -1294,7 +1293,6 @@ public:
          case TR::dadd:
             return TR::vadd;
          case TR::bsub:
-         case TR::csub:
          case TR::ssub:
          case TR::isub:
          case TR::lsub:

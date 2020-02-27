@@ -613,7 +613,7 @@ generic32BitAddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 /**
  * Generic subtraction of 32bits
  * This generic subtrac evaluator is invoked from different evaluator functions and handles all subtract types shorter than an int
- * (i.e. byte-bsub, char-csub, short-ssub, and int-isub)
+ * (i.e. byte-bsub, short-ssub, and int-isub)
  *
  * It does not handle long type.
  */

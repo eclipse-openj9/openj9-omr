@@ -355,7 +355,6 @@ public:
              getOpCodeValue() == TR::iflucmpgt ||
              getOpCodeValue() == TR::iadd      ||
              getOpCodeValue() == TR::ladd      ||
-             getOpCodeValue() == TR::iuadd     ||
              getOpCodeValue() == TR::iuaddc    ||
              getOpCodeValue() == TR::aiadd     ||
              getOpCodeValue() == TR::luadd     ||

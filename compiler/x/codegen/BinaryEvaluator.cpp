@@ -708,7 +708,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
    if (NEED_CC(node) || (opCode == TR::luaddc) || (opCode == TR::iuaddc))
       {
       TR_ASSERT((nodeIs64Bit  && (opCode == TR::ladd || opCode == TR::luadd) || opCode == TR::luaddc) ||
-                (!nodeIs64Bit && (opCode == TR::iadd || opCode == TR::iuadd) || opCode == TR::iuaddc),
+                (!nodeIs64Bit && opCode == TR::iadd || opCode == TR::iuaddc),
                 "CC computation not supported for this node %p with opcode %s\n", node, cg->comp()->getDebug()->getName(opCode));
 
       // we need eflags from integerAddAnalyser for the CC sequence

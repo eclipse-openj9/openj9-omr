@@ -1307,8 +1307,7 @@ OMR::Z::MemoryReference::populateAddTree(TR::Node * subTree, TR::CodeGenerator *
        (integerChild->getLongInt() != TR::Compiler->vm.heapBaseAddress())))
       {
       self()->populateMemoryReference(addressChild, cg);
-      if ((subTree->getOpCodeValue() != TR::iadd) && (subTree->getOpCodeValue() != TR::aiadd) &&
-          (subTree->getOpCodeValue() != TR::iuadd) && (subTree->getOpCodeValue() != TR::isub))
+      if ((subTree->getOpCodeValue() != TR::iadd) && (subTree->getOpCodeValue() != TR::aiadd) && (subTree->getOpCodeValue() != TR::isub))
          {
          if (subTree->getOpCode().isSub())
             _offset -= integerChild->getLongInt();

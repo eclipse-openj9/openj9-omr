@@ -357,12 +357,10 @@ public:
              getOpCodeValue() == TR::ladd      ||
              getOpCodeValue() == TR::iuaddc    ||
              getOpCodeValue() == TR::aiadd     ||
-             getOpCodeValue() == TR::luadd     ||
              getOpCodeValue() == TR::luaddc    ||
              getOpCodeValue() == TR::aladd     ||
              getOpCodeValue() == TR::isub      ||
              getOpCodeValue() == TR::lsub      ||
-             getOpCodeValue() == TR::iusub     ||
              getOpCodeValue() == TR::iusubb    ||
              getOpCodeValue() == TR::asub      ||
              getOpCodeValue() == TR::lusub     ||
@@ -903,7 +901,6 @@ public:
       switch (longOp)
          {
          case TR::ladd:   return TR::iadd;
-         case TR::luadd:  return TR::iadd;
          case TR::lsub:   return TR::isub;
          case TR::lmul:   return TR::imul;
          case TR::ldiv:   return TR::idiv;

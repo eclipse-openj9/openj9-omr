@@ -2032,7 +2032,7 @@ lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
    if (NEED_CC(node) || (node->getOpCodeValue() == TR::lusubb))
       {
       TR_ASSERT( !isCompressionSequence,"CC computation not supported with compression sequence.\n");
-      TR_ASSERT(node->getOpCodeValue() == TR::lsub || node->getOpCodeValue() == TR::lusub || node->getOpCodeValue() == TR::lusubb,
+      TR_ASSERT(node->getOpCodeValue() == TR::lsub || node->getOpCodeValue() == TR::lusubb,
               "CC computation not supported for this node %p\n", node);
 
       // we need the borrow from longSubtractAnalyser for the CC sequence,

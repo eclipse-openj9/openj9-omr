@@ -280,9 +280,7 @@ public:
    bool hasPinningArrayPointer()
       {
       return (getOpCodeValue() == TR::aiadd)  ||
-             (getOpCodeValue() == TR::aladd)  ||
-             (getOpCodeValue() == TR::aiuadd) ||
-             (getOpCodeValue() == TR::aluadd);
+             (getOpCodeValue() == TR::aladd);
       }
 
    bool isLongCompare() const
@@ -360,11 +358,9 @@ public:
              getOpCodeValue() == TR::iuadd     ||
              getOpCodeValue() == TR::iuaddc    ||
              getOpCodeValue() == TR::aiadd     ||
-             getOpCodeValue() == TR::aiuadd    ||
              getOpCodeValue() == TR::luadd     ||
              getOpCodeValue() == TR::luaddc    ||
              getOpCodeValue() == TR::aladd     ||
-             getOpCodeValue() == TR::aluadd    ||
              getOpCodeValue() == TR::isub      ||
              getOpCodeValue() == TR::lsub      ||
              getOpCodeValue() == TR::iusub     ||

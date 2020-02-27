@@ -2353,7 +2353,7 @@ OMR::Node::isNotCollected()
  *
  * \note
  *    This query currently only works on opcodes that can have a pinning array pointer,
- *    i.e. aiadd, aiuadd, aladd, aluadd. Suppport for other opcodes can be added if necessary.
+ *    i.e. aiadd, aladd. Suppport for other opcodes can be added if necessary.
  */
 bool
 OMR::Node::computeIsInternalPointer()

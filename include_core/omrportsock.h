@@ -34,4 +34,19 @@ typedef struct OMRSockAddrStorage *omrsock_sockaddr_t;
 /* Pointer to OMRSocket, a struct that contains socket descriptor. */
 typedef struct OMRSocket *omrsock_socket_t;
 
+/* Address Family */
+#define OMRSOCK_AF_UNSPEC 0
+#define OMRSOCK_AF_INET 1
+#define OMRSOCK_AF_INET6 2
+
+/* Socket types */
+#define OMRSOCK_ANY 0
+#define OMRSOCK_STREAM 1
+#define OMRSOCK_DGRAM 2
+
+/* Protocol Family */
+#define OMRSOCK_IPPROTO_DEFAULT 0
+#define OMRSOCK_IPPROTO_TCP 1
+#define OMRSOCK_IPPROTO_UDP 2
+
 #endif /* !defined(OMRPORTSOCK_H_) */

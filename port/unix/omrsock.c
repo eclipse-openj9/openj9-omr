@@ -35,6 +35,72 @@
 #include "omrporterror.h"
 #include "omrsockptb.h"
 
+/* Internal: OMRSOCK user interface constants TO OS dependent constants mapping. */
+
+/**
+ * @internal Map OMRSOCK API user interface address family names to the OS address 
+ * family, which may be defined differently depending on operating system. 
+ *
+ * @param omrFamily The OMR address family to be converted.
+ *
+ * @return OS address family, or OS_SOCK_AF_UNSPEC if none exists.
+ */
+static int32_t
+get_os_family(int32_t omrFamily)
+{
+	switch(omrFamily)
+	{
+		case OMRSOCK_AF_INET:
+			return OS_SOCK_AF_INET;
+		case OMRSOCK_AF_INET6:
+			return OS_SOCK_AF_INET6;
+	}
+	return OS_SOCK_AF_UNSPEC;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface socket type to the OS socket type, 
+ * which may be defined differently depending on operating system. 
+ *
+ * @param omrSockType The OMR socket type to be converted.
+ *
+ * @return OS socket type on success, or OS_SOCK_ANY if none exists.
+ */
+static int32_t
+get_os_socktype(int32_t omrSockType)
+{
+	switch(omrSockType)
+	{
+		case OMRSOCK_STREAM:
+			return OS_SOCK_STREAM;
+		case OMRSOCK_DGRAM:
+			return OS_SOCK_DGRAM;
+	}
+	return OS_SOCK_ANY;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface protocol to the OS protocols, 
+ * which may be defined differently depending on operating system. 
+ *
+ * @param omrProtocol The OMR protocol to be converted.
+ *
+ * @return OS protocol on success, or OS_SOCK_IPPROTO_DEFAULT 
+ * if none exists.
+ */
+static int32_t
+get_os_protocol(int32_t omrProtocol)
+{
+	switch(omrProtocol)
+	{
+		case OMRSOCK_IPPROTO_TCP:
+			return OS_SOCK_IPPROTO_TCP;
+		case OMRSOCK_IPPROTO_UDP:
+			return OS_SOCK_IPPROTO_UDP;
+	}
+	return OS_SOCK_IPPROTO_DEFAULT;
+}
+
 int32_t
 omrsock_startup(struct OMRPortLibrary *portLibrary)
 {

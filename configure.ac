@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2019 IBM Corp. and others
+# Copyright (c) 2015, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -383,7 +383,6 @@ OMRCFG_DEFINE_FLAG_ON([OMR_GC_ALLOCATION_TAX])
 OMRCFG_DEFINE_FLAG_ON([OMR_GC_BATCH_CLEAR_TLH])
 OMRCFG_DEFINE_FLAG_ON([OMR_GC_COMBINATION_SPEC])
 OMRCFG_DEFINE_FLAG_ON([OMR_GC_DEBUG_ASSERTS])
-OMRCFG_DEFINE_FLAG_ON([OMR_GC_HEAP_CARD_TABLE])
 OMRCFG_DEFINE_FLAG_ON([OMR_GC_LARGE_OBJECT_AREA])
 OMRCFG_DEFINE_FLAG_ON([OMR_GC_MINIMUM_OBJECT_SIZE])
 OMRCFG_DEFINE_FLAG_ON([OMR_GC_MODRON_STANDARD])

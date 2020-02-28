@@ -137,25 +137,26 @@ class OMR_EXTENSIBLE Linkage
     *    (closest to the frame pointer) parameter is located. 
     *
     *  @details
-    *    For example given the following stack frame layout, and assuming a call to a function with 4 parameters:
+    *    For example given the following stack frame layout, for a stack which grows towards 0x0000 (we subtract the
+    *    stack pointer for each additional frame), and assuming a call to a function with 4 parameters:
     *
     *    @code
-    *        0x0588     +--------+
-    *                   |  ARG1  |
-    *        0x0580     +--------+
-    *                   |  ARG2  |
-    *        0x0578     +--------+
-    *                   |  ARG3  |
-    *        0x0570     +--------+   <- offset to first parm relative to the frame pointer (0x0570 - 0x0530 = 0x0040)
+    *        0x04E8     +--------+   <- stack pointer
+    *                   |  ....  |
+    *        0x0518     +--------+   <- frame pointer
+    *                   |  ....  |
+    *        0x0550     +--------+   <- offset to first parm relative to the frame pointer (0x0550 - 0x0518 = 0x0038)
     *                   |  ARG4  |
-    *        0x0568     +--------+ 
-    *                   |  ....  |
-    *        0x0530     +--------+   <- frame pointer
-    *                   |  ....  |
-    *        0x0500     +--------+   <- stack pointer
+    *        0x0558     +--------+
+    *                   |  ARG3  |
+    *        0x0560     +--------+
+    *                   |  ARG2  |
+    *        0x0568     +--------+
+    *                   |  ARG1  |
+    *        0x0570     +--------+
     *    @endcode
     *
-    *    The offset returned by this function (0x0040 in the above example) may not be the first argument (in argument
+    *    The offset returned by this function (0x0038 in the above example) may not be the first argument (in argument
     *    order) passed by the caller on the stack. It is up to the linkage to make use of this function to initialize
     *    parameter offsets depending on the order in which the caller passes the arguments to the callee.
     */

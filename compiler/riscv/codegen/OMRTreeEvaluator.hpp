@@ -476,7 +476,7 @@ public:
 	static TR::Register *vicmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vicmpanyleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *vselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vpermEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vdmergelEvaluator(TR::Node *node, TR::CodeGenerator *cg);

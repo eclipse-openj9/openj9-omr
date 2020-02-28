@@ -31,6 +31,7 @@
 
 #include "omrcfg.h"
 #if defined(OMR_PORT_SOCKET_SUPPORT)
+#include "omrsock.h"
 #include "omrport.h"
 #include "omrporterror.h"
 #include "omrsockptb.h"
@@ -196,12 +197,12 @@ omrsock_getaddrinfo_create_hints(struct OMRPortLibrary *portLibrary, omrsock_add
 	memset(ptbHints, 0, sizeof(omr_os_addrinfo));
 
 	ptbHints->ai_flags = flags;
-	ptbHints->ai_family = family;
-	ptbHints->ai_socktype = socktype;
-	ptbHints->ai_protocol = protocol;
+	ptbHints->ai_family = get_os_family(family);
+	ptbHints->ai_socktype = get_os_socktype(socktype);
+	ptbHints->ai_protocol = get_os_protocol(protocol);
 
-	(ptBuffer->addrInfoHints).addrInfo = ptbHints;
-	(ptBuffer->addrInfoHints).length = 1;
+	ptBuffer->addrInfoHints.addrInfo = ptbHints;
+	ptBuffer->addrInfoHints.length = 1;
 	*hints = &ptBuffer->addrInfoHints;
 	return 0;
 }
@@ -271,7 +272,7 @@ omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_
 		}
 	}
 
-	*family = info->ai_family;
+	*family = get_omr_family(info->ai_family);
 	return 0;
 }
 
@@ -294,7 +295,7 @@ omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinf
 		}
 	}
 
-	*socktype = info->ai_socktype;
+	*socktype = get_omr_socktype(info->ai_socktype);
 	return 0;
 }
 
@@ -317,7 +318,7 @@ omrsock_getaddrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinf
 		}
 	}
 
-	*protocol = info->ai_protocol;
+	*protocol = get_omr_protocol(info->ai_protocol);
 	return 0;
 }
 

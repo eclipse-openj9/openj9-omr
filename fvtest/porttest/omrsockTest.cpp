@@ -116,9 +116,9 @@ TEST(PortSockTest, create_hints_and_element_extraction)
 	int32_t sockType = 0;
 	int32_t protocol = 0;
 
-	int32_t hintsFamily = 0;
-	int32_t hintsSockType = 1;
-	int32_t hintsProtocol = 1;
+	int32_t hintsFamily = OMRSOCK_AF_UNSPEC;
+	int32_t hintsSockType = OMRSOCK_STREAM;
+	int32_t hintsProtocol = OMRSOCK_IPPROTO_TCP;
 	int32_t hintsFlags = 0;
 
 	OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, hintsFamily, hintsSockType, hintsProtocol, hintsFlags);
@@ -174,7 +174,7 @@ TEST(PortSockTest, create_hints_and_element_extraction)
 
 	/* Recreate hints with different parameters, see if hints elements are overwriten properly. */
 
-	hintsProtocol = 0;
+	hintsProtocol = OMRSOCK_IPPROTO_DEFAULT;
 	hintsFlags = 6;
 
 	OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, hintsFamily, hintsSockType, hintsProtocol, hintsFlags);
@@ -236,9 +236,9 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 	int32_t sockType = 0;
 	int32_t protocol = 0;
 
-	int32_t hintsFamily = 2;
-	int32_t hintsSockType = 1;
-	int32_t hintsProtocol = 0;
+	int32_t hintsFamily = OMRSOCK_AF_INET;
+	int32_t hintsSockType = OMRSOCK_STREAM;
+	int32_t hintsProtocol = OMRSOCK_IPPROTO_DEFAULT;
 	int32_t hintsFlags = 0;
 
 	rc = OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, hintsFamily, hintsSockType, hintsProtocol, hintsFlags);

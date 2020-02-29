@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,6 +27,7 @@
 #include "codegen/TreeEvaluator.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/LabelSymbol.hpp"
 
 TR::Register *
 genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rnum, TR_RegisterKinds rk, TR_ReturnInfo i,  TR::CodeGenerator *cg)
@@ -570,3 +571,65 @@ OMR::RV::TreeEvaluator::ArrayCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	// TODO:RV: Enable TR::TreeEvaluator::ArrayCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
 	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
+
+static TR::Register *
+commonMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+   {
+   TR_ASSERT(node->getNumChildren() == 2, "The number of children for imax/imin/lmax/lmin must be 2.");
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->gprClobberEvaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+
+   TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *joinLabel = generateLabelSymbol(cg);
+
+   startLabel->setStartInternalControlFlow();
+   joinLabel->setEndInternalControlFlow();
+
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   addDependency(deps, src1Reg, TR::RealRegister::NoReg, TR_GPR, cg);
+   addDependency(deps, src2Reg, TR::RealRegister::NoReg, TR_GPR, cg);
+
+   generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
+   generateBTYPE(op, node, joinLabel, src1Reg, src2Reg, cg);
+   generateITYPE(TR::InstOpCode::_addi, node, src1Reg, src2Reg, 0, cg);
+   generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
+
+   node->setRegister(src1Reg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return src1Reg;
+   }
+
+// Also handles lmax
+TR::Register *
+OMR::RV::TreeEvaluator::imaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonMinMaxEvaluator(node, TR::InstOpCode::_bge, cg);
+   }
+
+// Also handles lumax
+TR::Register *
+OMR::RV::TreeEvaluator::iumaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonMinMaxEvaluator(node, TR::InstOpCode::_bgeu, cg);
+   }
+
+
+// Also handles lmin
+TR::Register *
+OMR::RV::TreeEvaluator::iminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonMinMaxEvaluator(node, TR::InstOpCode::_blt, cg);
+   }
+
+// Also handles lumin
+TR::Register *
+OMR::RV::TreeEvaluator::iuminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonMinMaxEvaluator(node, TR::InstOpCode::_bltu, cg);
+   }
+

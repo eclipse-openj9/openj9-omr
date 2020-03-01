@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -4078,6 +4078,7 @@ TEST(PortVmemTest, vmem_testOverlappingSegments)
 
 	reportTestEntry(OMRPORTLIB, testName);
 	memset(keepCycles, 0, CYCLES);
+	memset(vmemID, 0, sizeof(*vmemID) * CYCLES);
 	srand(10);
 
 	portTestEnv->log("Cycles: %d\n\n", CYCLES);
@@ -4135,6 +4136,9 @@ exit:
 	freed = 0;
 	for (j = 0; j < CYCLES; j++) {
 		if (keepCycles[j] >= i) {
+			if (vmemID[j].address == 0) {
+				continue;
+			}
 			int32_t rc = omrvmem_free_memory(vmemID[j].address, vmemParams[j].byteAmount, &vmemID[j]);
 			if (0 == rc) {
 				freed++;

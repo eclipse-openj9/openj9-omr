@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -345,6 +345,13 @@ public:
 	
 	void scavengeRememberedSetListIndirect(MM_EnvironmentStandard *env);
 	void scavengeRememberedSetListDirect(MM_EnvironmentStandard *env);
+
+	MMINLINE void handleInactiveSurvivorCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final);
+	MMINLINE void handleSurvivorCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final);
+	MMINLINE void handleInactiveTenureCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final);
+	MMINLINE void handleTenureCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final);
+	MMINLINE void handleInactiveDeferredCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final);
+	MMINLINE void handleDeferredCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final);
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	/**
@@ -453,6 +460,10 @@ public:
 	 */
 	void abandonSurvivorTLHRemainder(MM_EnvironmentStandard *env);
 	void abandonTenureTLHRemainder(MM_EnvironmentStandard *env, bool preserveRemainders = false);
+	
+	MMINLINE bool activateSurvivorCopyScanCache(MM_EnvironmentStandard *env);
+	MMINLINE bool activateTenureCopyScanCache(MM_EnvironmentStandard *env);
+	void activateDeferredCopyScanCache(MM_EnvironmentStandard *env);
 
 	void reportGCStart(MM_EnvironmentStandard *env);
 	void reportGCEnd(MM_EnvironmentStandard *env);
@@ -672,9 +683,10 @@ public:
 	/**
 	 * All open copy caches (even if not full) are pushed onto scan queue. Unused memory is abondoned.
 	 * @param env Invoking thread, for which copy caches are to be released. Could be either GC or mutator thread.
+	 * @param flushCaches If true, really push caches to scan queue, otherwise just deactivate them for possible near future use
 	 * @param final If true (typically at the end of a cycle), abandon TLH remainders, too. Otherwise keep them for possible future copy cache refresh.
 	 */
-	void threadReleaseCaches(MM_EnvironmentBase *env, bool final);
+	void threadReleaseCaches(MM_EnvironmentBase *env, bool flushCaches, bool final);
 	
 	/**
 	 * trigger STW phase (either start or end) of a Concurrent Scavenger Cycle 
@@ -869,6 +881,7 @@ public:
 		, _concurrentState(concurrent_state_idle)
 		, _concurrentScavengerSwitchCount(0)
 		, _shouldYield(false)
+		, _concurrentPhaseStats()
 #endif /* #if defined(OMR_GC_CONCURRENT_SCAVENGER) */
 
 		, _omrVM(env->getOmrVM())

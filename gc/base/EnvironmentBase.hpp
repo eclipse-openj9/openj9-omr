@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -424,6 +424,11 @@ public:
 	 * Releases shared VM access.
 	 */
 	void releaseVMAccess();
+	
+	/**
+	 * Returns true if a mutator threads entered native code without releasing VM access
+	 */
+	MMINLINE bool inNative() { return _delegate.inNative(); }
 
 	/**
 	 * Acquire exclusive access to request a gc.
@@ -512,13 +517,11 @@ public:
 	 */
 	bool exclusiveAccessBeatenByOtherThread() { return _exclusiveAccessBeatenByOtherThread; }
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/**
 	 * Force thread to use out-of-line request for VM access. This may be required if there
 	 * is there is an event waiting to be hooked the next time the thread acquires VM access.
 	 */
 	void forceOutOfLineVMAccess() { _delegate.forceOutOfLineVMAccess(); }
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 #if defined (OMR_GC_THREAD_LOCAL_HEAP)
 	/**
@@ -588,7 +591,11 @@ public:
 	MMINLINE MM_WorkStack *getWorkStack() { return &_workStack; }
 
 	virtual void flushNonAllocationCaches() { _delegate.flushNonAllocationCaches(); }
-	virtual void flushGCCaches() {}
+	/* Flush GC specific caches (of mutator thread involved in object graph traversal)
+	 * For example, push copy caches created by Read Barrier in Concurrent Scavenger to be scanned.  
+	 * @param final if true it's done in a STW pass at the start of GC. We may do some other things beyond pushing caches, like make the unused part of cache walkable. If false (called in a middle of a GC cycle) we don't care about having heap walkable)
+	 */
+	virtual void flushGCCaches(bool final) {}
 
 	/**
 	 * Get a pointer to common GC metadata attached to this environment. The GC environment structure

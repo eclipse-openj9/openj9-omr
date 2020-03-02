@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -248,9 +248,9 @@ MM_MasterGCThread::masterThreadEntryPoint()
 		/* thread attached successfully */
 		MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
 
-		/* attachVMThread could allocate an execute a barrier (since it that point, this thread acted as a mutator thread.
+		/* attachVMThread could have allocated and execute a barrier (until point, this thread acted as a mutator thread.
 		 * Flush GC chaches (like barrier buffers) before turning into the master thread */
-		env->flushGCCaches();
+		env->flushGCCaches(true);
 
 		env->setThreadType(GC_MASTER_THREAD);
 

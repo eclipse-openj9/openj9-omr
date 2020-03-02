@@ -230,6 +230,7 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 
 	OMRAddrInfoNode result;
 	omrsock_addrinfo_t hints = NULL;
+	omrsock_socket_t socket = NULL;
 	int32_t rc = 0;
 	uint32_t length = 0;
 	int32_t family = 0;
@@ -254,6 +255,15 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 	rc = OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, resultPtr);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
+	/* Verify that omrsock_getaddrinfo and omrsock_freeaddrinfo works with NULL hints. */
+	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, (char *)"localhost", NULL, NULL, &result);
+	ASSERT_EQ(rc, 0);
+
+	OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length);
+	ASSERT_NE(length, 0);
+	
+	OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, &result);
+
 	/* Get and verify that omrsock_getaddrinfo and omrsock_freeaddrinfo works. */
 	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, (char *)"localhost", NULL, hints, &result);
 	ASSERT_EQ(rc, 0);
@@ -273,17 +283,25 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 		rc = OMRPORTLIB->sock_addrinfo_protocol(OMRPORTLIB, &result, i, &protocol);
 		EXPECT_EQ(rc, 0);
 	}
-	
-	OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, &result);
 
-	/* Verify that omrsock_getaddrinfo and omrsock_freeaddrinfo works with NULL hints. */
-	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, (char *)"localhost", NULL, NULL, &result);
-	ASSERT_EQ(rc, 0);
+	/* Try to create a socket with results. */
+	for (uint32_t i = 0; i < length; i++) {
+		EXPECT_EQ(OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, &result, i, &family), 0);
+		EXPECT_EQ(OMRPORTLIB->sock_addrinfo_socktype(OMRPORTLIB, &result, i, &sockType), 0);
+		EXPECT_EQ(OMRPORTLIB->sock_addrinfo_protocol(OMRPORTLIB, &result, i, &protocol), 0);
 
-	OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length);
-	ASSERT_NE(length, 0);
+		rc = OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, family, sockType, protocol);
+		if(0 == rc) {
+			break;
+		}
+	}
+	ASSERT_NE(socket, (void *)NULL);
 
-	OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, &result);
+	rc = OMRPORTLIB->sock_close(OMRPORTLIB, &socket);
+	EXPECT_EQ(rc, 0);
+
+	rc = OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, &result);
+	EXPECT_EQ(rc, 0);
 }
 
 /**

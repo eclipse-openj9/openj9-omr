@@ -201,6 +201,11 @@ private:
 		return shouldAbort;
 	}
 
+	/** 
+	 * A simple heuristic that projects the need for copy-scan cache size pool, based on heap size that Scavenger operates with)
+	 */	
+	uintptr_t calculateMaxCacheCount(uintptr_t activeMemorySize);
+
 public:
 	/**
 	 * Hook callback. Called when a global collect has started

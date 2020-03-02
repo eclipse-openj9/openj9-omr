@@ -267,8 +267,8 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 	incrementNewSpaceSize = OMR_MIN(incrementNewSpaceSize, _extensions->maxNewSpaceSize);
 	incrementNewSpaceSize = OMR_MIN(incrementNewSpaceSize, 256*1024*1024);
 
-	uintptr_t incrementCacheCount = incrementNewSpaceSize / _extensions->scavengerScanCacheMinimumSize;
-	uintptr_t totalActiveCacheCount = _extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW) / _extensions->scavengerScanCacheMinimumSize;
+	uintptr_t incrementCacheCount = calculateMaxCacheCount(incrementNewSpaceSize);
+	uintptr_t totalActiveCacheCount = calculateMaxCacheCount(_extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW));
 	if (0 == totalActiveCacheCount) {
 		totalActiveCacheCount += 1;
 	}
@@ -467,6 +467,12 @@ MM_Scavenger::workerSetupForGC(MM_EnvironmentStandard *env)
 	Assert_MM_false(env->_loaAllocation);
 	Assert_MM_true(NULL == env->_survivorTLHRemainderBase);
 	Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
+}
+
+uintptr_t
+MM_Scavenger::calculateMaxCacheCount(uintptr_t activeMemorySize)
+{
+	return 5 * (activeMemorySize / (_extensions->scavengerScanCacheMaximumSize + _extensions->scavengerScanCacheMinimumSize));
 }
 
 /**
@@ -4098,7 +4104,7 @@ MM_Scavenger::collectorExpanded(MM_EnvironmentBase *env, MM_MemorySubSpace *subS
 		env->_scavengerStats._tenureExpandedBytes += expandSize;
 		env->_scavengerStats._tenureExpandedTime += resizeStats->getLastExpandTime();
 
-		uintptr_t totalActiveCacheCount = _extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW) / _extensions->scavengerScanCacheMinimumSize;
+		uintptr_t totalActiveCacheCount = calculateMaxCacheCount(_extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW));
 
 		/* TODO: can fail? */
 		_scavengeCacheFreeList.resizeCacheEntries(env, totalActiveCacheCount, 0);

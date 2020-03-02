@@ -161,6 +161,8 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
 
    private:
 
+   uint32_t generateCallDescriptorValue(TR::Node* callNode);
+
    virtual TR::Instruction* addImmediateToRealRegister(TR::RealRegister * targetReg, int32_t immediate, TR::RealRegister *tempReg, TR::Node *node, TR::Instruction *cursor, bool *checkTempNeeded=NULL);
 
    TR::Instruction* fillGPRsInEpilogue(TR::Node* node, TR::Instruction* cursor);

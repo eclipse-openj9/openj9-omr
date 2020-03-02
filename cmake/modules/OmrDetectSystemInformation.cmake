@@ -67,6 +67,13 @@ macro(omr_find_semaphore_implementation)
 	endif()
 endmacro()
 
+function(omr_check_dladdr)
+	list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE")
+	list(APPEND CMAKE_REQUIRED_LIBRARIES ${CMAKE_DL_LIBS})
+	check_symbol_exists(dladdr "dlfcn.h" OMR_HAS_DLADDR)
+endfunction()
+
+
 # Translate from CMake's view of the system to the OMR view of the system.
 # Exports a number of variables indicicating platform, os, endianness, etc.
 # - OMR_ARCH_{AARCH64,X86,ARM,S390} # TODO: Add POWER
@@ -208,6 +215,7 @@ macro(omr_detect_system_information)
 	message(STATUS "OMR: The target data size is ${OMR_ENV_TARGET_DATASIZE}")
 
 	omr_find_semaphore_implementation()
+	omr_check_dladdr()
 
 	# Check if we are a multi config generator
 	# CMake 3.10 adds GENERATOR_IS_MULTI_CONFIG property

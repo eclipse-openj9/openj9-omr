@@ -5236,6 +5236,72 @@ TR::S390NOPInstruction::generateBinaryEncoding()
    return cursor;
    }
 
+int32_t
+TR::S390AlignmentNopInstruction::estimateBinaryLength(int32_t currentEstimate)
+   {
+   self()->setEstimatedBinaryLength(_alignment - 2);
+   return currentEstimate + self()->getEstimatedBinaryLength();
+   }
+
+uint8_t*
+TR::S390AlignmentNopInstruction::generateBinaryEncoding()
+   {
+   bool trace = cg()->comp()->getOption(TR_TraceCG);
+   uint32_t currentMisalign = reinterpret_cast<uintptr_t>(cg()->getBinaryBufferCursor()) % _alignment;
+
+   if (currentMisalign != 0)
+      {
+      uint32_t nopsOfLength6ToAdd = (_alignment - currentMisalign) / 6;
+      uint32_t nopsOfLength4ToAdd = ((_alignment - currentMisalign) % 6) / 4;
+      uint32_t nopsOfLength2ToAdd = (((_alignment - currentMisalign) % 6) % 4) / 2;
+      
+      if (trace)
+         traceMsg(cg()->comp(), "Expanding alignment nop %p into %u instructions: [ ", self(), nopsOfLength6ToAdd + nopsOfLength4ToAdd + nopsOfLength2ToAdd);
+
+      for (uint32_t i = 0; i < nopsOfLength2ToAdd; ++i)
+         {
+         TR::Instruction *nop = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, getNode(), self(), cg());
+
+         if (trace)
+            traceMsg(cg()->comp(), "%p ", nop);
+         }
+
+      for (uint32_t i = 0; i < nopsOfLength4ToAdd; ++i)
+         {
+         TR::Instruction *nop = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, getNode(), self(), cg());
+
+         if (trace)
+            traceMsg(cg()->comp(), "%p ", nop);
+         }
+      
+      for (uint32_t i = 0; i < nopsOfLength6ToAdd; ++i)
+         {
+         TR::Instruction *nop = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 6, getNode(), self(), cg());
+
+         if (trace)
+            traceMsg(cg()->comp(), "%p ", nop);
+         }
+
+      if (trace)
+         traceMsg(cg()->comp(), "]\n");
+      }
+   else
+      {
+      if (trace)
+         traceMsg(cg()->comp(), "Eliminating alignment nop %p, since the next instruction is already aligned\n", self());
+      }
+
+   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - currentMisalign);
+
+   // When the trace log prints the list of instructions after binary encoding, we don't want this
+   // instruction to show up any more. Removing it from the linked list of instructions does this
+   // without affecting this instruction's next pointer, so the binary encoding loop can continue
+   // and encode the actual nops we emitted as if nothing happened.
+   self()->remove();
+
+   return cg()->getBinaryBufferCursor();
+   }
+
 // ////////////////////////////////////////////////////////////////////////////////
 // TR::S390MIIInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////

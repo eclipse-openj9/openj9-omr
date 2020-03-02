@@ -280,6 +280,9 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       case TR::Instruction::IsNOP:
          print(pOutFile, (TR::S390NOPInstruction *) instr);
          break;
+      case TR::Instruction::IsAlignmentNop:
+         print(pOutFile, (TR::S390AlignmentNopInstruction *) instr);
+         break;
 #ifdef J9_PROJECT_SPECIFIC
       case TR::Instruction::IsVirtualGuardNOP:
          print(pOutFile, (TR::S390VirtualGuardNOPInstruction *) instr);
@@ -2130,6 +2133,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390NOPInstruction * instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "NOP");
+   trfflush(pOutFile);
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::S390AlignmentNopInstruction * instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s\t; Align to %u bytes", instr->getOpCode().getMnemonicName(), instr->getAlignment());
    trfflush(pOutFile);
    }
 

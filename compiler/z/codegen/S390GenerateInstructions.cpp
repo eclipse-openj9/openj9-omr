@@ -3211,3 +3211,11 @@ template TR::Instruction * generateS390CompareAndBranchInstruction<int64_t>(
                     bool targetIsFarAndCold = false,
                     TR::Instruction        *preced = 0,
                     TR::RegisterDependencyConditions *cond = 0); 
+
+TR::Instruction*
+generateAlignmentNopInstruction(TR::CodeGenerator *cg, TR::Node *node, uint32_t alignment, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (INSN_HEAP) TR::S390AlignmentNopInstruction(node, alignment, preced, cg);
+   return new (INSN_HEAP) TR::S390AlignmentNopInstruction(node, alignment, cg);
+   }

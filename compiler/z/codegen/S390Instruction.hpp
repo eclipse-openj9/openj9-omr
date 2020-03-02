@@ -6075,6 +6075,39 @@ class S390NOPInstruction : public TR::Instruction
 
    };
 
+class S390AlignmentNopInstruction : public TR::Instruction
+   {
+   uint32_t _alignment;
+
+   void setAlignment(uint32_t alignment)
+      {
+      TR_ASSERT_FATAL((alignment % 2) == 0, "Alignment must be a multiple of 2");
+      _alignment = alignment != 0 ? alignment : 2;
+      }
+
+public:
+   S390AlignmentNopInstruction(TR::Node *n, uint32_t alignment, TR::CodeGenerator *cg)
+      : TR::Instruction(TR::InstOpCode::NOP, n, cg)
+      {
+      setAlignment(alignment);
+      }
+
+   S390AlignmentNopInstruction(TR::Node *n, uint32_t alignment, TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : TR::Instruction(TR::InstOpCode::NOP, n, precedingInstruction, cg)
+      {
+      setAlignment(alignment);
+      }
+
+   virtual char *description() { return "S390AlignmentNopInstruction"; }
+   virtual Kind getKind() { return IsAlignmentNop; }
+
+   uint32_t getAlignment() { return _alignment; }
+
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t *generateBinaryEncoding();
+
+   };
+
 ////////////////////////////////////////////////////////////////////////////////
 // S390IInstruction Class Definition
 ////////////////////////////////////////////////////////////////////////////////

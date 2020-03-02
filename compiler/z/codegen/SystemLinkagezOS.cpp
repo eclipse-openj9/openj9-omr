@@ -615,15 +615,43 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::N
    {
    if (comp()->target().is32Bit())
       {
-      uint32_t callDescriptorValue = TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(this, callNode);
+      // The XPLINK Call Descriptor is created only on 31-bit targets when:
+      // 
+      // 1. The call site is so far removed from the Entry Point Marker of the function that its offset cannot be contained
+      // in the space available in the call NOP descriptor following the call site.
+      // 
+      // 2. The call contains a return value or parameters that are passed in registers or in ways incompatible with non-
+      // XPLINK code.
+      // 
+      // The XPLINK Call Descriptor has the following format:
+      // 
+      //                                        0x01                               0x02                               0x03
+      // 0x00 +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
+      //      | Signed offset, in bytes, to Entry Point Marker (if it exists)                                                                             |
+      // 0x04 +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
+      //      | Linkage and Return Value Adjust  | Parameter Adjust                                                                                       |
+      //      +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
+      //
+      // We generate the XPLINK call descriptor inline right after the call instead of the literal pool because some
+      // z/OS 31-bit programs tend to be rather large, and the distance between the call location and the literal pool
+      // may exceed the number of bits we have to encode the offset in the NOP descriptor.
 
-      TR::S390ConstantDataSnippet* callDescriptor = new (self()->trHeapMemory()) TR::XPLINKCallDescriptorSnippet(cg(), this, callDescriptorValue);
-      cg()->addDataConstantSnippet(callDescriptor);
+      TR::LabelSymbol* xplinkCallDescriptorBeginLabel = generateLabelSymbol(cg());
+      TR::LabelSymbol* xplinkCallDescriptorEndLabel = generateLabelSymbol(cg());
 
       uint32_t nopDescriptor = 0x47000000 | (static_cast<uint32_t>(callType) << 16);
       cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, nopDescriptor, cursor);
 
-      cg()->addRelocation(new (cg()->trHeapMemory()) XPLINKCallDescriptorRelocation(cursor, callDescriptor->getSnippetLabel()));
+      cg()->addRelocation(new (cg()->trHeapMemory()) XPLINKCallDescriptorRelocation(cursor, xplinkCallDescriptorBeginLabel));
+
+      cursor = generateS390BranchInstruction(cg(), InstOpCode::BRC, InstOpCode::COND_BRC, node, xplinkCallDescriptorEndLabel, cursor);
+      cursor = generateAlignmentNopInstruction(cg(), node, 8, cursor);
+      cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, xplinkCallDescriptorBeginLabel, cursor);
+      cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, 0x00000000, cursor);
+
+      uint32_t callDescriptorValue = TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(this, callNode);
+      cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, callDescriptorValue, cursor);
+      cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, xplinkCallDescriptorEndLabel, cursor);
       }
    else
       {

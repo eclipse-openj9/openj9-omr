@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1512,7 +1512,7 @@ TR_InlinerBase::createVirtualGuard(
       {
       TR::KnownObjectTable *knot = comp()->getOrCreateKnownObjectTable();
       if (knot)
-         heuristicTrace(tracer(),"  createVirtualGuard: MutableCallSite.epoch is %p.obj%d (%p.%p)", guard->_mutableCallSiteObject, guard->_mutableCallSiteEpoch, *guard->_mutableCallSiteObject, *knot->getPointerLocation(guard->_mutableCallSiteEpoch));
+         heuristicTrace(tracer(),"  createVirtualGuard: MutableCallSite.epoch is %p.obj%d (%p.%p)", guard->_mutableCallSiteObject, guard->_mutableCallSiteEpoch, *guard->_mutableCallSiteObject, knot->getPointer(guard->_mutableCallSiteEpoch));
       return TR_VirtualGuard::createMutableCallSiteTargetGuard(comp(), calleeIndex, callNode, destination, guard->_mutableCallSiteObject, guard->_mutableCallSiteEpoch);
       }
 

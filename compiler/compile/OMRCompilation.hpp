@@ -1052,6 +1052,12 @@ public:
     */
    DebugCounterMap &getDebugCounterMap() { return _debugCounterMap; }
 
+   /**
+    * @brief Answers whether the compilation is an out of process compilation
+    * @return true if the compilation is an out of process compilation
+    */
+   static bool isOutOfProcessCompilation() { return false; }
+
 public:
 #ifdef J9_PROJECT_SPECIFIC
    // Access to this list must be performed with assumptionTableMutex in hand

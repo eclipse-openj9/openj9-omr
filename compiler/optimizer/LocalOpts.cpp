@@ -6841,7 +6841,10 @@ int32_t TR_InvariantArgumentPreexistence::perform()
        parmInfo.setSymbol(p);
        TR::SymbolReference* symRef = methodSymbol->getParmSymRef(p->getSlot());
        TR::KnownObjectTable::Index koi = symRef->getKnownObjectIndex();
-       if (koi != TR::KnownObjectTable::UNKNOWN)
+       if ((koi != TR::KnownObjectTable::UNKNOWN)
+           && knot
+           && !comp()->isOutOfProcessCompilation()
+          )
           {
           TR::VMAccessCriticalSection setClass(comp());
           TR_OpaqueClassBlock *fixedClazz = TR::Compiler->cls.objectClass(comp(), knot->getPointer(koi));
@@ -6981,7 +6984,9 @@ int32_t TR_InvariantArgumentPreexistence::perform()
             if (enableTrace)
                traceMsg(comp(), "PREX:      Parm %d is arg %p parmInfo %p\n", index, arg, &parmInfo);
 
-            if (arg->hasKnownObjectIndex())
+            if (arg->hasKnownObjectIndex()
+               && !comp()->isOutOfProcessCompilation()
+               )
                {
                if (enableTrace)
                   traceMsg(comp(), "PREX:        Parm %d is known object obj%d\n", index, arg->getKnownObjectIndex());
@@ -7281,7 +7286,10 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
 
    // Bonus goodies for known objects
    //
-   if (receiver->getSymbolReference() && receiver->getSymbolReference()->hasKnownObjectIndex())
+   if (receiver->getSymbolReference()
+       && receiver->getSymbolReference()->hasKnownObjectIndex()
+       && !comp()->isOutOfProcessCompilation()
+      )
       {
       if (trace())
          traceMsg(comp(), "PREX:          Receiver is obj%d\n", receiver->getSymbolReference()->getKnownObjectIndex());

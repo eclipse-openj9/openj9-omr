@@ -1529,6 +1529,11 @@ static const char *getFieldSignature(OMR::ValuePropagation *vp, TR::Node *node, 
  */
 static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
    {
+   // Access to VM for multiple operations including KnownObjectTable::getIndex()
+   // is not supported at the server for OMR.
+   if (vp->comp()->isOutOfProcessCompilation())
+      return false;
+
    TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
    if (!knot)
       return false;

@@ -1102,8 +1102,11 @@ TraceException=Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_parseDashFa
 TraceException=Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_parseSecondAddressFailed Group=mem Overhead=1 Level=5 NoEnv Template="findAvailableMemoryBlockNoMalloc parser failed to get second address from line (%s)"
 TraceException=Trc_PRT_vmem_omrvmem_findAvailableMemoryBlockNoMalloc_addressesMismatch Group=mem Overhead=1 Level=5 NoEnv Template="findAvailableMemoryBlockNoMalloc parser found addresses mismatch from line (%s)"
 
-TraceEntry=Trc_PRT_sysinfo_get_processor_description_Entered Group=j9sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_get_processor_description: desc = %p"
-TraceExit=Trc_PRT_sysinfo_get_processor_description_Exit Group=j9sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_get_processor_description: returning with %zd"
+TraceEntry=Trc_PRT_sysinfo_get_processor_description_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_get_processor_description: desc = %p"
+TraceExit=Trc_PRT_sysinfo_get_processor_description_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_get_processor_description: returning with %zd"
 
 TraceEntry=Trc_PRT_sysinfo_processor_has_feature_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_processor_has_feature: desc = %p, feature = %d"
-TraceExit=Trc_PRT_sysinfo_processor_has_feature_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_processor_has_feature: returning with %zu."
+TraceExit=Trc_PRT_sysinfo_processor_has_feature_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_processor_has_feature: returning with %zu"
+
+TraceEntry=Trc_PRT_sysinfo_processor_disable_feature_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_processor_disable_feature: desc = %p, feature = %d"
+TraceExit=Trc_PRT_sysinfo_processor_disable_feature_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_processor_disable_feature: returning with %zd"

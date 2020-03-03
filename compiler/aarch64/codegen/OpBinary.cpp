@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -389,6 +389,8 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x9BA08000,	/* UMSUBL    	umsubl	 */
 		0x9B400000,	/* SMULH     	smulh	 */
 		0x9BC00000,	/* UMULH     	umulh	 */
+		0X1F400000,	/* FMADD        fmaddd   */
+		0X1F000000,	/* FMADD        fmadds   */
 	/* Data-processing (2 source) */
 		0x9AC04C00,	/* CRC32X    	crc32x	 */
 		0x9AC05C00,	/* CRC32CX   	crc32cx	 */

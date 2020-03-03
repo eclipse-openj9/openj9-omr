@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -390,6 +390,8 @@
 		umsubl,                                                 	/* 0x9BA08000	UMSUBL    	 */
 		smulh,                                                  	/* 0x9B400000	SMULH     	 */
 		umulh,                                                  	/* 0x9BC00000	UMULH     	 */
+		fmaddd,                                                 	/* 0X1F000000   FMADD        */
+		fmadds,                                                 	/* 0X1F400000   FMADD        */
 	/* Data-processing (2 source) */
 		crc32x,                                                 	/* 0x9AC04C00	CRC32X    	 */
 		crc32cx,                                                	/* 0x9AC05C00	CRC32CX   	 */

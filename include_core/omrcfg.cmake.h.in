@@ -150,11 +150,6 @@
 #cmakedefine OMR_GC_TLH_PREFETCH_FTA
 #cmakedefine OMR_GC_VLHGC
 
-/**
- * Flag to indicate that on 64-bit platforms, the monitor slot in object headers is a U32 rather than a UDATA.
- * ifRemoved: The monitor slot is a UDATA.
- */
-#cmakedefine OMR_INTERP_SMALL_MONITOR_SLOT
 
 /**
  * Add support for CUDA

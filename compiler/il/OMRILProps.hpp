@@ -216,7 +216,6 @@ namespace ILProp2
       LeftRotate                   = 0x00001000,
       UnsignedCompare              = 0x00002000,
       OverflowCompare              = 0x00004000,
-      Ternary                      = 0x00008000,
       Select                       = 0x00008000,
       SelectAdd                    = 0x00010000,
       SelectSub                    = 0x00020000,

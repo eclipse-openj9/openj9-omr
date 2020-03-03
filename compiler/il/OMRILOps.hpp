@@ -228,7 +228,6 @@ public:
    bool isRotate()                   const { return properties2().testAny(ILProp2::LeftRotate); }
    bool isUnsignedCompare()          const { return properties2().testAny(ILProp2::UnsignedCompare); }
    bool isOverflowCompare()          const { return properties2().testAny(ILProp2::OverflowCompare); }
-   bool isTernary()                  const { return properties2().testAny(ILProp2::Select); }
    bool isSelect()                   const { return properties2().testAny(ILProp2::Select); }
    bool isSelectAdd()                const { return properties2().testAny(ILProp2::SelectAdd); }
    bool isSelectSub()                const { return properties2().testAny(ILProp2::SelectSub); }

@@ -126,7 +126,7 @@ omrsock_getaddrinfo_length(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_
  * \arg OMRPORT_ERROR_INVALID_ARGUMENTS when handle or index arguments are invalid.
  */
 int32_t
-omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, int32_t index)
+omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, uint32_t index)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
@@ -144,7 +144,7 @@ omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_
  * \arg OMRPORT_ERROR_INVALID_ARGUMENTS when handle or index arguments are invalid.
  */
 int32_t
-omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, int32_t index)
+omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, uint32_t index)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
@@ -162,7 +162,7 @@ omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinf
  * \arg OMRPORT_ERROR_INVALID_ARGUMENTS when handle or index arguments are invalid.
  */
 int32_t
-omrsock_getaddrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *protocol, int32_t index)
+omrsock_getaddrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *protocol, uint32_t index)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }

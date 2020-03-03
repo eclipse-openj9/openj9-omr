@@ -154,17 +154,6 @@ TEST(PortSockTest, create_hints_and_element_extraction)
 	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, length);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
-	/* Testing invalid arguments: Index is smaller than 0 when querying */
-
-	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, hints, &family, -1);
-	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
-
-	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, hints, &sockType, -1);
-	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
-
-	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, -1);
-	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
-
 	/* Get and verify elements of the newly created hints. */
 
 	rc = OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, hints, &length);

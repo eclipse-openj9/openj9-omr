@@ -43,10 +43,12 @@
 #include <mach-o/dyld.h>
 #include <sys/param.h>
 #include <sys/mount.h>
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
+
+#if defined(OSX) || defined(OMR_OS_BSD)
 #include <sys/types.h>
 #include <sys/sysctl.h>
-
-#endif /* defined(LINUX) && !defined(OMRZTPF) */
+#endif /* defined(OSX) || defined(OMR_OS_BSD) */
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -2914,9 +2916,16 @@ omrsysinfo_get_physical_memory(struct OMRPortLibrary *portLibrary)
 	J9CVT * __ptr32 cvtp = ((J9PSA * __ptr32)0)->flccvt;
 	J9RCE * __ptr32 rcep = cvtp->cvtrcep;
 	result = ((U_64)rcep->rcepool * J9BYTES_PER_PAGE);
-#elif defined(OSX)
+#elif defined(OSX) || defined(OMR_OS_BSD)
 	{
-		int name[2] = {CTL_HW, HW_MEMSIZE};
+		int name[2] = {
+			CTL_HW,
+#if defined(OSX)
+			HW_MEMSIZE
+#elif defined(OMR_OS_BSD)
+			HW_PHYSMEM
+#endif
+};
 		size_t len = sizeof(result);
 
 		if (0 != sysctl(name, 2, &result, &len, NULL, 0)) {

@@ -70,7 +70,7 @@ endmacro()
 function(omr_check_dladdr)
 	list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE")
 	list(APPEND CMAKE_REQUIRED_LIBRARIES ${CMAKE_DL_LIBS})
-	check_symbol_exists(dladdr "dlfcn.h" OMR_HAS_DLADDR)
+	check_symbol_exists(dladdr "dlfcn.h" OMR_HAVE_DLADDR)
 endfunction()
 
 

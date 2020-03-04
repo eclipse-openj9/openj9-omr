@@ -256,7 +256,7 @@
 #endif
 
 #if defined(LINUX) || defined(OSX)
-#define OMR_HAS_DLADDR
+#define OMR_HAVE_DLADDR
 #endif
 
 /**

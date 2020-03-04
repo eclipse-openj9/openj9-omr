@@ -162,7 +162,7 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 	/* dlopen(2) called with NULL filename opens a handle to current executable. */
 	handle = dlopen(openExec ? NULL : openName, lazyOrNow);
 
-#if defined(OMR_HAS_DLADDR)
+#if defined(OMR_HAVE_DLADDR)
 	if ((NULL == handle) && !openExec) {
 		/* last ditch, try dir port lib DLL is in */
 		char portLibDir[MAX_STRING_LENGTH];

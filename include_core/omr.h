@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2019 IBM Corp. and others
+ * Copyright (c) 2013, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,7 +42,9 @@
 #endif /* J9ZOS390 */
 
 #if !defined(OMR_GC_COMPRESSED_POINTERS)
+#if !defined(OMR_GC_FULL_POINTERS)
 #define OMR_GC_FULL_POINTERS
+#endif /* !defined(OMR_GC_FULL_POINTERS) */
 #endif /* !defined(OMR_GC_COMPRESSED_POINTERS) */
 
 #ifdef __cplusplus

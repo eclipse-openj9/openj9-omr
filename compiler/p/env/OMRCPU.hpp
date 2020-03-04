@@ -38,25 +38,24 @@ namespace OMR { typedef OMR::Power::CPU CPUConnector; }
 #include "env/jittypes.h"
 #include "infra/Assert.hpp"
 
-#define VALID_PROCESSOR TR_ASSERT(id() >= TR_FirstPPCProcessor && id() <= TR_LastPPCProcessor, "Not a valid PPC Processor Type")
-
 namespace OMR
 {
 
 namespace Power
 {
 
-class CPU : public OMR::CPU
+class OMR_EXTENSIBLE CPU : public OMR::CPU
    {
 protected:
 
    CPU() : OMR::CPU() {}
+   CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription) {}
 
 public:
 
-   bool getSupportsHardwareSQRT() { VALID_PROCESSOR; return id() >= TR_FirstPPCHwSqrtProcessor; }
-   bool getSupportsHardwareRound() { VALID_PROCESSOR; return id() >= TR_FirstPPCHwRoundProcessor; }
-   bool getSupportsHardwareCopySign() { VALID_PROCESSOR; return id() >= TR_FirstPPCHwCopySignProcessor;}
+   bool getSupportsHardwareSQRT();
+   bool getSupportsHardwareRound();
+   bool getSupportsHardwareCopySign();
 
    bool getPPCis64bit();
    bool getPPCSupportsVMX() { return false; }

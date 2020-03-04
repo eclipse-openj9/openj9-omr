@@ -45,7 +45,7 @@ namespace OMR
 namespace Z
 {
 
-class CPU : public OMR::CPU
+class OMR_EXTENSIBLE CPU : public OMR::CPU
    {
    public:
 
@@ -261,8 +261,7 @@ class CPU : public OMR::CPU
    protected:
 
    CPU();
-
-   protected:
+   CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription) {}
 
    enum
       {

@@ -135,7 +135,7 @@ OMR::Z::CPU::getSupportsHardwareSQRT()
 bool
 OMR::Z::CPU::hasPopulationCountInstruction()
    {
-   return getSupportsMiscellaneousInstructionExtensions3Facility();
+   return self()->getSupportsMiscellaneousInstructionExtensions3Facility();
    }
 
 bool

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2016 IBM Corp. and others
+# Copyright (c) 2016, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,6 +33,7 @@ CONFIGURE_ARGS += \
   --enable-OMRTHREAD_LIB_UNIX \
   --enable-OMR_ARCH_X86 \
   --enable-OMR_ENV_DATA64 \
+  --enable-OMR_GC_FULL_POINTERS \
   --enable-OMR_ENV_LITTLE_ENDIAN \
   --enable-OMR_GC_TLH_PREFETCH_FTA \
   --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \

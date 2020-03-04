@@ -32,6 +32,7 @@ CONFIGURE_ARGS += \
 	--build=$(shell eval ${TOOLCHAIN} -dumpmachine) \
 	--host=$(shell eval '${CHOST}-gcc' -dumpmachine) \
 	--enable-OMR_ARCH_ARM \
+    --enable-OMR_GC_FULL_POINTERS \
 	--enable-OMR_ENV_LITTLE_ENDIAN \
 	--enable-OMR_EXAMPLE \
 	--enable-OMR_GC \

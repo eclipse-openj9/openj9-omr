@@ -657,22 +657,25 @@ omrsysinfo_processor_has_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 }
 
 intptr_t
-omrsysinfo_processor_disable_feature(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature)
+omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature, BOOLEAN enable)
 {
 	intptr_t rc = -1;
-	Trc_PRT_sysinfo_processor_disable_feature_Entered(desc, feature);
+	Trc_PRT_sysinfo_processor_set_feature_Entered(desc, feature, enable);
 
 	if ((NULL != desc) && (feature < (OMRPORT_SYSINFO_OS_FEATURES_SIZE * 32))) {
 		uint32_t featureIndex = feature / 32;
 		uint32_t featureShift = feature % 32;
 
-		if (OMR_ARE_ALL_BITS_SET(desc->features[featureIndex], 1u << featureShift)) {
-			desc->features[featureIndex] -= (1u << featureShift);
-			rc = 0;
+		if (enable) {
+			desc->features[featureIndex] |= (1u << featureShift);
 		}
+		else {
+			desc->features[featureIndex] &= ~(1u << featureShift);
+		}
+		rc = 0;
 	}
 
-	Trc_PRT_sysinfo_processor_disable_feature_Exit(rc);
+	Trc_PRT_sysinfo_processor_set_feature_Exit(rc);
 	return rc;
 }
 

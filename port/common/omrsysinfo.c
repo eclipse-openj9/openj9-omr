@@ -129,7 +129,7 @@ omrsysinfo_processor_has_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 }
 
 /**
- * Disable provided CPU feature.
+ * Enable or disable provided CPU feature.
  *
  * @param[in] portLibrary The port library.
  * @param[in] desc The struct that will contain the CPU type and features.
@@ -138,13 +138,14 @@ omrsysinfo_processor_has_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
  * @return 0 on success, -1 on failure
  */
 intptr_t
-omrsysinfo_processor_disable_feature(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature)
+omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature, BOOLEAN enable)
 {
-	Trc_PRT_sysinfo_processor_disable_feature_Entered(desc, feature);
+	Trc_PRT_sysinfo_processor_set_feature_Entered(desc, feature, enable);
 	intptr_t rc = OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
-	Trc_PRT_sysinfo_processor_disable_feature_Exit(rc);
+	Trc_PRT_sysinfo_processor_set_feature_Exit(rc);
 	return rc;
 }
+
 /**
  * Query the operating system for environment variables.
  *

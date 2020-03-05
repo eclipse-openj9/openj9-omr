@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -758,12 +758,12 @@ TR::VPClassType *TR::VPUnresolvedClass::getArrayClass(OMR::ValuePropagation *vp)
 
 bool TR::VPUnresolvedClass::isReferenceArray(TR::Compilation *comp)
    {
-   return _sig[0] == '[' && (_sig[1] == '[' || _sig[1] == 'L');
+   return _sig[0] == '[' && (_sig[1] == '[' || _sig[1] == 'L' || _sig[1] == 'Q');
    }
 
 bool TR::VPUnresolvedClass::isPrimitiveArray(TR::Compilation *comp)
    {
-   return _sig[0] == '[' && _sig[1] != '[' && _sig[1] != 'L';
+   return _sig[0] == '[' && _sig[1] != '[' && _sig[1] != 'L'  && _sig[1] != 'Q';
    }
 
 bool TR::VPNullObject::isNullObject()
@@ -864,6 +864,7 @@ TR::VPConstraint *TR::VPConstraint::create(OMR::ValuePropagation *vp, const char
    switch (sig[0])
       {
       case 'L':
+      case 'Q':
       case '[':
          return TR::VPClassType::create(vp, sig, len, method, isFixedClass);
       case 'B':
@@ -3392,8 +3393,8 @@ TR::VPConstraint *TR::VPResolvedClass::intersect1(TR::VPConstraint *other, OMR::
             otherLen--;
             }
 
-         if (((*thisSig != 'L') && (*thisSig != '[')) &&
-             ((*otherSig == 'L') || (*otherSig == '[')))
+         if (((*thisSig != 'L') && (*thisSig != '[') && (*thisSig != 'Q')) &&
+             ((*otherSig == 'L') || (*otherSig == '[') || (*otherSig == 'Q')))
             return NULL;
 
          return this;
@@ -3494,8 +3495,10 @@ TR::VPConstraint *TR::VPFixedClass::intersect1(TR::VPConstraint *other, OMR::Val
             otherLen--;
             }
 
-         if ((*thisSig != 'L') && ((*otherSig == 'L') || (*otherSig == '[')))
+         // Test if thisSig is primitive or an array, and otherSig is any kind of reference type
+         if ((*thisSig != 'L') && (*thisSig != 'Q') && ((*otherSig == 'L') || (*otherSig == '[') || (*otherSig == 'Q')))
             {
+            // Test if thisSig is not an array, or otherSig is not a java/lang/Object array
             if (! ((*thisSig == '[') && (otherLen == 18 && !strncmp(otherSig, "Ljava/lang/Object;", 18))) )
                return NULL;
             }

@@ -275,8 +275,9 @@ static int32_t arrayElementSize(const char *signature, int32_t len, TR::Node *no
          case 'J': return 8;
          case 'Z': return static_cast<int32_t>(TR::Compiler->om.elementSizeOfBooleanArray());
          case 'L':
+         case 'Q':
          default :
-                   return TR::Compiler->om.sizeofReferenceField();
+            return TR::Compiler->om.sizeofReferenceField();
          }
       }
 
@@ -1738,7 +1739,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
                         int32_t len;
                         const char *sig = symRef->getTypeSignature(len);
                         if (sig && (len > 0) &&
-                            (sig[0] == '[' || sig[0] == 'L'))
+                            (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
                            {
                            int32_t elementSize = arrayElementSize(sig, len, node, vp);
                            if (elementSize != 0)
@@ -1771,7 +1772,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
                            {
                            int32_t len;
                            const char *sig = getFieldSignature(vp, node, len);
-                           if (sig && (len > 0) && (sig[0] == '[' || sig[0] == 'L'))
+                           if (sig && (len > 0) && (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
                               {
                               int32_t elementSize = arrayElementSize(sig, len, node, vp);
                               if (elementSize != 0)
@@ -1882,7 +1883,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
                   if (classBlock != jlClass)
                      {
                      constraint = TR::VPClassType::create(vp, sig, len, symRef->getOwningMethod(vp->comp()), isFixed, classBlock);
-                     if (*sig == '[' || sig[0] == 'L')
+                     if (*sig == '[' || sig[0] == 'L' || sig[0] == 'Q')
                         {
                         int32_t elementSize = arrayElementSize(sig, len, node, vp);
                         if (elementSize != 0)
@@ -2554,7 +2555,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
 
                         sig = symRef->getTypeSignature(len);
                         if (sig && (len > 0) &&
-                            (sig[0] == '[' || sig[0] == 'L'))
+                            (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
                            {
                            elementSize = arrayElementSize(sig, len, node, vp);
                            if (elementSize != 0)
@@ -2584,7 +2585,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
                         {
                         arrLength = arrayFieldInfo->getDimensionInfo(0);
                         if (arrLength >= 0 && sig && (len > 0) &&
-                            (sig[0] == '[' || sig[0] == 'L'))
+                            (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
                            {
                            elementSize = arrayElementSize(sig, len, node, vp);
                            if (elementSize != 0)
@@ -2679,7 +2680,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
                {
                constraint = TR::VPClassType::create(vp, sig, len, method, isFixed, classBlock);
 
-               if (*sig == '[' || sig[0] == 'L')
+               if (*sig == '[' || sig[0] == 'L' || sig[0] == 'Q')
                   {
                   elementSize = arrayElementSize(sig, len, node, vp);
                   if (elementSize != 0)

@@ -2096,28 +2096,24 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
 
                if (self()->isSkipGPRsForFloatParms())
                   {
-                  if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
-                     {
-                     numIntegerArgs++;
-                     }
+                  numIntegerArgs++;
                   }
                break;
                }
          case TR::Double:
 #ifdef J9_PROJECT_SPECIFIC
          case TR::DecimalDouble:
+#endif
             argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
 
             numFloatArgs++;
 
             if (self()->isSkipGPRsForFloatParms())
                {
-               if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
-                  {
-                  numIntegerArgs += (self()->cg()->comp()->target().is64Bit()) ? 1 : 2;
-                  }
+               numIntegerArgs += (self()->cg()->comp()->target().is64Bit()) ? 1 : 2;
                }
             break;
+#ifdef J9_PROJECT_SPECIFIC
          case TR::DecimalLongDouble:
             if (numFloatArgs%2 == 1)
                { // need to skip fp arg 'hole' for long double arg

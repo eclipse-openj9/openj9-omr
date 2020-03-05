@@ -48,6 +48,7 @@ ifeq (aix_ppc-64, $(SPEC))
     --enable-OMRTHREAD_LIB_AIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
+    --enable-OMR_GC_FULL_POINTERS \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
     --enable-OMR_THR_FORK_SUPPORT
 endif
@@ -56,6 +57,7 @@ ifeq (aix_ppc, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_AIX \
     --enable-OMR_ARCH_POWER \
+    --enable-OMR_GC_FULL_POINTERS \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
     --enable-OMR_THR_FORK_SUPPORT
 endif

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,5 +32,6 @@ set(OMR_NOTIFY_POLICY_CONTROL ON CACHE BOOL "")
 set(OMR_THR_CUSTOM_SPIN_OPTIONS ON CACHE BOOL "")
 set(OMR_THR_SPIN_WAKE_CONTROL ON CACHE BOOL "")
 set(OMR_THR_THREE_TIER_LOCKING ON CACHE BOOL "")
+set(OMR_GC_FULL_POINTERS ON CACHE BOOL "")
 
 set(OMR_PORT_SOCKET_SUPPORT ON CACHE BOOL "")

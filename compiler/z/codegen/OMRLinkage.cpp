@@ -2035,7 +2035,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          argSize += gprSize;
       }
 
-   bool isXPLinkToPureOSLinkageCall = false;
    if (!self()->isFirstParmAtFixedOffset())
       {
       stackOffset = argSize;
@@ -2043,23 +2042,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
    else
       {
       stackOffset = self()->getOffsetToFirstParm();
-
-      if (isXPLinkToPureOSLinkageCall)
-         {
-         // Load argument list (GPR1) pointer here in XPLink to OS linkage call
-         // The OS linkage argument list is embedded in the XPLink outbound argument area
-         // at offset 8 instead of 0 (to bypass collision with long displacement slot)
-         TR::Register *r1Reg = self()->cg()->allocateRegister();
-         if (stackOffset == self()->getOffsetToLongDispSlot())
-            {
-            stackOffset += 8; // avoid first parm at long displacement slot
-            }
-         TR::RealRegister * stackPtr = self()->getNormalStackPointerRealRegister();
-         generateRXInstruction(self()->cg(), TR::InstOpCode::LA, callNode, r1Reg,
-                   generateS390MemoryReference(stackPtr, stackOffset, self()->cg()));
-         dependencies->addPreCondition(r1Reg, TR::RealRegister::GPR1);
-         self()->cg()->stopUsingRegister(r1Reg);
-         }
       }
 
    //store env register

@@ -6773,7 +6773,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
       }
 
    static const char *disablePREX = feGetEnv("TR_disablePREX");
-   if (disablePREX || comp()->getOptions()->realTimeGC())
+   if (!comp()->isRecompilationEnabled() || disablePREX || comp()->getOptions()->realTimeGC())
       return 0;
 
    {

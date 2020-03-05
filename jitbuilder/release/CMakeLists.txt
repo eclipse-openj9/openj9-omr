@@ -74,6 +74,5 @@ endif()
 
 
 # Additional Tests: These may not run properly on all platforms
-# Mandelbrot takes arguments for its test
-# so will require we enhance create_jitbuilder_target.
-#create_jitbuilder_target(mandelbrot   cpp/samples/Mandelbrot.cpp)
+# Mandelbrot takes arguments for its test so will require we enhance create_jitbuilder_test
+#create_jitbuilder_test(mandelbrot cpp/samples/Mandelbrot.cpp)

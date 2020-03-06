@@ -8946,28 +8946,6 @@ static void addDelayedConvertedGuard (TR::Node* node,
    }
 
 
-#ifdef J9_PROJECT_SPECIFIC
-TR_ResolvedMethod * findSingleImplementer(
-   TR_OpaqueClassBlock * thisClass, int32_t cpIndexOrVftSlot, TR_ResolvedMethod * callerMethod, TR::Compilation * comp, bool locked, TR_YesNoMaybe useGetResolvedInterfaceMethod)
-   {
-   if (comp->getOption(TR_DisableCHOpts))
-      return 0;
-
-
-
-   TR_PersistentClassInfo * classInfo = comp->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(thisClass, comp, true);
-   if (!classInfo)
-      {
-      return 0;
-      }
-
-   TR_ResolvedMethod *implArray[2]; // collect maximum 2 implemeters if you can
-   int32_t implCount = TR_ClassQueries::collectImplementorsCapped(classInfo, implArray, 2, cpIndexOrVftSlot, callerMethod, comp, locked, useGetResolvedInterfaceMethod);
-   return (implCount == 1 ? implArray[0] : 0);
-   }
-#endif
-
-
 // Handles ificmpeq, ificmpne, iflcmpeq, iflcmpne, ifacmpeq, ifacmpne
 //
 static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, bool branchOnEqual)
@@ -9835,7 +9813,6 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
              TR::SymbolReference* symRef = callNode->getSymbolReference();
              TR::MethodSymbol* methodSymbol = symRef->getSymbol()->castToMethodSymbol();
 
-
              if (methodSymbol && !(!methodSymbol->isInterface() && TR::Compiler->cls.isInterfaceClass(vp->comp(), objectClass)))
                 {
 
@@ -9844,7 +9821,11 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                 TR_YesNoMaybe useGetResolvedInterfaceMethod = methodSymbol->isInterface() ? TR_yes : TR_no;
                 TR::MethodSymbol::Kinds methodKind = methodSymbol->isInterface() ? TR::MethodSymbol::Interface : TR::MethodSymbol::Virtual;
 
-                TR_ResolvedMethod* rvm = findSingleImplementer (objectClass, cpIndexOrVftSlot, symRef->getOwningMethod(vp->comp()), vp->comp(), false, useGetResolvedInterfaceMethod);
+                TR_ResolvedMethod* rvm = vp->comp()->getOption(TR_DisableCHOpts) ?
+                                         NULL :
+                                         vp->comp()->getPersistentInfo()->getPersistentCHTable()->findSingleImplementer(
+                                                   objectClass, cpIndexOrVftSlot, symRef->getOwningMethod(vp->comp()),
+                                                   vp->comp(), false, useGetResolvedInterfaceMethod);
 
         TR_ScratchList<TR_PersistentClassInfo> subClasses(vp->comp()->trMemory());
 

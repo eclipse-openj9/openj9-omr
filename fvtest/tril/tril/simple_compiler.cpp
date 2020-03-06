@@ -83,19 +83,7 @@ int32_t Tril::SimpleCompiler::compileWithVerifier(TR::IlVerifier* verifier) {
     // if compilation was successful, set the entry point for the compiled body
     if (rc == 0)
        {
-#if defined(J9ZOS390)
-       struct FunctionDescriptor
-       {
-          uint64_t environment;
-          void* func;
-       };
-
-       FunctionDescriptor* fd = new FunctionDescriptor();
-       fd->environment = 0;
-       fd->func = entry_point;
-
-       entry_point = (uint8_t*) fd;
-#elif defined(AIXPPC)
+#if defined(AIXPPC)
        struct FunctionDescriptor
           {
           void* func;

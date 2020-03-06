@@ -379,7 +379,7 @@ compileMethodFromDetails(
          // not ready yet...
          //OMR::MethodMetaDataPOD *metaData = fe.createMethodMetaData(&compiler);
 
-         startPC = compiler.cg()->getCodeStart();
+         startPC = (uint8_t*)compiler.getMethodSymbol()->getMethodAddress();
          uint64_t translationTime = TR::Compiler->vm.getUSecClock() - translationStartTime;
 
          if (TR::Options::isAnyVerboseOptionSet(TR_VerboseCompileEnd, TR_VerbosePerformance))

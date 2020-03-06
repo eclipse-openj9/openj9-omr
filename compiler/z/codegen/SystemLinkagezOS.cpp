@@ -1163,6 +1163,9 @@ TR::S390zOSSystemLinkage::XPLINKFunctionDescriptorSnippet::emitSnippetBody()
    // TODO: We should not have to do this here. This should be done by the caller.
    getSnippetLabel()->setCodeLocation(cursor);
 
+   // Update the method symbol address to point to the function descriptor
+   cg()->comp()->getMethodSymbol()->setMethodAddress(cursor);
+
    if (cg()->comp()->target().is32Bit())
       {
       // Address of function's environment

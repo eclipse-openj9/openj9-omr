@@ -196,11 +196,6 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         diagnostic("%08d   %s\n", cg->getCodeLength(), comp->signature());
         }
 
-     if (comp->getCurrentMethod() == NULL)
-        {
-        comp->getMethodSymbol()->setMethodAddress(cg->getBinaryBufferStart());
-        }
-
      TR_ASSERT(cg->getCodeLength() <= cg->getEstimatedCodeLength(),
                "Method length estimate must be conservatively large\n"
                "    codeLength = %d, estimatedCodeLength = %d \n",
@@ -303,6 +298,9 @@ OMR::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator * cg, TR::CodeGe
    LexicalTimer pt(phase->getName(), comp->phaseTimer());
 
    cg->doBinaryEncoding();
+
+   // Instructions have been emitted, and now we know what the entry point is, so update the compilation method symbol
+   comp->getMethodSymbol()->setMethodAddress(cg->getCodeStart());
 
    if (debug("verifyFinalNodeReferenceCounts"))
       {

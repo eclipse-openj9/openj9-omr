@@ -291,6 +291,8 @@ public:
 	 * Informational, relating to scanning context (_flags)
 	 */
 	MMINLINE void setNoMoreSlots() { _flags |= (uintptr_t)GC_ObjectScanner::noMoreSlots; }
+	
+	MMINLINE void setMoreSlots() { _flags &= ~(uintptr_t)GC_ObjectScanner::noMoreSlots; }
 
 	MMINLINE bool hasMoreSlots() { return 0 == (GC_ObjectScanner::noMoreSlots & _flags); }
 

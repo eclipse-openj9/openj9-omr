@@ -16,7 +16,7 @@ pipeline {
                 timestamps {
                     dir('build') {
                         echo 'Configure...'
-                        sh '''cmake -Wdev -C../cmake/caches/Travis.cmake -DCMAKE_C_COMPILER=/bin/c89 -DCMAKE_CXX_COMPILER=/bin/xlc -DOMR_DDR=OFF -DOMR_THR_FORK_SUPPORT=0 ..'''
+                        sh '''cmake -Wdev -C../cmake/caches/Travis.cmake -DCMAKE_C_COMPILER=/bin/c89 -DCMAKE_CXX_COMPILER=/bin/xlc -DOMR_DDR=OFF -DOMR_THR_FORK_SUPPORT=0 -DOMR_JITBUILDER_TEST_EXTENDED=1 ..'''
                         echo 'Compile...'
                         sh '''make -j4'''
                     }

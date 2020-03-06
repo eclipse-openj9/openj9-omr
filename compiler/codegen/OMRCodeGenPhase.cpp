@@ -180,43 +180,44 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
      }
 
    if (cg->getAheadOfTimeCompile() && (comp->getOption(TR_TraceRelocatableDataCG) || comp->getOption(TR_TraceRelocatableDataDetailsCG) || comp->getOption(TR_TraceReloCG)))
-     {
-     traceMsg(comp, "\n<relocatableDataCG>\n");
-     if (comp->getOption(TR_TraceRelocatableDataDetailsCG)) // verbose output
-        {
-        uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
-        traceMsg(comp, "Code start = %8x, Method start pc = %x, Method start pc offset = 0x%x\n", relocatableMethodCodeStart, cg->getCodeStart(), cg->getCodeStart() - relocatableMethodCodeStart);
-        }
-     cg->getAheadOfTimeCompile()->dumpRelocationData();
-     traceMsg(comp, "</relocatableDataCG>\n");
-     }
+      {
+      traceMsg(comp, "\n<relocatableDataCG>\n");
+      if (comp->getOption(TR_TraceRelocatableDataDetailsCG)) // verbose output
+         {
+         uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
+         traceMsg(comp, "Code start = %8x, Method start pc = %x, Method start pc offset = 0x%x\n", relocatableMethodCodeStart, cg->getCodeStart(), cg->getCodeStart() - relocatableMethodCodeStart);
+         }
+      cg->getAheadOfTimeCompile()->dumpRelocationData();
+      traceMsg(comp, "</relocatableDataCG>\n");
+      }
 
-     if (debug("dumpCodeSizes"))
-        {
-        diagnostic("%08d   %s\n", cg->getCodeLength(), comp->signature());
-        }
+   if (debug("dumpCodeSizes"))
+      {
+      diagnostic("%08d   %s\n", cg->getCodeLength(), comp->signature());
+      }
 
-     TR_ASSERT(cg->getCodeLength() <= cg->getEstimatedCodeLength(),
-               "Method length estimate must be conservatively large\n"
-               "    codeLength = %d, estimatedCodeLength = %d \n",
-               cg->getCodeLength(), cg->getEstimatedCodeLength()
-               );
+   TR_ASSERT(cg->getCodeLength() <= cg->getEstimatedCodeLength(),
+      "Method length estimate must be conservatively large\n"
+      "    codeLength = %d, estimatedCodeLength = %d \n",
+      cg->getCodeLength(), cg->getEstimatedCodeLength()
+   );
 
-     // also trace the interal stack atlas
-     cg->getStackAtlas()->close(cg);
+   // also trace the interal stack atlas
+   cg->getStackAtlas()->close(cg);
 
-     TR::SimpleRegex * regex = comp->getOptions()->getSlipTrap();
-     if (regex && TR::SimpleRegex::match(regex, comp->getCurrentMethod()))
-        {
-        if (cg->comp()->target().is64Bit())
-        {
-        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getCodeLength(),"SLIPDLL64", comp);
-        }
-     else
-        {
-        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getCodeLength(),"SLIPDLL31", comp);
-        }
-     }
+   TR::SimpleRegex * regex = comp->getOptions()->getSlipTrap();
+   if (regex && TR::SimpleRegex::match(regex, comp->getCurrentMethod()))
+      {
+      if (cg->comp()->target().is64Bit())
+         {
+         setDllSlip((char*)cg->getCodeStart(), (char*)cg->getCodeStart() + cg->getCodeLength(), "SLIPDLL64", comp);
+         }
+      else
+         {
+         setDllSlip((char*)cg->getCodeStart(), (char*)cg->getCodeStart() + cg->getCodeLength(), "SLIPDLL31", comp);
+         }
+      }
+
    if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
       {
       const char * title = "Post Relocation Instructions";

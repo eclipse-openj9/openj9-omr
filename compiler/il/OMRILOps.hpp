@@ -280,9 +280,7 @@ public:
    bool hasPinningArrayPointer()
       {
       return (getOpCodeValue() == TR::aiadd)  ||
-             (getOpCodeValue() == TR::aladd)  ||
-             (getOpCodeValue() == TR::aiuadd) ||
-             (getOpCodeValue() == TR::aluadd);
+             (getOpCodeValue() == TR::aladd);
       }
 
    bool isLongCompare() const
@@ -357,20 +355,14 @@ public:
              getOpCodeValue() == TR::iflucmpgt ||
              getOpCodeValue() == TR::iadd      ||
              getOpCodeValue() == TR::ladd      ||
-             getOpCodeValue() == TR::iuadd     ||
              getOpCodeValue() == TR::iuaddc    ||
              getOpCodeValue() == TR::aiadd     ||
-             getOpCodeValue() == TR::aiuadd    ||
-             getOpCodeValue() == TR::luadd     ||
              getOpCodeValue() == TR::luaddc    ||
              getOpCodeValue() == TR::aladd     ||
-             getOpCodeValue() == TR::aluadd    ||
              getOpCodeValue() == TR::isub      ||
              getOpCodeValue() == TR::lsub      ||
-             getOpCodeValue() == TR::iusub     ||
              getOpCodeValue() == TR::iusubb    ||
              getOpCodeValue() == TR::asub      ||
-             getOpCodeValue() == TR::lusub     ||
              getOpCodeValue() == TR::lusubb;
       }
 
@@ -908,7 +900,6 @@ public:
       switch (longOp)
          {
          case TR::ladd:   return TR::iadd;
-         case TR::luadd:  return TR::iadd;
          case TR::lsub:   return TR::isub;
          case TR::lmul:   return TR::imul;
          case TR::ldiv:   return TR::idiv;
@@ -1295,7 +1286,6 @@ public:
          case TR::dstorei:
             return TR::vstorei;
          case TR::badd:
-         case TR::cadd:
          case TR::sadd:
          case TR::iadd:
          case TR::ladd:
@@ -1303,7 +1293,6 @@ public:
          case TR::dadd:
             return TR::vadd;
          case TR::bsub:
-         case TR::csub:
          case TR::ssub:
          case TR::isub:
          case TR::lsub:

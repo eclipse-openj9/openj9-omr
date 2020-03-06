@@ -590,9 +590,9 @@ static void evaluateIfNotConst(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *OMR::X86::TreeEvaluator::integerDualAddOrSubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT((node->getOpCodeValue() == TR::luaddh) || (node->getOpCodeValue() == TR::luadd)
-      || (node->getOpCodeValue() == TR::lusubh) || (node->getOpCodeValue() == TR::lusub)
-      , "Unexpected dual operator. Expected luadd, luaddh, lusub, or lusubh as part of cyclic dual.");
+   TR_ASSERT((node->getOpCodeValue() == TR::luaddh) || (node->getOpCodeValue() == TR::ladd)
+      || (node->getOpCodeValue() == TR::lusubh) || (node->getOpCodeValue() == TR::lsub)
+      , "Unexpected dual operator. Expected ladd, luaddh, lsub, or lusubh as part of cyclic dual.");
 
    TR::Node *pair = node->getChild(2);
    bool requiresCarryOnEntry = cg->requiresCarry();
@@ -707,8 +707,8 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
 
    if (NEED_CC(node) || (opCode == TR::luaddc) || (opCode == TR::iuaddc))
       {
-      TR_ASSERT((nodeIs64Bit  && (opCode == TR::ladd || opCode == TR::luadd) || opCode == TR::luaddc) ||
-                (!nodeIs64Bit && (opCode == TR::iadd || opCode == TR::iuadd) || opCode == TR::iuaddc),
+      TR_ASSERT((nodeIs64Bit  && opCode == TR::ladd || opCode == TR::luaddc) ||
+                (!nodeIs64Bit && opCode == TR::iadd || opCode == TR::iuaddc),
                 "CC computation not supported for this node %p with opcode %s\n", node, cg->comp()->getDebug()->getName(opCode));
 
       // we need eflags from integerAddAnalyser for the CC sequence
@@ -1346,8 +1346,8 @@ TR::Register *OMR::X86::TreeEvaluator::integerSubEvaluator(TR::Node *node, TR::C
 
    if (NEED_CC(node) || (node->getOpCodeValue() == TR::lusubb) || (node->getOpCodeValue() == TR::iusubb))
       {
-      TR_ASSERT((nodeIs64Bit  && (opCode == TR::lsub || opCode == TR::lusub) || opCode == TR::lusubb) ||
-                (!nodeIs64Bit && (opCode == TR::isub || opCode == TR::iusub) || opCode == TR::iusubb),
+      TR_ASSERT((nodeIs64Bit  && (opCode == TR::lsub) || opCode == TR::lusubb) ||
+                (!nodeIs64Bit && opCode == TR::isub || opCode == TR::iusubb),
                 "CC computation not supported for this node %p with opcode %s\n", node, cg->comp()->getDebug()->getName(opCode));
 
       const bool isWithBorrow = (opCode == TR::lusubb) || (opCode == TR::iusubb);
@@ -1500,7 +1500,7 @@ TR::Register *OMR::X86::TreeEvaluator::bsubEvaluator(TR::Node *node, TR::CodeGen
 
    if (NEED_CC(node))
       {
-      TR_ASSERT(node->getOpCodeValue() == TR::bsub || node->getOpCodeValue() == TR::busub,
+      TR_ASSERT(node->getOpCodeValue() == TR::bsub,
                 "CC computation not supported for this node %p with opcode %s\n", node, cg->comp()->getDebug()->getName(node->getOpCode()));
 
       // we need eflags from integerAddAnalyser for the CC sequence

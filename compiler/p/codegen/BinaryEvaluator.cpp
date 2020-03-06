@@ -195,7 +195,7 @@ static bool genNullTestForCompressedPointers(TR::Node *node,
    return false;
    }
 
-// Also handles TR::badd, TR::aiadd, TR::iuadd, aiuadd
+// Also handles TR::badd, TR::aiadd
 TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *src1Reg = NULL;
@@ -234,7 +234,7 @@ TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeG
          }
      }
 
-   if ((node->getOpCodeValue() == TR::aiadd || node->getOpCodeValue() == TR::aiuadd) &&
+   if ((node->getOpCodeValue() == TR::aiadd) &&
        node->isInternalPointer())
       {
       if (node->getPinningArrayPointer())
@@ -435,7 +435,7 @@ static TR::Register *laddEvaluatorWithAnalyser(TR::Node *node, TR::CodeGenerator
    return trgReg;
    }
 
-// Also handles TR::aladd for 64 bit target, luadd, aluadd
+// Also handles TR::aladd for 64 bit target
 TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
@@ -553,7 +553,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
 
             if (setsOrReadsCC)
                {
-               TR_ASSERT(node->getOpCodeValue() == TR::ladd || node->getOpCodeValue() == TR::luadd || node->getOpCodeValue() == TR::luaddc,
+               TR_ASSERT(node->getOpCodeValue() == TR::ladd || node->getOpCodeValue() == TR::luaddc,
                   "CC computation not supported for this node %p\n", node);
                TR::Register *carryReg = NULL;
                if ((node->getOpCodeValue() == TR::luaddc) && TR_PPCComputeCC::setCarryBorrow(node->getChild(2), false, &carryReg, cg))
@@ -585,8 +585,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
          generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneSkipAdd, deps);
          }
 
-      if ((node->getOpCodeValue() == TR::aladd || node->getOpCodeValue() == TR::aluadd) &&
-          node->isInternalPointer())
+      if (node->getOpCodeValue() == TR::aladd && node->isInternalPointer())
          {
          if (node->getPinningArrayPointer())
             {
@@ -627,7 +626,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
 
 
 // aiaddEvaluator handled by iaddEvaluator
-// also handles TR::bsub, TR::iusub and TR::asub
+// also handles TR::bsub and TR::asub
 TR::Register *OMR::Power::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *secondChild    = node->getSecondChild();
@@ -807,7 +806,7 @@ TR::Register *lsub64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
 
             if (setsOrReadsCC)
                {
-               TR_ASSERT(node->getOpCodeValue() == TR::lsub || node->getOpCodeValue() == TR::lusub || node->getOpCodeValue() == TR::lusubb,
+               TR_ASSERT(node->getOpCodeValue() == TR::lsub || node->getOpCodeValue() == TR::lusubb,
                   "CC computation not supported for this node %p\n", node);
                TR::Register *borrowReg = NULL;
                if ((node->getOpCodeValue() == TR::lusubb) && TR_PPCComputeCC::setCarryBorrow(node->getChild(2), true, &borrowReg, cg))
@@ -833,8 +832,7 @@ TR::Register *lsub64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->decReferenceCount(secondChild);
    return trgReg;
    }
-
-// also handles lusub
+ 
 TR::Register *OMR::Power::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (cg->comp()->target().is64Bit())

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3895,8 +3895,7 @@ TR_GeneralLoopUnroller::countNodesAndSubscripts(TR::Node *node, int32_t &numNode
    if (node->getOpCodeValue() != TR::treetop)
       numNodes++;
 
-   if (node->getOpCodeValue() == TR::aiadd || node->getOpCodeValue() == TR::aiuadd ||
-       node->getOpCodeValue() == TR::aladd || node->getOpCodeValue() == TR::aluadd)
+   if (node->getOpCodeValue() == TR::aiadd || node->getOpCodeValue() == TR::aladd)
       {
       // TODO: make this more intelligent -- check if the subscript indexes
       // an induction variable

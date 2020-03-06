@@ -333,7 +333,7 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
    if (NEED_CC(node) || (node->getOpCodeValue() == TR::luaddc))
       {
       TR_ASSERT( !isCompressionSequence, "CC computation not supported with compression sequence.\n");
-      TR_ASSERT(node->getOpCodeValue() == TR::ladd || node->getOpCodeValue() == TR::luadd || node->getOpCodeValue() == TR::luaddc,
+      TR_ASSERT(node->getOpCodeValue() == TR::ladd || node->getOpCodeValue() == TR::luaddc,
               "CC computation not supported for this node %p\n", node);
 
       // we need the carry from integerAddAnalyser for the CC sequence, thus we use logical add instead of add
@@ -613,7 +613,7 @@ generic32BitAddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 /**
  * Generic subtraction of 32bits
  * This generic subtrac evaluator is invoked from different evaluator functions and handles all subtract types shorter than an int
- * (i.e. byte-bsub, char-csub, short-ssub, and int-isub)
+ * (i.e. byte-bsub, short-ssub, and int-isub)
  *
  * It does not handle long type.
  */
@@ -2032,7 +2032,7 @@ lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
    if (NEED_CC(node) || (node->getOpCodeValue() == TR::lusubb))
       {
       TR_ASSERT( !isCompressionSequence,"CC computation not supported with compression sequence.\n");
-      TR_ASSERT(node->getOpCodeValue() == TR::lsub || node->getOpCodeValue() == TR::lusub || node->getOpCodeValue() == TR::lusubb,
+      TR_ASSERT(node->getOpCodeValue() == TR::lsub || node->getOpCodeValue() == TR::lusubb,
               "CC computation not supported for this node %p\n", node);
 
       // we need the borrow from longSubtractAnalyser for the CC sequence,

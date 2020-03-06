@@ -137,8 +137,8 @@ NativeToJitCallMethod::buildIL()
    return true;
    }
 
-JitToJitCallMethod::JitToJitCallMethod(OMR::JitBuilder::TypeDictionary *types, const char *jitMethodName, void *entry)
-   : OMR::JitBuilder::MethodBuilder(types), jitMethodName(jitMethodName)
+JitToJitCallMethod::JitToJitCallMethod(OMR::JitBuilder::TypeDictionary *types, OMR::JitBuilder::MethodBuilder *jitMethodBuilder)
+   : OMR::JitBuilder::MethodBuilder(types), jitMethodBuilder(jitMethodBuilder)
    {
    DefineLine(LINETOSTR(__LINE__));
    DefineFile(__FILE__);
@@ -146,15 +146,6 @@ JitToJitCallMethod::JitToJitCallMethod(OMR::JitBuilder::TypeDictionary *types, c
    DefineName("test_jit_to_jit");
    DefineParameter("n", Int32);
    DefineReturnType(Int32);
-
-   DefineFunction((char *)jitMethodName,
-                  (char *)"",
-                  (char *)"",
-                  (void *)entry,
-                  Int32,
-                  2,
-                  Int32,
-                  Int32);
    }
 
 bool
@@ -170,7 +161,7 @@ JitToJitCallMethod::buildIL()
              ConstInt32(1));
 
    loop->Store("sum",
-   loop->   Call(jitMethodName, 2,
+   loop->   Call(jitMethodBuilder, 2,
    loop->      Load("sum"),
    loop->      Load("i")));
 
@@ -232,7 +223,7 @@ main(int argc, char *argv[])
    nativeToJitMethod = (CallFunctionType2Arg*)entry;
 
    printf("Step 6: compile JitToJitCall (direct call to native) method builder\n");
-   JitToJitCallMethod jitToJitCallMethod(&types, "test_jit_to_native", (void *)jitToNativeMethod);
+   JitToJitCallMethod jitToJitCallMethod(&types, &jitToNativeCallMethod);
    rc = compileMethodBuilder(&jitToJitCallMethod, &entry);
    if (rc != 0)
       {
@@ -247,7 +238,7 @@ main(int argc, char *argv[])
       printf("jitToJitMethod(%d) = %d\n", n, jitToJitMethod(n));
 
    printf("Step 8: compile JitToJitCall (computed/indirect call to native) method builder\n");
-   JitToJitCallMethod jitToJitComputedCallMethod(&types, "test_jit_to_native_computed", (void *)jitToNativeComputedMethod);
+   JitToJitCallMethod jitToJitComputedCallMethod(&types, &jitToNativeComputedCallMethod);
    rc = compileMethodBuilder(&jitToJitComputedCallMethod, &entry);
    if (rc != 0)
       {

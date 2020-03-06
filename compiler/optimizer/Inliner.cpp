@@ -6446,7 +6446,8 @@ OMR_InlinerUtil::clearArgInfoForNonInvariantArguments(TR_CallTarget *target, TR_
       {
       if (tracePrex)
          traceMsg(comp(), "ARGS PROPAGATION: argInfo %p after clear arg info for non-invariant arguments", argInfo);
-      tracer->dumpPrexArgInfo(argInfo);
+      if (tracer->heuristicLevel())
+         argInfo->dumpTrace();
       }
    }
 

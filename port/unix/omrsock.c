@@ -77,7 +77,36 @@ omrsock_getaddrinfo_create_hints(struct OMRPortLibrary *portLibrary, omrsock_add
 int32_t
 omrsock_getaddrinfo(struct OMRPortLibrary *portLibrary, char *node, char *service, omrsock_addrinfo_t hints, omrsock_addrinfo_t result)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	omr_os_addrinfo *addrInfoResults = NULL;
+	omr_os_addrinfo *addrInfoHints = NULL;
+	uint32_t count = 0;
+	
+	if (NULL == result) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	
+	memset(result, 0, sizeof(struct OMRAddrInfoNode));
+
+	if (NULL != hints) {
+		addrInfoHints = (omr_os_addrinfo *)hints->addrInfo;
+	}
+
+	if (0 != getaddrinfo(node, service, addrInfoHints, &addrInfoResults)) {
+		return OMRPORT_ERROR_SOCK_ADDRINFO_FAILED;
+	}
+
+	result->addrInfo = addrInfoResults;
+
+	/* There is at least one addrinfo on successful call. Account the first entry. */
+	count = 1;
+	
+	while (NULL != addrInfoResults->ai_next) {
+		count++;
+		addrInfoResults = addrInfoResults->ai_next;
+	}
+	result->length = count;
+	
+	return 0;
 }
 
 int32_t
@@ -92,14 +121,16 @@ omrsock_getaddrinfo_length(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_
 }
 
 int32_t
-omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, int32_t index)
+omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, uint32_t index)
 {	
-	if ((NULL == handle) || (NULL == handle->addrInfo) || (index < 0) || (index >= handle->length)) {
+	omr_os_addrinfo *info = NULL;
+	uint32_t i = 0;
+
+	if ((NULL == handle) || (NULL == handle->addrInfo) || (index >= handle->length)) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 
-	omr_os_addrinfo *info = handle->addrInfo;
-	int32_t i = 0;
+	info = handle->addrInfo;
 
 	for (i = 0; i < index; i++) {
 		info = info->ai_next;
@@ -113,15 +144,17 @@ omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_
 }
 
 int32_t
-omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, int32_t index)
+omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, uint32_t index)
 {
-	if ((NULL == handle) || (NULL == handle->addrInfo) || (index < 0) || (index >= handle->length)) {
+	omr_os_addrinfo *info = NULL;
+	uint32_t i = 0;
+
+	if ((NULL == handle) || (NULL == handle->addrInfo) || (index >= handle->length)) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 
-	omr_os_addrinfo *info = handle->addrInfo;
-	int32_t i = 0;
-	
+	info = handle->addrInfo;
+
 	for (i = 0; i < index; i++) {
 		info = info->ai_next;
 		if (NULL == info) {
@@ -134,14 +167,16 @@ omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinf
 }
 
 int32_t
-omrsock_getaddrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *protocol, int32_t index)
+omrsock_getaddrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *protocol, uint32_t index)
 {
-	if ((NULL == handle) || (NULL == handle->addrInfo) || (index < 0) || (index >= handle->length)) {
+	omr_os_addrinfo *info = NULL;
+	uint32_t i = 0;
+
+	if ((NULL == handle) || (NULL == handle->addrInfo) || (index >= handle->length)) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 
-	omr_os_addrinfo *info = handle->addrInfo;
-	int32_t i = 0;
+	info = handle->addrInfo;
 
 	for (i = 0; i < index; i++) {
 		info = info->ai_next;
@@ -157,7 +192,16 @@ omrsock_getaddrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinf
 int32_t
 omrsock_freeaddrinfo(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if (NULL == handle) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	
+	freeaddrinfo((omr_os_addrinfo *)handle->addrInfo);
+
+	handle->addrInfo = NULL;
+	handle->length = 0;
+
+	return 0;
 }
 
 int32_t

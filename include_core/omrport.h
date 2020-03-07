@@ -2118,11 +2118,11 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsock.c::omrsock_getaddrinfo_length "omrsock_getaddrinfo_length"*/
 	int32_t (*sock_getaddrinfo_length)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t *length) ;
 	/** see @ref omrsock.c::omrsock_getaddrinfo_family "omrsock_getaddrinfo_family"*/
-	int32_t (*sock_getaddrinfo_family)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, int32_t index )	;
+	int32_t (*sock_getaddrinfo_family)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, uint32_t index) ;
 	/** see @ref omrsock.c::omrsock_getaddrinfo_socktype "omrsock_getaddrinfo_socktype"*/
-	int32_t (*sock_getaddrinfo_socktype)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, int32_t index) ;
+	int32_t (*sock_getaddrinfo_socktype)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, uint32_t index) ;
 	/** see @ref omrsock.c::omrsock_getaddrinfo_protocol "omrsock_getaddrinfo_protocol"*/
-	int32_t (*sock_getaddrinfo_protocol)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *protocol, int32_t index) ;
+	int32_t (*sock_getaddrinfo_protocol)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *protocol, uint32_t index) ;
 	/** see @ref omrsock.c::omrsock_freeaddrinfo "omrsock_freeaddrinfo"*/
 	int32_t (*sock_freeaddrinfo)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle) ;
 	/** see @ref omrsock.c::omrsock_socket "omrsock_socket"*/

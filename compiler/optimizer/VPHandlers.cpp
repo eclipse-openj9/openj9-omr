@@ -4570,10 +4570,12 @@ static int32_t integerToPowerOf2 (int32_t n) {return (n==0) ? 0 : floorPowerOfTw
 static int32_t integerNumberOfLeadingZeros (int32_t n) {return leadingZeroes (n);}
 static int32_t integerNumberOfTrailingZeros (int32_t n) {return trailingZeroes(n);}
 static int32_t integerBitCount (int32_t n) {return populationCount(n);}
+static int32_t integerLowestOneBit (int32_t n) {return (n==0) ? 0 : 1 << integerNumberOfTrailingZeros(n);}
 static int64_t longToPowerOf2 (int64_t n) {return (n==0) ? 0 : floorPowerOfTwo64(n);}
 static int32_t longNumberOfLeadingZeros (int64_t n) {return leadingZeroes (n);}
 static int32_t longNumberOfTrailingZeros (int64_t n) { return trailingZeroes(n); }
 static int32_t longBitCount (int64_t n) {return populationCount(n);}
+static int64_t longLowestOneBit (int64_t n) {return (n==0) ? 0 : 1 << longNumberOfTrailingZeros(n);}
 
 
 template <typename FUNC, typename FUNC2, typename T>
@@ -4763,7 +4765,7 @@ TR::Node * constrainIntegerLowestOneBit(OMR::ValuePropagation *vp, TR::Node *nod
    return constrainLowestOneBitAndTrailingZerosHelper (vp, node, getIntConst,
                                                        getIntRange, getInt, getLowHighInts,
                                                        createIntConstConstraint,
-                                                       createIntRangeConstraint, integerToPowerOf2, (int32_t) TR::getMaxSigned<TR::Int32>(), (int32_t) TR::getMinSigned<TR::Int32>());
+                                                       createIntRangeConstraint, integerLowestOneBit, (int32_t) TR::getMaxSigned<TR::Int32>(), (int32_t) TR::getMinSigned<TR::Int32>());
    }
 
 
@@ -4789,7 +4791,7 @@ TR::Node * constrainLongLowestOneBit(OMR::ValuePropagation *vp, TR::Node *node)
    return constrainLowestOneBitAndTrailingZerosHelper (vp, node, getLongConst,
                                                        getLongRange, getLong, getLowHighLongs,
                                                        createLongConstConstraint,
-                                                       createLongRangeConstraint, longToPowerOf2, (int64_t) TR::getMaxSigned<TR::Int64>(), (int64_t) TR::getMinSigned<TR::Int64>());
+                                                       createLongRangeConstraint, longLowestOneBit, (int64_t) TR::getMaxSigned<TR::Int64>(), (int64_t) TR::getMinSigned<TR::Int64>());
    }
 
 

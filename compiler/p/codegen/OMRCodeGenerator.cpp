@@ -170,6 +170,8 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    self()->setSupportsGlRegDeps();
    self()->setSupportsGlRegDepOnFirstBlock();
 
+   self()->setSupportsRecompilation();
+
    if (self()->comp()->target().is32Bit())
       self()->setUsesRegisterPairsForLongs();
 

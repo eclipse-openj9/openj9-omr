@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,6 +27,8 @@
 #include "codegen/TreeEvaluator.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/LabelSymbol.hpp"
+
 
 static void fpBitsMovHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::Register *trgReg, TR::CodeGenerator *cg)
    {
@@ -565,19 +567,90 @@ OMR::RV::TreeEvaluator::fRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return globalReg;
    }
 
+static TR::Register *
+commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, bool reverse, bool isDouble, TR::CodeGenerator *cg)
+   {
+   TR_ASSERT(node->getNumChildren() == 2, "The number of children for fmax/fmin/dmax/dmin must be 2.");
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+
+   TR::Register *cmpReg = cg->allocateRegister();
+   TR::RealRegister *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
+   TR::Register *trgReg;
+
+   if (cg->canClobberNodesRegister(firstChild))
+      {
+      trgReg = src1Reg; // use the first child as the target
+      }
+   else
+      {
+      trgReg = cg->allocateRegister(TR_FPR);
+      if (isDouble)
+         generateRTYPE(TR::InstOpCode::_fsgnj_d, node, trgReg, src1Reg, src1Reg, cg);
+      else
+         generateRTYPE(TR::InstOpCode::_fsgnj_s, node, trgReg, src1Reg, src1Reg, cg);
+      }
+
+   TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *joinLabel = generateLabelSymbol(cg);
+
+   startLabel->setStartInternalControlFlow();
+   joinLabel->setEndInternalControlFlow();
+
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
+   addDependency(deps, cmpReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   addDependency(deps, trgReg, TR::RealRegister::NoReg, TR_FPR, cg);
+   addDependency(deps, src2Reg, TR::RealRegister::NoReg, TR_FPR, cg);
+
+
+   if (reverse)
+      generateRTYPE(op, node, cmpReg, src2Reg, src1Reg, cg);
+   else
+      generateRTYPE(op, node, cmpReg, src1Reg, src2Reg, cg);
+
+   generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
+   generateBTYPE(TR::InstOpCode::_bne, node, joinLabel, cmpReg, zero, cg);
+   if (isDouble)
+      generateRTYPE(TR::InstOpCode::_fsgnj_d, node, trgReg, src2Reg, src2Reg, cg);
+   else
+      generateRTYPE(TR::InstOpCode::_fsgnj_s, node, trgReg, src2Reg, src2Reg, cg);
+   generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
+
+   cg->stopUsingRegister(cmpReg);
+   node->setRegister(trgReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return trgReg;
+   }
+
 TR::Register *
 OMR::RV::TreeEvaluator::fmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::fmaxEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return commonFpMinMaxEvaluator(node, TR::InstOpCode::_flt_s, true, false, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::fminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::fminEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return commonFpMinMaxEvaluator(node, TR::InstOpCode::_flt_s, false, false, cg);
+   }
+
+TR::Register *
+OMR::RV::TreeEvaluator::dmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonFpMinMaxEvaluator(node, TR::InstOpCode::_flt_d, true, true, cg);
+   }
+
+TR::Register *
+OMR::RV::TreeEvaluator::dminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonFpMinMaxEvaluator(node, TR::InstOpCode::_flt_d, false, true, cg);
+   }
+
 
 TR::Register *
 OMR::RV::TreeEvaluator::b2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)

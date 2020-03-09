@@ -3792,6 +3792,84 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 									  requestedPageSize, requestedPageFlags, isSizeSupported);
 	}
 
+	portTestEnv->log("\nCase %d: Default large page when pageable is preferred. \n", caseIndex++);
+	if (0 == defaultLargePageSize) {
+		portTestEnv->log("Skip this test as the configuration does not support default large page size\n");
+	} else {
+		mode = 0;
+		requestedPageSize = 0;
+		requestedPageFlags = OMRPORT_VMEM_PAGE_FLAG_PAGEABLE_PREFERABLE;
+		PRINT_FIND_VALID_PAGE_SIZE_INPUT(mode, requestedPageSize, requestedPageFlags);
+
+		omrvmem_default_large_page_size_ex(mode, &requestedPageSize, &requestedPageFlags);
+
+		expectedPageSize = ONE_MB;
+		expectedPageFlags = oneMBPageable ? OMRPORT_VMEM_PAGE_FLAG_PAGEABLE : OMRPORT_VMEM_PAGE_FLAG_FIXED;
+
+		verifyFindValidPageSizeOutput(
+			portLibrary, testName, expectedPageSize, expectedPageFlags,
+			FALSE, requestedPageSize, requestedPageFlags, FALSE);
+	}
+
+	portTestEnv->log("\nCase %d: Default large page when mode is OMRPORT_VMEM_MEMORY_MODE_EXECUTE.\n", caseIndex++);
+	if (0 == defaultLargePageSize) {
+		portTestEnv->log("Skip this test as the configuration does not support default large page size\n");
+	} else {
+		mode = OMRPORT_VMEM_MEMORY_MODE_EXECUTE;
+		requestedPageSize = 0;
+		requestedPageFlags = OMRPORT_VMEM_PAGE_FLAG_PAGEABLE_PREFERABLE;
+		PRINT_FIND_VALID_PAGE_SIZE_INPUT(mode, requestedPageSize, requestedPageFlags);
+
+		omrvmem_default_large_page_size_ex(mode, &requestedPageSize, &requestedPageFlags);
+
+		expectedPageSize = oneMBPageable ? ONE_MB : 0;
+		expectedPageFlags = oneMBPageable ? OMRPORT_VMEM_PAGE_FLAG_PAGEABLE : OMRPORT_VMEM_PAGE_FLAG_NOT_USED;
+
+		verifyFindValidPageSizeOutput(
+			portLibrary, testName, expectedPageSize, expectedPageFlags,
+			FALSE, requestedPageSize, requestedPageFlags, FALSE);
+	}
+
+	portTestEnv->log("\nCase %d: Verify 1M large pages when pageable is preferred.\n", caseIndex++);
+	if (0 == defaultLargePageSize) {
+		portTestEnv->log("Skip this test as the configuration does not support default large page size\n");
+	} else {
+		mode = 0;
+		requestedPageSize = ONE_MB;
+		requestedPageFlags = OMRPORT_VMEM_PAGE_FLAG_PAGEABLE_PREFERABLE;
+		PRINT_FIND_VALID_PAGE_SIZE_INPUT(mode, requestedPageSize, requestedPageFlags);
+
+		omrvmem_find_valid_page_size(mode, &requestedPageSize, &requestedPageFlags, &isSizeSupported);
+
+		expectedPageSize = ONE_MB;
+		expectedPageFlags = oneMBPageable ? OMRPORT_VMEM_PAGE_FLAG_PAGEABLE : OMRPORT_VMEM_PAGE_FLAG_FIXED;
+		expectedIsSizeSupported = TRUE;
+
+		verifyFindValidPageSizeOutput(
+			portLibrary, testName, expectedPageSize, expectedPageFlags,
+			expectedIsSizeSupported, requestedPageSize, requestedPageFlags, isSizeSupported);
+	}
+
+	portTestEnv->log("\nCase %d: Verify 1M large pages when mode is OMRPORT_VMEM_MEMORY_MODE_EXECUTE.\n", caseIndex++);
+	if (0 == defaultLargePageSize) {
+		portTestEnv->log("Skip this test as the configuration does not support default large page size\n");
+	} else {
+		mode = OMRPORT_VMEM_MEMORY_MODE_EXECUTE;
+		requestedPageSize = ONE_MB;
+		requestedPageFlags = OMRPORT_VMEM_PAGE_FLAG_PAGEABLE_PREFERABLE;
+		PRINT_FIND_VALID_PAGE_SIZE_INPUT(mode, requestedPageSize, requestedPageFlags);
+
+		omrvmem_find_valid_page_size(mode, &requestedPageSize, &requestedPageFlags, &isSizeSupported);
+
+		expectedPageSize = oneMBPageable ? ONE_MB : FOUR_KB;
+		expectedPageFlags = OMRPORT_VMEM_PAGE_FLAG_PAGEABLE;
+		expectedIsSizeSupported = oneMBPageable;
+
+		verifyFindValidPageSizeOutput(
+			portLibrary, testName, expectedPageSize, expectedPageFlags,
+			expectedIsSizeSupported, requestedPageSize, requestedPageFlags, isSizeSupported);
+	}
+
 #endif /* defined(OMR_ENV_DATA64) */
 
 _exit:

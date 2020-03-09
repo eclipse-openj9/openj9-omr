@@ -401,7 +401,9 @@ OMR::Compilation::Compilation(
 
    //codegen also needs _methodSymbol
    _codeGenerator = allocateCodeGenerator(self());
-   _recompilationInfo = _codeGenerator->allocateRecompilationInfo();
+
+   _recompilationInfo = _codeGenerator->getSupportsRecompilation() ? _codeGenerator->allocateRecompilationInfo() : NULL;
+
    _globalRegisterCandidates = new (self()->trHeapMemory()) TR_RegisterCandidates(self());
 
 #ifdef J9_PROJECT_SPECIFIC

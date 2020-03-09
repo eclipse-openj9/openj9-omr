@@ -60,6 +60,6 @@ OMR_JITBUILDER
 OMR_COMPILER
 ```
 
-## Enable Tests
+## Tests
 
-todo...
+LLJB tests are located in `fvtest/lljbtest`.

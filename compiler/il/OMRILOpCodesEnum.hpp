@@ -338,8 +338,6 @@
    bcmpge,   // byte compare if greater than or equal
    bcmpgt,   // byte compare if greater than
    bcmple,   // byte compare if less than or equal
-   bucmpeq,  // unsigned byte compare if equal
-   bucmpne,  // unsigned byte compare if not equal
    bucmplt,  // unsigned byte compare if less than
    bucmpge,  // unsigned byte compare if greater than or equal
    bucmpgt,  // unsigned byte compare if greater than

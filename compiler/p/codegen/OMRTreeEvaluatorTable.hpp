@@ -288,8 +288,6 @@
    TR::TreeEvaluator::icmpgeEvaluator,                  // TR::bcmpge
    TR::TreeEvaluator::icmpgtEvaluator,                  // TR::bcmpgt
    TR::TreeEvaluator::icmpleEvaluator,                  // TR::bcmple
-   TR::TreeEvaluator::icmpeqEvaluator,                  // TR::bucmpeq
-   TR::TreeEvaluator::icmpneEvaluator,                  // TR::bucmpne
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::bucmplt
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::bucmpge
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::bucmpgt

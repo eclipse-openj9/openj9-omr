@@ -289,8 +289,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bcmpgeEvaluator ,	// TR::bcmpge		// byte compare if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bcmpgtEvaluator ,	// TR::bcmpgt		// byte compare if greater than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bcmpleEvaluator ,	// TR::bcmple		// byte compare if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bucmpeqEvaluator ,	// TR::bucmpeq		// unsigned byte compare if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bucmpneEvaluator ,	// TR::bucmpne		// unsigned byte compare if not equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bucmpltEvaluator ,	// TR::bucmplt		// unsigned byte compare if less than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bucmpgeEvaluator ,	// TR::bucmpge		// unsigned byte compare if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bucmpgtEvaluator ,	// TR::bucmpgt		// unsigned byte compare if greater than

@@ -373,9 +373,7 @@ private:
       {
       switch (opvalue) 
          {
-         //Equality compare
-         case TR::bucmpeq:
-         case TR::bucmpne:   
+         //Equality compare  
          case TR::iucmpeq:
          case TR::iucmpne:
          case TR::lucmpeq:

@@ -289,8 +289,6 @@
     TR::TreeEvaluator::icmpgeEvaluator, // TR::bcmpge		// byte compare if greater than or equal
     TR::TreeEvaluator::icmpgtEvaluator, // TR::bcmpgt		// byte compare if greater than
     TR::TreeEvaluator::icmpleEvaluator, // TR::bcmple		// byte compare if less than or equal
-    TR::TreeEvaluator::icmpeqEvaluator, // TR::bucmpeq		// unsigned byte compare if equal
-    TR::TreeEvaluator::icmpneEvaluator, // TR::bucmpne		// unsigned byte compare if not equal
     TR::TreeEvaluator::iucmpltEvaluator, // TR::bucmplt		// unsigned byte compare if less than
     TR::TreeEvaluator::iucmpgeEvaluator, // TR::bucmpge		// unsigned byte compare if greater than or equal
     TR::TreeEvaluator::iucmpgtEvaluator, // TR::bucmpgt		// unsigned byte compare if greater than

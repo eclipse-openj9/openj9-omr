@@ -302,8 +302,6 @@
    bcmpgeSimplifier,        // TR::bcmpge
    bcmpgtSimplifier,        // TR::bcmpgt
    bcmpleSimplifier,        // TR::bcmple
-   bcmpeqSimplifier,        // TR::bucmpeq
-   bcmpneSimplifier,        // TR::bucmpne
    bcmpltSimplifier,        // TR::bucmplt
    bcmpgeSimplifier,        // TR::bucmpge
    bcmpgtSimplifier,        // TR::bucmpgt

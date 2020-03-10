@@ -317,8 +317,6 @@ public:
 	static TR::Register *bcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *bucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *bucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -133,6 +133,8 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    // TODO: Disable FP-GRA since current GRA does not work well with ARM linkage (where Float register usage is limited).
    self()->setDisableFpGRA();
 
+   self()->setSupportsRecompilation();
+
    self()->setSupportsGlRegDeps();
    self()->setSupportsGlRegDepOnFirstBlock();
    self()->setPerformsChecksExplicitly();

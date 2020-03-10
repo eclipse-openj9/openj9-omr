@@ -1453,6 +1453,17 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsGlRegDeps() {return _flags1.testAny(SupportsGlRegDeps);}
    void setSupportsGlRegDeps() {_flags1.set(SupportsGlRegDeps);}
 
+   /**
+    * @brief Query whether this code generator supports recompilation
+    * @return true if recompilation supported; false otherwise
+    */
+   bool getSupportsRecompilation() {return _flags1.testAny(SupportsRecompilation);}
+
+   /**
+    * @brief Indicate code generator support for recompilation
+    */
+   void setSupportsRecompilation() {_flags1.set(SupportsRecompilation);}
+
    bool getSupportsVectorRegisters() {return _flags1.testAny(SupportsVectorRegisters);}
    void setSupportsVectorRegisters() {_flags1.set(SupportsVectorRegisters);}
 
@@ -1714,7 +1725,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsReferenceArrayCopy                         = 0x00000200,
       SupportsJavaFloatSemantics                         = 0x00000400,
       SupportsInliningOfTypeCoersionMethods              = 0x00000800,
-      // AVAILABLE                                       = 0x00001000,
+      SupportsRecompilation                              = 0x00001000,
       SupportsVectorRegisters                            = 0x00002000,
       SupportsGlRegDepOnFirstBlock                       = 0x00004000,
       SupportsRemAsThirdChildOfDiv                       = 0x00008000,

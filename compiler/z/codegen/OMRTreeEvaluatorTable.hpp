@@ -790,19 +790,19 @@
    TR::TreeEvaluator::setpmEvaluator,       // TR::setpm
    TR::TreeEvaluator::loadAutoOffsetEvaluator,// TR::loadAutoOffset
 
-   TR::TreeEvaluator::maxEvaluator,         // TR::imax
-   TR::TreeEvaluator::maxEvaluator,         // TR::iumax
-   TR::TreeEvaluator::maxEvaluator,         // TR::lmax
-   TR::TreeEvaluator::maxEvaluator,         // TR::lumax
-   TR::TreeEvaluator::unImpOpEvaluator,     // TR::fmax
-   TR::TreeEvaluator::unImpOpEvaluator,     // TR::dmax
+   TR::TreeEvaluator::imaxEvaluator,         // TR::imax
+   TR::TreeEvaluator::imaxEvaluator,         // TR::iumax
+   TR::TreeEvaluator::lmaxEvaluator,         // TR::lmax
+   TR::TreeEvaluator::lmaxEvaluator,         // TR::lumax
+   TR::TreeEvaluator::fmaxEvaluator,     // TR::fmax
+   TR::TreeEvaluator::dmaxEvaluator,     // TR::dmax
 
-   TR::TreeEvaluator::minEvaluator,         // TR::imin
-   TR::TreeEvaluator::minEvaluator,         // TR::iumin
-   TR::TreeEvaluator::minEvaluator,         // TR::lmin
-   TR::TreeEvaluator::minEvaluator,         // TR::lumin
-   TR::TreeEvaluator::unImpOpEvaluator,     // TR::fmin
-   TR::TreeEvaluator::unImpOpEvaluator,     // TR::dmin
+   TR::TreeEvaluator::iminEvaluator,         // TR::imin
+   TR::TreeEvaluator::iminEvaluator,         // TR::iumin
+   TR::TreeEvaluator::lminEvaluator,         // TR::lmin
+   TR::TreeEvaluator::lminEvaluator,         // TR::lumin
+   TR::TreeEvaluator::fminEvaluator,     // TR::fmin
+   TR::TreeEvaluator::dminEvaluator,     // TR::dmin
    TR::TreeEvaluator::trtEvaluator,         // TR::trt
    TR::TreeEvaluator::trtEvaluator,         // TR::trtSimple
 

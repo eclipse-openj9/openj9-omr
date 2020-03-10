@@ -734,9 +734,15 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *dRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *GlRegDepsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-
-   static TR::Register *minEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *maxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   
+   static TR::Register *iminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *lminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *fminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *dminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *imaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *lmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *fmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *dmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register *evaluateNULLCHKWithPossibleResolve(TR::Node * node, bool needsResolve, TR::CodeGenerator * cg);
 

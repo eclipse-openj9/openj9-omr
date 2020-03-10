@@ -1110,3 +1110,6 @@ TraceExit=Trc_PRT_sysinfo_processor_has_feature_Exit Group=sysinfo Overhead=1 Le
 
 TraceEntry=Trc_PRT_sysinfo_processor_disable_feature_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_processor_disable_feature: desc = %p, feature = %d"
 TraceExit=Trc_PRT_sysinfo_processor_disable_feature_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_processor_disable_feature: returning with %zd"
+
+TraceEntry=Trc_PRT_sysinfo_processor_set_feature_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_processor_set_feature: desc = %p, feature = %d, enable = %d"
+TraceExit=Trc_PRT_sysinfo_processor_set_feature_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_processor_set_feature: returning with %zd"

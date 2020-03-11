@@ -2322,7 +2322,7 @@ void OMR::X86::CodeGenerator::apply32BitLoadLabelRelativeRelocation(TR::Instruct
 
 void OMR::X86::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    {
-   *cursor += ((uintptrj_t)label->getCodeLocation());
+   *cursor += ((uintptr_t)label->getCodeLocation());
    }
 
 
@@ -2683,7 +2683,7 @@ static const uint8_t *paddingTableEncoding(TR_X86PaddingTable *paddingTable, uin
    {
    TR_ASSERT(paddingTable->_biggestEncoding <= PADDING_TABLE_MAX_ENCODING_LENGTH, "Padding table must have _biggestEncoding <= PADDING_TABLE_MAX_ENCODING_LENGTH (%d <= %d)", paddingTable->_biggestEncoding, PADDING_TABLE_MAX_ENCODING_LENGTH);
    TR_ASSERT(length <= paddingTable->_biggestEncoding, "Padding length %d cannot exceed %d", length, paddingTable->_biggestEncoding);
-   return (uint8_t *)((uintptrj_t)(paddingTable->_encodings)+(length-1)*PADDING_TABLE_MAX_ENCODING_LENGTH);
+   return (uint8_t *)((uintptr_t)(paddingTable->_encodings)+(length-1)*PADDING_TABLE_MAX_ENCODING_LENGTH);
    }
 
 uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,

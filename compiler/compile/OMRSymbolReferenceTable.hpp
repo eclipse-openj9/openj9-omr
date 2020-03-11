@@ -622,8 +622,8 @@ class SymbolReferenceTable
    // CG, optimizer
    TR::SymbolReference * findThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol = 0);
 
-   TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptrj_t *referenceLocation);
-   TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptrj_t *referenceLocation, bool isArrayWithConstantElements);
+   TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation);
+   TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation, bool isArrayWithConstantElements);
    TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, TR::KnownObjectTable::Index objectIndex);
    /*
     * The public API that should be used when the caller needs a temp to hold a known object

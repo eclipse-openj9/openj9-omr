@@ -41,7 +41,7 @@ OMR::ClassEnv::classNameChars(TR::Compilation *comp, TR::SymbolReference *symRef
    return name;
    }
 
-uintptrj_t
+uintptr_t
 OMR::ClassEnv::getArrayElementWidthInBytes(TR::Compilation *comp, TR_OpaqueClassBlock* arrayClass)
    {
    TR_UNIMPLEMENTED();

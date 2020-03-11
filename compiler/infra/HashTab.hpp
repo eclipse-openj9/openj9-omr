@@ -78,7 +78,7 @@ class TR_HashTab
 
    // inherit and then overwrite these two methods as appropriate
    // assume a pointer
-   virtual TR_HashId calculateHash(const void *key) const { return  (TR_HashId((uintptrj_t)key) >> 2) %_closedAreaSize;}
+   virtual TR_HashId calculateHash(const void *key) const { return  (TR_HashId((uintptr_t)key) >> 2) %_closedAreaSize;}
    virtual bool isEqual(const void * key1, const void *key2) const { return key1 == key2; }
 
    TR_HashTab(TR_Memory *mem,
@@ -201,8 +201,8 @@ class TR_HashTabInt : public TR_HashTab
 
    TR_HashId calculateHash(const void *key) const { return (TR_HashId((intptrj_t)key) %_closedAreaSize);}
 
-   bool locate(int32_t key,TR_HashId &hashIndex){ return TR_HashTab::locate((const void*)(uintptrj_t)key,hashIndex);}
-   bool add(int32_t key,TR_HashId hashIndex,void * data){ return TR_HashTab::add((void *)(uintptrj_t)key,hashIndex,data);}
+   bool locate(int32_t key,TR_HashId &hashIndex){ return TR_HashTab::locate((const void*)(uintptr_t)key,hashIndex);}
+   bool add(int32_t key,TR_HashId hashIndex,void * data){ return TR_HashTab::add((void *)(uintptr_t)key,hashIndex,data);}
    };
 
 class TR_HashTabString : public TR_HashTab

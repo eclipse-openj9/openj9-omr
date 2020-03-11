@@ -2207,7 +2207,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
          // 31 can be handled with a second technique, leaving one straggler
          // that needs special treatment.
          //
-         const uintptrj_t SIGN32 = CONSTANT64(0x80000000);
+         const uintptr_t SIGN32 = CONSTANT64(0x80000000);
 
          // Note: We could check node->isNegative and node->isNonNegative to
          // try to avoid this internal control flow.  However, in those cases,

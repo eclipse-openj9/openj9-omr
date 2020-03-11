@@ -1653,7 +1653,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          }
 
       // TODO: Improve the code sequence for cases when we know pTOC is full.
-      TR::MemoryReference *tocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptrj_t), cg);
+      TR::MemoryReference *tocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
       tocRef->setSymbol(symbol, cg);
       tocRef->getSymbolReference()->copyFlags(ref);
       tocRef->setUsingStaticTOC();

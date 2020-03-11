@@ -137,7 +137,7 @@ public:
    virtual bool isUnresolvedString(int32_t cpIndex, bool optimizeForAOT = false);
    virtual bool isConstantDynamic(int32_t cpIndex);
    virtual bool isUnresolvedConstantDynamic(int32_t cpIndex);
-   virtual void *dynamicConstant(int32_t cpIndex, uintptrj_t *obj);
+   virtual void *dynamicConstant(int32_t cpIndex, uintptr_t *obj);
    virtual void *methodTypeConstant(int32_t cpIndex);
    virtual bool isUnresolvedMethodType(int32_t cpIndex);
    virtual void *methodHandleConstant(int32_t cpIndex);
@@ -165,8 +165,8 @@ public:
    bool isDAAMarshallingIntrinsicMethod();
    bool isDAAPackedDecimalIntrinsicMethod();
 
-   virtual void setMethodHandleLocation(uintptrj_t *location);
-   virtual uintptrj_t *getMethodHandleLocation();
+   virtual void setMethodHandleLocation(uintptr_t *location);
+   virtual uintptr_t *getMethodHandleLocation();
 
    virtual const char *newInstancePrototypeSignature(TR_Memory *, TR_AllocationKind = heapAlloc);
 
@@ -201,7 +201,7 @@ public:
 
    virtual uint32_t vTableSlot(uint32_t);
 
-   virtual TR_OpaqueClassBlock *getResolvedInterfaceMethod(int32_t cpIndex, uintptrj_t * pITableIndex);
+   virtual TR_OpaqueClassBlock *getResolvedInterfaceMethod(int32_t cpIndex, uintptr_t * pITableIndex);
 
    virtual TR_ResolvedMethod *getResolvedStaticMethod (TR::Compilation *, int32_t cpIndex, bool * unresolvedInCP = 0);
    virtual TR_ResolvedMethod *getResolvedSpecialMethod(TR::Compilation *, int32_t cpIndex, bool * unresolvedInCP = 0);

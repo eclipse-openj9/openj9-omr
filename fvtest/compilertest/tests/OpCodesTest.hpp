@@ -137,32 +137,32 @@ typedef float (signatureCharIFF_F_testMethodType)(int32_t, float, float);
 typedef double (signatureCharIDD_D_testMethodType)(int32_t, double, double);
 
 //address signatureChars
-typedef int8_t (signatureCharL_B_testMethodType)(uintptrj_t);
-typedef int16_t (signatureCharL_S_testMethodType)(uintptrj_t);
-typedef int32_t (signatureCharL_I_testMethodType)(uintptrj_t);
-typedef int64_t (signatureCharL_J_testMethodType)(uintptrj_t);
-typedef double (signatureCharL_D_testMethodType)(uintptrj_t);
-typedef float (signatureCharL_F_testMethodType)(uintptrj_t);
-typedef uintptrj_t (signatureCharB_L_testMethodType)(int8_t);
-typedef uintptrj_t (signatureCharS_L_testMethodType)(int16_t);
-typedef uintptrj_t (signatureCharI_L_testMethodType)(int32_t);
-typedef uintptrj_t (signatureCharJ_L_testMethodType)(int64_t);
-typedef uintptrj_t (unsignedSignatureCharB_L_testMethodType)(uint8_t);
-typedef uintptrj_t (unsignedSignatureCharS_L_testMethodType)(uint16_t);
-typedef uintptrj_t (unsignedSignatureCharI_L_testMethodType)(uint32_t);
-typedef uintptrj_t (unsignedSignatureCharJ_L_testMethodType)(uint64_t);
-typedef uintptrj_t (signatureCharL_L_testMethodType)(uintptrj_t);
-typedef int32_t (signatureCharLL_I_testMethodType)(uintptrj_t, uintptrj_t);
-typedef uintptrj_t (signatureCharILL_L_testMethodType)(int32_t, uintptrj_t, uintptrj_t);
+typedef int8_t (signatureCharL_B_testMethodType)(uintptr_t);
+typedef int16_t (signatureCharL_S_testMethodType)(uintptr_t);
+typedef int32_t (signatureCharL_I_testMethodType)(uintptr_t);
+typedef int64_t (signatureCharL_J_testMethodType)(uintptr_t);
+typedef double (signatureCharL_D_testMethodType)(uintptr_t);
+typedef float (signatureCharL_F_testMethodType)(uintptr_t);
+typedef uintptr_t (signatureCharB_L_testMethodType)(int8_t);
+typedef uintptr_t (signatureCharS_L_testMethodType)(int16_t);
+typedef uintptr_t (signatureCharI_L_testMethodType)(int32_t);
+typedef uintptr_t (signatureCharJ_L_testMethodType)(int64_t);
+typedef uintptr_t (unsignedSignatureCharB_L_testMethodType)(uint8_t);
+typedef uintptr_t (unsignedSignatureCharS_L_testMethodType)(uint16_t);
+typedef uintptr_t (unsignedSignatureCharI_L_testMethodType)(uint32_t);
+typedef uintptr_t (unsignedSignatureCharJ_L_testMethodType)(uint64_t);
+typedef uintptr_t (signatureCharL_L_testMethodType)(uintptr_t);
+typedef int32_t (signatureCharLL_I_testMethodType)(uintptr_t, uintptr_t);
+typedef uintptr_t (signatureCharILL_L_testMethodType)(int32_t, uintptr_t, uintptr_t);
 
 
-typedef int32_t (signatureCharLI_I_testMethodType)(uintptrj_t, int32_t);
-typedef int64_t (signatureCharLJ_J_testMethodType)(uintptrj_t, int64_t);
-typedef double (signatureCharLD_D_testMethodType)(uintptrj_t, double);
-typedef float (signatureCharLF_F_testMethodType)(uintptrj_t, float);
-typedef int8_t (signatureCharLB_B_testMethodType)(uintptrj_t, int8_t);
-typedef int16_t (signatureCharLS_S_testMethodType)(uintptrj_t, int16_t);
-typedef uintptrj_t (signatureCharLL_L_testMethodType)(uintptrj_t, uintptrj_t);
+typedef int32_t (signatureCharLI_I_testMethodType)(uintptr_t, int32_t);
+typedef int64_t (signatureCharLJ_J_testMethodType)(uintptr_t, int64_t);
+typedef double (signatureCharLD_D_testMethodType)(uintptr_t, double);
+typedef float (signatureCharLF_F_testMethodType)(uintptr_t, float);
+typedef int8_t (signatureCharLB_B_testMethodType)(uintptr_t, int8_t);
+typedef int16_t (signatureCharLS_S_testMethodType)(uintptr_t, int16_t);
+typedef uintptr_t (signatureCharLL_L_testMethodType)(uintptr_t, uintptr_t);
 
 class OpCodesTest : public TestDriver
    {
@@ -323,7 +323,7 @@ class OpCodesTest : public TestDriver
                 }
              case TR::Address:
                 {
-                uintptrj_t * addressValue = (uintptrj_t *) value;
+                uintptr_t * addressValue = (uintptr_t *) value;
                 opCodeInjector->aconstParm(pos, *addressValue);
                 break;
                 }
@@ -500,9 +500,9 @@ class OpCodesTest : public TestDriver
    static const double DOUBLE_PLACEHOLDER_2;
    static const double DOUBLE_PLACEHOLDER_3;
 
-   static const uintptrj_t ADDRESS_PLACEHOLDER_1;
-   static const uintptrj_t ADDRESS_PLACEHOLDER_2;
-   static const uintptrj_t ADDRESS_PLACEHOLDER_3;
+   static const uintptr_t ADDRESS_PLACEHOLDER_1;
+   static const uintptr_t ADDRESS_PLACEHOLDER_2;
+   static const uintptr_t ADDRESS_PLACEHOLDER_3;
 
    protected:
    static signatureCharI_I_testMethodType *_iByteswap;

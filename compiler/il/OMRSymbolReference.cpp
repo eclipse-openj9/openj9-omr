@@ -310,7 +310,7 @@ OMR::SymbolReference::hasKnownObjectIndex()
    return self()->getKnownObjectIndex() != TR::KnownObjectTable::UNKNOWN;
    }
 
-uintptrj_t*
+uintptr_t*
 OMR::SymbolReference::getKnownObjectReferenceLocation(TR::Compilation *comp)
    {
    return self()->hasKnownObjectIndex() ?

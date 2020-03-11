@@ -2138,12 +2138,12 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
    TR_ASSERT( RegEP != NULL,"generateDirectCall: Undefined entry point register\n");
 
    TR::Symbol * sym = callSymRef->getSymbol();
-   uintptrj_t imm = 0;
+   uintptr_t imm = 0;
 
    // if it is not calling myself, get the method address
    if (!myself)
       {
-      imm = (uintptrj_t) callSymRef->getMethodAddress();
+      imm = (uintptr_t) callSymRef->getMethodAddress();
       }
 
    AOTcgDiag2(comp, "\nimm=%x isHelper=%x\n", imm, isHelper);
@@ -2381,7 +2381,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
  * For AOT relocatable Symbol
  */
 TR::Instruction *
-generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, uintptrj_t imm, int32_t reloType,
+generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, uintptr_t imm, int32_t reloType,
                              TR::RegisterDependencyConditions * cond, TR::Instruction * preced, TR::Register * base)
    {
    bool alloc = false;
@@ -2603,7 +2603,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
  * For unsigned integer pointer constant
  */
 TR::Instruction *
-generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, uintptrj_t imm,
+generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, uintptr_t imm,
                              TR::RegisterDependencyConditions * cond, TR::Instruction * preced, TR::Register * base, bool isPICCandidate)
    {
    if (cg->comp()->target().is64Bit())

@@ -255,7 +255,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::RealRegister *getTOCBaseRegister()                       {return _tocBaseRegister;}
    TR::RealRegister *setTOCBaseRegister(TR::RealRegister *r)  {return (_tocBaseRegister = r);}
 
-   uintptrj_t *getTOCBase();
+   uintptr_t *getTOCBase();
 
    TR_PPCScratchRegisterManager* generateScratchRegisterManager(int32_t capacity = 32);
 

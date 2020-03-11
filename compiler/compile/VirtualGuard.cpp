@@ -145,7 +145,7 @@ TR_VirtualGuard::createVftGuardWithReceiver
    TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
 
    TR::Node* vft = TR::Node::createWithSymRef(TR::aloadi, 1, 1, receiverNode, symRefTab->findOrCreateVftSymbolRef());
-   TR::Node* aconstNode = TR::Node::aconst(callNode, (uintptrj_t)thisClass);
+   TR::Node* aconstNode = TR::Node::aconst(callNode, (uintptr_t)thisClass);
    aconstNode->setIsClassPointerConstant(true);
    aconstNode->setInlinedSiteIndex(calleeIndex);
    aconstNode->setByteCodeIndex(0);
@@ -190,7 +190,7 @@ TR_VirtualGuard::createBreakpointGuardNode
  */
    TR::SymbolReferenceTable * symRefTab = comp->getSymRefTab();
    TR::SymbolReference * fieldSymRef = symRefTab->findOrCreateJ9MethodConstantPoolFieldSymbolRef(offsetof(struct J9Method, constantPool));
-   TR::Node * aconstNode = TR::Node::aconst(callNode, (uintptrj_t)calleeSymbol->getResolvedMethod()->getPersistentIdentifier());
+   TR::Node * aconstNode = TR::Node::aconst(callNode, (uintptr_t)calleeSymbol->getResolvedMethod()->getPersistentIdentifier());
    TR::Node * constantPool = NULL;
    aconstNode->setIsMethodPointerConstant(true);
    aconstNode->setInlinedSiteIndex(calleeIndex);
@@ -271,7 +271,7 @@ TR_VirtualGuard::createMethodGuardWithReceiver
             symRefTab->findOrCreateVtableEntrySymbolRef(calleeSymbol,
                          comp->fej9()->virtualCallOffsetToVTableSlot(offset)));
 
-   TR::Node * aconstNode = TR::Node::aconst(callNode, (uintptrj_t)calleeSymbol->getResolvedMethod()->getPersistentIdentifier());
+   TR::Node * aconstNode = TR::Node::aconst(callNode, (uintptr_t)calleeSymbol->getResolvedMethod()->getPersistentIdentifier());
    aconstNode->setIsMethodPointerConstant(true);
    aconstNode->setInlinedSiteIndex(calleeIndex);
    aconstNode->setByteCodeIndex(0);
@@ -342,7 +342,7 @@ TR_VirtualGuard::createNonoverriddenGuard
 
 
 TR::Node *
-TR_VirtualGuard::createMutableCallSiteTargetGuard(TR::Compilation * comp, int16_t calleeIndex, TR::Node * node, TR::TreeTop * destination, uintptrj_t *mcsObject, TR::KnownObjectTable::Index mcsEpoch)
+TR_VirtualGuard::createMutableCallSiteTargetGuard(TR::Compilation * comp, int16_t calleeIndex, TR::Node * node, TR::TreeTop * destination, uintptr_t *mcsObject, TR::KnownObjectTable::Index mcsEpoch)
    {
    TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
    TR::SymbolReference *addressSymRef = symRefTab->createKnownStaticDataSymbolRef(0, TR::Address, mcsEpoch);

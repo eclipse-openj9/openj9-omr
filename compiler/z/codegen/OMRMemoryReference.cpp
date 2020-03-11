@@ -554,7 +554,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
             }
          else
             {
-            uintptrj_t staticAddressValue = (uintptrj_t) symbol->getStaticSymbol()->getStaticAddress();
+            uintptr_t staticAddressValue = (uintptr_t) symbol->getStaticSymbol()->getStaticAddress();
             TR::S390ConstantDataSnippet * targetsnippet;
             if (cg->comp()->target().is64Bit())
                {
@@ -611,7 +611,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
                else
                   self()->setBaseRegister(tempReg, cg);
                }
-            genLoadAddressConstant(cg, rootLoadOrStore, (uintptrj_t) symRef->getSymbol()->getStaticSymbol()->getStaticAddress(),
+            genLoadAddressConstant(cg, rootLoadOrStore, (uintptr_t) symRef->getSymbol()->getStaticSymbol()->getStaticAddress(),
                _baseRegister);
             cg->stopUsingRegister(tempReg);
             }

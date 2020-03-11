@@ -58,9 +58,9 @@
 
 using namespace OMR;
 
-#define SET_OPTION_BIT(x)   TR::Options::setBit,   offsetof(OMR::Options,_options[(x)&TR_OWM]), (static_cast<uintptrj_t>((x)&~TR_OWM))
-#define RESET_OPTION_BIT(x) TR::Options::resetBit, offsetof(OMR::Options,_options[(x)&TR_OWM]), (static_cast<uintptrj_t>((x)&~TR_OWM))
-#define SET_TRACECG_BIT(x)  TR::Options::setBit,   offsetof(OMR::Options, _cgTrace), (static_cast<uintptrj_t>(x))
+#define SET_OPTION_BIT(x)   TR::Options::setBit,   offsetof(OMR::Options,_options[(x)&TR_OWM]), (static_cast<uintptr_t>((x)&~TR_OWM))
+#define RESET_OPTION_BIT(x) TR::Options::resetBit, offsetof(OMR::Options,_options[(x)&TR_OWM]), (static_cast<uintptr_t>((x)&~TR_OWM))
+#define SET_TRACECG_BIT(x)  TR::Options::setBit,   offsetof(OMR::Options, _cgTrace), (static_cast<uintptr_t>(x))
 
 #define NoOptString                     "noOpt"
 #define DisableAllocationInliningString "disableAllocationInlining"
@@ -1067,7 +1067,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"staticDebugCounters=",    "D{regex}\tEnable static debug counters with names matching regex", TR::Options::setRegex, offsetof(OMR::Options, _enabledStaticCounterNames), 0, "F"},
    {"stopThrottlingTime=", "M<nnn>\tTime when compilation throttling should stop (ms since JVM start)",
                              TR::Options::setStaticNumeric, (intptrj_t)&OMR::Options::_stopThrottlingTime, 0, "F%d", NOT_IN_SUBSET },
-   {"storeSinkingLastOpt=", "C<nnn>\tLast store sinking optimization to perform", TR::Options::set32BitNumeric, offsetof(OMR::Options, _storeSinkingLastOpt), static_cast<uintptrj_t>(-1) , "F%d"},
+   {"storeSinkingLastOpt=", "C<nnn>\tLast store sinking optimization to perform", TR::Options::set32BitNumeric, offsetof(OMR::Options, _storeSinkingLastOpt), static_cast<uintptr_t>(-1) , "F%d"},
    {"stressTrampolines", "O\tenables trampolines to always be used for method and helper calls", SET_OPTION_BIT(TR_StressTrampolines), "F"},
    {"strictFPCompares",   "C\tassume strictFP semantics for floating point compares only", SET_OPTION_BIT(TR_StrictFPCompares), "F" },
    {"subtractLoopyMethodCounts",   "C\tSubtract loopy method counts instead of dividing", SET_OPTION_BIT(TR_SubtractLoopyMethodCounts), "F", NOT_IN_SUBSET},
@@ -1349,9 +1349,9 @@ OMR::Options::getNumericValue(char * & option)
    }
 
 
-static uintptrj_t getHexadecimalValue(char * & option)
+static uintptr_t getHexadecimalValue(char * & option)
    {
-   uintptrj_t value=0;
+   uintptr_t value=0;
    char *endLocation;
    value = strtol((const char *)option, &endLocation, 16);
    option = endLocation;
@@ -1437,7 +1437,7 @@ OMR::Options::setStaticNumericKBAdjusted(char *option, void *base, TR::OptionTab
 char *
 OMR::Options::setStaticHexadecimal(char *option, void *base, TR::OptionTable *entry)
    {
-   *((uintptrj_t*)entry->parm1) = getHexadecimalValue(option);
+   *((uintptr_t*)entry->parm1) = getHexadecimalValue(option);
    return option;
    }
 
@@ -4816,7 +4816,7 @@ OMR::Options::setVerboseBits(char *option, void *base, TR::OptionTable *entry)
 
 
 char *
-OMR::Options::setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verboseOptionFlags, uintptrj_t defaultVerboseFlags)
+OMR::Options::setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verboseOptionFlags, uintptr_t defaultVerboseFlags)
    {
    if (defaultVerboseFlags != 0) // This is used for -Xjit:verbose without any options
       {

@@ -1151,7 +1151,7 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
       symRefObjIndex.append( " (obj%d)", (int)symRef->getKnownObjectIndex());
    else if (sym && sym->isFixedObjectRef() && comp()->getKnownObjectTable() && !symRef->isUnresolved())
       {
-      TR::KnownObjectTable::Index i = comp()->getKnownObjectTable()->getExistingIndexAt((uintptrj_t*)sym->castToStaticSymbol()->getStaticAddress());
+      TR::KnownObjectTable::Index i = comp()->getKnownObjectTable()->getExistingIndexAt((uintptr_t*)sym->castToStaticSymbol()->getStaticAddress());
       if (i != TR::KnownObjectTable::UNKNOWN)
          symRefObjIndex.append( " (==obj%d)", (int)i);
       }
@@ -1929,10 +1929,10 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
                                                                    TR::VMAccessCriticalSection::tryToAcquireVMAccess);
          if (!symRef->isUnresolved() && getStaticNameCriticalSection.acquiredVMAccess())
             {
-            uintptrj_t stringLocation = (uintptrj_t)sym->castToStaticSymbol()->getStaticAddress();
+            uintptr_t stringLocation = (uintptr_t)sym->castToStaticSymbol()->getStaticAddress();
             if (stringLocation)
                {
-               uintptrj_t string = comp()->fej9()->getStaticReferenceFieldAtAddress(stringLocation);
+               uintptr_t string = comp()->fej9()->getStaticReferenceFieldAtAddress(stringLocation);
                length = comp()->fej9()->getStringUTF8Length(string);
                contents = (char*)comp()->trMemory()->allocateMemory(length+1, stackAlloc, TR_MemoryBase::UnknownType);
                comp()->fej9()->getStringUTF8(string, contents, length+1);

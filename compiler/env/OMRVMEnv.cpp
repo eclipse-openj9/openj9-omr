@@ -45,7 +45,7 @@ OMR::VMEnv::self()
    }
 
 
-uintptrj_t
+uintptr_t
 OMR::VMEnv::heapBaseAddress()
    {
    TR_UNIMPLEMENTED();
@@ -53,7 +53,7 @@ OMR::VMEnv::heapBaseAddress()
    }
 
 
-uintptrj_t
+uintptr_t
 OMR::VMEnv::heapTailPaddingSizeInBytes()
    {
    return 0;

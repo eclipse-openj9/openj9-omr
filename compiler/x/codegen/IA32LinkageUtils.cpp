@@ -77,7 +77,7 @@ TR::Register *IA32LinkageUtils::pushIntegerWordArg(
          if (sym)
             {
             TR_ASSERT(!symRef->isUnresolved(), "pushIntegerWordArg loadaddr expecting resolved symbol");
-            generateImmSymInstruction(PUSHImm4, child, (uintptrj_t)sym->getStaticAddress(), symRef, cg);
+            generateImmSymInstruction(PUSHImm4, child, (uintptr_t)sym->getStaticAddress(), symRef, cg);
             cg->decReferenceCount(child);
             return NULL;
             }

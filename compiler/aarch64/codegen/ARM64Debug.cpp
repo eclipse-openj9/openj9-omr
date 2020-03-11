@@ -1489,7 +1489,7 @@ TR_Debug::printa64(TR::FILE *pOutFile, TR::Snippet * snippet)
 bool
 TR_Debug::isBranchToTrampoline(TR::SymbolReference *symRef, uint8_t *cursor, int32_t &distance)
    {
-   uintptrj_t target = (uintptrj_t)symRef->getMethodAddress();
+   uintptr_t target = (uintptr_t)symRef->getMethodAddress();
    bool requiresTrampoline = false;
 
    if (_cg->directCallRequiresTrampoline(target, (intptrj_t)cursor))

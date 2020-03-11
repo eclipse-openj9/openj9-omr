@@ -308,7 +308,7 @@ uint8_t *TR::X86BoundaryAvoidanceInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
 
-   int32_t modulo = ((uintptrj_t)(instructionStart + _minPaddingLength)) % _boundarySpacing;
+   int32_t modulo = ((uintptr_t)(instructionStart + _minPaddingLength)) % _boundarySpacing;
    int32_t padLength = 0;
 
    const TR_AtomicRegion *cur = _atomicRegions;
@@ -1113,7 +1113,7 @@ TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       else if (getOpCodeValue() == DDImm4)
          {
          cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                (uint8_t *)(uintptrj_t)getSourceImmediate(),
+                                                                (uint8_t *)(uintptr_t)getSourceImmediate(),
                                                                 getNode() ? (uint8_t *)(uintptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                TR_ConstantPool,
                                                                cg()),
@@ -1281,7 +1281,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                      {
                      TR::ResolvedMethodSymbol *resolvedMethodSym = sym->getResolvedMethodSymbol();
                      TR_ResolvedMethod *resolvedMethod = resolvedMethodSym ? resolvedMethodSym->getResolvedMethod() : 0;
-                     targetAddress = (uintptrj_t)resolvedMethod->startAddressForJNIMethod(comp);
+                     targetAddress = (uintptr_t)resolvedMethod->startAddressForJNIMethod(comp);
                      }
                   else
                      targetAddress = (intptrj_t)getSymbolReference()->getMethodAddress();

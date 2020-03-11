@@ -55,7 +55,7 @@
  #endif
 #endif
 
-#define MAX_UINTPTRJ (~(uintptrj_t)0)
+#define MAX_UINTPTRJ (~(uintptr_t)0)
 
 #ifdef __cplusplus
 namespace TR { class Compilation; }

@@ -119,7 +119,7 @@ class ArraycopyTransformation : public TR::Optimization
 
    TR::TreeTop* createMultipleArrayNodes(TR::TreeTop* arrayTreeTop, TR::Node* node);
    TR::TreeTop* tryToSpecializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode);
-   TR::TreeTop* specializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode, uintptrj_t lengthInBytes,
+   TR::TreeTop* specializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode, uintptr_t lengthInBytes,
          TR::SymbolReference *srcRef,
          TR::SymbolReference *dstRef,
          TR::SymbolReference *lenRef,

@@ -47,7 +47,7 @@
 
 class TR_OpaqueClassBlock;
 
-void *TR_PPCTableOfConstants::initTOC(TR_FrontEnd *fe, TR::PersistentInfo * pinfo, uintptrj_t systemTOC)
+void *TR_PPCTableOfConstants::initTOC(TR_FrontEnd *fe, TR::PersistentInfo * pinfo, uintptr_t systemTOC)
    {
    int32_t tsize = TR::Options::getCmdLineOptions()->getTOCSize();
 
@@ -85,13 +85,13 @@ void *TR_PPCTableOfConstants::initTOC(TR_FrontEnd *fe, TR::PersistentInfo * pinf
    memset(tocPtr, 0, tsize);
 
    // Always: base is at the middle of TOC
-   uintptrj_t *tocBase = (uintptrj_t *)(tocPtr + (tsize>>1));
+   uintptr_t *tocBase = (uintptr_t *)(tocPtr + (tsize>>1));
    tocManagement->setTOCBase(tocBase);
 
    // Initialize the helper function table (0 to TR_PPCnumRuntimeHelpers-2)
    int32_t idx;
    for (idx=1; idx<TR_PPCnumRuntimeHelpers; idx++)
-      tocBase[idx-1] = (uintptrj_t)runtimeHelperValue((TR_RuntimeHelper)idx);
+      tocBase[idx-1] = (uintptr_t)runtimeHelperValue((TR_RuntimeHelper)idx);
 #if defined(JITTEST)
    //Store at the index of TR_PPCnumRuntimeHelpers, the systemTOC. Note: Slot tocBase[TR_PPCnumRuntimeHelpers-1] is free.
    //See TR::TreeEvaluator::restoreTOCRegister.
@@ -139,8 +139,8 @@ void TR_PPCTableOfConstants::reinitializeMemory()
 
    // It is not mandatory to clean up this memory, but it may make debugging easier should it be required
    memset(tocManagement->getTOCBase()+tocManagement->getDownCursorAfterPermanentEntries(), 0,
-          (tocManagement->getTOCSize()>>1) - tocManagement->getDownCursorAfterPermanentEntries()*sizeof(uintptrj_t));
-   memset(tocManagement->getTOCPtr(), 0, (tocManagement->getTOCSize()>>1) - (tocManagement->getUpCursorAfterPermanentEntries() + 1 )*sizeof(uintptrj_t));
+          (tocManagement->getTOCSize()>>1) - tocManagement->getDownCursorAfterPermanentEntries()*sizeof(uintptr_t));
+   memset(tocManagement->getTOCPtr(), 0, (tocManagement->getTOCSize()>>1) - (tocManagement->getUpCursorAfterPermanentEntries() + 1 )*sizeof(uintptr_t));
 
    // Initialize the hash map
    int32_t top = tocManagement->getTOCSize()/(sizeof(intptrj_t)-1);
@@ -367,11 +367,11 @@ TR_PPCTableOfConstants::lookUp(int32_t val, struct TR_tocHashEntry *tmplate, int
          break;
       case TR_FLAG_tocFloatKey:
          hash[idx]._fKey = tmplate->_fKey;
-         uintptrj_t slotValue;
+         uintptr_t slotValue;
          if (comp->target().cpu.isBigEndian())
-            slotValue = (*offsetInSlot == 0)?(((uintptrj_t)hash[idx]._fKey)<<32):(getTOCSlot(rval*sizeof(intptrj_t))|hash[idx]._fKey);
+            slotValue = (*offsetInSlot == 0)?(((uintptr_t)hash[idx]._fKey)<<32):(getTOCSlot(rval*sizeof(intptrj_t))|hash[idx]._fKey);
          else
-            slotValue = (*offsetInSlot == 0)?((uintptrj_t)hash[idx]._fKey):(getTOCSlot(rval*sizeof(intptrj_t))|(((uintptrj_t)hash[idx]._fKey)<<32));
+            slotValue = (*offsetInSlot == 0)?((uintptr_t)hash[idx]._fKey):(getTOCSlot(rval*sizeof(intptrj_t))|(((uintptr_t)hash[idx]._fKey)<<32));
          setTOCSlot(rval*sizeof(intptrj_t), slotValue);
          break;
       case TR_FLAG_tocStatic2ClassKey:
@@ -622,25 +622,25 @@ TR_PPCTableOfConstants::onClassUnloading(void *tagPtr)
       if ((hash[idx]._flag & (TR_FLAG_tocNameKey|TR_FLAG_tocStatic2ClassKey)) && hash[idx]._keyTag==(intptrj_t)tagPtr)
          {
          hash[idx]._keyTag = -1;
-         setTOCSlot(hash[idx]._tocIndex * sizeof(uintptrj_t), -1);
+         setTOCSlot(hash[idx]._tocIndex * sizeof(uintptr_t), -1);
          }
       }
    }
 
-uintptrj_t TR_PPCTableOfConstants::getTOCSlot(int32_t offset)
+uintptr_t TR_PPCTableOfConstants::getTOCSlot(int32_t offset)
    {
    TR_PPCTableOfConstants *tocManagement = toPPCTableOfConstants(TR_PersistentMemory::getNonThreadSafePersistentInfo()->getPersistentTOC());
-   uintptrj_t *base = tocManagement->getTOCBase(); // no lock needed because base does not change
+   uintptr_t *base = tocManagement->getTOCBase(); // no lock needed because base does not change
 
-   return base[offset/sizeof(uintptrj_t)];
+   return base[offset/sizeof(uintptr_t)];
    }
 
-void TR_PPCTableOfConstants::setTOCSlot(int32_t offset, uintptrj_t v)
+void TR_PPCTableOfConstants::setTOCSlot(int32_t offset, uintptr_t v)
    {
    TR_PPCTableOfConstants *tocManagement = toPPCTableOfConstants(TR_PersistentMemory::getNonThreadSafePersistentInfo()->getPersistentTOC());
-   uintptrj_t *base = tocManagement->getTOCBase();
+   uintptr_t *base = tocManagement->getTOCBase();
 
-   base[offset/sizeof(uintptrj_t)] = v; // no lock needed
+   base[offset/sizeof(uintptr_t)] = v; // no lock needed
    }
 void TR_PPCTableOfConstants::permanentEntriesAddtionComplete() // only zEmulator uses this
   {

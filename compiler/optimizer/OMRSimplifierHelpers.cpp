@@ -221,7 +221,7 @@ void foldLongIntConstant(TR::Node * node, int64_t value, TR::Simplifier * s, boo
    s->prepareToReplaceNode(node, node->getOpCode().isRef() ? TR::aconst : TR::lconst);
 
    if (node->getOpCode().isRef())
-      node->setAddress((uintptrj_t)value);
+      node->setAddress((uintptr_t)value);
    else
       node->setLongInt(value);
 

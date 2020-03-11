@@ -78,7 +78,7 @@ OMR::X86::MemoryReference::getDisplacement()
          }
       else if (!symRef.isUnresolved() && symbol->isStatic())
          {
-         displacement += (uintptrj_t)symbol->castToStaticSymbol()->getStaticAddress();
+         displacement += (uintptr_t)symbol->castToStaticSymbol()->getStaticAddress();
          }
       }
 

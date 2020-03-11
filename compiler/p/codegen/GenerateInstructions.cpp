@@ -593,7 +593,7 @@ TR::Instruction *generateDepImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode
    }
 
 TR::Instruction *generateDepImmSymInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
-   uintptrj_t imm, TR::RegisterDependencyConditions *cond, TR::SymbolReference *sr, TR::Snippet *s, TR::Instruction *preced)
+   uintptr_t imm, TR::RegisterDependencyConditions *cond, TR::SymbolReference *sr, TR::Snippet *s, TR::Instruction *preced)
    {
    if (preced)
       return new (cg->trHeapMemory()) TR::PPCDepImmSymInstruction(op, n, imm, cond, sr, s, preced, cg);

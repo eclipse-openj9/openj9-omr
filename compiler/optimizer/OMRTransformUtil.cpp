@@ -368,7 +368,7 @@ OMR::TransformUtil::transformIndirectLoadChainAt(
       TR::Compilation *comp,
       TR::Node *node,
       TR::Node *baseExpression,
-      uintptrj_t *baseReferenceLocation,
+      uintptr_t *baseReferenceLocation,
       TR::Node **removedNode)
    {
    return false;

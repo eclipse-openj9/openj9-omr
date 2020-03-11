@@ -121,11 +121,11 @@ TR_FrontEnd::getArrayletLeafIndex(int32_t, int32_t)
    }
 
 
-uintptrj_t TR_FrontEnd::getObjectHeaderSizeInBytes()              { TR_UNIMPLEMENTED(); return 0; }
-uintptrj_t TR_FrontEnd::getOffsetOfContiguousArraySizeField()     { TR_UNIMPLEMENTED(); return 0; }
-uintptrj_t TR_FrontEnd::getOffsetOfDiscontiguousArraySizeField()  { TR_UNIMPLEMENTED(); return 0; }
+uintptr_t TR_FrontEnd::getObjectHeaderSizeInBytes()              { TR_UNIMPLEMENTED(); return 0; }
+uintptr_t TR_FrontEnd::getOffsetOfContiguousArraySizeField()     { TR_UNIMPLEMENTED(); return 0; }
+uintptr_t TR_FrontEnd::getOffsetOfDiscontiguousArraySizeField()  { TR_UNIMPLEMENTED(); return 0; }
 
-uintptrj_t TR_FrontEnd::getOffsetOfIndexableSizeField()           { TR_UNIMPLEMENTED(); return 0; }
+uintptr_t TR_FrontEnd::getOffsetOfIndexableSizeField()           { TR_UNIMPLEMENTED(); return 0; }
 
 
 char *
@@ -277,14 +277,14 @@ TR_FrontEnd::getClassFromMethodBlock(TR_OpaqueMethodBlock *mb)
    }
 
 intptrj_t
-TR_FrontEnd::getStringUTF8Length(uintptrj_t objectPointer)
+TR_FrontEnd::getStringUTF8Length(uintptr_t objectPointer)
    {
    TR_UNIMPLEMENTED();
    return -1;
    }
 
 char *
-TR_FrontEnd::getStringUTF8(uintptrj_t objectPointer, char *buffer, intptrj_t bufferSize)
+TR_FrontEnd::getStringUTF8(uintptr_t objectPointer, char *buffer, intptrj_t bufferSize)
    {
    TR_UNIMPLEMENTED();
    return NULL;

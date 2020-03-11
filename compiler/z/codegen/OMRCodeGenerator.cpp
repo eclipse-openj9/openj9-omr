@@ -205,7 +205,7 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
          }
       if (inList)
          {
-         uintptrj_t temp  = (uintptrj_t)ptr->getValue();
+         uintptr_t temp  = (uintptr_t)ptr->getValue();
          int32_t updatedTemp = (int32_t)temp + 1;
          ptr->setValue((int32_t*)(intptr_t)updatedTemp);
          }
@@ -3826,7 +3826,7 @@ OMR::Z::CodeGenerator::emitDataSnippets()
    // We align this stucture on 8bytes to guarantee full predictability of
    // of the lit pool layout.
    //
-   self()->setBinaryBufferCursor((uint8_t *) (((uintptrj_t) (self()->getBinaryBufferCursor() + 7) / 8) * 8));
+   self()->setBinaryBufferCursor((uint8_t *) (((uintptr_t) (self()->getBinaryBufferCursor() + 7) / 8) * 8));
 
    // Emit constants in order of decreasing size.  Constants will be aligned according to
    // their size.
@@ -3846,7 +3846,7 @@ OMR::Z::CodeGenerator::emitDataSnippets()
             if (first)
                {
                first = false;
-               self()->setBinaryBufferCursor((uint8_t *) (((uintptrj_t) (self()->getBinaryBufferCursor() + size - 1) / size) * size));
+               self()->setBinaryBufferCursor((uint8_t *) (((uintptr_t) (self()->getBinaryBufferCursor() + size - 1) / size) * size));
                }
             codeOffset = (*iterator)->emitSnippetBody();
             if (codeOffset != NULL)
@@ -3868,7 +3868,7 @@ OMR::Z::CodeGenerator::emitDataSnippets()
               if (first)
                  {
                   first = false;
-                  self()->setBinaryBufferCursor((uint8_t *) (((uintptrj_t)(self()->getBinaryBufferCursor() + size -1)/size)*size));
+                  self()->setBinaryBufferCursor((uint8_t *) (((uintptr_t)(self()->getBinaryBufferCursor() + size -1)/size)*size));
                  }
              codeOffset = cursor->emitSnippetBody();
              if (codeOffset != NULL)
@@ -3896,7 +3896,7 @@ OMR::Z::CodeGenerator::emitDataSnippets()
             if (first)
                {
                first = false;
-               self()->setBinaryBufferCursor((uint8_t *) (((uintptrj_t) (self()->getBinaryBufferCursor() + size - 1) / size) * size));
+               self()->setBinaryBufferCursor((uint8_t *) (((uintptr_t) (self()->getBinaryBufferCursor() + size - 1) / size) * size));
                }
             codeOffset = (*writeableiterator)->emitSnippetBody();
             if (codeOffset != NULL)
@@ -3910,7 +3910,7 @@ OMR::Z::CodeGenerator::emitDataSnippets()
    TR_ASSERT(1 << self()->constantDataSnippetExponent() >= maxSize, "Failed to emit 1 or more snippets of size %d\n", maxSize);
 
    // Emit Other Misc Data Snippets.
-   self()->setBinaryBufferCursor((uint8_t *) (((uintptrj_t) (self()->getBinaryBufferCursor() + 7) / 8) * 8));
+   self()->setBinaryBufferCursor((uint8_t *) (((uintptr_t) (self()->getBinaryBufferCursor() + 7) / 8) * 8));
    for (auto snippetDataIterator = _snippetDataList.begin(); snippetDataIterator != _snippetDataList.end(); ++snippetDataIterator)
       {
       if ((*snippetDataIterator)->getKind() == TR::Snippet::IsEyeCatcherData )

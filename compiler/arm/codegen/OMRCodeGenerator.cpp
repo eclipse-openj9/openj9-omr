@@ -286,14 +286,14 @@ TR::Instruction *OMR::ARM::CodeGenerator::generateSwitchToInterpreterPrePrologue
    TR::Register   *lr = self()->machine()->getRealRegister(TR::RealRegister::gr14); // link register
    TR::ResolvedMethodSymbol *methodSymbol = comp->getJittedMethodSymbol();
    TR::SymbolReference    *revertToInterpreterSymRef = self()->symRefTab()->findOrCreateRuntimeHelper(TR_ARMrevertToInterpreterGlue, false, false, false);
-   uintptrj_t             ramMethod = (uintptrj_t)methodSymbol->getResolvedMethod()->resolvedMethodAddress();
+   uintptr_t             ramMethod = (uintptr_t)methodSymbol->getResolvedMethod()->resolvedMethodAddress();
    TR::SymbolReference    *helperSymRef = self()->symRefTab()->findOrCreateRuntimeHelper(directToInterpreterHelper(methodSymbol, self()), false, false, false);
-   uintptrj_t             helperAddr = (uintptrj_t)helperSymRef->getMethodAddress();
+   uintptr_t             helperAddr = (uintptr_t)helperSymRef->getMethodAddress();
 
    // gr4 must contain the saved LR; see Recompilation.s
    cursor = new (self()->trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, ARMOp_mov, node, gr4, lr, self());
    cursor = self()->getLinkage()->flushArguments(cursor);
-   cursor = generateImmSymInstruction(self(), ARMOp_bl, node, (uintptrj_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
+   cursor = generateImmSymInstruction(self(), ARMOp_bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
    cursor = generateImmInstruction(self(), ARMOp_dd, node, (int32_t)ramMethod, TR_RamMethod, cursor);
 
    if (comp->getOption(TR_EnableHCR))
@@ -360,7 +360,7 @@ void OMR::ARM::CodeGenerator::beginInstructionSelection()
       TR::ResolvedMethodSymbol *methodSymbol  = comp->getMethodSymbol();
       if (methodSymbol->isJNI())
          {
-         uintptrj_t JNIMethodAddress = (uintptrj_t) methodSymbol->getResolvedMethod()->startAddressForJNIMethod(comp);
+         uintptr_t JNIMethodAddress = (uintptr_t) methodSymbol->getResolvedMethod()->startAddressForJNIMethod(comp);
          cursor = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, ARMOp_dd, startNode, (int32_t)JNIMethodAddress, self());
          }
 

@@ -423,7 +423,7 @@ static bool tryFoldCompileTimeLoad(
          else if (knot && constraint->isConstString())
             {
             baseExpression  = curNode;
-            baseKnownObject = knot->getIndexAt((uintptrj_t*)constraint->getConstString()->getSymRef()->getSymbol()->castToStaticSymbol()->getStaticAddress());
+            baseKnownObject = knot->getIndexAt((uintptr_t*)constraint->getConstString()->getSymRef()->getSymbol()->castToStaticSymbol()->getStaticAddress());
             if (vp->trace())
                traceMsg(vp->comp(), "  - %s %p is string obj%d\n", baseExpression->getOpCode().getName(), baseExpression, baseKnownObject);
             break;
@@ -437,7 +437,7 @@ static bool tryFoldCompileTimeLoad(
             if (vp->trace())
                traceMsg(vp->comp(), " - %s %p is class object - transforming\n", curNode->getOpCode().getName(), curNode);
             TR::Node *nodeToRemove = NULL;
-            uintptrj_t clazz = (uintptrj_t)constraint->getClass();
+            uintptr_t clazz = (uintptr_t)constraint->getClass();
             bool didSomething = TR::TransformUtil::transformIndirectLoadChainAt(vp->comp(), node, curNode, &clazz, &nodeToRemove);
             if (nodeToRemove)
                {
@@ -454,7 +454,7 @@ static bool tryFoldCompileTimeLoad(
                 && !curNode->getSymbolReference()->isUnresolved())
                {
                TR::Node *nodeToRemove = NULL;
-               uintptrj_t clazz = (uintptrj_t)curNode->getSymbolReference()->getSymbol()->getStaticSymbol()->getStaticAddress();
+               uintptr_t clazz = (uintptr_t)curNode->getSymbolReference()->getSymbol()->getStaticSymbol()->getStaticAddress();
                bool didSomething = TR::TransformUtil::transformIndirectLoadChainAt(vp->comp(), node, curNode, &clazz, &nodeToRemove);
                if (nodeToRemove)
                   {
@@ -1169,8 +1169,8 @@ TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
                {
                TR::VPConstString *constString = baseVPConstraint->getClassType()->asConstString();
 
-               uintptrj_t offset = vp->comp()->target().is64Bit() ? (uintptrj_t)index->getUnsignedLongInt() : (uintptrj_t)index->getUnsignedInt();
-               uintptrj_t chIdx = (offset - (uintptrj_t)TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2;
+               uintptr_t offset = vp->comp()->target().is64Bit() ? (uintptr_t)index->getUnsignedLongInt() : (uintptr_t)index->getUnsignedInt();
+               uintptr_t chIdx = (offset - (uintptr_t)TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2;
                uint16_t ch = constString->charAt(chIdx, vp->comp());
                if (ch != 0)
                   {
@@ -1194,19 +1194,19 @@ TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
                      TR::VMAccessCriticalSection::tryToAcquireVMAccess);
                   if (constrainAnyIntLoadCriticalSection.hasVMAccess())
                      {
-                     uintptrj_t arrayObj = knot->getPointer(idx);
-                     uintptrj_t offset = vp->comp()->target().is64Bit()
-                                         ? (uintptrj_t)index->getUnsignedLongInt() : (uintptrj_t)index->getUnsignedInt();
-                     uintptrj_t lengthInElements = TR::Compiler->om.getArrayLengthInElements(vp->comp(), arrayObj);
+                     uintptr_t arrayObj = knot->getPointer(idx);
+                     uintptr_t offset = vp->comp()->target().is64Bit()
+                                         ? (uintptr_t)index->getUnsignedLongInt() : (uintptr_t)index->getUnsignedInt();
+                     uintptr_t lengthInElements = TR::Compiler->om.getArrayLengthInElements(vp->comp(), arrayObj);
                      TR::DataType elementType = kobj->getPrimitiveArrayDataType();
-                     uintptrj_t lengthInBytes = lengthInElements * TR::DataType::getSize(elementType);
-                     uintptrj_t validStart = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
-                     uintptrj_t validEnd = validStart + lengthInBytes;
-                     uintptrj_t accessSize = TR::DataType::getSize(dataType);
-                     uintptrj_t accessEnd = offset + accessSize;
+                     uintptr_t lengthInBytes = lengthInElements * TR::DataType::getSize(elementType);
+                     uintptr_t validStart = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
+                     uintptr_t validEnd = validStart + lengthInBytes;
+                     uintptr_t accessSize = TR::DataType::getSize(dataType);
+                     uintptr_t accessEnd = offset + accessSize;
                      if (validStart <= offset && offset < accessEnd && accessEnd <= validEnd)
                         {
-                        uintptrj_t elementAddress = TR::Compiler->om.getAddressOfElement(vp->comp(), arrayObj, offset);
+                        uintptr_t elementAddress = TR::Compiler->om.getAddressOfElement(vp->comp(), arrayObj, offset);
                         switch (dataType)
                            {
                            case TR::Int8:
@@ -1310,7 +1310,7 @@ TR::Node *constrainIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
 bool simplifyJ9ClassFlags(OMR::ValuePropagation *vp, TR::Node *node, bool isLong)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   uintptrj_t cdfValue = 0;
+   uintptr_t cdfValue = 0;
    bool isGlobal;
    TR::VPConstraint *base = vp->getConstraint(node->getFirstChild(), isGlobal);
    TR::SymbolReference *symRef = node->getSymbolReference();
@@ -1542,11 +1542,11 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
    if (symRef->isUnresolved())
       return false;
 
-   uintptrj_t *objectReferenceLocation = NULL;
+   uintptr_t *objectReferenceLocation = NULL;
    if (symRef->hasKnownObjectIndex())
       objectReferenceLocation = symRef->getKnownObjectReferenceLocation(vp->comp());
    else if (symRef->getSymbol()->isFixedObjectRef())
-      objectReferenceLocation = (uintptrj_t*)symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
+      objectReferenceLocation = (uintptr_t*)symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
 
 #ifdef J9_PROJECT_SPECIFIC
    if (objectReferenceLocation)
@@ -1558,7 +1558,7 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
 
          {
          TR::VMAccessCriticalSection getObjectReferenceLocation(vp->comp());
-         uintptrj_t objectReference = vp->comp()->fej9()->getStaticReferenceFieldAtAddress((uintptrj_t)objectReferenceLocation);
+         uintptr_t objectReference = vp->comp()->fej9()->getStaticReferenceFieldAtAddress((uintptr_t)objectReferenceLocation);
          clazz   = TR::Compiler->cls.objectClass(vp->comp(), objectReference);
          isString = TR::Compiler->cls.isString(vp->comp(), clazz);
          jlClass = vp->fe()->getClassClassPointer(clazz);
@@ -1706,8 +1706,8 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
                                                                              TR::VMAccessCriticalSection::tryToAcquireVMAccess);
                   if (constrainAloadCriticalSection.hasVMAccess())
                      {
-                     uintptrj_t arrayStaticAddress = (uintptrj_t)symbol->getStaticAddress();
-                     uintptrj_t arrayObject = vp->comp()->fej9()->getStaticReferenceFieldAtAddress(arrayStaticAddress);
+                     uintptr_t arrayStaticAddress = (uintptr_t)symbol->getStaticAddress();
+                     uintptr_t arrayObject = vp->comp()->fej9()->getStaticReferenceFieldAtAddress(arrayStaticAddress);
                      if (arrayObject != 0)
                         {
                         int32_t arrLength = TR::Compiler->om.getArrayLengthInElements(vp->comp(), arrayObject);
@@ -2239,7 +2239,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
          if (constrainIaloadCriticalSection.hasVMAccess())
             {
             TR::KnownObjectTable *knot = vp->comp()->getOrCreateKnownObjectTable();
-            uintptrj_t baseObject = knot->getPointer(base->getKnownObject()->getIndex());
+            uintptr_t baseObject = knot->getPointer(base->getKnownObject()->getIndex());
             if (baseObject)
                {
                // Check if baseObject is actually the recognized field Class
@@ -2252,7 +2252,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
                         recognizedClassNameLength, symRef->getOwningMethod(vp->comp()));
                   if (recognizedClazz && (TR_yes == vp->fe()->isInstanceOf(baseObjectClazz, recognizedClazz, false)))
                      {
-                     uintptrj_t fieldObject = vp->comp()->fej9()->getReferenceFieldAtAddress(baseObject + node->getSymbolReference()->getOffset());
+                     uintptr_t fieldObject = vp->comp()->fej9()->getReferenceFieldAtAddress(baseObject + node->getSymbolReference()->getOffset());
                      if (0 != fieldObject)
                         {
                         TR_OpaqueClassBlock *fieldObjectClazz = TR::Compiler->cls.objectClass(vp->comp(), fieldObject);
@@ -2298,7 +2298,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
 
                if (constrainIaloadCriticalSection.hasVMAccess())
                   {
-                  uintptrj_t jlclazz = knot->getPointer(base->getKnownObject()->getIndex());
+                  uintptr_t jlclazz = knot->getPointer(base->getKnownObject()->getIndex());
                   TR_OpaqueClassBlock *clazz = TR::Compiler->cls.classFromJavaLangClass(vp->comp(), jlclazz);
                   if (TR::Compiler->cls.isClassInitialized(vp->comp(), clazz))
                      {
@@ -2346,7 +2346,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
          if (knot && symRef == vp->comp()->getSymRefTab()->findJavaLangClassFromClassSymbolRef())
             {
             TR_J9VMBase *fej9 = (TR_J9VMBase *)(vp->comp()->fe());
-            TR::KnownObjectTable::Index knownObjectIndex = knot->getIndexAt((uintptrj_t*)(base->getClass() + fej9->getOffsetOfJavaLangClassFromClassField()));
+            TR::KnownObjectTable::Index knownObjectIndex = knot->getIndexAt((uintptr_t*)(base->getClass() + fej9->getOffsetOfJavaLangClassFromClassField()));
             vp->addBlockOrGlobalConstraint(node,
                   TR::VPClass::create(vp,
                      TR::VPKnownObject::createForJavaLangClass(vp, knownObjectIndex),
@@ -2439,14 +2439,14 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
                   if (bypassOnThisRun)
                      {
                      TR::KnownObjectTable::Index callSiteKOI = callSiteConstraint->getKnownObject()->getIndex();
-                     uintptrj_t *bypassLocation = NULL;
+                     uintptr_t *bypassLocation = NULL;
 
                         {
                         TR::VMAccessCriticalSection constrainIaloadCriticalSection(vp->comp(),
                                                                                     TR::VMAccessCriticalSection::tryToAcquireVMAccess);
                         if (constrainIaloadCriticalSection.hasVMAccess())
                            {
-                           uintptrj_t *siteLocation = vp->comp()->getKnownObjectTable()->getPointerLocation(callSiteKOI);
+                           uintptr_t *siteLocation = vp->comp()->getKnownObjectTable()->getPointerLocation(callSiteKOI);
                            bypassLocation = vp->comp()->fej9()->mutableCallSite_bypassLocation(*siteLocation);
                            if (  !bypassLocation
                               && performTransformation(vp->comp(), "%s[%p] create CallSite bypass for obj%d\n", OPT_DETAILS, node, callSiteKOI))
@@ -2517,8 +2517,8 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
                                                                               TR::VMAccessCriticalSection::tryToAcquireVMAccess);
                   if (constrainIaloadCriticalSection.hasVMAccess())
                      {
-                     uintptrj_t arrayStaticAddress = (uintptrj_t)symbol->getStaticAddress();
-                     uintptrj_t arrayObject = vp->comp()->fej9()->getStaticReferenceFieldAtAddress(arrayStaticAddress);
+                     uintptr_t arrayStaticAddress = (uintptr_t)symbol->getStaticAddress();
+                     uintptr_t arrayObject = vp->comp()->fej9()->getStaticReferenceFieldAtAddress(arrayStaticAddress);
                      if (arrayObject != 0)
                         {
                         /*
@@ -4853,10 +4853,10 @@ TR::Node *constrainArraylength(OMR::ValuePropagation *vp, TR::Node *node)
                      TR::VMAccessCriticalSection::tryToAcquireVMAccess);
          if (constrainArraylengthCriticalSection.hasVMAccess())
             {
-            uintptrj_t array = knot->getPointer(kobj->getIndex());
+            uintptr_t array = knot->getPointer(kobj->getIndex());
             if (vp->comp()->fej9()->isClassArray(vp->comp()->fej9()->getObjectClass(array)))
                {
-               uintptrj_t length = vp->comp()->fej9()->getArrayLengthInElements(array);
+               uintptr_t length = vp->comp()->fej9()->getArrayLengthInElements(array);
                vp->replaceByConstant(node, TR::VPIntConst::create(vp, length), isGlobal);
                return node;
                }

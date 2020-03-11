@@ -76,7 +76,7 @@ class TR_PPCTableOfConstants : public TableOfConstants
 
    TR_PERSISTENT_ALLOC(TR_Memory::TableOfConstants)
 
-   uintptrj_t              *_tocBase;
+   uintptr_t              *_tocBase;
    struct TR_tocHashEntry  *_hashMap;
    int8_t                  *_nameAStart, *_nameACursor;
    int64_t     _nameASize;
@@ -96,7 +96,7 @@ class TR_PPCTableOfConstants : public TableOfConstants
    TR_PPCTableOfConstants(uint32_t size)
       : TableOfConstants(size), _tocBase(NULL)
       {
-      _downLast = (size>>1)/sizeof(uintptrj_t);
+      _downLast = (size>>1)/sizeof(uintptr_t);
       _upLast = -(_downLast + 1);
       _upCursor = _upCursorAfterPermanentEntries = -1;
       _downCursor = _downCursorAfterPermanentEntries = 0;
@@ -125,7 +125,7 @@ class TR_PPCTableOfConstants : public TableOfConstants
          }
       }
 
-   static void       *initTOC(TR_FrontEnd *vm, TR::PersistentInfo *, uintptrj_t systemTOC);
+   static void       *initTOC(TR_FrontEnd *vm, TR::PersistentInfo *, uintptr_t systemTOC);
    static void        reinitializeMemory();
    static void        shutdown(TR_FrontEnd *vm);
    static int32_t     lookUp(int32_t val, struct TR_tocHashEntry *lk, int32_t *s, TR::CodeGenerator *cg);  // return index
@@ -138,8 +138,8 @@ class TR_PPCTableOfConstants : public TableOfConstants
    static void        permanentEntriesAddtionComplete();
    static bool        isPermanentEntriesAddtionComplete();
 
-   static uintptrj_t   getTOCSlot(int32_t offset);
-   static void         setTOCSlot(int32_t offset, uintptrj_t v);
+   static uintptr_t   getTOCSlot(int32_t offset);
+   static void         setTOCSlot(int32_t offset, uintptr_t v);
 
    int32_t getUpLast() {return _upLast;}
    int32_t getDownLast() {return _downLast;}
@@ -156,8 +156,8 @@ class TR_PPCTableOfConstants : public TableOfConstants
    void    setPermanentEntriesAddtionComplete(bool b) { _permanentEntriesAddtionComplete = b; };
    bool    getPermanentEntriesAddtionComplete() { return _permanentEntriesAddtionComplete; }
 
-   uintptrj_t *getTOCBase() {return _tocBase;}
-   void       setTOCBase(uintptrj_t *b) {_tocBase=b;}
+   uintptr_t *getTOCBase() {return _tocBase;}
+   void       setTOCBase(uintptr_t *b) {_tocBase=b;}
 
    uint8_t *getTOCPtr() {return _tocPtr;}
    void     setTOCPtr(uint8_t* tocPtr) {_tocPtr = tocPtr;}

@@ -2020,7 +2020,7 @@ private:
    static char *setVerboseBits(char *option, void *base, TR::OptionTable *entry);
    static char *setVerboseBitsInJitPrivateConfig(char *option, void *base, TR::OptionTable *entry);
    // Helper method used by the two methods above
-   static char *setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verboseOptionFlags, uintptrj_t defaultVerboseFlags);
+   static char *setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verboseOptionFlags, uintptr_t defaultVerboseFlags);
 
    // Set samplingjprofiling bits
    //

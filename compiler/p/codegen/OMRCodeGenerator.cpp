@@ -357,7 +357,7 @@ OMR::Power::CodeGenerator::deriveCallingLinkage(TR::Node *node, bool isIndirect)
     return linkage;
     }
 
-uintptrj_t *
+uintptr_t *
 OMR::Power::CodeGenerator::getTOCBase()
     {
         TR_PPCTableOfConstants *pTOC = toPPCTableOfConstants(self()->comp()->getPersistentInfo()->getPersistentTOC());
@@ -398,14 +398,14 @@ OMR::Power::CodeGenerator::generateSwitchToInterpreterPrePrologue(
    TR::Register   *gr0 = self()->machine()->getRealRegister(TR::RealRegister::gr0);
    TR::ResolvedMethodSymbol *methodSymbol = self()->comp()->getJittedMethodSymbol();
    TR::SymbolReference    *revertToInterpreterSymRef = self()->symRefTab()->findOrCreateRuntimeHelper(TR_PPCrevertToInterpreterGlue, false, false, false);
-   uintptrj_t             ramMethod = (uintptrj_t)methodSymbol->getResolvedMethod()->resolvedMethodAddress();
+   uintptr_t             ramMethod = (uintptr_t)methodSymbol->getResolvedMethod()->resolvedMethodAddress();
    TR::SymbolReference    *helperSymRef = self()->symRefTab()->findOrCreateRuntimeHelper(directToInterpreterHelper(methodSymbol, self()), false, false, false);
-   uintptrj_t             helperAddr = (uintptrj_t)helperSymRef->getMethodAddress();
+   uintptr_t             helperAddr = (uintptr_t)helperSymRef->getMethodAddress();
 
    // gr0 must contain the saved LR; see Recompilation.s
    cursor = new (self()->trHeapMemory()) TR::PPCTrg1Instruction(TR::InstOpCode::mflr, node, gr0, cursor, self());
    cursor = self()->getLinkage()->flushArguments(cursor);
-   cursor = generateDepImmSymInstruction(self(), TR::InstOpCode::bl, node, (uintptrj_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions(0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
+   cursor = generateDepImmSymInstruction(self(), TR::InstOpCode::bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions(0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
 
    if (self()->comp()->target().is64Bit())
       {
@@ -1816,7 +1816,7 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
       int32_t idx;
       for (idx=0; idx<self()->getTrackItems()->size(); idx++)
          TR_PPCTableOfConstants::setTOCSlot(self()->getTrackItems()->element(idx)->getTOCOffset(),
-            (uintptrj_t)self()->getTrackItems()->element(idx)->getLabel()->getCodeLocation());
+            (uintptr_t)self()->getTrackItems()->element(idx)->getLabel()->getCodeLocation());
       }
 
    // Create exception table entries for outlined instructions.
@@ -2396,14 +2396,14 @@ void OMR::Power::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t * curs
    {
    TR_ASSERT( label->getCodeLocation(), "Attempt to relocate to a NULL label address!" );
 
-   *cursor |= ((uintptrj_t)label->getCodeLocation()-(uintptrj_t)cursor) & 0x0000fffc;
+   *cursor |= ((uintptr_t)label->getCodeLocation()-(uintptr_t)cursor) & 0x0000fffc;
    }
 
 void OMR::Power::CodeGenerator::apply24BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    {
    TR_ASSERT( label->getCodeLocation(), "Attempt to relocate to a NULL label address!" );
 
-   *cursor = ((*cursor) & 0xfc000003) | (((uintptrj_t)label->getCodeLocation()-(uintptrj_t)cursor) & 0x03fffffc);
+   *cursor = ((*cursor) & 0xfc000003) | (((uintptr_t)label->getCodeLocation()-(uintptr_t)cursor) & 0x03fffffc);
    }
 
 void OMR::Power::CodeGenerator::apply16BitLoadLabelRelativeRelocation(TR::Instruction *liInstruction, TR::LabelSymbol *startLabel, TR::LabelSymbol *endLabel, int32_t deltaToStartLabel)

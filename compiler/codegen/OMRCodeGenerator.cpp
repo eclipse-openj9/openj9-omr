@@ -241,7 +241,7 @@ OMR::CodeGenerator::CodeGenerator() :
                                self()->comp()->getOptions()->realTimeGC() ||
                                self()->comp()->getOption(TR_DisableInternalPointers);
 
-   uintptrj_t maxSize = TR::Compiler->vm.getOverflowSafeAllocSize(self()->comp());
+   uintptr_t maxSize = TR::Compiler->vm.getOverflowSafeAllocSize(self()->comp());
    int32_t i;
 
    for (i = 0; i < NumRegisterKinds; ++i)

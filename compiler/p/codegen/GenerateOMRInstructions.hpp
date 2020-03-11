@@ -365,7 +365,7 @@ TR::Instruction *generateDepImmSymInstruction(
                    TR::CodeGenerator      *cg,
                    TR::InstOpCode::Mnemonic                       op,
                    TR::Node                            *n,
-                   uintptrj_t                           imm,
+                   uintptr_t                           imm,
                    TR::RegisterDependencyConditions *cond,
                    TR::SymbolReference                 *sr,
                    TR::Snippet                         *s=NULL,

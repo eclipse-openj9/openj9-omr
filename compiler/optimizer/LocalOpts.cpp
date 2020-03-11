@@ -7080,7 +7080,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
 static bool specializeInvokeExactSymbol(TR::Node *callNode, TR::KnownObjectTable::Index receiverIndex, TR::Compilation *comp, TR::Optimization *opt)
    {
    TR::KnownObjectTable     *knot           = comp->getKnownObjectTable();
-   uintptrj_t              *refLocation    = knot->getPointerLocation(receiverIndex);
+   uintptr_t              *refLocation    = knot->getPointerLocation(receiverIndex);
    TR::SymbolReference      *symRef         = callNode->getSymbolReference();
    TR::ResolvedMethodSymbol *owningMethod   = callNode->getSymbolReference()->getOwningMethodSymbol(comp);
    TR_ResolvedMethod       *resolvedMethod = comp->fej9()->createMethodHandleArchetypeSpecimen(comp->trMemory(), refLocation, owningMethod->getResolvedMethod());
@@ -7618,7 +7618,7 @@ void TR_InvariantArgumentPreexistence::processIndirectLoad(TR::Node *node, TR::T
       }
    else if (addressChild->getSymbol()->isFixedObjectRef())
       {
-      somethingMayHaveChanged = TR::TransformUtil::transformIndirectLoadChainAt(comp(), node, addressChild, (uintptrj_t*)addressChild->getSymbol()->castToStaticSymbol()->getStaticAddress(), &removedNode);
+      somethingMayHaveChanged = TR::TransformUtil::transformIndirectLoadChainAt(comp(), node, addressChild, (uintptr_t*)addressChild->getSymbol()->castToStaticSymbol()->getStaticAddress(), &removedNode);
       }
    else if (addressChild->getSymbol()->isParm())
       {

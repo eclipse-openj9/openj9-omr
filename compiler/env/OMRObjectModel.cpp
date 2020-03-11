@@ -49,7 +49,7 @@ OMR::ObjectModel::sizeofReferenceAddress()
    return TR::Compiler->target.is64Bit() ? 8 : 4;
    }
 
-uintptrj_t
+uintptr_t
 OMR::ObjectModel::elementSizeOfBooleanArray()
    {
    TR_UNIMPLEMENTED();
@@ -77,42 +77,42 @@ OMR::ObjectModel::maxArraySizeInElements(int32_t knownMinElementSize, TR::Compil
    }
 
 bool
-OMR::ObjectModel::isDiscontiguousArray(TR::Compilation* comp, uintptrj_t objectPointer)
+OMR::ObjectModel::isDiscontiguousArray(TR::Compilation* comp, uintptr_t objectPointer)
    {
    TR_UNIMPLEMENTED();
    return false;
    }
 
 intptrj_t
-OMR::ObjectModel::getArrayLengthInElements(TR::Compilation* comp, uintptrj_t objectPointer)
+OMR::ObjectModel::getArrayLengthInElements(TR::Compilation* comp, uintptr_t objectPointer)
    {
    TR_UNIMPLEMENTED();
    return 0;
    }
 
-uintptrj_t
-OMR::ObjectModel::getArrayLengthInBytes(TR::Compilation* comp, uintptrj_t objectPointer)
+uintptr_t
+OMR::ObjectModel::getArrayLengthInBytes(TR::Compilation* comp, uintptr_t objectPointer)
    {
    TR_UNIMPLEMENTED();
    return 0;
    }
 
-uintptrj_t
+uintptr_t
 OMR::ObjectModel::getArrayElementWidthInBytes(TR::DataType type)
    {
    TR_UNIMPLEMENTED();
    return 0;
    }
 
-uintptrj_t
-OMR::ObjectModel::getArrayElementWidthInBytes(TR::Compilation* comp, uintptrj_t objectPointer)
+uintptr_t
+OMR::ObjectModel::getArrayElementWidthInBytes(TR::Compilation* comp, uintptr_t objectPointer)
    {
    TR_UNIMPLEMENTED();
    return 0;
    }
 
-uintptrj_t
-OMR::ObjectModel::decompressReference(TR::Compilation* comp, uintptrj_t compressedReference)
+uintptr_t
+OMR::ObjectModel::decompressReference(TR::Compilation* comp, uintptr_t compressedReference)
    {
    TR_UNIMPLEMENTED();
    return 0;

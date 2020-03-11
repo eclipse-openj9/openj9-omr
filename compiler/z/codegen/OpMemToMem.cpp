@@ -127,7 +127,7 @@ MemToMemVarLenMacroOp::generateLoop()
       //use literal for aot to make it easier for relocation
       if (_cg->needRelocationsForHelpers())
          {
-         generateRegLitRefInstruction(_cg, TR::InstOpCode::getLoadOpCode(), _rootNode, _raReg, (uintptrj_t)getHelperSymRef(), TR_HelperAddress, NULL, NULL, NULL);
+         generateRegLitRefInstruction(_cg, TR::InstOpCode::getLoadOpCode(), _rootNode, _raReg, (uintptr_t)getHelperSymRef(), TR_HelperAddress, NULL, NULL, NULL);
          }
       else
          {

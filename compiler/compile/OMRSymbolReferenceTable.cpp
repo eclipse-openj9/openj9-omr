@@ -991,13 +991,13 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptrj_t *referenceLocation)
+OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation)
    {
    return findOrCreateSymRefWithKnownObject(original, referenceLocation, false);
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptrj_t *referenceLocation, bool isArrayWithConstantElements)
+OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation, bool isArrayWithConstantElements)
    {
    TR::KnownObjectTable *knot = comp()->getOrCreateKnownObjectTable();
    if (!knot)

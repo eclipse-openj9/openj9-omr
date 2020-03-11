@@ -99,7 +99,7 @@ class TR_InterferenceGraph : public TR_IGBase
    TR_Stack<TR_IGNode *> *getNodeStack()  {return _nodeStack;}
    TR_Stack<TR_IGNode *> *setNodeStack(TR_Stack<TR_IGNode *> *ns) {return(_nodeStack = ns);}
 
-   int32_t entityHashBucket(void *entity) {return (int32_t)(((uintptrj_t)entity >> 2) % _entityHash._numBuckets);}
+   int32_t entityHashBucket(void *entity) {return (int32_t)(((uintptr_t)entity >> 2) % _entityHash._numBuckets);}
    void addIGNodeToEntityHash(TR_IGNode *igNode);
 
    TR_IGNode *add(void *entity, bool ignoreDuplicates = false);

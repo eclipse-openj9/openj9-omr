@@ -444,7 +444,7 @@ void s390zLinux31CodeCacheParameters(int32_t *trampolineSize, void **callBacks, 
 
 // Atomic Storage of a 4 byte value - Picbuilder.m4
 extern "C" void _Store4(int32_t * addr, uint32_t newData);
-extern "C" void _Store8(intptrj_t * addr, uintptrj_t newData);
+extern "C" void _Store8(intptrj_t * addr, uintptr_t newData);
 
 // zLinux64 Configuration of Code Cache.
 void s390zLinux64CodeCacheConfig(int32_t ccSizeInByte, int32_t *numTempTrampolines)

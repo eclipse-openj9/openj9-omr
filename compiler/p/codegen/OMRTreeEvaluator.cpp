@@ -758,7 +758,7 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
                }
 
             generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
-                   (uintptrj_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
+                   (uintptr_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
                    dependencies, vrlRef);
 
             dependencies->stopUsingDepRegs(cg, lowReg, highReg);
@@ -1340,7 +1340,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
                }
 
             generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
-                   (uintptrj_t)vwlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
+                   (uintptr_t)vwlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
                    dependencies, vwlRef);
 
             dependencies->stopUsingDepRegs(cg, valueReg->getLowOrder(), valueReg->getHighOrder());
@@ -3919,7 +3919,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraytranslateEvaluator(TR::Node *node,
             helper = arraytranslateTRTO255 ? TR_PPCarrayTranslateTRTO255 : TR_PPCarrayTranslateTRTO;
             }
          TR::SymbolReference *helperSym = cg->symRefTab()->findOrCreateRuntimeHelper(helper, false, false, false);
-         uintptrj_t          addr = (uintptrj_t)helperSym->getMethodAddress();
+         uintptr_t          addr = (uintptr_t)helperSym->getMethodAddress();
          generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node, addr, deps, helperSym);
       }
 
@@ -4382,7 +4382,7 @@ OMR::Power::TreeEvaluator::generateHelperBranchAndLinkInstruction(
 
    return generateDepImmSymInstruction(
       cg, TR::InstOpCode::bl, node,
-      (uintptrj_t)helperSym->getMethodAddress(),
+      (uintptr_t)helperSym->getMethodAddress(),
       conditions, helperSym);
    }
 

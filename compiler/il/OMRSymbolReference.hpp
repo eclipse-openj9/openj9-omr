@@ -215,7 +215,7 @@ public:
 
    TR::KnownObjectTable::Index getKnownObjectIndex();
    bool                        hasKnownObjectIndex();
-   uintptrj_t *                getKnownObjectReferenceLocation(TR::Compilation *comp);
+   uintptr_t *                getKnownObjectReferenceLocation(TR::Compilation *comp);
 
    /// Resolved final class that is not an array returns TRUE
    virtual void setAliasedTo(TR::SymbolReference *other, bool symmetric = true);

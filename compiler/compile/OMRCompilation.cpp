@@ -1700,7 +1700,7 @@ int32_t OMR::Compilation::findPrefetchInfo(TR::Node * node)
       {
       if ((*pair)->getKey() == node)
          {
-         uintptrj_t value = (uintptrj_t)(*pair)->getValue();
+         uintptr_t value = (uintptr_t)(*pair)->getValue();
          return (int32_t)value;
          }
       }

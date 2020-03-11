@@ -317,10 +317,10 @@ TR::S390LabelInstruction::generateBinaryEncoding()
 
       if (label->getCodeLocation() != NULL)
          {
-         *((uintptrj_t *) cursor) = boa((uintptrj_t) label->getCodeLocation());
+         *((uintptr_t *) cursor) = boa((uintptr_t) label->getCodeLocation());
          }
 
-      cursor += sizeof(uintptrj_t);
+      cursor += sizeof(uintptr_t);
       }
    else  // must be real LABEL instruction
       {
@@ -331,7 +331,7 @@ TR::S390LabelInstruction::generateBinaryEncoding()
             traceMsg(comp,"force tryToUseLabelTargetNOPs to false because _alignment already needed on inst %p\n",this);
          tryToUseLabelTargetNOPs = false;
 
-         int32_t padding = _alignment - (((uintptrj_t)instructionStart) % _alignment);
+         int32_t padding = _alignment - (((uintptr_t)instructionStart) % _alignment);
 
          for (int i = padding / 6; i > 0; i--)
             {
@@ -388,7 +388,7 @@ TR::S390LabelInstruction::generateBinaryEncoding()
    else
       {
       offset = (uint64_t)cursor&(0xff);
-      newInstructionStart = (uint8_t *) (((uintptrj_t)cursor+256)/256*256);
+      newInstructionStart = (uint8_t *) (((uintptr_t)cursor+256)/256*256);
       }
 
    if (offset && (doUseLabelTargetNOPs || isNopCandidate()))
@@ -541,7 +541,7 @@ TR::S390LabelInstruction::estimateBinaryLength(int32_t  currentEstimate)
 
    if (getOpCode().getOpCodeValue() == TR::InstOpCode::DC)
       {
-      estimatedSize = sizeof(uintptrj_t);
+      estimatedSize = sizeof(uintptr_t);
       }
    else
       {
@@ -1951,7 +1951,7 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
       intptrj_t targetAddr;
 
 #if defined(CODE_CACHE_TRAMPOLINE_DEBUG)
-      printf("Target: %p,  Cursor: %p, Our Reference # is: %d\n",getTargetPtr(),(uintptrj_t)currentInst,getSymbolReference()->getReferenceNumber());
+      printf("Target: %p,  Cursor: %p, Our Reference # is: %d\n",getTargetPtr(),(uintptr_t)currentInst,getSymbolReference()->getReferenceNumber());
 #endif
       if (getSymbolReference()->getReferenceNumber() < TR_S390numRuntimeHelpers)
          targetAddr = TR::CodeCacheManager::instance()->findHelperTrampoline(getSymbolReference()->getReferenceNumber(), (void *)currentInst);
@@ -1961,7 +1961,7 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
       TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddr, (intptrj_t)currentInst),
                       "Local trampoline must be directly reachable.");
 
-      offsetHalfWords = (int32_t)((targetAddr - (uintptrj_t)currentInst) / 2);
+      offsetHalfWords = (int32_t)((targetAddr - (uintptr_t)currentInst) / 2);
       }
 
    return offsetHalfWords;
@@ -2014,9 +2014,9 @@ TR::S390RILInstruction::generateBinaryEncoding()
          {
       //  Using RIL to get to a Static
       //
-      uintptrj_t addr = getTargetPtr();
+      uintptr_t addr = getTargetPtr();
 
-      i2 = (int32_t)((addr - (uintptrj_t)cursor) / 2);
+      i2 = (int32_t)((addr - (uintptr_t)cursor) / 2);
 
       if (cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
          {
@@ -2181,7 +2181,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
       }
    else if (getOpCode().getOpCodeValue() == TR::InstOpCode::EXRL)
       {
-      i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
+      i2 = (int32_t)((getTargetPtr() - (uintptr_t)cursor) / 2);
 
       if (isImmediateOffsetInBytes()) i2 = (int32_t)(getImmediateOffsetInBytes() / 2);
 
@@ -2220,7 +2220,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
          if (doRegisterPIC &&
                !TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
             {
-            cg()->jitAdd32BitPicToPatchOnClassUnload((void *) unloadableClass, (void *) (uintptrj_t *) (cursor+2));
+            cg()->jitAdd32BitPicToPatchOnClassUnload((void *) unloadableClass, (void *) (uintptr_t *) (cursor+2));
 
                // register 32 bit patchable immediate part of a LARL instruction
             }
@@ -2234,7 +2234,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
       if (sym && sym->isStartPC())
          setImmediateOffsetInBytes((uint8_t *) sym->getStaticSymbol()->getStaticAddress() - cursor);
 
-      i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
+      i2 = (int32_t)((getTargetPtr() - (uintptr_t)cursor) / 2);
 
       if (isImmediateOffsetInBytes()) i2 = (int32_t)(getImmediateOffsetInBytes() / 2);
 
@@ -2312,7 +2312,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
       if (getTargetSnippet() != NULL && (getTargetSnippet()->getKind() == TR::Snippet::IsUnresolvedData))
          {
          // address must be 4 byte aligned for atomic patching
-         int32_t padSize = 4 - ((uintptrj_t) (cursor + 2) % 4);
+         int32_t padSize = 4 - ((uintptr_t) (cursor + 2) % 4);
          if (padSize == 2)
             {
             (*(uint16_t *) cursor) = bos(0x1800);
@@ -2334,7 +2334,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
          }
       else
          {
-         i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
+         i2 = (int32_t)((getTargetPtr() - (uintptr_t)cursor) / 2);
 
 #if defined(TR_TARGET_64BIT)
 #if defined(J9ZOS390)
@@ -2363,10 +2363,10 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
 #if defined(J9ZOS390) || !defined(TR_TARGET_64BIT)
       // Address must not cross an 8 byte boundary for atomic patching
-      int32_t padSize = ((uintptrj_t) (cursor + 4) % 8) == 0 ? 2 : 0;
+      int32_t padSize = ((uintptr_t) (cursor + 4) % 8) == 0 ? 2 : 0;
 #else
       // Address must be 4 byte aligned for atomic patching
-      int32_t padSize = 4 - ((uintptrj_t) (cursor + 2) % 4);
+      int32_t padSize = 4 - ((uintptr_t) (cursor + 2) % 4);
 #endif
 
       if (padSize == 2)
@@ -2422,11 +2422,11 @@ TR::S390RILInstruction::generateBinaryEncoding()
                callSymbol = getTargetSymbol()->isMethod() ? getTargetSymbol()->castToMethodSymbol() : NULL;
                }
 
-            i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
+            i2 = (int32_t)((getTargetPtr() - (uintptr_t)cursor) / 2);
 
             if (getTargetPtr() == 0 && callSymbol)
                {
-               i2 = (int32_t)(((uintptrj_t)(callSymbol->getMethodAddress()) - (uintptrj_t)cursor) / 2);
+               i2 = (int32_t)(((uintptr_t)(callSymbol->getMethodAddress()) - (uintptr_t)cursor) / 2);
                }
 #if defined(TR_TARGET_64BIT)
 #if defined(J9ZOS390)

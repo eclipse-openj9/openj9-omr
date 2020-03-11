@@ -952,7 +952,7 @@ OMR::IlBuilder::ConstDouble(double value)
 TR::IlValue *
 OMR::IlBuilder::ConstString(const char * const value)
    {
-   TR::IlValue *returnValue = newValue(Address, TR::Node::aconst((uintptrj_t)value));
+   TR::IlValue *returnValue = newValue(Address, TR::Node::aconst((uintptr_t)value));
    TraceIL("IlBuilder[ %p ]::%d is ConstString %p\n", this, returnValue->getID(), value);
    return returnValue;
    }
@@ -960,7 +960,7 @@ OMR::IlBuilder::ConstString(const char * const value)
 TR::IlValue *
 OMR::IlBuilder::ConstAddress(const void * const value)
    {
-   TR::IlValue *returnValue = newValue(Address, TR::Node::aconst((uintptrj_t)value));
+   TR::IlValue *returnValue = newValue(Address, TR::Node::aconst((uintptr_t)value));
    TraceIL("IlBuilder[ %p ]::%d is ConstAddress %p\n", this, returnValue->getID(), value);
    return returnValue;
    }

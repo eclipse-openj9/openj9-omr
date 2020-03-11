@@ -58,7 +58,7 @@ class FECommon : public ::TR_FrontEnd
    virtual const char *       sampleSignature(TR_OpaqueMethodBlock * aMethod, char *buf, int32_t bufLen, TR_Memory *memory) { return NULL; }
 
    // need this so z codegen can create a sym ref to compare to another sym ref it cannot possibly be equal to
-   virtual uintptrj_t getOffsetOfIndexableSizeField() { return -1; }
+   virtual uintptr_t getOffsetOfIndexableSizeField() { return -1; }
    };
 
 template <class T> struct FETraits {};

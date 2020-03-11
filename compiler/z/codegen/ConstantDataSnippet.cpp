@@ -229,7 +229,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
                if (cg()->comp()->target().is64Bit())
                   targetAdress2 = (uint8_t *) *((uint64_t*) cursor);
                else
-                  targetAdress2 = (uint8_t *) *((uintptrj_t*) cursor);
+                  targetAdress2 = (uint8_t *) *((uintptr_t*) cursor);
                }
             relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode(), targetAdress2, (TR_ExternalRelocationTargetKind) reloType, cg());
             cg()->addExternalRelocation(relo, __FILE__, __LINE__, getNode());
@@ -259,29 +259,29 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
       {
       if (std::find(comp->getSnippetsToBePatchedOnClassRedefinition()->begin(), comp->getSnippetsToBePatchedOnClassRedefinition()->end(), this) != comp->getSnippetsToBePatchedOnClassRedefinition()->end())
          {
-         cg()->jitAddPicToPatchOnClassRedefinition(((void *) (*(uintptrj_t *) cursor)), (void *) (uintptrj_t *) cursor);
+         cg()->jitAddPicToPatchOnClassRedefinition(((void *) (*(uintptr_t *) cursor)), (void *) (uintptr_t *) cursor);
          }
 
       if (std::find(comp->getSnippetsToBePatchedOnClassUnload()->begin(), comp->getSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getSnippetsToBePatchedOnClassUnload()->end())
-         cg()->jitAddPicToPatchOnClassUnload(((void *) (*(uintptrj_t *) cursor)), (void *) (uintptrj_t *) cursor);
+         cg()->jitAddPicToPatchOnClassUnload(((void *) (*(uintptr_t *) cursor)), (void *) (uintptr_t *) cursor);
 
       if (std::find(comp->getMethodSnippetsToBePatchedOnClassUnload()->begin(), comp->getMethodSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getMethodSnippetsToBePatchedOnClassUnload()->end())
          {
-         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptrj_t *) cursor), comp->getCurrentMethod())->classOfMethod();
-         cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) (uintptrj_t *) cursor);
+         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptr_t *) cursor), comp->getCurrentMethod())->classOfMethod();
+         cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) (uintptr_t *) cursor);
          }
       }
    else
       {
       if (std::find(comp->getSnippetsToBePatchedOnClassUnload()->begin(), comp->getSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getSnippetsToBePatchedOnClassUnload()->end())
          {
-         cg()->jitAddPicToPatchOnClassUnload(((void *) (*(uintptrj_t *) cursor)), (void *) (uintptrj_t *) cursor);
+         cg()->jitAddPicToPatchOnClassUnload(((void *) (*(uintptr_t *) cursor)), (void *) (uintptr_t *) cursor);
          }
 
       if (std::find(comp->getMethodSnippetsToBePatchedOnClassUnload()->begin(), comp->getMethodSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getMethodSnippetsToBePatchedOnClassUnload()->end())
          {
-         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptrj_t *) cursor), comp->getCurrentMethod())->classOfMethod();
-         cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) (uintptrj_t *) cursor);
+         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptr_t *) cursor), comp->getCurrentMethod())->classOfMethod();
+         cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) (uintptr_t *) cursor);
          }
       }
 
@@ -296,7 +296,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
       getUnresolvedDataSnippet()->setLiteralPoolSlot(cursor);
       if (getUnresolvedDataSnippet()->getDataSymbol()->isClassObject() && cg()->wantToPatchClassPointer(NULL, cursor)) // unresolved
          {
-         cg()->jitAddPicToPatchOnClassRedefinition((void*) *(uintptrj_t *)cursor , (void *) cursor, true);
+         cg()->jitAddPicToPatchOnClassRedefinition((void*) *(uintptr_t *)cursor , (void *) cursor, true);
          }
       }
 #endif
@@ -323,7 +323,7 @@ TR::S390ConstantDataSnippet::emitSnippetBody()
       case TR_ClassAddress:
       case TR_ClassObject:
          {
-         uintptrj_t romClassPtr = TR::Compiler->cls.persistentClassPointerFromClassPointer(comp, (TR_OpaqueClassBlock*)(*((uintptrj_t*)cursor)));
+         uintptr_t romClassPtr = TR::Compiler->cls.persistentClassPointerFromClassPointer(comp, (TR_OpaqueClassBlock*)(*((uintptr_t*)cursor)));
          memcpy(cursor, &romClassPtr, _length);
          }
          break;
@@ -595,7 +595,7 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
       // _targetAddress/function pointer of native method
       *(intptrj_t *) cursor = (intptrj_t) _targetAddress;
       TR_OpaqueMethodBlock *method = getNode()->getSymbol()->castToResolvedMethodSymbol()->getResolvedMethod()->getPersistentIdentifier();
-      TR_PatchJNICallSite::make(cg()->fe(), cg()->trPersistentMemory(), (uintptrj_t) method, cursor, comp->getMetadataAssumptionList());
+      TR_PatchJNICallSite::make(cg()->fe(), cg()->trPersistentMemory(), (uintptr_t) method, cursor, comp->getMetadataAssumptionList());
 
       if (getNode()->getSymbol()->castToResolvedMethodSymbol()->isSpecial())
          reloType = TR_JNISpecialTargetAddress;

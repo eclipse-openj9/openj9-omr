@@ -110,7 +110,7 @@ class VPConstraint
    virtual const char *name()=0;
 
    static TR::VPConstraint *create(OMR::ValuePropagation *vp, const char *sig, int32_t len, TR_ResolvedMethod *method, bool isFixedClass);
-   static bool isSpecialClass(uintptrj_t klass);
+   static bool isSpecialClass(uintptr_t klass);
 
 
    TR::VPConstraint *merge(TR::VPConstraint *other, OMR::ValuePropagation *vp);

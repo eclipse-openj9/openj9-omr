@@ -245,8 +245,6 @@
    TR::TreeEvaluator::integerCmpgeEvaluator,                           // TR::lcmpge
    TR::TreeEvaluator::integerCmpgtEvaluator,                           // TR::lcmpgt
    TR::TreeEvaluator::integerCmpleEvaluator,                           // TR::lcmple
-   TR::TreeEvaluator::integerCmpeqEvaluator,                           // TR::lucmpeq
-   TR::TreeEvaluator::integerCmpneEvaluator,                           // TR::lucmpne
    TR::TreeEvaluator::unsignedIntegerCmpltEvaluator,                   // TR::lucmplt
    TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator,                   // TR::lucmpge
    TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator,                   // TR::lucmpgt

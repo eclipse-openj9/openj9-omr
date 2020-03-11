@@ -2504,8 +2504,6 @@ int32_t childTypes[] =
    TR::Int64,                     // TR::lcmpge
    TR::Int64,                     // TR::lcmpgt
    TR::Int64,                     // TR::lcmple
-   TR::Int64,                     // TR::lucmpeq
-   TR::Int64,                     // TR::lucmpne
    TR::Int64,                     // TR::lucmplt
    TR::Int64,                     // TR::lucmpge
    TR::Int64,                     // TR::lucmpgt

@@ -468,14 +468,14 @@ OMR::ARM64::TreeEvaluator::iucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *c
    return icmpHelper(node, TR::CC_HI, false, cg);
    }
 
-// also handles lucmpeq, acmpeq
+// also handles  acmpeq
 TR::Register *
 OMR::ARM64::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_EQ, true, cg);
    }
 
-// also handles lucmpne, acmpne
+// also handles acmpne
 TR::Register *
 OMR::ARM64::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

@@ -395,8 +395,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainCmpge,           // TR::lcmpge
    constrainCmpgt,           // TR::lcmpgt
    constrainCmple,           // TR::lcmple
-   constrainCmpeq,           // TR::lucmpeq
-   constrainCmpne,           // TR::lucmpne
    constrainCmp,             // TR::lucmplt
    constrainCmp,             // TR::lucmpge
    constrainCmp,             // TR::lucmpgt

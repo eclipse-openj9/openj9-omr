@@ -273,8 +273,6 @@ public:
 	static TR::Register *lcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);

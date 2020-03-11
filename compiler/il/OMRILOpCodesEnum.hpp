@@ -294,8 +294,6 @@
    lcmpge,   // long compare if greater than or equal
    lcmpgt,   // long compare if greater than
    lcmple,   // long compare if less than or equal
-   lucmpeq,   // unsigned long compare if equal
-   lucmpne,   // unsigned long compare if not equal
    lucmplt,   // unsigned long compare if less than
    lucmpge,   // unsigned long compare if greater than or equal
    lucmpgt,   // unsigned long compare if greater than

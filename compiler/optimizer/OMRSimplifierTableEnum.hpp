@@ -258,8 +258,6 @@
    lcmpgeSimplifier,        // TR::lcmpge
    lcmpgtSimplifier,        // TR::lcmpgt
    lcmpleSimplifier,        // TR::lcmple
-   lcmpeqSimplifier,        // TR::lucmpeq
-   lcmpneSimplifier,        // TR::lucmpne
    lucmpltSimplifier,       // TR::lucmplt
    lucmpgeSimplifier,       // TR::lucmpge
    lucmpgtSimplifier,       // TR::lucmpgt

@@ -245,8 +245,6 @@
     TR::TreeEvaluator::lcmpgeEvaluator, // TR::lcmpge		// long compare if greater than or equal
     TR::TreeEvaluator::lcmpgtEvaluator, // TR::lcmpgt		// long compare if greater than
     TR::TreeEvaluator::lcmpleEvaluator, // TR::lcmple		// long compare if less than or equal
-    TR::TreeEvaluator::lcmpeqEvaluator, // TR::lucmpeq		// unsigned long compare if equal
-    TR::TreeEvaluator::lcmpneEvaluator, // TR::lucmpne		// unsigned long compare if not equal
     TR::TreeEvaluator::lucmpltEvaluator, // TR::lucmplt		// unsigned long compare if less than
     TR::TreeEvaluator::lucmpgeEvaluator, // TR::lucmpge		// unsigned long compare if greater than or equal
     TR::TreeEvaluator::lucmpgtEvaluator, // TR::lucmpgt		// unsigned long compare if greater than

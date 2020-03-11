@@ -763,6 +763,16 @@ void OMR::LocalCSE::doCommoningAgainIfPreviouslyCommoned(TR::Node *node, TR::Nod
          }
       }
    }
+/**
+ * We can allow auto or parms which are not global during the volatile only phase
+ * as we do not expect those field to be changing. This enables up to common volatiles that are based on an 
+ * indirection chain of such non volatile autos or parms that are not global by definition. 
+ * Following query returns true if the node can be commoned in volatile only pass
+ */
+bool OMR::LocalCSE::canCommonNodeInVolatilePass(TR::Node *node)
+   {   
+   return node->getOpCode().hasSymbolReference() && (node->getSymbol()->isVolatile() || node->getSymbol()->isAutoOrParm());
+   }
 
 
 void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int32_t childNum, bool &doneCommoning)
@@ -778,7 +788,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
        performTransformation(comp(), "%s   Local Common Subexpression Elimination commoning node : %p by available node : %p\n", optDetailString(), node, availableExpression))
       {
       if (!node->getOpCode().hasSymbolReference() ||
-          (_volatileState == VOLATILE_ONLY && node->getSymbol()->isVolatile()) ||
+          (_volatileState == VOLATILE_ONLY && canCommonNodeInVolatilePass(node)) ||
           (_volatileState != VOLATILE_ONLY))
          {
          TR_ASSERT(_curBlock, "_curBlock should be non-null\n");
@@ -880,17 +890,6 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
          }
       else
          {
-         if ((parent != NULL || !node->getOpCode().isResolveOrNullCheck()) &&
-             !_simulatedNodesAsArray[node->getGlobalIndex()] &&
-             !node->getOpCode().isCase() && node->getReferenceCount() > 1)
-            {
-            _replacedNodesAsArray[_nextReplacedNode] = node;
-            _replacedNodesByAsArray[_nextReplacedNode++] = availableExpression;
-            // if (trace())
-            //    traceMsg(comp(), "Replaced node : %p Replacing node : %p\n", node, availableExpression);
-            doneCommoning = true;
-            }
-
          if (trace())
             traceMsg(comp(), "Simulating commoning of node n%dn with n%dn - current mode %n\n", node->getGlobalIndex(), availableExpression->getGlobalIndex(), _volatileState);
          _simulatedNodesAsArray[node->getGlobalIndex()] = availableExpression;
@@ -1194,15 +1193,8 @@ bool OMR::LocalCSE::canBeAvailable(TR::Node *parent, TR::Node *node, TR_BitVecto
 
    if (node->getOpCode().hasSymbolReference())
       {
-      // We can allow final non volatile fields to be commoned even during the volatile only phase
-      // This is because those are the only fields we can rely on not changing and therefore we can
-      // common volatiles that are based on an indirection chain of such final non volatiles (or autos or parms that are not global by definition)
-      // Any non volatile field that could change is a problem since it could be proven that a later volatile load
-      // based on an indirection chain involving a non final, non volatile variable must be different than an
-      // earlier volatile load based on the same indirection chain.
-      //
       if ((!seenAvailableLoadedSymbolReferences.get(node->getSymbolReference()->getReferenceNumber())) ||
-          ((_volatileState == VOLATILE_ONLY) && !node->getSymbol()->isAutoOrParm() && !node->getSymbol()->isVolatile() && !node->getSymbol()->isFinal()))
+          ((_volatileState == VOLATILE_ONLY) && !canCommonNodeInVolatilePass(node)))
          return false;
 
       if (comp()->getOption(TR_MimicInterpreterFrameShape) &&

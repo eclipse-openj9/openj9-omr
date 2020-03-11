@@ -284,8 +284,6 @@
    icmpge,   // integer compare if greater than or equal
    icmpgt,   // integer compare if greater than
    icmple,   // integer compare if less than or equal
-   iucmpeq,   // unsigned integer compare if equal
-   iucmpne,   // unsigned integer compare if not equal
    iucmplt,   // unsigned integer compare if less than
    iucmpge,   // unsigned integer compare if greater than or equal
    iucmpgt,   // unsigned integer compare if greater than

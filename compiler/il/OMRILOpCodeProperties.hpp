@@ -3430,38 +3430,6 @@
    },
 
    {
-   /* .opcode               = */ TR::iucmpeq,
-   /* .name                 = */ "iucmpeq",
-   /* .properties1          = */ ILProp1::BooleanCompare,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,
-   /* .properties3          = */ ILProp3::CompareTrueIfEqual,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int32,
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32),
-   /* .swapChildrenOpCode   = */ TR::iucmpeq,
-   /* .reverseBranchOpCode  = */ TR::iucmpne,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::ifiucmpeq,
-   },
-
-   {
-   /* .opcode               = */ TR::iucmpne,
-   /* .name                 = */ "iucmpne",
-   /* .properties1          = */ ILProp1::BooleanCompare,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,
-   /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int32,
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32),
-   /* .swapChildrenOpCode   = */ TR::iucmpne,
-   /* .reverseBranchOpCode  = */ TR::iucmpeq,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::ifiucmpne,
-   },
-
-   {
    /* .opcode               = */ TR::iucmplt,
    /* .name                 = */ "iucmplt",
    /* .properties1          = */ ILProp1::BooleanCompare,

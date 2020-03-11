@@ -235,8 +235,6 @@
     TR::TreeEvaluator::icmpgeEvaluator, // TR::icmpge		// integer compare if greater than or equal
     TR::TreeEvaluator::icmpgtEvaluator, // TR::icmpgt		// integer compare if greater than
     TR::TreeEvaluator::icmpleEvaluator, // TR::icmple		// integer compare if less than or equal
-    TR::TreeEvaluator::icmpeqEvaluator, // TR::iucmpeq		// unsigned integer compare if equal
-    TR::TreeEvaluator::icmpneEvaluator, // TR::iucmpne		// unsigned integer compare if not equal
     TR::TreeEvaluator::iucmpltEvaluator, // TR::iucmplt		// unsigned integer compare if less than
     TR::TreeEvaluator::iucmpgeEvaluator, // TR::iucmpge		// unsigned integer compare if greater than or equal
     TR::TreeEvaluator::iucmpgtEvaluator, // TR::iucmpgt		// unsigned integer compare if greater than

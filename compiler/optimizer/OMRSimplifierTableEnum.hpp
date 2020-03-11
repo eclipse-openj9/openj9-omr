@@ -248,8 +248,6 @@
    icmpgeSimplifier,        // TR::icmpge
    icmpgtSimplifier,        // TR::icmpgt
    icmpleSimplifier,        // TR::icmple
-   dftSimplifier,           // TR::iucmpeq
-   dftSimplifier,           // TR::iucmpne
    dftSimplifier,           // TR::iucmplt
    dftSimplifier,           // TR::iucmpge
    dftSimplifier,           // TR::iucmpgt

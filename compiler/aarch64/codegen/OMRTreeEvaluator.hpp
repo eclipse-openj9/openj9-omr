@@ -263,8 +263,6 @@ public:
 	static TR::Register *icmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *icmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *icmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);

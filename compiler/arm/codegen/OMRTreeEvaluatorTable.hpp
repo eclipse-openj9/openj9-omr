@@ -289,8 +289,6 @@
    TR::TreeEvaluator::icmpgeEvaluator,      // TR::icmpge
    TR::TreeEvaluator::icmpgtEvaluator,      // TR::icmpgt
    TR::TreeEvaluator::icmpleEvaluator,      // TR::icmple
-   TR::TreeEvaluator::icmpeqEvaluator,      // TR::iucmpeq
-   TR::TreeEvaluator::icmpneEvaluator,      // TR::iucmpne
    TR::TreeEvaluator::iucmpltEvaluator,     // TR::iucmplt
    TR::TreeEvaluator::iucmpgeEvaluator,     // TR::iucmpge
    TR::TreeEvaluator::iucmpgtEvaluator,     // TR::iucmpgt

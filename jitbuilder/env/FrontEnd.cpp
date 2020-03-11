@@ -70,7 +70,7 @@ FrontEnd::createResolvedMethod(TR_Memory * trMemory, TR_OpaqueMethodBlock * aMet
    return new (trMemory->trHeapMemory()) ResolvedMethod(aMethod);
    }
 
-intptrj_t
+intptr_t
 FrontEnd::methodTrampolineLookup(TR::Compilation *comp, TR::SymbolReference *symRef, void *callSite)
    {
    TR_UNIMPLEMENTED();

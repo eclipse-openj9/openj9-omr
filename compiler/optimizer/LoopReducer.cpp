@@ -1052,7 +1052,7 @@ TR_LoopReducer::generateArraycopy(TR_InductionVariable * indVar, TR::Block * loo
       //treat as primitive - create only 3 children
       TR::Node *src = loadAddr;
       TR::Node *dst = storeAddr;
-      intptrj_t offset;
+      intptr_t offset;
       TR::ILOpCodes op_add   = comp()->target().is64Bit() ? TR::aladd : TR::aiadd;
       TR::ILOpCodes op_const = comp()->target().is64Bit() ? TR::lconst : TR::iconst;
 
@@ -1253,7 +1253,7 @@ TR_LoopReducer::generateArrayset(TR_InductionVariable * indVar, TR::Block * loop
    arraysetLoop.getStoreAddress()->updateMultiply(arraysetLoop.getMultiplyNode());
 
    TR::Node *dst = storeNode->getFirstChild();
-   intptrj_t offset;
+   intptr_t offset;
    TR::ILOpCodes op_add   = comp()->target().is64Bit() ? TR::aladd : TR::aiadd;
    TR::ILOpCodes op_const = comp()->target().is64Bit() ? TR::lconst : TR::iconst;
    offset = storeNode->getSymbolReference()->getOffset();
@@ -1464,7 +1464,7 @@ TR_Arraytranslate::getMulChild(TR::Node * child)
    //   i2l
    //     <...>
    //   lconst 2
-   intptrj_t constValue;
+   intptr_t constValue;
    if ((child->getOpCodeValue() == TR::imul || child->getOpCodeValue() == TR::lmul) &&
       (child->getSecondChild()->getOpCodeValue() == TR::iconst || child->getSecondChild()->getOpCodeValue() == TR::lconst))
       {

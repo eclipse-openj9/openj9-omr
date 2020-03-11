@@ -109,8 +109,8 @@ public:
    virtual void *startAddressForJITInternalNativeMethod();
    virtual bool isSubjectToPhaseChange(TR::Compilation *);
    virtual uint16_t archetypeArgPlaceholderSlot(TR_Memory *);
-   virtual intptrj_t getInvocationCount();
-   virtual bool setInvocationCount(intptrj_t oldCount, intptrj_t newCount);
+   virtual intptr_t getInvocationCount();
+   virtual bool setInvocationCount(intptr_t oldCount, intptr_t newCount);
    virtual bool isWarmCallGraphTooBig(uint32_t bcIndex, TR::Compilation *);
    virtual void setWarmCallGraphTooBig(uint32_t bcIndex, TR::Compilation *);
    virtual uint8_t *bytecodeStart();

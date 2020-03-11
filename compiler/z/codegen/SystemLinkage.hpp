@@ -116,11 +116,11 @@ class SystemLinkage : public TR::Linkage
       }
 
    virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-         intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
+         intptr_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
          TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
    virtual TR::Register * callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-      intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet,
+      intptr_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet,
       bool isJNIGCPoint = true);
 
    virtual TR::Register *
@@ -163,7 +163,7 @@ class SystemLinkage : public TR::Linkage
     *
     * @return The entry point for compiled methods to use; 0 if the entry point is unknown
     */
-   virtual intptrj_t entryPointFromCompiledMethod();
+   virtual intptr_t entryPointFromCompiledMethod();
 
    /**
     * @brief Provides the entry point in a method to use when that method is invoked
@@ -177,7 +177,7 @@ class SystemLinkage : public TR::Linkage
     *
     * @return The entry point for interpreted methods to use; 0 if the entry point is unknown
     */
-   virtual intptrj_t entryPointFromInterpretedMethod();
+   virtual intptr_t entryPointFromInterpretedMethod();
 
    protected:
 

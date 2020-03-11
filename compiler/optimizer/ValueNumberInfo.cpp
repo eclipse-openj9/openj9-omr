@@ -643,7 +643,7 @@ int32_t TR_ValueNumberInfo::hash(TR::Node *node)
       if (symRef)
          {
          TR::Symbol *sym = symRef->getSymbol();
-         h = (h << 4) + (int32_t)(intptrj_t)sym;
+         h = (h << 4) + (int32_t)(intptr_t)sym;
          g = h & 0xF0000000;
          h ^= g >> 24;
          h = (h << 4) + symRef->getOffset();

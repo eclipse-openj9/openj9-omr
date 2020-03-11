@@ -2674,7 +2674,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       return cursor;
       }
 
-   intptrj_t addr = counter->getBumpCountAddress();
+   intptr_t addr = counter->getBumpCountAddress();
 
    TR_ASSERT(addr, "Expecting a non-null debug counter address");
 
@@ -2704,7 +2704,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
 TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR::RegisterDependencyConditions *cond)
    {
    TR::Node *node = cursor->getNode();
-   intptrj_t addr = counter->getBumpCountAddress();
+   intptr_t addr = counter->getBumpCountAddress();
 
    TR_ASSERT(addr, "Expecting a non-null debug counter address");
 
@@ -2744,7 +2744,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
       return cursor;
       }
 
-   intptrj_t addr = counter->getBumpCountAddress();
+   intptr_t addr = counter->getBumpCountAddress();
 
    TR_ASSERT(addr, "Expecting a non-null debug counter address");
 
@@ -2765,7 +2765,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
 TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR_ScratchRegisterManager &srm)
    {
    TR::Node *node = cursor->getNode();
-   intptrj_t addr = counter->getBumpCountAddress();
+   intptr_t addr = counter->getBumpCountAddress();
 
    TR_ASSERT(addr, "Expecting a non-null debug counter address");
 
@@ -2926,7 +2926,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
       TR::Instruction *firstInstruction,
       TR::Register *tempReg,
       int16_t typeAddress,
-      intptrj_t value)
+      intptr_t value)
    {
    if (value == 0x0)
       return;
@@ -3022,7 +3022,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
 TR::Instruction *
 OMR::Power::CodeGenerator::loadAddressConstantFixed(
       TR::Node * node,
-      intptrj_t value,
+      intptr_t value,
       TR::Register *trgReg,
       TR::Instruction *cursor,
       TR::Register *tempReg,
@@ -3391,7 +3391,7 @@ OMR::Power::CodeGenerator::getJitMethodEntryAlignmentBoundary()
    }
 
 bool
-OMR::Power::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+OMR::Power::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
    {
    return
       !self()->comp()->target().cpu.isTargetWithinIFormBranchRange(targetAddress, sourceAddress) ||

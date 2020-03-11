@@ -305,7 +305,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static bool genNullTestSequence(TR::Node *node, TR::Register *opReg, TR::Register *targetReg, TR::CodeGenerator *cg);
    static TR::Instruction *insertLoadConstant(TR::Node *node,
                                              TR::Register *target,
-                                             intptrj_t value,
+                                             intptr_t value,
                                              TR_RematerializableTypes type,
                                              TR::CodeGenerator *cg,
                                              TR::Instruction *currentInstruction = NULL);
@@ -352,7 +352,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    static bool getNodeIs64Bit(TR::Node *node, TR::CodeGenerator *cg);
 
-   static intptrj_t integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg);
+   static intptr_t integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Block *getOverflowCatchBlock(TR::Node *node, TR::CodeGenerator *cg);
 
@@ -360,7 +360,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    static TR::Register *performCall(TR::Node *node, bool isIndirect, bool spillFPRegs, TR::CodeGenerator *cg);
 
-   static TR::Register *loadConstant(TR::Node *node, intptrj_t value, TR_RematerializableTypes t, TR::CodeGenerator *cg, TR::Register *targetRegister = NULL);
+   static TR::Register *loadConstant(TR::Node *node, intptr_t value, TR_RematerializableTypes t, TR::CodeGenerator *cg, TR::Register *targetRegister = NULL);
 
    protected:
 
@@ -406,7 +406,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *commonFPRemEvaluator( TR::Node *node, TR::CodeGenerator *cg, bool isDouble);
    static TR::Register *generateLEAForLoadAddr(TR::Node *node, TR::MemoryReference *memRef, TR::SymbolReference *symRef,TR::CodeGenerator *cg, bool isInternalPointer);
 
-   static bool constNodeValueIs32BitSigned(TR::Node *node, intptrj_t *value, TR::CodeGenerator *cg);
+   static bool constNodeValueIs32BitSigned(TR::Node *node, intptr_t *value, TR::CodeGenerator *cg);
 
    static TR::Register *intOrLongClobberEvaluate(TR::Node *node, bool nodeIs64Bit, TR::CodeGenerator *cg);
 

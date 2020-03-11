@@ -1166,8 +1166,8 @@ TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType
 
    // If the constraint does not already exist, create it
    //
-   int32_t hash = (((int32_t)(intptrj_t)type)>>2) + (((int32_t)(intptrj_t)presence)>>2) + (((int32_t)(intptrj_t)preexistence)>>2) +
-      (((int32_t)(intptrj_t)arrayInfo)>>2) + (((int32_t)(intptrj_t)location)>>2);
+   int32_t hash = (((int32_t)(intptr_t)type)>>2) + (((int32_t)(intptr_t)presence)>>2) + (((int32_t)(intptr_t)preexistence)>>2) +
+      (((int32_t)(intptr_t)arrayInfo)>>2) + (((int32_t)(intptr_t)location)>>2);
    hash = ((uint32_t)hash) % VP_HASH_TABLE_SIZE;
    TR::VPClass *constraint;
    OMR::ValuePropagation::ConstraintsHashTableEntry *entry;

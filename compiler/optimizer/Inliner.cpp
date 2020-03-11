@@ -410,7 +410,7 @@ TR_InlinerBase::linkOSRCodeBlocks()
    {
    TR_OSRCompilationData* compData = comp()->getOSRCompilationData();
    const TR_Array<TR_OSRMethodData *>& methodDataArray = compData->getOSRMethodDataArray();
-   for (intptrj_t i = 0; i < methodDataArray.size(); ++i)
+   for (intptr_t i = 0; i < methodDataArray.size(); ++i)
       {
       TR_OSRMethodData *osrMethodData = methodDataArray[i];
       if (osrMethodData == NULL
@@ -2538,7 +2538,7 @@ TR_ParameterToArgumentMapper::map(TR::Node * node, TR::ParameterSymbol * parm, b
             return newNode;
             }
 
-         intptrj_t offset= node->getSymbolReference()->getOffset();
+         intptr_t offset= node->getSymbolReference()->getOffset();
 
 
          if (!parmMap->_parmIsModified && parmMap->_replacementSymRefForInlinedBody && performTransformation(comp(), "%s set symRef on node n%dn to be known object symRef %p\n", OPT_DETAILS, node->getGlobalIndex(), parmMap->_replacementSymRefForInlinedBody))

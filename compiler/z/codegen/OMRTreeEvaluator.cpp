@@ -10230,7 +10230,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
          // At first, load up the branch address into raReg, because
          // to ensure that no weird spilling happens if the code decides it needs
          // to allocate a register at this point for the literal pool base address.
-         intptrj_t helper = (intptrj_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayTranslateAndTestHelper, false, false, false)->getMethodAddress();
+         intptr_t helper = (intptr_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayTranslateAndTestHelper, false, false, false)->getMethodAddress();
 
          TR::LabelSymbol * labelEntryElementChar = generateLabelSymbol(cg);
          TR::Instruction * cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, labelEntryElementChar);
@@ -12053,7 +12053,7 @@ OMR::Z::TreeEvaluator::long2StringEvaluator(TR::Node * node, TR::CodeGenerator *
    // At first, load up the branch address into raReg, because
    // to ensure that no weird spilling happens if the code decides it needs
    // to allocate a register at this point for the literal pool base address.
-   intptrj_t helper = (intptrj_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390long2StringHelper,false,false,false)->getMethodAddress();
+   intptr_t helper = (intptr_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390long2StringHelper,false,false,false)->getMethodAddress();
    genLoadAddressConstant(cg, node, helper, raReg);
 
    TR::MemoryReference * workTopMR = generateS390MemoryReference(workReg, 0, cg);

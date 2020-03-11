@@ -86,7 +86,7 @@ public:
     *
     * @return true if the target is within range; false otherwise.
     */
-   bool isTargetWithinRIPRange(intptrj_t targetAddress, intptrj_t sourceAddress)
+   bool isTargetWithinRIPRange(intptr_t targetAddress, intptr_t sourceAddress)
       {
       return targetAddress == sourceAddress + (int32_t)(targetAddress - sourceAddress);
       }

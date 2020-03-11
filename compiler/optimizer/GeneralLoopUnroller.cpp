@@ -1806,7 +1806,7 @@ void TR_LoopUnroller::collectInternalPointers()
 
 void TR_LoopUnroller::collectArrayAccesses()
    {
-   intptrj_t visitCount = comp()->incVisitCount();
+   intptr_t visitCount = comp()->incVisitCount();
    TR_ScratchList<TR::Block> blocksInRegion(trMemory());
    _loop->getBlocks(&blocksInRegion);
 
@@ -1837,7 +1837,7 @@ void TR_LoopUnroller::collectArrayAccesses()
       }
    }
 
-void TR_LoopUnroller::examineNode(TR::Node *node, intptrj_t visitCount)
+void TR_LoopUnroller::examineNode(TR::Node *node, intptr_t visitCount)
    {
    // If we have seen this node before, we are done
    // Otherwise, set visit count
@@ -1889,7 +1889,7 @@ void TR_LoopUnroller::examineNode(TR::Node *node, intptrj_t visitCount)
       }
 
    /* Walk its children */
-   for (intptrj_t i = 0; i < node->getNumChildren(); i++)
+   for (intptr_t i = 0; i < node->getNumChildren(); i++)
       {
       examineNode(node->getChild(i), visitCount);
       }

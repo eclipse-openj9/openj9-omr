@@ -488,10 +488,10 @@ int32_t TR::X86HelperCallSnippet::branchDisplacementToHelper(
    TR::SymbolReference *helper,
    TR::CodeGenerator   *cg)
    {
-   intptrj_t helperAddress = (intptrj_t)helper->getMethodAddress();
-   intptrj_t nextInstructionAddress = (intptrj_t)(callInstructionAddress + 5);
+   intptr_t helperAddress = (intptr_t)helper->getMethodAddress();
+   intptr_t nextInstructionAddress = (intptr_t)(callInstructionAddress + 5);
 
-   if (cg->directCallRequiresTrampoline(helperAddress, (intptrj_t)callInstructionAddress))
+   if (cg->directCallRequiresTrampoline(helperAddress, (intptr_t)callInstructionAddress))
       {
       helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(helper->getReferenceNumber(), (void *)(callInstructionAddress+1));
 

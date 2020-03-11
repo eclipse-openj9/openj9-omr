@@ -23,9 +23,9 @@
 #include "env/jittypes.h"
 
 bool
-OMR::ARM64::CPU::isTargetWithinUnconditionalBranchImmediateRange(intptrj_t targetAddress, intptrj_t sourceAddress)
+OMR::ARM64::CPU::isTargetWithinUnconditionalBranchImmediateRange(intptr_t targetAddress, intptr_t sourceAddress)
    {
-   intptrj_t range = targetAddress - sourceAddress;
+   intptr_t range = targetAddress - sourceAddress;
    return range <= self()->maxUnconditionalBranchImmediateForwardOffset() &&
           range >= self()->maxUnconditionalBranchImmediateBackwardOffset();
    }

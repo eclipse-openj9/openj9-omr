@@ -212,7 +212,7 @@ public:
     * @return The address of the helper trampoline in the same code cache as
     *         the call site address
     */
-   intptrj_t findHelperTrampoline(int32_t helperIndex, void *callSite);
+   intptr_t findHelperTrampoline(int32_t helperIndex, void *callSite);
 
    CodeCacheTrampolineCode * findMethodTrampoline(TR_OpaqueMethodBlock *method, void *callingPC);
    void synchronizeTrampolines();

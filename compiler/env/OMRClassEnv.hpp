@@ -123,7 +123,7 @@ public:
     * @param offset An offset into the virtual function table (VFT) of clazz
     * @return The entry point of the method at the given offset
     */
-   intptrj_t getVFTEntry(TR::Compilation *comp, TR_OpaqueClassBlock* clazz, int32_t offset);
+   intptr_t getVFTEntry(TR::Compilation *comp, TR_OpaqueClassBlock* clazz, int32_t offset);
 
    bool classUnloadAssumptionNeedsRelocation(TR::Compilation *comp);
 

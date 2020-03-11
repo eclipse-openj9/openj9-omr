@@ -48,10 +48,10 @@ OMR::ClassEnv::getArrayElementWidthInBytes(TR::Compilation *comp, TR_OpaqueClass
    return 0;
    }
 
-intptrj_t
+intptr_t
 OMR::ClassEnv::getVFTEntry(TR::Compilation *comp, TR_OpaqueClassBlock* clazz, int32_t offset)
    {
-   return *(intptrj_t*) (((uint8_t *)clazz) + offset);
+   return *(intptr_t*) (((uint8_t *)clazz) + offset);
    }
 
 bool

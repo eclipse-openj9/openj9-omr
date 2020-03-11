@@ -502,7 +502,7 @@ OMR::CodeCacheManager::findMethodTrampoline(TR_OpaqueMethodBlock *method, void *
    }
 
 
-intptrj_t
+intptr_t
 OMR::CodeCacheManager::findHelperTrampoline(int32_t helperIndex, void *callSite)
    {
    /* does the platform need trampolines at all? */
@@ -514,7 +514,7 @@ OMR::CodeCacheManager::findHelperTrampoline(int32_t helperIndex, void *callSite)
    if (!codeCache)
       return 0;
 
-   return (intptrj_t)codeCache->findTrampoline(helperIndex);
+   return (intptr_t)codeCache->findTrampoline(helperIndex);
    }
 
 

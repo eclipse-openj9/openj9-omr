@@ -5495,11 +5495,11 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
        {
        bool newOType = false;
        TR::DataType loadDataType = newOType ? node->getDataType() : node->getSymbolReference()->getSymbol()->getDataType();
-       intptrj_t loadSize = newOType ? node->getSize() : node->getSymbolReference()->getSymbol()->getSize();
-       intptrj_t loadSymSize = node->getSymbolReference()->getSymbol()->getSize();
+       intptr_t loadSize = newOType ? node->getSize() : node->getSymbolReference()->getSymbol()->getSize();
+       intptr_t loadSymSize = node->getSymbolReference()->getSymbol()->getSize();
 
        TR::DataType addrDataType = firstChild->getSymbolReference()->getSymbol()->getDataType();
-       intptrj_t addrSize = firstChild->getSymbolReference()->getSymbol()->getSize();
+       intptr_t addrSize = firstChild->getSymbolReference()->getSymbol()->getSize();
        TR::Symbol* addrSymbol = firstChild->getSymbolReference()->getSymbol();
        bool localStatic = false;
 
@@ -5620,11 +5620,11 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
        bool newOType = false;
 
        TR::DataType storeDataType = newOType ? node->getDataType() : node->getSymbolReference()->getSymbol()->getDataType();
-       intptrj_t storeSize = newOType ? node->getSize() : node->getSymbolReference()->getSymbol()->getSize();
-       intptrj_t storeSymSize = node->getSymbolReference()->getSymbol()->getSize();
+       intptr_t storeSize = newOType ? node->getSize() : node->getSymbolReference()->getSymbol()->getSize();
+       intptr_t storeSymSize = node->getSymbolReference()->getSymbol()->getSize();
 
        TR::DataType addrDataType = firstChild->getSymbolReference()->getSymbol()->getDataType();
-       intptrj_t addrSize = firstChild->getSymbolReference()->getSymbol()->getSize();
+       intptr_t addrSize = firstChild->getSymbolReference()->getSymbol()->getSize();
        TR::Symbol *addrSymbol = firstChild->getSymbolReference()->getSymbol();
 
        bool isSameType = true;

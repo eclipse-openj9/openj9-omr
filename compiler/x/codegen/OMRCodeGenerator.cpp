@@ -2333,17 +2333,17 @@ int32_t OMR::X86::CodeGenerator::branchDisplacementToHelperOrTrampoline(
    uint8_t            *nextInstructionAddress,
    TR::SymbolReference *helper)
    {
-   intptrj_t helperAddress = (intptrj_t)helper->getMethodAddress();
+   intptr_t helperAddress = (intptr_t)helper->getMethodAddress();
 
-   if (self()->directCallRequiresTrampoline(helperAddress, (intptrj_t)nextInstructionAddress))
+   if (self()->directCallRequiresTrampoline(helperAddress, (intptr_t)nextInstructionAddress))
       {
       helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(helper->getReferenceNumber(), (void *)(nextInstructionAddress-4));
 
-      TR_ASSERT_FATAL(self()->comp()->target().cpu.isTargetWithinRIPRange(helperAddress, (intptrj_t)nextInstructionAddress),
+      TR_ASSERT_FATAL(self()->comp()->target().cpu.isTargetWithinRIPRange(helperAddress, (intptr_t)nextInstructionAddress),
                       "Local helper trampoline should be reachable directly");
       }
 
-   return (int32_t)(helperAddress - (intptrj_t)(nextInstructionAddress));
+   return (int32_t)(helperAddress - (intptr_t)(nextInstructionAddress));
    }
 
 
@@ -2423,7 +2423,7 @@ inline bool getNodeIs64Bit(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 // TODO: Don't duplicate this function all over the place.  Find a good header for it.
-inline intptrj_t integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg)
+inline intptr_t integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (getNodeIs64Bit(node, cg))
       {
@@ -2687,7 +2687,7 @@ static const uint8_t *paddingTableEncoding(TR_X86PaddingTable *paddingTable, uin
    }
 
 uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
-                                              intptrj_t             length,
+                                              intptr_t             length,
                                               TR::Instruction    *neighborhood,
                                               TR_PaddingProperties  properties,
                                               bool                  recursive)
@@ -2729,7 +2729,7 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
       }
    else
       {
-      const intptrj_t jmpThreshold = 100; // Beyond this length, a jmp is faster than a sequence of no-op instructions
+      const intptr_t jmpThreshold = 100; // Beyond this length, a jmp is faster than a sequence of no-op instructions
 
       if ((properties & TR_AtomicNoOpPadding || length >= jmpThreshold))
          {
@@ -2874,16 +2874,16 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
    return cursor;
    }
 
-intptrj_t
-OMR::X86::CodeGenerator::alignment(void *cursor, intptrj_t boundary, intptrj_t margin)
+intptr_t
+OMR::X86::CodeGenerator::alignment(void *cursor, intptr_t boundary, intptr_t margin)
    {
-   return self()->alignment((intptrj_t)cursor, boundary, margin);
+   return self()->alignment((intptr_t)cursor, boundary, margin);
    }
 
 bool
-OMR::X86::CodeGenerator::patchableRangeNeedsAlignment(void *cursor, intptrj_t length, intptrj_t boundary, intptrj_t margin)
+OMR::X86::CodeGenerator::patchableRangeNeedsAlignment(void *cursor, intptr_t length, intptr_t boundary, intptr_t margin)
    {
-   intptrj_t toAlign = self()->alignment(cursor, boundary, margin);
+   intptr_t toAlign = self()->alignment(cursor, boundary, margin);
    return (toAlign > 0 && toAlign < length);
    }
 
@@ -3129,7 +3129,7 @@ OMR::X86::CodeGenerator::switchCodeCacheTo(TR::CodeCache *newCodeCache)
 
 
 bool
-OMR::X86::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+OMR::X86::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
    {
    // Adjust the sourceAddress to the start of the following instruction (+5 bytes)
    //

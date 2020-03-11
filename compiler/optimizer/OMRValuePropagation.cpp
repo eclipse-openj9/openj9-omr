@@ -5585,7 +5585,7 @@ TR::TreeTop* TR::ArraycopyTransformation::tryToSpecializeForLength(TR::TreeTop *
       }
    }
 
-static TR::Node *addressSizedConst(TR::Compilation *comp, TR::Node *n, intptrj_t val)
+static TR::Node *addressSizedConst(TR::Compilation *comp, TR::Node *n, intptr_t val)
    {
    TR::Node *node = comp->target().is64Bit()? TR::Node::lconst(n, val) : TR::Node::iconst(n, val);
    if (node->getOpCodeValue() == TR::lconst)

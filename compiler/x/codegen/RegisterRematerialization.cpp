@@ -54,7 +54,7 @@ static TR_RematerializationInfo *generateRematerializationInfo(TR::Node         
                                                                TR::CodeGenerator         *cg);
 
 static TR_RematerializationInfo *generateRematerializationInfo(TR::Node                  *node,
-                                                               intptrj_t                   constant,
+                                                               intptr_t                   constant,
                                                                TR_RematerializableTypes  type,
                                                                TR::Instruction           *instr,
                                                                TR::CodeGenerator         *cg);
@@ -117,7 +117,7 @@ void setDiscardableIfPossible(TR_RematerializableTypes  type,
                               TR::Register              *candidate,
                               TR::Node                  *node,
                               TR::Instruction           *instr,
-                              intptrj_t                 constant,
+                              intptr_t                 constant,
                               TR::CodeGenerator         *cg)
    {
    TR::Compilation *comp = cg->comp();
@@ -250,7 +250,7 @@ static TR_RematerializationInfo *generateRematerializationInfo(TR::Node         
 
 
 static TR_RematerializationInfo *generateRematerializationInfo(TR::Node                  *node,
-                                                               intptrj_t                 constant,
+                                                               intptr_t                 constant,
                                                                TR_RematerializableTypes  type,
                                                                TR::Instruction           *instr,
                                                                TR::CodeGenerator         *cg)

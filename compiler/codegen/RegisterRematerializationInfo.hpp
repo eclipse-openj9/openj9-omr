@@ -57,7 +57,7 @@ class TR_RematerializationInfo
 
    union
       {
-      intptrj_t _constant;
+      intptr_t _constant;
       MemoryReference _mr;
       };
 
@@ -81,7 +81,7 @@ class TR_RematerializationInfo
 
    TR_RematerializationInfo(TR::Instruction           *instr,
                             TR_RematerializableTypes  type,
-                            intptrj_t                 constant) : _definition(instr),
+                            intptr_t                 constant) : _definition(instr),
                                                                   _type(type),
                                                                   _constant(constant),
                                                                   _NodeForwardDeclinition(NULL)
@@ -114,8 +114,8 @@ class TR_RematerializationInfo
       setRematerializableFromSpillReg();
       }
 
-   intptrj_t getConstant()          {return _constant;}
-   intptrj_t setConstant(intptrj_t c) {return (_constant = c);}
+   intptr_t getConstant()          {return _constant;}
+   intptr_t setConstant(intptr_t c) {return (_constant = c);}
 
    TR::Register *getBaseRegister()               {return _mr._baseRegister;}
    TR::Register *setBaseRegister(TR::Register *r) {return (_mr._baseRegister = r);}

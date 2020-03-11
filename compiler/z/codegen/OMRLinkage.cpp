@@ -2601,13 +2601,13 @@ OMR::Z::Linkage::performCallNativeFunctionForLinkage(TR::Node * callNode, TR_Dis
    {
    TR::S390JNICallDataSnippet * jniCallDataSnippet = NULL;
    TR::LabelSymbol * returnFromJNICallLabel = generateLabelSymbol(self()->cg());
-   intptrj_t targetAddress = (intptrj_t) 0;
+   intptr_t targetAddress = (intptr_t) 0;
 
    if (dispatchType == TR_SystemDispatch)
      {
      TR::SymbolReference *methodSymRef = callNode->getSymbolReference();
      TR::MethodSymbol *methodSymbol = methodSymRef->getSymbol()->castToMethodSymbol();
-     targetAddress = (intptrj_t) methodSymbol->getMethodAddress();
+     targetAddress = (intptr_t) methodSymbol->getMethodAddress();
      }
 
    javaReturnRegister = systemLinkage->callNativeFunction(

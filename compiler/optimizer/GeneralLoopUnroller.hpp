@@ -133,7 +133,7 @@ class TR_LoopUnroller
    void getLoopPreheaders(TR_RegionStructure *loop, TR_ScratchList<TR::Block> *preheaders);
    void collectInternalPointers();
    void collectArrayAccesses();
-   void examineNode(TR::Node *node, intptrj_t visitCount);
+   void examineNode(TR::Node *node, intptr_t visitCount);
    struct IntrnPtr;
    IntrnPtr *findIntrnPtr(int32_t symRefNum);
    bool haveIdenticalOffsets(IntrnPtr *intrnPtr1, IntrnPtr *intrnPtr2);

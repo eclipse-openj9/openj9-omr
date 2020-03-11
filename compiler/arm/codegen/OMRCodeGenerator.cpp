@@ -830,7 +830,7 @@ bool OMR::ARM::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber 
    }
 
 bool
-OMR::ARM::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+OMR::ARM::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
    {
    return
       !self()->comp()->target().cpu.isTargetWithinBranchImmediateRange(targetAddress, sourceAddress) ||

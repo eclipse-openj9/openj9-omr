@@ -1500,7 +1500,7 @@ OMR::Node::createConstOne(TR::Node *originatingByteCodeNode, TR::DataType dt)
    }
 
 TR::Node *
-OMR::Node::createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, intptrj_t extraData)
+OMR::Node::createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, intptr_t extraData)
    {
    TR::Node *result = NULL;
    const int8_t dead8 = (int8_t)((extraData << 4) | 0xD);

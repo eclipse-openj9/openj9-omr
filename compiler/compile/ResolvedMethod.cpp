@@ -341,8 +341,8 @@ bool         TR_ResolvedMethod::isWarmCallGraphTooBig(uint32_t bcIndex, TR::Comp
 void         TR_ResolvedMethod::setWarmCallGraphTooBig(uint32_t bcIndex, TR::Compilation *){ TR_UNIMPLEMENTED(); return; }
 
 TR_FrontEnd *TR_ResolvedMethod::fe()                                       { TR_UNIMPLEMENTED(); return 0; }
-intptrj_t    TR_ResolvedMethod::getInvocationCount()                       { TR_UNIMPLEMENTED(); return 0; }
-bool         TR_ResolvedMethod::setInvocationCount(intptrj_t, intptrj_t)   { TR_UNIMPLEMENTED(); return false; }
+intptr_t    TR_ResolvedMethod::getInvocationCount()                       { TR_UNIMPLEMENTED(); return 0; }
+bool         TR_ResolvedMethod::setInvocationCount(intptr_t, intptr_t)   { TR_UNIMPLEMENTED(); return false; }
 uint16_t     TR_ResolvedMethod::numberOfParameterSlots()                   { TR_UNIMPLEMENTED(); return 0; }
 uint16_t     TR_ResolvedMethod::archetypeArgPlaceholderSlot(TR_Memory *)   { TR_UNIMPLEMENTED(); return 0; }
 uint16_t     TR_ResolvedMethod::numberOfTemps()                            { TR_UNIMPLEMENTED(); return 0; }

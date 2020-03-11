@@ -43,7 +43,7 @@ OMR::ObjectModel::sizeofReferenceField()
    return 0;
    }
 
-intptrj_t
+intptr_t
 OMR::ObjectModel::sizeofReferenceAddress()
    {
    return TR::Compiler->target.is64Bit() ? 8 : 4;
@@ -83,7 +83,7 @@ OMR::ObjectModel::isDiscontiguousArray(TR::Compilation* comp, uintptr_t objectPo
    return false;
    }
 
-intptrj_t
+intptr_t
 OMR::ObjectModel::getArrayLengthInElements(TR::Compilation* comp, uintptr_t objectPointer)
    {
    TR_UNIMPLEMENTED();

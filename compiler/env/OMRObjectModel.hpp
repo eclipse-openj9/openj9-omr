@@ -78,7 +78,7 @@ class ObjectModel
    bool isDiscontiguousArray(int32_t sizeInBytes) { return false; }
    bool isDiscontiguousArray(int32_t sizeInElements, int32_t elementSize) { return false; }
    bool isDiscontiguousArray(TR::Compilation* comp, uintptr_t objectPointer);
-   intptrj_t getArrayLengthInElements(TR::Compilation* comp, uintptr_t objectPointer);
+   intptr_t getArrayLengthInElements(TR::Compilation* comp, uintptr_t objectPointer);
    uintptr_t getArrayLengthInBytes(TR::Compilation* comp, uintptr_t objectPointer);
    uintptr_t getArrayElementWidthInBytes(TR::DataType type);
    uintptr_t getArrayElementWidthInBytes(TR::Compilation* comp, uintptr_t objectPointer);
@@ -95,7 +95,7 @@ class ObjectModel
    // Object shape
    //
    int32_t sizeofReferenceField();
-   intptrj_t sizeofReferenceAddress();
+   intptr_t sizeofReferenceAddress();
    uintptr_t elementSizeOfBooleanArray();
    uint32_t getSizeOfArrayElement(TR::Node * node);
    int64_t maxArraySizeInElementsForAllocation(TR::Node *newArray, TR::Compilation *comp);

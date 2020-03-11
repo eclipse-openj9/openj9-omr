@@ -276,7 +276,7 @@ TR_FrontEnd::getClassFromMethodBlock(TR_OpaqueMethodBlock *mb)
    return NULL;
    }
 
-intptrj_t
+intptr_t
 TR_FrontEnd::getStringUTF8Length(uintptr_t objectPointer)
    {
    TR_UNIMPLEMENTED();
@@ -284,7 +284,7 @@ TR_FrontEnd::getStringUTF8Length(uintptr_t objectPointer)
    }
 
 char *
-TR_FrontEnd::getStringUTF8(uintptr_t objectPointer, char *buffer, intptrj_t bufferSize)
+TR_FrontEnd::getStringUTF8(uintptr_t objectPointer, char *buffer, intptr_t bufferSize)
    {
    TR_UNIMPLEMENTED();
    return NULL;
@@ -305,7 +305,7 @@ TR_FrontEnd::reserveTrampolineIfNecessary(TR::Compilation *, TR::SymbolReference
    TR_UNIMPLEMENTED();
    }
 
-intptrj_t
+intptr_t
 TR_FrontEnd::methodTrampolineLookup(TR::Compilation *comp, TR::SymbolReference *symRef, void * callSite)
    {
    TR_UNIMPLEMENTED();

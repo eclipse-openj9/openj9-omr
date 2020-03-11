@@ -343,7 +343,7 @@ OMR::Z::CodeGenerator::lowerTreeIfNeeded(
          {
          // traceMsg(comp(), "&&& Found pattern root=%llx add1=%llx add2=%llx const1=%llx sub=%llx const2=%llx\n", node, add1, add2, const1, sub, const2);
 
-         intptrj_t offset = 0;
+         intptr_t offset = 0;
          if (self()->comp()->target().is64Bit())
             {
             offset = const1->getLongInt();
@@ -1078,7 +1078,7 @@ OMR::Z::CodeGenerator::beginInstructionSelection()
           !self()->comp()->getOption(TR_MimicInterpreterFrameShape))
          {
          TR::ResolvedMethodSymbol * methodSymbol = self()->comp()->getJittedMethodSymbol();
-         intptrj_t jniMethodTargetAddress = (intptrj_t)methodSymbol->getResolvedMethod()->startAddressForJNIMethod(self()->comp());
+         intptr_t jniMethodTargetAddress = (intptr_t)methodSymbol->getResolvedMethod()->startAddressForJNIMethod(self()->comp());
 
          cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
 
@@ -1288,11 +1288,11 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
     */
    bool canReachWithBPRP = false;
 
-   intptrj_t codeCacheBase = (intptrj_t)(self()->getCodeCache()->getCodeBase());
-   intptrj_t codeCacheTop = (intptrj_t)(self()->getCodeCache()->getCodeTop());
+   intptr_t codeCacheBase = (intptr_t)(self()->getCodeCache()->getCodeBase());
+   intptr_t codeCacheTop = (intptr_t)(self()->getCodeCache()->getCodeTop());
 
-   intptrj_t offset1 = (intptrj_t) data->_callSymRef->getMethodAddress() - codeCacheBase;
-   intptrj_t offset2 = (intptrj_t) data->_callSymRef->getMethodAddress() - codeCacheTop;
+   intptr_t offset1 = (intptr_t) data->_callSymRef->getMethodAddress() - codeCacheBase;
+   intptr_t offset2 = (intptr_t) data->_callSymRef->getMethodAddress() - codeCacheTop;
    if (offset2 >= MIN_24_RELOCATION_VAL && offset2 <= MAX_24_RELOCATION_VAL &&
          offset1 >= MIN_24_RELOCATION_VAL && offset1 <= MAX_24_RELOCATION_VAL)
       {
@@ -3446,7 +3446,7 @@ OMR::Z::CodeGenerator::apply12BitLabelRelativeRelocation(int32_t * cursor, TR::L
       uint16_t * label_cursor = (uint16_t *) label->getCodeLocation();
       if ((*(uint16_t *) label_cursor) == bos(0x1800))
          label_cursor += 1;
-      *(int16_t *) cursor |= (int16_t) (((intptrj_t) label_cursor - (((intptrj_t) cursor) - 1)) / 2);
+      *(int16_t *) cursor |= (int16_t) (((intptr_t) label_cursor - (((intptr_t) cursor) - 1)) / 2);
       return;
       }
    int32_t disp = label->getCodeLocation() - self()->getFirstSnippet()->getSnippetLabel()->getCodeLocation();
@@ -3488,16 +3488,16 @@ OMR::Z::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t * cursor, TR::L
       uint16_t * label_cursor = (uint16_t *) label->getCodeLocation();
       if ((*(uint16_t *) label_cursor) == bos(0x1800))
          label_cursor += 1;
-      *(int16_t *) cursor = (int16_t) (((intptrj_t) label_cursor - (((intptrj_t) cursor) - addressDifferenceDivisor)) / 2);
+      *(int16_t *) cursor = (int16_t) (((intptr_t) label_cursor - (((intptr_t) cursor) - addressDifferenceDivisor)) / 2);
       }
    else
-      *(int16_t *) cursor = (int16_t) (((intptrj_t) label->getCodeLocation() - (((intptrj_t) cursor) - addressDifferenceDivisor)) / addressDifferenceDivisor);
+      *(int16_t *) cursor = (int16_t) (((intptr_t) label->getCodeLocation() - (((intptr_t) cursor) - addressDifferenceDivisor)) / addressDifferenceDivisor);
    }
 
 void
 OMR::Z::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    {
-   *(int16_t *) cursor = (int16_t) (((intptrj_t) label->getCodeLocation() - ((intptrj_t) cursor - 2)) / 2);
+   *(int16_t *) cursor = (int16_t) (((intptr_t) label->getCodeLocation() - ((intptr_t) cursor - 2)) / 2);
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3506,7 +3506,7 @@ OMR::Z::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t * cursor, TR::L
 void
 OMR::Z::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    {
-   *(int32_t *) (((uint8_t *) cursor) + 2) = (int32_t) (((intptrj_t) (label->getCodeLocation()) - ((intptrj_t) cursor)) / 2);
+   *(int32_t *) (((uint8_t *) cursor) + 2) = (int32_t) (((intptr_t) (label->getCodeLocation()) - ((intptr_t) cursor)) / 2);
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3515,7 +3515,7 @@ OMR::Z::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t * cursor, TR::L
 void
 OMR::Z::CodeGenerator::apply32BitLabelTableRelocation(int32_t * cursor, TR::LabelSymbol * label)
    {
-   *(uint32_t *) cursor = (intptrj_t) label->getCodeLocation() - ((intptrj_t) cursor - *(uint32_t *) cursor);
+   *(uint32_t *) cursor = (intptr_t) label->getCodeLocation() - ((intptr_t) cursor - *(uint32_t *) cursor);
    }
 
 /**
@@ -4399,17 +4399,17 @@ OMR::Z::CodeGenerator::canUseRelativeLongInstructions(int64_t value)
 
    if (self()->comp()->target().isLinux())
       {
-      intptrj_t codeCacheBase = (intptrj_t)(self()->getCodeCache()->getCodeBase());
-      intptrj_t codeCacheTop = (intptrj_t)(self()->getCodeCache()->getCodeTop());
+      intptr_t codeCacheBase = (intptr_t)(self()->getCodeCache()->getCodeBase());
+      intptr_t codeCacheTop = (intptr_t)(self()->getCodeCache()->getCodeTop());
 
-      return ( (((intptrj_t)value - codeCacheBase ) <=  (intptrj_t)(INT_MAX))
-            && (((intptrj_t)value - codeCacheBase ) >=  (intptrj_t)(INT_MIN))
-            && (((intptrj_t)value - codeCacheTop ) <=  (intptrj_t)(INT_MAX))
-            && (((intptrj_t)value - codeCacheTop ) >=  (intptrj_t)(INT_MIN)) );
+      return ( (((intptr_t)value - codeCacheBase ) <=  (intptr_t)(INT_MAX))
+            && (((intptr_t)value - codeCacheBase ) >=  (intptr_t)(INT_MIN))
+            && (((intptr_t)value - codeCacheTop ) <=  (intptr_t)(INT_MAX))
+            && (((intptr_t)value - codeCacheTop ) >=  (intptr_t)(INT_MIN)) );
       }
    else
       {
-      return (intptrj_t)value<=(intptrj_t)(INT_MAX) && (intptrj_t)value>=(intptrj_t)(INT_MIN);
+      return (intptr_t)value<=(intptr_t)(INT_MAX) && (intptr_t)value>=(intptr_t)(INT_MIN);
       }
    }
 
@@ -4920,7 +4920,7 @@ OMR::Z::CodeGenerator::genCopyFromLiteralPool(TR::Node *node, int32_t bytesToCop
 TR::Instruction *
 OMR::Z::CodeGenerator::genLoadAddressToRegister(TR::Register *reg, TR::MemoryReference *origMR, TR::Node *node, TR::Instruction *preced)
    {
-   intptrj_t offset = origMR->getOffset();
+   intptr_t offset = origMR->getOffset();
    TR::CodeGenerator *cg = self();
    if (offset >= TR_MIN_RX_DISP && offset <= TR_MAX_RX_DISP)
       {
@@ -5367,7 +5367,7 @@ void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg)
  */
 TR::Instruction* OMR::Z::CodeGenerator::generateDebugCounterBump(TR::Instruction* cursor, TR::DebugCounterBase* counter, int32_t delta, TR::RegisterDependencyConditions* cond)
    {
-   TR::Snippet *constant = self()->Create8ByteConstant(cursor->getNode(), reinterpret_cast<intptrj_t> (counter->getBumpCountSymRef(self()->comp())->getSymbol()->getStaticSymbol()->getStaticAddress()), false);
+   TR::Snippet *constant = self()->Create8ByteConstant(cursor->getNode(), reinterpret_cast<intptr_t> (counter->getBumpCountSymRef(self()->comp())->getSymbol()->getStaticSymbol()->getStaticAddress()), false);
    return generateS390DebugCounterBumpInstruction(self(), TR::InstOpCode::DCB, cursor->getNode(), constant, delta, cursor);
    }
 
@@ -6034,7 +6034,7 @@ OMR::Z::CodeGenerator::findOrCreateLiteral(void *value, size_t len)
    }
 
 bool
-OMR::Z::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+OMR::Z::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
    {
    return
       !self()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||

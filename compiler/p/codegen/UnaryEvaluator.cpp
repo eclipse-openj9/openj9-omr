@@ -70,7 +70,7 @@ TR::Register *OMR::Power::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::Cod
    bool isProfiledPointerConstant = node->isClassPointerConstant() || node->isMethodPointerConstant();
 
    // use data snippet only on class pointers when HCR is enabled
-   intptrj_t address = cg->comp()->target().is64Bit()? node->getLongInt(): node->getInt();
+   intptr_t address = cg->comp()->target().is64Bit()? node->getLongInt(): node->getInt();
    if (isClass && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)address, node) ||
        isProfiledPointerConstant && cg->profiledPointersRequireRelocation())
       {

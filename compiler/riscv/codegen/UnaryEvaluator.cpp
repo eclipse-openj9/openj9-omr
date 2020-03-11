@@ -57,7 +57,7 @@ TR::Register *OMR::RV::TreeEvaluator::cconstEvaluator(TR::Node *node, TR::CodeGe
 TR::Register *OMR::RV::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *tempReg = cg->allocateRegister();
-   intptrj_t address = node->getLongInt();
+   intptr_t address = node->getLongInt();
    loadConstant64(cg, node, address, tempReg);
    return node->setRegister(tempReg);
    }

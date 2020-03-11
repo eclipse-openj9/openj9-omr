@@ -902,7 +902,7 @@ int32_t TR_LocalAnalysisInfo::HashTable::hash(TR::Node *node)
       h <<= 4;
 
       if (child->getOpCode().hasSymbolReference())
-         h += (int32_t)(intptrj_t)child->getSymbolReference()->getSymbol();
+         h += (int32_t)(intptr_t)child->getSymbolReference()->getSymbol();
       else
          h++;
 

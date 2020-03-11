@@ -887,13 +887,13 @@ TR::X86SystemLinkage::layoutTypeOnStack(
    }
 
 
-intptrj_t TR::X86SystemLinkage::entryPointFromCompiledMethod()
+intptr_t TR::X86SystemLinkage::entryPointFromCompiledMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 
-intptrj_t TR::X86SystemLinkage::entryPointFromInterpretedMethod()
+intptr_t TR::X86SystemLinkage::entryPointFromInterpretedMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 

@@ -33,7 +33,7 @@ namespace TR { class Register; }
 namespace TR { class SymbolReference; }
 
 void setDiscardableIfPossible(TR_RematerializableTypes, TR::Register *, TR::Node *, TR::Instruction *, TR::MemoryReference  *, TR::CodeGenerator *);
-void setDiscardableIfPossible(TR_RematerializableTypes, TR::Register *, TR::Node *, TR::Instruction *, intptrj_t, TR::CodeGenerator *);
+void setDiscardableIfPossible(TR_RematerializableTypes, TR::Register *, TR::Node *, TR::Instruction *, intptr_t, TR::CodeGenerator *);
 void setDiscardableIfPossible(TR_RematerializableTypes, TR::Register *, TR::Node *, TR::Instruction *, TR::SymbolReference*, TR::CodeGenerator *);
 
 #endif

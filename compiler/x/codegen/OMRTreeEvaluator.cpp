@@ -176,7 +176,7 @@ void OMR::X86::TreeEvaluator::compareGPRegisterToImmediateForEquality(TR::Node  
 
 TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node                  *node,
                                                         TR::Register              *target,
-                                                        intptrj_t                 value,
+                                                        intptr_t                 value,
                                                         TR_RematerializableTypes  type,
                                                         TR::CodeGenerator         *cg,
                                                         TR::Instruction           *currentInstruction)
@@ -383,7 +383,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
       }
    }
 
-TR::Register *OMR::X86::TreeEvaluator::loadConstant(TR::Node * node, intptrj_t value, TR_RematerializableTypes type, TR::CodeGenerator *cg, TR::Register *targetRegister)
+TR::Register *OMR::X86::TreeEvaluator::loadConstant(TR::Node * node, intptr_t value, TR_RematerializableTypes type, TR::CodeGenerator *cg, TR::Register *targetRegister)
    {
    if (targetRegister == NULL)
       {
@@ -2804,7 +2804,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-bool OMR::X86::TreeEvaluator::constNodeValueIs32BitSigned(TR::Node *node, intptrj_t *value, TR::CodeGenerator *cg)
+bool OMR::X86::TreeEvaluator::constNodeValueIs32BitSigned(TR::Node *node, intptr_t *value, TR::CodeGenerator *cg)
    {
    *value = TR::TreeEvaluator::integerConstNodeValue(node, cg);
    if (cg->comp()->target().is64Bit())
@@ -2834,11 +2834,11 @@ bool OMR::X86::TreeEvaluator::getNodeIs64Bit(TR::Node *node, TR::CodeGenerator *
    return cg->comp()->target().is64Bit() && node->getSize() > 4;
    }
 
-intptrj_t OMR::X86::TreeEvaluator::integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg)
+intptr_t OMR::X86::TreeEvaluator::integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::TreeEvaluator::getNodeIs64Bit(node, cg))
       {
-      return (intptrj_t)node->getLongInt(); // Cast to satisfy 32-bit compilers, even though they never take this path
+      return (intptr_t)node->getLongInt(); // Cast to satisfy 32-bit compilers, even though they never take this path
       }
    else
       {

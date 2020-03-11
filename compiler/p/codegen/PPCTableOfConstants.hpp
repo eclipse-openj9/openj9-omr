@@ -43,12 +43,12 @@ struct TR_tocHashEntry
       {
       uint64_t   _d;
       int8_t    *_n;
-      intptrj_t  _cp;
-      intptrj_t  _addr;
+      intptr_t  _cp;
+      intptr_t  _addr;
       uint32_t   _f;
       } _key;
 
-   intptrj_t   _keyTag ;   // class-loader or anonClass used as key2 for hashed "names"
+   intptr_t   _keyTag ;   // class-loader or anonClass used as key2 for hashed "names"
    int32_t     _flag;
    int32_t     _collisionChain;
    int32_t     _tocIndex;
@@ -67,7 +67,7 @@ struct TR_tocHashEntry
 #define TR_FLAG_tocStatic2ClassKey   0x00000020
 
 // PTOC_FULL_INDEX value has to be special:
-//    no valid index or index*sizeof(intptrj_t) can equal to PTOC_FULL_INDEX
+//    no valid index or index*sizeof(intptr_t) can equal to PTOC_FULL_INDEX
 #define CHAIN_END             (-1)
 #define PTOC_FULL_INDEX       0
 
@@ -129,7 +129,7 @@ class TR_PPCTableOfConstants : public TableOfConstants
    static void        reinitializeMemory();
    static void        shutdown(TR_FrontEnd *vm);
    static int32_t     lookUp(int32_t val, struct TR_tocHashEntry *lk, int32_t *s, TR::CodeGenerator *cg);  // return index
-   static int32_t     lookUp(int8_t *n, int32_t len, bool isAddr,intptrj_t loader, TR::CodeGenerator *cg); // return index
+   static int32_t     lookUp(int8_t *n, int32_t len, bool isAddr,intptr_t loader, TR::CodeGenerator *cg); // return index
    static int32_t     lookUp(TR::SymbolReference *symRef, TR::CodeGenerator *);                            // return index
    static int32_t     lookUp(double d, TR::CodeGenerator *cg);                                             // return offset
    static int32_t     lookUp(float f, TR::CodeGenerator *cg);                                              // return offset

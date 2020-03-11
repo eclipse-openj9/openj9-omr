@@ -99,7 +99,7 @@ public:
     *
     * @return true if the target is within range; false otherwise.
     */
-   bool isTargetWithinIFormBranchRange(intptrj_t targetAddress, intptrj_t sourceAddress);
+   bool isTargetWithinIFormBranchRange(intptr_t targetAddress, intptr_t sourceAddress);
 
    };
 

@@ -1919,10 +1919,10 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
          {
          TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
          char *contents = NULL;
-         intptrj_t length = 0, prefixLength = 0, suffixOffset = 0;
+         intptr_t length = 0, prefixLength = 0, suffixOffset = 0;
          char *etc = "";
-         const intptrj_t LENGTH_LIMIT=80;
-         const intptrj_t PIECE_LIMIT=20;
+         const intptr_t LENGTH_LIMIT=80;
+         const intptr_t PIECE_LIMIT=20;
 
 #ifdef J9_PROJECT_SPECIFIC
          TR::VMAccessCriticalSection getStaticNameCriticalSection(comp(),
@@ -1957,7 +1957,7 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
 
                // Stop before any non-printable characters (like newlines or UTF8 weirdness)
                //
-               intptrj_t i;
+               intptr_t i;
                for (i=0; i < prefixLength; i++)
                   if (!isprint(contents[i]))
                      {
@@ -3070,7 +3070,7 @@ TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
    else if (_comp->getAddressEnumerationOption(TR_EnumerateRegister) && _comp->getToNumberMap().Locate((void *)reg, hashIndex))
       {
       char *buf = (char *)_comp->trMemory()->allocateHeapMemory(maxPrefixSize + 6 + 11); // max register kind name size plus underscore plus 10-digit reg num plus null terminator
-      uint32_t regNum = (uint32_t)(intptrj_t)_comp->getToNumberMap().DataAt(hashIndex);
+      uint32_t regNum = (uint32_t)(intptr_t)_comp->getToNumberMap().DataAt(hashIndex);
       sprintf(buf, "%s%s_%04d", prefix, getRegisterKindName(reg->getKind()), regNum);
       _comp->getToStringMap().Add((void *)reg, buf);
       return buf;

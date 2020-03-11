@@ -79,21 +79,21 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, TR::Register
    self()->finishInitialization(cg, NULL);
    }
 
-OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, intptrj_t disp, TR::CodeGenerator *cg):
+OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, intptr_t disp, TR::CodeGenerator *cg):
       OMR::X86::MemoryReference(br, disp, cg),
    _forceRIPRelative(false)
    {
    self()->finishInitialization(cg, NULL);
    }
 
-OMR::X86::AMD64::MemoryReference::MemoryReference(intptrj_t disp, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm):
+OMR::X86::AMD64::MemoryReference::MemoryReference(intptr_t disp, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm):
       OMR::X86::MemoryReference(disp, cg),
    _forceRIPRelative(false)
    {
    self()->finishInitialization(cg, srm);
    }
 
-OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, TR::Register *ir, uint8_t s, intptrj_t disp, TR::CodeGenerator *cg):
+OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, TR::Register *ir, uint8_t s, intptr_t disp, TR::CodeGenerator *cg):
       OMR::X86::MemoryReference(br, ir, s, disp, cg),
    _forceRIPRelative(false)
    {
@@ -135,21 +135,21 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::SymbolReference *symRef, T
    self()->finishInitialization(cg, srm);
    }
 
-OMR::X86::AMD64::MemoryReference::MemoryReference(TR::SymbolReference *symRef, intptrj_t displacement, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm):
+OMR::X86::AMD64::MemoryReference::MemoryReference(TR::SymbolReference *symRef, intptr_t displacement, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm):
       OMR::X86::MemoryReference(symRef, displacement, cg),
    _forceRIPRelative(false)
    {
    self()->finishInitialization(cg, srm);
    }
 
-OMR::X86::AMD64::MemoryReference::MemoryReference(TR::SymbolReference *symRef, intptrj_t displacement, TR::CodeGenerator *cg, bool forceRIPRelative, TR_ScratchRegisterManager *srm):
+OMR::X86::AMD64::MemoryReference::MemoryReference(TR::SymbolReference *symRef, intptr_t displacement, TR::CodeGenerator *cg, bool forceRIPRelative, TR_ScratchRegisterManager *srm):
       OMR::X86::MemoryReference(symRef, displacement, cg),
    _forceRIPRelative(forceRIPRelative)
    {
    self()->finishInitialization(cg, srm);
    }
 
-OMR::X86::AMD64::MemoryReference::MemoryReference(TR::MemoryReference& mr, intptrj_t n, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm):
+OMR::X86::AMD64::MemoryReference::MemoryReference(TR::MemoryReference& mr, intptr_t n, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm):
       OMR::X86::MemoryReference(mr, n, cg),
    _forceRIPRelative(mr.getForceRIPRelative())
    {
@@ -270,10 +270,10 @@ void OMR::X86::AMD64::MemoryReference::useRegisters(TR::Instruction  *instr, TR:
       }
    }
 
-bool OMR::X86::AMD64::MemoryReference::needsAddressLoadInstruction(intptrj_t nextInstructionAddress, TR::CodeGenerator * cg)
+bool OMR::X86::AMD64::MemoryReference::needsAddressLoadInstruction(intptr_t nextInstructionAddress, TR::CodeGenerator * cg)
    {
    TR::SymbolReference &sr = self()->getSymbolReference();
-   intptrj_t displacement = self()->getDisplacement();
+   intptr_t displacement = self()->getDisplacement();
 
    if (_forceRIPRelative)
       {
@@ -408,7 +408,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       TR::CodeGenerator *cg,
       TR::SymbolReference *srCopy)
    {
-   intptrj_t displacement = self()->getDisplacement();
+   intptr_t displacement = self()->getDisplacement();
 
    if (_symbolReference.getSymbol())
       {
@@ -524,7 +524,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
 
 void
 OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressDisplacementOnly(
-      intptrj_t displacement,
+      intptr_t displacement,
       uint8_t *cursor,
       TR::CodeGenerator *cg)
    {
@@ -549,7 +549,7 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
    {
    TR::Compilation *comp = cg->comp();
    TR::SymbolReference &sr = self()->getSymbolReference();
-   intptrj_t displacement = self()->getDisplacement();
+   intptr_t displacement = self()->getDisplacement();
 
    if (comp->getOption(TR_TraceCG))
       {
@@ -582,7 +582,7 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
    //
    // address of next instruction = modRM + 4 (disp32) + sizeof(immediate for this instruction: 0, 1, or 4) + 1
    //
-   intptrj_t nextInstructionAddress = (intptrj_t)(modRM + 5) + containingInstruction->getOpCode().info().ImmediateSize();
+   intptr_t nextInstructionAddress = (intptr_t)(modRM + 5) + containingInstruction->getOpCode().info().ImmediateSize();
 
    if (self()->getDataSnippet() || self()->getLabel())
       {
@@ -718,7 +718,7 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
          TR_ASSERT(!(comp->getOption(TR_EnableHCR) && sr.getSymbol() && sr.getSymbol()->isClassObject()),
             "HCR runtime assumptions currently can't patch RIP-relative offsets");
          self()->ModRM(modRM)->setIndexOnlyDisp32();
-         *(uint32_t*)cursor = (uint32_t)(displacement - (intptrj_t)nextInstructionAddress);
+         *(uint32_t*)cursor = (uint32_t)(displacement - (intptr_t)nextInstructionAddress);
          }
 
       self()->addMetaDataForCodeAddressDisplacementOnly(displacement, cursor, cg);

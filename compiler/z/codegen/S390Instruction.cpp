@@ -735,7 +735,7 @@ TR::S390BranchInstruction::generateBinaryEncoding()
    memset(static_cast<void*>(cursor), 0, getEstimatedBinaryLength());
    TR::Compilation *comp = cg()->comp();
 
-   intptrj_t distance;
+   intptr_t distance;
    uint8_t * relocationPoint = NULL;
    bool doRelocation;
    bool shortRelocation = false;
@@ -867,7 +867,7 @@ TR::S390BranchOnCountInstruction::generateBinaryEncoding()
    uint16_t binOpCode = *(uint16_t *) (getOpCode().getOpCodeBinaryRepresentation());
    TR::Compilation *comp = cg()->comp();
 
-   intptrj_t distance;
+   intptr_t distance;
 
    uint8_t * relocationPoint = NULL;
    bool doRelocation;
@@ -1016,7 +1016,7 @@ TR::S390BranchOnIndexInstruction::generateBinaryEncoding()
    uint16_t binOpCode = *(uint16_t *) (getOpCode().getOpCodeBinaryRepresentation());
    bool shortRelocation = false;
 
-   intptrj_t distance;
+   intptr_t distance;
    uint8_t * relocationPoint = NULL;
    bool doRelocation;
 
@@ -1086,7 +1086,7 @@ TR::S390BranchOnIndexInstruction::estimateBinaryLength(int32_t  currentEstimate)
    setEstimatedBinaryLength(getOpCode().getInstructionLength());
    //code could be expanded into BRAS(4)+DC(4)+L(4)+BXLE(4) sequence
    //or  BRAS(4)+DC(8)+LG(6)+BXLG(6) sequence
-   if (sizeof(intptrj_t) == 8)
+   if (sizeof(intptr_t) == 8)
       {
       setEstimatedBinaryLength(24);
       }
@@ -1155,7 +1155,7 @@ TR::S390PseudoInstruction::generateBinaryEncoding()
       //    BRC  4 + Padding
       //    <Padding>
       //    DC <call Descriptor> // 8-bytes aligned.
-      _padbytes = ((intptrj_t)(cursor + 4) + 7) / 8 * 8 - (intptrj_t)(cursor + 4);
+      _padbytes = ((intptr_t)(cursor + 4) + 7) / 8 * 8 - (intptr_t)(cursor + 4);
 
       // BRC 4 + padding.
       *((uint32_t *) cursor) = boi(0xA7F40000 + 6 + _padbytes / 2);
@@ -1179,7 +1179,7 @@ TR::S390PseudoInstruction::generateBinaryEncoding()
          *(uint16_t *) cursor = bos(0x0000);
          cursor += 2;
          }
-      TR_ASSERT(((intptrj_t)cursor) % 8 == 0, "Call Descriptor not aligned\n");
+      TR_ASSERT(((intptr_t)cursor) % 8 == 0, "Call Descriptor not aligned\n");
       // Encode the Call Descriptor
       memcpy (cursor, &_callDescValue,8);
       getCallDescLabel()->setCodeLocation(cursor);
@@ -1946,9 +1946,9 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
    // Check to make sure that we can reach our target!  Otherwise, we need to look up appropriate
    // trampoline and branch through the trampoline.
 
-   if (cg()->directCallRequiresTrampoline(getTargetPtr(), (intptrj_t)currentInst))
+   if (cg()->directCallRequiresTrampoline(getTargetPtr(), (intptr_t)currentInst))
       {
-      intptrj_t targetAddr;
+      intptr_t targetAddr;
 
 #if defined(CODE_CACHE_TRAMPOLINE_DEBUG)
       printf("Target: %p,  Cursor: %p, Our Reference # is: %d\n",getTargetPtr(),(uintptr_t)currentInst,getSymbolReference()->getReferenceNumber());
@@ -1958,7 +1958,7 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
       else
          targetAddr = cg()->fe()->methodTrampolineLookup(cg()->comp(), getSymbolReference(), (void *)currentInst);
 
-      TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddr, (intptrj_t)currentInst),
+      TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddr, (intptr_t)currentInst),
                       "Local trampoline must be directly reachable.");
 
       offsetHalfWords = (int32_t)((targetAddr - (uintptr_t)currentInst) / 2);
@@ -2018,7 +2018,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
       i2 = (int32_t)((addr - (uintptr_t)cursor) / 2);
 
-      if (cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
+      if (cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange((intptr_t)getTargetPtr(), (intptr_t)cursor))
          {
          getOpCode().copyBinaryToBuffer(instructionStart);
          toRealRegister(getRegisterOperand(1))->setRegister1Field((uint32_t *) cursor);
@@ -2259,9 +2259,9 @@ TR::S390RILInstruction::generateBinaryEncoding()
             // Check to make sure that we can reach our target!  Otherwise, we
             // need to look up appropriate trampoline and branch through the
             // trampoline.
-            if (!isImmediateOffsetInBytes() && !cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
+            if (!isImmediateOffsetInBytes() && !cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange((intptr_t)getTargetPtr(), (intptr_t)cursor))
                {
-               intptrj_t targetAddr = ((intptrj_t)(cursor) + ((intptrj_t)(i2) * 2));
+               intptr_t targetAddr = ((intptr_t)(cursor) + ((intptr_t)(i2) * 2));
                TR_ASSERT( targetAddr != getTargetPtr(), "LARL is correct already!\n");
                // lower 32 bits should be correct.
                TR_ASSERT( (int32_t)(targetAddr) == (int32_t)(getTargetPtr()), "LARL lower 32-bits is incorrect!\n");
@@ -2412,7 +2412,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
             // Calculate jit-to-jit entry point
             jitTojitStart += ((*(int32_t *) (jitTojitStart - 4)) >> 16) & 0x0000ffff;
-            *(int32_t *) (cursor + 2) = boi(((intptrj_t) jitTojitStart - (intptrj_t) cursor) / 2);
+            *(int32_t *) (cursor + 2) = boi(((intptr_t) jitTojitStart - (intptr_t) cursor) / 2);
             }
          else
             {
@@ -5272,7 +5272,7 @@ TR::S390MIIInstruction::generateBinaryEncoding()
          (cursor + cg()->getAccumulatedInstructionLengthError());
 
    static bool bpp = (feGetEnv("TR_BPPNOBINARY")!=NULL);
-   intptrj_t offset = (intptrj_t) getSymRef()->getMethodAddress() - (intptrj_t) instructionStart;
+   intptr_t offset = (intptr_t) getSymRef()->getMethodAddress() - (intptr_t) instructionStart;
 
    if (distance >= MIN_12_RELOCATION_VAL && distance <= MAX_12_RELOCATION_VAL && !bpp &&
          offset >= MIN_24_RELOCATION_VAL && offset <= MAX_24_RELOCATION_VAL)
@@ -5299,7 +5299,7 @@ TR::S390MIIInstruction::generateBinaryEncoding()
       // add RI3 24-47 # of halfword from current or memory
       //TODO need a check too
 
-      intptrj_t offset = (intptrj_t) getSymRef()->getMethodAddress() - (intptrj_t) instructionStart;
+      intptr_t offset = (intptr_t) getSymRef()->getMethodAddress() - (intptr_t) instructionStart;
 
       int32_t offsetInHalfWords = (int32_t) (offset/2);
 
@@ -5421,7 +5421,7 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
    uint16_t binOpCode;
-   intptrj_t distance;
+   intptr_t distance;
    bool doRelocation;
    bool shortRelocation = false;
    bool longRelocation = false;

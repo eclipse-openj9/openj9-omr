@@ -62,7 +62,7 @@ OMR::CodeGenerator::createStackAtlas()
    //
    TR::Compilation *comp = self()->comp();
    TR::ResolvedMethodSymbol * methodSymbol = comp->getMethodSymbol();
-   intptrj_t stackSlotSize = TR::Compiler->om.sizeofReferenceAddress();
+   intptr_t stackSlotSize = TR::Compiler->om.sizeofReferenceAddress();
 
    int32_t slotIndex = 0;
    int32_t numberOfParmSlots = 0;

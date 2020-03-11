@@ -66,7 +66,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    TR::Register *_indexRegister;
    TR::Node *_indexNode;
    TR::Register *_modBase;
-   intptrj_t _offset;
+   intptr_t _offset;
 
    TR::UnresolvedDataSnippet *_unresolvedSnippet;
    TR::PPCPairedRelocation *_staticRelocation;
@@ -277,7 +277,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    void accessStaticItem(TR::Node *node, TR::SymbolReference *ref, bool isStore, TR::CodeGenerator *cg);
 
-   void addToOffset(TR::Node * node, intptrj_t amount, TR::CodeGenerator *cg);
+   void addToOffset(TR::Node * node, intptr_t amount, TR::CodeGenerator *cg);
 
    void forceIndexedForm(TR::Node * node, TR::CodeGenerator *cg, TR::Instruction *cursor = 0);
 

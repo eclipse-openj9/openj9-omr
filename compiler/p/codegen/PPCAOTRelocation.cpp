@@ -64,7 +64,7 @@ void TR::PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
 
 void TR::PPCPairedLabelAbsoluteRelocation::apply(TR::CodeGenerator *cg)
    {
-   intptrj_t p = (intptrj_t)getLabel()->getCodeLocation();
+   intptr_t p = (intptr_t)getLabel()->getCodeLocation();
 
    if (cg->comp()->target().is32Bit())
       {

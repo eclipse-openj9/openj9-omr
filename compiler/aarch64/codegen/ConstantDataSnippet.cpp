@@ -119,7 +119,7 @@ uint8_t *TR::ARM64ConstantDataSnippet::emitSnippetBody()
    // align to 8 bytes
    if (getDataSize() % 8 == 0)
       {
-      cursor = (uint8_t*)(((intptrj_t)(cursor + 7)) & (~7));
+      cursor = (uint8_t*)(((intptr_t)(cursor + 7)) & (~7));
       }
 
    getSnippetLabel()->setCodeLocation(cursor);

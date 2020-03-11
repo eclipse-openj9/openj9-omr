@@ -216,7 +216,7 @@ TR::Instruction *generateTrg1Src1ImmInstruction(
                    TR::Node        *n,
                    TR::Register    *treg,
                    TR::Register    *s1reg,
-                   intptrj_t       imm,
+                   intptr_t       imm,
                    TR::Instruction *preced = 0);
 
 TR::Instruction *generateTrg1Src1ImmInstruction(

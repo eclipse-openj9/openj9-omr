@@ -60,11 +60,11 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
          OMR::MemoryReferenceConnector(br, ir, s, cg) {}
 
    MemoryReference(TR::Register *br,
-      intptrj_t disp,
+      intptr_t disp,
       TR::CodeGenerator *cg) :
          OMR::MemoryReferenceConnector(br, disp, cg) {}
 
-   MemoryReference(intptrj_t disp,
+   MemoryReference(intptr_t disp,
       TR::CodeGenerator *cg,
       TR_ScratchRegisterManager *srm = NULL) :
          OMR::MemoryReferenceConnector(disp, cg, srm) {}
@@ -72,7 +72,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
    MemoryReference(TR::Register *br,
       TR::Register *ir,
       uint8_t s,
-      intptrj_t disp,
+      intptr_t disp,
       TR::CodeGenerator *cg) :
          OMR::MemoryReferenceConnector(br, ir, s, disp, cg) {}
 
@@ -99,16 +99,16 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
       OMR::MemoryReferenceConnector(symRef, cg, forceRIPRelative, srm) {}
 
    MemoryReference(TR::SymbolReference *symRef,
-      intptrj_t displacement,
+      intptr_t displacement,
       TR::CodeGenerator *cg,
       TR_ScratchRegisterManager *srm = NULL) :
          OMR::MemoryReferenceConnector(symRef, displacement, cg, srm) {}
 
-   MemoryReference(TR::SymbolReference *symRef, intptrj_t displacement, TR::CodeGenerator *cg, bool forceRIPRelative, TR_ScratchRegisterManager *srm = NULL) :
+   MemoryReference(TR::SymbolReference *symRef, intptr_t displacement, TR::CodeGenerator *cg, bool forceRIPRelative, TR_ScratchRegisterManager *srm = NULL) :
       OMR::MemoryReferenceConnector(symRef, displacement, cg, forceRIPRelative, srm) {}
 
    MemoryReference(MemoryReference& mr,
-      intptrj_t n,
+      intptr_t n,
       TR::CodeGenerator *cg,
       TR_ScratchRegisterManager *srm = NULL) :
          OMR::MemoryReferenceConnector(mr, n, cg, srm) {}

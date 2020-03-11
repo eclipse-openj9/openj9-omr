@@ -398,8 +398,8 @@ OMR::Z::CPU::setSupportsVectorPackedDecimalEnhancementFacility(bool value)
    }
 
 bool
-OMR::Z::CPU::isTargetWithinBranchRelativeRILRange(intptrj_t targetAddress, intptrj_t sourceAddress)
+OMR::Z::CPU::isTargetWithinBranchRelativeRILRange(intptr_t targetAddress, intptr_t sourceAddress)
    {
-   return (targetAddress == sourceAddress + ((intptrj_t)((int32_t)((targetAddress - sourceAddress) / 2))) * 2) &&
+   return (targetAddress == sourceAddress + ((intptr_t)((int32_t)((targetAddress - sourceAddress) / 2))) * 2) &&
             (targetAddress % 2 == 0);
    }

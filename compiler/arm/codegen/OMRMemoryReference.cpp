@@ -1350,7 +1350,7 @@ static void loadRelocatableConstant(TR::Node               *node,
        && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)symbol->getStaticSymbol()->getStaticAddress(), node))
       {
       TR_ASSERT(!comp->getOption(TR_AOT), "HCR: AOT is currently no supported");
-      intptrj_t address = (intptrj_t)symbol->getStaticSymbol()->getStaticAddress();
+      intptr_t address = (intptr_t)symbol->getStaticSymbol()->getStaticAddress();
       loadAddressConstantInSnippet(cg, node ? node : cg->getCurrentEvaluationTreeTop()->getNode(), address, reg); // isStore ? TR::InstOpCode::Op_st : TR::InstOpCode::Op_load
       return;
       }

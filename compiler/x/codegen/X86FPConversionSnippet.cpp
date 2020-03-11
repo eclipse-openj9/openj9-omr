@@ -57,12 +57,12 @@ uint8_t *TR::X86FPConversionSnippet::emitSnippetBody()
 
 uint8_t *TR::X86FPConversionSnippet::emitCallToConversionHelper(uint8_t *buffer)
    {
-   intptrj_t callInstructionAddress = (intptrj_t)buffer;
-   intptrj_t nextInstructionAddress = callInstructionAddress+5;
+   intptr_t callInstructionAddress = (intptr_t)buffer;
+   intptr_t nextInstructionAddress = callInstructionAddress+5;
 
    *buffer++ = 0xe8;      // CallImm4
 
-   intptrj_t helperAddress = (intptrj_t)getHelperSymRef()->getMethodAddress();
+   intptr_t helperAddress = (intptr_t)getHelperSymRef()->getMethodAddress();
    if (cg()->directCallRequiresTrampoline(helperAddress, callInstructionAddress))
       {
       helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(getHelperSymRef()->getReferenceNumber(), (void *)buffer);

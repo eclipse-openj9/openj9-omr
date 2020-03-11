@@ -552,7 +552,7 @@ class SymbolReferenceTable
 
    TR::SymbolReference * methodSymRefFromName(TR::ResolvedMethodSymbol *owningMethodSymbol, char *className, char *methodName, char *signature, TR::MethodSymbol::Kinds kind, int32_t cpIndex=-1);
 
-   TR::SymbolReference *createSymbolReference(TR::Symbol *sym, intptrj_t o = 0);
+   TR::SymbolReference *createSymbolReference(TR::Symbol *sym, intptr_t o = 0);
 
    TR::Symbol * findOrCreateConstantAreaSymbol();
    TR::SymbolReference * findOrCreateConstantAreaSymbolReference();
@@ -672,10 +672,10 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateMonitorEntrySymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateMonitorExitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
 
-   TR::SymbolReference * findOrCreateGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector = false);
-   TR::SymbolReference * createGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector = false);
-   TR::SymbolReference * findOrCreateGenericIntArrayShadowSymbolReference(intptrj_t offset);
-   TR::SymbolReference * findOrCreateGenericIntNonArrayShadowSymbolReference(intptrj_t offset);
+   TR::SymbolReference * findOrCreateGenericIntShadowSymbolReference(intptr_t offset, bool allocateUseDefBitVector = false);
+   TR::SymbolReference * createGenericIntShadowSymbolReference(intptr_t offset, bool allocateUseDefBitVector = false);
+   TR::SymbolReference * findOrCreateGenericIntArrayShadowSymbolReference(intptr_t offset);
+   TR::SymbolReference * findOrCreateGenericIntNonArrayShadowSymbolReference(intptr_t offset);
 
    TR::SymbolReference * findOrCreateArrayCopySymbol();
    TR::SymbolReference * findOrCreateArraySetSymbol();

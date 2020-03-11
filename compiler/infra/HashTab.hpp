@@ -199,7 +199,7 @@ class TR_HashTabInt : public TR_HashTab
    TR_HashTabInt(TR_Memory *mem, TR_AllocationKind allocType=heapAlloc, uint32_t initialSize=kDefaultSize, bool allowGrowth=true):
       TR_HashTab(mem, allocType, initialSize, allowGrowth) { }
 
-   TR_HashId calculateHash(const void *key) const { return (TR_HashId((intptrj_t)key) %_closedAreaSize);}
+   TR_HashId calculateHash(const void *key) const { return (TR_HashId((intptr_t)key) %_closedAreaSize);}
 
    bool locate(int32_t key,TR_HashId &hashIndex){ return TR_HashTab::locate((const void*)(uintptr_t)key,hashIndex);}
    bool add(int32_t key,TR_HashId hashIndex,void * data){ return TR_HashTab::add((void *)(uintptr_t)key,hashIndex,data);}

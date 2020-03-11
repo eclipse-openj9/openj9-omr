@@ -37,7 +37,7 @@
 #include "il/ParameterSymbol.hpp"
 #include "il/StaticSymbol.hpp"
 
-TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *node, intptrj_t address, TR::Register *targetRegister, TR_ExternalRelocationTargetKind reloKind, TR::Instruction *cursor)
+TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *node, intptr_t address, TR::Register *targetRegister, TR_ExternalRelocationTargetKind reloKind, TR::Instruction *cursor)
    {
    // We use LDR literal to load a value from the snippet. Offset to PC will be patched by LabelRelative24BitRelocation
    auto snippet = cg->findOrCreate8ByteConstant(node, address);
@@ -192,7 +192,7 @@ TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t v
  * @param[in] value : address value
  */
 static void
-addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR::Instruction *firstInstruction, int16_t typeAddress, intptrj_t value)
+addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR::Instruction *firstInstruction, int16_t typeAddress, intptr_t value)
    {
    if (value == 0x0)
       return;
@@ -292,7 +292,7 @@ addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR
  * @param[in] typeAddress : type of address
  */ 
 static TR::Instruction *
-loadAddressConstantRelocatable(TR::CodeGenerator *cg, TR::Node *node, intptrj_t value, TR::Register *trgReg, TR::Instruction *cursor=NULL, int16_t typeAddress = -1)
+loadAddressConstantRelocatable(TR::CodeGenerator *cg, TR::Node *node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor=NULL, int16_t typeAddress = -1)
    {
    TR::Compilation *comp = cg->comp();
    // load a 64-bit constant into a register with a fixed 4 instruction sequence

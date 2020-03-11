@@ -82,7 +82,7 @@ public:
     *
     * @return true if the target is within range; false otherwise.
     */
-   bool isTargetWithinUnconditionalBranchImmediateRange(intptrj_t targetAddress, intptrj_t sourceAddress);
+   bool isTargetWithinUnconditionalBranchImmediateRange(intptr_t targetAddress, intptr_t sourceAddress);
 
    };
 

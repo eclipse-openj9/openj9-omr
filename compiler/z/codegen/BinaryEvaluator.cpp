@@ -3381,7 +3381,7 @@ OMR::Z::TreeEvaluator::integerRolEvaluator(TR::Node *node, TR::CodeGenerator *cg
 
    if (secondChild->getOpCode().isLoadConst())
       {
-      intptrj_t rotateAmount = secondChild->getConstValue();
+      intptr_t rotateAmount = secondChild->getConstValue();
       if (rotateAmount == 0)
          {
          targetRegister = cg->evaluate(firstChild);

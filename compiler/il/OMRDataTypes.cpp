@@ -229,7 +229,7 @@ static int32_t OMRDataTypeSizes[] =
    8,                 // TR::Int64
    4,                 // TR::Float
    8,                 // TR::Double
-   sizeof(intptrj_t), // TR::Address
+   sizeof(intptr_t), // TR::Address
    16,                // TR::VectorInt8
    16,                // TR::VectorInt16
    16,                // TR::VectorInt32

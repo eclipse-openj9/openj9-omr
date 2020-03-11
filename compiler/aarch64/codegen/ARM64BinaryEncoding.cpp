@@ -76,14 +76,14 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
       if (cg()->comp()->isRecursiveMethodTarget(sym))
          {
-         intptrj_t jitToJitStart = cg()->getLinkage()->entryPointFromCompiledMethod();
+         intptr_t jitToJitStart = cg()->getLinkage()->entryPointFromCompiledMethod();
 
          TR_ASSERT_FATAL(jitToJitStart, "Unknown compiled method entry point.  Entry point should be available by now.");
 
-         TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(jitToJitStart, (intptrj_t)cursor),
+         TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(jitToJitStart, (intptr_t)cursor),
                          "Target address is out of range");
 
-         intptrj_t distance = jitToJitStart - (intptrj_t)cursor;
+         intptr_t distance = jitToJitStart - (intptr_t)cursor;
          insertImmediateField(toARM64Cursor(cursor), distance);
          setAddrImmediate(jitToJitStart);
          }
@@ -97,17 +97,17 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
          TR::MethodSymbol *method = symRef->getSymbol()->getMethodSymbol();
          if (method && method->isHelper())
             {
-            intptrj_t destination = (intptrj_t)symRef->getMethodAddress();
+            intptr_t destination = (intptr_t)symRef->getMethodAddress();
 
-            if (cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
+            if (cg()->directCallRequiresTrampoline(destination, (intptr_t)cursor))
                {
                destination = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
 
-               TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptrj_t)cursor),
+               TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptr_t)cursor),
                                "Target address is out of range");
                }
 
-            intptrj_t distance = destination - (intptrj_t)cursor;
+            intptr_t distance = destination - (intptr_t)cursor;
             insertImmediateField(toARM64Cursor(cursor), distance);
             setAddrImmediate(destination);
 
@@ -119,16 +119,16 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
             }
          else
             {
-            intptrj_t destination = getAddrImmediate();
+            intptr_t destination = getAddrImmediate();
 
-            if (cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
+            if (cg()->directCallRequiresTrampoline(destination, (intptr_t)cursor))
                {
-               destination = (intptrj_t)cg()->fe()->methodTrampolineLookup(cg()->comp(), symRef, (void *)cursor);
-               TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptrj_t)cursor),
+               destination = (intptr_t)cg()->fe()->methodTrampolineLookup(cg()->comp(), symRef, (void *)cursor);
+               TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptr_t)cursor),
                                "Call target address is out of range");
                }
 
-            intptrj_t distance = destination - (intptrj_t)cursor;
+            intptr_t distance = destination - (intptr_t)cursor;
             insertImmediateField(toARM64Cursor(cursor), distance);
             }
          }
@@ -162,7 +162,7 @@ uint8_t *TR::ARM64LabelInstruction::generateBinaryEncoding()
       cursor = getOpCode().copyBinaryToBuffer(instructionStart);
       if (destination != 0)
          {
-         if (!cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
+         if (!cg()->directCallRequiresTrampoline(destination, (intptr_t)cursor))
             {
             intptr_t distance = destination - (intptr_t)cursor;
             insertImmediateField(toARM64Cursor(cursor), distance);

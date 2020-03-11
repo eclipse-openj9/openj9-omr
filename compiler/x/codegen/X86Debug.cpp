@@ -1501,7 +1501,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
 
    if (sym != NULL || mr->getSymbolReference().getOffset() != 0)
       {
-      intptrj_t disp32 = mr->getDisplacement();
+      intptr_t disp32 = mr->getDisplacement();
 
       if (!hasPrecedingTerm)
          {
@@ -2222,7 +2222,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86CallSnippet  * snippet)
                }
 
           }
-         intptrj_t ramMethod = (intptr_t)methodSymbol->getMethodAddress();
+         intptr_t ramMethod = (intptr_t)methodSymbol->getMethodAddress();
 
          printPrefix(pOutFile, NULL, bufferPos, 10);
          trfprintf(pOutFile, "mov \trdi, 0x%x\t\t# MOV8RegImm64",ramMethod);
@@ -2236,7 +2236,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86CallSnippet  * snippet)
 
    else
       {
-         intptrj_t ramMethod = (intptr_t)methodSymbol->getMethodAddress();
+         intptr_t ramMethod = (intptr_t)methodSymbol->getMethodAddress();
 
          printPrefix(pOutFile, NULL, bufferPos, 5);
          trfprintf(pOutFile, "mov \tedi, 0x%x\t\t# MOV8RegImm32",ramMethod);

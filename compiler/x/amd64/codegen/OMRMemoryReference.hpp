@@ -89,11 +89,11 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::X86::MemoryReference
 
    MemoryReference(TR::Register *br, TR::Register *ir, uint8_t s, TR::CodeGenerator *cg);
 
-   MemoryReference(TR::Register *br, intptrj_t disp, TR::CodeGenerator *cg);
+   MemoryReference(TR::Register *br, intptr_t disp, TR::CodeGenerator *cg);
 
-   MemoryReference(intptrj_t disp, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm = NULL);
+   MemoryReference(intptr_t disp, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm = NULL);
 
-   MemoryReference(TR::Register *br, TR::Register *ir, uint8_t s, intptrj_t disp, TR::CodeGenerator *cg);
+   MemoryReference(TR::Register *br, TR::Register *ir, uint8_t s, intptr_t disp, TR::CodeGenerator *cg);
 
    MemoryReference(TR::X86DataSnippet *cds, TR::CodeGenerator *cg);
 
@@ -132,7 +132,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::X86::MemoryReference
     * @param[in] srm : optional ScratchRegisterManager to use to allocate overflow address register;
     *                  NULL (the default) will use the CodeGenerator allocator
     */
-   MemoryReference(TR::SymbolReference *symRef, intptrj_t displacement, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm = NULL);
+   MemoryReference(TR::SymbolReference *symRef, intptr_t displacement, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm = NULL);
 
    /**
     * @brief Construct a MemoryReference
@@ -145,9 +145,9 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::X86::MemoryReference
     * @param[in] srm : optional ScratchRegisterManager to use to allocate overflow address register;
     *                  NULL (the default) will use the CodeGenerator allocator
     */
-   MemoryReference(TR::SymbolReference *symRef, intptrj_t displacement, TR::CodeGenerator *cg, bool forceRIPRelative, TR_ScratchRegisterManager *srm = NULL);
+   MemoryReference(TR::SymbolReference *symRef, intptr_t displacement, TR::CodeGenerator *cg, bool forceRIPRelative, TR_ScratchRegisterManager *srm = NULL);
 
-   MemoryReference(TR::MemoryReference& mr, intptrj_t n, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm = NULL);
+   MemoryReference(TR::MemoryReference& mr, intptr_t n, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm = NULL);
 
    virtual void blockRegisters()
       {
@@ -168,15 +168,15 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::X86::MemoryReference
       }
 
    void addMetaDataForCodeAddressWithLoad(uint8_t *displacementLocation, TR::Instruction *containingInstruction, TR::CodeGenerator *cg, TR::SymbolReference *srCopy);
-   void addMetaDataForCodeAddressDisplacementOnly(intptrj_t displacement, uint8_t *cursor, TR::CodeGenerator *cg);
+   void addMetaDataForCodeAddressDisplacementOnly(intptr_t displacement, uint8_t *cursor, TR::CodeGenerator *cg);
 
    protected:
 
 #if defined(TR_TARGET_64BIT)
-   bool needsAddressLoadInstruction(intptrj_t nextInstructionAddress, TR::CodeGenerator *cg);
+   bool needsAddressLoadInstruction(intptr_t nextInstructionAddress, TR::CodeGenerator *cg);
    void finishInitialization(TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm);
 #else
-   bool needsAddressLoadInstruction(intptrj_t rip) { return false; }
+   bool needsAddressLoadInstruction(intptr_t rip) { return false; }
    void finishInitialization(TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm) {}
 #endif
 

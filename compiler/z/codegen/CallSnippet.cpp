@@ -610,14 +610,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390CallSnippet * snippet)
       bufferPos += 6;
       }
 
-   printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+   printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
    trfprintf(pOutFile, "DC   \t%p \t\t# Method Address", glueRef->getMethodAddress());
-   bufferPos += sizeof(intptrj_t);
+   bufferPos += sizeof(intptr_t);
 
 
-   printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+   printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
    trfprintf(pOutFile, "DC   \t%p \t\t# Call Site RA", snippet->getCallRA());
-   bufferPos += sizeof(intptrj_t);
+   bufferPos += sizeof(intptr_t);
 
    if (methodSymRef->isUnresolved())
       {
@@ -625,7 +625,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390CallSnippet * snippet)
       }
    else
       {
-      printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+      printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
       }
 
    trfprintf(pOutFile, "DC   \t%p \t\t# Method Pointer", methodSymRef->isUnresolved() ? 0 : methodSymbol->getMethodAddress());

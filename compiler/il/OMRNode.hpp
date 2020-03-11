@@ -340,7 +340,7 @@ public:
 
    static TR::Node *createConstZeroValue(TR::Node *originatingByteCodeNode, TR::DataType dt);
    static TR::Node *createConstOne(TR::Node *originatingByteCodeNode, TR::DataType dt);
-   static TR::Node *createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, intptrj_t extraData=0);
+   static TR::Node *createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, intptr_t extraData=0);
 
    static TR::Node *createCompressedRefsAnchor(TR::Node *firstChild);
 

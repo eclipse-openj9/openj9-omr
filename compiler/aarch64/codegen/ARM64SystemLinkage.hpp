@@ -129,7 +129,7 @@ class ARM64SystemLinkage : public TR::Linkage
     *
     * @return The entry point for compiled methods to use; 0 if the entry point is unknown
     */
-   virtual intptrj_t entryPointFromCompiledMethod();
+   virtual intptr_t entryPointFromCompiledMethod();
 
    /**
     * @brief Provides the entry point in a method to use when that method is invoked
@@ -143,7 +143,7 @@ class ARM64SystemLinkage : public TR::Linkage
     *
     * @return The entry point for interpreted methods to use; 0 if the entry point is unknown
     */
-   virtual intptrj_t entryPointFromInterpretedMethod();
+   virtual intptr_t entryPointFromInterpretedMethod();
 
    };
 

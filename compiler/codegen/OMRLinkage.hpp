@@ -146,7 +146,7 @@ class OMR_EXTENSIBLE Linkage
     *
     * @return The entry point for compiled methods to use; 0 if the entry point is unknown
     */
-   virtual intptrj_t entryPointFromCompiledMethod() { TR_UNIMPLEMENTED(); return 0; }
+   virtual intptr_t entryPointFromCompiledMethod() { TR_UNIMPLEMENTED(); return 0; }
 
    /**
     * @brief Provides the entry point in a method to use when that method is invoked
@@ -162,7 +162,7 @@ class OMR_EXTENSIBLE Linkage
     *
     * @return The entry point for interpreted methods to use; 0 if the entry point is unknown
     */
-   virtual intptrj_t entryPointFromInterpretedMethod() { TR_UNIMPLEMENTED(); return 0; }
+   virtual intptr_t entryPointFromInterpretedMethod() { TR_UNIMPLEMENTED(); return 0; }
 
 protected:
 

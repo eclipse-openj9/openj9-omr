@@ -1719,13 +1719,13 @@ void TR::PPCSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSy
 
    }
 
-intptrj_t TR::PPCSystemLinkage::entryPointFromCompiledMethod()
+intptr_t TR::PPCSystemLinkage::entryPointFromCompiledMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 
-intptrj_t TR::PPCSystemLinkage::entryPointFromInterpretedMethod()
+intptr_t TR::PPCSystemLinkage::entryPointFromInterpretedMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 

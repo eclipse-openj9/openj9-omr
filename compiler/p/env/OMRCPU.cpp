@@ -38,9 +38,9 @@ OMR::Power::CPU::supportsTransactionalMemoryInstructions()
    }
 
 bool
-OMR::Power::CPU::isTargetWithinIFormBranchRange(intptrj_t targetAddress, intptrj_t sourceAddress)
+OMR::Power::CPU::isTargetWithinIFormBranchRange(intptr_t targetAddress, intptr_t sourceAddress)
    {
-   intptrj_t range = targetAddress - sourceAddress;
+   intptr_t range = targetAddress - sourceAddress;
    return range <= self()->maxIFormBranchForwardOffset() &&
           range >= self()->maxIFormBranchBackwardOffset();
    }

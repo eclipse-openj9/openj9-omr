@@ -23,9 +23,9 @@
 #include "env/jittypes.h"
 
 bool
-OMR::ARM::CPU::isTargetWithinBranchImmediateRange(intptrj_t targetAddress, intptrj_t sourceAddress)
+OMR::ARM::CPU::isTargetWithinBranchImmediateRange(intptr_t targetAddress, intptr_t sourceAddress)
    {
-   intptrj_t range = targetAddress - sourceAddress;
+   intptr_t range = targetAddress - sourceAddress;
    return range <= self()->maxBranchImmediateForwardOffset() &&
           range >= self()->maxBranchImmediateBackwardOffset();
    }

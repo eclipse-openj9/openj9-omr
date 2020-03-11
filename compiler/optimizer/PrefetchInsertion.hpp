@@ -64,7 +64,7 @@ class TR_PrefetchInsertion : public TR_LoopTransformer
    void insertPrefetchInstructions();
    TR::Node *createDeltaNode(TR::Node *node, TR::Node *pivNode, int32_t deltaOnBackEdge);
    void examineLoop(TR_RegionStructure *loop);
-   void examineNode(TR::TreeTop *treeTop, TR::Block *block, TR::Node *node, intptrj_t visitCount, TR_RegionStructure *loop);
+   void examineNode(TR::TreeTop *treeTop, TR::Block *block, TR::Node *node, intptr_t visitCount, TR_RegionStructure *loop);
    TR_PrimaryInductionVariable *getClosestPIV(TR::Block *block);
    bool isBIV(TR::SymbolReference* symRef, TR::Block *block, TR_BasicInductionVariable* &biv);
    };

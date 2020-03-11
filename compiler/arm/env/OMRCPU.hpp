@@ -82,7 +82,7 @@ public:
     *
     * @return true if the target is within range; false otherwise.
     */
-   bool isTargetWithinBranchImmediateRange(intptrj_t targetAddress, intptrj_t sourceAddress);
+   bool isTargetWithinBranchImmediateRange(intptr_t targetAddress, intptr_t sourceAddress);
 
    };
 

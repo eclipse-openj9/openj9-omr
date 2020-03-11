@@ -383,7 +383,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
     * @param[in] amount : amount to be added to offset
     * @param[in] cg : CodeGenerator
     */
-   void addToOffset(TR::Node *node, intptrj_t amount, TR::CodeGenerator *cg);
+   void addToOffset(TR::Node *node, intptr_t amount, TR::CodeGenerator *cg);
 
    /**
     * @brief Decrements node reference counts

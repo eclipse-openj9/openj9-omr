@@ -9384,7 +9384,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                         {
                         TR_OpaqueClassBlock *clazz  = classConstraint->getClass();
                         int32_t    vftOffset        = vtableEntryNode->getSymbolReference()->getOffset();
-                        intptrj_t  vftEntry         = TR::Compiler->cls.getVFTEntry(vp->comp(), clazz, vftOffset);
+                        intptr_t  vftEntry         = TR::Compiler->cls.getVFTEntry(vp->comp(), clazz, vftOffset);
                         bool       childrenAreEqual = (vftEntry == methodPtrNode->getAddress());
                         bool       testForEquality  = (node->getOpCodeValue() == TR::ifacmpeq);
                         if (vp->trace())

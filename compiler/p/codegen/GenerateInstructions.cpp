@@ -383,7 +383,7 @@ TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, 
    }
 
 TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
-   TR::Register *treg, TR::Register *s1reg, intptrj_t imm, TR::Instruction *preced)
+   TR::Register *treg, TR::Register *s1reg, intptr_t imm, TR::Instruction *preced)
    {
    if (cg->comp()->target().cpu.id() == TR_PPCp6 && TR::InstOpCode(op).isCompare())
       treg->resetFlippedCCR();

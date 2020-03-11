@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2844,6 +2844,27 @@ class X86VFPReleaseInstruction : public TR::Instruction
    };
 
 
+/**
+ * Calls are normally responsible for maintaining VFP state.  However, Polymorphic
+ * Inline Caches (PICs) can have multiple call instructions in the same internal
+ * control flow region.  As a consequence, if the VFP adjustment must be attached
+ * to a call then it must go on exactly one of them, which is sometimes hard to
+ * achieve in the code.  Furthermore, with the adjustment on one of the calls, the
+ * VFP offset must be incorrect for at least part of the internal control flow
+ * region, though this doesn't matter because we have tight control over what is
+ * done in there anyway.
+ *
+ * Given that VFP tracking isn't perfect inside internal control flow anyway, it
+ * seems simpler to offer a dedicated "VFP adjustment instruction" that we can
+ * place at the appropriate point in the internal control flow region to make the
+ * adjustment happen there.  Such an instruction is not safe in general, because
+ * we can't control whether a spill comes before or after such an instruction, and
+ * only one of the two possibilities can be correct; however, there are no spills
+ * inside internal control flow anyway.
+ *
+ * Thus, it seems that an explicit VFP adjustment instruction is simpler than what
+ * we have now, and no less correct.
+ */
 class X86VFPCallCleanupInstruction : public TR::Instruction
    {
    int32_t _stackPointerAdjustment;

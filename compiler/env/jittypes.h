@@ -35,6 +35,7 @@
 #define IS_32BIT_UNSIGNED(x) ((x) == (uint32_t)(x))
 
 #define MAX_UINTPTRJ (~(uintptr_t)0)
+#define MAX_UINTPTR (~(uintptr_t)0)
 
 #ifdef __cplusplus
 namespace TR { class Compilation; }

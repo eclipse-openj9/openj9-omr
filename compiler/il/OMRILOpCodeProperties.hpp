@@ -4390,38 +4390,6 @@
    },
 
    {
-   /* .opcode               = */ TR::sucmpeq,
-   /* .name                 = */ "sucmpeq",
-   /* .properties1          = */ ILProp1::BooleanCompare,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,
-   /* .properties3          = */ ILProp3::CompareTrueIfEqual,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int32,
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer,
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int16),
-   /* .swapChildrenOpCode   = */ TR::sucmpeq,
-   /* .reverseBranchOpCode  = */ TR::sucmpne,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::ifsucmpeq,
-   },
-
-   {
-   /* .opcode               = */ TR::sucmpne,
-   /* .name                 = */ "sucmpne",
-   /* .properties1          = */ ILProp1::BooleanCompare,
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,
-   /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int32,
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer,
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int16),
-   /* .swapChildrenOpCode   = */ TR::sucmpne,
-   /* .reverseBranchOpCode  = */ TR::sucmpeq,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::ifsucmpne,
-   },
-
-   {
    /* .opcode               = */ TR::sucmplt,
    /* .name                 = */ "sucmplt",
    /* .properties1          = */ ILProp1::BooleanCompare,

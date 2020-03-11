@@ -308,8 +308,6 @@
    scmpgeSimplifier,        // TR::scmpge
    scmpgtSimplifier,        // TR::scmpgt
    scmpleSimplifier,        // TR::scmple
-   sucmpeqSimplifier,        // TR::sucmpeq
-   sucmpneSimplifier,        // TR::sucmpne
    sucmpltSimplifier,        // TR::sucmplt
    sucmpgeSimplifier,        // TR::sucmpge
    sucmpgtSimplifier,        // TR::sucmpgt

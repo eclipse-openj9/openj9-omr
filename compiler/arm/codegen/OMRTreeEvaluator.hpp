@@ -347,7 +347,6 @@ public:
    static TR::Register *scmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *scmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *scmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *sucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -295,8 +295,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::scmpgeEvaluator ,	// TR::scmpge		// short integer compare if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::scmpgtEvaluator ,	// TR::scmpgt		// short integer compare if greater than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::scmpleEvaluator ,	// TR::scmple		// short integer compare if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sucmpeqEvaluator ,	// TR::sucmpeq		// char compare if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sucmpneEvaluator ,	// TR::sucmpne		// char compare if not equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sucmpltEvaluator ,	// TR::sucmplt		// char compare if less than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sucmpgeEvaluator ,	// TR::sucmpge		// char compare if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sucmpgtEvaluator ,	// TR::sucmpgt		// char compare if greater than

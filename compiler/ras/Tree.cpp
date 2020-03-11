@@ -2556,8 +2556,6 @@ int32_t childTypes[] =
    TR::Int16,                     // TR::scmpge
    TR::Int16,                     // TR::scmpgt
    TR::Int16,                     // TR::scmple
-   TR::Int16,                     // TR::sucmpeq
-   TR::Int16,                     // TR::sucmpne
    TR::Int16,                     // TR::sucmplt
    TR::Int16,                     // TR::sucmpge
    TR::Int16,                     // TR::sucmpgt

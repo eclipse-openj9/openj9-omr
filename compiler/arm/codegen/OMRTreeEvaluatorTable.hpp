@@ -374,8 +374,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,      // TR::scmpge
    TR::TreeEvaluator::unImpOpEvaluator,      // TR::scmpgt
    TR::TreeEvaluator::unImpOpEvaluator,      // TR::scmple
-   TR::TreeEvaluator::unImpOpEvaluator,      // TR::sucmpeq
-   TR::TreeEvaluator::unImpOpEvaluator,      // TR::sucmpne
    TR::TreeEvaluator::unImpOpEvaluator,      // TR::sucmplt
    TR::TreeEvaluator::unImpOpEvaluator,      // TR::sucmpge
    TR::TreeEvaluator::unImpOpEvaluator,      // TR::sucmpgt

@@ -320,8 +320,6 @@
    TR::TreeEvaluator::scmpgeEvaluator,      // TR::scmpge
    TR::TreeEvaluator::scmpgtEvaluator,      // TR::scmpgt
    TR::TreeEvaluator::scmpleEvaluator,      // TR::scmple
-   TR::TreeEvaluator::sucmpeqEvaluator,      // TR::sucmpeq
-   TR::TreeEvaluator::sucmpeqEvaluator,      // TR::sucmpne
    TR::TreeEvaluator::sucmpltEvaluator,      // TR::sucmplt
    TR::TreeEvaluator::sucmpgeEvaluator,      // TR::sucmpge
    TR::TreeEvaluator::sucmpgtEvaluator,      // TR::sucmpgt

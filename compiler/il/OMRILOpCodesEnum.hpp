@@ -344,8 +344,6 @@
    scmpge,   // short integer compare if greater than or equal
    scmpgt,   // short integer compare if greater than
    scmple,   // short integer compare if less than or equal
-   sucmpeq,   // char compare if equal
-   sucmpne,   // char compare if not equal
    sucmplt,   // char compare if less than
    sucmpge,   // char compare if greater than or equal
    sucmpgt,   // char compare if greater than

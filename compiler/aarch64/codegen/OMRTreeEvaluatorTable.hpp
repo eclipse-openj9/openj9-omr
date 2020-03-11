@@ -295,8 +295,6 @@
     TR::TreeEvaluator::icmpgeEvaluator, // TR::scmpge		// short integer compare if greater than or equal
     TR::TreeEvaluator::icmpgtEvaluator, // TR::scmpgt		// short integer compare if greater than
     TR::TreeEvaluator::icmpleEvaluator, // TR::scmple		// short integer compare if less than or equal
-    TR::TreeEvaluator::icmpeqEvaluator, // TR::sucmpeq		// char compare if equal
-    TR::TreeEvaluator::icmpneEvaluator, // TR::sucmpne		// char compare if not equal
     TR::TreeEvaluator::iucmpltEvaluator, // TR::sucmplt		// char compare if less than
     TR::TreeEvaluator::iucmpgeEvaluator, // TR::sucmpge		// char compare if greater than or equal
     TR::TreeEvaluator::iucmpgtEvaluator, // TR::sucmpgt		// char compare if greater than

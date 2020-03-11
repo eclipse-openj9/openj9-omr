@@ -1629,16 +1629,6 @@ OMR::Z::TreeEvaluator::scmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    }
 
 /**
- * Char compare if equal
- * - also handles sucmpne (char compare if not equal)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::sucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-      return generateS390CompareBool(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, TR::InstOpCode::COND_BNE);
-   }
-
-/**
  * Char compare if less than
  */
 TR::Register *

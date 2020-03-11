@@ -658,14 +658,6 @@ OMR::IL::opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForTernarySelect(TR::DataType dt)
-   {
-   TR_ASSERT(dt < TR::NumOMRTypes, "Unexpected data type");
-
-   return OMR::IL::opCodesForSelect[dt];
-   }
-
-TR::ILOpCodes
 OMR::IL::opCodeForSelect(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "Unexpected data type");

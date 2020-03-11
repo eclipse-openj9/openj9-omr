@@ -1506,7 +1506,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsArrayTranslateTRxx() {return _flags2.testAny(SupportsArrayTranslate);}
    void setSupportsArrayTranslateTRxx() {_flags2.set(SupportsArrayTranslate);}
 
-   bool getSupportsTernary() {return _flags2.testAny(SupportsSelect);}
    bool getSupportsSelect() {return _flags2.testAny(SupportsSelect);}
    void setSupportsSelect() {_flags2.set(SupportsSelect);}
 

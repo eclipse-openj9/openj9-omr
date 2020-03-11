@@ -73,7 +73,6 @@ class OMR_EXTENSIBLE IL
    TR::ILOpCodes opCodeForCorrespondingIndirectLoad(TR::ILOpCodes loadOpCode);
    TR::ILOpCodes opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode);
 
-   TR::ILOpCodes opCodeForTernarySelect(TR::DataType dt);
    TR::ILOpCodes opCodeForSelect(TR::DataType dt);
    TR::ILOpCodes opCodeForConst(TR::DataType dt);
    TR::ILOpCodes opCodeForDirectLoad(TR::DataType dt);

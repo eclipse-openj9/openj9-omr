@@ -462,7 +462,6 @@
    bselect,   //
    sselect,   //
    aselect,   //
-   aternary = aselect,   //
    fselect,   //
    dselect,   //
    treetop,  // tree top to anchor subtrees with side-effects

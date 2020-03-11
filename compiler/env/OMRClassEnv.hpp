@@ -82,6 +82,7 @@ public:
    bool isInterfaceClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazzPointer) { return false; }
    bool isPrimitiveClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return false; }
    bool isAnonymousClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return false; }
+   bool isValueTypeClass(TR_OpaqueClassBlock *) { return false; }
    bool isPrimitiveArray(TR::Compilation *comp, TR_OpaqueClassBlock *) { return false; }
    bool isReferenceArray(TR::Compilation *comp, TR_OpaqueClassBlock *) { return false; }
    bool isClassArray(TR::Compilation *comp, TR_OpaqueClassBlock *) { return false; }

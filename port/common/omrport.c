@@ -307,10 +307,10 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsock_startup, /* sock_startup */
 	omrsock_getaddrinfo_create_hints, /* sock_getaddrinfo_create_hints */
 	omrsock_getaddrinfo, /* sock_getaddrinfo */
-	omrsock_getaddrinfo_length, /* sock_getaddrinfo_length */
-	omrsock_getaddrinfo_family, /* sock_getaddrinfo_family */
-	omrsock_getaddrinfo_socktype, /* sock_getaddrinfo_socktype */
-	omrsock_getaddrinfo_protocol, /* sock_getaddrinfo_protocol */
+	omrsock_addrinfo_length, /* sock_addrinfo_length */
+	omrsock_addrinfo_family, /* sock_addrinfo_family */
+	omrsock_addrinfo_socktype, /* sock_addrinfo_socktype */
+	omrsock_addrinfo_protocol, /* sock_addrinfo_protocol */
 	omrsock_freeaddrinfo, /* sock_freeaddrinfo */
 	omrsock_socket, /* sock_socket */
 	omrsock_bind, /* sock_bind */

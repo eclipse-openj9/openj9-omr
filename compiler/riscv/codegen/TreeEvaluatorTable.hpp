@@ -408,11 +408,11 @@
     TR::TreeEvaluator::iRegStoreEvaluator, // TR::sRegStore		// Store short global register
     TR::TreeEvaluator::iRegStoreEvaluator, // TR::bRegStore		// Store byte global register
     TR::TreeEvaluator::GlRegDepsEvaluator, // TR::GlRegDeps		// Global Register Dependency List
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::iselectEvaluator ,	// TR::iselect		// Select Operator:  Based on the result of the first child; take the value of the
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::lselectEvaluator ,	// TR::lselect		//   second (first child evaluates to true) or third(first child evaluates to false) child
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bselectEvaluator ,	// TR::bselect   
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sselectEvaluator ,	// TR::sselect   
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::aselectEvaluator ,	// TR::aselect   
+    TR::TreeEvaluator::iselectEvaluator ,	// TR::iselect		// Select Operator:  Based on the result of the first child; take the value of the
+    TR::TreeEvaluator::iselectEvaluator ,	// TR::lselect		//   second (first child evaluates to true) or third(first child evaluates to false) child
+    TR::TreeEvaluator::iselectEvaluator ,	// TR::bselect
+    TR::TreeEvaluator::iselectEvaluator ,	// TR::sselect
+    TR::TreeEvaluator::iselectEvaluator ,	// TR::aselect
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fselectEvaluator ,	// TR::fselect   
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dselectEvaluator ,	// TR::dselect   
     TR::TreeEvaluator::treetopEvaluator, // TR::treetop		// tree top to anchor subtrees with side-effects

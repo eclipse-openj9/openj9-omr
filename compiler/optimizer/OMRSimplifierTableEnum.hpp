@@ -323,8 +323,6 @@
    ificmpgeSimplifier,      // TR::ificmpge
    ificmpgtSimplifier,      // TR::ificmpgt
    ificmpleSimplifier,      // TR::ificmple
-   ificmpeqSimplifier,      // TR::ifiucmpeq
-   ificmpneSimplifier,      // TR::ifiucmpne
    ificmpltSimplifier,      // TR::ifiucmplt
    ificmpgeSimplifier,      // TR::ifiucmpge
    ificmpgtSimplifier,      // TR::ifiucmpgt

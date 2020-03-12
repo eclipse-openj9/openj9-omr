@@ -310,8 +310,6 @@
     TR::TreeEvaluator::ificmpgeEvaluator, // TR::ificmpge		// integer compare and branch if greater than or equal
     TR::TreeEvaluator::ificmpgtEvaluator, // TR::ificmpgt		// integer compare and branch if greater than
     TR::TreeEvaluator::ificmpleEvaluator, // TR::ificmple		// integer compare and branch if less than or equal
-    TR::TreeEvaluator::ificmpeqEvaluator, // TR::ifiucmpeq		// unsigned integer compare and branch if equal
-    TR::TreeEvaluator::ificmpneEvaluator, // TR::ifiucmpne		// unsigned integer compare and branch if not equal
     TR::TreeEvaluator::ifiucmpltEvaluator, // TR::ifiucmplt		// unsigned integer compare and branch if less than
     TR::TreeEvaluator::ifiucmpgeEvaluator, // TR::ifiucmpge		// unsigned integer compare and branch if greater than or equal
     TR::TreeEvaluator::ifiucmpgtEvaluator, // TR::ifiucmpgt		// unsigned integer compare and branch if greater than

@@ -462,8 +462,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainIfcmpge,         // TR::ificmpge
    constrainIfcmpgt,         // TR::ificmpgt
    constrainIfcmple,         // TR::ificmple
-   constrainIfcmpeq,         // TR::ifiucmpeq
-   constrainIfcmpne,         // TR::ifiucmpne
    constrainCondBranch,      // TR::ifiucmplt
    constrainCondBranch,      // TR::ifiucmpge
    constrainCondBranch,      // TR::ifiucmpgt

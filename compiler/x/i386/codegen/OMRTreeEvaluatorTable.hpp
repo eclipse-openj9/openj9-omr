@@ -310,8 +310,6 @@
    TR::TreeEvaluator::integerIfCmpgeEvaluator,                         // TR::ificmpge
    TR::TreeEvaluator::integerIfCmpgtEvaluator,                         // TR::ificmpgt
    TR::TreeEvaluator::integerIfCmpleEvaluator,                         // TR::ificmple
-   TR::TreeEvaluator::integerIfCmpeqEvaluator,                         // TR::ifiucmpeq
-   TR::TreeEvaluator::integerIfCmpneEvaluator,                         // TR::ifiucmpne
    TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator,                 // TR::ifiucmplt
    TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator,                 // TR::ifiucmpge
    TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator,                 // TR::ifiucmpgt

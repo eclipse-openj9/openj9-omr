@@ -128,7 +128,6 @@ static TR::Instruction *ificmpHelper(TR::InstOpCode::Mnemonic op, TR::Node *node
    return result;
    }
 
-// also handles ifiucmpeq
 TR::Register *
 OMR::RV::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -136,7 +135,6 @@ OMR::RV::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return NULL;
    }
 
-// also handles ifiucmpne
 TR::Register *
 OMR::RV::TreeEvaluator::ificmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

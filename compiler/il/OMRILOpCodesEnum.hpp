@@ -359,8 +359,6 @@
    ificmpge, // integer compare and branch if greater than or equal
    ificmpgt, // integer compare and branch if greater than
    ificmple, // integer compare and branch if less than or equal
-   ifiucmpeq, // unsigned integer compare and branch if equal
-   ifiucmpne, // unsigned integer compare and branch if not equal
    ifiucmplt, // unsigned integer compare and branch if less than
    ifiucmpge, // unsigned integer compare and branch if greater than or equal
    ifiucmpgt, // unsigned integer compare and branch if greater than

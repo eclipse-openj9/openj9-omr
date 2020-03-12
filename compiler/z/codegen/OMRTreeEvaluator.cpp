@@ -12681,8 +12681,8 @@ TR::InstOpCode::S390BranchCondition getButestBranchCondition(TR::ILOpCodes opCod
          {
                                  /* Condition Code Value */
     /* branch opcode*/  /*        0            1            2            3       */
-    /* TR::ifiucmpeq */     { TR::InstOpCode::COND_MASK8 , TR::InstOpCode::COND_MASK6 , TR::InstOpCode::COND_MASK0 ,  TR::InstOpCode::COND_MASK1  },
-    /* TR::ifiucmpne */     { TR::InstOpCode::COND_MASK7 , TR::InstOpCode::COND_MASK9 , TR::InstOpCode::COND_MASK15,  TR::InstOpCode::COND_MASK14 },
+    /* TR::ificmpeq */      { TR::InstOpCode::COND_MASK8 , TR::InstOpCode::COND_MASK6 , TR::InstOpCode::COND_MASK0 ,  TR::InstOpCode::COND_MASK1  },
+    /* TR::ificmpne */      { TR::InstOpCode::COND_MASK7 , TR::InstOpCode::COND_MASK9 , TR::InstOpCode::COND_MASK15,  TR::InstOpCode::COND_MASK14 },
     /* TR::ifiucmpgt */     { TR::InstOpCode::COND_MASK7 , TR::InstOpCode::COND_MASK1 , TR::InstOpCode::COND_MASK1 ,  TR::InstOpCode::COND_MASK0  },
     /* TR::ifiucmpge */     { TR::InstOpCode::COND_MASK15, TR::InstOpCode::COND_MASK7 , TR::InstOpCode::COND_MASK1 ,  TR::InstOpCode::COND_MASK1  },
     /* TR::ifiucmplt */     { TR::InstOpCode::COND_MASK0 , TR::InstOpCode::COND_MASK8 , TR::InstOpCode::COND_MASK14,  TR::InstOpCode::COND_MASK14 },

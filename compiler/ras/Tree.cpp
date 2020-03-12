@@ -2571,8 +2571,6 @@ int32_t childTypes[] =
    TR::Int32,                     // TR::ificmpge
    TR::Int32,                     // TR::ificmpgt
    TR::Int32,                     // TR::ificmple
-   TR::Int32,                     // TR::ifiucmpeq
-   TR::Int32,                     // TR::ifiucmpne
    TR::Int32,                     // TR::ifiucmplt
    TR::Int32,                     // TR::ifiucmpge
    TR::Int32,                     // TR::ifiucmpgt

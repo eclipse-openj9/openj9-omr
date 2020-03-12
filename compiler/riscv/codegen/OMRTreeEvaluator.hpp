@@ -340,8 +340,6 @@ public:
 	static TR::Register *ificmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ificmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ificmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ifiucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ifiucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifiucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifiucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifiucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);

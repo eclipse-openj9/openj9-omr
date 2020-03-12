@@ -335,8 +335,6 @@
    TR::TreeEvaluator::ificmpgeEvaluator,    // TR::ificmpge
    TR::TreeEvaluator::ificmpgtEvaluator,    // TR::ificmpgt
    TR::TreeEvaluator::ificmpleEvaluator,    // TR::ificmple
-   TR::TreeEvaluator::ificmpeqEvaluator,    // TR::ifiucmpeq
-   TR::TreeEvaluator::ificmpeqEvaluator,    // TR::ifiucmpne : todo
    TR::TreeEvaluator::ificmpltEvaluator,    // TR::ifiucmplt : Temporary place holders till unsigned opcodes are implemented
    TR::TreeEvaluator::ificmpgeEvaluator,    // TR::ifiucmpge
    TR::TreeEvaluator::ificmpgtEvaluator,    // TR::ifiucmpgt

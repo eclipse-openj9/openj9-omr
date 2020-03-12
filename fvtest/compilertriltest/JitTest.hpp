@@ -26,6 +26,7 @@
 #include <vector>
 #include <stdexcept>
 #include <iostream>
+#include <cstring>
 #include "control/Options.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "ilgen/MethodBuilder.hpp"
@@ -606,7 +607,7 @@ class SkipHelper
  * anywhere within the scope of a test, it is best to only use at at the beginning,
  * before the main body of a test.
  *
- * To skip a test, a condition aswell as a "reason" for skipping must be specified.
+ * To skip a test, a condition as well as a "reason" for skipping must be specified.
  * The condition may be any boolean expression. The "reason" must be a value from
  * the `SkipReason` enum (see its documentation for further details). Optionally,
  * a more detailed message can also be specified using the `<<` stream operator;
@@ -623,5 +624,127 @@ class SkipHelper
    if (!(condition)) { /* allow test to proceed normally */ } \
    else \
       return SkipHelper(SkipReason::reason) = ::testing::Message()
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on given platform
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON(<OMRPORT_ARCH_*>, <reason>) << <message>;
+ *
+ */
+#define SKIP_ON(arch, reason) \
+   SKIP_IF(!strcmp(arch, omrsysinfo_get_CPU_architecture()), reason)
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on X86
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_X86(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_X86(reason) \
+   SKIP_ON(OMRPORT_ARCH_X86, reason)
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on POWER
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_PPC(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_PPC(reason) \
+   SKIP_ON(OMRPORT_ARCH_PPC, reason)
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on POWER 64
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_PPC64(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_PPC64(reason) \
+   SKIP_ON(OMRPORT_ARCH_PPC64, reason)
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on POWER 64le
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_PPC64LE(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_PPC64LE(reason) \
+   SKIP_ON(OMRPORT_ARCH_PPC64LE, reason)
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on S390
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_S390(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_S390(reason) \
+   SKIP_ON(OMRPORT_ARCH_S390, reason)
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on S390X
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_S390X(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_S390X(reason) \
+   SKIP_ON(OMRPORT_ARCH_S390X, reason)
+
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on AMD64
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_HAMMER(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_HAMMER(reason) \
+   SKIP_ON(OMRPORT_ARCH_HAMMER, reason)
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on ARM (AArch32)
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_ARM(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_ARM(reason) \
+   SKIP_ON(OMRPORT_ARCH_ARM, reason)
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on AArch64
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_AARCH64(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_AARCH64(reason) \
+   SKIP_ON(OMRPORT_ARCH_AARCH64, reason)
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on RISC-V
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_RISCV(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_RISCV(reason) \
+   SKIP_ON(OMRPORT_ARCH_RISCV, reason)
 
 #endif // JITTEST_HPP

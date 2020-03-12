@@ -112,6 +112,7 @@ static std::vector<std::tuple<T, T>> resultInputs()
 class Int32SelectInt32CompareTest : public SelectTest<int32_t, int32_t> {};
 
 TEST_P(Int32SelectInt32CompareTest, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -140,6 +141,7 @@ TEST_P(Int32SelectInt32CompareTest, UsingLoadParam) {
 }
 
 TEST_P(Int32SelectInt32CompareTest, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -180,6 +182,7 @@ INSTANTIATE_TEST_CASE_P(SelectTest, Int32SelectInt32CompareTest,
 class Int64SelectInt64CompareTest : public SelectTest<int64_t, int64_t> {};
 
 TEST_P(Int64SelectInt64CompareTest, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -208,6 +211,7 @@ TEST_P(Int64SelectInt64CompareTest, UsingLoadParam) {
 }
 
 TEST_P(Int64SelectInt64CompareTest, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -249,6 +253,7 @@ INSTANTIATE_TEST_CASE_P(SelectTest, Int64SelectInt64CompareTest,
 class Int64SelectDoubleCompareTest : public SelectTest<double, int64_t> {};
 
 TEST_P(Int64SelectDoubleCompareTest, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -277,6 +282,7 @@ TEST_P(Int64SelectDoubleCompareTest, UsingLoadParam) {
 }
 
 TEST_P(Int64SelectDoubleCompareTest, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -315,6 +321,7 @@ INSTANTIATE_TEST_CASE_P(SelectTest, Int64SelectDoubleCompareTest,
 class Int32SelectDoubleCompareTest : public SelectTest<double, int32_t> {};
 
 TEST_P(Int32SelectDoubleCompareTest, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -343,6 +350,7 @@ TEST_P(Int32SelectDoubleCompareTest, UsingLoadParam) {
 }
 
 TEST_P(Int32SelectDoubleCompareTest, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -382,6 +390,7 @@ INSTANTIATE_TEST_CASE_P(SelectTest, Int32SelectDoubleCompareTest,
 class ShortSelectDoubleCompareTest : public SelectTest<double, int16_t> {};
 
 TEST_P(ShortSelectDoubleCompareTest, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -411,6 +420,7 @@ TEST_P(ShortSelectDoubleCompareTest, UsingLoadParam) {
 }
 
 TEST_P(ShortSelectDoubleCompareTest, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};

@@ -100,6 +100,7 @@ TEST_P(Int8ToInt32, UsingConst) {
 }
 
 TEST_P(Int8ToInt32, UsingLoadParam) {
+    SKIP_ON_RISCV(KnownBug);
     auto param = TRTest::to_struct(GetParam());
 
     char *inputTrees =
@@ -156,6 +157,7 @@ TEST_P(UInt8ToInt32, UsingConst) {
 }
 
 TEST_P(UInt8ToInt32, UsingLoadParam) {
+    SKIP_ON_RISCV(KnownBug);
     auto param = TRTest::to_struct(GetParam());
 
     char *inputTrees =
@@ -212,6 +214,7 @@ TEST_P(Int8ToInt64, UsingConst) {
 }
 
 TEST_P(Int8ToInt64, UsingLoadParam) {
+    SKIP_ON_RISCV(KnownBug);
     auto param = TRTest::to_struct(GetParam());
 
     char *inputTrees =
@@ -268,6 +271,7 @@ TEST_P(UInt8ToInt64, UsingConst) {
 }
 
 TEST_P(UInt8ToInt64, UsingLoadParam) {
+    SKIP_ON_RISCV(KnownBug);
     auto param = TRTest::to_struct(GetParam());
 
     char *inputTrees =
@@ -324,6 +328,7 @@ TEST_P(Int16ToInt32, UsingConst) {
 }
 
 TEST_P(Int16ToInt32, UsingLoadParam) {
+    SKIP_ON_RISCV(KnownBug);
     auto param = TRTest::to_struct(GetParam());
 
     char *inputTrees =
@@ -380,6 +385,7 @@ TEST_P(UInt16ToInt32, UsingConst) {
 }
 
 TEST_P(UInt16ToInt32, UsingLoadParam) {
+    SKIP_ON_RISCV(KnownBug);
     auto param = TRTest::to_struct(GetParam());
 
     char *inputTrees =
@@ -436,6 +442,7 @@ TEST_P(Int16ToInt64, UsingConst) {
 }
 
 TEST_P(Int16ToInt64, UsingLoadParam) {
+    SKIP_ON_RISCV(KnownBug);
     auto param = TRTest::to_struct(GetParam());
 
     char *inputTrees =
@@ -492,6 +499,7 @@ TEST_P(UInt16ToInt64, UsingConst) {
 }
 
 TEST_P(UInt16ToInt64, UsingLoadParam) {
+    SKIP_ON_RISCV(KnownBug);
     auto param = TRTest::to_struct(GetParam());
 
     char *inputTrees =
@@ -604,6 +612,8 @@ TEST_P(UInt32ToInt64, UsingConst) {
 }
 
 TEST_P(UInt32ToInt64, UsingLoadParam) {
+    SKIP_ON_RISCV(KnownBug);
+
     auto param = TRTest::to_struct(GetParam());
 
     char *inputTrees =
@@ -1402,9 +1412,9 @@ class NormalizeNanTest : public TRTest::JitTest, public ::testing::WithParamInte
 class FloatNormalizeNan : public NormalizeNanTest<uint32_t> {};
 
 TEST_P(FloatNormalizeNan, UsingLoadIndirect) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_RISCV(KnownBug);
 
     char *inputTrees =
         "(method return=Int32 args=[Address]"
@@ -1427,9 +1437,9 @@ TEST_P(FloatNormalizeNan, UsingLoadIndirect) {
 }
 
 TEST_P(FloatNormalizeNan, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_RISCV(KnownBug);
 
     char *inputTrees =
         "(method return=Int32 args=[Int32]"
@@ -1453,9 +1463,9 @@ TEST_P(FloatNormalizeNan, UsingLoadParam) {
 }
 
 TEST_P(FloatNormalizeNan, UsingLoadConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_RISCV(KnownBug);
 
     uint32_t value = GetParam();
 
@@ -1485,9 +1495,9 @@ INSTANTIATE_TEST_CASE_P(TypeConversionTest, FloatNormalizeNan, ::testing::Values
 class DoubleNormalizeNan : public NormalizeNanTest<uint64_t> {};
 
 TEST_P(DoubleNormalizeNan, UsingLoadIndirect) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_RISCV(KnownBug);
 
     char *inputTrees =
         "(method return=Int64 args=[Address]"
@@ -1510,9 +1520,9 @@ TEST_P(DoubleNormalizeNan, UsingLoadIndirect) {
 }
 
 TEST_P(DoubleNormalizeNan, UsingLoadParam) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_RISCV(KnownBug);
 
     char *inputTrees =
         "(method return=Int64 args=[Int64]"
@@ -1536,9 +1546,9 @@ TEST_P(DoubleNormalizeNan, UsingLoadParam) {
 }
 
 TEST_P(DoubleNormalizeNan, UsingLoadConst) {
-    std::string arch = omrsysinfo_get_CPU_architecture();
-    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
-        << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when specifying the mustNormalizeNanValues flag (see issue #4381)";
+    SKIP_ON_RISCV(KnownBug);
 
     uint64_t value = GetParam();
 

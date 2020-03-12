@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -937,6 +937,8 @@ int32_t iffcmpgt(float l, float r) {
 class FloatIfCompare : public TRTest::OpCodeTest<int32_t, float, float> {};
 
 TEST_P(FloatIfCompare, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[256] = {0};
@@ -965,6 +967,8 @@ TEST_P(FloatIfCompare, UsingConst) {
 }
 
 TEST_P(FloatIfCompare, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[256] = {0};
@@ -1031,6 +1035,8 @@ int32_t ifdcmpgt(double l, double r) {
 class DoubleIfCompare : public TRTest::OpCodeTest<int32_t, double, double> {};
 
 TEST_P(DoubleIfCompare, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[1024] = {0};
@@ -1059,6 +1065,8 @@ TEST_P(DoubleIfCompare, UsingConst) {
 }
 
 TEST_P(DoubleIfCompare, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[256] = {0};

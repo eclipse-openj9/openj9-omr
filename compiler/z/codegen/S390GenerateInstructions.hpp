@@ -1522,4 +1522,29 @@ void generateShiftAndKeepSelected31Bit(
       int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode);
 
 TR::Instruction *generateZeroVector(TR::Node *node, TR::CodeGenerator *cg, TR::Register *vecZeroReg);
+
+/** \brief
+ *     Generates an alignment NOP (no-operation) pseudo-instruction in the instruction stream which will expand into
+ *     an appropriate number of NOP instructions at binary encoding time to satisfy the specified alignment.
+ *
+ *  \param cg
+ *     The code generator used to generate the instructions.
+ *
+ *  \param node
+ *     The node with which the generated instruction will be associated.
+ *
+ *  \param alignment
+ *     The alignment at which the next instruction in the instruction stream will be encoded at. For example specifying
+ *     a value of 16 will ensure that the binary encoding location of the subsequent instruction will be 16-byte
+ *     aligned, i.e. the low order four bits will be zero.
+ *
+ *  \param preced
+ *     The preceeding instruction to link the generated data constant instruction with.
+ *
+ *  \return
+ *     The generated instruction.
+ */
+TR::Instruction*
+generateAlignmentNopInstruction(TR::CodeGenerator *cg, TR::Node *node, uint32_t alignment, TR::Instruction *preced = NULL);
+
 #endif

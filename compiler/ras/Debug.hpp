@@ -308,6 +308,7 @@ namespace TR { class S390SInstruction; }
 namespace TR { class S390SIInstruction; }
 namespace TR { class S390SILInstruction; }
 namespace TR { class S390NOPInstruction; }
+namespace TR { class S390AlignmentNopInstruction; }
 namespace TR { class S390RestoreGPR7Snippet; }
 namespace TR { class S390CallSnippet; }
 namespace TR { class S390ConstantDataSnippet; }
@@ -1053,6 +1054,7 @@ public:
    void print(TR::FILE *, TR::S390AnnotationInstruction *);
    void print(TR::FILE *, TR::S390PseudoInstruction *);
    void print(TR::FILE *, TR::S390NOPInstruction *);
+   void print(TR::FILE *, TR::S390AlignmentNopInstruction *);
    void print(TR::FILE *, TR::MemoryReference *, TR::Instruction *);
    void print(TR::FILE *, TR::S390RRSInstruction *);
    void print(TR::FILE *, TR::S390RIEInstruction *);

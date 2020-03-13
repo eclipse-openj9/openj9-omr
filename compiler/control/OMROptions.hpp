@@ -325,7 +325,7 @@ enum TR_CompilationOptions
    TR_DisableTOC                          = 0x08000000 + 7,
    TR_UseLowPriorityQueueDuringCLP        = 0x10000000 + 7,
    TR_DisableVectorBCD                    = 0x20000000 + 7,
-   // Available                           = 0x40000000 + 7,
+   TR_RealTimeGC                          = 0x40000000 + 7,
    TR_DisableTraps                        = 0x80000000 + 7,
 
    // Option word 8
@@ -1909,8 +1909,8 @@ public:
    void setActiveCardTableBase(uintptr_t b) { _activeCardTableBase = b; }
    uintptr_t getActiveCardTableBase() { return _activeCardTableBase; }
 
-   void setRealTimeGC(bool m)            { _realTimeGC = m; }
-   inline bool realTimeGC()              { return _realTimeGC; }
+   void setRealTimeGC(bool m);
+   bool realTimeGC();
 
    static void setSharedClassCache(bool c){ _sharedClassCache = c; }
    inline static bool sharedClassCache()  { return _sharedClassCache; }
@@ -2298,8 +2298,6 @@ protected:
    bool                        _isVariableHeapBaseForBarrierRange0;
    bool                        _isVariableHeapSizeForBarrierRange0;
    bool                        _isVariableActiveCardTableBase;
-
-   static bool                 _realTimeGC;
 
    static bool                 _sharedClassCache;
 

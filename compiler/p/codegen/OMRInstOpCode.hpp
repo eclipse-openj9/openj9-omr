@@ -183,6 +183,8 @@ class InstOpCode: public OMR::InstOpCode
                                _mnemonic==assocreg ||
                                _mnemonic==dd;}
 
+        const char* getMnemonicName() { return metadata[_mnemonic].name; }
+
         static const uint32_t getOpCodeBinaryEncoding(Mnemonic opCode)
            {return metadata[opCode].opcode;}
         const uint32_t getOpCodeBinaryEncoding()

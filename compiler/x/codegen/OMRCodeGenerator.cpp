@@ -401,6 +401,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
          }
       }
 
+   self()->setSupportsRecompilation();
    self()->setSupportsScaledIndexAddressing();
    self()->setSupportsConstantOffsetInAddressing();
    self()->setSupportsCompactedLocals();

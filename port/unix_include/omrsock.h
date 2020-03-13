@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,33 +20,35 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#if !defined(OMRPORTSOCK_H_)
-#define OMRPORTSOCK_H_
+#if !defined(OMRSOCK_H_)
+#define OMRSOCK_H_
 
-/* Pointer to OMRAddInfoNode, a struct that contains addrinfo information. */
-typedef struct OMRAddrInfoNode *omrsock_addrinfo_t;
+/* According to AIX documentation, this file is needed. */
+#if defined(OMR_OS_AIX)
+#include <sys/socketvar.h>
+#endif
 
-/* Pointer to OMRSockAddrStorage, a struct that contains socket address
- * information. It has enough space for Ipv4 or IPv6 addresses. 
- */
-typedef struct OMRSockAddrStorage *omrsock_sockaddr_t;
+/* According to ZOS documentation, this definition is needed. */
+#if defined(OMR_OS_ZOS) && !defined(_OE_SOCKETS)
+#define _OE_SOCKETS
+#endif
 
-/* Pointer to OMRSocket, a struct that contains socket descriptor. */
-typedef struct OMRSocket *omrsock_socket_t;
+#include <sys/types.h> /* Some historical implementations need this file, POSIX.1-2001 does not. */
+#include <sys/socket.h>
 
 /* Address Family */
-#define OMRSOCK_AF_UNSPEC 0
-#define OMRSOCK_AF_INET 1
-#define OMRSOCK_AF_INET6 2
+#define OS_SOCK_AF_UNSPEC AF_UNSPEC
+#define OS_SOCK_AF_INET AF_INET
+#define OS_SOCK_AF_INET6 AF_INET6
 
 /* Socket types */
-#define OMRSOCK_ANY 0
-#define OMRSOCK_STREAM 1
-#define OMRSOCK_DGRAM 2
+#define OS_SOCK_ANY 0
+#define OS_SOCK_STREAM SOCK_STREAM
+#define OS_SOCK_DGRAM SOCK_DGRAM
 
-/* Protocol Family */
-#define OMRSOCK_IPPROTO_DEFAULT 0
-#define OMRSOCK_IPPROTO_TCP 1
-#define OMRSOCK_IPPROTO_UDP 2
+/* Protocol */
+#define OS_SOCK_IPPROTO_DEFAULT 0
+#define OS_SOCK_IPPROTO_TCP IPPROTO_TCP
+#define OS_SOCK_IPPROTO_UDP IPPROTO_UDP
 
-#endif /* !defined(OMRPORTSOCK_H_) */
+#endif /* !defined(OMRSOCK_H_) */

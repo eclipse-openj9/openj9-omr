@@ -1318,7 +1318,7 @@ OMR::Node::createRelative32BitFenceNode(TR::Node * originatingByteCodeNode, void
 
 
 TR::Node *
-OMR::Node::createAddressNode(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uintptrj_t address, uint8_t precision)
+OMR::Node::createAddressNode(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uintptr_t address, uint8_t precision)
    {
    TR::Node *node = TR::Node::create(originatingByteCodeNode, op, 0, 0);
    node->setAddress(address);
@@ -1326,7 +1326,7 @@ OMR::Node::createAddressNode(TR::Node *originatingByteCodeNode, TR::ILOpCodes op
    }
 
 TR::Node *
-OMR::Node::createAddressNode(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uintptrj_t address)
+OMR::Node::createAddressNode(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uintptr_t address)
    {
    TR::Node *node = TR::Node::create(originatingByteCodeNode, op, 0, 0);
    node->setAddress(address);
@@ -1405,19 +1405,19 @@ OMR::Node::lconst(int64_t val)
 
 
 TR::Node *
-OMR::Node::aconst(TR::Node *originatingByteCodeNode, uintptrj_t val)
+OMR::Node::aconst(TR::Node *originatingByteCodeNode, uintptr_t val)
    {
    return TR::Node::createAddressNode(originatingByteCodeNode, TR::aconst, val);
    }
 
 TR::Node *
-OMR::Node::aconst(TR::Node *originatingByteCodeNode, uintptrj_t val, uint8_t precision)
+OMR::Node::aconst(TR::Node *originatingByteCodeNode, uintptr_t val, uint8_t precision)
    {
    return TR::Node::createAddressNode(originatingByteCodeNode, TR::aconst, val, precision);
    }
 
 TR::Node *
-OMR::Node::aconst(uintptrj_t val)
+OMR::Node::aconst(uintptr_t val)
    {
    return TR::Node::aconst(0, val);
    }
@@ -1500,7 +1500,7 @@ OMR::Node::createConstOne(TR::Node *originatingByteCodeNode, TR::DataType dt)
    }
 
 TR::Node *
-OMR::Node::createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, intptrj_t extraData)
+OMR::Node::createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, intptr_t extraData)
    {
    TR::Node *result = NULL;
    const int8_t dead8 = (int8_t)((extraData << 4) | 0xD);

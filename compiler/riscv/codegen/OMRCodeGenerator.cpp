@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -402,7 +402,7 @@ void OMR::RV::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t *cursor, 
    // for "b.cond" instruction
    TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
 
-   intptrj_t distance = (uintptrj_t)label->getCodeLocation() - (uintptrj_t)cursor;
+   intptr_t distance = (uintptr_t)label->getCodeLocation() - (uintptr_t)cursor;
 
    TR_ASSERT(VALID_SBTYPE_IMM(distance), "Invalid Branch offset out of range");
    *cursor |= ENCODE_SBTYPE_IMM(distance);
@@ -423,7 +423,7 @@ void OMR::RV::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t *cursor, 
    // for "b.cond" instruction
    TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
 
-   intptrj_t distance = (uintptrj_t)label->getCodeLocation() - (uintptrj_t)cursor;
+   intptr_t distance = (uintptr_t)label->getCodeLocation() - (uintptr_t)cursor;
 
    TR_ASSERT(VALID_UJTYPE_IMM(distance), "Invalid Branch offset out of range");
    *cursor |= ENCODE_UJTYPE_IMM(distance);

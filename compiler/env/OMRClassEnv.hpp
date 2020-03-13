@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -63,7 +63,7 @@ public:
 
    // Depth of a class from the base class in a hierarchy.
    //
-   uintptrj_t classDepthOf(TR_OpaqueClassBlock *clazzPointer) { return 0; }
+   uintptr_t classDepthOf(TR_OpaqueClassBlock *clazzPointer) { return 0; }
 
    // Is specified class a string class?
    //
@@ -71,12 +71,12 @@ public:
 
    // Is specified object a string class?
    //
-   bool isStringClass(uintptrj_t objectPointer) { return false; }
+   bool isStringClass(uintptr_t objectPointer) { return false; }
 
    // Class of specified object address
    //
-   TR_OpaqueClassBlock *classOfObject(OMR_VMThread *vmThread, uintptrj_t objectPointer) { return NULL; }
-   TR_OpaqueClassBlock *classOfObject(TR::Compilation *comp, uintptrj_t objectPointer) { return NULL; }
+   TR_OpaqueClassBlock *classOfObject(OMR_VMThread *vmThread, uintptr_t objectPointer) { return NULL; }
+   TR_OpaqueClassBlock *classOfObject(TR::Compilation *comp, uintptr_t objectPointer) { return NULL; }
 
    bool isAbstractClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazzPointer) { return false; }
    bool isInterfaceClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazzPointer) { return false; }
@@ -91,18 +91,18 @@ public:
    bool hasFinalFieldsInClass(TR::Compilation *comp, TR_OpaqueClassBlock *classPointer) { return false; }
    bool sameClassLoaders(TR::Compilation *comp, TR_OpaqueClassBlock *, TR_OpaqueClassBlock *) { return false; }
    bool isString(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return false; }
-   bool isString(TR::Compilation *comp, uintptrj_t objectPointer) { return false; }
+   bool isString(TR::Compilation *comp, uintptr_t objectPointer) { return false; }
    bool jitStaticsAreSame(TR::Compilation *comp, TR_ResolvedMethod * method1, int32_t cpIndex1, TR_ResolvedMethod * method2, int32_t cpIndex2) { return false; }
    bool jitFieldsAreSame(TR::Compilation *comp, TR_ResolvedMethod * method1, int32_t cpIndex1, TR_ResolvedMethod * method2, int32_t cpIndex2, int32_t isStatic) { return false; }
 
-   uintptrj_t getArrayElementWidthInBytes(TR::Compilation *comp, TR_OpaqueClassBlock* arrayClass);
+   uintptr_t getArrayElementWidthInBytes(TR::Compilation *comp, TR_OpaqueClassBlock* arrayClass);
 
-   uintptrj_t persistentClassPointerFromClassPointer(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return 0; }
-   TR_OpaqueClassBlock *objectClass(TR::Compilation *comp, uintptrj_t objectPointer) { return NULL; }
-   TR_OpaqueClassBlock *classFromJavaLangClass(TR::Compilation *comp, uintptrj_t objectPointer) { return NULL; }
+   uintptr_t persistentClassPointerFromClassPointer(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return 0; }
+   TR_OpaqueClassBlock *objectClass(TR::Compilation *comp, uintptr_t objectPointer) { return NULL; }
+   TR_OpaqueClassBlock *classFromJavaLangClass(TR::Compilation *comp, uintptr_t objectPointer) { return NULL; }
 
    // 0 <= index < getStringLength
-   uint16_t getStringCharacter(TR::Compilation *comp, uintptrj_t objectPointer, int32_t index) { return 0; }
+   uint16_t getStringCharacter(TR::Compilation *comp, uintptr_t objectPointer, int32_t index) { return 0; }
    bool getStringFieldByName(TR::Compilation *, TR::SymbolReference *stringRef, TR::SymbolReference *fieldRef, void* &pResult) { return false; }
 
    int32_t vTableSlot(TR::Compilation *comp, TR_OpaqueMethodBlock *, TR_OpaqueClassBlock *) { return 0; }
@@ -123,7 +123,7 @@ public:
     * @param offset An offset into the virtual function table (VFT) of clazz
     * @return The entry point of the method at the given offset
     */
-   intptrj_t getVFTEntry(TR::Compilation *comp, TR_OpaqueClassBlock* clazz, int32_t offset);
+   intptr_t getVFTEntry(TR::Compilation *comp, TR_OpaqueClassBlock* clazz, int32_t offset);
 
    bool classUnloadAssumptionNeedsRelocation(TR::Compilation *comp);
 

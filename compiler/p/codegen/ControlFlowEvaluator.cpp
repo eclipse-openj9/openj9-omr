@@ -2949,7 +2949,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
    else
       dataTable =  (int32_t *)cg->allocateCodeMemory(dataTableSize, cg->getCurrentEvaluationBlock()->isCold());
 
-   intptrj_t   address = isInt64 ? ((intptrj_t) dataTable64) : ((intptrj_t)dataTable);
+   intptr_t   address = isInt64 ? ((intptr_t) dataTable64) : ((intptr_t)dataTable);
    TR::Register *selector = cg->evaluate(node->getFirstChild());
    TR::Register *cndRegister = cg->allocateRegister(TR_CCR);
    TR::Register *addrRegister = cg->allocateRegister();
@@ -3227,17 +3227,17 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    bool        two_reg = isInt64 && cg->comp()->target().is32Bit();
    int32_t *dataTable = NULL;
    int64_t *dataTable64 = NULL;
-   intptrj_t  address = NULL;
+   intptr_t  address = NULL;
    if (isInt64)
       {
       dataTableSize *= 2;
       dataTable64 =  (int64_t *)cg->allocateCodeMemory(dataTableSize, cg->getCurrentEvaluationBlock()->isCold());
-      address = (intptrj_t)dataTable64;
+      address = (intptr_t)dataTable64;
       }
    else
       {
       dataTable =  (int32_t *)cg->allocateCodeMemory(dataTableSize, cg->getCurrentEvaluationBlock()->isCold());
-      address = (intptrj_t)dataTable;
+      address = (intptr_t)dataTable;
       }
 
    TR::Register *selector = cg->evaluate(node->getFirstChild());

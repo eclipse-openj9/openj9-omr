@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -101,8 +101,8 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
       // Generate LARL r14, <Start of Data Const>
       *(int16_t *) cursor = 0xC0E0;
       cursor += sizeof(int16_t);
-      intptrj_t destAddr = (intptrj_t)(cursor + self()->getPICBinaryLength(cg) + self()->getPadBytes() - 2);
-      *(int32_t *) cursor = (int32_t)((destAddr - (intptrj_t)(cursor - 2)) / 2);
+      intptr_t destAddr = (intptr_t)(cursor + self()->getPICBinaryLength(cg) + self()->getPadBytes() - 2);
+      *(int32_t *) cursor = (int32_t)((destAddr - (intptr_t)(cursor - 2)) / 2);
       cursor += sizeof(int32_t);
 
       // L/LG  rEP, 0(r14)
@@ -126,7 +126,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
    else
       {
       // Generate BRASL instruction.
-      intptrj_t instructionStartAddress = (intptrj_t)cursor;
+      intptr_t instructionStartAddress = (intptr_t)cursor;
       *(int16_t *) cursor = 0xC0E5;
       cursor += sizeof(int16_t);
 
@@ -134,7 +134,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
       // If MCC is not supported, everything should be reachable.
       // If MCC is supported, we will look up the appropriate trampoline, if
       //     necessary.
-      intptrj_t destAddr = (intptrj_t)(glueRef->getSymbol()->castToMethodSymbol()->getMethodAddress());
+      intptr_t destAddr = (intptr_t)(glueRef->getSymbol()->castToMethodSymbol()->getMethodAddress());
 
 #if defined(TR_TARGET_64BIT)
 #if defined(J9ZOS390)

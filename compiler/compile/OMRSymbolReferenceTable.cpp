@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -991,13 +991,13 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptrj_t *referenceLocation)
+OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation)
    {
    return findOrCreateSymRefWithKnownObject(original, referenceLocation, false);
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptrj_t *referenceLocation, bool isArrayWithConstantElements)
+OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation, bool isArrayWithConstantElements)
    {
    TR::KnownObjectTable *knot = comp()->getOrCreateKnownObjectTable();
    if (!knot)
@@ -1145,14 +1145,14 @@ OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbol()
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector)
+OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbolReference(intptr_t offset, bool allocateUseDefBitVector)
    {
    //FIXME: we should attempt to find it
    return createGenericIntShadowSymbolReference(offset, allocateUseDefBitVector);
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector)
+OMR::SymbolReferenceTable::createGenericIntShadowSymbolReference(intptr_t offset, bool allocateUseDefBitVector)
    {
    TR::SymbolReference * symRef = new (trHeapMemory()) TR::SymbolReference(self(), findOrCreateGenericIntShadowSymbol(), comp()->getMethodSymbol()->getResolvedMethodIndex(), -1);
    symRef->setOffset(offset);
@@ -1169,7 +1169,7 @@ OMR::SymbolReferenceTable::createGenericIntShadowSymbolReference(intptrj_t offse
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateGenericIntArrayShadowSymbolReference(intptrj_t offset)
+OMR::SymbolReferenceTable::findOrCreateGenericIntArrayShadowSymbolReference(intptr_t offset)
    {
    TR::SymbolReference * symRef = new (trHeapMemory()) TR::SymbolReference(self(), findOrCreateGenericIntShadowSymbol(), comp()->getMethodSymbol()->getResolvedMethodIndex(), -1);
    symRef->setOffset(offset);
@@ -1181,7 +1181,7 @@ OMR::SymbolReferenceTable::findOrCreateGenericIntArrayShadowSymbolReference(intp
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateGenericIntNonArrayShadowSymbolReference(intptrj_t offset)
+OMR::SymbolReferenceTable::findOrCreateGenericIntNonArrayShadowSymbolReference(intptr_t offset)
    {
    TR::SymbolReference * symRef = new (trHeapMemory()) TR::SymbolReference(self(), findOrCreateGenericIntShadowSymbol(), comp()->getMethodSymbol()->getResolvedMethodIndex(), -1);
    symRef->setOffset(offset);
@@ -1852,7 +1852,7 @@ OMR::SymbolReferenceTable::findOrCreateCounterSymRef(char *name, TR::DataType d,
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createSymbolReference(TR::Symbol *sym, intptrj_t offset)
+OMR::SymbolReferenceTable::createSymbolReference(TR::Symbol *sym, intptr_t offset)
    {
    TR::SymbolReference *ref = new (trHeapMemory()) TR::SymbolReference(self(), sym, offset);
    ref->setSymbol(sym);

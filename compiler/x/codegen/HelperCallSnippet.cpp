@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -132,9 +132,9 @@ TR::X86HelperCallSnippet::addMetaDataForLoadAddrArg(
            || cg()->wantToPatchClassPointer((TR_OpaqueClassBlock*)sym->getStaticAddress(), buffer)))
       {
       if (cg()->comp()->target().is64Bit())
-         cg()->jitAddPicToPatchOnClassRedefinition(((void *) (uintptrj_t)sym->getStaticAddress()), (void *) buffer);
+         cg()->jitAddPicToPatchOnClassRedefinition(((void *) (uintptr_t)sym->getStaticAddress()), (void *) buffer);
       else
-         cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *) (uintptrj_t)sym->getStaticAddress()), (void *) buffer);
+         cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *) (uintptr_t)sym->getStaticAddress()), (void *) buffer);
       }
 
    }
@@ -226,7 +226,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
                TR::StaticSymbol *sym = child->getSymbol()->getStaticSymbol();
                TR_ASSERT(sym, "Bad argument to helper call");
                *buffer++ = 0x68; // push   imm4   argValue
-               *(uint32_t *)buffer = (uint32_t)(uintptrj_t)sym->getStaticAddress();
+               *(uint32_t *)buffer = (uint32_t)(uintptr_t)sym->getStaticAddress();
 
                addMetaDataForLoadAddrArg(buffer, child);
 
@@ -268,7 +268,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
    //
    if (_alignCallDisplacementForPatching && cg()->comp()->target().isSMP())
       {
-      uintptrj_t mod = (uintptrj_t)(buffer) % cg()->getInstructionPatchAlignmentBoundary();
+      uintptr_t mod = (uintptr_t)(buffer) % cg()->getInstructionPatchAlignmentBoundary();
       mod = cg()->getInstructionPatchAlignmentBoundary() - mod;
 
       if (mod <= 4)
@@ -488,10 +488,10 @@ int32_t TR::X86HelperCallSnippet::branchDisplacementToHelper(
    TR::SymbolReference *helper,
    TR::CodeGenerator   *cg)
    {
-   intptrj_t helperAddress = (intptrj_t)helper->getMethodAddress();
-   intptrj_t nextInstructionAddress = (intptrj_t)(callInstructionAddress + 5);
+   intptr_t helperAddress = (intptr_t)helper->getMethodAddress();
+   intptr_t nextInstructionAddress = (intptr_t)(callInstructionAddress + 5);
 
-   if (cg->directCallRequiresTrampoline(helperAddress, (intptrj_t)callInstructionAddress))
+   if (cg->directCallRequiresTrampoline(helperAddress, (intptr_t)callInstructionAddress))
       {
       helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(helper->getReferenceNumber(), (void *)(callInstructionAddress+1));
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -49,7 +49,7 @@ int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
    {
    TR::Compilation *comp = cg()->comp();
 
-   intptrj_t   ain, aex;
+   intptr_t   ain, aex;
 
    int32_t ret = 0;
 
@@ -57,10 +57,10 @@ int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
       {
       case TR::Address:
          {
-         ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
-         TR::ARMConstant<intptrj_t>                 *acursor=aiterator.getFirst();
+         ListIterator< TR::ARMConstant<intptr_t> >  aiterator(&_addressConstants);
+         TR::ARMConstant<intptr_t>                 *acursor=aiterator.getFirst();
 
-         ain = *(intptrj_t *)v;
+         ain = *(intptr_t *)v;
          while (acursor != NULL)
             {
              aex = acursor->getConstantValue();
@@ -78,7 +78,7 @@ int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
             }
          if (acursor == NULL)
             {
-            acursor = new (_cg->trHeapMemory()) TR::ARMConstant<intptrj_t>(_cg, ain, node, isUnloadablePicSite);
+            acursor = new (_cg->trHeapMemory()) TR::ARMConstant<intptr_t>(_cg, ain, node, isUnloadablePicSite);
             _addressConstants.add(acursor);
             }
             acursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
@@ -94,8 +94,8 @@ int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
 bool TR::ARMConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, TR::Instruction **q, bool remove)
    {
    int32_t count = cg()->comp()->target().is64Bit()?4:2;
-   ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
-   TR::ARMConstant<intptrj_t>               *acursor=aiterator.getFirst();
+   ListIterator< TR::ARMConstant<intptr_t> >  aiterator(&_addressConstants);
+   TR::ARMConstant<intptr_t>               *acursor=aiterator.getFirst();
    while (acursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = acursor->getRequestors();
@@ -146,7 +146,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
    uint8_t   *codeCursor = cg()->getBinaryBufferCursor();
    uint8_t   *iloc1, *iloc2, *iloc3, *iloc4;
    int32_t    i, size, count;
-   intptrj_t  addr;
+   intptr_t  addr;
    double     dconv;
    uint64_t   i64;
    float      fconv;
@@ -172,7 +172,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
             {
             iloc1 = requestors[i]->getBinaryEncoding();
             iloc2 = requestors[i+1]->getBinaryEncoding();
-            addr = (intptrj_t)codeCursor;
+            addr = (intptr_t)codeCursor;
             if (count==4)
                {
                iloc3 = requestors[i+2]->getBinaryEncoding();
@@ -235,7 +235,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
             {
             iloc1 = requestors[i]->getBinaryEncoding();
             iloc2 = requestors[i+1]->getBinaryEncoding();
-            addr = (intptrj_t)codeCursor;
+            addr = (intptr_t)codeCursor;
             if (count==4)
                {
                iloc3 = requestors[i+2]->getBinaryEncoding();
@@ -278,15 +278,15 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
       }
 #endif
 
-   ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
-   TR::ARMConstant<intptrj_t>               *acursor=aiterator.getFirst();
+   ListIterator< TR::ARMConstant<intptr_t> >  aiterator(&_addressConstants);
+   TR::ARMConstant<intptr_t>               *acursor=aiterator.getFirst();
    while (acursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = acursor->getRequestors();
       size = requestors.size();
       if (size > 0)
          {
-         *(intptrj_t *)codeCursor = acursor->getConstantValue();
+         *(intptr_t *)codeCursor = acursor->getConstantValue();
          if (cg()->profiledPointersRequireRelocation())
             {
             TR::Node *node = acursor->getNode();
@@ -327,7 +327,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
          TR_ASSERT(size%count == 0, "Requestors are paired.\n");
          for (i=0; i<size; i+=count)
             {
-            addr = (intptrj_t)codeCursor;
+            addr = (intptr_t)codeCursor;
             iloc1 = requestors[i]->getBinaryEncoding();
             iloc2 = requestors[i+1]->getBinaryEncoding();
             iloc3 = requestors[i+2]->getBinaryEncoding();
@@ -352,7 +352,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
                                          requestors[i]->getNode());
                }
             }
-         codeCursor += sizeof(intptrj_t);
+         codeCursor += sizeof(intptr_t);
          }
       acursor = aiterator.getNext();
       }
@@ -380,8 +380,8 @@ void TR::ARMConstantDataSnippet::print(TR::FILE *outFile)
 
    trfprintf(outFile, "\n%08x\t\t\t\t\t; Constant Data", codeCursor-codeStart);
 
-   ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
-   TR::ARMConstant<intptrj_t>                 *acursor=aiterator.getFirst();
+   ListIterator< TR::ARMConstant<intptr_t> >  aiterator(&_addressConstants);
+   TR::ARMConstant<intptr_t>                 *acursor=aiterator.getFirst();
    while (acursor != NULL)
       {
       if (acursor->getRequestors().size()>0)

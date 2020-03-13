@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -887,13 +887,13 @@ TR::X86SystemLinkage::layoutTypeOnStack(
    }
 
 
-intptrj_t TR::X86SystemLinkage::entryPointFromCompiledMethod()
+intptr_t TR::X86SystemLinkage::entryPointFromCompiledMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 
-intptrj_t TR::X86SystemLinkage::entryPointFromInterpretedMethod()
+intptr_t TR::X86SystemLinkage::entryPointFromInterpretedMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 

@@ -40,7 +40,7 @@ typedef union ParmValue
    int64_t parmLong;
    int16_t parmShort;
    int8_t parmByte;
-   uintptrj_t parmAddress;
+   uintptr_t parmAddress;
    double parmDouble;
    float parmFloat;
 } ParmValue;
@@ -97,7 +97,7 @@ class OpIlInjector : public TR::IlInjector
       pnode->value.parmShort = value;
       _optArgs[slot-1] = pnode;
       }
-   virtual void aconstParm(uint32_t slot, uintptrj_t value)
+   virtual void aconstParm(uint32_t slot, uintptr_t value)
       {
       TR_ASSERT(slot > 0 && slot <= _numOptArgs, "aconstParm: slot %d should be greater than 0 and less than _numOptArgs %d\n", slot, _numOptArgs);
       ParmNode *pnode = new ParmNode(ParmAddress);

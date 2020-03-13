@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -119,7 +119,7 @@ class ArraycopyTransformation : public TR::Optimization
 
    TR::TreeTop* createMultipleArrayNodes(TR::TreeTop* arrayTreeTop, TR::Node* node);
    TR::TreeTop* tryToSpecializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode);
-   TR::TreeTop* specializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode, uintptrj_t lengthInBytes,
+   TR::TreeTop* specializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode, uintptr_t lengthInBytes,
          TR::SymbolReference *srcRef,
          TR::SymbolReference *dstRef,
          TR::SymbolReference *lenRef,

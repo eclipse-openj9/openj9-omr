@@ -1151,7 +1151,7 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
       symRefObjIndex.append( " (obj%d)", (int)symRef->getKnownObjectIndex());
    else if (sym && sym->isFixedObjectRef() && comp()->getKnownObjectTable() && !symRef->isUnresolved())
       {
-      TR::KnownObjectTable::Index i = comp()->getKnownObjectTable()->getExistingIndexAt((uintptrj_t*)sym->castToStaticSymbol()->getStaticAddress());
+      TR::KnownObjectTable::Index i = comp()->getKnownObjectTable()->getExistingIndexAt((uintptr_t*)sym->castToStaticSymbol()->getStaticAddress());
       if (i != TR::KnownObjectTable::UNKNOWN)
          symRefObjIndex.append( " (==obj%d)", (int)i);
       }
@@ -1919,20 +1919,20 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
          {
          TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
          char *contents = NULL;
-         intptrj_t length = 0, prefixLength = 0, suffixOffset = 0;
+         intptr_t length = 0, prefixLength = 0, suffixOffset = 0;
          char *etc = "";
-         const intptrj_t LENGTH_LIMIT=80;
-         const intptrj_t PIECE_LIMIT=20;
+         const intptr_t LENGTH_LIMIT=80;
+         const intptr_t PIECE_LIMIT=20;
 
 #ifdef J9_PROJECT_SPECIFIC
          TR::VMAccessCriticalSection getStaticNameCriticalSection(comp(),
                                                                    TR::VMAccessCriticalSection::tryToAcquireVMAccess);
          if (!symRef->isUnresolved() && getStaticNameCriticalSection.acquiredVMAccess())
             {
-            uintptrj_t stringLocation = (uintptrj_t)sym->castToStaticSymbol()->getStaticAddress();
+            uintptr_t stringLocation = (uintptr_t)sym->castToStaticSymbol()->getStaticAddress();
             if (stringLocation)
                {
-               uintptrj_t string = comp()->fej9()->getStaticReferenceFieldAtAddress(stringLocation);
+               uintptr_t string = comp()->fej9()->getStaticReferenceFieldAtAddress(stringLocation);
                length = comp()->fej9()->getStringUTF8Length(string);
                contents = (char*)comp()->trMemory()->allocateMemory(length+1, stackAlloc, TR_MemoryBase::UnknownType);
                comp()->fej9()->getStringUTF8(string, contents, length+1);
@@ -1957,7 +1957,7 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
 
                // Stop before any non-printable characters (like newlines or UTF8 weirdness)
                //
-               intptrj_t i;
+               intptr_t i;
                for (i=0; i < prefixLength; i++)
                   if (!isprint(contents[i]))
                      {
@@ -3070,7 +3070,7 @@ TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
    else if (_comp->getAddressEnumerationOption(TR_EnumerateRegister) && _comp->getToNumberMap().Locate((void *)reg, hashIndex))
       {
       char *buf = (char *)_comp->trMemory()->allocateHeapMemory(maxPrefixSize + 6 + 11); // max register kind name size plus underscore plus 10-digit reg num plus null terminator
-      uint32_t regNum = (uint32_t)(intptrj_t)_comp->getToNumberMap().DataAt(hashIndex);
+      uint32_t regNum = (uint32_t)(intptr_t)_comp->getToNumberMap().DataAt(hashIndex);
       sprintf(buf, "%s%s_%04d", prefix, getRegisterKindName(reg->getKind()), regNum);
       _comp->getToStringMap().Add((void *)reg, buf);
       return buf;

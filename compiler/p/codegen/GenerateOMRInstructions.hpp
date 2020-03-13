@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -216,7 +216,7 @@ TR::Instruction *generateTrg1Src1ImmInstruction(
                    TR::Node        *n,
                    TR::Register    *treg,
                    TR::Register    *s1reg,
-                   intptrj_t       imm,
+                   intptr_t       imm,
                    TR::Instruction *preced = 0);
 
 TR::Instruction *generateTrg1Src1ImmInstruction(
@@ -365,7 +365,7 @@ TR::Instruction *generateDepImmSymInstruction(
                    TR::CodeGenerator      *cg,
                    TR::InstOpCode::Mnemonic                       op,
                    TR::Node                            *n,
-                   uintptrj_t                           imm,
+                   uintptr_t                           imm,
                    TR::RegisterDependencyConditions *cond,
                    TR::SymbolReference                 *sr,
                    TR::Snippet                         *s=NULL,

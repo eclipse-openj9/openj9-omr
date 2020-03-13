@@ -1243,7 +1243,7 @@ int32_t OMR::Compilation::compile()
 #if defined(AIXPPC) || defined(LINUXPPC)
    if (self()->getOption(TR_DebugOnEntry))
       {
-      intptrj_t jitTojitStart = (intptrj_t) self()->cg()->getCodeStart();
+      intptr_t jitTojitStart = (intptr_t) self()->cg()->getCodeStart();
       jitTojitStart += ((*(int32_t *)(jitTojitStart - 4)) >> 16) & 0x0000ffff;
 #if defined(AIXPPC)
       self()->getDebug()->setupDebugger((void *)jitTojitStart);
@@ -1700,7 +1700,7 @@ int32_t OMR::Compilation::findPrefetchInfo(TR::Node * node)
       {
       if ((*pair)->getKey() == node)
          {
-         uintptrj_t value = (uintptrj_t)(*pair)->getValue();
+         uintptr_t value = (uintptr_t)(*pair)->getValue();
          return (int32_t)value;
          }
       }

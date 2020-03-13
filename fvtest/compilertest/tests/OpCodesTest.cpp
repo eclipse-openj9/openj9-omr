@@ -124,9 +124,9 @@ const double OpCodesTest::DOUBLE_PLACEHOLDER_1 = 100.21;
 const double OpCodesTest::DOUBLE_PLACEHOLDER_2 = 200.22;
 const double OpCodesTest::DOUBLE_PLACEHOLDER_3 = 300.23;
 
-const uintptrj_t OpCodesTest::ADDRESS_PLACEHOLDER_1 = (uintptrj_t)100;
-const uintptrj_t OpCodesTest::ADDRESS_PLACEHOLDER_2 = (uintptrj_t)200;
-const uintptrj_t OpCodesTest::ADDRESS_PLACEHOLDER_3 = (uintptrj_t)300;
+const uintptr_t OpCodesTest::ADDRESS_PLACEHOLDER_1 = (uintptr_t)100;
+const uintptr_t OpCodesTest::ADDRESS_PLACEHOLDER_2 = (uintptr_t)200;
+const uintptr_t OpCodesTest::ADDRESS_PLACEHOLDER_3 = (uintptr_t)300;
 
 TR::DataType OpCodesTest::_argTypesUnaryByte[_numberOfUnaryArgs] = {TR::Int8};
 TR::DataType OpCodesTest::_argTypesUnaryShort[_numberOfUnaryArgs] = {TR::Int16};
@@ -921,7 +921,7 @@ OpCodesTest::invokeMemoryOperationTests()
    int64_t longDataArray[] = {LONG_NEG, LONG_POS, LONG_MAXIMUM, LONG_MINIMUM, LONG_ZERO};
    float floatDataArray[] = {FLOAT_NEG, FLOAT_POS, FLOAT_MAXIMUM, FLOAT_MINIMUM, FLOAT_ZERO};
    double doubleDataArray[] = {DOUBLE_NEG, DOUBLE_POS, DOUBLE_MAXIMUM, DOUBLE_MINIMUM, DOUBLE_ZERO};
-   uintptrj_t addressDataArray[] = {(uintptrj_t)&INT_NEG, (uintptrj_t)&LONG_POS, (uintptrj_t)&BYTE_MAXIMUM, (uintptrj_t)&SHORT_MINIMUM, (uintptrj_t)&FLOAT_ZERO};
+   uintptr_t addressDataArray[] = {(uintptr_t)&INT_NEG, (uintptr_t)&LONG_POS, (uintptr_t)&BYTE_MAXIMUM, (uintptr_t)&SHORT_MINIMUM, (uintptr_t)&FLOAT_ZERO};
 
    int32_t rc = 0;
    uint32_t testCaseNum = 0;
@@ -942,43 +942,43 @@ compileOpCodeMethod(      iMemCons, _numberOfUnaryArgs, TR::istore, resolvedMeth
    testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_iLoadi, intDataArray[i], _iLoadi((uintptrj_t)(&intDataArray[i])));
+      OMR_CT_EXPECT_EQ(_iLoadi, intDataArray[i], _iLoadi((uintptr_t)(&intDataArray[i])));
       }
 
    testCaseNum = sizeof(shortDataArray) / sizeof(shortDataArray[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_sLoadi, shortDataArray[i], _sLoadi((uintptrj_t)(&shortDataArray[i])));
+      OMR_CT_EXPECT_EQ(_sLoadi, shortDataArray[i], _sLoadi((uintptr_t)(&shortDataArray[i])));
       }
 
    testCaseNum = sizeof(byteDataArray) / sizeof(byteDataArray[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_bLoadi, byteDataArray[i], _bLoadi((uintptrj_t)(&byteDataArray[i])));
+      OMR_CT_EXPECT_EQ(_bLoadi, byteDataArray[i], _bLoadi((uintptr_t)(&byteDataArray[i])));
       }
 
    testCaseNum = sizeof(longDataArray) / sizeof(longDataArray[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_lLoadi, longDataArray[i], _lLoadi((uintptrj_t)(&longDataArray[i])));
+      OMR_CT_EXPECT_EQ(_lLoadi, longDataArray[i], _lLoadi((uintptr_t)(&longDataArray[i])));
       }
 
    testCaseNum = sizeof(doubleDataArray) / sizeof(doubleDataArray[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_dLoadi, doubleDataArray[i], _dLoadi((uintptrj_t)(&doubleDataArray[i])));
+      OMR_CT_EXPECT_EQ(_dLoadi, doubleDataArray[i], _dLoadi((uintptr_t)(&doubleDataArray[i])));
       }
 
    testCaseNum = sizeof(floatDataArray) / sizeof(floatDataArray[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_fLoadi, floatDataArray[i], _fLoadi((uintptrj_t)(&floatDataArray[i])));
+      OMR_CT_EXPECT_EQ(_fLoadi, floatDataArray[i], _fLoadi((uintptr_t)(&floatDataArray[i])));
       }
 
    testCaseNum = sizeof(addressDataArray) / sizeof(addressDataArray[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
-      OMR_CT_EXPECT_EQ(_aLoadi, addressDataArray[i], _aLoadi((uintptrj_t)(&addressDataArray[i])));
+      OMR_CT_EXPECT_EQ(_aLoadi, addressDataArray[i], _aLoadi((uintptr_t)(&addressDataArray[i])));
       }
    }
 
@@ -2313,14 +2313,14 @@ OpCodesTest::invokeAddressTests()
    {
    int32_t rc = 0;
 
-   uintptrj_t aUnaryDataArr[] =
+   uintptr_t aUnaryDataArr[] =
       {
-      (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_ZERO,
-      (uintptrj_t) &LONG_POS,
-      (uintptrj_t) &LONG_MAXIMUM,
-      (uintptrj_t) &LONG_ZERO
+      (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_ZERO,
+      (uintptr_t) &LONG_POS,
+      (uintptr_t) &LONG_MAXIMUM,
+      (uintptr_t) &LONG_ZERO
       };
 
    uint32_t testCaseNum = 0;

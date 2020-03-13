@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -82,7 +82,7 @@ public:
     *
     * @return true if the target is within range; false otherwise.
     */
-   bool isTargetWithinBranchImmediateRange(intptrj_t targetAddress, intptrj_t sourceAddress);
+   bool isTargetWithinBranchImmediateRange(intptr_t targetAddress, intptr_t sourceAddress);
 
    };
 

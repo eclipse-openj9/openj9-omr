@@ -468,7 +468,7 @@ TR::PPCSystemLinkage::mapParameters(
    const TR::PPCLinkageProperties&    linkage           = getProperties();
    int32_t                          offsetToFirstParm = linkage.getOffsetToFirstParm();
    int32_t offset_from_top = 0;
-   int32_t slot_size = sizeof(uintptrj_t);
+   int32_t slot_size = sizeof(uintptr_t);
 
    // The 64-bit ELF V2 ABI Specification makes having a parameter save area optional if all parameters can be passed in
    // registers. As a result, we cannot use the caller's parameter save area on 64-bit Linux if all parameters were
@@ -1447,7 +1447,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
          }
 
    generateDepImmSymInstruction(cg(), TR::InstOpCode::bl, callNode,
-         (uintptrj_t)callSymbol->getMethodAddress(),
+         (uintptr_t)callSymbol->getMethodAddress(),
          dependencies, callSymRef?callSymRef:callNode->getSymbolReference());
 
    //Bug fix: JIT doesn't need to restore caller's system TOC since there is no infrastructure to generate
@@ -1719,13 +1719,13 @@ void TR::PPCSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSy
 
    }
 
-intptrj_t TR::PPCSystemLinkage::entryPointFromCompiledMethod()
+intptr_t TR::PPCSystemLinkage::entryPointFromCompiledMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 
-intptrj_t TR::PPCSystemLinkage::entryPointFromInterpretedMethod()
+intptr_t TR::PPCSystemLinkage::entryPointFromInterpretedMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 

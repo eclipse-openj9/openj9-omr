@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -85,7 +85,7 @@ ppcCreateHelperTrampolines(uint8_t *trampPtr, int32_t numHelpers)
    uint8_t *bufferStart = trampPtr, *buffer;
    for (int32_t cookie=1; cookie<numHelpers; cookie++)
       {
-      intptrj_t helper = (intptrj_t)runtimeHelperValue((TR_RuntimeHelper)cookie);
+      intptr_t helper = (intptr_t)runtimeHelperValue((TR_RuntimeHelper)cookie);
       // Skip over the first one for index 0
       bufferStart += config.trampolineCodeSize();
       buffer = bufferStart;
@@ -99,7 +99,7 @@ ppcCreateHelperTrampolines(uint8_t *trampPtr, int32_t numHelpers)
 #else //!defined(__LITTLE_ENDIAN__)
 #if defined(TR_TARGET_64BIT)
       // ld gr11, [gr2, 8*(cookie-1)]
-      *(int32_t *)buffer = 0xe9620000 | (((cookie-1)*sizeof(intptrj_t)) & 0x0000ffff);
+      *(int32_t *)buffer = 0xe9620000 | (((cookie-1)*sizeof(intptr_t)) & 0x0000ffff);
       buffer += 4;
 #else //!defined(TR_TARGET_64BIT)
       // For POWER4 which has a problem with the CTR/LR cache when the upper
@@ -136,7 +136,7 @@ ppcCreateHelperTrampolines(uint8_t *trampPtr, int32_t numHelpers)
 #endif //defined(TR_TARGET_64BIT)
 
       //ld gr2, [gr2, systemTOCOffset]
-      *(int32_t *)buffer = 0xe8420000 | ((numHelpers*sizeof(intptrj_t)) & 0x0000ffff);
+      *(int32_t *)buffer = 0xe8420000 | ((numHelpers*sizeof(intptr_t)) & 0x0000ffff);
       buffer += 4;
 
       // mtctr r11
@@ -195,7 +195,7 @@ void ppcCodeCacheParameters(int32_t *trampolineSize, void **callBacks, int32_t *
 
 #if defined(TR_TARGET_64BIT)
 /*FIXME this IS_32BIT_RIP is already define in different places; should be moved to a header file*/
-#define IS_32BIT_RIP(x,rip)  ((intptrj_t)(x) == (intptrj_t)(rip) + (int32_t)((intptrj_t)(x) - (intptrj_t)(rip)))
+#define IS_32BIT_RIP(x,rip)  ((intptr_t)(x) == (intptr_t)(rip) + (int32_t)((intptr_t)(x) - (intptr_t)(rip)))
 #define TRAMPOLINE_SIZE    16
 #define CALL_INSTR_LENGTH  5
 
@@ -211,7 +211,7 @@ void amd64CreateHelperTrampolines(uint8_t *trampPtr, int32_t numHelpers)
 
    for (int32_t i=1; i<numHelpers; i++)
       {
-      intptrj_t helperAddr = (intptrj_t)runtimeHelperValue((TR_RuntimeHelper)i);
+      intptr_t helperAddr = (intptr_t)runtimeHelperValue((TR_RuntimeHelper)i);
 
       // Skip the first trampoline for index 0
       bufferStart += TRAMPOLINE_SIZE;
@@ -298,7 +298,7 @@ void armCreateHelperTrampolines(void *trampPtr, int32_t numHelpers)
       //
       *buffer = 0xe51ff004;
       buffer += 1;
-      *buffer = (intptrj_t)runtimeHelperValue((TR_RuntimeHelper)i);
+      *buffer = (intptr_t)runtimeHelperValue((TR_RuntimeHelper)i);
       buffer += 1;
       }
 
@@ -353,7 +353,7 @@ void arm64CreateHelperTrampolines(void *trampPtr, int32_t numHelpers)
       buffer += 1;
       *buffer = 0xD61F0200; //BR R16
       buffer += 1;
-      *((intptrj_t *)buffer) = (intptrj_t)runtimeHelperValue((TR_RuntimeHelper)i);
+      *((intptr_t *)buffer) = (intptr_t)runtimeHelperValue((TR_RuntimeHelper)i);
       buffer += 2;
       }
    }
@@ -444,7 +444,7 @@ void s390zLinux31CodeCacheParameters(int32_t *trampolineSize, void **callBacks, 
 
 // Atomic Storage of a 4 byte value - Picbuilder.m4
 extern "C" void _Store4(int32_t * addr, uint32_t newData);
-extern "C" void _Store8(intptrj_t * addr, uintptrj_t newData);
+extern "C" void _Store8(intptr_t * addr, uintptr_t newData);
 
 // zLinux64 Configuration of Code Cache.
 void s390zLinux64CodeCacheConfig(int32_t ccSizeInByte, int32_t *numTempTrampolines)
@@ -471,7 +471,7 @@ void s390zLinux64CreateHelperTrampoline(void *trampPtr, int32_t numHelpers)
       {
 
       // Get the helper address
-      intptrj_t helperAddr = (intptrj_t)runtimeHelperValue((TR_RuntimeHelper)i);
+      intptr_t helperAddr = (intptr_t)runtimeHelperValue((TR_RuntimeHelper)i);
 
       // Skip the first trampoline for index 0
       bufferStart += TRAMPOLINE_SIZE;
@@ -507,8 +507,8 @@ void s390zLinux64CreateHelperTrampoline(void *trampPtr, int32_t numHelpers)
       buffer += sizeof(int16_t);
 
       // DC mAddr
-      *(intptrj_t *)buffer = helperAddr;
-      buffer += sizeof(intptrj_t);
+      *(intptr_t *)buffer = helperAddr;
+      buffer += sizeof(intptr_t);
       }
    }
 

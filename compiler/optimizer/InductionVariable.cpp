@@ -5396,7 +5396,7 @@ bool TR_LoopStrider::checkExpressionForInductionVariable(TR::Node *node)
 int64_t TR_LoopStrider::getAdditiveTermConst(int32_t k)
    {
    TR_ASSERT(k < _numberOfLinearExprs, "index k %d exceeds _numberOfLinearExprs %d!\n",k,_numberOfLinearExprs);
-   TR::Node *node = (TR::Node*)(intptrj_t)_linearEquations[k][3];
+   TR::Node *node = (TR::Node*)(intptr_t)_linearEquations[k][3];
    if (node == NULL)
       return 0;
    TR_ASSERT(isAdditiveTermConst(k), "LoopStrider: expecting constant term\n");
@@ -5434,7 +5434,7 @@ bool TR_LoopStrider::isAdditiveTermEquivalentTo(int32_t k, TR::Node * node)
 TR::Node *TR_LoopStrider::duplicateMulTermNode(int32_t k, TR::Node *node, TR::DataType type)
    {
    TR_ASSERT(k < _numberOfLinearExprs, "index k %d exceeds _numberOfLinearExprs %d!\n",k,_numberOfLinearExprs);
-   TR::Node *new_node = ((TR::Node*)(intptrj_t)_linearEquations[k][2])->duplicateTree();
+   TR::Node *new_node = ((TR::Node*)(intptr_t)_linearEquations[k][2])->duplicateTree();
    new_node->setByteCodeIndex(node->getByteCodeIndex());
    new_node->setInlinedSiteIndex(node->getInlinedSiteIndex());
 
@@ -5447,7 +5447,7 @@ TR::Node *TR_LoopStrider::duplicateMulTermNode(int32_t k, TR::Node *node, TR::Da
 int64_t TR_LoopStrider::getMulTermConst(int32_t k)
    {
    TR_ASSERT(k < _numberOfLinearExprs, "index k %d exceeds _numberOfLinearExprs %d!\n",k,_numberOfLinearExprs);
-   TR::Node *node = (TR::Node*)(intptrj_t)_linearEquations[k][2];
+   TR::Node *node = (TR::Node*)(intptr_t)_linearEquations[k][2];
    TR_ASSERT(isMulTermConst(k), "LoopStrider: expecting constant term\n");
    if (node->getOpCodeValue() == TR::iconst)
       return node->getInt();

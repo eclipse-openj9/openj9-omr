@@ -2383,13 +2383,13 @@ class S390RILInstruction : public TR::Instruction
    bool isImmediateOffsetInBytes() {return _flagsRIL.testAny(isImmediateOffsetInBytesFlag); }
    void setIsImmediateOffsetInBytes() { _flagsRIL.set(isImmediateOffsetInBytesFlag);}
 
-   uintptrj_t getTargetPtr()
-      { return  reinterpret_cast<uintptrj_t>(_targetPtr); }
-   uintptrj_t setTargetPtr(uintptrj_t tp)
+   uintptr_t getTargetPtr()
+      { return  reinterpret_cast<uintptr_t>(_targetPtr); }
+   uintptr_t setTargetPtr(uintptr_t tp)
       { TR_ASSERT(!isImmediateOffsetInBytes(), "Immediate Offset already set on RIL instruction."); _targetPtr = reinterpret_cast<void*>(tp); return tp; }
-   uintptrj_t getImmediateOffsetInBytes()
-      { TR_ASSERT(isImmediateOffsetInBytes(), "Immediate Offset not set for RIL Instruction."); return reinterpret_cast<uintptrj_t>(_targetPtr); }
-   uintptrj_t setImmediateOffsetInBytes(uintptrj_t tp)
+   uintptr_t getImmediateOffsetInBytes()
+      { TR_ASSERT(isImmediateOffsetInBytes(), "Immediate Offset not set for RIL Instruction."); return reinterpret_cast<uintptr_t>(_targetPtr); }
+   uintptr_t setImmediateOffsetInBytes(uintptr_t tp)
       { setIsImmediateOffsetInBytes(); _targetPtr = reinterpret_cast<void*>(tp); return tp; }
    TR::Snippet *getTargetSnippet()
       { return _targetSnippet; }

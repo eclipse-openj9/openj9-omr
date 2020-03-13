@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -100,7 +100,7 @@ uint8_t *TR::X86DataSnippet::emitSnippetBody()
    // align to 16 bytes
    if (getDataSize() % 16 == 0)
       {
-      cursor = (uint8_t*)(((intptrj_t)(cursor + 15)) & ((-1)<<4));
+      cursor = (uint8_t*)(((intptr_t)(cursor + 15)) & ((-1)<<4));
       }
 
    getSnippetLabel()->setCodeLocation(cursor);

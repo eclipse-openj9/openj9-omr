@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,7 +64,7 @@ namespace TR { struct PPCLinkageProperties; }
 
 extern TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg,
                                     TR::Node        *node,
-                                    intptrj_t      address,
+                                    intptr_t      address,
                                     TR::Register    *targetRegister,
                                     TR::Register    *tempRegister,
                                     TR::InstOpCode::Mnemonic  opCode,
@@ -73,7 +73,7 @@ extern TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg,
 
 extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg,
                                     TR::Node        *node,
-                                    intptrj_t         value,
+                                    intptr_t         value,
                                     TR::Register    *targetRegister,
                                     TR::Instruction *cursor=NULL,
                                     bool            isPicSite=false,
@@ -83,7 +83,7 @@ extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg,
 extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg,
                                     bool            isRelocatable,
                                     TR::Node        *node,
-                                    intptrj_t         value,
+                                    intptr_t         value,
                                     TR::Register    *targetRegister,
                                     TR::Instruction *cursor=NULL,
                                     bool            isPicSite=false,
@@ -91,7 +91,7 @@ extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg,
 
 extern TR::Instruction *loadActualConstant(TR::CodeGenerator *cg,
                                     TR::Node        *node,
-                                    intptrj_t       value,
+                                    intptr_t       value,
                                     TR::Register    *targetRegister,
                                     TR::Instruction *cursor=NULL,
                                     bool            isPicSite=false);
@@ -113,7 +113,7 @@ extern TR::Instruction *loadConstant(TR::CodeGenerator *cg,
 
 extern TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg,
                                          TR::Node          *node,
-                                         intptrj_t         addr,
+                                         intptr_t         addr,
                                          TR::Instruction  **nibbles,
                                          TR::Register      *srcOrTrg,
                                          TR::Register      *baseReg,
@@ -134,7 +134,7 @@ extern uint8_t *loadArgumentItem(TR::InstOpCode::Mnemonic       op,
                                  int32_t             offset,
                                  TR::CodeGenerator *cg);
 
-extern intptrj_t findCCLocalPPCHelperTrampoline(int32_t helperIndex, void *target, void*callSite, void*fe);
+extern intptr_t findCCLocalPPCHelperTrampoline(int32_t helperIndex, void *target, void*callSite, void*fe);
 
 #if defined(TR_HOST_POWER)
 void ppcCodeSync(uint8_t * start, uint32_t size);
@@ -255,7 +255,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::RealRegister *getTOCBaseRegister()                       {return _tocBaseRegister;}
    TR::RealRegister *setTOCBaseRegister(TR::RealRegister *r)  {return (_tocBaseRegister = r);}
 
-   uintptrj_t *getTOCBase();
+   uintptr_t *getTOCBase();
 
    TR_PPCScratchRegisterManager* generateScratchRegisterManager(int32_t capacity = 32);
 
@@ -472,7 +472,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    TR::Instruction *loadAddressConstantFixed(
       TR::Node        *node,
-      intptrj_t         value,
+      intptr_t         value,
       TR::Register    *targetRegister,
       TR::Instruction *cursor=NULL,
       TR::Register    *tempReg=NULL,
@@ -506,7 +506,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
       TR::Instruction *firstInstruction,
       TR::Register *tempReg,
       int16_t typeAddress,
-      intptrj_t value);
+      intptr_t value);
 
    void addMetaDataFor32BitFixedLoadLabelAddressIntoReg(
       TR::Node *node,
@@ -529,7 +529,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     *
     * @return : true if a trampoline is required; false otherwise.
     */
-   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress);
+   bool directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress);
 
    private:
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -560,7 +560,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    // no-op instruction to be chosen based on the surrounding instructions.
    //
    virtual uint8_t *generatePadding(uint8_t              *cursor,
-                                    intptrj_t             length,
+                                    intptr_t             length,
                                     TR::Instruction    *neighborhood=NULL,
                                     TR_PaddingProperties  properties=TR_NoOpPadding,
                                     bool                  recursive=false);
@@ -570,14 +570,14 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    // Specifically, cursor + margin + alignment(cursor, boundary, margin) will
    // be a multiple of boundary.
    //
-   intptrj_t alignment(intptrj_t cursor, intptrj_t boundary, intptrj_t margin=0)
+   intptr_t alignment(intptr_t cursor, intptr_t boundary, intptr_t margin=0)
       {
       TR_ASSERT((boundary & (boundary-1)) == 0, "Can only align to powers of 2");
       return (-cursor - margin) & (boundary-1);
       }
-   intptrj_t alignment(void *cursor, intptrj_t boundary, intptrj_t margin=0);
+   intptr_t alignment(void *cursor, intptr_t boundary, intptr_t margin=0);
 
-   bool patchableRangeNeedsAlignment(void *cursor, intptrj_t length, intptrj_t boundary, intptrj_t margin=0);
+   bool patchableRangeNeedsAlignment(void *cursor, intptr_t length, intptr_t boundary, intptr_t margin=0);
 
    bool nopsAlsoProcessedByRelocations() { return false; }
 
@@ -677,7 +677,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     *
     * @return : true if a trampoline is required; false otherwise.
     */
-   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress);
+   bool directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress);
 
    protected:
 
@@ -888,13 +888,13 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 //
 
 #if defined(TR_TARGET_64BIT)
-#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptrj_t)target, (intptrj_t)rip))
+#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptr_t)target, (intptr_t)rip))
 #else
 // Give the C++ compiler a hand
 #define NEEDS_TRAMPOLINE(target, rip, cg) (0)
 #endif
 
-#define IS_32BIT_RIP(x,rip)  ((intptrj_t)(x) == (intptrj_t)(rip) + (int32_t)((intptrj_t)(x) - (intptrj_t)(rip)))
+#define IS_32BIT_RIP(x,rip)  ((intptr_t)(x) == (intptr_t)(rip) + (int32_t)((intptr_t)(x) - (intptr_t)(rip)))
 
 class TR_X86ScratchRegisterManager: public TR_ScratchRegisterManager
    {

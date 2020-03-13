@@ -168,7 +168,7 @@ void OMR::RV::MemoryReference::setSymbol(TR::Symbol *symbol, TR::CodeGenerator *
    }
 
 
-void OMR::RV::MemoryReference::addToOffset(TR::Node *node, intptrj_t amount, TR::CodeGenerator *cg)
+void OMR::RV::MemoryReference::addToOffset(TR::Node *node, intptr_t amount, TR::CodeGenerator *cg)
    {
    if (self()->getUnresolvedSnippet() != NULL)
       {
@@ -194,7 +194,7 @@ void OMR::RV::MemoryReference::addToOffset(TR::Node *node, intptrj_t amount, TR:
       _baseRegister = cg->machine()->getRealRegister(TR::RealRegister::zero);
       }
 
-   intptrj_t displacement = self()->getOffset() + amount;
+   intptr_t displacement = self()->getOffset() + amount;
    if (!VALID_ITYPE_IMM(displacement))
       {
       TR::Register *newBase;
@@ -294,7 +294,7 @@ void OMR::RV::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::Co
          if (integerChild->getOpCode().isLoadConst())
             {
             self()->populateMemoryReference(addressChild, cg);
-            intptrj_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
+            intptr_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
                                 integerChild->getInt() : integerChild->getLongInt();
             self()->addToOffset(integerChild, amount, cg);
             integerChild->decReferenceCount();
@@ -365,7 +365,7 @@ void OMR::RV::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::Co
                subTree->getOpCodeValue() == TR::iconst ||
                subTree->getOpCodeValue() == TR::lconst)
          {
-         intptrj_t amount = (subTree->getOpCodeValue() == TR::iconst) ?
+         intptr_t amount = (subTree->getOpCodeValue() == TR::iconst) ?
                              subTree->getInt() : subTree->getLongInt();
          self()->addToOffset(subTree, amount, cg);
          }

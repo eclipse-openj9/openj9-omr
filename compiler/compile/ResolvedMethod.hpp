@@ -109,8 +109,8 @@ public:
    virtual void *startAddressForJITInternalNativeMethod();
    virtual bool isSubjectToPhaseChange(TR::Compilation *);
    virtual uint16_t archetypeArgPlaceholderSlot(TR_Memory *);
-   virtual intptrj_t getInvocationCount();
-   virtual bool setInvocationCount(intptrj_t oldCount, intptrj_t newCount);
+   virtual intptr_t getInvocationCount();
+   virtual bool setInvocationCount(intptr_t oldCount, intptr_t newCount);
    virtual bool isWarmCallGraphTooBig(uint32_t bcIndex, TR::Compilation *);
    virtual void setWarmCallGraphTooBig(uint32_t bcIndex, TR::Compilation *);
    virtual uint8_t *bytecodeStart();
@@ -137,7 +137,7 @@ public:
    virtual bool isUnresolvedString(int32_t cpIndex, bool optimizeForAOT = false);
    virtual bool isConstantDynamic(int32_t cpIndex);
    virtual bool isUnresolvedConstantDynamic(int32_t cpIndex);
-   virtual void *dynamicConstant(int32_t cpIndex, uintptrj_t *obj);
+   virtual void *dynamicConstant(int32_t cpIndex, uintptr_t *obj);
    virtual void *methodTypeConstant(int32_t cpIndex);
    virtual bool isUnresolvedMethodType(int32_t cpIndex);
    virtual void *methodHandleConstant(int32_t cpIndex);
@@ -165,8 +165,8 @@ public:
    bool isDAAMarshallingIntrinsicMethod();
    bool isDAAPackedDecimalIntrinsicMethod();
 
-   virtual void setMethodHandleLocation(uintptrj_t *location);
-   virtual uintptrj_t *getMethodHandleLocation();
+   virtual void setMethodHandleLocation(uintptr_t *location);
+   virtual uintptr_t *getMethodHandleLocation();
 
    virtual const char *newInstancePrototypeSignature(TR_Memory *, TR_AllocationKind = heapAlloc);
 
@@ -201,7 +201,7 @@ public:
 
    virtual uint32_t vTableSlot(uint32_t);
 
-   virtual TR_OpaqueClassBlock *getResolvedInterfaceMethod(int32_t cpIndex, uintptrj_t * pITableIndex);
+   virtual TR_OpaqueClassBlock *getResolvedInterfaceMethod(int32_t cpIndex, uintptr_t * pITableIndex);
 
    virtual TR_ResolvedMethod *getResolvedStaticMethod (TR::Compilation *, int32_t cpIndex, bool * unresolvedInCP = 0);
    virtual TR_ResolvedMethod *getResolvedSpecialMethod(TR::Compilation *, int32_t cpIndex, bool * unresolvedInCP = 0);

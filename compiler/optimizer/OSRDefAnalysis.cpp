@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -109,7 +109,7 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
    // Iterate through OSR reaching definitions bit vectors and save it in method symbol's data structure.
    TR::SymbolReferenceTable *symRefTab   = comp()->getSymRefTab();
    TR::ResolvedMethodSymbol *methodSymbol = optimizer()->getMethodSymbol();
-   for (intptrj_t i = 0; i < methodSymbol->getOSRPoints().size(); ++i)
+   for (intptr_t i = 0; i < methodSymbol->getOSRPoints().size(); ++i)
       {
       TR_OSRPoint *point = (methodSymbol->getOSRPoints())[i];
       if (point == NULL) continue;

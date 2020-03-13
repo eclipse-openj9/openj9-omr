@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -58,7 +58,7 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
       int64_t     lvalue;
    } din, dex;
 
-   intptrj_t   ain, aex;
+   intptr_t   ain, aex;
 
    int32_t ret = PTOC_FULL_INDEX;
 
@@ -124,10 +124,10 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
 
       case TR::Address:
          {
-         ListIterator< PPCConstant<intptrj_t> >  aiterator(&_addressConstants);
-         PPCConstant<intptrj_t>                 *acursor=aiterator.getFirst();
+         ListIterator< PPCConstant<intptr_t> >  aiterator(&_addressConstants);
+         PPCConstant<intptr_t>                 *acursor=aiterator.getFirst();
 
-         ain = *(intptrj_t *)v;
+         ain = *(intptr_t *)v;
          while (acursor != NULL)
             {
             aex = acursor->getConstantValue();
@@ -145,7 +145,7 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             }
          if (acursor == NULL)
             {
-            acursor = new (_cg->trHeapMemory()) PPCConstant<intptrj_t>(_cg, ain, node, isUnloadablePicSite);
+            acursor = new (_cg->trHeapMemory()) PPCConstant<intptr_t>(_cg, ain, node, isUnloadablePicSite);
             _addressConstants.add(acursor);
             }
             acursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
@@ -252,8 +252,8 @@ bool OMR::ConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, 
          }
       fcursor = fiterator.getNext();
       }
-   ListIterator< PPCConstant<intptrj_t> >  aiterator(&_addressConstants);
-   PPCConstant<intptrj_t>               *acursor=aiterator.getFirst();
+   ListIterator< PPCConstant<intptr_t> >  aiterator(&_addressConstants);
+   PPCConstant<intptr_t>               *acursor=aiterator.getFirst();
    while (acursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = acursor->getRequestors();
@@ -307,7 +307,7 @@ OMR::ConstantDataSnippet::emitFloatingPointConstant(
       int32_t count)
    {
    uint8_t *iloc1, *iloc2, *iloc3, *iloc4;
-   intptrj_t addr;
+   intptr_t addr;
    int32_t i;
    int32_t size = requestors.size();
    TR::Compilation *comp = cg()->comp();
@@ -317,7 +317,7 @@ OMR::ConstantDataSnippet::emitFloatingPointConstant(
       {
       iloc1 = requestors[i]->getBinaryEncoding();
       iloc2 = requestors[i+1]->getBinaryEncoding();
-      addr = (intptrj_t)codeCursor;
+      addr = (intptr_t)codeCursor;
       if (count==4)
          {
          iloc3 = requestors[i+2]->getBinaryEncoding();
@@ -366,13 +366,13 @@ OMR::ConstantDataSnippet::emitFloatingPointConstant(
 
 void
 OMR::ConstantDataSnippet::emitAddressConstant(
-      PPCConstant<intptrj_t> *acursor,
+      PPCConstant<intptr_t> *acursor,
       TR_Array<TR::Instruction *> &requestors,
       uint8_t *codeCursor,
       int32_t count)
    {
    uint8_t *iloc1, *iloc2, *iloc3, *iloc4;
-   intptrj_t addr;
+   intptr_t addr;
    int32_t i;
    int32_t size = requestors.size();
    TR::Compilation *comp = cg()->comp();
@@ -430,12 +430,12 @@ OMR::ConstantDataSnippet::emitAddressConstant(
       {
       iloc1 = requestors[i]->getBinaryEncoding();
       iloc2 = requestors[i+1]->getBinaryEncoding();
-      addr = (intptrj_t)codeCursor;
+      addr = (intptr_t)codeCursor;
       // if it's the start PC, don't use the constant, but grab it from the symbol:
       TR::Symbol *sym = requestors[i]->getNode()->getSymbol();
       TR::StaticSymbol *staticSym = sym ? sym->getStaticSymbol() : NULL;
       if (staticSym && staticSym->isStartPC())
-         addr = (intptrj_t) staticSym->getStaticAddress();
+         addr = (intptr_t) staticSym->getStaticAddress();
       if (count==4)
          {
          iloc3 = requestors[i+2]->getBinaryEncoding();
@@ -504,17 +504,17 @@ uint8_t *OMR::ConstantDataSnippet::emitSnippetBody()
       dcursor = diterator.getNext();
       }
 
-   ListIterator< PPCConstant<intptrj_t> > aiterator(&_addressConstants);
-   PPCConstant<intptrj_t> *acursor=aiterator.getFirst();
+   ListIterator< PPCConstant<intptr_t> > aiterator(&_addressConstants);
+   PPCConstant<intptr_t> *acursor=aiterator.getFirst();
    while (acursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = acursor->getRequestors();
       size = requestors.size();
       if (size > 0)
          {
-         *(intptrj_t *)codeCursor = acursor->getConstantValue();
+         *(intptr_t *)codeCursor = acursor->getConstantValue();
          emitAddressConstant(acursor, requestors, codeCursor, count);
-         codeCursor += sizeof(intptrj_t);
+         codeCursor += sizeof(intptr_t);
          }
       acursor = aiterator.getNext();
       }
@@ -542,7 +542,7 @@ uint8_t *OMR::ConstantDataSnippet::emitSnippetBody()
 
 uint32_t OMR::ConstantDataSnippet::getLength()
    {
-      return _doubleConstants.getSize()*8 + _floatConstants.getSize()*4 + _addressConstants.getSize()*sizeof(intptrj_t) + 4;
+      return _doubleConstants.getSize()*8 + _floatConstants.getSize()*4 + _addressConstants.getSize()*sizeof(intptr_t) + 4;
    }
 
 
@@ -585,8 +585,8 @@ void OMR::ConstantDataSnippet::print(TR::FILE *outFile)
       fcursor = fiterator.getNext();
       }
 
-   ListIterator< PPCConstant<intptrj_t> >  aiterator(&_addressConstants);
-   PPCConstant<intptrj_t>                 *acursor=aiterator.getFirst();
+   ListIterator< PPCConstant<intptr_t> >  aiterator(&_addressConstants);
+   PPCConstant<intptr_t>                 *acursor=aiterator.getFirst();
    while (acursor != NULL)
       {
       if (acursor->getRequestors().size()>0)

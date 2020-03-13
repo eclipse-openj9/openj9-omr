@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -176,7 +176,7 @@ void OMR::X86::TreeEvaluator::compareGPRegisterToImmediateForEquality(TR::Node  
 
 TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node                  *node,
                                                         TR::Register              *target,
-                                                        intptrj_t                 value,
+                                                        intptr_t                 value,
                                                         TR_RematerializableTypes  type,
                                                         TR::CodeGenerator         *cg,
                                                         TR::Instruction           *currentInstruction)
@@ -383,7 +383,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
       }
    }
 
-TR::Register *OMR::X86::TreeEvaluator::loadConstant(TR::Node * node, intptrj_t value, TR_RematerializableTypes type, TR::CodeGenerator *cg, TR::Register *targetRegister)
+TR::Register *OMR::X86::TreeEvaluator::loadConstant(TR::Node * node, intptr_t value, TR_RematerializableTypes type, TR::CodeGenerator *cg, TR::Register *targetRegister)
    {
    if (targetRegister == NULL)
       {
@@ -2441,7 +2441,7 @@ static void packXMMWithMultipleValues(TR::Node* node, TR::Register* XMMReg, TR::
       }
    }
 
-static void arraySetToZeroForShortConstantArrays(TR::Node* node, TR::Register* addressReg, uintptrj_t size, TR::CodeGenerator* cg)
+static void arraySetToZeroForShortConstantArrays(TR::Node* node, TR::Register* addressReg, uintptr_t size, TR::CodeGenerator* cg)
    {
    // We do special optimization for zero because it happens very frequent.
    // if size < 16:
@@ -2485,7 +2485,7 @@ static void arraySetToZeroForShortConstantArrays(TR::Node* node, TR::Register* a
    cg->stopUsingRegister(tempReg);
    }
 
-static void arraySetForShortConstantArrays(TR::Node* node, uint8_t elementSize, TR::Register* addressReg, TR::Register* valueReg, uintptrj_t size, TR::CodeGenerator* cg)
+static void arraySetForShortConstantArrays(TR::Node* node, uint8_t elementSize, TR::Register* addressReg, TR::Register* valueReg, uintptr_t size, TR::CodeGenerator* cg)
    {
    const int32_t notWorthPacking = 5;
    const int32_t totalSize = elementSize*size;
@@ -2713,7 +2713,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::Cod
    TR::Node* sizeNode     = node->getChild(2); // Size
 
    TR::Register* addressReg = TR::TreeEvaluator::intOrLongClobberEvaluate(addressNode, cg->comp()->target().is64Bit(), cg);
-   uintptrj_t size;
+   uintptr_t size;
    bool isSizeConst = false;
    bool isValueZero = false;
 
@@ -2804,7 +2804,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-bool OMR::X86::TreeEvaluator::constNodeValueIs32BitSigned(TR::Node *node, intptrj_t *value, TR::CodeGenerator *cg)
+bool OMR::X86::TreeEvaluator::constNodeValueIs32BitSigned(TR::Node *node, intptr_t *value, TR::CodeGenerator *cg)
    {
    *value = TR::TreeEvaluator::integerConstNodeValue(node, cg);
    if (cg->comp()->target().is64Bit())
@@ -2834,11 +2834,11 @@ bool OMR::X86::TreeEvaluator::getNodeIs64Bit(TR::Node *node, TR::CodeGenerator *
    return cg->comp()->target().is64Bit() && node->getSize() > 4;
    }
 
-intptrj_t OMR::X86::TreeEvaluator::integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg)
+intptr_t OMR::X86::TreeEvaluator::integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::TreeEvaluator::getNodeIs64Bit(node, cg))
       {
-      return (intptrj_t)node->getLongInt(); // Cast to satisfy 32-bit compilers, even though they never take this path
+      return (intptr_t)node->getLongInt(); // Cast to satisfy 32-bit compilers, even though they never take this path
       }
    else
       {
@@ -3816,7 +3816,7 @@ TR::Register *OMR::X86::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::Cod
       // Offset node is a constant.
       if (secondChild->getOpCode().isLoadConst())
          {
-         uintptrj_t offset = secondChild->getInt();
+         uintptr_t offset = secondChild->getInt();
          TR::Register *addrReg = cg->evaluate(firstChild);
          generateMemInstruction(prefetchOp.getOpCodeValue(), node, generateX86MemoryReference(addrReg, offset, cg), cg);
 
@@ -4303,8 +4303,8 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
    if (length->getOpCode().isLoadConst())
       {
       // Manage the constant length case
-      uintptrj_t arrayLen = TR::TreeEvaluator::integerConstNodeValue(length, cg);
-      for (uintptrj_t x = 0; x < arrayLen; ++x)
+      uintptr_t arrayLen = TR::TreeEvaluator::integerConstNodeValue(length, cg);
+      for (uintptr_t x = 0; x < arrayLen; ++x)
          {
          // Zero tmpReg if SET won't do it
          if (x >= 8)

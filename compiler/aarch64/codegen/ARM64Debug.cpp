@@ -1489,15 +1489,15 @@ TR_Debug::printa64(TR::FILE *pOutFile, TR::Snippet * snippet)
 bool
 TR_Debug::isBranchToTrampoline(TR::SymbolReference *symRef, uint8_t *cursor, int32_t &distance)
    {
-   uintptrj_t target = (uintptrj_t)symRef->getMethodAddress();
+   uintptr_t target = (uintptr_t)symRef->getMethodAddress();
    bool requiresTrampoline = false;
 
-   if (_cg->directCallRequiresTrampoline(target, (intptrj_t)cursor))
+   if (_cg->directCallRequiresTrampoline(target, (intptr_t)cursor))
       {
       target = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
       requiresTrampoline = true;
       }
 
-   distance = (int32_t)(target - (intptrj_t)cursor);
+   distance = (int32_t)(target - (intptr_t)cursor);
    return requiresTrampoline;
    }

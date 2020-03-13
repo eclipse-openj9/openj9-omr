@@ -34,28 +34,8 @@
 #define IS_32BIT_SIGNED(x)   ((x) == ( int32_t)(x))
 #define IS_32BIT_UNSIGNED(x) ((x) == (uint32_t)(x))
 
-/*
- * -----------------------------------------------------------------------------
- * Generated code TARGET pointer types and limits
- * -----------------------------------------------------------------------------
- * FIXME: Note that the concept of a static target pointer type is deprecated
- * and should be removed from the code going forward.
- */
-
-#if (TR_TARGET_64BIT && TR_HOST_64BIT) || (TR_HOST_32BIT && TR_TARGET_32BIT) || defined(XCOMPILE)
-   typedef uintptr_t uintptrj_t;
-   typedef  intptr_t  intptrj_t;
-#else
- #ifdef TR_TARGET_64BIT
-    typedef uint64_t uintptrj_t;
-    typedef  int64_t  intptrj_t;
- #else
-    typedef uint32_t uintptrj_t;
-    typedef  int32_t  intptrj_t;
- #endif
-#endif
-
-#define MAX_UINTPTRJ (~(uintptrj_t)0)
+#define MAX_UINTPTRJ (~(uintptr_t)0)
+#define MAX_UINTPTR (~(uintptr_t)0)
 
 #ifdef __cplusplus
 namespace TR { class Compilation; }

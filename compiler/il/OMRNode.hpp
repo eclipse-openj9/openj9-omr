@@ -317,8 +317,8 @@ public:
    static TR::Node *createRelative32BitFenceNode(void * relocationAddress);
    static TR::Node *createRelative32BitFenceNode(TR::Node *originatingByteCodeNode, void *);
 
-   static TR::Node *createAddressNode(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uintptrj_t address);
-   static TR::Node *createAddressNode(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uintptrj_t address, uint8_t precision);
+   static TR::Node *createAddressNode(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uintptr_t address);
+   static TR::Node *createAddressNode(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uintptr_t address, uint8_t precision);
 
    static TR::Node *createAllocationFence(TR::Node *originatingByteCodeNode, TR::Node *fenceNode);
 
@@ -334,13 +334,13 @@ public:
    static TR::Node *lconst(TR::Node *originatingByteCodeNode, int64_t val);
    static TR::Node *lconst(int64_t val);
 
-   static TR::Node *aconst(TR::Node *originatingByteCodeNode, uintptrj_t val);
-   static TR::Node *aconst(TR::Node *originatingByteCodeNode, uintptrj_t val, uint8_t precision);
-   static TR::Node *aconst(uintptrj_t val);
+   static TR::Node *aconst(TR::Node *originatingByteCodeNode, uintptr_t val);
+   static TR::Node *aconst(TR::Node *originatingByteCodeNode, uintptr_t val, uint8_t precision);
+   static TR::Node *aconst(uintptr_t val);
 
    static TR::Node *createConstZeroValue(TR::Node *originatingByteCodeNode, TR::DataType dt);
    static TR::Node *createConstOne(TR::Node *originatingByteCodeNode, TR::DataType dt);
-   static TR::Node *createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, intptrj_t extraData=0);
+   static TR::Node *createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, intptr_t extraData=0);
 
    static TR::Node *createCompressedRefsAnchor(TR::Node *firstChild);
 

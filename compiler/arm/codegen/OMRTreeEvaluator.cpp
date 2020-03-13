@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -196,7 +196,7 @@ TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, int32_
    return cursor;
    }
 
-TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node * node, intptrj_t address, TR::Register *trgReg, bool isUnloadablePicSite, TR::Instruction *cursor)
+TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node * node, intptr_t address, TR::Register *trgReg, bool isUnloadablePicSite, TR::Instruction *cursor)
    {
    TR::Instruction *q[5];
    TR::Instruction *c = fixedSeqMemAccess(cg, node, 0, q, trgReg, cursor);
@@ -204,7 +204,7 @@ TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node * 
    return c;
    }
 
-TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node, intptrj_t value, TR::Register *trgReg, TR::Instruction *cursor, uint8_t *targetAddress, uint8_t *targetAddress2, int16_t typeAddress, bool doAOTRelocation)
+TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor, uint8_t *targetAddress, uint8_t *targetAddress2, int16_t typeAddress, bool doAOTRelocation)
    {
    TR::Compilation *comp = cg->comp();
    bool isAOT = comp->compileRelocatableCode();
@@ -315,7 +315,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
    return(cursor);
    }
 
-TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, TR::Node * node, intptrj_t value, TR::Register *trgReg, TR::Instruction *cursor, bool isPicSite, int16_t typeAddress, uint8_t *targetAddress, uint8_t *targetAddress2)
+TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, TR::Node * node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor, bool isPicSite, int16_t typeAddress, uint8_t *targetAddress, uint8_t *targetAddress2)
    {
    if (cg->comp()->compileRelocatableCode())
       return loadAddressConstantFixed(cg, node, value, trgReg, cursor, targetAddress, targetAddress2, typeAddress);

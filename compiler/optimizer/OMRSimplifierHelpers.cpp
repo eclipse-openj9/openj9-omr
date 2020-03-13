@@ -57,11 +57,11 @@
 // Determine the ordinal value associated with a node. This is used to determine
 // the order in which children of a commutative node should be placed.
 //
-static intptrj_t ordinalValue(TR::Node * node)
+static intptr_t ordinalValue(TR::Node * node)
    {
    if (node->getOpCode().hasSymbolReference())
-      return (intptrj_t)node->getSymbolReference()->getReferenceNumber();
-   return (intptrj_t)node->getOpCodeValue();
+      return (intptr_t)node->getSymbolReference()->getReferenceNumber();
+   return (intptr_t)node->getOpCodeValue();
    }
 
 //---------------------------------------------------------------------
@@ -72,8 +72,8 @@ static intptrj_t ordinalValue(TR::Node * node)
 //
 static bool shouldSwapChildren(TR::Node * firstChild, TR::Node * secondChild)
    {
-   intptrj_t firstOrdinal = ordinalValue(firstChild);
-   intptrj_t secondOrdinal = ordinalValue(secondChild);
+   intptr_t firstOrdinal = ordinalValue(firstChild);
+   intptr_t secondOrdinal = ordinalValue(secondChild);
    if (firstOrdinal < secondOrdinal)
       return false;
    if (firstOrdinal > secondOrdinal)
@@ -221,7 +221,7 @@ void foldLongIntConstant(TR::Node * node, int64_t value, TR::Simplifier * s, boo
    s->prepareToReplaceNode(node, node->getOpCode().isRef() ? TR::aconst : TR::lconst);
 
    if (node->getOpCode().isRef())
-      node->setAddress((uintptrj_t)value);
+      node->setAddress((uintptr_t)value);
    else
       node->setLongInt(value);
 

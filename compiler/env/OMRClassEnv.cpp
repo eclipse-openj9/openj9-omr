@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,17 +41,17 @@ OMR::ClassEnv::classNameChars(TR::Compilation *comp, TR::SymbolReference *symRef
    return name;
    }
 
-uintptrj_t
+uintptr_t
 OMR::ClassEnv::getArrayElementWidthInBytes(TR::Compilation *comp, TR_OpaqueClassBlock* arrayClass)
    {
    TR_UNIMPLEMENTED();
    return 0;
    }
 
-intptrj_t
+intptr_t
 OMR::ClassEnv::getVFTEntry(TR::Compilation *comp, TR_OpaqueClassBlock* clazz, int32_t offset)
    {
-   return *(intptrj_t*) (((uint8_t *)clazz) + offset);
+   return *(intptr_t*) (((uint8_t *)clazz) + offset);
    }
 
 bool

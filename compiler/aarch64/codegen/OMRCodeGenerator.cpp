@@ -502,7 +502,7 @@ void OMR::ARM64::CodeGenerator::apply24BitLabelRelativeRelocation(int32_t *curso
    // for "b.cond" instruction
    TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
 
-   intptrj_t distance = (uintptrj_t)label->getCodeLocation() - (uintptrj_t)cursor;
+   intptr_t distance = (uintptr_t)label->getCodeLocation() - (uintptr_t)cursor;
    *cursor |= ((distance >> 2) & 0x7ffff) << 5; // imm19
    }
 
@@ -511,7 +511,7 @@ void OMR::ARM64::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t *curso
    // for unconditional "b" instruction
    TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
 
-   intptrj_t distance = (uintptrj_t)label->getCodeLocation() - (uintptrj_t)cursor;
+   intptr_t distance = (uintptr_t)label->getCodeLocation() - (uintptr_t)cursor;
    *cursor |= ((distance >> 2) & 0x3ffffff); // imm26
    }
 
@@ -528,7 +528,7 @@ int64_t OMR::ARM64::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
    }
 
 bool
-OMR::ARM64::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+OMR::ARM64::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
    {
    return
       !self()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(targetAddress, sourceAddress) ||

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -412,14 +412,14 @@ uint32_t
 TR::S390CallSnippet::getLength(int32_t  estimatedSnippetStart)
    {
    // *this   swipeable for debugger
-   // length = instructionCountForArgsInBytes + (BASR + L(or LG) + BASR +3*sizeof(uintptrj_t)) + NOPs
+   // length = instructionCountForArgsInBytes + (BASR + L(or LG) + BASR +3*sizeof(uintptr_t)) + NOPs
    // number of pad bytes has not been set when this method is called to
    // estimate codebuffer size, so -- i'll put an conservative number here...
    return (instructionCountForArguments(getNode(), cg()) +
       getPICBinaryLength(cg()) +
-      3 * sizeof(uintptrj_t) +
+      3 * sizeof(uintptr_t) +
       getRuntimeInstrumentationOnOffInstructionLength(cg()) +
-      sizeof(uintptrj_t));  // the last item is for padding
+      sizeof(uintptr_t));  // the last item is for padding
    }
 
 
@@ -610,14 +610,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390CallSnippet * snippet)
       bufferPos += 6;
       }
 
-   printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+   printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
    trfprintf(pOutFile, "DC   \t%p \t\t# Method Address", glueRef->getMethodAddress());
-   bufferPos += sizeof(intptrj_t);
+   bufferPos += sizeof(intptr_t);
 
 
-   printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+   printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
    trfprintf(pOutFile, "DC   \t%p \t\t# Call Site RA", snippet->getCallRA());
-   bufferPos += sizeof(intptrj_t);
+   bufferPos += sizeof(intptr_t);
 
    if (methodSymRef->isUnresolved())
       {
@@ -625,7 +625,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390CallSnippet * snippet)
       }
    else
       {
-      printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+      printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
       }
 
    trfprintf(pOutFile, "DC   \t%p \t\t# Method Pointer", methodSymRef->isUnresolved() ? 0 : methodSymbol->getMethodAddress());

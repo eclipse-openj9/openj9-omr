@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,7 +68,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
    // Generate RIOFF if RI is supported.
    cursor = generateRuntimeInstrumentationOnOffInstruction(cg(), cursor, TR::InstOpCode::RIOFF);
 
-   intptrj_t branchInstructionStartAddress;
+   intptr_t branchInstructionStartAddress;
 
    if (                                                                               // Methods that require
              alwaysExcept())                                                          // R14 to point to snippet:
@@ -82,7 +82,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
       // will see R14 is pointing to this snippet, and pick up the correct
       // stack map.
 
-      branchInstructionStartAddress = (intptrj_t)cursor;
+      branchInstructionStartAddress = (intptr_t)cursor;
       *(int16_t *) cursor = 0xC0E5;                                                   // BRASL  R14, <Helper Addr>
       cursor += sizeof(int16_t);
       }
@@ -93,13 +93,13 @@ TR::S390HelperCallSnippet::emitSnippetBody()
       // completes, it can jump back properly.
 
       // Load Return Address into R14.
-      intptrj_t returnAddr = (intptrj_t)getReStartLabel()->getCodeLocation();         // LARL   R14, <Return Addr>
+      intptr_t returnAddr = (intptr_t)getReStartLabel()->getCodeLocation();         // LARL   R14, <Return Addr>
       *(int16_t *) cursor = 0xC0E0;
       cursor += sizeof(int16_t);
-      *(int32_t *) cursor = (int32_t)((returnAddr - (intptrj_t)(cursor - 2)) / 2);
+      *(int32_t *) cursor = (int32_t)((returnAddr - (intptr_t)(cursor - 2)) / 2);
       cursor += sizeof(int32_t);
 
-      branchInstructionStartAddress = (intptrj_t)cursor;
+      branchInstructionStartAddress = (intptr_t)cursor;
       *(int16_t *) cursor = 0xC0F4;                                                   // BRCL   <Helper Addr>
       cursor += sizeof(int16_t);
       }
@@ -108,7 +108,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
    // If MCC is not supported, everything should be reachable.
    // If MCC is supported, we will look up the appropriate trampoline, if
    //     necessary.
-   intptrj_t destAddr = (intptrj_t)(helperSymRef->getSymbol()->castToMethodSymbol()->getMethodAddress());
+   intptr_t destAddr = (intptr_t)(helperSymRef->getSymbol()->castToMethodSymbol()->getMethodAddress());
 
 #if defined(TR_TARGET_64BIT)
 #if defined(J9ZOS390)
@@ -195,7 +195,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390HelperCallSnippet * snippet)
       {
       printPrefix(pOutFile, NULL, bufferPos, 6);
       trfprintf(pOutFile, "LARL \tGPR14, <%p>\t# Return Addr of Main Line.",
-                                   (intptrj_t) snippet->getReStartLabel()->getCodeLocation());
+                                   (intptr_t) snippet->getReStartLabel()->getCodeLocation());
       bufferPos += 6;
       printPrefix(pOutFile, NULL, bufferPos, 6);
       trfprintf(pOutFile, "BRCL \t<%p>\t# Branch to Helper Method %s",

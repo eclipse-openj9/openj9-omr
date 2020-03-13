@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -70,13 +70,13 @@ uint32_t encodeHelperBranchAndLink(TR::SymbolReference *symRef, uint8_t *cursor,
 
 uint32_t encodeHelperBranch(bool isBranchAndLink, TR::SymbolReference *symRef, uint8_t *cursor, TR_ARMConditionCode cc, TR::Node *node, TR::CodeGenerator *cg)
    {
-   intptrj_t target = (intptrj_t)symRef->getMethodAddress();
+   intptr_t target = (intptr_t)symRef->getMethodAddress();
 
-   if (cg->directCallRequiresTrampoline(target, (intptrj_t)cursor))
+   if (cg->directCallRequiresTrampoline(target, (intptr_t)cursor))
       {
       target = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
 
-      TR_ASSERT_FATAL(cg->comp()->target().cpu.isTargetWithinBranchImmediateRange(target, (intptrj_t)cursor),
+      TR_ASSERT_FATAL(cg->comp()->target().cpu.isTargetWithinBranchImmediateRange(target, (intptr_t)cursor),
                       "Target address is out of range");
       }
 
@@ -291,7 +291,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
             {
             int32_t imm = getSourceImmediate();
 
-            if (cg()->comp()->target().cpu.isTargetWithinBranchImmediateRange((intptrj_t)imm, (intptrj_t)cursor))
+            if (cg()->comp()->target().cpu.isTargetWithinBranchImmediateRange((intptr_t)imm, (intptr_t)cursor))
                {
                *(int32_t *)cursor |= encodeBranchDistance((uintptr_t)cursor, (uint32_t) imm);
                }
@@ -319,9 +319,9 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
                else
                   {
                   // have to use the trampoline as the target and not the label
-                  intptrj_t targetAddress = cg()->fe()->methodTrampolineLookup(comp, getSymbolReference(), (void *)cursor);
+                  intptr_t targetAddress = cg()->fe()->methodTrampolineLookup(comp, getSymbolReference(), (void *)cursor);
 
-                  TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinBranchImmediateRange(targetAddress, (intptrj_t)cursor),
+                  TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinBranchImmediateRange(targetAddress, (intptr_t)cursor),
                                   "Target address is out of range");
 
                   *(int32_t *)cursor |= encodeBranchDistance((uintptr_t)cursor, (uintptr_t) targetAddress);

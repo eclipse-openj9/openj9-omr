@@ -401,7 +401,7 @@ TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethod
    }
 
 void
-TR::S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node* callNode, TR::RegisterDependencyConditions* deps, intptrj_t targetAddress, TR::Register* methodAddressReg, TR::Register* javaLitOffsetReg, TR::LabelSymbol* returnFromJNICallLabel, TR::S390JNICallDataSnippet* jniCallDataSnippet, bool isJNIGCPoint)
+TR::S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node* callNode, TR::RegisterDependencyConditions* deps, intptr_t targetAddress, TR::Register* methodAddressReg, TR::Register* javaLitOffsetReg, TR::LabelSymbol* returnFromJNICallLabel, TR::S390JNICallDataSnippet* jniCallDataSnippet, bool isJNIGCPoint)
    {
    TR::CodeGenerator * codeGen = cg();
 
@@ -442,7 +442,7 @@ TR::S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node* callNode, TR:
  */
 TR::Register *
 TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
-   TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
+   TR::RegisterDependencyConditions * deps, intptr_t targetAddress,
    TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
    TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {

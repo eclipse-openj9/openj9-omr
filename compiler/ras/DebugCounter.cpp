@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -324,9 +324,9 @@ TR::SymbolReference *TR::DebugCounter::getBumpCountSymRef(TR::Compilation *comp)
    return symRef;
    }
 
-intptrj_t TR::DebugCounter::getBumpCountAddress()
+intptr_t TR::DebugCounter::getBumpCountAddress()
    {
-   return (intptrj_t)&_bumpCount;
+   return (intptr_t)&_bumpCount;
    }
 
 void TR::DebugCounter::getInsertionCounterNames(TR::Compilation *comp, TR_OpaqueMethodBlock *method, int32_t bytecodeIndex, const char *(&counterNames)[3])
@@ -427,9 +427,9 @@ void TR::DebugCounterAggregation::aggregateDebugCounterHistogram(TR::Compilation
       }
    }
 
-intptrj_t TR::DebugCounterAggregation::getBumpCountAddress()
+intptr_t TR::DebugCounterAggregation::getBumpCountAddress()
    {
-   return (intptrj_t)&_bumpCount;
+   return (intptr_t)&_bumpCount;
    }
 
 TR::SymbolReference *TR::DebugCounterAggregation::getBumpCountSymRef(TR::Compilation *comp)

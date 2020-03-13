@@ -554,7 +554,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
             }
          else
             {
-            uintptrj_t staticAddressValue = (uintptrj_t) symbol->getStaticSymbol()->getStaticAddress();
+            uintptr_t staticAddressValue = (uintptr_t) symbol->getStaticSymbol()->getStaticAddress();
             TR::S390ConstantDataSnippet * targetsnippet;
             if (cg->comp()->target().is64Bit())
                {
@@ -611,7 +611,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
                else
                   self()->setBaseRegister(tempReg, cg);
                }
-            genLoadAddressConstant(cg, rootLoadOrStore, (uintptrj_t) symRef->getSymbol()->getStaticSymbol()->getStaticAddress(),
+            genLoadAddressConstant(cg, rootLoadOrStore, (uintptr_t) symRef->getSymbol()->getStaticSymbol()->getStaticAddress(),
                _baseRegister);
             cg->stopUsingRegister(tempReg);
             }
@@ -1337,7 +1337,7 @@ OMR::Z::MemoryReference::populateAddTree(TR::Node * subTree, TR::CodeGenerator *
       TR::Node * secondSubChild = integerChild->getSecondChild();
       if (secondSubChild->getOpCode().isLoadConst())
          {
-         intptrj_t value;
+         intptr_t value;
          if (usingAladd)
             {
             if (secondSubChild->getType().isInt32())
@@ -1354,7 +1354,7 @@ OMR::Z::MemoryReference::populateAddTree(TR::Node * subTree, TR::CodeGenerator *
             value = secondSubChild->getInt();
             }
 
-         intptrj_t totalOff = _offset - value;
+         intptr_t totalOff = _offset - value;
 
          if (cg->isDispInRange(totalOff) && integerChild->getRegister() == NULL)
             {
@@ -1606,7 +1606,7 @@ bool OMR::Z::MemoryReference::tryBaseIndexDispl(TR::CodeGenerator* cg, TR::Node*
    TR::Node* sub = NULL;
    TR::Node* base = NULL;
    TR::Node* index = NULL;
-   intptrj_t offset = 0;
+   intptr_t offset = 0;
    bool big = topAdd->getOpCodeValue() == TR::aladd;
    bool debug = false;
    TR::Register* breg = NULL;
@@ -1750,7 +1750,7 @@ bool OMR::Z::MemoryReference::ZeroBasePtr_EvaluateSubtree(TR::Node * subTree, TR
             return false;
             }
 #else // 32 bit
-         if ((dispVal >= TR::getMaxSigned<TR::Int32>()) || !cg->isDispInRange((intptrj_t)dispVal))
+         if ((dispVal >= TR::getMaxSigned<TR::Int32>()) || !cg->isDispInRange((intptr_t)dispVal))
             {
             return false;
             }
@@ -1768,7 +1768,7 @@ bool OMR::Z::MemoryReference::ZeroBasePtr_EvaluateSubtree(TR::Node * subTree, TR
          mr->setBaseRegister(NULL, cg);
 
          // The value of the const node refers to the offset from R0.
-         mr->addToOffset( (intptrj_t)( getIntegralValue( subTree ) & TR::getMaxUnsigned<TR::Int32>() ) );
+         mr->addToOffset( (intptr_t)( getIntegralValue( subTree ) & TR::getMaxUnsigned<TR::Int32>() ) );
          return true;
          }
       default:

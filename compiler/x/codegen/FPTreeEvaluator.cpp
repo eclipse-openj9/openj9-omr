@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -214,7 +214,7 @@ TR::Register *OMR::X86::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
          {
          TR::MemoryReference  *tempMR = generateX86MemoryReference(cg->findOrCreate4ByteConstant(node, node->getFloatBits()), cg);
          TR::Instruction *instr = generateRegMemInstruction(MOVSSRegMem, node, targetRegister, tempMR, cg);
-         setDiscardableIfPossible(TR_RematerializableFloat, targetRegister, node, instr, (intptrj_t)node->getFloatBits(), cg);
+         setDiscardableIfPossible(TR_RematerializableFloat, targetRegister, node, instr, (intptr_t)node->getFloatBits(), cg);
          }
       }
    else

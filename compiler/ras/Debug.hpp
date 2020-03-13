@@ -670,7 +670,7 @@ public:
    virtual void printSubGraph(TR::FILE *, TR_RegionStructure * regionStructure, uint32_t indentation);
    virtual void print(TR::FILE *, TR_InductionVariable * inductionVariable, uint32_t indentation);
    virtual bool inDebugExtension() { return false; }
-   virtual void* dxMallocAndRead(uintptrj_t size, void *remotePtr, bool dontAddToMap = false){return remotePtr;}
+   virtual void* dxMallocAndRead(uintptr_t size, void *remotePtr, bool dontAddToMap = false){return remotePtr;}
    virtual void* dxMallocAndReadString(void *remotePtr, bool dontAddToMap = false){return remotePtr;}
    virtual void  dxFree(void * localPtr){return;}
    void printTopLegend(TR::FILE *);
@@ -696,9 +696,9 @@ public:
    void printDFPNodeInfo(TR::Node * node, TR_PrettyPrinterString& output);
 #endif
 
-   int32_t * printStackAtlas(uintptrj_t startPC, uint8_t * mapBits, int32_t numberOfSlotsMapped, bool fourByteOffsets, int32_t * sizeOfStackAtlas, int32_t frameSize);
-   uint16_t printStackAtlasDetails(uintptrj_t startPC, uint8_t * mapBits, int numberOfSlotsMapped, bool fourByteOffsets, int32_t * sizeOfStackAtlas, int32_t frameSize, int32_t *offsetInfo);
-   uint8_t *printMapInfo(uintptrj_t startPC, uint8_t * mapBits, int32_t numberOfSlotsMapped, bool fourByteOffsets, int32_t * sizeOfStackAtlas, TR_ByteCodeInfo *byteCodeInfo, uint16_t indexOfFirstInternalPtr, int32_t offsetInfo[], bool nummaps=false);
+   int32_t * printStackAtlas(uintptr_t startPC, uint8_t * mapBits, int32_t numberOfSlotsMapped, bool fourByteOffsets, int32_t * sizeOfStackAtlas, int32_t frameSize);
+   uint16_t printStackAtlasDetails(uintptr_t startPC, uint8_t * mapBits, int numberOfSlotsMapped, bool fourByteOffsets, int32_t * sizeOfStackAtlas, int32_t frameSize, int32_t *offsetInfo);
+   uint8_t *printMapInfo(uintptr_t startPC, uint8_t * mapBits, int32_t numberOfSlotsMapped, bool fourByteOffsets, int32_t * sizeOfStackAtlas, TR_ByteCodeInfo *byteCodeInfo, uint16_t indexOfFirstInternalPtr, int32_t offsetInfo[], bool nummaps=false);
    void printStackMapInfo(uint8_t * & mapBits, int32_t numberOfSlotsMapped, int32_t * sizeOfStackAtlas, int32_t * offsetInfo, bool nummaps=false);
    void printJ9JITExceptionTableDetails(J9JITExceptionTable *data, J9JITExceptionTable *dbgextRemotePtr = NULL);
    void printSnippetLabel(TR::FILE *, TR::LabelSymbol *label, uint8_t *cursor, const char *comment1, const char *comment2 = 0);

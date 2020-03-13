@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -539,7 +539,7 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
             TR::addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
          }
       generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
-                                   (uintptrj_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
+                                   (uintptr_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
                                    dependencies, vrlRef);
 
       // tempMR registers possibly repeatedly declared dead but no harm.
@@ -1014,7 +1014,7 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
             TR::addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
          }
       generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
-         (uintptrj_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
+         (uintptr_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
          dependencies, vrlRef);
 
       // tempMR registers may be repeatedly declared dead but no harm.

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -745,7 +745,7 @@ class PPCDepImmInstruction : public PPCDepInstruction
 class PPCDepImmSymInstruction : public PPCDepInstruction
    {
 
-   uintptrj_t           _addrImmediate;
+   uintptr_t           _addrImmediate;
    TR::SymbolReference *_symbolReference;
    TR::Snippet         *_snippet;
 
@@ -753,7 +753,7 @@ class PPCDepImmSymInstruction : public PPCDepInstruction
 
    PPCDepImmSymInstruction(TR::InstOpCode::Mnemonic                       op,
                               TR::Node                            *n,
-                              uintptrj_t                           imm,
+                              uintptr_t                           imm,
                               TR::RegisterDependencyConditions *cond,
                               TR::SymbolReference                 *sr,
                               TR::Snippet                         *s, TR::CodeGenerator *codeGen)
@@ -763,7 +763,7 @@ class PPCDepImmSymInstruction : public PPCDepInstruction
    PPCDepImmSymInstruction(
                               TR::InstOpCode::Mnemonic                       op,
                               TR::Node                            *n,
-                              uintptrj_t                           imm,
+                              uintptr_t                           imm,
                               TR::RegisterDependencyConditions *cond,
                               TR::SymbolReference                 *sr,
                               TR::Snippet                         *s,
@@ -773,7 +773,7 @@ class PPCDepImmSymInstruction : public PPCDepInstruction
 
    virtual Kind getKind() { return IsDepImmSym; }
 
-   uintptrj_t getAddrImmediate() {return _addrImmediate;}
+   uintptr_t getAddrImmediate() {return _addrImmediate;}
 
    TR::SymbolReference *getSymbolReference() {return _symbolReference;}
    TR::SymbolReference *setSymbolReference(TR::SymbolReference *sr)
@@ -1082,23 +1082,23 @@ class PPCTrg1Src1Instruction : public PPCTrg1Instruction
 class PPCTrg1Src1ImmInstruction : public PPCTrg1Src1Instruction
    {
 
-   uintptrj_t _source1Immediate;
+   uintptr_t _source1Immediate;
 
    public:
 
    PPCTrg1Src1ImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register    *treg,
-                                TR::Register    *sreg, uintptrj_t imm, TR::CodeGenerator *codeGen)
+                                TR::Register    *sreg, uintptr_t imm, TR::CodeGenerator *codeGen)
            : PPCTrg1Src1Instruction(op, n, treg, sreg, codeGen),
              _source1Immediate(imm) {};
 
    PPCTrg1Src1ImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register    *treg,
-                                TR::Register    *sreg, uintptrj_t imm,
+                                TR::Register    *sreg, uintptr_t imm,
                                 TR::Instruction *precedingInstruction, TR::CodeGenerator *codeGen)
            : PPCTrg1Src1Instruction(op, n, treg, sreg, precedingInstruction, codeGen),
              _source1Immediate(imm) {};
 
    PPCTrg1Src1ImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register    *treg,
-                                TR::Register *sreg, TR::Register *cr0reg, uintptrj_t imm, TR::CodeGenerator *codeGen)
+                                TR::Register *sreg, TR::Register *cr0reg, uintptr_t imm, TR::CodeGenerator *codeGen)
            : PPCTrg1Src1Instruction(op, n, treg, sreg, codeGen),
              _source1Immediate(imm)
       {
@@ -1109,7 +1109,7 @@ class PPCTrg1Src1ImmInstruction : public PPCTrg1Src1Instruction
       }
 
    PPCTrg1Src1ImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register    *treg,
-                                TR::Register *sreg, TR::Register *cr0reg, uintptrj_t imm,
+                                TR::Register *sreg, TR::Register *cr0reg, uintptr_t imm,
                                 TR::Instruction *precedingInstruction, TR::CodeGenerator *codeGen)
            : PPCTrg1Src1Instruction(op, n, treg, sreg, precedingInstruction, codeGen),
              _source1Immediate(imm)
@@ -1125,7 +1125,7 @@ class PPCTrg1Src1ImmInstruction : public PPCTrg1Src1Instruction
    uint32_t getSourceImmediate()            {return (uint32_t)_source1Immediate;}
    uint32_t setSourceImmediate(uint32_t si) {return (_source1Immediate = si);}
 
-   uintptrj_t getSourceImmPtr()             {return _source1Immediate;}
+   uintptr_t getSourceImmPtr()             {return _source1Immediate;}
 
    void insertTargetRegister(uint32_t *instruction)
       {

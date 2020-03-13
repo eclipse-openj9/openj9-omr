@@ -94,7 +94,7 @@ inline bool getNodeIs64Bit(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 // Right now, this is duplicated in ControlFlowEval, BinaryEval and TreeEval.
-inline intptrj_t integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg)
+inline intptr_t integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (getNodeIs64Bit(node, cg))
       {
@@ -107,7 +107,7 @@ inline intptrj_t integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg)
       }
    }
 // Right now, this is duplicated in ControlFlowEval, BinaryEval and TreeEval.
-inline bool constNodeValueIs32BitSigned(TR::Node *node, intptrj_t *value, TR::CodeGenerator *cg)
+inline bool constNodeValueIs32BitSigned(TR::Node *node, intptr_t *value, TR::CodeGenerator *cg)
    {
    *value = integerConstNodeValue(node, cg);
    if (cg->comp()->target().is64Bit())
@@ -123,7 +123,7 @@ inline bool constNodeValueIs32BitSigned(TR::Node *node, intptrj_t *value, TR::Co
 
 
 static inline TR::Instruction *generateWiderCompare(TR::Node *node, TR::Register *targetReg,
-                                                   intptrj_t value,
+                                                   intptr_t value,
                                                    TR::CodeGenerator *cg)
    {
    // using 16bit immediate in a 32-bit compare instruction (0x66 length change prefix)
@@ -430,8 +430,8 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
    {
    int32_t i;
    uint32_t numBranchTableEntries = node->getNumChildren() - 2;
-   intptrj_t *branchTable =
-      (intptrj_t*)cg->allocateCodeMemory(numBranchTableEntries * sizeof(branchTable[0]), cg->getCurrentEvaluationBlock()->isCold());
+   intptr_t *branchTable =
+      (intptr_t*)cg->allocateCodeMemory(numBranchTableEntries * sizeof(branchTable[0]), cg->getCurrentEvaluationBlock()->isCold());
 
    TR::Register *selectorReg = cg->evaluate(node->getFirstChild());
    TR_X86OpCodes opCode;
@@ -486,7 +486,7 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
          (TR::Register *)NULL,
          selectorReg,
          (uint8_t)(cg->comp()->target().is64Bit()? 3 : 2),
-         (intptrj_t)branchTable, cg);
+         (intptr_t)branchTable, cg);
 
       jumpMR->setNeedsCodeAbsoluteExternalRelocation();
       }
@@ -617,14 +617,14 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
       cg->evaluate(secondChild);
       }
 
-   intptrj_t constValue;
+   intptr_t constValue;
    if (secondChild->getOpCode().isLoadConst() &&
        secondChild->getRegister() == NULL     &&
        (((secondChild->getSize() <= 2) && (!secondChild->isUnsigned())) ||
        (TR::TreeEvaluator::constNodeValueIs32BitSigned(secondChild, &constValue, cg) && !cg->constantAddressesCanChangeSize(secondChild))))
       {
       if(secondChild->getSize() <= 2)
-         constValue = (intptrj_t)secondChild->get64bitIntegralValue();
+         constValue = (intptr_t)secondChild->get64bitIntegralValue();
 
       // compare  (node)
       //    ?     (firstChild)
@@ -1023,7 +1023,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForOrder(
    TR::Node          *secondChild,
    TR::CodeGenerator *cg)
    {
-   intptrj_t constValue;
+   intptr_t constValue;
 
    if (secondChild->getOpCode().isLoadConst() &&
        secondChild->getRegister() == NULL     &&

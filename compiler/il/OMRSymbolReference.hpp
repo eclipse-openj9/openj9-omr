@@ -89,7 +89,7 @@ public:
    void init(TR::SymbolReferenceTable * symRefTab,
              uint32_t                   refNumber,
              TR::Symbol *               sym = 0,
-             intptrj_t                  offset = 0,
+             intptr_t                  offset = 0,
              mcount_t                   owningMethodIndex = JITTED_METHOD_INDEX,
              int32_t                    cpIndex = -1,
              int32_t                    unresolvedIndex = 0,
@@ -101,17 +101,17 @@ public:
 
    SymbolReference(TR::SymbolReferenceTable * symRefTab,
                    TR::Symbol * symbol,
-                   intptrj_t offset = 0);
+                   intptr_t offset = 0);
 
    SymbolReference(TR::SymbolReferenceTable * symRefTab,
                    int32_t refNumber,
                    TR::Symbol *ps,
-                   intptrj_t offset = 0);
+                   intptr_t offset = 0);
 
    SymbolReference(TR::SymbolReferenceTable *symRefTab,
                    TR::SymbolReferenceTable::CommonNonhelperSymbol number,
                    TR::Symbol *ps,
-                   intptrj_t offset = 0);
+                   intptr_t offset = 0);
 
    SymbolReference(TR::SymbolReferenceTable *symRefTab,
                    TR::Symbol *sym,
@@ -122,7 +122,7 @@ public:
 
    SymbolReference(TR::SymbolReferenceTable *symRefTab,
                    TR::SymbolReference& sr,
-                   intptrj_t offset,
+                   intptr_t offset,
                    TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN);
 
    void copyFlags(TR::SymbolReference * sr);
@@ -195,9 +195,9 @@ public:
 
    // Offset from the underlying symbol. Should the symbol have an offset, these
    // offsets are later summed together
-   intptrj_t            getOffset()                            { return _offset; }
-   void                 setOffset(intptrj_t o)                 { _offset = o; }
-   void                 addToOffset(intptrj_t o)               { _offset += o; }
+   intptr_t            getOffset()                            { return _offset; }
+   void                 setOffset(intptr_t o)                 { _offset = o; }
+   void                 addToOffset(intptr_t o)               { _offset += o; }
 
    uint32_t             getSize()                              { return _size; }
    void                 setSize(uint32_t size)                 { _size = size; }
@@ -215,7 +215,7 @@ public:
 
    TR::KnownObjectTable::Index getKnownObjectIndex();
    bool                        hasKnownObjectIndex();
-   uintptrj_t *                getKnownObjectReferenceLocation(TR::Compilation *comp);
+   uintptr_t *                getKnownObjectReferenceLocation(TR::Compilation *comp);
 
    /// Resolved final class that is not an array returns TRUE
    virtual void setAliasedTo(TR::SymbolReference *other, bool symmetric = true);
@@ -304,7 +304,7 @@ protected:
     */
    SymbolReference(TR::SymbolReferenceTable * symRefTab,
                    TR::Symbol *               symbol,
-                   intptrj_t                  offset,
+                   intptr_t                  offset,
                    const char *               name);
 
    friend class ::TR_Debug;
@@ -340,7 +340,7 @@ protected:
 
    TR_ExtraInfoForNew *        _extraInfo;             ///< Extra info pointer used for some SymbolReferences
 
-   intptrj_t                   _offset;                ///< Offset of reference from base address
+   intptr_t                   _offset;                ///< Offset of reference from base address
 
    uint32_t                    _size;                  ///< Byte size of this SymbolReference
 

@@ -53,7 +53,7 @@ extern "C" void _patchVirtualGuard(uint8_t* locationAddr, uint8_t* destinationAd
 
    if (debugTrace)
       {
-      printf("####> Patching VGNOP at locationAddr %p (%x), destinationAddr %p (%x), smpFlag: %d\n", volatileLocationAddr, *reinterpret_cast<volatile intptrj_t*>(volatileLocationAddr), destinationAddr, *reinterpret_cast<intptrj_t*>(destinationAddr), smpFlag);
+      printf("####> Patching VGNOP at locationAddr %p (%x), destinationAddr %p (%x), smpFlag: %d\n", volatileLocationAddr, *reinterpret_cast<volatile intptr_t*>(volatileLocationAddr), destinationAddr, *reinterpret_cast<intptr_t*>(destinationAddr), smpFlag);
       }
 
    int64_t displacement = static_cast<int64_t>(destinationAddr - volatileLocationAddr) / 2;

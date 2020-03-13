@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,7 +57,7 @@ TR::Register *OMR::RV::TreeEvaluator::cconstEvaluator(TR::Node *node, TR::CodeGe
 TR::Register *OMR::RV::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *tempReg = cg->allocateRegister();
-   intptrj_t address = node->getLongInt();
+   intptr_t address = node->getLongInt();
    loadConstant64(cg, node, address, tempReg);
    return node->setRegister(tempReg);
    }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -4503,7 +4503,7 @@ generateHelperCallInstruction(TR::Instruction * cursor, TR_RuntimeHelper index, 
    {
    TR::SymbolReference * helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(index, false, false, false);
    cg->resetIsLeafMethod();
-   return new (cg->trHeapMemory()) TR::X86ImmSymInstruction(cursor, CALLImm4, (uintptrj_t)helperSymRef->getMethodAddress(), helperSymRef, cg);
+   return new (cg->trHeapMemory()) TR::X86ImmSymInstruction(cursor, CALLImm4, (uintptr_t)helperSymRef->getMethodAddress(), helperSymRef, cg);
    }
 
 TR::X86ImmSymInstruction  *
@@ -4514,7 +4514,7 @@ generateHelperCallInstruction(TR::Node * node, TR_RuntimeHelper index, TR::Regis
    return generateImmSymInstruction(
          CALLImm4,
          node,
-         (uintptrj_t)helperSymRef->getMethodAddress(),
+         (uintptr_t)helperSymRef->getMethodAddress(),
          helperSymRef,
          dependencies,
          cg);

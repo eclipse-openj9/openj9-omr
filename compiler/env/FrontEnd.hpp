@@ -194,10 +194,10 @@ public:
    virtual int32_t getArraySpineShift(int32_t);
    virtual int32_t getArrayletMask(int32_t);
    virtual int32_t getArrayletLeafIndex(int32_t, int32_t);
-   virtual uintptrj_t getOffsetOfContiguousArraySizeField();
-   virtual uintptrj_t getOffsetOfDiscontiguousArraySizeField();
-   virtual uintptrj_t getObjectHeaderSizeInBytes();
-   virtual uintptrj_t getOffsetOfIndexableSizeField();
+   virtual uintptr_t getOffsetOfContiguousArraySizeField();
+   virtual uintptr_t getOffsetOfDiscontiguousArraySizeField();
+   virtual uintptr_t getObjectHeaderSizeInBytes();
+   virtual uintptr_t getOffsetOfIndexableSizeField();
 
    // --------------------------------------------------------------------------
    // J9 Classes / VM?
@@ -219,15 +219,15 @@ public:
    virtual TR_OpaqueClassBlock * getLeafComponentClassFromArrayClass(TR_OpaqueClassBlock *arrayClass);
 
    // Null-terminated.  bufferSize >= 1+getStringUTF8Length(objectPointer).  Returns buffer just for convenience.
-   virtual char *getStringUTF8(uintptrj_t objectPointer, char *buffer, intptrj_t bufferSize);
-   virtual intptrj_t getStringUTF8Length(uintptrj_t objectPointer);
+   virtual char *getStringUTF8(uintptr_t objectPointer, char *buffer, intptr_t bufferSize);
+   virtual intptr_t getStringUTF8Length(uintptr_t objectPointer);
 
    // --------------------------------------------------------------------------
    // Code cache
    // --------------------------------------------------------------------------
 
    virtual void reserveTrampolineIfNecessary(TR::Compilation *, TR::SymbolReference *symRef, bool inBinaryEncoding);
-   virtual intptrj_t methodTrampolineLookup(TR::Compilation *, TR::SymbolReference *symRef, void * callSite);
+   virtual intptr_t methodTrampolineLookup(TR::Compilation *, TR::SymbolReference *symRef, void * callSite);
 
    // --------------------------------------------------------------------------
    // Stay in FrontEnd

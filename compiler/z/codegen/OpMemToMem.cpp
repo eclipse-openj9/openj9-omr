@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -115,7 +115,7 @@ MemToMemVarLenMacroOp::generateLoop()
    // 1) to avoid the AGI on the indirection and (more importantly)
    // 2) to ensure that no weird spilling happens if the code decides it needs
    //    to allocate a register at this point for the literal pool base address.
-   intptrj_t helper = 0;
+   intptr_t helper = 0;
 
    if (!useEXForRemainder())
       {
@@ -127,7 +127,7 @@ MemToMemVarLenMacroOp::generateLoop()
       //use literal for aot to make it easier for relocation
       if (_cg->needRelocationsForHelpers())
          {
-         generateRegLitRefInstruction(_cg, TR::InstOpCode::getLoadOpCode(), _rootNode, _raReg, (uintptrj_t)getHelperSymRef(), TR_HelperAddress, NULL, NULL, NULL);
+         generateRegLitRefInstruction(_cg, TR::InstOpCode::getLoadOpCode(), _rootNode, _raReg, (uintptr_t)getHelperSymRef(), TR_HelperAddress, NULL, NULL, NULL);
          }
       else
          {
@@ -569,41 +569,41 @@ MemInitConstLenMacroOp::generateRemainder()
    return cursor;
    }
 
-intptrj_t
+intptr_t
 MemInitVarLenMacroOp::getHelper()
    {
-   return (intptrj_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arraySetGeneralHelper, false, false, false)->getMethodAddress();
+   return (intptr_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arraySetGeneralHelper, false, false, false)->getMethodAddress();
    }
 
-intptrj_t
+intptr_t
 MemClearVarLenMacroOp::getHelper()
    {
-   return (intptrj_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arraySetZeroHelper, false, false, false)->getMethodAddress();
+   return (intptr_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arraySetZeroHelper, false, false, false)->getMethodAddress();
    }
 
-intptrj_t
+intptr_t
 MemCpyVarLenMacroOp::getHelper()
    {
-   return (intptrj_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayCopyHelper, false, false, false)->getMethodAddress();
+   return (intptr_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayCopyHelper, false, false, false)->getMethodAddress();
    }
 
-intptrj_t
+intptr_t
 MemCmpVarLenMacroOp::getHelper()
    {
-   return (intptrj_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayCmpHelper, false, false, false)->getMethodAddress();
+   return (intptr_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayCmpHelper, false, false, false)->getMethodAddress();
    }
 
-intptrj_t
+intptr_t
 BitOpMemVarLenMacroOp::getHelper()
    {
    switch(_opcode)
       {
       case TR::InstOpCode::XC:
-         return (intptrj_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayXORHelper, false, false, false)->getMethodAddress();
+         return (intptr_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayXORHelper, false, false, false)->getMethodAddress();
       case TR::InstOpCode::NC:
-         return (intptrj_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayANDHelper, false, false, false)->getMethodAddress();
+         return (intptr_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayANDHelper, false, false, false)->getMethodAddress();
       case TR::InstOpCode::OC:
-         return (intptrj_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayORHelper, false, false, false)->getMethodAddress();
+         return (intptr_t) _cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayORHelper, false, false, false)->getMethodAddress();
       default:
          TR_ASSERT( 0, "not support");
       }

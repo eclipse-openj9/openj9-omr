@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -308,7 +308,7 @@ uint8_t *TR::X86BoundaryAvoidanceInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
 
-   int32_t modulo = ((uintptrj_t)(instructionStart + _minPaddingLength)) % _boundarySpacing;
+   int32_t modulo = ((uintptr_t)(instructionStart + _minPaddingLength)) % _boundarySpacing;
    int32_t padLength = 0;
 
    const TR_AtomicRegion *cur = _atomicRegions;
@@ -402,7 +402,7 @@ uint8_t *TR::X86AlignmentInstruction::generateBinaryEncoding()
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor = instructionStart;
 
-   intptrj_t paddingLength = cg()->alignment(cursor + _minPaddingLength, _boundary, _margin);
+   intptr_t paddingLength = cg()->alignment(cursor + _minPaddingLength, _boundary, _margin);
    cursor = cg()->generatePadding(cursor, _minPaddingLength + paddingLength, this);
 
    setBinaryLength(cursor - instructionStart);
@@ -498,7 +498,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
             else
                {
                cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative8BitRelocation(cursor, label));
-               *cursor = (uint8_t)(-(intptrj_t)(cursor+1));
+               *cursor = (uint8_t)(-(intptr_t)(cursor+1));
                }
 
             cursor += 1;
@@ -527,7 +527,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
             else
                {
                cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
-               *(uint32_t *)cursor = (uint32_t)(-(intptrj_t)(cursor+4));
+               *(uint32_t *)cursor = (uint32_t)(-(intptr_t)(cursor+4));
                }
 
             cursor += 4;
@@ -936,7 +936,7 @@ uint8_t* TR::X86ImmInstruction::generateOperand(uint8_t* cursor)
       *(int32_t *)cursor = (int32_t)getSourceImmediate();
       if (getOpCode().isCallImmOp())
          {
-         *(int32_t *)cursor -= (int32_t)(intptrj_t)(cursor + 4);
+         *(int32_t *)cursor -= (int32_t)(intptr_t)(cursor + 4);
          }
       cursor += 4;
       }
@@ -1017,7 +1017,7 @@ uint8_t* TR::X86ImmSnippetInstruction::generateOperand(uint8_t* cursor)
 
       if (getOpCode().isCallImmOp())
          {
-         *(int32_t *)cursor -= (int32_t)(intptrj_t)(cursor + 4);
+         *(int32_t *)cursor -= (int32_t)(intptr_t)(cursor + 4);
          }
       cursor += 4;
       }
@@ -1113,7 +1113,7 @@ TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       else if (getOpCodeValue() == DDImm4)
          {
          cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                (uint8_t *)(uintptrj_t)getSourceImmediate(),
+                                                                (uint8_t *)(uintptr_t)getSourceImmediate(),
                                                                 getNode() ? (uint8_t *)(uintptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                TR_ConstantPool,
                                                                cg()),
@@ -1210,21 +1210,21 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
       TR::Symbol *sym = getSymbolReference()->getSymbol();
 
       if (sym->isStatic())
-         *(intptrj_t *)cursor = (intptr_t)(sym->getStaticSymbol()->getStaticAddress());
+         *(intptr_t *)cursor = (intptr_t)(sym->getStaticSymbol()->getStaticAddress());
       else
          *(int32_t *)cursor = (int32_t)getSourceImmediate();
 
       if (getOpCode().isCallImmOp() || getOpCode().isBranchOp())
          {
-         intptrj_t targetAddress = (int32_t)getSourceImmediate();
+         intptr_t targetAddress = (int32_t)getSourceImmediate();
 
          if (cg()->comp()->target().is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
             {
             cg()->redoTrampolineReservationIfNecessary(this, getSymbolReference());
             }
 
-         intptrj_t currentInstructionAddress = (intptrj_t)(cursor-1);
-         intptrj_t nextInstructionAddress = (intptrj_t)(cursor+4);
+         intptr_t currentInstructionAddress = (intptr_t)(cursor-1);
+         intptr_t nextInstructionAddress = (intptr_t)(cursor+4);
 
          if (comp->isRecursiveMethodTarget(sym))
             {
@@ -1234,12 +1234,12 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
             if (comp->target().is64Bit())
                {
                start += TR_LinkageInfo::get(start)->getReservedWord();
-               TR_ASSERT_FATAL(comp->target().cpu.isTargetWithinRIPRange((intptrj_t)start, nextInstructionAddress),
+               TR_ASSERT_FATAL(comp->target().cpu.isTargetWithinRIPRange((intptr_t)start, nextInstructionAddress),
                                "Method start must be within RIP range");
                cg()->fe()->reserveTrampolineIfNecessary(comp, getSymbolReference(), true);
                }
 
-            targetAddress = (intptrj_t)start;
+            targetAddress = (intptr_t)start;
             }
          else
             {
@@ -1281,10 +1281,10 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                      {
                      TR::ResolvedMethodSymbol *resolvedMethodSym = sym->getResolvedMethodSymbol();
                      TR_ResolvedMethod *resolvedMethod = resolvedMethodSym ? resolvedMethodSym->getResolvedMethod() : 0;
-                     targetAddress = (uintptrj_t)resolvedMethod->startAddressForJNIMethod(comp);
+                     targetAddress = (uintptr_t)resolvedMethod->startAddressForJNIMethod(comp);
                      }
                   else
-                     targetAddress = (intptrj_t)getSymbolReference()->getMethodAddress();
+                     targetAddress = (intptr_t)getSymbolReference()->getMethodAddress();
                   }
 
                bool isTrampolineRequired = cg()->directCallRequiresTrampoline(targetAddress, currentInstructionAddress);
@@ -1335,7 +1335,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                {
                if (sym->isStatic())
                   {
-                  *(intptrj_t *)cursor = (intptrj_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(cg()->comp(), (TR_OpaqueClassBlock*)sym->getStaticSymbol()->getStaticAddress());
+                  *(intptr_t *)cursor = (intptr_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(cg()->comp(), (TR_OpaqueClassBlock*)sym->getStaticSymbol()->getStaticAddress());
                   }
                else
                   {

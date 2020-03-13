@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,7 +64,7 @@ void TR::PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
 
 void TR::PPCPairedLabelAbsoluteRelocation::apply(TR::CodeGenerator *cg)
    {
-   intptrj_t p = (intptrj_t)getLabel()->getCodeLocation();
+   intptr_t p = (intptr_t)getLabel()->getCodeLocation();
 
    if (cg->comp()->target().is32Bit())
       {

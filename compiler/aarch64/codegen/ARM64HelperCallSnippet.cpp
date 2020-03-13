@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -94,7 +94,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64HelperCallSnippet * snippet)
       {
       bufferPos += ARM64_INSTRUCTION_LENGTH;
       intptr_t restartLocation = (intptr_t)restartLabel->getCodeLocation();
-      if (comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange((intptrj_t)restartLocation, (intptrj_t)bufferPos))
+      if (comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange((intptr_t)restartLocation, (intptr_t)bufferPos))
          {
          printPrefix(pOutFile, NULL, bufferPos, 4);
          trfprintf(pOutFile, "b \t" POINTER_PRINTF_FORMAT "\t\t; Back to ", restartLocation);

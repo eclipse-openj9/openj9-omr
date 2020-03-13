@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -229,7 +229,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
                if (cg()->comp()->target().is64Bit())
                   targetAdress2 = (uint8_t *) *((uint64_t*) cursor);
                else
-                  targetAdress2 = (uint8_t *) *((uintptrj_t*) cursor);
+                  targetAdress2 = (uint8_t *) *((uintptr_t*) cursor);
                }
             relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode(), targetAdress2, (TR_ExternalRelocationTargetKind) reloType, cg());
             cg()->addExternalRelocation(relo, __FILE__, __LINE__, getNode());
@@ -259,29 +259,29 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
       {
       if (std::find(comp->getSnippetsToBePatchedOnClassRedefinition()->begin(), comp->getSnippetsToBePatchedOnClassRedefinition()->end(), this) != comp->getSnippetsToBePatchedOnClassRedefinition()->end())
          {
-         cg()->jitAddPicToPatchOnClassRedefinition(((void *) (*(uintptrj_t *) cursor)), (void *) (uintptrj_t *) cursor);
+         cg()->jitAddPicToPatchOnClassRedefinition(((void *) (*(uintptr_t *) cursor)), (void *) (uintptr_t *) cursor);
          }
 
       if (std::find(comp->getSnippetsToBePatchedOnClassUnload()->begin(), comp->getSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getSnippetsToBePatchedOnClassUnload()->end())
-         cg()->jitAddPicToPatchOnClassUnload(((void *) (*(uintptrj_t *) cursor)), (void *) (uintptrj_t *) cursor);
+         cg()->jitAddPicToPatchOnClassUnload(((void *) (*(uintptr_t *) cursor)), (void *) (uintptr_t *) cursor);
 
       if (std::find(comp->getMethodSnippetsToBePatchedOnClassUnload()->begin(), comp->getMethodSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getMethodSnippetsToBePatchedOnClassUnload()->end())
          {
-         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptrj_t *) cursor), comp->getCurrentMethod())->classOfMethod();
-         cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) (uintptrj_t *) cursor);
+         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptr_t *) cursor), comp->getCurrentMethod())->classOfMethod();
+         cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) (uintptr_t *) cursor);
          }
       }
    else
       {
       if (std::find(comp->getSnippetsToBePatchedOnClassUnload()->begin(), comp->getSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getSnippetsToBePatchedOnClassUnload()->end())
          {
-         cg()->jitAddPicToPatchOnClassUnload(((void *) (*(uintptrj_t *) cursor)), (void *) (uintptrj_t *) cursor);
+         cg()->jitAddPicToPatchOnClassUnload(((void *) (*(uintptr_t *) cursor)), (void *) (uintptr_t *) cursor);
          }
 
       if (std::find(comp->getMethodSnippetsToBePatchedOnClassUnload()->begin(), comp->getMethodSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getMethodSnippetsToBePatchedOnClassUnload()->end())
          {
-         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptrj_t *) cursor), comp->getCurrentMethod())->classOfMethod();
-         cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) (uintptrj_t *) cursor);
+         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptr_t *) cursor), comp->getCurrentMethod())->classOfMethod();
+         cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) (uintptr_t *) cursor);
          }
       }
 
@@ -292,11 +292,11 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
       {
       uint8_t * udsPatchLocation = getUnresolvedDataSnippet()->getLiteralPoolPatchAddress();
       TR_ASSERT(udsPatchLocation != NULL,"Literal Pool Reference has NULL Unresolved Data Snippet patch site!");
-      *(intptrj_t *)udsPatchLocation = (intptrj_t)cursor;
+      *(intptr_t *)udsPatchLocation = (intptr_t)cursor;
       getUnresolvedDataSnippet()->setLiteralPoolSlot(cursor);
       if (getUnresolvedDataSnippet()->getDataSymbol()->isClassObject() && cg()->wantToPatchClassPointer(NULL, cursor)) // unresolved
          {
-         cg()->jitAddPicToPatchOnClassRedefinition((void*) *(uintptrj_t *)cursor , (void *) cursor, true);
+         cg()->jitAddPicToPatchOnClassRedefinition((void*) *(uintptr_t *)cursor , (void *) cursor, true);
          }
       }
 #endif
@@ -323,7 +323,7 @@ TR::S390ConstantDataSnippet::emitSnippetBody()
       case TR_ClassAddress:
       case TR_ClassObject:
          {
-         uintptrj_t romClassPtr = TR::Compiler->cls.persistentClassPointerFromClassPointer(comp, (TR_OpaqueClassBlock*)(*((uintptrj_t*)cursor)));
+         uintptr_t romClassPtr = TR::Compiler->cls.persistentClassPointerFromClassPointer(comp, (TR_OpaqueClassBlock*)(*((uintptr_t*)cursor)));
          memcpy(cursor, &romClassPtr, _length);
          }
          break;
@@ -519,17 +519,17 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
       AOTcgDiag1(comp, "TR::S390JNICallDataSnippet::emitSnippetBody cursor=%x\n", cursor);
       // Ensure pointer sized alignment
       int32_t alignSize = TR::Compiler->om.sizeofReferenceAddress();
-      int32_t padBytes = ((intptrj_t)cursor + alignSize -1) / alignSize * alignSize - (intptrj_t)cursor;
+      int32_t padBytes = ((intptr_t)cursor + alignSize -1) / alignSize * alignSize - (intptr_t)cursor;
       cursor += padBytes;
 
       getSnippetLabel()->setCodeLocation(cursor);
       TR::Node * callNode = getNode();
 
-      intptrj_t snippetStart = (intptrj_t)cursor;
+      intptr_t snippetStart = (intptr_t)cursor;
 
       //  JNI Callout Frame data
       // _ramMethod
-      *(intptrj_t *) cursor = (intptrj_t) _ramMethod;
+      *(intptr_t *) cursor = (intptr_t) _ramMethod;
 
       uint32_t reloType;
       if (getNode()->getSymbol()->castToResolvedMethodSymbol()->isSpecial())
@@ -556,10 +556,10 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
       cursor += TR::Compiler->om.sizeofReferenceAddress();
 
       // _JNICallOutFrameFlags
-       *(intptrj_t *) cursor = (intptrj_t) _JNICallOutFrameFlags;
+       *(intptr_t *) cursor = (intptr_t) _JNICallOutFrameFlags;
        cursor += TR::Compiler->om.sizeofReferenceAddress();
        // _returnFromJNICall
-       *(intptrj_t *) cursor = (intptrj_t) (_returnFromJNICallLabel->getCodeLocation());
+       *(intptr_t *) cursor = (intptr_t) (_returnFromJNICallLabel->getCodeLocation());
 
        AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
        cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, _returnFromJNICallLabel));
@@ -568,34 +568,34 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
 
        cursor += TR::Compiler->om.sizeofReferenceAddress();
        // _savedPC
-       *(intptrj_t *) cursor = (intptrj_t) _savedPC;
+       *(intptr_t *) cursor = (intptr_t) _savedPC;
        cursor += TR::Compiler->om.sizeofReferenceAddress();
        // _tagBits
-       *(intptrj_t *) cursor = (intptrj_t) _tagBits;
+       *(intptr_t *) cursor = (intptr_t) _tagBits;
        cursor += TR::Compiler->om.sizeofReferenceAddress();
 
        //VMThread data
        // _pc
-       *(intptrj_t *) cursor = (intptrj_t) _pc;
+       *(intptr_t *) cursor = (intptr_t) _pc;
        cursor += TR::Compiler->om.sizeofReferenceAddress();
        // _literals
-       *(intptrj_t *) cursor = (intptrj_t) _literals;
+       *(intptr_t *) cursor = (intptr_t) _literals;
        cursor += TR::Compiler->om.sizeofReferenceAddress();
        // _jitStackFrameFlags
-       *(intptrj_t *) cursor = (intptrj_t) _jitStackFrameFlags;
+       *(intptr_t *) cursor = (intptr_t) _jitStackFrameFlags;
        cursor += TR::Compiler->om.sizeofReferenceAddress();
 
        // _constReleaseVMAccessMask
-      *(intptrj_t *) cursor = (intptrj_t) _constReleaseVMAccessMask;
+      *(intptr_t *) cursor = (intptr_t) _constReleaseVMAccessMask;
       cursor += TR::Compiler->om.sizeofReferenceAddress();
       // _constReleaseVMAccessOutOfLineMask
-      *(intptrj_t *) cursor = (intptrj_t) _constReleaseVMAccessOutOfLineMask;
+      *(intptr_t *) cursor = (intptr_t) _constReleaseVMAccessOutOfLineMask;
       cursor += TR::Compiler->om.sizeofReferenceAddress();
 
       // _targetAddress/function pointer of native method
-      *(intptrj_t *) cursor = (intptrj_t) _targetAddress;
+      *(intptr_t *) cursor = (intptr_t) _targetAddress;
       TR_OpaqueMethodBlock *method = getNode()->getSymbol()->castToResolvedMethodSymbol()->getResolvedMethod()->getPersistentIdentifier();
-      TR_PatchJNICallSite::make(cg()->fe(), cg()->trPersistentMemory(), (uintptrj_t) method, cursor, comp->getMetadataAssumptionList());
+      TR_PatchJNICallSite::make(cg()->fe(), cg()->trPersistentMemory(), (uintptr_t) method, cursor, comp->getMetadataAssumptionList());
 
       if (getNode()->getSymbol()->castToResolvedMethodSymbol()->isSpecial())
          reloType = TR_JNISpecialTargetAddress;
@@ -647,49 +647,49 @@ TR::S390JNICallDataSnippet::print(TR::FILE *pOutFile, TR_Debug *debug)
 
    debug->printSnippetLabel(pOutFile, getSnippetLabel(), bufferPos, "JNI Call Data Snippet");
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# ramMethod",*((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# ramMethod",*((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# JNICallOutFrameFlags",*((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# JNICallOutFrameFlags",*((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# returnFromJNICall", *((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# returnFromJNICall", *((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# savedPC", *((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# savedPC", *((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# tagBits", *((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# tagBits", *((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# pc", *((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# pc", *((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# literals", *((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# literals", *((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# jitStackFrameFlags", *((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# jitStackFrameFlags", *((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# constReleaseVMAccessMask",*((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# constReleaseVMAccessMask",*((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# constReleaseVMAccessOutOfLineMask",*((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# constReleaseVMAccessOutOfLineMask",*((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
-   trfprintf(pOutFile, "DC   \t%p \t\t# targetAddress",*((intptrj_t*)bufferPos));
-   bufferPos += sizeof(intptrj_t);
+   debug->printPrefix(pOutFile, NULL, bufferPos, sizeof(intptr_t));
+   trfprintf(pOutFile, "DC   \t%p \t\t# targetAddress",*((intptr_t*)bufferPos));
+   bufferPos += sizeof(intptr_t);
 }
 
 void

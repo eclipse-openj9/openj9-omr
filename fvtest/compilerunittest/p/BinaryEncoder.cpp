@@ -510,7 +510,7 @@ TEST_P(PPCTrg1Src1ImmEncodingTest, encode) {
         fakeNode,
         cg()->machine()->getRealRegister(std::get<1>(GetParam())),
         cg()->machine()->getRealRegister(std::get<2>(GetParam())),
-        (uintptrj_t)std::get<3>(GetParam())
+        (uintptr_t)std::get<3>(GetParam())
     );
 
     ASSERT_EQ(
@@ -533,7 +533,7 @@ TEST_P(PPCTrg1Src1ImmEncodingTest, encodeRecordForm) {
         fakeNode,
         cg()->machine()->getRealRegister(std::get<1>(GetParam())),
         cg()->machine()->getRealRegister(std::get<2>(GetParam())),
-        (uintptrj_t)std::get<3>(GetParam())
+        (uintptr_t)std::get<3>(GetParam())
     );
 
     ASSERT_EQ(

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -62,7 +62,7 @@ OMR::CodeGenerator::createStackAtlas()
    //
    TR::Compilation *comp = self()->comp();
    TR::ResolvedMethodSymbol * methodSymbol = comp->getMethodSymbol();
-   intptrj_t stackSlotSize = TR::Compiler->om.sizeofReferenceAddress();
+   intptr_t stackSlotSize = TR::Compiler->om.sizeofReferenceAddress();
 
    int32_t slotIndex = 0;
    int32_t numberOfParmSlots = 0;

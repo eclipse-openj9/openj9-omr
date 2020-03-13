@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -287,12 +287,12 @@ int32_t OMR::Power::MemoryReference::getTOCOffset()
    // TODO: add checking for other type of TOC usages.
    if (self()->isUsingStaticTOC())
       {
-      return _symbolReference->getSymbol()->getStaticSymbol()->getTOCIndex() * sizeof(intptrj_t);
+      return _symbolReference->getSymbol()->getStaticSymbol()->getTOCIndex() * sizeof(intptr_t);
       }
    return 0;
    }
 
-void OMR::Power::MemoryReference::addToOffset(TR::Node * node, intptrj_t amount, TR::CodeGenerator *cg)
+void OMR::Power::MemoryReference::addToOffset(TR::Node * node, intptr_t amount, TR::CodeGenerator *cg)
    {
    // in compressedRefs mode, amount maybe heapBase constant, which in
    // most cases is quite large
@@ -312,11 +312,11 @@ void OMR::Power::MemoryReference::addToOffset(TR::Node * node, intptrj_t amount,
       {
       self()->consolidateRegisters(NULL, NULL, false, cg);
       }
-   intptrj_t displacement = self()->getOffset() + amount;
+   intptr_t displacement = self()->getOffset() + amount;
    if (displacement<LOWER_IMMED || displacement>UPPER_IMMED)
       {
       TR::Register  *newBase;
-      intptrj_t     upper, lower;
+      intptr_t     upper, lower;
 
       self()->setOffset(0);
       lower = displacement & 0x0000ffff;
@@ -402,7 +402,7 @@ void OMR::Power::MemoryReference::forceIndexedForm(TR::Node * node, TR::CodeGene
       }
 
    // true displacement available now
-   intptrj_t displacement = self()->getOffset();
+   intptr_t displacement = self()->getOffset();
 
    if (displacement == 0)
       {
@@ -570,7 +570,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             self()->populateMemoryReference(addressChild, cg);
             if (cg->comp()->target().is64Bit())
                {
-               intptrj_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
+               intptr_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
                                    integerChild->getInt() :
                                    integerChild->getLongInt();
                self()->addToOffset(integerChild, amount, cg);
@@ -596,7 +596,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          {
          if (cg->comp()->target().is64Bit())
             { // 64-bit
-            intptrj_t amount = (subTree->getSecondChild()->getOpCodeValue() == TR::iconst) ?
+            intptr_t amount = (subTree->getSecondChild()->getOpCodeValue() == TR::iconst) ?
                                 subTree->getSecondChild()->getInt() :
                                 subTree->getSecondChild()->getLongInt();
             // lshl
@@ -672,7 +672,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
                subTree->getOpCodeValue() == TR::iconst || // subTree->getOpCode().isLoadConst ?
                subTree->getOpCodeValue() == TR::lconst)
          {
-         intptrj_t amount = (subTree->getOpCodeValue() == TR::iconst) ?
+         intptr_t amount = (subTree->getOpCodeValue() == TR::iconst) ?
                              subTree->getInt() : subTree->getLongInt();
          self()->addToOffset(subTree, amount, cg);
          }
@@ -1551,7 +1551,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       {
       TR_ASSERT(!comp->getOption(TR_AOT), "HCR: AOT is currently no supported");
       TR::Register *reg = _baseRegister = cg->allocateRegister();
-      intptrj_t address = (intptrj_t)symbol->getStaticSymbol()->getStaticAddress();
+      intptr_t address = (intptr_t)symbol->getStaticSymbol()->getStaticAddress();
       loadAddressConstantInSnippet(cg, node ? node : cg->getCurrentEvaluationTreeTop()->getNode(), address, reg, NULL, isStore?TR::InstOpCode::Op_st :TR::InstOpCode::Op_load, false, NULL);
       return;
       }
@@ -1622,7 +1622,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       else if (isClass && !ref->isUnresolved() && comp->getOption(TR_UseSymbolValidationManager) && cg->needClassAndMethodPointerRelocations())
          {
          TR::Register *reg = _baseRegister = cg->allocateRegister();
-         loadAddressConstant(cg, true, nodeForSymbol, (intptrj_t)ref, reg, NULL, false, TR_ClassAddress);
+         loadAddressConstant(cg, true, nodeForSymbol, (intptr_t)ref, reg, NULL, false, TR_ClassAddress);
          return;
          }
       else
@@ -1653,7 +1653,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          }
 
       // TODO: Improve the code sequence for cases when we know pTOC is full.
-      TR::MemoryReference *tocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptrj_t), cg);
+      TR::MemoryReference *tocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
       tocRef->setSymbol(symbol, cg);
       tocRef->getSymbolReference()->copyFlags(ref);
       tocRef->setUsingStaticTOC();
@@ -1728,10 +1728,10 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       TR::PPCPairedRelocation         *staticRelocation;
       TR::Register                    *reg = _baseRegister = cg->allocateRegister();
       TR_ExternalRelocationTargetKind relocationKind;
-      intptrj_t                        addr;
+      intptr_t                        addr;
 
-      addr = symbol->isStatic() ? (intptrj_t)symbol->getStaticSymbol()->getStaticAddress() :
-                                  (intptrj_t)symbol->getMethodSymbol()->getMethodAddress();
+      addr = symbol->isStatic() ? (intptr_t)symbol->getStaticSymbol()->getStaticAddress() :
+                                  (intptr_t)symbol->getMethodSymbol()->getMethodAddress();
 
       if (!node) node = cg->getCurrentEvaluationTreeTop()->getNode();
 

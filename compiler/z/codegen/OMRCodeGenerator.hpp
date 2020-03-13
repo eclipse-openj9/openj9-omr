@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -125,7 +125,7 @@ extern int64_t getIntegralValue(TR::Node* node);
 #endif
 
 // Multi Code Cache Routines for checking whether an entry point is within reach of a BASRL.
-#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptrj_t)target, (intptrj_t)rip))
+#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptr_t)target, (intptr_t)rip))
 
 #define TR_MAX_MVC_SIZE 256
 #define TR_MAX_CLC_SIZE 256
@@ -222,7 +222,7 @@ public:
     *
     * @return : true if a trampoline is required; false otherwise.
     */
-   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress);
+   bool directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress);
 
    /**
     * \brief Tells the optimzers and codegen whether a load constant node should be rematerialized.

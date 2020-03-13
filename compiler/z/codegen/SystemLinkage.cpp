@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -191,7 +191,7 @@ TR::SystemLinkage::flipBitsRegisterSaveMask(uint16_t mask)
  * Front-end customization of callNativeFunction
  */
 void
-TR::SystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
+TR::SystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptr_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
       TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {
@@ -203,7 +203,7 @@ TR::SystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::Register
  * @return return value will be return value from system routine copied to private linkage return reg
  */
 TR::Register *
-TR::SystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
+TR::SystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptr_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
       TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {
@@ -356,12 +356,12 @@ bool TR::SystemLinkage::hasToBeOnStack(TR::ParameterSymbol * parm)
    return parm->getAssignedGlobalRegisterIndex() >=  0 &&  parm->isParmHasToBeOnStack();
    }
 
-intptrj_t TR::SystemLinkage::entryPointFromCompiledMethod()
+intptr_t TR::SystemLinkage::entryPointFromCompiledMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 
-intptrj_t TR::SystemLinkage::entryPointFromInterpretedMethod()
+intptr_t TR::SystemLinkage::entryPointFromInterpretedMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }

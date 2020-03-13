@@ -96,7 +96,7 @@ static inline bool alwaysInlineArrayCopy(TR::CodeGenerator *cg)
    return false;
    }
 
-TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node * node, intptrj_t address, TR::Register *trgReg, TR::Register *tempReg, TR::InstOpCode::Mnemonic opCode, bool isUnloadablePicSite, TR::Instruction *cursor)
+TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node * node, intptr_t address, TR::Register *trgReg, TR::Register *tempReg, TR::InstOpCode::Mnemonic opCode, bool isUnloadablePicSite, TR::Instruction *cursor)
    {
    TR::Instruction *q[4];
    bool isTmpRegLocal = false;
@@ -105,7 +105,7 @@ TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node * 
       tempReg = cg->allocateRegister();
       isTmpRegLocal = true;
       }
-   TR::Instruction *c = fixedSeqMemAccess(cg, node, 0, q, trgReg,  trgReg, opCode, sizeof(intptrj_t), cursor, tempReg);
+   TR::Instruction *c = fixedSeqMemAccess(cg, node, 0, q, trgReg,  trgReg, opCode, sizeof(intptr_t), cursor, tempReg);
    cg->findOrCreateAddressConstant(&address, TR::Address, q[0], q[1], q[2], q[3], node, isUnloadablePicSite);
    if (isTmpRegLocal)
       cg->stopUsingRegister(tempReg);
@@ -119,7 +119,7 @@ loadAddressConstant(
       TR::CodeGenerator *cg,
       bool isRelocatable,
       TR::Node * node,
-      intptrj_t value,
+      intptr_t value,
       TR::Register *trgReg,
       TR::Instruction *cursor,
       bool isPicSite,
@@ -137,7 +137,7 @@ TR::Instruction *
 loadAddressConstant(
       TR::CodeGenerator *cg,
       TR::Node * node,
-      intptrj_t value,
+      intptr_t value,
       TR::Register *trgReg,
       TR::Instruction *cursor,
       bool isPicSite,
@@ -150,7 +150,7 @@ loadAddressConstant(
    }
 
 
-TR::Instruction *loadActualConstant(TR::CodeGenerator *cg, TR::Node * node, intptrj_t value, TR::Register *trgReg, TR::Instruction *cursor, bool isPicSite)
+TR::Instruction *loadActualConstant(TR::CodeGenerator *cg, TR::Node * node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor, bool isPicSite)
    {
    if (cg->comp()->target().is32Bit())
       return loadConstant(cg, node, (int32_t)value, trgReg, cursor, isPicSite);
@@ -294,13 +294,13 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t va
    return cursor;
    }
 
-TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, intptrj_t addr, TR::Instruction **nibbles, TR::Register *srcOrTrg, TR::Register *baseReg, TR::InstOpCode::Mnemonic opCode, int32_t opSize, TR::Instruction *cursor, TR::Register *tempReg)
+TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, intptr_t addr, TR::Instruction **nibbles, TR::Register *srcOrTrg, TR::Register *baseReg, TR::InstOpCode::Mnemonic opCode, int32_t opSize, TR::Instruction *cursor, TR::Register *tempReg)
    {
    // Note: tempReg can be the same register as srcOrTrg. Caller needs to make sure it is right.
    TR::Instruction *cursorCopy = cursor;
    TR::InstOpCode    op(opCode);
-   intptrj_t       hiAddr = cg->hiValue(addr);
-   intptrj_t       loAddr = LO_VALUE(addr);
+   intptr_t       hiAddr = cg->hiValue(addr);
+   intptr_t       loAddr = LO_VALUE(addr);
    int32_t         idx;
    TR::Compilation *comp = cg->comp();
 
@@ -758,7 +758,7 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
                }
 
             generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
-                   (uintptrj_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
+                   (uintptr_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
                    dependencies, vrlRef);
 
             dependencies->stopUsingDepRegs(cg, lowReg, highReg);
@@ -1340,7 +1340,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
                }
 
             generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
-                   (uintptrj_t)vwlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
+                   (uintptr_t)vwlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
                    dependencies, vwlRef);
 
             dependencies->stopUsingDepRegs(cg, valueReg->getLowOrder(), valueReg->getHighOrder());
@@ -3919,7 +3919,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraytranslateEvaluator(TR::Node *node,
             helper = arraytranslateTRTO255 ? TR_PPCarrayTranslateTRTO255 : TR_PPCarrayTranslateTRTO;
             }
          TR::SymbolReference *helperSym = cg->symRefTab()->findOrCreateRuntimeHelper(helper, false, false, false);
-         uintptrj_t          addr = (uintptrj_t)helperSym->getMethodAddress();
+         uintptr_t          addr = (uintptr_t)helperSym->getMethodAddress();
          generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node, addr, deps, helperSym);
       }
 
@@ -4382,7 +4382,7 @@ OMR::Power::TreeEvaluator::generateHelperBranchAndLinkInstruction(
 
    return generateDepImmSymInstruction(
       cg, TR::InstOpCode::bl, node,
-      (uintptrj_t)helperSym->getMethodAddress(),
+      (uintptr_t)helperSym->getMethodAddress(),
       conditions, helperSym);
    }
 

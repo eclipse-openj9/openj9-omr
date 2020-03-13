@@ -990,7 +990,7 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
    loadNodes.add(vmThread);
    loadNodes.add(TR::Node::iconst(firstNode, osrMethodData->getInlinedSiteIndex()));
    TR::Node *loadNode = NULL;
-   intptrj_t i = 0;
+   intptr_t i = 0;
 
    bool alreadyLoadedSyncObjectTemp = false;
    bool alreadyLoadedThisTempForObjectCtor = false;
@@ -1301,7 +1301,7 @@ bool
 OMR::ResolvedMethodSymbol::sharesStackSlots(TR::Compilation *comp)
    {
    auto *methodSymbol = self();
-   intptrj_t i = 0;
+   intptr_t i = 0;
    bool isRequired = false;
 
    // Check for pending pushes
@@ -1890,7 +1890,7 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Co
 TR_OSRPoint *
 OMR::ResolvedMethodSymbol::findOSRPoint(TR_ByteCodeInfo &bcInfo)
    {
-   for (intptrj_t i = 0; i < _osrPoints.size(); ++i)
+   for (intptr_t i = 0; i < _osrPoints.size(); ++i)
       {
       TR_ByteCodeInfo& pointBCInfo = _osrPoints[i]->getByteCodeInfo();
       if (pointBCInfo.getByteCodeIndex() == bcInfo.getByteCodeIndex() &&

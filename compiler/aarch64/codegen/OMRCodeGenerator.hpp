@@ -73,7 +73,7 @@ extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, TR::Node *nod
  * @param[in] cursor : instruction cursor
  * @return generated instruction
  */
-extern TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *node, intptrj_t address, TR::Register *trgReg, TR_ExternalRelocationTargetKind reloKind, TR::Instruction *cursor=NULL);
+extern TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *node, intptr_t address, TR::Register *trgReg, TR_ExternalRelocationTargetKind reloKind, TR::Instruction *cursor=NULL);
 
 /**
  * @brief Helper function for encoding immediate value of logic instructions.
@@ -366,7 +366,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     *
     * @return : true if a trampoline is required; false otherwise.
     */
-   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress);
+   bool directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress);
 
    // OutOfLineCodeSection List functions
    TR::list<TR_ARM64OutOfLineCodeSection*> &getARM64OutOfLineCodeSectionList() {return _outOfLineCodeSectionList;}

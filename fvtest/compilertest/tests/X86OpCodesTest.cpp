@@ -911,7 +911,7 @@ X86OpCodesTest::invokeMemoryOperationTests()
    int64_t longDataArray[] = {LONG_NEG, LONG_POS, LONG_MAXIMUM, LONG_MINIMUM, LONG_ZERO};
    float floatDataArray[] = {FLOAT_NEG, FLOAT_POS, FLOAT_MAXIMUM, FLOAT_MINIMUM, FLOAT_ZERO};
    double doubleDataArray[] = {DOUBLE_NEG, DOUBLE_POS, DOUBLE_MAXIMUM, DOUBLE_MINIMUM, DOUBLE_ZERO};
-   uintptrj_t addressDataArray[] = {(uintptrj_t)&INT_NEG, (uintptrj_t)&LONG_POS, (uintptrj_t)&BYTE_MAXIMUM, (uintptrj_t)&SHORT_MINIMUM, (uintptrj_t)&FLOAT_ZERO};
+   uintptr_t addressDataArray[] = {(uintptr_t)&INT_NEG, (uintptr_t)&LONG_POS, (uintptr_t)&BYTE_MAXIMUM, (uintptr_t)&SHORT_MINIMUM, (uintptr_t)&FLOAT_ZERO};
 
    OMR_CT_EXPECT_EQ(_bLoad, BYTE_ZERO, _bLoad(BYTE_ZERO));
    OMR_CT_EXPECT_EQ(_bLoad, BYTE_NEG, _bLoad(BYTE_NEG));
@@ -977,7 +977,7 @@ X86OpCodesTest::invokeMemoryOperationTests()
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
       sprintf(resolvedMethodName, "iLoadiConst%d", i + 1);
-      uintptrj_t intDataAddress = (uintptrj_t)(&intDataArray[i]);
+      uintptr_t intDataAddress = (uintptr_t)(&intDataArray[i]);
       compileOpCodeMethod(iLoadiCons, _numberOfUnaryArgs, TR::iloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int32, rc, 2, 1, &intDataAddress);
       OMR_CT_EXPECT_EQ(iLoadiCons, intDataArray[i], iLoadiCons(ADDRESS_PLACEHOLDER_1));
       }
@@ -987,7 +987,7 @@ X86OpCodesTest::invokeMemoryOperationTests()
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
       sprintf(resolvedMethodName, "sLoadiConst%d", i + 1);
-      uintptrj_t shortDataAddress = (uintptrj_t)(&shortDataArray[i]);
+      uintptr_t shortDataAddress = (uintptr_t)(&shortDataArray[i]);
       compileOpCodeMethod(sLoadiCons, _numberOfUnaryArgs, TR::sloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int16, rc, 2, 1, &shortDataAddress);
       OMR_CT_EXPECT_EQ(sLoadiCons, shortDataArray[i], sLoadiCons(ADDRESS_PLACEHOLDER_1));
       }
@@ -997,7 +997,7 @@ X86OpCodesTest::invokeMemoryOperationTests()
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
       sprintf(resolvedMethodName, "bLoadiConst%d", i + 1);
-      uintptrj_t byteDataAddress = (uintptrj_t)(&byteDataArray[i]);
+      uintptr_t byteDataAddress = (uintptr_t)(&byteDataArray[i]);
       compileOpCodeMethod(bLoadiCons, _numberOfUnaryArgs, TR::bloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int8, rc, 2, 1, &byteDataAddress);
       OMR_CT_EXPECT_EQ(bLoadiCons, byteDataArray[i], bLoadiCons(ADDRESS_PLACEHOLDER_1));
       }
@@ -1007,7 +1007,7 @@ X86OpCodesTest::invokeMemoryOperationTests()
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
       sprintf(resolvedMethodName, "lLoadiConst%d", i + 1);
-      uintptrj_t longDataAddress = (uintptrj_t)(&longDataArray[i]);
+      uintptr_t longDataAddress = (uintptr_t)(&longDataArray[i]);
       compileOpCodeMethod(lLoadiCons, _numberOfUnaryArgs, TR::lloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int64, rc, 2, 1, &longDataAddress);
       OMR_CT_EXPECT_EQ(lLoadiCons, longDataArray[i], lLoadiCons(ADDRESS_PLACEHOLDER_1));
       }
@@ -1017,7 +1017,7 @@ X86OpCodesTest::invokeMemoryOperationTests()
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
       sprintf(resolvedMethodName, "dLoadiConst%d", i + 1);
-      uintptrj_t doubleDataAddress = (uintptrj_t)(&doubleDataArray[i]);
+      uintptr_t doubleDataAddress = (uintptr_t)(&doubleDataArray[i]);
       compileOpCodeMethod(dLoadiCons, _numberOfUnaryArgs, TR::dloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Double, rc, 2, 1, &doubleDataAddress);
       OMR_CT_EXPECT_EQ(dLoadiCons, doubleDataArray[i], dLoadiCons(ADDRESS_PLACEHOLDER_1));
       }
@@ -1027,7 +1027,7 @@ X86OpCodesTest::invokeMemoryOperationTests()
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
       sprintf(resolvedMethodName, "fLoadiConst%d", i + 1);
-      uintptrj_t floatDataAddress = (uintptrj_t)(&floatDataArray[i]);
+      uintptr_t floatDataAddress = (uintptr_t)(&floatDataArray[i]);
       compileOpCodeMethod(fLoadiCons, _numberOfUnaryArgs, TR::floadi, resolvedMethodName, _argTypesUnaryAddress, TR::Float, rc, 2, 1, &floatDataAddress);
       OMR_CT_EXPECT_EQ(fLoadiCons, floatDataArray[i], fLoadiCons(ADDRESS_PLACEHOLDER_1));
       }
@@ -1037,7 +1037,7 @@ X86OpCodesTest::invokeMemoryOperationTests()
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
       sprintf(resolvedMethodName, "aLoadiConst%d", i + 1);
-      uintptrj_t addressDataAddress = (uintptrj_t)(&addressDataArray[i]);
+      uintptr_t addressDataAddress = (uintptr_t)(&addressDataArray[i]);
       compileOpCodeMethod(aLoadiCons, _numberOfUnaryArgs, TR::aloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Address, rc, 2, 1, &addressDataAddress);
       OMR_CT_EXPECT_EQ(aLoadiCons, addressDataArray[i], aLoadiCons(ADDRESS_PLACEHOLDER_1));
       }
@@ -1049,39 +1049,39 @@ X86OpCodesTest::invokeMemoryOperationTests()
    int16_t shortStoreDataArray[] = {0, 0, 0, 0, 0};
    float floatStoreDataArray[] = {0, 0, 0, 0, 0};
    double doubleStoreDataArray[] = {0, 0, 0, 0, 0};
-   uintptrj_t addressStoreDataArray[] = {0, 0, 0, 0, 0};
+   uintptr_t addressStoreDataArray[] = {0, 0, 0, 0, 0};
 
    testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
       if (_iStorei != NULL)
          {
-         _iStorei((uintptrj_t)(&intStoreDataArray[i]) , intDataArray[i]);
+         _iStorei((uintptr_t)(&intStoreDataArray[i]) , intDataArray[i]);
          EXPECT_EQ(intDataArray[i], intStoreDataArray[i]);
          }
        if (_lStorei != NULL)
          {
-         _lStorei((uintptrj_t)(&longStoreDataArray[i]) , longDataArray[i]);
+         _lStorei((uintptr_t)(&longStoreDataArray[i]) , longDataArray[i]);
          EXPECT_EQ(longDataArray[i], longStoreDataArray[i]);
          }
       if (_sStorei != NULL)
          {
-         _sStorei((uintptrj_t)(&shortStoreDataArray[i]) , shortDataArray[i]);
+         _sStorei((uintptr_t)(&shortStoreDataArray[i]) , shortDataArray[i]);
          EXPECT_EQ(shortDataArray[i], shortStoreDataArray[i]);
          }
       if (_fStorei != NULL)
          {
-         _fStorei((uintptrj_t)(&floatStoreDataArray[i]) , floatDataArray[i]);
+         _fStorei((uintptr_t)(&floatStoreDataArray[i]) , floatDataArray[i]);
          EXPECT_EQ(floatDataArray[i], floatStoreDataArray[i]);
          }
       if (_dStorei != NULL)
          {
-         _dStorei((uintptrj_t)(&doubleStoreDataArray[i]) , doubleDataArray[i]);
+         _dStorei((uintptr_t)(&doubleStoreDataArray[i]) , doubleDataArray[i]);
          EXPECT_EQ(doubleDataArray[i], doubleStoreDataArray[i]);
          }
       if (_aStorei != NULL)
          {
-         _aStorei((uintptrj_t)(&addressStoreDataArray[i]) , addressDataArray[i]);
+         _aStorei((uintptr_t)(&addressStoreDataArray[i]) , addressDataArray[i]);
          EXPECT_EQ(addressDataArray[i], addressStoreDataArray[i]);
          }
       }
@@ -3824,93 +3824,93 @@ X86OpCodesTest::invokeAddressTests()
    int64_t longDataArr[] = {LONG_NEG, LONG_POS, LONG_MAXIMUM, LONG_MINIMUM, LONG_ZERO};
    int32_t intDataArr[] = {INT_NEG, INT_POS, INT_MAXIMUM, INT_MINIMUM, INT_ZERO};
    uint32_t uintDataArr[] = {UINT_POS, UINT_MAXIMUM, UINT_MINIMUM};
-   uintptrj_t aUnaryDataArr[] =
+   uintptr_t aUnaryDataArr[] =
       {
-      (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_ZERO,
-      (uintptrj_t) &LONG_POS,
-      (uintptrj_t) &LONG_MAXIMUM,
-      (uintptrj_t) &LONG_ZERO
+      (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_ZERO,
+      (uintptr_t) &LONG_POS,
+      (uintptr_t) &LONG_MAXIMUM,
+      (uintptr_t) &LONG_ZERO
       };
 
-   uintptrj_t acmpeqDataArr[][2] =
+   uintptr_t acmpeqDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_MINIMUM
       };
-   uintptrj_t acmpneDataArr[][2] =
+   uintptr_t acmpneDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_MINIMUM,
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_MINIMUM,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_POS
       };
-   uintptrj_t acmpltDataArr[][2] =
+   uintptr_t acmpltDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_MINIMUM
       };
-   uintptrj_t acmpgeDataArr[][2] =
+   uintptr_t acmpgeDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_MINIMUM
       };
-   uintptrj_t acmpleDataArr[][2] =
+   uintptr_t acmpleDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MAXIMUM
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_MINIMUM,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_MAXIMUM
       };
-   uintptrj_t acmpgtDataArr[][2] =
+   uintptr_t acmpgtDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_MINIMUM,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_POS
       };
-   uintptrj_t ifacmpeqDataArr[][2] =
+   uintptr_t ifacmpeqDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_MINIMUM
       };
-   uintptrj_t ifacmpneDataArr[][2] =
+   uintptr_t ifacmpneDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_MINIMUM,
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_MINIMUM,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_POS
       };
-   uintptrj_t ifacmpltDataArr[][2] =
+   uintptr_t ifacmpltDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_MINIMUM
       };
-   uintptrj_t ifacmpgeDataArr[][2] =
+   uintptr_t ifacmpgeDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_MINIMUM
       };
-   uintptrj_t ifacmpleDataArr[][2] =
+   uintptr_t ifacmpleDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MAXIMUM
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_MINIMUM,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_MAXIMUM
       };
-   uintptrj_t ifacmpgtDataArr[][2] =
+   uintptr_t ifacmpgtDataArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
+      (uintptr_t) &INT_MAXIMUM,  (uintptr_t) &INT_MINIMUM,
+      (uintptr_t) &INT_MINIMUM,  (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_POS,   (uintptr_t) &INT_POS
       };
 
    int32_t aselectChild1Arr[] =
@@ -3931,23 +3931,23 @@ X86OpCodesTest::invokeAddressTests()
          INT_ZERO,
          INT_ZERO
       };
-   uintptrj_t aselectArr[][2] =
+   uintptr_t aselectArr[][2] =
       {
-      (uintptrj_t) &INT_MAXIMUM, (uintptrj_t) &INT_ZERO,
-      (uintptrj_t) &INT_POS,     (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_ZERO,    (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MAXIMUM, (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_POS,     (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_ZERO,    (uintptrj_t) &INT_ZERO,
-      (uintptrj_t) &INT_MAXIMUM, (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,     (uintptrj_t) &INT_ZERO,
-      (uintptrj_t) &INT_ZERO,    (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MAXIMUM, (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_POS,     (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_ZERO,    (uintptrj_t) &INT_ZERO,
-      (uintptrj_t) &INT_MAXIMUM, (uintptrj_t) &INT_ZERO,
-      (uintptrj_t) &INT_POS,     (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_ZERO,    (uintptrj_t) &INT_MAXIMUM
+      (uintptr_t) &INT_MAXIMUM, (uintptr_t) &INT_ZERO,
+      (uintptr_t) &INT_POS,     (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_ZERO,    (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MAXIMUM, (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_POS,     (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_ZERO,    (uintptr_t) &INT_ZERO,
+      (uintptr_t) &INT_MAXIMUM, (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_POS,     (uintptr_t) &INT_ZERO,
+      (uintptr_t) &INT_ZERO,    (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MAXIMUM, (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_POS,     (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_ZERO,    (uintptr_t) &INT_ZERO,
+      (uintptr_t) &INT_MAXIMUM, (uintptr_t) &INT_ZERO,
+      (uintptr_t) &INT_POS,     (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_ZERO,    (uintptr_t) &INT_MAXIMUM
       };
 
    uint32_t testCaseNum = 0;
@@ -4516,14 +4516,14 @@ X86OpCodesTest::invokeDisabledConvertOpCodesTest()
    {
 
    int32_t rc = 0;
-   uintptrj_t aUnaryDataArr[] =
+   uintptr_t aUnaryDataArr[] =
       {
-      (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_ZERO,
-      (uintptrj_t) &LONG_POS,
-      (uintptrj_t) &LONG_MAXIMUM,
-      (uintptrj_t) &LONG_ZERO
+      (uintptr_t) &INT_POS,
+      (uintptr_t) &INT_MAXIMUM,
+      (uintptr_t) &INT_ZERO,
+      (uintptr_t) &LONG_POS,
+      (uintptr_t) &LONG_MAXIMUM,
+      (uintptr_t) &LONG_ZERO
       };
 
    uint32_t testCaseNum = 0;
@@ -4561,7 +4561,7 @@ X86OpCodesTest::invokeDisabledMemoryOpCodesTest()
    uint32_t testCaseNum = sizeof(byteDataArray) / sizeof(byteDataArray[0]);
    for (int32_t i = 0 ; _bStorei != NULL && i < testCaseNum ; i++)
       {
-      _bStorei((uintptrj_t)(&byteStoreDataArray[i]) , byteDataArray[i]);
+      _bStorei((uintptr_t)(&byteStoreDataArray[i]) , byteDataArray[i]);
       EXPECT_EQ(byteDataArray[i], byteStoreDataArray[i]);
       }
 

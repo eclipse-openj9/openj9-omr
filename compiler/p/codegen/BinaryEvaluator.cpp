@@ -2105,7 +2105,7 @@ strengthReducingLongDivideOrRemainder32BitMode(TR::Node *node,      TR::CodeGene
       helper = isSignedOp ? TR_PPClongDivide : TR_PPCunsignedLongDivide;
 
    TR::SymbolReference *helperSym = cg->symRefTab()->findOrCreateRuntimeHelper(helper, false, false, false);
-   uintptrj_t addr = (uintptrj_t)helperSym->getMethodAddress();
+   uintptr_t addr = (uintptr_t)helperSym->getMethodAddress();
    TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
 
    generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node, addr, deps, helperSym);

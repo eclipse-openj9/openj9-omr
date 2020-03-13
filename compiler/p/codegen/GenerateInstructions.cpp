@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -383,7 +383,7 @@ TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, 
    }
 
 TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
-   TR::Register *treg, TR::Register *s1reg, intptrj_t imm, TR::Instruction *preced)
+   TR::Register *treg, TR::Register *s1reg, intptr_t imm, TR::Instruction *preced)
    {
    if (cg->comp()->target().cpu.id() == TR_PPCp6 && TR::InstOpCode(op).isCompare())
       treg->resetFlippedCCR();
@@ -593,7 +593,7 @@ TR::Instruction *generateDepImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode
    }
 
 TR::Instruction *generateDepImmSymInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
-   uintptrj_t imm, TR::RegisterDependencyConditions *cond, TR::SymbolReference *sr, TR::Snippet *s, TR::Instruction *preced)
+   uintptr_t imm, TR::RegisterDependencyConditions *cond, TR::SymbolReference *sr, TR::Snippet *s, TR::Instruction *preced)
    {
    if (preced)
       return new (cg->trHeapMemory()) TR::PPCDepImmSymInstruction(op, n, imm, cond, sr, s, preced, cg);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -423,7 +423,7 @@ TR_Debug::inlinefileOption(char *option, void *base, TR::OptionTable *entry, TR:
    char *inlineFileName = (char *)(TR::Compiler->regionAllocator.allocate(len+1));
    memcpy(inlineFileName, name, len);
    inlineFileName[len] = 0; // NULL terminate the copied string
-   entry->msgInfo = (intptrj_t)inlineFileName;
+   entry->msgInfo = (intptr_t)inlineFileName;
 
    FILE *inlineFile = fopen(inlineFileName, "r");
    bool success = false;
@@ -513,9 +513,9 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
    char *limitFileName = (char *)(TR::Compiler->regionAllocator.allocate(len+1));
    memcpy(limitFileName, name, len);
    limitFileName[len] = 0;
-   entry->msgInfo = (intptrj_t)limitFileName;
+   entry->msgInfo = (intptr_t)limitFileName;
 
-   intptrj_t firstLine = 1, lastLine = INT_MAX;
+   intptr_t firstLine = 1, lastLine = INT_MAX;
    if (range)
       {
       if (!*endOpt)
@@ -715,7 +715,7 @@ TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Opti
    char *limitName = (char *)(TR::Compiler->regionAllocator.allocate(len+1));
    memcpy(limitName, option, len);
    limitName[len] = 0;
-   entry->msgInfo = (intptrj_t)limitName;
+   entry->msgInfo = (intptr_t)limitName;
 
    // Look for option subset if this is "limit" rather than "exclude"
    //

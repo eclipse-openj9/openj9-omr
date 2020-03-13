@@ -124,8 +124,8 @@ bool OMR::X86::TreeEvaluator::analyseSubForLEA(TR::Node *node, TR::CodeGenerator
    //    const       (secondChild)
    //
    TR_ASSERT(secondChild->getOpCode().isLoadConst(), "assertion failure");
-   intptrj_t displacement = -TR::TreeEvaluator::integerConstNodeValue(secondChild, cg);
-   intptrj_t dummyConstValue = 0;
+   intptr_t displacement = -TR::TreeEvaluator::integerConstNodeValue(secondChild, cg);
+   intptr_t dummyConstValue = 0;
 
    if (firstChild->getRegister() == NULL && firstChild->getReferenceCount() == 1)
       {
@@ -269,7 +269,7 @@ bool OMR::X86::TreeEvaluator::analyseAddForLEA(TR::Node *node, TR::CodeGenerator
          //       const       (addSecondChild)
          //
 
-         intptrj_t offset = TR::TreeEvaluator::integerConstNodeValue(addSecondChild, cg);
+         intptr_t offset = TR::TreeEvaluator::integerConstNodeValue(addSecondChild, cg);
          if (secondOp.isSub())
             offset = -offset;
 
@@ -305,7 +305,7 @@ bool OMR::X86::TreeEvaluator::analyseAddForLEA(TR::Node *node, TR::CodeGenerator
          }
       }
 
-   intptrj_t dummyConstValue = 0;
+   intptr_t dummyConstValue = 0;
 
    if (secondOp.isLoadConst())
       {
@@ -553,7 +553,7 @@ bool OMR::X86::TreeEvaluator::analyseAddForLEA(TR::Node *node, TR::CodeGenerator
       //        child 0
       //        loadconstant
       //    ?        (second)
-      intptrj_t val = TR::TreeEvaluator::integerConstNodeValue(firstChild->getSecondChild(), cg);
+      intptr_t val = TR::TreeEvaluator::integerConstNodeValue(firstChild->getSecondChild(), cg);
       if (firstChild->getOpCode().isSub())
          val = -val;
       leaMR = generateX86MemoryReference(cg->evaluate(firstChild->getFirstChild()),
@@ -749,7 +749,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
             }
          }
 
-      intptrj_t constValue;
+      intptr_t constValue;
       if (!targetRegister                                                 &&
           secondChild->getOpCode().isLoadConst()                          &&
           (secondChild->getRegister() == NULL)                            &&
@@ -1387,7 +1387,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerSubEvaluator(TR::Node *node, TR::C
          }
       }
 
-   intptrj_t constValue;
+   intptr_t constValue;
    TR::Register * testRegister = secondChild->getRegister();
    if (secondChild->getOpCode().isLoadConst() &&
        testRegister == NULL     &&
@@ -2151,7 +2151,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
    bool           nodeIs64Bit  = TR::TreeEvaluator::getNodeIs64Bit(node, cg);
    TR::Node       *dividend     = node->getFirstChild();
    TR::ILOpCode   &rootOpCode   = node->getOpCode();
-   intptrj_t      dvalue       = TR::TreeEvaluator::integerConstNodeValue(node->getSecondChild(), cg);
+   intptr_t      dvalue       = TR::TreeEvaluator::integerConstNodeValue(node->getSecondChild(), cg);
    TR_ASSERT(dvalue != 0, "assertion failure");
 
    bool isMinInt = ((!nodeIs64Bit && dvalue == TR::getMinSigned<TR::Int32>()) ||
@@ -2207,7 +2207,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
          // 31 can be handled with a second technique, leaving one straggler
          // that needs special treatment.
          //
-         const uintptrj_t SIGN32 = CONSTANT64(0x80000000);
+         const uintptr_t SIGN32 = CONSTANT64(0x80000000);
 
          // Note: We could check node->isNegative and node->isNonNegative to
          // try to avoid this internal control flow.  However, in those cases,
@@ -2374,12 +2374,12 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
       }
    else
       {
-      intptrj_t     m, s;
+      intptr_t     m, s;
       TR::Register  *eaxRegister = cg->allocateRegister();
 
       if (nodeIs64Bit)
          {
-         // This prevents a compile error on IA32, where intptrj_t can't be cast to int64_t.
+         // This prevents a compile error on IA32, where intptr_t can't be cast to int64_t.
          //
          int64_t tm, ts;
          cg->compute64BitMagicValues(dvalue, &tm, &ts);
@@ -2389,7 +2389,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
       else
          {
          // On AMD64, this has the desired effect of sign-extending the magic
-         // numbers; on IA32, it doesn't do anything because intptrj_t is the
+         // numbers; on IA32, it doesn't do anything because intptr_t is the
          // same as int32_t.
          //
          int32_t tm, ts;
@@ -2682,7 +2682,7 @@ TR::X86RegInstruction  *OMR::X86::TreeEvaluator::generateRegisterShift(TR::Node 
 
    if (secondChild->getOpCode().isLoadConst())
       {
-      intptrj_t shiftAmount = TR::TreeEvaluator::integerConstNodeValue(secondChild, cg) & TR::TreeEvaluator::shiftMask(nodeIs64Bit);
+      intptr_t shiftAmount = TR::TreeEvaluator::integerConstNodeValue(secondChild, cg) & TR::TreeEvaluator::shiftMask(nodeIs64Bit);
       if (shiftAmount == 0)
          {
          targetRegister = cg->evaluate(firstChild);
@@ -2812,7 +2812,7 @@ TR::X86MemInstruction  *OMR::X86::TreeEvaluator::generateMemoryShift(TR::Node *n
    bool loadConstant = secondChild->getOpCode().isLoadConst();
    if (loadConstant && performTransformation(comp, "O^O GenerateMemoryShift: load is not constant %d\n", loadConstant))
       {
-      intptrj_t shiftAmount = TR::TreeEvaluator::integerConstNodeValue(secondChild, cg) & TR::TreeEvaluator::shiftMask(nodeIs64Bit);
+      intptr_t shiftAmount = TR::TreeEvaluator::integerConstNodeValue(secondChild, cg) & TR::TreeEvaluator::shiftMask(nodeIs64Bit);
       if (shiftAmount != 0)
          {
          if (debug("traceMemOp"))
@@ -2894,7 +2894,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerShlEvaluator(TR::Node *node, TR::C
    {
    bool       nodeIs64Bit     = TR::TreeEvaluator::getNodeIs64Bit(node, cg);
    TR::Node  *shiftAmountNode = node->getSecondChild();
-   intptrj_t shiftAmount;
+   intptr_t shiftAmount;
    TR::Compilation *comp = cg->comp();
 
    if (node->isDirectMemoryUpdate())
@@ -2935,7 +2935,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerRolEvaluator(TR::Node *node, TR::C
 
    if (secondChild->getOpCode().isLoadConst())
       {
-      intptrj_t rotateAmount = TR::TreeEvaluator::integerConstNodeValue(secondChild, cg) & TR::TreeEvaluator::rotateMask(nodeIs64Bit);
+      intptr_t rotateAmount = TR::TreeEvaluator::integerConstNodeValue(secondChild, cg) & TR::TreeEvaluator::rotateMask(nodeIs64Bit);
       if (rotateAmount == 0)
          {
          targetRegister = cg->evaluate(firstChild);
@@ -3636,7 +3636,7 @@ TR::Register *OMR::X86::TreeEvaluator::logicalEvaluator(TR::Node          *node,
    TR::Register        *targetRegister           = NULL;
    TR::Node            *firstChild               = node->getFirstChild();
    TR::Node            *secondChild              = node->getSecondChild();
-   intptrj_t            constValue               = 0;
+   intptr_t            constValue               = 0;
    TR::MemoryReference *tempMR                   = NULL;
    TR::Instruction     *instr                    = NULL;
    bool                 oursIsTheOnlyMemRef      = true;

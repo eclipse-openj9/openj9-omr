@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -93,9 +93,9 @@ void TR::LabelRelative32BitRelocation::apply(TR::CodeGenerator *codeGen)
 
 void TR::LabelAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   intptrj_t *cursor = (intptrj_t *)getUpdateLocation();
+   intptr_t *cursor = (intptr_t *)getUpdateLocation();
    AOTcgDiag2(codeGen->comp(), "TR::LabelAbsoluteRelocation::apply cursor=" POINTER_PRINTF_FORMAT " label=" POINTER_PRINTF_FORMAT "\n", cursor, getLabel());
-   *cursor = (intptrj_t)getLabel()->getCodeLocation();
+   *cursor = (intptr_t)getLabel()->getCodeLocation();
    }
 
 TR::InstructionLabelRelative16BitRelocation::InstructionLabelRelative16BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor)
@@ -160,8 +160,8 @@ TR::InstructionLabelRelative32BitRelocation::apply(TR::CodeGenerator* cg)
 
 void TR::InstructionAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   intptrj_t *cursor = (intptrj_t*)getUpdateLocation();
-   intptrj_t address = (intptrj_t)getInstruction()->getBinaryEncoding();
+   intptr_t *cursor = (intptr_t*)getUpdateLocation();
+   intptr_t address = (intptr_t)getInstruction()->getBinaryEncoding();
    if (useEndAddress())
       address += getInstruction()->getBinaryLength();
    AOTcgDiag2(codeGen->comp(), "TR::InstructionAbsoluteRelocation::apply cursor=" POINTER_PRINTF_FORMAT " instruction=" POINTER_PRINTF_FORMAT "\n", cursor, address);

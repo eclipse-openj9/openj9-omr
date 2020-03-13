@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -82,7 +82,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCHelperCallSnippet * snippet)
    distance = *((int32_t *) cursor) & 0x03fffffc;
    distance = (distance << 6) >> 6;   // sign extend
    trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT "\t\t; %s %s",
-      restartLabel ? "bl" : "b", (intptrj_t)cursor + distance, getName(snippet->getDestination()), info);
+      restartLabel ? "bl" : "b", (intptr_t)cursor + distance, getName(snippet->getDestination()), info);
 
    if (restartLabel)
       {
@@ -90,7 +90,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCHelperCallSnippet * snippet)
       printPrefix(pOutFile, NULL, cursor, 4);
       distance = *((int32_t *) cursor) & 0x03fffffc;
       distance = (distance << 6) >> 6;   // sign extend
-      trfprintf(pOutFile, "b \t" POINTER_PRINTF_FORMAT "\t\t; Restart", (intptrj_t)cursor + distance);
+      trfprintf(pOutFile, "b \t" POINTER_PRINTF_FORMAT "\t\t; Restart", (intptr_t)cursor + distance);
       }
    }
 
@@ -101,17 +101,17 @@ uint32_t TR::PPCHelperCallSnippet::getLength(int32_t estimatedSnippetStart)
 
 uint8_t *TR::PPCHelperCallSnippet::genHelperCall(uint8_t *buffer)
    {
-   intptrj_t helperAddress = (intptrj_t)getDestination()->getSymbol()->castToMethodSymbol()->getMethodAddress();
+   intptr_t helperAddress = (intptr_t)getDestination()->getSymbol()->castToMethodSymbol()->getMethodAddress();
 
-   if (cg()->directCallRequiresTrampoline(helperAddress, (intptrj_t)buffer))
+   if (cg()->directCallRequiresTrampoline(helperAddress, (intptr_t)buffer))
       {
       helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(getDestination()->getReferenceNumber(), (void *)buffer);
 
-      TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinIFormBranchRange(helperAddress, (intptrj_t)buffer),
+      TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinIFormBranchRange(helperAddress, (intptr_t)buffer),
                       "Helper address is out of range");
       }
 
-   intptrj_t distance = helperAddress - (intptrj_t)buffer;
+   intptr_t distance = helperAddress - (intptr_t)buffer;
 
    // b|bl distance
    *(int32_t *)buffer = 0x48000000 | (distance & 0x03fffffc);

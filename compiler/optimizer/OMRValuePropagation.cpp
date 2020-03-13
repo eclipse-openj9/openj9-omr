@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -191,7 +191,7 @@ void OMR::ValuePropagation::addLoopDef(TR::Node *node)
    {
    // If the loop def entry does not already exist, create it
    //
-   int32_t hash = (((uintptrj_t)node) >> 2) % VP_HASH_TABLE_SIZE;
+   int32_t hash = (((uintptr_t)node) >> 2) % VP_HASH_TABLE_SIZE;
    LoopDefsHashTableEntry *entry;
    for (entry = _loopDefsHashTable[hash]; entry; entry = entry->next)
       {
@@ -209,7 +209,7 @@ OMR::ValuePropagation::LoopDefsHashTableEntry *OMR::ValuePropagation::findLoopDe
    {
    // Find the loop def entry
    //
-   int32_t hash = (((uintptrj_t)node) >> 2) % VP_HASH_TABLE_SIZE;
+   int32_t hash = (((uintptr_t)node) >> 2) % VP_HASH_TABLE_SIZE;
    LoopDefsHashTableEntry *entry;
    for (entry = _loopDefsHashTable[hash]; entry; entry = entry->next)
       {
@@ -497,7 +497,7 @@ TR::VPConstraint *OMR::ValuePropagation::addConstraintToList(TR::Node *node, int
                   ///storeConstraint = constraint->intersect(constraint, this);
                   //
                   //FIXME: ugly, uncomment line above and comment this 'if' block
-                  if (TR::VPConstraint::isSpecialClass((uintptrj_t)constraint->getClass()))
+                  if (TR::VPConstraint::isSpecialClass((uintptr_t)constraint->getClass()))
                      {
                      TR_ASSERT(constraint->asClass(), "special class constraint must be VPClass");
                      traceMsg(comp(), "found special class constraint!\n");
@@ -1255,7 +1255,7 @@ OMR::ValuePropagation::EdgeConstraints *OMR::ValuePropagation::EdgeConstraints::
 //
 OMR::ValuePropagation::EdgeConstraints *OMR::ValuePropagation::getEdgeConstraints(TR::CFGEdge *edge)
    {
-   int32_t hash = ((uintptrj_t)edge) % VP_HASH_TABLE_SIZE;
+   int32_t hash = ((uintptr_t)edge) % VP_HASH_TABLE_SIZE;
    EdgeConstraints *entry;
    for (entry = _edgeConstraintsHashTable[hash]; entry; entry = entry->next)
       {
@@ -5546,7 +5546,7 @@ TR::TreeTop* TR::ArraycopyTransformation::createMultipleArrayNodes(TR::TreeTop* 
 
    arraycopyBlock = outerArraycopyTree->getEnclosingBlock();
    if (specificLength >= 0)
-      specializeForLength(outerArraycopyTree, node, (uintptrj_t) specificLength, srcRef, dstRef, lenRef, srcObjRef, dstObjRef);
+      specializeForLength(outerArraycopyTree, node, (uintptr_t) specificLength, srcRef, dstRef, lenRef, srcObjRef, dstObjRef);
 
    if (trace())
       {
@@ -5576,7 +5576,7 @@ TR::TreeTop* TR::ArraycopyTransformation::tryToSpecializeForLength(TR::TreeTop *
       TR::SymbolReference *dstRef = NULL;
       TR::SymbolReference *lenRef = NULL;
       TR::TreeTop *firstInsertedTree = createStoresForArraycopyChildren(comp(), tt, srcObjRef, dstObjRef, srcRef, dstRef, lenRef);
-      specializeForLength(tt, arraycopyNode, (uintptrj_t) specificLength, srcRef, dstRef, lenRef, srcObjRef, dstObjRef);
+      specializeForLength(tt, arraycopyNode, (uintptr_t) specificLength, srcRef, dstRef, lenRef, srcObjRef, dstObjRef);
       return firstInsertedTree;
       }
    else
@@ -5585,7 +5585,7 @@ TR::TreeTop* TR::ArraycopyTransformation::tryToSpecializeForLength(TR::TreeTop *
       }
    }
 
-static TR::Node *addressSizedConst(TR::Compilation *comp, TR::Node *n, intptrj_t val)
+static TR::Node *addressSizedConst(TR::Compilation *comp, TR::Node *n, intptr_t val)
    {
    TR::Node *node = comp->target().is64Bit()? TR::Node::lconst(n, val) : TR::Node::iconst(n, val);
    if (node->getOpCodeValue() == TR::lconst)
@@ -5593,7 +5593,7 @@ static TR::Node *addressSizedConst(TR::Compilation *comp, TR::Node *n, intptrj_t
    return node;
    }
 
-TR::TreeTop* TR::ArraycopyTransformation::specializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode, uintptrj_t lengthInBytes,
+TR::TreeTop* TR::ArraycopyTransformation::specializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode, uintptr_t lengthInBytes,
       TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *lenRef, TR::SymbolReference *srcObjRef, TR::SymbolReference *dstObjRef)
    {
    TR::TreeTop* arraycopyOriginal = TR::TreeTop::create(comp());

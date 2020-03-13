@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -204,7 +204,7 @@ uint8_t *TR::PPCDepImmSymInstruction::generateBinaryEncoding()
    {
    uint8_t   *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t   *cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   intptrj_t  distance;
+   intptr_t  distance;
 
    if (getOpCodeValue() == TR::InstOpCode::bl || getOpCodeValue() == TR::InstOpCode::b)
       {
@@ -212,13 +212,13 @@ uint8_t *TR::PPCDepImmSymInstruction::generateBinaryEncoding()
          {
          uint8_t *jitTojitStart = cg()->getCodeStart();
          jitTojitStart += ((*(int32_t *)(jitTojitStart - 4)) >> 16) & 0x0000ffff;
-         distance = (intptrj_t)(jitTojitStart - cursor);
+         distance = (intptr_t)(jitTojitStart - cursor);
          }
       else
          {
-         intptrj_t targetAddress = getAddrImmediate();
+         intptr_t targetAddress = getAddrImmediate();
 
-         if (cg()->directCallRequiresTrampoline(targetAddress, (intptrj_t)cursor))
+         if (cg()->directCallRequiresTrampoline(targetAddress, (intptr_t)cursor))
             {
             int32_t refNum = getSymbolReference()->getReferenceNumber();
             if (refNum < TR_PPCnumRuntimeHelpers)
@@ -231,17 +231,17 @@ uint8_t *TR::PPCDepImmSymInstruction::generateBinaryEncoding()
                }
             }
 
-         TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinIFormBranchRange(targetAddress, (intptrj_t)cursor),
+         TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinIFormBranchRange(targetAddress, (intptr_t)cursor),
                          "Target address is out of range");
 
-         distance = targetAddress - (intptrj_t)cursor;
+         distance = targetAddress - (intptr_t)cursor;
          }
       }
    else
       {
       // Place holder only: non-TR::InstOpCode::b[l] usage of this instruction doesn't
       // exist at this moment.
-      distance = getAddrImmediate() - (intptrj_t)cursor;
+      distance = getAddrImmediate() - (intptr_t)cursor;
       }
 
    *(int32_t *)cursor |= distance & 0x03fffffc;

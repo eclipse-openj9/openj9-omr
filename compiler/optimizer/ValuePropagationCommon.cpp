@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3382,8 +3382,8 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
 
    TR::TreeTop *prevTree = vcallTree->getPrevTreeTop();
    TR::DataType type = rtArrayCopyTree->_type;
-   intptrj_t elementSize = TR::Symbol::convertTypeToSize(type);
-   intptrj_t leafSize = comp()->fe()->getArrayletMask(elementSize) + 1;
+   intptr_t elementSize = TR::Symbol::convertTypeToSize(type);
+   intptr_t leafSize = comp()->fe()->getArrayletMask(elementSize) + 1;
 
    TR_ResolvedMethod *method = comp()->getCurrentMethod();
    TR::ResolvedMethodSymbol *methodSymbol = comp()->getOwningMethodSymbol(method);

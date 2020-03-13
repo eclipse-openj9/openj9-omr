@@ -75,9 +75,9 @@ public:
    void setComp(TR::Compilation *comp) { _comp = comp; }
 
    virtual Index getEndIndex();                      // Highest index assigned so far + 1
-   virtual Index getIndex(uintptrj_t objectPointer); // Must hold vm access for this
-   Index getIndex(uintptrj_t objectPointer, bool isArrayWithConstantElements); // Must hold vm access for this
-   virtual uintptrj_t *getPointerLocation(Index index);
+   virtual Index getIndex(uintptr_t objectPointer); // Must hold vm access for this
+   Index getIndex(uintptr_t objectPointer, bool isArrayWithConstantElements); // Must hold vm access for this
+   virtual uintptr_t *getPointerLocation(Index index);
    virtual bool isNull(Index index);
 
    virtual void dumpTo(TR::FILE *file, TR::Compilation *comp);
@@ -87,13 +87,13 @@ public:
    // API for checking if an known object is an array with immutable elements
    bool isArrayWithConstantElements(Index index);
 
-   Index getIndexAt(uintptrj_t *objectReferenceLocation);
-   Index getIndexAt(uintptrj_t *objectReferenceLocation, bool isArrayWithConstantElements);
-   Index getExistingIndexAt(uintptrj_t *objectReferenceLocation);
+   Index getIndexAt(uintptr_t *objectReferenceLocation);
+   Index getIndexAt(uintptr_t *objectReferenceLocation, bool isArrayWithConstantElements);
+   Index getExistingIndexAt(uintptr_t *objectReferenceLocation);
 
-   uintptrj_t getPointer(Index index);
+   uintptr_t getPointer(Index index);
 
-   void updateKnownObjectTableAtServer(Index index, uintptrj_t *objectReferenceLocation);
+   void updateKnownObjectTableAtServer(Index index, uintptr_t *objectReferenceLocation);
 
 protected:
    void addArrayWithConstantElements(Index index);

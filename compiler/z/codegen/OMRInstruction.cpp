@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -870,13 +870,13 @@ OMR::Z::Instruction::recordOperand(void *operand, int8_t &operandCount)
 
    if(_operands==NULL)
       {
-      ((uintptrj_t** )p)[0]=(uintptrj_t *)operand;
+      ((uintptr_t** )p)[0]=(uintptr_t *)operand;
       _operands=p;
       }
    else
       {
-      for (int i=0; i < n; i++) ((uintptrj_t**)p)[i] = ((uintptrj_t **) _operands)[i];
-      ((uintptrj_t** )p)[n]= (uintptrj_t *) operand;
+      for (int i=0; i < n; i++) ((uintptr_t**)p)[i] = ((uintptr_t **) _operands)[i];
+      ((uintptr_t** )p)[n]= (uintptr_t *) operand;
 
       comp->allocator().deallocate(_operands, sizeof(void *) * n);
       _operands = p;

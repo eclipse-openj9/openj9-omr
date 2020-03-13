@@ -341,8 +341,8 @@ bool         TR_ResolvedMethod::isWarmCallGraphTooBig(uint32_t bcIndex, TR::Comp
 void         TR_ResolvedMethod::setWarmCallGraphTooBig(uint32_t bcIndex, TR::Compilation *){ TR_UNIMPLEMENTED(); return; }
 
 TR_FrontEnd *TR_ResolvedMethod::fe()                                       { TR_UNIMPLEMENTED(); return 0; }
-intptrj_t    TR_ResolvedMethod::getInvocationCount()                       { TR_UNIMPLEMENTED(); return 0; }
-bool         TR_ResolvedMethod::setInvocationCount(intptrj_t, intptrj_t)   { TR_UNIMPLEMENTED(); return false; }
+intptr_t    TR_ResolvedMethod::getInvocationCount()                       { TR_UNIMPLEMENTED(); return 0; }
+bool         TR_ResolvedMethod::setInvocationCount(intptr_t, intptr_t)   { TR_UNIMPLEMENTED(); return false; }
 uint16_t     TR_ResolvedMethod::numberOfParameterSlots()                   { TR_UNIMPLEMENTED(); return 0; }
 uint16_t     TR_ResolvedMethod::archetypeArgPlaceholderSlot(TR_Memory *)   { TR_UNIMPLEMENTED(); return 0; }
 uint16_t     TR_ResolvedMethod::numberOfTemps()                            { TR_UNIMPLEMENTED(); return 0; }
@@ -366,7 +366,7 @@ bool         TR_ResolvedMethod::isUnresolvedString(int32_t, bool optimizeForAOT)
 void *       TR_ResolvedMethod::getConstantDynamicTypeFromCP(int32_t cpIndex)   { TR_UNIMPLEMENTED(); return 0; }
 bool         TR_ResolvedMethod::isConstantDynamic(int32_t cpIndex)            { TR_UNIMPLEMENTED(); return false; }
 bool         TR_ResolvedMethod::isUnresolvedConstantDynamic(int32_t cpIndex)  { TR_UNIMPLEMENTED(); return false; }
-void *       TR_ResolvedMethod::dynamicConstant(int32_t cpIndex, uintptrj_t *obj)              { TR_UNIMPLEMENTED(); return 0; }
+void *       TR_ResolvedMethod::dynamicConstant(int32_t cpIndex, uintptr_t *obj)              { TR_UNIMPLEMENTED(); return 0; }
 void *       TR_ResolvedMethod::methodTypeConstant(int32_t)                { TR_UNIMPLEMENTED(); return 0; }
 bool         TR_ResolvedMethod::isUnresolvedMethodType(int32_t)            { TR_UNIMPLEMENTED(); return false; }
 void *       TR_ResolvedMethod::methodHandleConstant(int32_t)              { TR_UNIMPLEMENTED(); return 0; }
@@ -425,7 +425,7 @@ TR_ResolvedMethod::getParameterIterator(TR::Compilation& comp)
    return convertToMethod()->getParameterIterator(comp, this);
    }
 
-uintptrj_t *
+uintptr_t *
 TR_ResolvedMethod::getMethodHandleLocation()
    {
    TR_ASSERT(convertToMethod()->isArchetypeSpecimen(), "All methods associated with a MethodHandle must be archetype specimens");
@@ -482,7 +482,7 @@ uint32_t              TR_ResolvedMethod::classCPIndexOfMethod(uint32_t)         
 
 TR_OpaqueMethodBlock *TR_ResolvedMethod::getNonPersistentIdentifier()                      { TR_UNIMPLEMENTED(); return 0; }
 TR_OpaqueMethodBlock *TR_ResolvedMethod::getPersistentIdentifier()                         { TR_UNIMPLEMENTED(); return 0; }
-TR_OpaqueClassBlock * TR_ResolvedMethod::getResolvedInterfaceMethod(int32_t, uintptrj_t *) { TR_UNIMPLEMENTED(); return 0; }
+TR_OpaqueClassBlock * TR_ResolvedMethod::getResolvedInterfaceMethod(int32_t, uintptr_t *) { TR_UNIMPLEMENTED(); return 0; }
 
 TR_ResolvedMethod * TR_ResolvedMethod::owningMethod()                                      { TR_UNIMPLEMENTED(); return 0; }
 void TR_ResolvedMethod::setOwningMethod(TR_ResolvedMethod*)                                { TR_UNIMPLEMENTED();  }
@@ -516,7 +516,7 @@ TR_ResolvedMethod::getResolvedVirtualMethod(TR::Compilation *, TR_OpaqueClassBlo
    }
 
 void
-TR_ResolvedMethod::setMethodHandleLocation(uintptrj_t *location)
+TR_ResolvedMethod::setMethodHandleLocation(uintptr_t *location)
    {
    TR_UNIMPLEMENTED();
    }

@@ -256,7 +256,7 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
     *
     * @return true if the target is within range; false otherwise.
     */
-   bool isTargetWithinBranchRelativeRILRange(intptrj_t targetAddress, intptrj_t sourceAddress);
+   bool isTargetWithinBranchRelativeRILRange(intptr_t targetAddress, intptr_t sourceAddress);
 
    protected:
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -286,7 +286,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
     * @param[in] amount : amount to be added to offset
     * @param[in] cg : CodeGenerator
     */
-   void addToOffset(TR::Node *node, intptrj_t amount, TR::CodeGenerator *cg);
+   void addToOffset(TR::Node *node, intptr_t amount, TR::CodeGenerator *cg);
 
    /**
     * @brief Decrements node reference counts

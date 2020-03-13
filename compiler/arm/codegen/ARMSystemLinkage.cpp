@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -605,13 +605,13 @@ TR::Register *TR::ARMSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    return NULL;
    }
 
-intptrj_t TR::ARMSystemLinkage::entryPointFromCompiledMethod()
+intptr_t TR::ARMSystemLinkage::entryPointFromCompiledMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 
-intptrj_t TR::ARMSystemLinkage::entryPointFromInterpretedMethod()
+intptr_t TR::ARMSystemLinkage::entryPointFromInterpretedMethod()
    {
-   return reinterpret_cast<intptrj_t>(cg()->getCodeStart());
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
 

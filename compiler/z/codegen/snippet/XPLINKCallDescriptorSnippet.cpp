@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -105,11 +105,11 @@ uint32_t TR::XPLINKCallDescriptorSnippet::generateCallDescriptorValue(TR::S390zO
          // JNI Calls include a JNIEnv* pointer that is not included in list of children nodes.
          // For FastJNI, certain calls do not require us to pass the JNIEnv.
          if (!linkage->cg()->fej9()->jniDoNotPassThread(resolvedMethod))
-            parmAreaOffset += sizeof(uintptrj_t);
+            parmAreaOffset += sizeof(uintptr_t);
 
          // For FastJNI, certain calls do not have to pass in receiver object.
          if (linkage->cg()->fej9()->jniDoNotPassReceiver(resolvedMethod))
-            parmAreaOffset -= sizeof(uintptrj_t);
+            parmAreaOffset -= sizeof(uintptr_t);
          }
 #endif
 

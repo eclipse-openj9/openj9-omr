@@ -238,7 +238,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    void fixupVFPOffset(TR::Node *node, TR::CodeGenerator *cg);
 #endif
 
-   void addToOffset(TR::Node * node, intptrj_t amount, TR::CodeGenerator *cg);
+   void addToOffset(TR::Node * node, intptr_t amount, TR::CodeGenerator *cg);
 
    void adjustForResolution(TR::CodeGenerator *cg);
 

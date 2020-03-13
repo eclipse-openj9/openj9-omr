@@ -539,7 +539,7 @@ int32_t TR::PPCTrg1ImmInstruction::estimateBinaryLength(int32_t currentEstimate)
    return currentEstimate + getEstimatedBinaryLength();
    }
 
-static TR::Instruction *loadReturnAddress(TR::Node * node, uintptrj_t value, TR::Register *trgReg, TR::Instruction *cursor)
+static TR::Instruction *loadReturnAddress(TR::Node * node, uintptr_t value, TR::Register *trgReg, TR::Instruction *cursor)
    {
    return cursor->cg()->loadAddressConstantFixed(node, value, trgReg, cursor);
    }

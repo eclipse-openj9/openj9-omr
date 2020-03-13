@@ -254,7 +254,7 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
  * Generate code to load an address constant
  */
 TR::Instruction *
-genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptrj_t value, TR::Register * targetRegister,
+genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value, TR::Register * targetRegister,
    TR::Instruction * cursor, TR::RegisterDependencyConditions * cond, TR::Register * base)
    {
    if (cg->profiledPointersRequireRelocation() &&
@@ -272,7 +272,7 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptrj_t value
          reloKind = TR_ClassPointer;
 
       TR_ASSERT(reloKind != TR_NoRelocation, "relocation kind shouldn't be TR_NoRelocation");
-      return generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, (uintptrj_t) value, reloKind, cond, cursor, base);
+      return generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, (uintptr_t) value, reloKind, cond, cursor, base);
       }
 
    TR::Symbol *symbol = NULL;
@@ -283,11 +283,11 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptrj_t value
    bool isPICCandidate = symbol ? symbol->isStatic() && symbol->isClassObject() : false;
    if (isPICCandidate && !cg->comp()->compileRelocatableCode()
        && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)value, node))
-      return genLoadAddressConstantInSnippet(cg, node, (uintptrj_t)value, targetRegister, cursor, cond, base, true);
+      return genLoadAddressConstantInSnippet(cg, node, (uintptr_t)value, targetRegister, cursor, cond, base, true);
 
    if (node->isClassUnloadingConst())
       {
-      uintptrj_t value = node->getAddress();
+      uintptr_t value = node->getAddress();
       TR::Instruction *unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value));
       TR_OpaqueClassBlock* unloadableClass = NULL;
       if (node->isMethodPointerConstant())
@@ -313,7 +313,7 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptrj_t value
    }
 
 TR::Instruction *
-genLoadAddressConstantInSnippet(TR::CodeGenerator * cg, TR::Node * node, uintptrj_t value, TR::Register * targetRegister,
+genLoadAddressConstantInSnippet(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value, TR::Register * targetRegister,
    TR::Instruction * cursor, TR::RegisterDependencyConditions * cond, TR::Register * base, bool isPICCandidate)
    {
    return generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, value, cond, NULL, base, isPICCandidate);
@@ -1887,7 +1887,7 @@ memoryReferenceMightNeedLargeOffset(TR::Node *node, TR::CodeGenerator *cg)
    // (non-Java where stack frames large)
    //
    if (node->getOpCode().hasSymbolReference() &&
-       ((uintptrj_t)node->getSymbolReference()->getOffset() > MAX_12_RELOCATION_VAL)) // unsigned checks for neg too
+       ((uintptr_t)node->getSymbolReference()->getOffset() > MAX_12_RELOCATION_VAL)) // unsigned checks for neg too
       return true;
 
    if (node->getOpCode().isIndirect())
@@ -2992,7 +2992,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
                break;
                }
             case TR::Int32:
-               constValue32 = isAddress ? static_cast<uintptrj_t>(constNode->getAddress()) : constNode->getInt();
+               constValue32 = isAddress ? static_cast<uintptr_t>(constNode->getAddress()) : constNode->getInt();
                compareOpCode = isUnsignedCmp ? TR::InstOpCode::CL : TR::InstOpCode::C;
                break;
 
@@ -4781,7 +4781,7 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
        !cg->getConditionalMovesEvaluationMode()
       )
       {
-      uintptrj_t staticAddress = (uintptrj_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
+      uintptr_t staticAddress = (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
 
       TR::InstOpCode::Mnemonic op = TR::InstOpCode::BAD;
       if (node->getType().isInt32() || (!(cg->comp()->target().is64Bit()) && node->getType().isAddress() ))
@@ -4991,7 +4991,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       {
       if (tempMR == NULL)
          {
-         uintptrj_t value = (uintptrj_t) symbol->getStaticSymbol()->getStaticAddress();
+         uintptr_t value = (uintptr_t) symbol->getStaticSymbol()->getStaticAddress();
          genLoadAddressConstantInSnippet(cg, node, value, tempReg, NULL, NULL, NULL, true);
          }
       // HCR to do for compressed references
@@ -5013,7 +5013,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
             && (node->getOpCodeValue() == TR::aloadi)
             && constNode->isClassUnloadingConst())
       {
-      uintptrj_t value = constNode->getAddress();
+      uintptr_t value = constNode->getAddress();
       TR::Instruction *unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, tempReg, reinterpret_cast<void*>(value));
       TR_OpaqueClassBlock* unloadableClass = NULL;
       if (constNode->isMethodPointerConstant())
@@ -5124,7 +5124,7 @@ bool relativeLongStoreHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
        !cg->getConditionalMovesEvaluationMode()
       )
       {
-      uintptrj_t staticAddress = (uintptrj_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
+      uintptr_t staticAddress = (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
       TR::InstOpCode::Mnemonic op = node->getSize() == 8 ? TR::InstOpCode::STGRL : TR::InstOpCode::STRL;
 
       TR::Register * sourceRegister = cg->evaluate(valueChild);
@@ -5225,7 +5225,7 @@ bool storeHelperImmediateInstruction(TR::Node * valueChild, TR::CodeGenerator * 
          case TR::Address:
             if (cg->comp()->target().is32Bit())
                {
-               imm = (uintptrj_t)valueChild->getAddress();
+               imm = (uintptr_t)valueChild->getAddress();
                if ((imm <= MIN_IMMEDIATE_VAL) || (imm >= MAX_IMMEDIATE_VAL))
                   return true;
                break;
@@ -9541,7 +9541,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
          // A static symbol may either contain a static address or require a register (i.e. DLT MetaData)
          if (comp->getOption(TR_EnableHCR) && node->getSymbol()->isMethod() && !cg->comp()->compileRelocatableCode()) // AOT Class Address are loaded via snippets already
-            cursor = genLoadAddressConstantInSnippet(cg, node, (uintptrj_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(), targetRegister, NULL, NULL, NULL, true);
+            cursor = genLoadAddressConstantInSnippet(cg, node, (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(), targetRegister, NULL, NULL, NULL, true);
          else
             {
             // Generate Static Address into a register
@@ -9574,12 +9574,12 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
                   reloType = 0;
 
                cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
-                                                     (uintptrj_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                     (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
                                                      reloType, NULL, NULL, NULL);
                }
             else
                {
-               cursor = genLoadAddressConstant(cg, node, (uintptrj_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(), targetRegister);
+               cursor = genLoadAddressConstant(cg, node, (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(), targetRegister);
                }
             }
          }
@@ -10230,7 +10230,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
          // At first, load up the branch address into raReg, because
          // to ensure that no weird spilling happens if the code decides it needs
          // to allocate a register at this point for the literal pool base address.
-         intptrj_t helper = (intptrj_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayTranslateAndTestHelper, false, false, false)->getMethodAddress();
+         intptr_t helper = (intptr_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayTranslateAndTestHelper, false, false, false)->getMethodAddress();
 
          TR::LabelSymbol * labelEntryElementChar = generateLabelSymbol(cg);
          TR::Instruction * cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, labelEntryElementChar);
@@ -12053,7 +12053,7 @@ OMR::Z::TreeEvaluator::long2StringEvaluator(TR::Node * node, TR::CodeGenerator *
    // At first, load up the branch address into raReg, because
    // to ensure that no weird spilling happens if the code decides it needs
    // to allocate a register at this point for the literal pool base address.
-   intptrj_t helper = (intptrj_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390long2StringHelper,false,false,false)->getMethodAddress();
+   intptr_t helper = (intptr_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390long2StringHelper,false,false,false)->getMethodAddress();
    genLoadAddressConstant(cg, node, helper, raReg);
 
    TR::MemoryReference * workTopMR = generateS390MemoryReference(workReg, 0, cg);

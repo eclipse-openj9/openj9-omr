@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -552,7 +552,7 @@ class SymbolReferenceTable
 
    TR::SymbolReference * methodSymRefFromName(TR::ResolvedMethodSymbol *owningMethodSymbol, char *className, char *methodName, char *signature, TR::MethodSymbol::Kinds kind, int32_t cpIndex=-1);
 
-   TR::SymbolReference *createSymbolReference(TR::Symbol *sym, intptrj_t o = 0);
+   TR::SymbolReference *createSymbolReference(TR::Symbol *sym, intptr_t o = 0);
 
    TR::Symbol * findOrCreateConstantAreaSymbol();
    TR::SymbolReference * findOrCreateConstantAreaSymbolReference();
@@ -622,8 +622,8 @@ class SymbolReferenceTable
    // CG, optimizer
    TR::SymbolReference * findThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol = 0);
 
-   TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptrj_t *referenceLocation);
-   TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptrj_t *referenceLocation, bool isArrayWithConstantElements);
+   TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation);
+   TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation, bool isArrayWithConstantElements);
    TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, TR::KnownObjectTable::Index objectIndex);
    /*
     * The public API that should be used when the caller needs a temp to hold a known object
@@ -672,10 +672,10 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateMonitorEntrySymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateMonitorExitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
 
-   TR::SymbolReference * findOrCreateGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector = false);
-   TR::SymbolReference * createGenericIntShadowSymbolReference(intptrj_t offset, bool allocateUseDefBitVector = false);
-   TR::SymbolReference * findOrCreateGenericIntArrayShadowSymbolReference(intptrj_t offset);
-   TR::SymbolReference * findOrCreateGenericIntNonArrayShadowSymbolReference(intptrj_t offset);
+   TR::SymbolReference * findOrCreateGenericIntShadowSymbolReference(intptr_t offset, bool allocateUseDefBitVector = false);
+   TR::SymbolReference * createGenericIntShadowSymbolReference(intptr_t offset, bool allocateUseDefBitVector = false);
+   TR::SymbolReference * findOrCreateGenericIntArrayShadowSymbolReference(intptr_t offset);
+   TR::SymbolReference * findOrCreateGenericIntNonArrayShadowSymbolReference(intptr_t offset);
 
    TR::SymbolReference * findOrCreateArrayCopySymbol();
    TR::SymbolReference * findOrCreateArraySetSymbol();

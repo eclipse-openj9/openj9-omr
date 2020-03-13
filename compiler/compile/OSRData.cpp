@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -557,7 +557,7 @@ void TR_OSRCompilationData::buildDefiningMap()
    DefiningMaps definingMapAtOSRCodeBlocks(numOfMethods, static_cast<DefiningMap*>(NULL), comp->trMemory()->currentStackRegion());
    DefiningMaps definingMapAtPrepareForOSRCalls(numOfMethods, static_cast<DefiningMap*>(NULL), comp->trMemory()->currentStackRegion());
 
-   for (intptrj_t i = 0; i < methodDataArray.size(); ++i)
+   for (intptr_t i = 0; i < methodDataArray.size(); ++i)
       {
       TR_OSRMethodData *osrMethodData = methodDataArray[i];
       if (!osrMethodData)
@@ -591,7 +591,7 @@ void TR_OSRCompilationData::buildDefiningMap()
 
    if (comp->getOption(TR_TraceOSR))
       {
-      for (intptrj_t i = 0; i < methodDataArray.size(); ++i)
+      for (intptr_t i = 0; i < methodDataArray.size(); ++i)
          {
          TR_OSRMethodData *osrMethodData = methodDataArray[i];
          if (!osrMethodData)
@@ -923,7 +923,7 @@ void TR_OSRCompilationData::buildSymRefOrderMapAux( TR_Array<List<TR::SymbolRefe
    if (symListArray == NULL)
       return;
 
-   for (intptrj_t j = 0; j < symListArray->size(); j++)
+   for (intptr_t j = 0; j < symListArray->size(); j++)
       {
       List<TR::SymbolReference>& symList = (*symListArray)[j];
       bool sharedSlot = symList.getSize() > 1;

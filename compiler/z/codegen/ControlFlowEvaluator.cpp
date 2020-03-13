@@ -1691,7 +1691,7 @@ void OMR::Z::TreeEvaluator::tableEvaluatorCaseLabelHelper(TR::Node * node, TR::C
       TR_ASSERT(reg1, "Java must have allocated a temp reg");
       TR_ASSERT( tableKindToBeEvaluated == AddressTable32bit || tableKindToBeEvaluated == AddressTable64bitIntLookup || tableKindToBeEvaluated == AddressTable64bitLongLookup, "For Java, must be using Address Table");
 
-      new (cg->trHeapMemory()) TR::S390RIInstruction(TR::InstOpCode::BRAS, node, reg1, (4 + (sizeof(uintptrj_t) * numBranchTableEntries)) / 2, cg);
+      new (cg->trHeapMemory()) TR::S390RIInstruction(TR::InstOpCode::BRAS, node, reg1, (4 + (sizeof(uintptr_t) * numBranchTableEntries)) / 2, cg);
 
       // Generate the data constants with the target label addresses.
       for (int32_t i = 0; i < numBranchTableEntries; ++i)

@@ -216,13 +216,13 @@ class ARM64ImmSymInstruction : public TR::Instruction
     * @brief Gets address immediate
     * @return address immediate
     */
-   uintptrj_t getAddrImmediate() { return _addrImmediate; }
+   uintptr_t getAddrImmediate() { return _addrImmediate; }
    /**
     * @brief Sets address immediate
     * @param[in] imm : address immediate
     * @return address immediate
     */
-   uintptrj_t setAddrImmediate(uintptrj_t imm) { return (_addrImmediate = imm); }
+   uintptr_t setAddrImmediate(uintptr_t imm) { return (_addrImmediate = imm); }
 
    /**
     * @brief Gets symbol reference

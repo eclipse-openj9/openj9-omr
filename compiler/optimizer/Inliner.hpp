@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -238,7 +238,7 @@ struct TR_VirtualGuardSelection
    TR_OpaqueClassBlock *_thisClass;
 
    // only for a MutableCallSiteTargetGuard
-   uintptrj_t                *_mutableCallSiteObject;
+   uintptr_t                *_mutableCallSiteObject;
    TR::KnownObjectTable::Index _mutableCallSiteEpoch;
 
    // this flag is used to signify a profiled guard for which

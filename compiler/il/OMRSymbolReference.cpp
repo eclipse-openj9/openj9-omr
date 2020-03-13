@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,7 +64,7 @@ void
 OMR::SymbolReference::init(TR::SymbolReferenceTable * symRefTab,
           uint32_t      refNumber,
           TR::Symbol * sym,
-          intptrj_t     offset,
+          intptr_t     offset,
           mcount_t      owningMethodIndex,
           int32_t       cpIndex,
           int32_t       unresolvedIndex,
@@ -90,7 +90,7 @@ OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable * symRefTab)
 
 OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable * symRefTab,
                    TR::Symbol * symbol,
-                   intptrj_t offset)
+                   intptr_t offset)
    {
    self()->init(symRefTab, symRefTab->assignSymRefNumber(self()), symbol, offset);
    }
@@ -98,7 +98,7 @@ OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable * symRefTab,
 OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable * symRefTab,
                    int32_t refNumber,
                    TR::Symbol *ps,
-                   intptrj_t offset)
+                   intptr_t offset)
    {
    self()->init(symRefTab, refNumber, ps, offset);
    }
@@ -106,7 +106,7 @@ OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable * symRefTab,
 OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable *symRefTab,
                    TR::SymbolReferenceTable::CommonNonhelperSymbol number,
                    TR::Symbol *ps,
-                   intptrj_t offset)
+                   intptr_t offset)
    {
    self()->init(symRefTab, symRefTab->getNonhelperIndex(number), ps, offset);
    }
@@ -115,7 +115,7 @@ OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable *symRefTab,
 /**
  * Create a symbol reference, however, don't check named shadows
  */
-OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable * symRefTab, TR::Symbol * symbol, intptrj_t offset, const char *name)
+OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable * symRefTab, TR::Symbol * symbol, intptr_t offset, const char *name)
    {
    self()->init(symRefTab,
         symRefTab->assignSymRefNumber(self()),
@@ -310,7 +310,7 @@ OMR::SymbolReference::hasKnownObjectIndex()
    return self()->getKnownObjectIndex() != TR::KnownObjectTable::UNKNOWN;
    }
 
-uintptrj_t*
+uintptr_t*
 OMR::SymbolReference::getKnownObjectReferenceLocation(TR::Compilation *comp)
    {
    return self()->hasKnownObjectIndex() ?

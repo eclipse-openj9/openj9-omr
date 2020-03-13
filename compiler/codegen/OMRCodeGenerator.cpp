@@ -241,7 +241,7 @@ OMR::CodeGenerator::CodeGenerator() :
                                self()->comp()->getOptions()->realTimeGC() ||
                                self()->comp()->getOption(TR_DisableInternalPointers);
 
-   uintptrj_t maxSize = TR::Compiler->vm.getOverflowSafeAllocSize(self()->comp());
+   uintptr_t maxSize = TR::Compiler->vm.getOverflowSafeAllocSize(self()->comp());
    int32_t i;
 
    for (i = 0; i < NumRegisterKinds; ++i)
@@ -1155,13 +1155,13 @@ TR::Register *OMR::CodeGenerator::allocateSinglePrecisionRegister(TR_RegisterKin
    }
 
 void OMR::CodeGenerator::apply8BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
-   { *(int8_t *)cursor += (int8_t)(intptrj_t)label->getCodeLocation(); }
+   { *(int8_t *)cursor += (int8_t)(intptr_t)label->getCodeLocation(); }
 void OMR::CodeGenerator::apply12BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label, bool isCheckDisp)
    { TR_ASSERT(0, "unexpected call to OMR::CodeGenerator::apply12BitLabelRelativeRelocation"); }
 void OMR::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
-   { *(int16_t *)cursor += (int16_t)(intptrj_t)label->getCodeLocation(); }
+   { *(int16_t *)cursor += (int16_t)(intptr_t)label->getCodeLocation(); }
 void OMR::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label,int8_t d, bool isInstrOffset)
-   { *(int16_t *)cursor += (int16_t)(intptrj_t)label->getCodeLocation(); }
+   { *(int16_t *)cursor += (int16_t)(intptr_t)label->getCodeLocation(); }
 void OMR::CodeGenerator::apply24BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *)
    { TR_ASSERT(0, "unexpected call to OMR::CodeGenerator::apply24BitLabelRelativeRelocation"); }
 void OMR::CodeGenerator::apply16BitLoadLabelRelativeRelocation(TR::Instruction *, TR::LabelSymbol *, TR::LabelSymbol *, int32_t)
@@ -3014,7 +3014,7 @@ OMR::CodeGenerator::addStaticRelocation(const TR::StaticRelocation &relocation)
    _staticRelocationList.push_back(relocation);
    }
 
-intptrj_t OMR::CodeGenerator::hiValue(intptrj_t address)
+intptr_t OMR::CodeGenerator::hiValue(intptr_t address)
    {
    if (self()->comp()->compileRelocatableCode()) // We don't want to store values using HI_VALUE at compile time, otherwise, we do this a 2nd time when we relocate (and new value is based on old one)
       return ((address >> 16) & 0x0000FFFF);

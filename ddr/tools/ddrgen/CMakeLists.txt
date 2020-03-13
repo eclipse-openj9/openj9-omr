@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -40,4 +40,14 @@ target_link_libraries(omr_ddrgen
 
 if(OMRPORT_OMRSIG_SUPPORT)
 	target_link_libraries(omr_ddrgen omrsig)
+endif()
+
+if((OMR_TOOLCONFIG STREQUAL "gnu") AND (NOT OMR_OS_OSX))
+	include(CheckCXXCompilerFlag)
+	check_cxx_compiler_flag("-static-libstdc++" ALLOWS_STATIC_LIBCPP)
+	if(ALLOWS_STATIC_LIBCPP)
+		set_property(
+			TARGET omr_ddrgen
+			APPEND_STRING PROPERTY LINK_FLAGS " -static-libstdc++")
+	endif()
 endif()

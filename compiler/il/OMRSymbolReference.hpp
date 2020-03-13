@@ -47,6 +47,11 @@ namespace OMR { typedef OMR::SymbolReference SymbolReferenceConnector; }
 #include "infra/BitVector.hpp"
 #include "infra/Flags.hpp"
 
+typedef enum {
+   UseDefAliasSet,
+   UseOnlyAliasSet
+} AliasSetInterface;
+
 class TR_Debug;
 class TR_ResolvedMethod;
 class TR_UseDefAliasSetInterface;
@@ -55,7 +60,7 @@ namespace TR { class Register; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReference; }
 template <class T> class TR_Array;
-template <uint32_t> class TR_SymAliasSetInterface;
+template <AliasSetInterface> class TR_AliasSetInterface ;
 typedef TR::SparseBitVector SharedSparseBitVector;
 
 // Extra symbol reference info for allocation nodes.
@@ -309,8 +314,8 @@ protected:
 
    friend class ::TR_Debug;
 
-   template <uint32_t>
-   friend class ::TR_SymAliasSetInterface;
+   template <AliasSetInterface>
+   friend class ::TR_AliasSetInterface;
 
    TR_BitVector *getUseonlyAliasesBV(TR::SymbolReferenceTable *symRefTab);
    TR_BitVector *getUseDefAliasesBV( bool isDirectCall = false, bool gcSafe = false);

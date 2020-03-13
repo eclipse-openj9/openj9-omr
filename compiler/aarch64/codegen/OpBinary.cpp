@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -313,7 +313,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0xD3400000,	/* UBFM      	ubfmx	 */
 	/* Extract */
 		0x13800000,	/* EXTR      	extrw	 */
-		0x93C08000,	/* EXTR      	extrx	 */
+		0x93C00000,	/* EXTR      	extrx	 */
 /* Data Processing - register */
 	/* Logical (shifted register) */
 		0x0A000000,	/* AND       	andw	 */

@@ -4035,6 +4035,12 @@ generateRegInstruction(TR::Instruction *prev, TR_X86OpCodes op, TR::Register * r
    return new (cg->trHeapMemory()) TR::X86RegInstruction(reg1, op, prev, cg);
    }
 
+TR::X86RegInstruction  *
+generateRegInstruction(TR::Instruction *prev, TR_X86OpCodes op, TR::Register *reg1, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
+   {
+   return new (cg->trHeapMemory()) TR::X86RegInstruction(cond, reg1, op, prev, cg);
+   }
+
 TR::X86BoundaryAvoidanceInstruction  *
 generateBoundaryAvoidanceInstruction(const TR_AtomicRegion *atomicRegions,
                                      uint8_t                boundarySpacing,

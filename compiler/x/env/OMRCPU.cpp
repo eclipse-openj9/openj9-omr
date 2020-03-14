@@ -27,6 +27,34 @@
 #include "infra/Flags.hpp"
 #include "x/runtime/X86Runtime.hpp"
 
+TR::CPU
+OMR::X86::CPU::detect(OMRPortLibrary * const omrPortLib)
+   {   
+   // Only enable the features that compiler currently uses
+   uint32_t enabledFeatures [] = {OMR_FEATURE_X86_FPU, OMR_FEATURE_X86_CX8, OMR_FEATURE_X86_CMOV,
+                                  OMR_FEATURE_X86_MMX, OMR_FEATURE_X86_SSE, OMR_FEATURE_X86_SSE2,
+                                  OMR_FEATURE_X86_SSSE3, OMR_FEATURE_X86_SSE4_1, OMR_FEATURE_X86_POPCNT,
+                                  OMR_FEATURE_X86_AESNI, OMR_FEATURE_X86_OSXSAVE, OMR_FEATURE_X86_AVX,
+                                  OMR_FEATURE_X86_HLE, OMR_FEATURE_X86_RTM};
+
+   OMRPORT_ACCESS_FROM_OMRPORT(omrPortLib);
+   OMRProcessorDesc featureMasks;
+   memset(featureMasks.features, 0, OMRPORT_SYSINFO_FEATURES_SIZE*sizeof(uint32_t));
+   for (size_t i = 0; i < sizeof(enabledFeatures)/sizeof(uint32_t); i++)
+      {
+      omrsysinfo_processor_set_feature(&featureMasks, enabledFeatures[i], TRUE);
+      }
+
+   OMRProcessorDesc processorDescription;
+   omrsysinfo_get_processor_description(&processorDescription);
+   for (size_t i = 0; i < OMRPORT_SYSINFO_FEATURES_SIZE; i++)
+      {
+      processorDescription.features[i] &= featureMasks.features[i];
+      }
+
+   return TR::CPU(processorDescription);
+   }
+
 TR_X86CPUIDBuffer *
 OMR::X86::CPU::queryX86TargetCPUID()
    {

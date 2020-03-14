@@ -69,6 +69,8 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
     */
    static const char* getProcessorName(int32_t machineId);
 
+   static TR::CPU detect(OMRPortLibrary * const omrPortLib);
+
    public:
 
    bool getSupportsArch(Architecture arch);
@@ -260,7 +262,7 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
 
    protected:
 
-   CPU();
+   CPU() : OMR::CPU(), _supportedArch(z9) {}
    CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription) {}
 
    enum

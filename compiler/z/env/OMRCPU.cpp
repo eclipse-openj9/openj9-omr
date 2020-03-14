@@ -27,7 +27,67 @@
 #pragma csect(STATIC,"OMRZCPUBase#S")
 #pragma csect(TEST,"OMRZCPUBase#T")
 
+#include "control/Options.hpp"
 #include "env/CPU.hpp"
+
+TR::CPU
+OMR::Z::CPU::detect(OMRPortLibrary * const omrPortLib)
+   {
+   OMRPORT_ACCESS_FROM_OMRPORT(omrPortLib);
+   OMRProcessorDesc processorDescription;
+   omrsysinfo_get_processor_description(&processorDescription);
+
+   if (processorDescription.processor >= OMR_PROCESSOR_S390_Z10 && TR::Options::getCmdLineOptions()->getOption(TR_DisableZ10))
+      processorDescription.processor = OMR_PROCESSOR_S390_FIRST;
+   else if (processorDescription.processor >= OMR_PROCESSOR_S390_Z196 && TR::Options::getCmdLineOptions()->getOption(TR_DisableZ196))
+      processorDescription.processor = OMR_PROCESSOR_S390_Z10;
+   else if (processorDescription.processor >= OMR_PROCESSOR_S390_ZEC12 && TR::Options::getCmdLineOptions()->getOption(TR_DisableZEC12))
+      processorDescription.processor = OMR_PROCESSOR_S390_Z196;
+   else if (processorDescription.processor >= OMR_PROCESSOR_S390_Z13 && TR::Options::getCmdLineOptions()->getOption(TR_DisableZ13))
+      processorDescription.processor = OMR_PROCESSOR_S390_ZEC12;
+   else if (processorDescription.processor >= OMR_PROCESSOR_S390_Z14 && TR::Options::getCmdLineOptions()->getOption(TR_DisableZ14))
+      processorDescription.processor = OMR_PROCESSOR_S390_Z13;
+   else if (processorDescription.processor >= OMR_PROCESSOR_S390_Z15 && TR::Options::getCmdLineOptions()->getOption(TR_DisableZ15))
+      processorDescription.processor = OMR_PROCESSOR_S390_Z14;
+   else if (processorDescription.processor >= OMR_PROCESSOR_S390_ZNEXT && TR::Options::getCmdLineOptions()->getOption(TR_DisableZNext))
+      processorDescription.processor = OMR_PROCESSOR_S390_Z15;
+
+   if (processorDescription.processor < OMR_PROCESSOR_S390_Z10)
+      {
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_DFP, FALSE);
+      }
+
+   if (processorDescription.processor < OMR_PROCESSOR_S390_Z196)
+      {
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_HIGH_WORD, FALSE);
+      }
+
+   if (processorDescription.processor < OMR_PROCESSOR_S390_ZEC12)
+      {
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_TE, FALSE);
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_RI, FALSE);
+      }
+
+   if (processorDescription.processor < OMR_PROCESSOR_S390_Z13)
+      {
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_VECTOR_FACILITY, FALSE);
+      }
+
+   if (processorDescription.processor < OMR_PROCESSOR_S390_Z14)
+      {
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL, FALSE);
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_GUARDED_STORAGE, FALSE);
+      }
+
+   if (processorDescription.processor < OMR_PROCESSOR_S390_Z15)
+      {
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_3, FALSE);
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_2, FALSE);
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY, FALSE);
+      }
+
+   return TR::CPU(processorDescription);
+   }
 
 const char*
 OMR::Z::CPU::getProcessorName(int32_t machineId)
@@ -107,12 +167,6 @@ OMR::Z::CPU::getProcessorName(int32_t machineId)
 
    return result;
    }
-
-OMR::Z::CPU::CPU()
-   :
-   OMR::CPU(),
-   _supportedArch(z9)
-   {}
 
 bool
 OMR::Z::CPU::getSupportsArch(Architecture arch)
@@ -403,3 +457,4 @@ OMR::Z::CPU::isTargetWithinBranchRelativeRILRange(intptr_t targetAddress, intptr
    return (targetAddress == sourceAddress + ((intptr_t)((int32_t)((targetAddress - sourceAddress) / 2))) * 2) &&
             (targetAddress % 2 == 0);
    }
+

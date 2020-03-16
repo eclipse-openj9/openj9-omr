@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -314,7 +314,7 @@
 		ubfmx,                                                  	/* 0xD3400000	UBFM      	 */
 	/* Extract */
 		extrw,                                                  	/* 0x13800000	EXTR      	 */
-		extrx,                                                  	/* 0x93C08000	EXTR      	 */
+		extrx,                                                  	/* 0x93C00000	EXTR      	 */
 /* Data Processing - register */
 	/* Logical (shifted register) */
 		andw,                                                   	/* 0x0A000000	AND       	 */

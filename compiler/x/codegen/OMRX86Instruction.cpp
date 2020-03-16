@@ -4516,6 +4516,16 @@ generateCallMemInstruction(TR_X86OpCodes                       op,
    return new (cg->trHeapMemory()) TR::X86CallMemInstruction(op, node, mr, cg);
    }
 
+TR::X86CallMemInstruction  *
+generateCallMemInstruction(TR::Instruction *prevInstr,
+                           TR_X86OpCodes op,
+                           TR::MemoryReference *mr,
+                           TR::RegisterDependencyConditions *cond,
+                           TR::CodeGenerator *cg)
+   {
+   return new (cg->trHeapMemory()) TR::X86CallMemInstruction(prevInstr, op, mr, cond, cg);
+   }
+
 TR::X86ImmSymInstruction  *
 generateHelperCallInstruction(TR::Instruction * cursor, TR_RuntimeHelper index, TR::CodeGenerator *cg)
    {

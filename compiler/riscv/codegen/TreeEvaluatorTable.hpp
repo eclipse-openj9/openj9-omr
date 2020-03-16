@@ -729,18 +729,18 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::getpmEvaluator ,	// TR::getpm		// get program mask
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::setpmEvaluator ,	// TR::setpm		// set program mask
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::loadAutoOffsetEvaluator ,	// TR::loadAutoOffset	// loads the offset (from the SP) of an auto
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::imaxEvaluator ,	// TR::imax		// max of 2 or more integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::iumaxEvaluator ,	// TR::iumax		// max of 2 or more unsigned integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::lmaxEvaluator ,	// TR::lmax		// max of 2 or more longs
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::lumaxEvaluator ,	// TR::lumax		// max of 2 or more unsigned longs
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fmaxEvaluator ,	// TR::fmax		// max of 2 or more floats
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dmaxEvaluator ,	// TR::dmax		// max of 2 or more doubles
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::iminEvaluator ,	// TR::imin		// min of 2 or more integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::iuminEvaluator ,	// TR::iumin		// min of 2 or more unsigned integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::lminEvaluator ,	// TR::lmin		// min of 2 or more longs
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::luminEvaluator ,	// TR::lumin		// min of 2 or more unsigned longs
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fminEvaluator ,	// TR::fmin		// min of 2 or more floats
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dminEvaluator ,	// TR::dmin		// min of 2 or more doubles
+    TR::TreeEvaluator::imaxEvaluator ,	// TR::imax		// max of 2 or more integers
+    TR::TreeEvaluator::iumaxEvaluator ,	// TR::iumax		// max of 2 or more unsigned integers
+    TR::TreeEvaluator::imaxEvaluator ,	// TR::lmax		// max of 2 or more longs
+    TR::TreeEvaluator::iumaxEvaluator ,	// TR::lumax		// max of 2 or more unsigned longs
+    TR::TreeEvaluator::fmaxEvaluator ,	// TR::fmax		// max of 2 or more floats
+    TR::TreeEvaluator::dmaxEvaluator ,	// TR::dmax		// max of 2 or more doubles
+    TR::TreeEvaluator::iminEvaluator ,	// TR::imin		// min of 2 or more integers
+    TR::TreeEvaluator::iuminEvaluator ,	// TR::iumin		// min of 2 or more unsigned integers
+    TR::TreeEvaluator::iminEvaluator ,	// TR::lmin		// min of 2 or more longs
+    TR::TreeEvaluator::iuminEvaluator ,	// TR::lumin		// min of 2 or more unsigned longs
+    TR::TreeEvaluator::fminEvaluator ,	// TR::fmin		// min of 2 or more floats
+    TR::TreeEvaluator::dminEvaluator ,	// TR::dmin		// min of 2 or more doubles
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::trtEvaluator ,	// TR::trt		// translate and test
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::trtSimpleEvaluator ,	// TR::trtSimple		// same as TRT but ignoring the returned source byte address and table entry value
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::ihbitEvaluator ,	// TR::ihbit

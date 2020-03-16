@@ -43,7 +43,6 @@ class RtypeInstruction : public TR::Instruction
    TR::Register *_target1Register;
    TR::Register *_source1Register;
    TR::Register *_source2Register;
-   uint32_t _imm;
 
    public:
 

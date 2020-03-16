@@ -738,11 +738,11 @@ TR::S390zOSSystemLinkage::generateCallDescriptorValue(TR::Node* callNode)
          // JNI Calls include a JNIEnv* pointer that is not included in list of children nodes.
          // For FastJNI, certain calls do not require us to pass the JNIEnv.
          if (!cg()->fej9()->jniDoNotPassThread(resolvedMethod))
-            parmAreaOffset += sizeof(uintptrj_t);
+            parmAreaOffset += sizeof(uintptr_t);
 
          // For FastJNI, certain calls do not have to pass in receiver object.
          if (cg()->fej9()->jniDoNotPassReceiver(resolvedMethod))
-            parmAreaOffset -= sizeof(uintptrj_t);
+            parmAreaOffset -= sizeof(uintptr_t);
          }
 #endif
 

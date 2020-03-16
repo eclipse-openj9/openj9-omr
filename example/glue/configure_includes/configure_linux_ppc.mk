@@ -67,9 +67,9 @@ ifeq (linux_ppc-64_cmprssptrs_gcc, $(SPEC))
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_GCC \
-    --enable-OMR_GC_COMPRESSED_POINTERS \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
-    --enable-OMR_THR_FORK_SUPPORT
+    --enable-OMR_THR_FORK_SUPPORT \
+    OMR_GC_POINTER_MODE=compressed
 endif
 
 ifeq (linux_ppc-64_cmprssptrs_le_gcc_cuda, $(SPEC))
@@ -79,12 +79,12 @@ ifeq (linux_ppc-64_cmprssptrs_le_gcc_cuda, $(SPEC))
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
-    --enable-OMR_GC_COMPRESSED_POINTERS \
     --enable-OMR_JITBUILDER \
     --enable-OMR_OPT_CUDA \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
     --enable-OMR_TEST_COMPILER \
-    --enable-OMR_THR_FORK_SUPPORT
+    --enable-OMR_THR_FORK_SUPPORT \
+    OMR_GC_POINTER_MODE=compressed
 endif
 
 ifeq (linux_ppc-64_cmprssptrs_le_gcc, $(SPEC))
@@ -94,11 +94,11 @@ ifeq (linux_ppc-64_cmprssptrs_le_gcc, $(SPEC))
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
-    --enable-OMR_GC_COMPRESSED_POINTERS \
     --enable-OMR_JITBUILDER \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
     --enable-OMR_TEST_COMPILER \
-    --enable-OMR_THR_FORK_SUPPORT
+    --enable-OMR_THR_FORK_SUPPORT \
+    OMR_GC_POINTER_MODE=compressed
 endif
 
 ifeq (linux_ppc-64_cmprssptrs_le, $(SPEC))
@@ -107,9 +107,9 @@ ifeq (linux_ppc-64_cmprssptrs_le, $(SPEC))
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
-    --enable-OMR_GC_COMPRESSED_POINTERS \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
-    --enable-OMR_THR_FORK_SUPPORT
+    --enable-OMR_THR_FORK_SUPPORT \
+    OMR_GC_POINTER_MODE=compressed
 
   TEMP_TOOLS=$(XLC_TOOLS)
 endif
@@ -119,9 +119,9 @@ ifeq (linux_ppc-64_cmprssptrs, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_GC_COMPRESSED_POINTERS \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
-    --enable-OMR_THR_FORK_SUPPORT
+    --enable-OMR_THR_FORK_SUPPORT \
+    OMR_GC_POINTER_MODE=compressed
 
   TEMP_TOOLS=$(XLC_TOOLS)
 endif
@@ -131,7 +131,6 @@ ifeq (linux_ppc-64_le_gcc_cuda, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_GC_FULL_POINTERS \
     --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_JITBUILDER \
@@ -146,7 +145,6 @@ ifeq (linux_ppc-64_le_gcc, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_GC_FULL_POINTERS \
     --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_JITBUILDER \
@@ -160,7 +158,6 @@ ifeq (linux_ppc-64, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_GC_FULL_POINTERS \
     --enable-OMR_ENV_GCC \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
     --enable-OMR_THR_FORK_SUPPORT
@@ -173,7 +170,6 @@ ifeq (linux_ppc, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
-    --enable-OMR_GC_FULL_POINTERS \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
     --enable-OMR_THR_FORK_SUPPORT
 

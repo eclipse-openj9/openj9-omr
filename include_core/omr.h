@@ -27,6 +27,8 @@
  * @ddr_namespace: default
  */
 
+#include "omrcfg.h"
+
 #include "omrport.h"
 
 #define OMRPORT_ACCESS_FROM_OMRRUNTIME(omrRuntime) OMRPortLibrary *privateOmrPortLibrary = (omrRuntime)->_portLibrary

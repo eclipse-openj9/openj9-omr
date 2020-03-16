@@ -685,6 +685,7 @@ OMR_THR_FORK_SUPPORT
 OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS
 OMR_GC_COMPRESSED_POINTERS
 OMR_GC_FULL_POINTERS
+OMR_GC_POINTER_MODE
 OMR_ENV_DATA64
 OMR_ARCH_RISCV
 OMR_ARCH_S390
@@ -930,6 +931,7 @@ CXX
 CXXFLAGS
 CCC
 CPP
+OMR_GC_POINTER_MODE
 OMR_DIASDK_HOME'
 
 
@@ -1648,8 +1650,9 @@ Optional Features:
   --enable-OMR_ARCH_RISCV
   --enable-OMR_ENV_DATA64
   --enable-OMR_GC_COMPRESSED_POINTERS
+                          Enable OMR_GC_COMPRESSED_POINTERS
   --enable-OMR_GC_FULL_POINTERS
-
+                          Enable OMR_GC_FULL_POINTERS
   --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS
 
   --enable-OMR_THR_FORK_SUPPORT
@@ -1755,6 +1758,8 @@ Some influential environment variables:
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
   CPP         C preprocessor
+  OMR_GC_POINTER_MODE
+              The mode of pointers. Must be "full", "compressed", or "mixed"
   OMR_DIASDK_HOME
               The directory where the DIA SDK can be found. (Default: )
 
@@ -5744,45 +5749,58 @@ fi
 
 
 
+# TODO These options are no longer used, and will be deleted.  User's should switch to use OMR_GC_POINTER_MODE.
 # Check whether --enable-OMR_GC_COMPRESSED_POINTERS was given.
 if test "${enable_OMR_GC_COMPRESSED_POINTERS+set}" = set; then :
-  enableval=$enable_OMR_GC_COMPRESSED_POINTERS; if test "x${enableval}" = xyes; then :
-  OMR_GC_COMPRESSED_POINTERS=1
-
-   $as_echo "#define OMR_GC_COMPRESSED_POINTERS 1" >>confdefs.h
-
-else
-  OMR_GC_COMPRESSED_POINTERS=0
-
-
+  enableval=$enable_OMR_GC_COMPRESSED_POINTERS;
 fi
-else
-  OMR_GC_COMPRESSED_POINTERS=0
-
-
-fi
-
-
 
 # Check whether --enable-OMR_GC_FULL_POINTERS was given.
 if test "${enable_OMR_GC_FULL_POINTERS+set}" = set; then :
-  enableval=$enable_OMR_GC_FULL_POINTERS; if test "x${enableval}" = xyes; then :
-  OMR_GC_FULL_POINTERS=1
+  enableval=$enable_OMR_GC_FULL_POINTERS;
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking OMR_GC_POINTER_MODE" >&5
+$as_echo_n "checking OMR_GC_POINTER_MODE... " >&6; }
+
+: ${OMR_GC_POINTER_MODE="full"}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $OMR_GC_POINTER_MODE" >&5
+$as_echo "$OMR_GC_POINTER_MODE" >&6; }
+
+if test "x$OMR_GC_POINTER_MODE" = "xmixed" || test "x$OMR_GC_POINTER_MODE" = "xcompressed"; then :
+  if test "x$OMR_TARGET_DATASIZE" = "x32"; then :
+  as_fn_error $? "\$OMR_GC_POINTER_MODE=$OMR_GC_POINTER_MODE requires 64 bit target datasize" "$LINENO" 5
+fi
+fi
+
+case "x$OMR_GC_POINTER_MODE" in #(
+  xfull) :
+    OMR_GC_FULL_POINTERS=1
 
    $as_echo "#define OMR_GC_FULL_POINTERS 1" >>confdefs.h
 
-else
-  OMR_GC_FULL_POINTERS=0
+		 OMR_GC_COMPRESSED_POINTERS=0
+ ;; #(
+  xcompressed) :
+    OMR_GC_FULL_POINTERS=0
 
+		 OMR_GC_COMPRESSED_POINTERS=1
 
-fi
-else
-  OMR_GC_FULL_POINTERS=0
+   $as_echo "#define OMR_GC_COMPRESSED_POINTERS 1" >>confdefs.h
+ ;; #(
+  xmixed) :
+    OMR_GC_FULL_POINTERS=1
 
+   $as_echo "#define OMR_GC_FULL_POINTERS 1" >>confdefs.h
 
-fi
+		 OMR_GC_COMPRESSED_POINTERS=1
 
-
+   $as_echo "#define OMR_GC_COMPRESSED_POINTERS 1" >>confdefs.h
+ ;; #(
+  *) :
+    as_fn_error $? "OMR_GC_FULL_POINTERS must be set to one of \"full\", \"compressed\", or \"mixed\"" "$LINENO" 5 ;;
+esac
 
 # Check whether --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS was given.
 if test "${enable_OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS+set}" = set; then :

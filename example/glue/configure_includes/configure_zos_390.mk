@@ -40,8 +40,8 @@ ifeq (zos_390-64_cmprssptrs, $(SPEC))
     --enable-OMRTHREAD_LIB_ZOS \
     --enable-OMR_ARCH_S390 \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_GC_COMPRESSED_POINTERS \
-    --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS
+    --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
+    OMR_GC_POINTER_MODE=compressed
 endif
 
 ifeq (zos_390-64, $(SPEC))
@@ -49,7 +49,6 @@ ifeq (zos_390-64, $(SPEC))
     --enable-OMRTHREAD_LIB_ZOS \
     --enable-OMR_ARCH_S390 \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_GC_FULL_POINTERS \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS
 endif
 
@@ -57,7 +56,6 @@ ifeq (zos_390, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_ZOS \
     --enable-OMR_ARCH_S390 \
-    --enable-OMR_GC_FULL_POINTERS \
     --enable-OMR_PORT_ZOS_CEEHDLRSUPPORT \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS
 endif

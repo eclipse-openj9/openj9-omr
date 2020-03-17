@@ -55,6 +55,8 @@ get_os_family(int32_t omrFamily)
 			return OS_SOCK_AF_INET;
 		case OMRSOCK_AF_INET6:
 			return OS_SOCK_AF_INET6;
+		default:
+			break;
 	}
 	return OS_SOCK_AF_UNSPEC;
 }
@@ -76,6 +78,8 @@ get_os_socktype(int32_t omrSockType)
 			return OS_SOCK_STREAM;
 		case OMRSOCK_DGRAM:
 			return OS_SOCK_DGRAM;
+		default:
+			break;
 	}
 	return OS_SOCK_ANY;
 }
@@ -98,6 +102,8 @@ get_os_protocol(int32_t omrProtocol)
 			return OS_SOCK_IPPROTO_TCP;
 		case OMRSOCK_IPPROTO_UDP:
 			return OS_SOCK_IPPROTO_UDP;
+		default:
+			break;
 	}
 	return OS_SOCK_IPPROTO_DEFAULT;
 }
@@ -122,6 +128,8 @@ get_omr_family(int32_t osFamily)
 			return OMRSOCK_AF_INET;
 		case OS_SOCK_AF_INET6:
 			return OMRSOCK_AF_INET6;
+		default:
+			break;
 	}
 	return OMRSOCK_AF_UNSPEC;
 }
@@ -143,6 +151,8 @@ get_omr_socktype(int32_t osSockType)
 			return OS_SOCK_STREAM;
 		case OMRSOCK_DGRAM:
 			return OS_SOCK_DGRAM;
+		default:
+			break;
 	}
 	return OMRSOCK_ANY;
 }
@@ -164,6 +174,8 @@ get_omr_protocol(int32_t osProtocol)
 			return OMRSOCK_IPPROTO_TCP;
 		case OS_SOCK_IPPROTO_UDP:
 			return OMRSOCK_IPPROTO_UDP;
+		default:
+			break;
 	}
 	return OMRSOCK_IPPROTO_DEFAULT;
 }

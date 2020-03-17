@@ -28,6 +28,7 @@
 #pragma csect(TEST,"OMRZCPUBase#T")
 
 #include "control/Options.hpp"
+#include "control/Options_inlines.hpp"
 #include "env/CPU.hpp"
 
 TR::CPU

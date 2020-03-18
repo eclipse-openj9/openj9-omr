@@ -67,6 +67,25 @@ OMR::KnownObjectTable::getIndex(uintptr_t objectPointer, bool isArrayWithConstan
    return index;
    }
 
+TR::KnownObjectTable::Index
+OMR::KnownObjectTable::getOrCreateIndex(uintptr_t objectPointer)
+   {
+   TR_UNIMPLEMENTED();
+   return -1;
+   }
+
+TR::KnownObjectTable::Index
+OMR::KnownObjectTable::getOrCreateIndex(uintptr_t objectPointer, bool isArrayWithConstantElements)
+   {
+   TR_ASSERT(TR::Compiler->vm.hasAccess(self()->comp()), "Getting KnownObjectTable index requires VM access");
+   TR::KnownObjectTable::Index index = self()->getOrCreateIndex(objectPointer);
+   if (isArrayWithConstantElements)
+      {
+      self()->addArrayWithConstantElements(index);
+      }
+   return index;
+   }
+
 void
 OMR::KnownObjectTable::addArrayWithConstantElements(Index index)
    {
@@ -121,6 +140,26 @@ TR::KnownObjectTable::Index
 OMR::KnownObjectTable::getIndexAt(uintptr_t *objectReferenceLocation, bool isArrayWithConstantElements)
    {
    Index result = self()->getIndexAt(objectReferenceLocation);
+   if (isArrayWithConstantElements)
+      self()->addArrayWithConstantElements(result);
+   return result;
+   }
+
+TR::KnownObjectTable::Index
+OMR::KnownObjectTable::getOrCreateIndexAt(uintptr_t *objectReferenceLocation)
+   {
+#ifdef J9_PROJECT_SPECIFIC
+   TR::VMAccessCriticalSection getIndexCriticalSection(self()->comp());
+#endif
+   uintptr_t objectPointer = *objectReferenceLocation; // Note: object references held as uintptr_t must never be compressed refs
+   Index result = self()->getOrCreateIndex(objectPointer);
+   return result;
+   }
+
+TR::KnownObjectTable::Index
+OMR::KnownObjectTable::getOrCreateIndexAt(uintptr_t *objectReferenceLocation, bool isArrayWithConstantElements)
+   {
+   Index result = self()->getOrCreateIndexAt(objectReferenceLocation);
    if (isArrayWithConstantElements)
       self()->addArrayWithConstantElements(result);
    return result;

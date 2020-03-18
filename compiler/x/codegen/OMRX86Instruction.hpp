@@ -2921,6 +2921,7 @@ TR::X86MemInstruction  * generateMemInstruction(TR::Instruction *, TR_X86OpCodes
 TR::X86RegInstruction  * generateRegInstruction(TR_X86OpCodes op, TR::Node *, TR::Register * reg1, TR::RegisterDependencyConditions  * cond, TR::CodeGenerator *cg);
 TR::X86RegInstruction  * generateRegInstruction(TR_X86OpCodes op, TR::Node *, TR::Register * reg1, TR::CodeGenerator *cg);
 TR::X86RegInstruction  * generateRegInstruction(TR::Instruction *prev, TR_X86OpCodes op, TR::Register * reg1, TR::CodeGenerator *cg);
+TR::X86RegInstruction  * generateRegInstruction(TR::Instruction *prev, TR_X86OpCodes op, TR::Register * reg1, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg);
 
 TR::X86MemInstruction  * generateMemInstruction(TR_X86OpCodes op, TR::Node *, TR::MemoryReference  * mr, TR::CodeGenerator *cg);
 
@@ -3015,6 +3016,7 @@ TR::X86RegRegImmInstruction  * generateRegRegImmInstruction(TR_X86OpCodes op, TR
 
 TR::X86CallMemInstruction  * generateCallMemInstruction(TR_X86OpCodes op, TR::Node *, TR::MemoryReference  * mr, TR::RegisterDependencyConditions  *, TR::CodeGenerator *cg);
 TR::X86CallMemInstruction  * generateCallMemInstruction(TR_X86OpCodes op, TR::Node *, TR::MemoryReference  * mr, TR::CodeGenerator *cg);
+TR::X86CallMemInstruction  * generateCallMemInstruction(TR::Instruction *, TR_X86OpCodes op, TR::MemoryReference *mr, TR::RegisterDependencyConditions *, TR::CodeGenerator *cg);
 
 TR::X86ImmSymInstruction  * generateHelperCallInstruction(TR::Node *, TR_RuntimeHelper, TR::RegisterDependencyConditions  *, TR::CodeGenerator *cg);
 TR::X86ImmSymInstruction  * generateHelperCallInstruction(TR::Instruction *, TR_RuntimeHelper, TR::CodeGenerator *cg);

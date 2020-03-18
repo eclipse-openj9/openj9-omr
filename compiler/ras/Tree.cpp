@@ -2581,8 +2581,6 @@ int32_t childTypes[] =
    TR::Int64,                     // TR::iflcmpge
    TR::Int64,                     // TR::iflcmpgt
    TR::Int64,                     // TR::iflcmple
-   TR::Int64,                     // TR::iflucmpeq
-   TR::Int64,                     // TR::iflucmpne
    TR::Int64,                     // TR::iflucmplt
    TR::Int64,                     // TR::iflucmpge
    TR::Int64,                     // TR::iflucmpgt

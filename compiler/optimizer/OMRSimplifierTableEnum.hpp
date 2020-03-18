@@ -333,8 +333,6 @@
    iflcmpgeSimplifier,      // TR::iflcmpge
    iflcmpgtSimplifier,      // TR::iflcmpgt
    iflcmpleSimplifier,      // TR::iflcmple
-   iflcmpeqSimplifier,      // TR::iflucmpeq
-   iflcmpneSimplifier,      // TR::iflucmpne
    iflcmpltSimplifier,      // TR::iflucmplt
    iflcmpgeSimplifier,      // TR::iflucmpge
    iflcmpgtSimplifier,      // TR::iflucmpgt

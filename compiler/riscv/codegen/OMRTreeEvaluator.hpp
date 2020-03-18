@@ -350,8 +350,6 @@ public:
 	static TR::Register *iflcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iflcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iflcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iflucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iflucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iflucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iflucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iflucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -320,8 +320,6 @@
    TR::TreeEvaluator::iflcmpgeEvaluator,                               // TR::iflcmpge
    TR::TreeEvaluator::iflcmpgtEvaluator,                               // TR::iflcmpgt
    TR::TreeEvaluator::iflcmpleEvaluator,                               // TR::iflcmple
-   TR::TreeEvaluator::iflcmpeqEvaluator,                               // TR::iflucmpeq
-   TR::TreeEvaluator::iflcmpneEvaluator,                               // TR::iflucmpne
    TR::TreeEvaluator::iflcmpltEvaluator,                               // TR::iflucmplt
    TR::TreeEvaluator::iflcmpgeEvaluator,                               // TR::iflucmpge
    TR::TreeEvaluator::iflcmpgtEvaluator,                               // TR::iflucmpgt

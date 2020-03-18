@@ -4790,38 +4790,6 @@
    },
 
    {
-   /* .opcode               = */ TR::iflucmpeq,
-   /* .name                 = */ "iflucmpeq",
-   /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,
-   /* .properties2          = */ ILProp2::UnsignedCompare,
-   /* .properties3          = */ ILProp3::CompareTrueIfEqual,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::NoType,
-   /* .typeProperties       = */ ILTypeProp::Unsigned,
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int64),
-   /* .swapChildrenOpCode   = */ TR::iflucmpeq,
-   /* .reverseBranchOpCode  = */ TR::iflucmpne,
-   /* .booleanCompareOpCode = */ TR::lucmpeq,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
-   /* .opcode               = */ TR::iflucmpne,
-   /* .name                 = */ "iflucmpne",
-   /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,
-   /* .properties2          = */ ILProp2::UnsignedCompare,
-   /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::NoType,
-   /* .typeProperties       = */ ILTypeProp::Unsigned,
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int64),
-   /* .swapChildrenOpCode   = */ TR::iflucmpne,
-   /* .reverseBranchOpCode  = */ TR::iflucmpeq,
-   /* .booleanCompareOpCode = */ TR::lucmpne,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
    /* .opcode               = */ TR::iflucmplt,
    /* .name                 = */ "iflucmplt",
    /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,

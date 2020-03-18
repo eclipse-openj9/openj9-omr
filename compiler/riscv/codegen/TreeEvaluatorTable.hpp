@@ -320,8 +320,6 @@
     TR::TreeEvaluator::iflcmpgeEvaluator, // TR::iflcmpge		// long compare and branch if greater than or equal
     TR::TreeEvaluator::iflcmpgtEvaluator, // TR::iflcmpgt		// long compare and branch if greater than
     TR::TreeEvaluator::iflcmpleEvaluator, // TR::iflcmple		// long compare and branch if less than or equal
-    TR::TreeEvaluator::iflcmpeqEvaluator, // TR::iflucmpeq		// unsigned long compare and branch if equal
-    TR::TreeEvaluator::iflcmpneEvaluator, // TR::iflucmpne		// unsigned long compare and branch if not equal
     TR::TreeEvaluator::iflucmpltEvaluator, // TR::iflucmplt		// unsigned long compare and branch if less than
     TR::TreeEvaluator::iflucmpgeEvaluator, // TR::iflucmpge		// unsigned long compare and branch if greater than or equal
     TR::TreeEvaluator::iflucmpgtEvaluator, // TR::iflucmpgt		// unsigned long compare and branch if greater than

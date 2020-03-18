@@ -198,7 +198,7 @@ OMR::RV::TreeEvaluator::ifiucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg
    return NULL;
    }
 
-// also handles iflucmpeq, ifacmpeq
+// also handles ifacmpeq
 TR::Register *
 OMR::RV::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -206,7 +206,7 @@ OMR::RV::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return NULL;
    }
 
-// also handles iflucmpne, ifacmpne
+// also handles ifacmpne
 TR::Register *
 OMR::RV::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

@@ -369,8 +369,6 @@
    iflcmpge, // long compare and branch if greater than or equal
    iflcmpgt, // long compare and branch if greater than
    iflcmple, // long compare and branch if less than or equal
-   iflucmpeq, // unsigned long compare and branch if equal
-   iflucmpne, // unsigned long compare and branch if not equal
    iflucmplt, // unsigned long compare and branch if less than
    iflucmpge, // unsigned long compare and branch if greater than or equal
    iflucmpgt, // unsigned long compare and branch if greater than

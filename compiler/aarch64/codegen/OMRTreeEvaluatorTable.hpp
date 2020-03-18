@@ -360,8 +360,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbcmpgeEvaluator ,	// TR::ifbcmpge		// byte compare and branch if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbcmpgtEvaluator ,	// TR::ifbcmpgt		// byte compare and branch if greater than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbcmpleEvaluator ,	// TR::ifbcmple		// byte compare and branch if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbucmpeqEvaluator ,	// TR::ifbucmpeq		// unsigned byte compare and branch if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbucmpneEvaluator ,	// TR::ifbucmpne		// unsigned byte compare and branch if not equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbucmpltEvaluator ,	// TR::ifbucmplt		// unsigned byte compare and branch if less than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbucmpgeEvaluator ,	// TR::ifbucmpge		// unsigned byte compare and branch if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbucmpgtEvaluator ,	// TR::ifbucmpgt		// unsigned byte compare and branch if greater than

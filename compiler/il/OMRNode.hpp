@@ -374,8 +374,6 @@ private:
       switch (opvalue) 
          {
          //Equality compare and branch
-         case TR::ifbucmpeq:
-         case TR::ifbucmpne:
          case TR::ifsucmpeq:
          case TR::ifsucmpne:
 

@@ -2623,8 +2623,6 @@ int32_t childTypes[] =
    TR::Int8,                      // TR::ifbcmpge
    TR::Int8,                      // TR::ifbcmpgt
    TR::Int8,                      // TR::ifbcmple
-   TR::Int8,                      // TR::ifbucmpeq
-   TR::Int8,                      // TR::ifbucmpne
    TR::Int8,                      // TR::ifbucmplt
    TR::Int8,                      // TR::ifbucmpge
    TR::Int8,                      // TR::ifbucmpgt

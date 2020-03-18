@@ -409,8 +409,6 @@
    ifbcmpge, // byte compare and branch if greater than or equal
    ifbcmpgt, // byte compare and branch if greater than
    ifbcmple, // byte compare and branch if less than or equal
-   ifbucmpeq, // unsigned byte compare and branch if equal
-   ifbucmpne, // unsigned byte compare and branch if not equal
    ifbucmplt, // unsigned byte compare and branch if less than
    ifbucmpge, // unsigned byte compare and branch if greater than or equal
    ifbucmpgt, // unsigned byte compare and branch if greater than

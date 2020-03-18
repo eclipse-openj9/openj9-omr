@@ -360,8 +360,6 @@
    TR::TreeEvaluator::ifbcmpgeEvaluator,                               // TR::ifbcmpge
    TR::TreeEvaluator::ifbcmpgtEvaluator,                               // TR::ifbcmpgt
    TR::TreeEvaluator::ifbcmpleEvaluator,                               // TR::ifbcmple
-   TR::TreeEvaluator::ifbcmpeqEvaluator,                               // TR::ifbucmpeq
-   TR::TreeEvaluator::ifbcmpeqEvaluator,                               // TR::ifbucmpne
    TR::TreeEvaluator::ifbucmpltEvaluator,                              // TR::ifbucmplt
    TR::TreeEvaluator::ifbucmpgeEvaluator,                              // TR::ifbucmpge
    TR::TreeEvaluator::ifbucmpgtEvaluator,                              // TR::ifbucmpgt

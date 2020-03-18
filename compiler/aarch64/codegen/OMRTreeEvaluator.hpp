@@ -388,8 +388,6 @@ public:
 	static TR::Register *ifbcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifbcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifbcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ifbucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ifbucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifbucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifbucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifbucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -9864,7 +9864,13 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                       methodSymbol->isInterface()  ? TR_InterfaceGuard :
                       TR::Compiler->cls.isAbstractClass(vp->comp(), objectClass) ? TR_AbstractGuard : TR_HierarchyGuard;
 
-                   addDelayedConvertedGuard(node, callNode, cMethodSymbol, vGuard, vp, guardKind, TR_VftTest, objectClass);
+                   TR_VirtualGuardTestType testType = guardKind == TR_HierarchyGuard ? TR_VftTest : TR_MethodTest;
+
+                   bool doThisTransformation = (guardKind == TR_HierarchyGuard && !vp->comp()->getOption(TR_DisableHierarchyInlining)) ||
+                                               (guardKind == TR_AbstractGuard && !vp->comp()->getOption(TR_DisableAbstractInlining)) ||
+                                               (guardKind == TR_InterfaceGuard && !vp->comp()->getOption(TR_DisableInterfaceInlining));
+                   if (doThisTransformation)
+                      addDelayedConvertedGuard(node, callNode, cMethodSymbol, vGuard, vp, guardKind, testType, objectClass);
                    }
                 }
              }

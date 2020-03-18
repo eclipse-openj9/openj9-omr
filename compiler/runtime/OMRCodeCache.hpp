@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -82,8 +82,8 @@ public:
    uint8_t *getWarmCodeAlloc()   { return _warmCodeAlloc; }
    uint8_t *getColdCodeAlloc()   { return _coldCodeAlloc; }
 
-   void alignWarmCodeAlloc(uint32_t round)  { _warmCodeAlloc = align(_warmCodeAlloc, round); }
-   void alignColdCodeAlloc(uint32_t round)  { _coldCodeAlloc = align(_coldCodeAlloc, round); }
+   void alignWarmCodeAlloc(uint32_t round)  { _warmCodeAlloc = ::align(_warmCodeAlloc, round); }
+   void alignColdCodeAlloc(uint32_t round)  { _coldCodeAlloc = ::align(_coldCodeAlloc, round); }
 
    TR::CodeCache * getNextCodeCache()  { return _next; }
 

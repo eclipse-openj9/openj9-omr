@@ -2400,11 +2400,8 @@ OMR::Z::TreeEvaluator::bsubEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    cg->evaluate(lhsChild);
    cg->evaluate(rhsChild);
 
-   TR_S390BinaryCommutativeAnalyser temp(cg);
+   TR_S390BinaryAnalyser temp(cg);
    temp.genericAnalyser(node, TR::InstOpCode::SR, TR::InstOpCode::BAD, TR::InstOpCode::LR);
-
-   cg->decReferenceCount(lhsChild);
-   cg->decReferenceCount(rhsChild);
 
    return node->getRegister();
    }
@@ -2415,11 +2412,8 @@ OMR::Z::TreeEvaluator::ssubEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    TR::Node* lhsChild = node->getChild(0);
    TR::Node* rhsChild = node->getChild(1);
 
-   TR_S390BinaryCommutativeAnalyser temp(cg);
+   TR_S390BinaryAnalyser temp(cg);
    temp.genericAnalyser(node, TR::InstOpCode::SR, TR::InstOpCode::SH, TR::InstOpCode::LR);
-
-   cg->decReferenceCount(lhsChild);
-   cg->decReferenceCount(rhsChild);
 
    return node->getRegister();
    }

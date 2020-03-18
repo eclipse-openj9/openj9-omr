@@ -138,6 +138,32 @@ TEST_P(Int32Arithmetic, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
 
+TEST_P(Int32Arithmetic, UsingLoadParamAndLoadConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32 args=[Int32]"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (iload parm=0)"
+      "        (iconst %d)))))",
+      param.opcode.c_str(),
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs));
+}
+
 TEST_P(UInt32Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
@@ -202,6 +228,36 @@ TEST_P(UInt32Arithmetic, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
 
+TEST_P(UInt32Arithmetic, UsingLoadParamAndLoadConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
+        << "The Power codegen does not yet support iudiv/iurem (see issue #3673)";
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32 args=[Int32]"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (iload parm=0)"
+      "        (iconst %d)))))",
+      param.opcode.c_str(),
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint32_t (*)(uint32_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs));
+}
+
 TEST_P(Int64Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
@@ -254,6 +310,32 @@ TEST_P(Int64Arithmetic, UsingLoadParam) {
 
     auto entry_point = compiler.getEntryPoint<int64_t (*)(int64_t, int64_t)>();
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
+}
+
+TEST_P(Int64Arithmetic, UsingLoadParamAndLoadConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int64 args=[Int64]"
+      "  (block"
+      "    (lreturn"
+      "      (%s"
+      "        (lload parm=0)"
+      "        (lconst %" OMR_PRId64 ")))))",
+      param.opcode.c_str(),
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int64_t (*)(int64_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs));
 }
 
 TEST_P(UInt64Arithmetic, UsingConst) {
@@ -320,6 +402,36 @@ TEST_P(UInt64Arithmetic, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
 
+TEST_P(UInt64Arithmetic, UsingLoadParamAndLoadConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(param.opcode == "ludiv" && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
+        << "The Power codegen does not yet support ludiv (see issue #2227)";
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int64 args=[Int64]"
+      "  (block"
+      "    (lreturn"
+      "      (%s"
+      "        (lload parm=0)"
+      "        (lconst %" OMR_PRId64 ")))))",
+      param.opcode.c_str(),
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint64_t (*)(uint64_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs));
+}
+
 TEST_P(Int16Arithmetic, UsingConst) {
     SKIP_ON_RISCV(MissingImplementation);
     auto param = TRTest::to_struct(GetParam());
@@ -374,6 +486,32 @@ TEST_P(Int16Arithmetic, UsingLoadParam) {
 
     auto entry_point = compiler.getEntryPoint<int16_t (*)(int16_t, int16_t)>();
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
+}
+
+TEST_P(Int16Arithmetic, UsingLoadParamAndLoadConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int16 args=[Int16]"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (sload parm=0)"
+      "        (sconst %" OMR_PRId16 ")))))",
+      param.opcode.c_str(),
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int16_t (*)(int16_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs));
 }
 
 TEST_P(Int8Arithmetic, UsingConst) {
@@ -431,6 +569,32 @@ TEST_P(Int8Arithmetic, UsingLoadParam) {
 
     auto entry_point = compiler.getEntryPoint<int8_t (*)(int8_t, int8_t)>();
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
+}
+
+TEST_P(Int8Arithmetic, UsingLoadParamAndLoadConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int8 args=[Int8]"
+      "  (block"
+      "    (ireturn"
+      "      (%s"
+      "        (bload parm=0)"
+      "        (bconst %" OMR_PRId8 ")))))",
+      param.opcode.c_str(),
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int8_t (*)(int8_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs));
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
@@ -601,6 +765,38 @@ TEST_P(FloatArithmetic, UsingLoadParam) {
     }
 }
 
+TEST_P(FloatArithmetic, UsingLoadParamAndLoadConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Float args=[Float]"
+      "  (block"
+      "    (freturn"
+      "      (%s"
+      "        (fload parm=0)"
+      "        (fconst %f)))))",
+      param.opcode.c_str(),
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)(float)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs);
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatArithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
@@ -671,6 +867,38 @@ TEST_P(DoubleArithmetic, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<double (*)(double, double)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point(param.lhs, param.rhs);
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+TEST_P(DoubleArithmetic, UsingLoadParamAndLoadConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Double args=[Double]"
+      "  (block"
+      "    (dreturn"
+      "      (%s"
+      "        (dload parm=0)"
+      "        (dconst %f)))))",
+      param.opcode.c_str(),
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)(double)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs);
     if (std::isnan(exp)) {
         ASSERT_EQ(std::isnan(exp), std::isnan(act));
     } else {

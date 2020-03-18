@@ -2180,6 +2180,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
          edxRegister  = cg->allocateRegister();
          }
       }
+
    if (isPowerOf2(dvalue))
       {
       bool isNegative = false;
@@ -2324,49 +2325,71 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
       //
       // Division by powers of 2.
       //
-
-      TR::RegisterDependencyConditions  *cdqDependencies = 0;
-
-      // If dividend is negative, we must add dvalue-1 to it in order to get the right result from the SAR.
-      // We use CDQ (or CQO) to allow us to do this without introducing control flow.
-      //
-      if ((dividend->isNonNegative() == false) && (dvalue > 0 || isMinInt))
+      if (!isMinInt)
          {
-         TR::RegisterDependencyConditions  *cdqDependencies = generateRegisterDependencyConditions((uint8_t)2, 2, cg);
-         cdqDependencies->addPreCondition(tempRegister, TR::RealRegister::eax, cg);
-         cdqDependencies->addPreCondition(edxRegister, TR::RealRegister::edx, cg);
-         cdqDependencies->addPostCondition(tempRegister, TR::RealRegister::eax, cg);
-         cdqDependencies->addPostCondition(edxRegister, TR::RealRegister::edx, cg);
-         generateInstruction(CXXAcc(nodeIs64Bit), node, cdqDependencies, cg);
+         TR::RegisterDependencyConditions  *cdqDependencies = 0;
 
-         if (dvalue == 2) // special case when working with 2
+         // If dividend is negative, we must add dvalue-1 to it in order to get the right result from the SAR.
+         // We use CDQ (or CQO) to allow us to do this without introducing control flow.
+         //
+         if ((dividend->isNonNegative() == false) && (dvalue > 0))
             {
-            generateRegRegInstruction(SUBRegReg(nodeIs64Bit), node, tempRegister, edxRegister, cg);
+            TR::RegisterDependencyConditions  *cdqDependencies = generateRegisterDependencyConditions((uint8_t)2, 2, cg);
+            cdqDependencies->addPreCondition(tempRegister, TR::RealRegister::eax, cg);
+            cdqDependencies->addPreCondition(edxRegister, TR::RealRegister::edx, cg);
+            cdqDependencies->addPostCondition(tempRegister, TR::RealRegister::eax, cg);
+            cdqDependencies->addPostCondition(edxRegister, TR::RealRegister::edx, cg);
+            generateInstruction(CXXAcc(nodeIs64Bit), node, cdqDependencies, cg);
+
+            if (dvalue == 2) // special case when working with 2
+               {
+               generateRegRegInstruction(SUBRegReg(nodeIs64Bit), node, tempRegister, edxRegister, cg);
+               }
+            else if (!nodeIs64Bit || (dvalue > 0 && dvalue <= CONSTANT64(0x80000000)))
+               {
+               int32_t mask = dvalue-1;
+               TR_ASSERT(mask >= 0,
+                  "AMD64: mask must have sign bit clear so that, when sign-extended, it clears the upper 32 bits of tempRegister");
+               generateRegImmInstruction(ANDRegImm4(nodeIs64Bit), node, edxRegister, (uint32_t)dvalue-1, cg);
+               generateRegRegInstruction(ADDRegReg(nodeIs64Bit), node, tempRegister, edxRegister, cg);
+               }
+            else
+               {
+               // dvalue-1 is too big for an Imm4, so shift off the bits instead.
+               //
+               int32_t shiftAmount = leadingZeroes(dvalue)+1;
+               generateRegImmInstruction(SHL8RegImm1, node, edxRegister, shiftAmount, cg);
+               generateRegImmInstruction(SHR8RegImm1, node, edxRegister, shiftAmount, cg);
+               generateRegRegInstruction(ADDRegReg(nodeIs64Bit), node, tempRegister, edxRegister, cg);
+               }
             }
-         else if (!nodeIs64Bit || (dvalue > 0 && dvalue <= CONSTANT64(0x80000000)))
+
+         generateRegImmInstruction(SARRegImm1(nodeIs64Bit), node, tempRegister, trailingZeroes(dvalue), cdqDependencies, cg);
+
+         if (isNegative)
             {
-            int32_t mask = dvalue-1;
-            TR_ASSERT(mask >= 0,
-               "AMD64: mask must have sign bit clear so that, when sign-extended, it clears the upper 32 bits of tempRegister");
-            generateRegImmInstruction(ANDRegImm4(nodeIs64Bit), node, edxRegister, (uint32_t)dvalue-1, cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), node, tempRegister, edxRegister, cg);
+            generateRegInstruction(NEGReg(nodeIs64Bit), node, tempRegister, cdqDependencies, cg);
+            }
+         }
+      else
+         {
+         // MIN_INT or MIN_LONG divisor
+         //
+         TR::Register *quotientRegister = cg->allocateRegister();
+         generateRegRegInstruction(XORRegReg(nodeIs64Bit), node, quotientRegister, quotientRegister, cg);
+
+         if (nodeIs64Bit)
+            {
+            generateRegImm64Instruction(MOV8RegImm64, node, edxRegister, dvalue, cg);
+            generateRegRegInstruction(CMP8RegReg, node, edxRegister, tempRegister, cg);
             }
          else
             {
-            // dvalue-1 is too big for an Imm4, so shift off the bits instead.
-            //
-            int32_t shiftAmount = leadingZeroes(dvalue)+1;
-            generateRegImmInstruction(SHL8RegImm1, node, edxRegister, shiftAmount, cg);
-            generateRegImmInstruction(SHR8RegImm1, node, edxRegister, shiftAmount, cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), node, tempRegister, edxRegister, cg);
+            generateRegImmInstruction(CMP4RegImm4, node, tempRegister, (int32_t)dvalue, cg);
             }
-         }
 
-      generateRegImmInstruction(SARRegImm1(nodeIs64Bit), node, tempRegister, trailingZeroes(dvalue), cdqDependencies, cg);
-
-      if (isNegative)
-         {
-         generateRegInstruction(NEGReg(nodeIs64Bit), node, tempRegister, cdqDependencies, cg);
+         generateRegInstruction(SETE1Reg, node, quotientRegister, cg);
+         tempRegister = quotientRegister;
          }
 
       cg->stopUsingRegister(edxRegister);

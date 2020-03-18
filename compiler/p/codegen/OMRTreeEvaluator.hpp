@@ -265,7 +265,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *ifscmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ifscmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ifscmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *ifsucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ifsucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ifsucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ifsucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);

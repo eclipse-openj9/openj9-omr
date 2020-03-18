@@ -383,8 +383,6 @@
    ifCmpWithEqualitySimplifier,     // TR::ifscmpge
    ifCmpWithoutEqualitySimplifier,  // TR::ifscmpgt
    ifCmpWithEqualitySimplifier,     // TR::ifscmple
-   ifCmpWithEqualitySimplifier,     // TR::ifsucmpeq
-   ifCmpWithoutEqualitySimplifier,  // TR::ifsucmpne
    ifCmpWithoutEqualitySimplifier,  // TR::ifsucmplt
    ifCmpWithEqualitySimplifier,     // TR::ifsucmpge
    ifCmpWithoutEqualitySimplifier,  // TR::ifsucmpgt

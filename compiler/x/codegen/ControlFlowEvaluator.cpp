@@ -1914,15 +1914,6 @@ TR::Register *OMR::X86::TreeEvaluator::ifscmpleEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-
-TR::Register *OMR::X86::TreeEvaluator::ifsucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::TreeEvaluator::compareIntegersForEquality(node, cg);
-   generateConditionalJumpInstruction(node->getOpCodeValue() == TR::ifsucmpeq ? JE4 : JNE4,
-                                      node, cg, true);
-   return NULL;
-   }
-
 TR::Register *OMR::X86::TreeEvaluator::ifsucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compare2BytesForOrder(node, cg);

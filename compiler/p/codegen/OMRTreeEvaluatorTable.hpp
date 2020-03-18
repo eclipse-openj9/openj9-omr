@@ -369,8 +369,6 @@
    TR::TreeEvaluator::ificmpgeEvaluator,                // TR::ifscmpge
    TR::TreeEvaluator::ificmpgtEvaluator,                // TR::ifscmpgt
    TR::TreeEvaluator::ificmpleEvaluator,                // TR::ifscmple
-   TR::TreeEvaluator::ificmpeqEvaluator,                // TR::ifsucmpeq
-   TR::TreeEvaluator::ificmpeqEvaluator,                // TR::ifsucmpne
    TR::TreeEvaluator::ifiucmpltEvaluator,               // TR::ifsucmplt
    TR::TreeEvaluator::ifiucmpgeEvaluator,               // TR::ifsucmpge
    TR::TreeEvaluator::ifiucmpgtEvaluator,               // TR::ifsucmpgt

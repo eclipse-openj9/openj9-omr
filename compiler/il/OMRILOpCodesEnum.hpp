@@ -419,8 +419,6 @@
    ifscmpge, // short integer compare and branch if greater than or equal
    ifscmpgt, // short integer compare and branch if greater than
    ifscmple, // short integer compare and branch if less than or equal
-   ifsucmpeq, // char compare and branch if equal
-   ifsucmpne, // char compare and branch if not equal
    ifsucmplt, // char compare and branch if less than
    ifsucmpge, // char compare and branch if greater than or equal
    ifsucmpgt, // char compare and branch if greater than

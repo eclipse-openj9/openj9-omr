@@ -1266,23 +1266,6 @@ OMR::Z::TreeEvaluator::ifscmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg
    }
 
 /**
- * Char compare and branch if equal
- *    - also handles ifsucmpne (char compare and branch if not equal)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::ifsucmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   if (node->getOpCodeValue() == TR::ifsucmpeq)
-      {
-      return generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, TR::InstOpCode::COND_BE);
-      }
-   else
-      {
-      return generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, TR::InstOpCode::COND_BNE);
-      }
-   }
-
-/**
  * Char compare and branch if less than
  */
 TR::Register *

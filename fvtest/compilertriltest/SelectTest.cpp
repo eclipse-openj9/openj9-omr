@@ -456,3 +456,155 @@ INSTANTIATE_TEST_CASE_P(SelectTest, ShortSelectDoubleCompareTest,
             ::testing::ValuesIn(compareInputs<double>()),
             ::testing::ValuesIn(resultInputs<int16_t>()),
             ::testing::Values((xselectOracle<double, int16_t>))));
+
+class FloatSelectInt32CompareTest : public SelectTest<int32_t, float> {};
+
+TEST_P(FloatSelectInt32CompareTest, UsingLoadParam) {
+    SKIP_ON_X86(MissingImplementation);
+    SKIP_ON_HAMMER(MissingImplementation);
+    SKIP_ON_S390(KnownBug);
+    SKIP_ON_S390X(KnownBug);
+    SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_AARCH64(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto param = to_struct(GetParam());
+
+    char inputTrees[512] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Float args=[Int32, Int32, Float, Float]"
+        "  (block"
+        "    (freturn"
+        "      (fselect"
+        "        (icmplt"
+        "          (iload parm=0)"
+        "          (iload parm=1))"
+        "        (fload parm=2)"
+        "        (fload parm=3))"
+        ")))");
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    int32_t compileResult = compiler.compile();
+    ASSERT_EQ(0, compileResult) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)(int32_t, int32_t, float, float)>();
+    ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point(param.c1, param.c2, param.v1, param.v2));
+}
+
+TEST_P(FloatSelectInt32CompareTest, UsingConst) {
+    auto param = to_struct(GetParam());
+
+    char inputTrees[512] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Float"
+        "  (block"
+        "    (freturn"
+        "      (fselect"
+        "        (icmplt"
+        "          (iconst %d)"
+        "          (iconst %d))"
+        "        (fconst %f)"
+        "        (fconst %f))"
+        ")))",
+        param.c1,
+        param.c2,
+        param.v1,
+        param.v2);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    int32_t compileResult = compiler.compile();
+    ASSERT_EQ(0, compileResult) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)(void)>();
+    ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point());
+}
+
+INSTANTIATE_TEST_CASE_P(SelectTest, FloatSelectInt32CompareTest,
+        ::testing::Combine(
+            ::testing::ValuesIn(compareInputs<int32_t>()),
+            ::testing::ValuesIn(resultInputs<float>()),
+            ::testing::Values(xselectOracle<int32_t, float>)));
+
+class DoubleSelectInt32CompareTest : public SelectTest<int32_t, double> {};
+
+TEST_P(DoubleSelectInt32CompareTest, UsingLoadParam) {
+    SKIP_ON_X86(MissingImplementation);
+    SKIP_ON_HAMMER(MissingImplementation);
+    SKIP_ON_S390(KnownBug);
+    SKIP_ON_S390X(KnownBug);
+    SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_AARCH64(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto param = to_struct(GetParam());
+
+    char inputTrees[512] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Double args=[Int32, Int32, Double, Double]"
+        "  (block"
+        "    (dreturn"
+        "      (dselect"
+        "        (icmplt"
+        "          (iload parm=0)"
+        "          (iload parm=1))"
+        "        (dload parm=2)"
+        "        (dload parm=3))"
+        ")))");
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    int32_t compileResult = compiler.compile();
+    ASSERT_EQ(0, compileResult) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)(int32_t, int32_t, double, double)>();
+    ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point(param.c1, param.c2, param.v1, param.v2));
+}
+
+TEST_P(DoubleSelectInt32CompareTest, UsingConst) {
+    auto param = to_struct(GetParam());
+
+    char inputTrees[512] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Double"
+        "  (block"
+        "    (dreturn"
+        "      (dselect"
+        "        (icmplt"
+        "          (iconst %d)"
+        "          (iconst %d))"
+        "        (dconst %f)"
+        "        (dconst %f))"
+        ")))",
+        param.c1,
+        param.c2,
+        param.v1,
+        param.v2);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    int32_t compileResult = compiler.compile();
+    ASSERT_EQ(0, compileResult) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)(void)>();
+    ASSERT_EQ(param.oracle(param.c1, param.c2, param.v1, param.v2), entry_point());
+}
+
+INSTANTIATE_TEST_CASE_P(SelectTest, DoubleSelectInt32CompareTest,
+        ::testing::Combine(
+            ::testing::ValuesIn(compareInputs<int32_t>()),
+            ::testing::ValuesIn(resultInputs<double>()),
+            ::testing::Values(xselectOracle<int32_t, double>)));

@@ -6302,7 +6302,7 @@
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::Double,
    /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point,
-   /* .childProperties      = */ THREE_CHILD(TR::Int32, TR::Int8, TR::Int8),
+   /* .childProperties      = */ THREE_CHILD(TR::Int32, TR::Double, TR::Double),
    /* .swapChildrenOpCode   = */ TR::BadILOp,
    /* .reverseBranchOpCode  = */ TR::BadILOp,
    /* .booleanCompareOpCode = */ TR::BadILOp,

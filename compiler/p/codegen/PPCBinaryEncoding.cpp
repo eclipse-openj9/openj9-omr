@@ -265,7 +265,7 @@ static void fillFieldFXM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
 
 static void fillFieldFXM1(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
-   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, populationCount(val), "0x%x is invalid for FXM field, expecting exactly 1 bit set", val);
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, populationCount(val) == 1, "0x%x is invalid for FXM field, expecting exactly 1 bit set", val);
    fillFieldFXM(instr, cursor, val);
    }
 

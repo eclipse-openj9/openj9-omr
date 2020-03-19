@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2019 IBM Corp. and others
+# Copyright (c) 2016, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -238,7 +238,6 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegister.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegisterInStruct.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineState.cpp \
-    $(JIT_OMR_DIRTY_DIR)/runtime/Alignment.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/CodeCacheTypes.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCache.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCacheManager.cpp \

@@ -100,14 +100,14 @@ FORMAT_MTFSF,
 // +------+-------+-----------------------------------------------+
 FORMAT_RS,
 
-// Format for instructions with an RA field encoding the source register and an SI field encoding
-// the signed immediate:
+// Format for instructions with an RA field encoding the source register and a 16-bit SI field
+// encoding the signed immediate:
 //
 // +-----------------+----------+---------------------------------+
 // |                 | RA       | SI                              |
 // | 0               | 11       | 16                              |
 // +-----------------+----------+---------------------------------+
-FORMAT_RA_SI,
+FORMAT_RA_SI16,
 
 // Format for instructions with an RA field encoding the source register and a 5-bit SI field
 // encoding the signed immediate:
@@ -301,40 +301,40 @@ FORMAT_XT_XA_XB,
 FORMAT_FRT_FRA_FRC,
 
 // Format for instructions with an RT field encoding the target register, an RA field encoding the
-// source register, and an SI field encoding a signed immediate:
+// source register, and a 16-bit SI field encoding a signed immediate:
 //
 // +------+----------+----------+---------------------------------+
 // |      | RT       | RA       | SI                              |
 // | 0    | 6        | 11       | 16                              |
 // +------+----------+----------+---------------------------------+
-FORMAT_RT_RA_SI,
+FORMAT_RT_RA_SI16,
 
 // Format for instructions with an RA field encoding the target register, an RS field encoding the
-// source register, and a UI field encoding an unsigned immediate:
+// source register, and a 16-bit UI field encoding an unsigned immediate:
 //
 // +------+----------+----------+---------------------------------+
 // |      | RS       | RA       | UI                              |
 // | 0    | 6        | 11       | 16                              |
 // +------+----------+----------+---------------------------------+
-FORMAT_RA_RS_UI,
+FORMAT_RA_RS_UI16,
 
 // Format for instructions with a BF field encoding the target CC register, an RA field encoding the
-// source register, and an SI field encoding a signed immediate:
+// source register, and a 16-bit SI field encoding a signed immediate:
 //
 // +------+-----+----+----------+---------------------------------+
 // |      | BF  |    | RA       | SI                              |
 // | 0    | 6   | 9  | 11       | 16                              |
 // +------+-----+----+----------+---------------------------------+
-FORMAT_BF_RA_SI,
+FORMAT_BF_RA_SI16,
 
 // Format for instructions with a BF field encoding the target CC register, an RA field encoding the
-// source register, and a UI field encoding an unsigned immediate:
+// source register, and a 16-bit UI field encoding an unsigned immediate:
 //
 // +------+-----+----+----------+---------------------------------+
 // |      | BF  |    | RA       | UI                              |
 // | 0    | 6   | 9  | 11       | 16                              |
 // +------+-----+----+----------+---------------------------------+
-FORMAT_BF_RA_UI,
+FORMAT_BF_RA_UI16,
 
 // Format for instructions with a BF field encoding the target CC register, an FRA field encoding
 // the source FP register, and a DM field encoding an unsigned immediate mask:
@@ -391,14 +391,14 @@ FORMAT_VRT_VRB_UIM2,
 //       only for the purposes of checking that the UIM field is in range.
 FORMAT_XT_XB_UIM2,
 
-// Format for instructions with an RT field encoding the target register and an SI field encoding a
-// signed immediate:
+// Format for instructions with an RT field encoding the target register and a 16-bit SI field
+// encoding a signed immediate:
 //
 // +------+----------+----------+---------------------------------+
 // |      | RT       |          | SI                              |
 // | 0    | 6        | 11       | 16                              |
 // +------+----------+----------+---------------------------------+
-FORMAT_RT_SI,
+FORMAT_RT_SI16,
 
 // Format for instructions with a BF field encoding the target CC register and a BFA field encoding
 // an unsigned immediate:

@@ -5306,7 +5306,7 @@
    /* .name        = */ "tdeqi",
    /* .description =    "Trap dword if equal to immediate value", */
    /* .opcode      = */ 0x08800000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5328,7 +5328,7 @@
    /* .name        = */ "tdgei",
    /* .description =    "Trap dword if greater than or equal to immediate value", */
    /* .opcode      = */ 0x09800000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5350,7 +5350,7 @@
    /* .name        = */ "tdgti",
    /* .description =    "Trap dword if greater than immediate value", */
    /* .opcode      = */ 0x09000000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5372,7 +5372,7 @@
    /* .name        = */ "tdlei",
    /* .description =    "Trap dword if less than or equal to immediate value", */
    /* .opcode      = */ 0x0A800000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5394,7 +5394,7 @@
    /* .name        = */ "tdlgei",
    /* .description =    "Trap dword if logically greater than or equal to immediate value", */
    /* .opcode      = */ 0x08A00000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5416,7 +5416,7 @@
    /* .name        = */ "tdlgti",
    /* .description =    "Trap dword if logically greater than immediate value", */
    /* .opcode      = */ 0x08200000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5438,7 +5438,7 @@
    /* .name        = */ "tdllei",
    /* .description =    "Trap dword if logically less than or equal to immediate value", */
    /* .opcode      = */ 0x08C00000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5460,7 +5460,7 @@
    /* .name        = */ "tdllti",
    /* .description =    "Trap dword if logically less than immediate value", */
    /* .opcode      = */ 0x08400000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5482,7 +5482,7 @@
    /* .name        = */ "tdlti",
    /* .description =    "Trap dword if less than immediate value", */
    /* .opcode      = */ 0x0A000000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5504,7 +5504,7 @@
    /* .name        = */ "tdneqi",
    /* .description =    "Trap dword if not equal to immediate value", */
    /* .opcode      = */ 0x0B000000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap |
                         PPCOpProp_DWord,
@@ -5535,7 +5535,7 @@
    /* .name        = */ "tweqi",
    /* .description =    "Trap word if equal to immediate value", */
    /* .opcode      = */ 0x0C800000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5555,7 +5555,7 @@
    /* .name        = */ "twgei",
    /* .description =    "Trap word if greater than or equal to immediate value", */
    /* .opcode      = */ 0x0D800000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5575,7 +5575,7 @@
    /* .name        = */ "twgti",
    /* .description =    "Trap word if greater than immediate value", */
    /* .opcode      = */ 0x0D000000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5595,7 +5595,7 @@
    /* .name        = */ "twlei",
    /* .description =    "Trap word if less than or equal to immediate value", */
    /* .opcode      = */ 0x0E800000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5615,7 +5615,7 @@
    /* .name        = */ "twlgei",
    /* .description =    "Trap word if logically greater than or equal to immediate value", */
    /* .opcode      = */ 0x0CA00000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5635,7 +5635,7 @@
    /* .name        = */ "twlgti",
    /* .description =    "Trap word if logically greater than immediate value", */
    /* .opcode      = */ 0x0C200000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5655,7 +5655,7 @@
    /* .name        = */ "twllei",
    /* .description =    "Trap word if logically less than or equal to immediate value", */
    /* .opcode      = */ 0x0CC00000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5675,7 +5675,7 @@
    /* .name        = */ "twllti",
    /* .description =    "Trap word if logically less than immediate value", */
    /* .opcode      = */ 0x0C400000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5695,7 +5695,7 @@
    /* .name        = */ "twlti",
    /* .description =    "Trap word if less than immediate value", */
    /* .opcode      = */ 0x0E000000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },
@@ -5715,7 +5715,7 @@
    /* .name        = */ "twneqi",
    /* .description =    "Trap word if not equal to immediate value", */
    /* .opcode      = */ 0x0F000000,
-   /* .format      = */ FORMAT_RA_SI,
+   /* .format      = */ FORMAT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_Trap,
    },

@@ -294,9 +294,9 @@ static void fillFieldSIM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    *cursor |= (val & 0x1f) << 16;
    }
 
-static void fillFieldSI(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+static void fillFieldSI16(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
-   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffu), "0x%x is out-of-range for SI field", val);
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffu), "0x%x is out-of-range for SI(16) field", val);
    *cursor |= val & 0xffff;
    }
 
@@ -313,7 +313,7 @@ static void fillFieldUIM(TR::Instruction *instr, uint32_t *cursor, int32_t numBi
    *cursor |= val << 16;
    }
 
-static void fillFieldUI(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+static void fillFieldUI16(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    // TODO: This is a hack until PIC sites are reworked. Currently, the PIC site handling code
    // assumes that the entire address is in the immediate of the instruction, so we can't chop it to
@@ -775,9 +775,9 @@ void TR::PPCSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldRS(self(), cursor, src);
          break;
 
-      case FORMAT_RA_SI:
+      case FORMAT_RA_SI16:
          fillFieldRA(self(), cursor, src);
-         fillFieldSI(self(), cursor, imm);
+         fillFieldSI16(self(), cursor, imm);
          break;
 
       case FORMAT_RA_SI5:
@@ -900,9 +900,9 @@ TR::PPCTrg1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
 
    switch (getOpCode().getFormat())
       {
-      case FORMAT_RT_SI:
+      case FORMAT_RT_SI16:
          fillFieldRT(self(), cursor, trg);
-         fillFieldSI(self(), cursor, imm);
+         fillFieldSI16(self(), cursor, imm);
          break;
 
       case FORMAT_BF_BFAI:
@@ -955,28 +955,28 @@ void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
 
    switch (getOpCode().getFormat())
       {
-      case FORMAT_RT_RA_SI:
+      case FORMAT_RT_RA_SI16:
          fillFieldRT(self(), cursor, trg);
          fillFieldRA(self(), cursor, src);
-         fillFieldSI(self(), cursor, imm);
+         fillFieldSI16(self(), cursor, imm);
          break;
 
-      case FORMAT_RA_RS_UI:
+      case FORMAT_RA_RS_UI16:
          fillFieldRA(self(), cursor, trg);
          fillFieldRS(self(), cursor, src);
-         fillFieldUI(self(), cursor, imm);
+         fillFieldUI16(self(), cursor, imm);
          break;
 
-      case FORMAT_BF_RA_SI:
+      case FORMAT_BF_RA_SI16:
          fillFieldBF(self(), cursor, trg);
          fillFieldRA(self(), cursor, src);
-         fillFieldSI(self(), cursor, imm);
+         fillFieldSI16(self(), cursor, imm);
          break;
 
-      case FORMAT_BF_RA_UI:
+      case FORMAT_BF_RA_UI16:
          fillFieldBF(self(), cursor, trg);
          fillFieldRA(self(), cursor, src);
-         fillFieldUI(self(), cursor, imm);
+         fillFieldUI16(self(), cursor, imm);
          break;
 
       case FORMAT_BF_FRA_DM:

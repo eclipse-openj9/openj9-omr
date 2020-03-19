@@ -432,12 +432,6 @@ OMRCFG_DEFINE_FLAG([OMR_ENV_DATA64],[],
 	)]
 )
 
-# TODO These options are no longer used, and will be deleted.  User's should switch to use OMR_GC_POINTER_MODE.
-AC_ARG_ENABLE([OMR_GC_COMPRESSED_POINTERS],
-	AS_HELP_STRING([--enable-OMR_GC_COMPRESSED_POINTERS], [Enable OMR_GC_COMPRESSED_POINTERS]))
-AC_ARG_ENABLE([OMR_GC_FULL_POINTERS],
-	AS_HELP_STRING([--enable-OMR_GC_FULL_POINTERS], [Enable OMR_GC_FULL_POINTERS]))
-
 AC_MSG_CHECKING([OMR_GC_POINTER_MODE])
 AC_ARG_VAR([OMR_GC_POINTER_MODE], [The mode of pointers.  Must be "full", "compressed", or "mixed"])
 : ${OMR_GC_POINTER_MODE="full"}

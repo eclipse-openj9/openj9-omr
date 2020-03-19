@@ -873,8 +873,6 @@ enable_OMR_ARCH_X86
 enable_OMR_ARCH_S390
 enable_OMR_ARCH_RISCV
 enable_OMR_ENV_DATA64
-enable_OMR_GC_COMPRESSED_POINTERS
-enable_OMR_GC_FULL_POINTERS
 enable_OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS
 enable_OMR_THR_FORK_SUPPORT
 enable_OMR_THR_THREE_TIER_LOCKING
@@ -1649,10 +1647,6 @@ Optional Features:
   --enable-OMR_ARCH_S390
   --enable-OMR_ARCH_RISCV
   --enable-OMR_ENV_DATA64
-  --enable-OMR_GC_COMPRESSED_POINTERS
-                          Enable OMR_GC_COMPRESSED_POINTERS
-  --enable-OMR_GC_FULL_POINTERS
-                          Enable OMR_GC_FULL_POINTERS
   --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS
 
   --enable-OMR_THR_FORK_SUPPORT
@@ -5747,18 +5741,6 @@ fi
 
 fi
 
-
-
-# TODO These options are no longer used, and will be deleted.  User's should switch to use OMR_GC_POINTER_MODE.
-# Check whether --enable-OMR_GC_COMPRESSED_POINTERS was given.
-if test "${enable_OMR_GC_COMPRESSED_POINTERS+set}" = set; then :
-  enableval=$enable_OMR_GC_COMPRESSED_POINTERS;
-fi
-
-# Check whether --enable-OMR_GC_FULL_POINTERS was given.
-if test "${enable_OMR_GC_FULL_POINTERS+set}" = set; then :
-  enableval=$enable_OMR_GC_FULL_POINTERS;
-fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking OMR_GC_POINTER_MODE" >&5

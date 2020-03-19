@@ -152,6 +152,8 @@ OMR::CodeCacheManager::initialize(
 
 #if defined(TR_HOST_POWER)
    #define REACHEABLE_RANGE_KB (32*1024)
+#elif defined(TR_HOST_ARM64)
+   #define REACHEABLE_RANGE_KB (128*1024)
 #else
    #define REACHEABLE_RANGE_KB (2048*1024)
 #endif

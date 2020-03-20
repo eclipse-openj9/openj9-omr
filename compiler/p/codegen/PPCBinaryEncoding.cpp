@@ -380,9 +380,9 @@ OMR::Power::Instruction::generateBinaryEncoding()
 
    TR_ASSERT_FATAL_WITH_INSTRUCTION(
       self(),
-      (cursor - instructionStart) <= getEstimatedBinaryLength(),
+      (cursor - instructionStart) <= self()->getEstimatedBinaryLength(),
       "Estimated binary length was %u bytes, but actual length was %u bytes",
-      getEstimatedBinaryLength(),
+      self()->getEstimatedBinaryLength(),
       static_cast<uint32_t>(cursor - instructionStart)
    );
 

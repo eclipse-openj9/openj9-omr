@@ -5087,6 +5087,8 @@ TR::SymbolReference *
 OMR::Node::getSymbolReference()
    {
 #if !defined(REMOVE_REGLS_SYMREFS_FROM_GETSYMREF)
+   // Issue #4647 was created to track the investigation and removal of this guarded code.
+   //
    // This code is to be removed, once all illegal accesses of _regLoadStoreSymbolReference are removed
    if (self()->hasRegLoadStoreSymbolReference())
       return self()->getRegLoadStoreSymbolReference();
@@ -5100,6 +5102,8 @@ TR::SymbolReference    *
 OMR::Node::setSymbolReference(TR::SymbolReference * p)
    {
 #if !defined(REMOVE_REGLS_SYMREFS_FROM_SETSYMREF)
+   // Issue #4647 was created to track the investigation and removal of this guarded code.
+   //
    if (self()->hasRegLoadStoreSymbolReference())
       {
       p = self()->setRegLoadStoreSymbolReference(p);

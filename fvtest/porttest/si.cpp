@@ -157,6 +157,14 @@ TEST(PortSysinfoTest, sysinfo_test0)
 	if (0 == strncmp(argv0, "./", 2)) {
 		argv0 = &argv0[2];
 	}
+	/* When this test is invoked from a Windows machine, the input in `argv` may have forward or back slashes. To avoid false
+	 * negatives we normalize the path names to use forward slashes always.
+	 */
+	for (char* cursor = argv0; *cursor != '\0'; ++cursor) {
+		if (*cursor == '/') {
+			*cursor = '\\';
+		}
+	}
 #endif /* defined(OMR_OS_WINDOWS) */
 
 	rc = omrsysinfo_get_executable_name(NULL, &executable_name);

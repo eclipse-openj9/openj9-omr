@@ -433,7 +433,7 @@ FORMAT_VRT_SIM,
 // Format for rldic-like instructions. The RA field encodes the target register and the RS field
 // encodes the source register. The first immediate dictates the value of the SH(6) field. The
 // second immediate encodes the mask that should actually end up being used by the instruction: it
-// must have a contiguous group of 1 bits from some position MB(6) to 63-SH and 0 bits everywhere
+// must have a contiguous group of 1 bits from some position MB to 63-SH and 0 bits everywhere
 // else.
 //
 // +------+----------+----------+-------+---------+-----+----+----+
@@ -445,7 +445,7 @@ FORMAT_RLDIC,
 // Format for rldicl-like instructions. The RA field encodes the target register and the RS field
 // encodes the source register. The first immediate dictates the value of the SH(6) field. The
 // second immediate encodes the mask that should actually end up being used by the instruction: it
-// must have a contiguous group of 1 bits from some position MB(6) to 63 and 0 bits everywhere else.
+// must have a contiguous group of 1 bits from some position MB to 63 and 0 bits everywhere else.
 //
 // +------+----------+----------+-------+---------+-----+----+----+
 // |      | RS       | RA       | SH    | MB      |     | SH |    |
@@ -456,7 +456,7 @@ FORMAT_RLDICL,
 // Format for rldicr-like instructions. The RA field encodes the target register and the RS field
 // encodes the source register. The first immediate dictates the value of the SH(6) field. The
 // second immediate encodes the mask that should actually end up being used by the instruction: it
-// must have a contiguous group of 1 bits from 0 to some position ME(6) and 0 bits everywhere else.
+// must have a contiguous group of 1 bits from 0 to some position ME and 0 bits everywhere else.
 //
 // +------+----------+----------+-------+---------+-----+----+----+
 // |      | RS       | RA       | SH    | ME      |     | SH |    |
@@ -467,8 +467,8 @@ FORMAT_RLDICR,
 // Format for rlwinm-like instructions. The RA field encodes the target register and the RS field
 // encodes the source register. The first immediate dictates the value of the SH(5) field. The
 // second immediate encodes the mask that should actually end up being used by the instruction: it
-// must have a contiguous group of 1 bits from some position 32+MB(5) to some position 32+ME(5) and
-// 0 bits everywhere else.
+// must have a contiguous group of 1 bits from some position 32+MB to some position 32+ME and 0
+// bits everywhere else.
 //
 // +------+----------+----------+-------+---------+----------+----+
 // |      | RS       | RA       | SH    | MB      | ME       |    |
@@ -515,7 +515,7 @@ FORMAT_FRT_FRA_FRB_RMC,
 
 // Format for rldcl-like instructions. The RA field encodes the target register and the RS and RB
 // fields encode the source registers. The immediate encodes the mask that should actually end up
-// being used by the instruction: it must have a contiguous group of 1 bits from some position MB(6)
+// being used by the instruction: it must have a contiguous group of 1 bits from some position MB
 // to 63 and 0 bits everywhere else.
 //
 // +------+---------+---------+---------+---------+---------------+
@@ -527,7 +527,7 @@ FORMAT_RLDCL,
 // Format for rlwnm-like instructions. The RA field encodes the target register and the RS and RB
 // fields encode the source registers. The immediate encodes the mask that should actually end up
 // being used by the instruction: it must have a contiguous group of 1 bits from some position
-// 32+MB(5) to some position 32+ME(5) and 0 bits everywhere else.
+// 32+MB to some position 32+ME and 0 bits everywhere else.
 //
 // +------+---------+---------+---------+---------+----------+----+
 // |      | RS      | RA      | RB      | MB      | ME       |    |

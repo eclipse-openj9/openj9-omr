@@ -323,22 +323,22 @@ static void fillFieldUI16(TR::Instruction *instr, uint32_t *cursor, uint32_t val
    *cursor |= val & 0xffff;
    }
 
-static void fillFieldM6(TR::Instruction *instr, uint32_t *cursor, int32_t val)
+static void fillFieldMDM(TR::Instruction *instr, uint32_t *cursor, int32_t val)
    {
-   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3f) == val, "0x%x is out-of-range for ME(6)/MB(6) field", val);
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3f) == val, "0x%x is out-of-range for me/mb field", val);
    *cursor |= (val & 0x1f) << 6;
    *cursor |= (val & 0x20);
    }
 
-static void fillFieldMB5(TR::Instruction *instr, uint32_t *cursor, int32_t val)
+static void fillFieldMB(TR::Instruction *instr, uint32_t *cursor, int32_t val)
    {
-   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for MB(5) field", val);
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for MB field", val);
    *cursor |= val << 6;
    }
 
-static void fillFieldME5(TR::Instruction *instr, uint32_t *cursor, int32_t val)
+static void fillFieldME(TR::Instruction *instr, uint32_t *cursor, int32_t val)
    {
-   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for ME(5) field", val);
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for ME field", val);
    *cursor |= val << 1;
    }
 
@@ -1088,7 +1088,7 @@ void TR::PPCTrg1Src1Imm2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
 
          auto maskEnds = getMaskEnds64(self(), imm2);
          TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.second == 63 - imm1 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldic-form for shift by %u", imm2, imm1);
-         fillFieldM6(self(), cursor, maskEnds.first);
+         fillFieldMDM(self(), cursor, maskEnds.first);
          break;
          }
 
@@ -1100,7 +1100,7 @@ void TR::PPCTrg1Src1Imm2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
 
          auto maskEnds = getMaskEnds64(self(), imm2);
          TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.second == 63 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldicl-form", imm2);
-         fillFieldM6(self(), cursor, maskEnds.first);
+         fillFieldMDM(self(), cursor, maskEnds.first);
          break;
          }
 
@@ -1112,7 +1112,7 @@ void TR::PPCTrg1Src1Imm2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
 
          auto maskEnds = getMaskEnds64(self(), imm2);
          TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.first == 0 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldicr-form", imm2);
-         fillFieldM6(self(), cursor, maskEnds.second);
+         fillFieldMDM(self(), cursor, maskEnds.second);
          break;
          }
 
@@ -1123,8 +1123,8 @@ void TR::PPCTrg1Src1Imm2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldSH5(self(), cursor, imm1);
 
          auto maskEnds = getMaskEnds32(self(), imm2);
-         fillFieldMB5(self(), cursor, maskEnds.first);
-         fillFieldME5(self(), cursor, maskEnds.second);
+         fillFieldMB(self(), cursor, maskEnds.first);
+         fillFieldME(self(), cursor, maskEnds.second);
          break;
          }
 
@@ -1246,7 +1246,7 @@ void TR::PPCTrg1Src2ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
          auto maskEnds = getMaskEnds64(self(), imm);
          TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.second == 63 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldcl-form", imm);
 
-         fillFieldM6(self(), cursor, maskEnds.first);
+         fillFieldMDM(self(), cursor, maskEnds.first);
 
          break;
          }
@@ -1258,8 +1258,8 @@ void TR::PPCTrg1Src2ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldRB(self(), cursor, src2);
 
          auto maskEnds = getMaskEnds32(self(), imm);
-         fillFieldMB5(self(), cursor, maskEnds.first);
-         fillFieldME5(self(), cursor, maskEnds.second);
+         fillFieldMB(self(), cursor, maskEnds.first);
+         fillFieldME(self(), cursor, maskEnds.second);
 
          break;
          }

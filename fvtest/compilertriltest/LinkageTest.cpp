@@ -600,6 +600,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitToNativeParameterPassing8Arg) {
 }
 
 TYPED_TEST(LinkageTest, SystemLinkageJitToNativeParameterPassing9Arg) {
+    OMRPORT_ACCESS_FROM_OMRPORT(TRTest::TestWithPortLib::privateOmrPortLibrary);
 
     SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
     SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";

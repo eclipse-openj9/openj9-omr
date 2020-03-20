@@ -1299,7 +1299,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                if (!cg()->canClobberNodesRegister(child, 0))
                   {
                   tempRegister = cg()->allocateRegister(TR_VSX_VECTOR);
-                  generateTrg1Src2Instruction(cg(), TR::InstOpCode::xxlor, callNode, tempRegister, tempRegister, argReg);
+                  generateTrg1Src2Instruction(cg(), TR::InstOpCode::xxlor, callNode, tempRegister, argReg, argReg);
                   argReg = tempRegister;
                   }
                if (numVectorArgs == 0)

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2019 IBM Corp. and others
+# Copyright (c) 2015, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -419,21 +419,21 @@ ifneq (,$(findstring shared,$(ARTIFACT_TYPE)))
 
       define LINK_C_SHARED_COMMAND
         $(CCLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS)
-        $(OBJCOPY) --only-keep-debug $@ $@.dbg
+        $(OBJCOPY) --only-keep-debug $@ $(@:$(SOLIBEXT)=.debuginfo)
         $(OBJCOPY) --strip-debug $@
-        $(OBJCOPY) --add-gnu-debuglink=$@.dbg $@
+        $(OBJCOPY) --add-gnu-debuglink=$(@:$(SOLIBEXT)=.debuginfo) $@
       endef
 
       define LINK_CXX_SHARED_COMMAND
         $(CXXLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS)
-        $(OBJCOPY) --only-keep-debug $@ $@.dbg
+        $(OBJCOPY) --only-keep-debug $@ $(@:$(SOLIBEXT)=.debuginfo)
         $(OBJCOPY) --strip-debug $@
-        $(OBJCOPY) --add-gnu-debuglink=$@.dbg $@
+        $(OBJCOPY) --add-gnu-debuglink=$(@:$(SOLIBEXT)=.debuginfo) $@
       endef
 
       ## Files to clean
       CLEAN_FILES=$(OBJECTS) $(OBJECTS:$(OBJEXT)=.i) *.d
-      CLEAN_FILES+=$($(MODULE_NAME)_shared).dbg $(MODULE_NAME).map
+      CLEAN_FILES+=$($(MODULE_NAME)_shared:$(SOLIBEXT)=.debuginfo) $(MODULE_NAME).map
       define CLEAN_COMMAND
         -$(RM) $(CLEAN_FILES)
       endef

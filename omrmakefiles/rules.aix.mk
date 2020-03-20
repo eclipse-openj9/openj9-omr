@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2019 IBM Corp. and others
+# Copyright (c) 2015, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -145,13 +145,13 @@ ifneq (,$(findstring shared,$(ARTIFACT_TYPE)))
   define LINK_C_SHARED_COMMAND
     -$(RM) $@
     $(CCLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS)
-    cp $@ $@.dbg
+    cp -f $@ $(@:$(SOLIBEXT)=.debuginfo)
   endef
 
   define LINK_CXX_SHARED_COMMAND
     -$(RM) $@
     $(CXXLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS)
-    cp $@ $@.dbg
+    cp -f $@ $(@:$(SOLIBEXT)=.debuginfo)
   endef
 endif # ARTIFACT_TYPE contains "shared"
 

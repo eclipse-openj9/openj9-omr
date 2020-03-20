@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2019 IBM Corp. and others
+# Copyright (c) 2016, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -122,20 +122,20 @@ ifneq (,$(findstring shared,$(ARTIFACT_TYPE)))
     ifeq (1,$(USE_GNU_DEBUG))
 
       define LINK_C_SHARED_COMMAND
-        $(CCLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS) -install_name @rpath/lib$(MODULE_NAME).dylib
-        dsymutil -f $@ -o $@.dbg
+        $(CCLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS) -install_name @rpath/lib$(MODULE_NAME)$(SOLIBEXT)
+        dsymutil -o $@.dSYM $@
       endef
 
       define LINK_CXX_SHARED_COMMAND
-        $(CXXLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS) -install_name @rpath/lib$(MODULE_NAME).dylib
-        dsymutil -f $@ -o $@.dbg
+        $(CXXLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS) -install_name @rpath/lib$(MODULE_NAME)$(SOLIBEXT)
+        dsymutil -o $@.dSYM $@
       endef
 
       ## Files to clean
       CLEAN_FILES=$(OBJECTS) *.d
-      CLEAN_FILES+=$($(MODULE_NAME)_shared).dbg
+      CLEAN_FILES+=$($(MODULE_NAME)_shared:$(SOLIBEXT)=.dSYM)
       define CLEAN_COMMAND
-        -$(RM) $(CLEAN_FILES)
+        -$(RM) -rf $(CLEAN_FILES)
       endef
     endif # USE_GNU_DEBUG
   endif # OMR_DEBUG

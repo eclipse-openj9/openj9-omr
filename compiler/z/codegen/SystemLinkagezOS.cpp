@@ -589,7 +589,7 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
 
           FunctionDescriptor* fd = reinterpret_cast<FunctionDescriptor*>(callSymbol->castToMethodSymbol()->getMethodAddress());
 
-          genLoadAddressConstant(cg(), callNode, reinterpret_cast<uintptrj_t>(fd), epReg);
+          genLoadAddressConstant(cg(), callNode, reinterpret_cast<uintptr_t>(fd), epReg);
           generateRSInstruction(cg(), TR::InstOpCode::getLoadMultipleOpCode(), callNode, aeReg, epReg, generateS390MemoryReference(epReg, 0, cg()));
 
           TR::Instruction* callInstr = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, raReg, fd->func, callSymRef, cg());

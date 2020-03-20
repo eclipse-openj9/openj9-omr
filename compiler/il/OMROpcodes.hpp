@@ -22,43 +22,9 @@
 #ifndef OMR_OPCODEMACROS_INCL
 #define OMR_OPCODEMACROS_INCL
 
-/**
- *
- * Opcodes consist of (in order):
- * - opcode
- * - name
- * - properties1
- * - properties2
- * - properties3
- * - properties4
- * - dataType
- * - typeProperties
- * - childProperties
- * - swapChildrenOpcode
- * - reverseBranchOpcode
- * - booleanCompareOpcode
- * - ifCompareOpcode
- *
- */
-
 #define FOR_EACH_OPCODE(MACRO) \
-   MACRO(\
-      /* opcode */ TR::BadILOp,\
-      "BadILOp",\
-      0,\
-      0,\
-      0,\
-      0,\
-      TR::NoType,\
-      0,\
-      ILChildProp::NoChildren,\
-      TR::BadILOp,\
-      TR::BadILOp,\
-      TR::BadILOp,\
-      TR::BadILOp) \
-   MACRO(\
-      TR::aconst,\
-      "aconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
+   MACRO(TR::BadILOp,"BadILOp",0,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
+   MACRO(TR::aconst,"aconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::iconst,"iconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::lconst,"lconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::fconst,"fconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
@@ -122,7 +88,7 @@
    MACRO(TR::swrtbari,"swrtbari",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,THREE_CHILD(TR::Address, TR::Int16, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::iwrtbari,"iwrtbari",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,THREE_CHILD(TR::Address, TR::Int32, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::Goto,"goto",ILProp1::Branch | ILProp1::TreeTop,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ireturn,"ireturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
+   MACRO(TR::ireturn,"ireturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(ILChildProp::UnspecifiedChildType), // ireturn is used to return all types smaller than Int3,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::lreturn,"lreturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::freturn,"freturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::dreturn,"dreturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
@@ -447,7 +413,7 @@
    MACRO(TR::sselect,"sselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,THREE_CHILD(TR::Int32, TR::Int16, TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::aselect,"aselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Address,ILTypeProp::Reference,THREE_CHILD(TR::Int32, TR::Address, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::fselect,"fselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,THREE_CHILD(TR::Int32, TR::Float, TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dselect,"dselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,THREE_CHILD(TR::Int32, TR::Int8, TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
+   MACRO(TR::dselect,"dselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,THREE_CHILD(TR::Int32, TR::Double, TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::treetop,"treetop",ILProp1::TreeTop,0,0,0,TR::NoType,0,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::MethodEnterHook,"MethodEnterHook",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::MustBeLowered| ILProp2::MayUseSystemStack,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::MethodExitHook,"MethodExitHook",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::MustBeLowered| ILProp2::MayUseSystemStack,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
@@ -791,5 +757,5 @@
    MACRO(TR::sbitpermute,"sbitpermute",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,THREE_CHILD(TR::Int16, TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::ibitpermute,"ibitpermute",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,THREE_CHILD(TR::Int32, TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
    MACRO(TR::lbitpermute,"lbitpermute",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,THREE_CHILD(TR::Int64, TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::Prefetch,"Prefetch",ILProp1::TreeTop | ILProp1::HasSymbolRef,0,0,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp)
+   MACRO(TR::Prefetch,"Prefetch",ILProp1::TreeTop | ILProp1::HasSymbolRef,0,0,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) 
 #endif

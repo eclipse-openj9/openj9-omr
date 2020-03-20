@@ -413,8 +413,8 @@
     TR::TreeEvaluator::iselectEvaluator ,	// TR::bselect
     TR::TreeEvaluator::iselectEvaluator ,	// TR::sselect
     TR::TreeEvaluator::iselectEvaluator ,	// TR::aselect
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fselectEvaluator ,	// TR::fselect   
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dselectEvaluator ,	// TR::dselect   
+    TR::TreeEvaluator::fselectEvaluator ,	// TR::fselect
+    TR::TreeEvaluator::dselectEvaluator ,	// TR::dselect
     TR::TreeEvaluator::treetopEvaluator, // TR::treetop		// tree top to anchor subtrees with side-effects
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::MethodEnterHookEvaluator ,	// TR::MethodEnterHook	// called after a frame is built; temps initialized; and monitor acquired (if necessary)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::MethodExitHookEvaluator ,	// TR::MethodExitHook	// called immediately before returning; frame not yet collapsed; monitor released (if necessary)

@@ -410,7 +410,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
          // Printf added so it triggers some output even in prod build.
          // If this failure is triggered in a prod build, you might
          // not get a SEGV nor any meaningful error msg.
-         TR_ASSERT(0,"ERROR: addPostCondition list overflow\n");
+         TR_ASSERT_FATAL(0,"ERROR: addPostCondition list overflow\n");
          _cg->comp()->failCompilation<TR::CompilationException>("addPostCondition list overflow, abort compilation\n");
          }
       _postConditions->setDependencyInfo(_addCursorForPost++, vr, rr, flag);

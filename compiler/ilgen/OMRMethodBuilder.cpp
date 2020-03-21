@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 IBM Corp. and others
+ * Copyright (c) 2016, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -705,7 +705,17 @@ OMR::MethodBuilder::Compile(void **entry)
 
    int32_t rc=0;
    *entry = (void *) compileMethodFromDetails(NULL, details, warm, rc);
+
+   // let TypeDictionary know to clear out sym refs used in this compilation so
+   // no dangling pointers
    typeDictionary()->NotifyCompilationDone();
+
+   // in case this MethodBuilder object is used in another Call()
+   // clear out symrefs allocated in this compilation (no dangling pointers)
+   // and reset _connectedTrees so MethodBuilder can be inlined if needed
+   _symbols.clear();
+   _connectedTrees = false;
+
    return rc;
    }
 

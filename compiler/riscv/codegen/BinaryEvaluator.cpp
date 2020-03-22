@@ -264,16 +264,37 @@ OMR::RV::TreeEvaluator::idivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register *
+OMR::RV::TreeEvaluator::iudivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return Rhelper(node, TR::InstOpCode::_divuw, cg);
+   }
+
+
+TR::Register *
 OMR::RV::TreeEvaluator::iremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return Rhelper(node, TR::InstOpCode::_remw, cg);
    }
 
 TR::Register *
+OMR::RV::TreeEvaluator::iuremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return Rhelper(node, TR::InstOpCode::_remuw, cg);
+   }
+
+
+TR::Register *
 OMR::RV::TreeEvaluator::ldivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return Rhelper(node, TR::InstOpCode::_div, cg);
    }
+
+TR::Register *
+OMR::RV::TreeEvaluator::ludivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return Rhelper(node, TR::InstOpCode::_divu, cg);
+   }
+
 
 TR::Register *
 OMR::RV::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeGenerator *cg)

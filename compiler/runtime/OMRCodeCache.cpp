@@ -43,6 +43,7 @@
 #include "runtime/CodeCacheMemorySegment.hpp"
 #include "runtime/CodeCacheConfig.hpp"
 #include "runtime/Runtime.hpp"
+#include "OMR/Bytes.hpp"
 
 #ifdef LINUX
 #include <elf.h>
@@ -302,7 +303,7 @@ OMR::CodeCache::initialize(TR::CodeCacheManager *manager,
    *((TR::CodeCache **)(_segment->segmentBase())) = self(); // Write a pointer to this cache at the beginning of the segment
    _warmCodeAlloc = _segment->segmentBase() + sizeof(this);
 
-   _warmCodeAlloc = align(_warmCodeAlloc, config.codeCacheAlignment() -  1);
+   _warmCodeAlloc = (uint8_t *)align((size_t)_warmCodeAlloc, config.codeCacheAlignment());
 
    if (!config.trampolineCodeSize())
       {
@@ -946,8 +947,8 @@ OMR::CodeCache::addFreeBlock2WithCallSite(uint8_t *start,
 
    // align start on a code cache alignment boundary
    uint8_t *start_o = start;
-   uint32_t round = config.codeCacheAlignment() - 1;
-   start = align(start, round);
+   uint32_t round = config.codeCacheAlignment();
+   start = (uint8_t *)align((size_t)start, round);
 
    // make sure aligning start didn't push it past end
    if (end <= (start+sizeof(CodeCacheFreeCacheBlock)))
@@ -1438,7 +1439,7 @@ OMR::CodeCache::checkForErrors()
          // 2. A used block must be followed by another used block or by a free block
          // 3. All used blocks must have a CodeCacheMethodHeader with size as first parameter, folowed by eyeCatcher and metaData
          TR::CodeCacheConfig &config = _manager->codeCacheConfig();
-         uint8_t *start = align(((uint8_t*)_segment->segmentTop()) + sizeof(char*), config.codeCacheAlignment() -  1);
+         uint8_t *start = (uint8_t *)align(((size_t)_segment->segmentTop()) + sizeof(char*), config.codeCacheAlignment());
          uint8_t *prevBlock = NULL;
          while (start < this->_trampolineBase)
             {

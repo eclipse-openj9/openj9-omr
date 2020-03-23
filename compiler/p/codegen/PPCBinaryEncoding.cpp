@@ -78,6 +78,15 @@ static bool canUseAsVsxRegister(TR::RealRegister *reg)
       }
    }
 
+/**
+ * Fills in the RT field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | RT       |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
 static void fillFieldRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RT field with null register");
@@ -85,6 +94,15 @@ static void fillFieldRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldRT(cursor);
    }
 
+/**
+ * Fills in the FRT field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | FRT      |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
 static void fillFieldFRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRT field with null register");
@@ -92,6 +110,14 @@ static void fillFieldFRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldRT(cursor);
    }
 
+/**
+ * Fills in the VRT field of a binary-encoded instruction with the provided vector register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | VRT      |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
 static void fillFieldVRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRT field with null register");
@@ -99,6 +125,14 @@ static void fillFieldVRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldRT(cursor);
    }
 
+/**
+ * Fills in the XT field of a binary-encoded instruction with the provided VSX register:
+ *
+ * +------+----------+---------------------------------------+----+
+ * |      | XT       |                                       | XT |
+ * | 0    | 6        | 11                                    | 31 |
+ * +------+----------+---------------------------------------+----+
+ */
 static void fillFieldXT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XT field with null register");
@@ -106,6 +140,15 @@ static void fillFieldXT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldXT(cursor);
    }
 
+/**
+ * Fills in the RS field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | RS       |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
 static void fillFieldRS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RS field with null register");
@@ -113,6 +156,14 @@ static void fillFieldRS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldRS(cursor);
    }
 
+/**
+ * Fills in the XS field of a binary-encoded instruction with the provided VSX register:
+ *
+ * +------+----------+---------------------------------------+----+
+ * |      | XS       |                                       | XS |
+ * | 0    | 6        | 11                                    | 31 |
+ * +------+----------+---------------------------------------+----+
+ */
 static void fillFieldXS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XS field with null register");
@@ -120,6 +171,15 @@ static void fillFieldXS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldXS(cursor);
    }
 
+/**
+ * Fills in the RA field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +-----------------+----------+---------------------------------+
+ * |                 | RA       |                                 |
+ * | 0               | 11       | 16                              |
+ * +-----------------+----------+---------------------------------+
+ */
 static void fillFieldRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RA field with null register");
@@ -127,6 +187,15 @@ static void fillFieldRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldRA(cursor);
    }
 
+/**
+ * Fills in the FRA field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +-----------------+----------+---------------------------------+
+ * |                 | FRA      |                                 |
+ * | 0               | 11       | 16                              |
+ * +-----------------+----------+---------------------------------+
+ */
 static void fillFieldFRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRA field with null register");
@@ -134,6 +203,14 @@ static void fillFieldFRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldFRA(cursor);
    }
 
+/**
+ * Fills in the VRA field of a binary-encoded instruction with the provided vector register:
+ *
+ * +-----------------+----------+---------------------------------+
+ * |                 | VRA      |                                 |
+ * | 0               | 11       | 16                              |
+ * +-----------------+----------+---------------------------------+
+ */
 static void fillFieldVRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRA field with null register");
@@ -141,6 +218,14 @@ static void fillFieldVRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldRA(cursor);
    }
 
+/**
+ * Fills in the XA field of a binary-encoded instruction with the provided VSX register:
+ *
+ * +-----------------+----------+------------------+----+---------+
+ * |                 | XA       |                  | XA |         |
+ * | 0               | 11       | 16               | 29 | 30      |
+ * +-----------------+----------+------------------+----+---------+
+ */
 static void fillFieldXA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XA field with null register");
@@ -148,6 +233,15 @@ static void fillFieldXA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldXA(cursor);
    }
 
+/**
+ * Fills in the RB field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +------------------------+--------+----------------------------+
+ * |                        | RB     |                            |
+ * | 0                      | 16     | 21                         |
+ * +------------------------+--------+----------------------------+
+ */
 static void fillFieldRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RB field with null register");
@@ -155,6 +249,15 @@ static void fillFieldRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldRB(cursor);
    }
 
+/**
+ * Fills in the FRB field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +------------------------+--------+----------------------------+
+ * |                        | FRB    |                            |
+ * | 0                      | 16     | 21                         |
+ * +------------------------+--------+----------------------------+
+ */
 static void fillFieldFRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRB field with null register");
@@ -162,6 +265,15 @@ static void fillFieldFRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldFRB(cursor);
    }
 
+/**
+ * Fills in the FRB field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +------------------------+--------+----------------------------+
+ * |                        | FRB    |                            |
+ * | 0                      | 16     | 21                         |
+ * +------------------------+--------+----------------------------+
+ */
 static void fillFieldVRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRB field with null register");
@@ -169,6 +281,14 @@ static void fillFieldVRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldRB(cursor);
    }
 
+/**
+ * Fills in the XB field of a binary-encoded instruction with the provided VSX register:
+ *
+ * +----------------------------+----------+------------+----+----+
+ * |                            | XB       |            | XB |    |
+ * | 0                          | 16       | 21         | 30 | 31 |
+ * +----------------------------+----------+------------+----+----+
+ */
 static void fillFieldXB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XB field with null register");
@@ -176,6 +296,15 @@ static void fillFieldXB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldXB(cursor);
    }
 
+/**
+ * Fills in the RC field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +---------------------------------+--------+-------------------+
+ * |                                 | RC     |                   |
+ * | 0                               | 21     | 26                |
+ * +---------------------------------+--------+-------------------+
+ */
 static void fillFieldRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RC field with null register");
@@ -183,6 +312,15 @@ static void fillFieldRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldRC(cursor);
    }
 
+/**
+ * Fills in the FRC field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +---------------------------------+--------+-------------------+
+ * |                                 | FRC    |                   |
+ * | 0                               | 21     | 26                |
+ * +---------------------------------+--------+-------------------+
+ */
 static void fillFieldFRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRC field with null register");
@@ -190,6 +328,14 @@ static void fillFieldFRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldFRC(cursor);
    }
 
+/**
+ * Fills in the VRC field of a binary-encoded instruction with the provided vector register:
+ *
+ * +---------------------------------+--------+-------------------+
+ * |                                 | VRC    |                   |
+ * | 0                               | 21     | 26                |
+ * +---------------------------------+--------+-------------------+
+ */
 static void fillFieldVRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRC field with null register");
@@ -197,6 +343,14 @@ static void fillFieldVRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldRC(cursor);
    }
 
+/**
+ * Fills in the XC field of a binary-encoded instruction with the provided VSX register:
+ *
+ * +---------------------------+------+-----+----+--------------+
+ * |                           | XC   |     | XC |              |
+ * | 0                         | 21   | 26  | 28 | 29           |
+ * +---------------------------+------+-----+----+--------------+
+ */
 static void fillFieldXC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XC field with null register");
@@ -204,6 +358,20 @@ static void fillFieldXC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldXC(cursor);
    }
 
+/**
+ * Fills in the condition register part of the BI field of a binary-encoded instruction with the
+ * provided condition register:
+ *
+ * +------------+-----+-------------------------------------------+
+ * |            | BI  |                                           |
+ * | 0          | 11  | 14                                        |
+ * +------------+-----+-------------------------------------------+
+ *
+ * Note that the ISA defines the BI field to also include the part which determines which bit of
+ * the condition register is checked. This needs to be filled in using separate means. Typically,
+ * this is done by including the correct value of that part of the field as part of the binary
+ * encoding template of an extended mnemonic, e.g. beq.
+ */
 static void fillFieldBI(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BI field with null register");
@@ -211,6 +379,17 @@ static void fillFieldBI(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldBI(cursor);
    }
 
+/**
+ * Fills in the BF field of a binary-encoded instruction with the provided condition register:
+ *
+ * +------+-----+-------------------------------------------------+
+ * |      | BF  |                                                 |
+ * | 0    | 6   | 9                                               |
+ * +------+-----+-------------------------------------------------+
+ *
+ * This can also be used to fill in the condition register part of the BT field, with the part
+ * determining which bit should being filled in by other means.
+ */
 static void fillFieldBF(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BF field with null register");
@@ -218,6 +397,17 @@ static void fillFieldBF(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    reg->setRegisterFieldRT(cursor);
    }
 
+/**
+ * Fills in the BFA field of a binary-encoded instruction with the provided condition register:
+ *
+ * +------------------+-----+-------------------------------------+
+ * |                  | BFA |                                     |
+ * | 0                | 11  | 14                                  |
+ * +------------------+-----+-------------------------------------+
+ *
+ * This can also be used to fill in the condition register part of the BA field, with the part
+ * determining which bit should being filled in by other means.
+ */
 static void fillFieldBFA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BFA field with null register");
@@ -225,12 +415,31 @@ static void fillFieldBFA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldRA(cursor);
    }
 
+/**
+ * Fills in the BFA field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +------------------+-----+-------------------------------------+
+ * |                  | BFA |                                     |
+ * | 0                | 11  | 14                                  |
+ * +------------------+-----+-------------------------------------+
+ */
 static void fillFieldBFA(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x7) == val, "0x%x is out-of-range for BFA field", val);
    *cursor |= val << 18;
    }
 
+/**
+ * Fills in the BFB field of a binary-encoded instruction with the provided condition register:
+ *
+ * +------------------------+-----+-------------------------------+
+ * |                        | BFB |                               |
+ * | 0                      | 14  | 17                            |
+ * +------------------------+-----+-------------------------------+
+ *
+ * This can also be used to fill in the condition register part of the BB field, with the part
+ * determining which bit should being filled in by other means.
+ */
 static void fillFieldBFB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BFB field with null register");
@@ -238,12 +447,30 @@ static void fillFieldBFB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    reg->setRegisterFieldRB(cursor);
    }
 
+/**
+ * Fills in the U field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +-----------------------+-----+--------------------------------+
+ * |                       | U   |                                |
+ * | 0                     | 16  | 20                             |
+ * +-----------------------+-----+--------------------------------+
+ */
 static void fillFieldU(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xfu) == val, "0x%x is out-of-range for U field", val);
    *cursor |= val << 12;
    }
 
+/**
+ * Fills in the BF and W fields of a binary-encoded instruction with the provided immediate value.
+ * The bottom 7 bits are used to populate the BF field, while the 8th bit is used to populate the
+ * W field.
+ *
+ * +------+-----+-----+----+--------------------------------------+
+ * |      | BF  |     | W  |                                      |
+ * | 0    | 6   | 9   | 15 | 16                                   |
+ * +------+-----+-----+----+--------------------------------------+
+ */
 static void fillFieldBFW(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xfu) == val, "0x%x is out-of-range for BF/W field", val);
@@ -251,36 +478,81 @@ static void fillFieldBFW(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    *cursor |= (val & 0x7) << 23;
    }
 
+/**
+ * Fills in the FLM field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +------+---------+---------------------------------------------+
+ * |      | FLM     |                                             |
+ * | 0    | 7       | 15                                          |
+ * +------+---------+---------------------------------------------+
+ */
 static void fillFieldFLM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xffu) == val, "0x%x is out-of-range for FLM field", val);
    *cursor |= val << 17;
    }
 
+/**
+ * Fills in the FXM field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------+----------+----------------------------+
+ * |                      | FXM      |                            |
+ * | 0                    | 12       | 20                         |
+ * +----------------------+----------+----------------------------+
+ */
 static void fillFieldFXM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xffu) == val, "0x%x is out-of-range for FXM field", val);
    *cursor |= val << 12;
    }
 
+/**
+ * Fills in the FXM field of a binary-encoded instruction with the provided immediate value in the
+ * same way as fillFieldFXM, while also asserting that exactly one bit in that field should be set.
+ */
 static void fillFieldFXM1(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, populationCount(val) == 1, "0x%x is invalid for FXM field, expecting exactly 1 bit set", val);
    fillFieldFXM(instr, cursor, val);
    }
 
+/**
+ * Fills in the DCM or DQM field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+--------+------------------------+
+ * |                            | DCM    |                        |
+ * | 0                          | 16     | 22                     |
+ * +----------------------------+--------+------------------------+
+ */
 static void fillFieldDCM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3fu) == val, "0x%x is out-of-range for DCM/DQM field", val);
    *cursor |= val << 10;
    }
 
+/**
+ * Fills in a 5-bit SH field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+----------+----------------------+
+ * |                            | SH       |                      |
+ * | 0                          | 16       | 21                   |
+ * +----------------------------+----------+----------------------+
+ */
 static void fillFieldSH5(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1fu) == val, "0x%x is out-of-range for SH(5) field", val);
    *cursor |= val << 11;
    }
 
+/**
+ * Fills in a 6-bit SH field (as as used in MD-form and XS-form instructions) of a binary-encoded
+ * instruction with the provided immediate value:
+ *
+ * +----------------------------+----------+------------+----+----+
+ * |                            | SH       |            | SH |    |
+ * | 0                          | 16       | 21         | 30 | 31 |
+ * +----------------------------+----------+------------+----+----+
+ */
 static void fillFieldSH6(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3fu) == val, "0x%x is out-of-range for SH(6) field", val);
@@ -288,24 +560,58 @@ static void fillFieldSH6(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    *cursor |= (val & 0x20u) >> 4;
    }
 
+/**
+ * Fills in the SIM field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +-----------------+----------+---------------------------------+
+ * |                 | SIM      |                                 |
+ * | 0               | 11       | 16                              |
+ * +-----------------+----------+---------------------------------+
+ */
 static void fillFieldSIM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0x1fu), "0x%x is out-of-range for SIM field", val);
    *cursor |= (val & 0x1f) << 16;
    }
 
+/**
+ * Fills in the 16-bit SI field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+---------------------------------+
+ * |                            | SI                              |
+ * | 0                          | 16                              |
+ * +----------------------------+---------------------------------+
+ */
 static void fillFieldSI16(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffu), "0x%x is out-of-range for SI(16) field", val);
    *cursor |= val & 0xffff;
    }
 
+/**
+ * Fills in the 5-bit SI field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+----------+----------------------+
+ * |                            | SI       |                      |
+ * | 0                          | 16       | 21                   |
+ * +----------------------------+----------+----------------------+
+ */
 static void fillFieldSI5(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0x1fu), "0x%x is out-of-range for SI(5) field", val);
    *cursor |= (val & 0x1f) << 11;
    }
 
+/**
+ * Fills in the UIM field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +-----------------+----------+---------------------------------+
+ * |                 | UIM      |                                 |
+ * | 0               | 11       | 16                              |
+ * +-----------------+----------+---------------------------------+
+ *
+ * The numBits argument specifies the bit length of the UIM field being filled.
+ */
 static void fillFieldUIM(TR::Instruction *instr, uint32_t *cursor, int32_t numBits, uint32_t val)
    {
    uint32_t fieldMask = (1u << numBits) - 1;
@@ -313,6 +619,14 @@ static void fillFieldUIM(TR::Instruction *instr, uint32_t *cursor, int32_t numBi
    *cursor |= val << 16;
    }
 
+/**
+ * Fills in the 16-bit UI field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+---------------------------------+
+ * |                            | UI                              |
+ * | 0                          | 16                              |
+ * +----------------------------+---------------------------------+
+ */
 static void fillFieldUI16(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    // TODO: This is a hack until PIC sites are reworked. Currently, the PIC site handling code
@@ -323,6 +637,15 @@ static void fillFieldUI16(TR::Instruction *instr, uint32_t *cursor, uint32_t val
    *cursor |= val & 0xffff;
    }
 
+/**
+ * Fills in the me/mb field (as used in MD-form and MDS-form instructions) of a binary-encoded
+ * instruction with the provided immediate value:
+ *
+ * +------------------------------------+---------+---------------+
+ * |                                    | MDM     |               |
+ * | 0                                  | 21      | 27            |
+ * +------------------------------------+---------+---------------+
+ */
 static void fillFieldMDM(TR::Instruction *instr, uint32_t *cursor, int32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3f) == val, "0x%x is out-of-range for me/mb field", val);
@@ -330,36 +653,88 @@ static void fillFieldMDM(TR::Instruction *instr, uint32_t *cursor, int32_t val)
    *cursor |= (val & 0x20);
    }
 
+/**
+ * Fills in the the MB field (as used in M-form instructions) of a binary-encoded instruction with
+ * the provided immediate value:
+ *
+ * +------------------------------------+---------+---------------+
+ * |                                    | MB      |               |
+ * | 0                                  | 21      | 26            |
+ * +------------------------------------+---------+---------------+
+ */
 static void fillFieldMB(TR::Instruction *instr, uint32_t *cursor, int32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for MB field", val);
    *cursor |= val << 6;
    }
 
+/**
+ * Fills in the ME field (as used in M-form instructions) of a binary-encoded instruction with the
+ * provided immediate value:
+ *
+ * +----------------------------------------------+----------+----+
+ * |                                              | ME       |    |
+ * | 0                                            | 26       | 31 |
+ * +----------------------------------------------+----------+----+
+ */
 static void fillFieldME(TR::Instruction *instr, uint32_t *cursor, int32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for ME field", val);
    *cursor |= val << 1;
    }
 
+/**
+ * Fills in the RMC field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +---------------------------------------+-----+----------------+
+ * |                                       | RMC |                |
+ * | 0                                     | 21  | 23             |
+ * +---------------------------------------+-----+----------------+
+ */
 static void fillFieldRMC(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3) == val, "0x%llx is out-of-range for RMC field", val);
    *cursor |= static_cast<uint32_t>(val << 9);
    }
 
+/**
+ * Fills in the SHB field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +--------------------------------------------+-----+-----------+
+ * |                                            | SHB |           |
+ * | 0                                          | 22  | 26        |
+ * +--------------------------------------------+-----+-----------+
+ */
 static void fillFieldSHB(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xf) == val, "0x%llx is out-of-range for SHB field", val);
    *cursor |= static_cast<uint32_t>(val << 6);
    }
 
+/**
+ * Fills in the DM field (as used in XX3-form instructions) of a binary-encoded instruction with
+ * the provided immediate value:
+ *
+ * +----------------------------------+-----+---------------------+
+ * |                                  | DM  |                     |
+ * | 0                                | 22  | 24                  |
+ * +----------------------------------+-----+---------------------+
+ */
 static void fillFieldDM(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3) == val, "0x%llx is out-of-range for DM field", val);
    *cursor |= static_cast<uint32_t>(val << 8);
    }
 
+/**
+ * Fills in the SHW field (as used in XX3-form instructions) of a binary-encoded instruction with
+ * the provided immediate value:
+ *
+ * +----------------------------------+-----+---------------------+
+ * |                                  | SHW |                     |
+ * | 0                                | 22  | 24                  |
+ * +----------------------------------+-----+---------------------+
+ */
 static void fillFieldSHW(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3) == val, "0x%llx is out-of-range for SHW field", val);

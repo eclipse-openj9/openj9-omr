@@ -186,7 +186,7 @@
    /* .name        = */ "addi",
    /* .description =    "Add immediate", */
    /* .opcode      = */ 0x38000000,
-   /* .format      = */ FORMAT_RT_RA_SI,
+   /* .format      = */ FORMAT_RT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -196,7 +196,7 @@
    /* .name        = */ "addic",
    /* .description =    "Add immediate carrying", */
    /* .opcode      = */ 0x30000000,
-   /* .format      = */ FORMAT_RT_RA_SI,
+   /* .format      = */ FORMAT_RT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
@@ -218,7 +218,7 @@
    /* .name        = */ "addi",
    /* .description =    "Add imm (carry bit set only if record form)", */
    /* .opcode      = */ 0x38000000,
-   /* .format      = */ FORMAT_RT_RA_SI,
+   /* .format      = */ FORMAT_RT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
@@ -240,7 +240,7 @@
    /* .name        = */ "addis",
    /* .description =    "Add immediate shifted", */
    /* .opcode      = */ 0x3C000000,
-   /* .format      = */ FORMAT_RT_RA_SI,
+   /* .format      = */ FORMAT_RT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -452,7 +452,7 @@
    /* .name        = */ "andi.",
    /* .description =    "AND immediate", */
    /* .opcode      = */ 0x70000000,
-   /* .format      = */ FORMAT_RA_RS_UI,
+   /* .format      = */ FORMAT_RA_RS_UI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRecordForm |
                         PPCOpProp_AltFormatx |
@@ -464,7 +464,7 @@
    /* .name        = */ "andis.",
    /* .description =    "AND immediate shifted", */
    /* .opcode      = */ 0x74000000,
-   /* .format      = */ FORMAT_RA_RS_UI,
+   /* .format      = */ FORMAT_RA_RS_UI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsRecordForm |
                         PPCOpProp_AltFormatx |
@@ -807,7 +807,7 @@
    /* .name        = */ "cmpwi",
    /* .description =    "Compare word immediate algebraic", */
    /* .opcode      = */ 0x2C000000,
-   /* .format      = */ FORMAT_BF_RA_SI,
+   /* .format      = */ FORMAT_BF_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_CompareOp |
                         PPCOpProp_SyncSideEffectFree,
@@ -818,7 +818,7 @@
    /* .name        = */ "cmpdi",
    /* .description =    "Compare dword immediate algebraic", */
    /* .opcode      = */ 0x2C200000,
-   /* .format      = */ FORMAT_BF_RA_SI,
+   /* .format      = */ FORMAT_BF_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DWord |
                         PPCOpProp_CompareOp |
@@ -853,7 +853,7 @@
    /* .name        = */ "cmplwi",
    /* .description =    "Compare word immediate logical", */
    /* .opcode      = */ 0x28000000,
-   /* .format      = */ FORMAT_BF_RA_UI,
+   /* .format      = */ FORMAT_BF_RA_UI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_CompareOp |
                         PPCOpProp_SyncSideEffectFree,
@@ -864,7 +864,7 @@
    /* .name        = */ "cmpldi",
    /* .description =    "Compare dword immediate logical", */
    /* .opcode      = */ 0x28200000,
-   /* .format      = */ FORMAT_BF_RA_UI,
+   /* .format      = */ FORMAT_BF_RA_UI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_DWord |
                         PPCOpProp_CompareOp |
@@ -2666,7 +2666,7 @@
    /* .name        = */ "li",
    /* .description =    "Load immediate", */
    /* .opcode      = */ 0x38000000,
-   /* .format      = */ FORMAT_RT_SI,
+   /* .format      = */ FORMAT_RT_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -2676,7 +2676,7 @@
    /* .name        = */ "lis",
    /* .description =    "Load immediate shifted", */
    /* .opcode      = */ 0x3C000000,
-   /* .format      = */ FORMAT_RT_SI,
+   /* .format      = */ FORMAT_RT_SI16,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -3484,7 +3484,7 @@
    /* .name        = */ "mulli",
    /* .description =    "Multiply low immediate", */
    /* .opcode      = */ 0x1C000000,
-   /* .format      = */ FORMAT_RT_RA_SI,
+   /* .format      = */ FORMAT_RT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -3666,7 +3666,7 @@
    /* .name        = */ "ori",
    /* .description =    "OR immediate", */
    /* .opcode      = */ 0x60000000,
-   /* .format      = */ FORMAT_RA_RS_UI,
+   /* .format      = */ FORMAT_RA_RS_UI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree,
@@ -3677,7 +3677,7 @@
    /* .name        = */ "oris",
    /* .description =    "OR immediate shifted", */
    /* .opcode      = */ 0x64000000,
-   /* .format      = */ FORMAT_RA_RS_UI,
+   /* .format      = */ FORMAT_RA_RS_UI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree,
@@ -4669,7 +4669,7 @@
    /* .name        = */ "subfic",
    /* .description =    "Subtract from immediate carrying", */
    /* .opcode      = */ 0x20000000,
-   /* .format      = */ FORMAT_RT_RA_SI,
+   /* .format      = */ FORMAT_RT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_SyncSideEffectFree,
@@ -5758,7 +5758,7 @@
    /* .name        = */ "xori",
    /* .description =    "XOR immediate", */
    /* .opcode      = */ 0x68000000,
-   /* .format      = */ FORMAT_RA_RS_UI,
+   /* .format      = */ FORMAT_RA_RS_UI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree,
@@ -5769,7 +5769,7 @@
    /* .name        = */ "xoris",
    /* .description =    "XOR immediate shifted", */
    /* .opcode      = */ 0x6C000000,
-   /* .format      = */ FORMAT_RA_RS_UI,
+   /* .format      = */ FORMAT_RA_RS_UI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_AltFormatx |
                         PPCOpProp_SyncSideEffectFree,

@@ -3862,8 +3862,6 @@ TR_IndirectCallSite::addTargetIfThereIsSingleImplementer (TR_InlinerBase* inline
 
 bool TR_IndirectCallSite::findCallSiteTarget (TR_CallStack *callStack, TR_InlinerBase* inliner)
    {
-   //inliner->tracer()->dumpPrexArgInfo(_ecsPrexArgInfo);
-
    if (addTargetIfMethodIsNotOverriden(inliner) ||
        addTargetIfMethodIsNotOverridenInReceiversHierarchy(inliner) ||
        addTargetIfThereIsSingleImplementer(inliner) ||
@@ -6278,30 +6276,6 @@ TR_InlinerDelimiter::TR_InlinerDelimiter(TR_InlinerTracer *tracer, char * tag)
 TR_InlinerDelimiter::~TR_InlinerDelimiter()
    {
    debugTrace(_tracer,"</%s>",_tag);
-   }
-
-void TR_InlinerTracer::dumpPrexArgInfo(TR_PrexArgInfo* argInfo)
-   {
-   if (!argInfo || !heuristicLevel())
-      return;
-
-   traceMsg( comp(),  "<argInfo address = %p numArgs = %d>\n", argInfo, argInfo->getNumArgs());
-   for (int i = 0 ; i < argInfo->getNumArgs(); i++)
-
-      {
-      TR_PrexArgument* arg = argInfo->get(i);
-      if (arg && arg->getClass())
-         {
-         char* className = TR::Compiler->cls.classSignature(comp(), arg->getClass(), trMemory());
-         traceMsg( comp(),  "<Argument no=%d address=%p classIsFixed=%d classIsPreexistent=%d argIsKnownObject=%d koi=%d class=%p className= %s/>\n",
-         i, arg, arg->classIsFixed(), arg->classIsPreexistent(), arg->hasKnownObjectIndex(), arg->getKnownObjectIndex(), arg->getClass(), className);
-         }
-      else
-         {
-         traceMsg( comp(),  "<Argument no=%d address=%p classIsFixed=%d classIsPreexistent=%d/>\n", i, arg, arg ? arg->classIsFixed() : 0, arg ? arg->classIsPreexistent() : 0);
-         }
-      }
-      traceMsg( comp(),  "</argInfo>\n");
    }
 
 bool

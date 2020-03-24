@@ -324,6 +324,11 @@ public:
 #endif /* OMR_GC_MODRON_COMPACTION */
 
 	virtual void completeExternalConcurrentCycle(MM_EnvironmentBase *env);
+	/**
+	 * Notify any (concurrent) collector (like Concurrent Scavenger) that might block and hold VM access
+	 * that an Exclusive VM Access is to be requested so that VM access can be released
+	 */	
+	virtual void notifyAcquireExclusiveVMAccess(MM_EnvironmentBase *env);
 
 	MM_ParallelGlobalGC(MM_EnvironmentBase *env)
 		: MM_GlobalCollector()

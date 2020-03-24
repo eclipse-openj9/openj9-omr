@@ -1536,6 +1536,23 @@ MM_ParallelGlobalGC::completeExternalConcurrentCycle(MM_EnvironmentBase *env)
 }
 
 void
+MM_ParallelGlobalGC::notifyAcquireExclusiveVMAccess(MM_EnvironmentBase *env)
+{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (_extensions->concurrentScavengeExhaustiveTermination && _extensions->isConcurrentScavengerInProgress()) {
+		/* This thread is not releasing VM access (as being the one to request Exclusive) and doesn't have a chance (as other threads) to flush copy caches
+		 * through VMaccess-release hook, so it's doing it now.
+		 * false (not final) argument should work this time, since this will be flushed one more time (as final), as any other thread, at the start of STW increment.
+		 */
+		env->flushGCCaches(false);
+
+		/* Must specifically call it against Scavenger, even though the Exclusive access might have been requested to perform Concurrent Global. */
+		_extensions->scavenger->externalNotifyToYield(env);
+	}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+}
+
+void
 MM_ParallelGlobalGC::reportGCCycleStart(MM_EnvironmentBase *env)
 {
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);

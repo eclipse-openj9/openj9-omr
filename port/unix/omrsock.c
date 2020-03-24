@@ -341,7 +341,24 @@ omrsock_addrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t
 int32_t
 omrsock_addrinfo_address(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, omrsock_sockaddr_t result)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	omr_os_addrinfo *info = NULL;
+	uint32_t i = 0;
+
+	if ((NULL == handle) || (NULL == handle->addrInfo) || (index >= handle->length)) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	info = (omr_os_addrinfo *)handle->addrInfo;
+
+	for (i = 0; i < index; i++) {
+		info = info->ai_next;
+		if (NULL == info) {
+			return OMRPORT_ERROR_INVALID_ARGUMENTS;
+		}
+	}
+	memcpy(&result->data, info->ai_addr, info->ai_addrlen);
+
+	return 0;
 }
 
 int32_t

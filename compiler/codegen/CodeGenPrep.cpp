@@ -52,9 +52,11 @@
 #include "env/PersistentInfo.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "env/TypeLayout.hpp"
 #include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
+#include "il/IL.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
 #include "il/MethodSymbol.hpp"
@@ -175,6 +177,127 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
             }
          }
       }
+   }
+
+/**
+ * @brief Lower newvalue into a new
+ *
+ * The `newvalue` opcode is primarely useful to the optimizer for
+ * representing fused allocation an initialization. However, it's
+ * functionality can also be implemented using the `new` opcode
+ * (although doing so makes analyses more difficult in the optimizer).
+ *
+ * This function takes a `newvalue` tree and lowers it to an equivalent
+ * sequence of trees using a `new` opcode. For example, the following
+ * tree:
+ *
+ *    treetop
+ *      newvalue jitNewValueObject (identityless)
+ *        loadaddr Vec3
+ *        fload x
+ *        fload y
+ *        fload z
+ *
+ * will turned into:
+ *
+ *    treetop
+ *      fload x
+ *    treetop
+ *      fload y
+ *    treetop
+ *      fload z
+ *    treetop
+ *      new jitNewValueObject (skipZeroInit)
+ *        loadaddr Vec3
+ *    istorei Vec3.x
+ *      ==>new
+ *      ==>fload x
+ *    istorei Vec3.y
+ *      ==>new
+ *      ==>fload y
+ *    istorei Vec3.z
+ *      ==>new
+ *      ==>fload z
+ *    fence
+ *
+ * Note that the (helper) symbol reference for the `new` node is be
+ * the same as the symbol reference for the `newvalue` node.
+ *
+ * The fence at the end is needed for platforms with weak memory ordering
+ * such as POWER. It may appear anywhere after allocation + initialization
+ * but before any operation that could publish the resulting reference to
+ * other threads.
+ *
+ * @param comp pointer to the compilation object
+ * @param node the node being lowered
+ * @param tt the TreeTop anchoring the node
+ */
+static void
+lowerNewValue(TR::Compilation *comp, TR::Node *node, TR::TreeTop *tt)
+   {
+   // Transmute newvalue node into new.
+   // Importantly, the helper symref of the newvalue node is preserved.
+   TR::Node::recreate(node, TR::New);
+   node->setCanSkipZeroInitialization(true);
+   node->setIdentityless(false);
+
+   auto* valueClass = static_cast<TR_OpaqueClassBlock *>(node->getFirstChild()->getSymbol()->getStaticSymbol()->getStaticAddress());
+   const TR::TypeLayout* typeLayout = comp->typeLayout(valueClass);
+   TR::IL il;
+
+   // cursors to iterate over the treetops that compute field values and store those values into fields
+   auto* fieldValueTreeTopCursor = tt->getPrevTreeTop();
+   auto* fieldStoreTreeTopCursor = tt;
+
+   // cache the treetop that must go at the end of the new sequence
+   auto* nextTreeTop = tt->getNextTreeTop();
+
+   // Iterate over very child that sets a field, anchoring computations
+   // before the allocation node and anchoring stores to fields after.
+   //
+   // The first child is skipped as it's only used to specify the type
+   // of the value being constructed. The second child is the one that
+   // actually initializes the first field.
+   for (int i = 1; i < node->getNumChildren(); ++i)
+      {
+      TR::Node* fieldValueNode = node->getChild(i);
+      node->setChild(i, NULL);
+
+      // anchor calculation of the field's value
+      auto* ttNode = TR::Node::create(TR::treetop, 1);
+      ttNode->setFirst(fieldValueNode);
+      fieldValueTreeTopCursor->join(TR::TreeTop::create(comp, ttNode));
+      fieldValueTreeTopCursor = fieldValueTreeTopCursor->getNextTreeTop();
+
+      // generate store to the field
+      const TR::TypeLayoutEntry& fieldEntry = typeLayout->entry(i - 1);
+      auto* symref = comp->getSymRefTab()->findOrFabricateShadowSymbol(valueClass,
+                                                                       fieldEntry._datatype,
+                                                                       fieldEntry._offset,
+                                                                       fieldEntry._isVolatile,
+                                                                       fieldEntry._isPrivate,
+                                                                       fieldEntry._isFinal,
+                                                                       fieldEntry._fieldname,
+                                                                       fieldEntry._typeSignature
+                                                                       );
+      const auto storeOpCode = il.opCodeForIndirectStore(fieldValueNode->getDataType());
+      auto* storeNode = TR::Node::createWithSymRef(storeOpCode, 2, symref);
+      storeNode->setAndIncChild(0, node);
+      storeNode->setAndIncChild(1, fieldValueNode);
+      fieldStoreTreeTopCursor->join(TR::TreeTop::create(comp, storeNode));
+      fieldStoreTreeTopCursor = fieldStoreTreeTopCursor->getNextTreeTop();
+      }
+   node->setNumChildren(1);
+
+   // link anchord values to allocation treetop
+   fieldValueTreeTopCursor->join(tt);
+
+   // add memory fence
+   auto* allocFenceTreeTop = TR::TreeTop::create(comp, TR::Node::createAllocationFence(NULL, node));
+   fieldStoreTreeTopCursor->join(allocFenceTreeTop);
+
+   // finish by linking to the next TreeTop
+   allocFenceTreeTop->join(nextTreeTop);
    }
 
 void
@@ -324,6 +447,10 @@ OMR::CodeGenerator::lowerTreeIfNeeded(
          }
       else
          self()->lowerTree(node, tt);
+      }
+   else if (node->getOpCodeValue() == TR::newvalue)
+      {
+      lowerNewValue(self()->comp(), node, tt);
       }
 
    if (node->getOpCodeValue() == TR::loadaddr || node->getOpCode().isLoadVarDirect())

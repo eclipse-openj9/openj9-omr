@@ -36,11 +36,28 @@ namespace TR {
 class TypeLayoutEntry
    {
    public:
-   TypeLayoutEntry(TR::DataType datatype, int32_t offset, char * fieldname) 
-      : _datatype(datatype), _offset(offset), _fieldname(fieldname){}
+   TypeLayoutEntry(TR::DataType datatype,
+                   int32_t offset,
+                   char * fieldname,
+                   bool isVolatile = false,
+                   bool isPrivate = false,
+                   bool isFinal = false,
+                   const char* typeSignature = NULL)
+      : _datatype(datatype),
+        _offset(offset),
+        _fieldname(fieldname),
+        _isVolatile(isVolatile),
+        _isPrivate(isPrivate),
+        _isFinal(isFinal),
+        _typeSignature(typeSignature)
+       {}
    TR::DataType _datatype;
    int32_t _offset;
    const char * _fieldname;
+   bool _isVolatile;
+   bool _isPrivate;
+   bool _isFinal;
+   const char * _typeSignature;
    };
 
 /** \brief

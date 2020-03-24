@@ -518,12 +518,6 @@ public:
 	bool exclusiveAccessBeatenByOtherThread() { return _exclusiveAccessBeatenByOtherThread; }
 	
 	/**
-	 * Notify any (concurrent) collector that might block and hold VM access
-	 * that an Exclusive VM Access is to be requested so that VM access can be released
-	 */
-	void collectorNotifyAcquireExclusiveVMAccess();
-
-	/**
 	 * Force thread to use out-of-line request for VM access. This may be required if there
 	 * is there is an event waiting to be hooked the next time the thread acquires VM access.
 	 */

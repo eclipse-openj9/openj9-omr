@@ -40,7 +40,6 @@
 #include "ModronAssertions.h"
 #include "OMRVMInterface.hpp"
 #include "ObjectAllocationInterface.hpp"
-#include "Scavenger.hpp"
 
 #if defined(OMR_GC_SEGREGATED_HEAP)
 #include "HeapRegionQueue.hpp"
@@ -434,7 +433,7 @@ MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector, bool 
 	 * calls).  proceed with acquiring exclusive access. */
 	Assert_MM_true(_omrVMThread == extensions->gcExclusiveAccessThreadId);
 
-	collectorNotifyAcquireExclusiveVMAccess();
+	collector->notifyAcquireExclusiveVMAccess(this);
 
 	acquireExclusiveVMAccess();
 
@@ -446,21 +445,6 @@ MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector, bool 
 
 	return !_exclusiveAccessBeatenByOtherThread;
 
-}
-
-void
-MM_EnvironmentBase::collectorNotifyAcquireExclusiveVMAccess()
-{
-	if (getExtensions()->isConcurrentScavengerInProgress()) {
-		/* This thread is not releasing VM access (as being the one to request Exclusive) and doesn't have a chance (as other threads) to flush copy caches
-		 * through VMaccess-release hook, so it's doing it now.
-		 * false (not final) argument should work this time, since this will be flushed one more time (as final), as any other thread, at the start of STW increment.
-		 */
-		flushGCCaches(false);
-
-		/* Must specifically call it against Scavenger, even though the Exclusive access might have been requested to perform Concurrent Global. */
-		getExtensions()->scavenger->externalNotifyToYield(this);
-	}
 }
 
 void

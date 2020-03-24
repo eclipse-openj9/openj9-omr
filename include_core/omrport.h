@@ -2126,8 +2126,14 @@ typedef struct OMRPortLibrary {
 	int32_t (*sock_addrinfo_socktype)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, int32_t *result) ;
 	/** see @ref omrsock.c::omrsock_addrinfo_protocol "omrsock_addrinfo_protocol"*/
 	int32_t (*sock_addrinfo_protocol)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, int32_t *result) ;
+	/** see @ref omrsock.c::omrsock_addrinfo_address "omrsock_addrinfo_address"*/
+	int32_t (*sock_addrinfo_address)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, omrsock_sockaddr_t result) ;
 	/** see @ref omrsock.c::omrsock_freeaddrinfo "omrsock_freeaddrinfo"*/
 	int32_t (*sock_freeaddrinfo)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle) ;
+	/** see @ref omrsock.c::omrsock_sockaddr_init "omrsock_sockaddr_init"*/
+	int32_t (*sock_sockaddr_init)(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t handle, int32_t family, uint8_t *addrNetworkOrder, uint16_t portNetworkOrder) ;
+	/** see @ref omrsock.c::omrsock_sockaddr_init6 "omrsock_sockaddr_init6"*/
+	int32_t (*sock_sockaddr_init6)(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t handle, int32_t family, uint8_t *addrNetworkOrder, uint16_t portNetworkOrder, uint32_t flowinfo, uint32_t scope_id) ;
 	/** see @ref omrsock.c::omrsock_socket "omrsock_socket"*/
 	int32_t (*sock_socket)(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32_t family, int32_t socktype, int32_t protocol) ;
 	/** see @ref omrsock.c::omrsock_bind "omrsock_bind"*/
@@ -2150,6 +2156,12 @@ typedef struct OMRPortLibrary {
 	int32_t (*sock_close)(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock) ;
 	/** see @ref omrsock.c::omrsock_shutdown "omrsock_shutdown"*/
 	int32_t (*sock_shutdown)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrsock.c::omrsock_htons "omrsock_htons"*/
+	uint16_t (*sock_htons)(struct OMRPortLibrary *portLibrary, uint16_t val) ;
+	/** see @ref omrsock.c::omrsock_htonl "omrsock_htonl"*/
+	uint32_t (*sock_htonl)(struct OMRPortLibrary *portLibrary, uint32_t val) ;
+	/** see @ref omrsock.c::omrsock_inet_pton "omrsock_inet_pton"*/
+	int32_t (*sock_inet_pton)(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder) ;
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 #if defined(OMR_OPT_CUDA)
 	/** CUDA configuration data */
@@ -2603,7 +2615,10 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsock_addrinfo_family(param1,param2,param3) privateOmrPortLibrary->sock_addrinfo_family(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsock_addrinfo_socktype(param1,param2,param3) privateOmrPortLibrary->sock_addrinfo_socktype(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsock_addrinfo_protocol(param1,param2,param3) privateOmrPortLibrary->sock_addrinfo_protocol(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_addrinfo_address(param1, param2, param3) privateOmrPortLibrary->sock_addrinfo_address(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsock_freeaddrinfo(param1) privateOmrPortLibrary->sock_freeaddrinfo(privateOmrPortLibrary, (param1))
+#define omrsock_sockaddr_init(param1, param2, param3, param4) privateOmrPortLibrary->sock_sockaddr_init(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
+#define omrsock_sockaddr_init6(param1, param2, param3, param4, param5, param6) privateOmrPortLibrary->sock_sockaddr_init6(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5), (param6))
 #define omrsock_socket(param1, param2, param3, param4) privateOmrPortLibrary->sock_socket(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrsock_bind(param1,param2) privateOmrPortLibrary->sock_bind(privateOmrPortLibrary, (param1), (param2))
 #define omrsock_listen(param1,param2) privateOmrPortLibrary->sock_listen(privateOmrPortLibrary, (param1), (param2))
@@ -2615,6 +2630,9 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsock_recvfrom(param1,param2,param3,param4,param5) privateOmrPortLibrary->sock_recvfrom(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
 #define omrsock_close(param1) privateOmrPortLibrary->sock_close(privateOmrPortLibrary, (param1))
 #define omrsock_shutdown() privateOmrPortLibrary->sock_shutdown(privateOmrPortLibrary)
+#define omrsock_htons(param1) privateOmrPortLibrary->sock_htons(privateOmrPortLibrary, (param1))
+#define omrsock_htonl(param1) privateOmrPortLibrary->sock_htonl(privateOmrPortLibrary, (param1))
+#define omrsock_inet_pton(param1) privateOmrPortLibrary->sock_inet_pton(privateOmrPortLibrary, (param1))
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 
 #if defined(OMR_OPT_CUDA)

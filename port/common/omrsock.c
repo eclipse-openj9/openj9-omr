@@ -168,6 +168,24 @@ omrsock_addrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t
 }
 
 /**
+ * Answers a OMRSockAddrStorage which is the address struct at "index" in the structure returned from
+ * @ref omrsock_getaddrinfo, indexed starting at 0. OMRSockAddrStorage should be preallocated by user.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] handle The result structure returned by @ref omrsock_getaddrinfo.
+ * @param[in] index The address index into the structure returned by @ref j9sock_getaddrinfo.
+ * @param[out] result Pointer to OMRSockAddrStorage which contains address at "index", should
+ * be preallocated.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_addrinfo_address(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, omrsock_sockaddr_t result)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
  * Frees the memory created by the call to @ref omrsock_getaddrinfo.
  *
  * @param[in] portLibrary The port library.
@@ -178,6 +196,50 @@ omrsock_addrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t
  */
 int32_t
 omrsock_freeaddrinfo(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Answers an initalized OMRSockAddrStorage structure that contains AF_INET address. The only 
+ * address family currently supported is AF_INET.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] family The address family.
+ * @param[in] addrNetworkOrder The host address, in network order. Use @ref omrsock_htonl() and 
+ * omrsock_inet_pton to convert the ip address from host to network byte order.
+ * @param[in] portNetworkOrder The port, in network byte order. Use @ref omrsock_htons() to 
+ * convert the port from host to network byte order.
+ * @param[out] handle Pointer to the OMRSockAddrStorage struct, to be allocated.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_sockaddr_init(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t handle, int32_t family, uint8_t *addrNetworkOrder, uint16_t portNetworkOrder)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Answers an initialized OMRSockAddrStorage structure. Supports both IPv4-mapped IPv6 addresses 
+ * and IPv6 addresses.
+ *
+ * Pass in a omrsock_sockaddr_t, preallocated, with some parameters to initialize it appropriately.
+ * Currently the only address family supported is OS_AF_INET6, with either IPv4-mapped IPv6 address,
+ * or IPv6 address, which will be determined by family.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] addrNetworkOrder The IPv4 or IPv6 address in network byte order.
+ * @param[in] family The address family.
+ * @param[in] portNetworkOrder The target port, in network order. Use @ref omrsock_htons() to convert the port from host to network byte order.
+ * @param[in] flowinfo The flowinfo value for IPv6 addresses in HOST order. Set to 0 if no flowinfo needs to be set for the address.
+ * @param[in] scope_id The scope id for an IPv6 address in HOST order. Set to 0 for non-scoped IPv6 addresses.
+ * @param[out] handle Pointer pointer to the OMRSockAddrStorage, to be allocated.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_sockaddr_init6(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t handle, int32_t family, uint8_t *addrNetworkOrder, uint16_t portNetworkOrder, uint32_t flowinfo, uint32_t scope_id)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
@@ -402,6 +464,57 @@ int32_t
 omrsock_shutdown(struct OMRPortLibrary *portLibrary)
 {
 	return 0;
+}
+
+/**
+ * Answer the 16 bit host ordered argument, in network byte order.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] val The 16 bit host ordered number.
+ *
+ * @return the 16 bit network ordered number.
+ */
+uint16_t
+omrsock_htons(struct OMRPortLibrary *portLibrary, uint16_t val)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Answer the 32 bit host ordered argument, in network byte order.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] val The 32 bit host ordered number.
+ *
+ * @return the 32 bit network ordered number.
+ */
+uint32_t
+omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Answer a uint8_t array representing the address in network byte order. 
+ *
+ * Takes a string of either dot-decimal format for OMRSOCK_AF_INET or the 8 hexadecimal format 
+ * for OMRSOCK_AF_INET6 and converts it to network byte order.
+ *
+ * The addrNetworkOrder will either be 4 or 16 bytes depending on whether it is an OMRSOCK_AF_INET address 
+ * or an OMRSOCK_AF_INET6 address. You should preallocating the "address" depending on address family,
+ * whether to preallocate 4 or 16 bytes.
+ * 
+ * @param[in] portLibrary The port library.
+ * @param[in] addrFamily The address family.
+ * @param[in] addr The address string to be converted.
+ * @param[out] addrNetworkOrder The address in network order.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
 
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

@@ -23,739 +23,11748 @@
 #define OMR_OPCODEMACROS_INCL
 
 #define FOR_EACH_OPCODE(MACRO) \
-   MACRO(TR::BadILOp,"BadILOp",0,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::aconst,"aconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iconst,"iconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lconst,"lconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fconst,"fconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dconst,"dconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bconst,"bconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sconst,"sconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iload,"iload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fload,"fload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dload,"dload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::aload,"aload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bload,"bload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sload,"sload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lload,"lload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::irdbar,"irdbar",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::frdbar,"frdbar",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::drdbar,"drdbar",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ardbar,"ardbar",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::brdbar,"brdbar",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::srdbar,"srdbar",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lrdbar,"lrdbar",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iloadi,"iloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::floadi,"floadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dloadi,"dloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::aloadi,"aloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bloadi,"bloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sloadi,"sloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lloadi,"lloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::irdbari,"irdbari",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::frdbari,"frdbari",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::drdbari,"drdbari",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ardbari,"ardbari",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::brdbari,"brdbari",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::srdbari,"srdbari",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lrdbari,"lrdbari",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::istore,"istore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lstore,"lstore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fstore,"fstore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dstore,"dstore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::astore,"astore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bstore,"bstore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sstore,"sstore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iwrtbar,"iwrtbar",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_CHILD(TR::Int32, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lwrtbar,"lwrtbar",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_CHILD(TR::Int64, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fwrtbar,"fwrtbar",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_CHILD(TR::Float, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dwrtbar,"dwrtbar",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_CHILD(TR::Double, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::awrtbar,"awrtbar",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,TWO_CHILD(TR::Address, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bwrtbar,"bwrtbar",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_CHILD(TR::Int8, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::swrtbar,"swrtbar",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_CHILD(TR::Int16, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lstorei,"lstorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_CHILD(TR::Address, TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fstorei,"fstorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_CHILD(TR::Address, TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dstorei,"dstorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_CHILD(TR::Address, TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::astorei,"astorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,TWO_CHILD(TR::Address, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bstorei,"bstorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_CHILD(TR::Address, TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sstorei,"sstorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_CHILD(TR::Address, TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::istorei,"istorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_CHILD(TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lwrtbari,"lwrtbari",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,THREE_CHILD(TR::Address, TR::Int64, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fwrtbari,"fwrtbari",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,THREE_CHILD(TR::Address, TR::Float, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dwrtbari,"dwrtbari",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,THREE_CHILD(TR::Address, TR::Double, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::awrtbari,"awrtbari",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,THREE_CHILD(TR::Address, TR::Address, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bwrtbari,"bwrtbari",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,THREE_CHILD(TR::Address, TR::Int8, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::swrtbari,"swrtbari",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,THREE_CHILD(TR::Address, TR::Int16, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iwrtbari,"iwrtbari",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,THREE_CHILD(TR::Address, TR::Int32, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::Goto,"goto",ILProp1::Branch | ILProp1::TreeTop,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ireturn,"ireturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(ILChildProp::UnspecifiedChildType), // ireturn is used to return all types smaller than Int3,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lreturn,"lreturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::freturn,"freturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dreturn,"dreturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::areturn,"areturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::Return,"return",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::asynccheck,"asynccheck",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::MustBeLowered| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::athrow,"athrow",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::MustBeLowered | ILProp2::CanRaiseException| ILProp2::MayUseSystemStack,0,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::icall,"icall",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lcall,"lcall",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fcall,"fcall",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dcall,"dcall",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::acall,"acall",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::call,"call",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iadd,"iadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::iadd,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ladd,"ladd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::ladd,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fadd,"fadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Float),TR::fadd,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dadd,"dadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Double),TR::dadd,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::badd,"badd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::badd,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sadd,"sadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::sadd,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::isub,"isub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lsub,"lsub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fsub,"fsub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dsub,"dsub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bsub,"bsub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ssub,"ssub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::asub,"asub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::NoType,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::imul,"imul",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::imul,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lmul,"lmul",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::lmul,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fmul,"fmul",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Float),TR::fmul,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dmul,"dmul",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Double),TR::dmul,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bmul,"bmul",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::bmul,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::smul,"smul",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::smul,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::idiv,"idiv",ILProp1::Div,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ldiv,"ldiv",ILProp1::Div,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fdiv,"fdiv",ILProp1::Div,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ddiv,"ddiv",ILProp1::Div,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bdiv,"bdiv",ILProp1::Div,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sdiv,"sdiv",ILProp1::Div,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iudiv,"iudiv",ILProp1::Div,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ludiv,"ludiv",ILProp1::Div,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::irem,"irem",ILProp1::Rem,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lrem,"lrem",ILProp1::Rem,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::frem,"frem",ILProp1::Rem,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::drem,"drem",ILProp1::Rem,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::brem,"brem",ILProp1::Rem,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::srem,"srem",ILProp1::Rem,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iurem,"iurem",ILProp1::Rem,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ineg,"ineg",ILProp1::Neg,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lneg,"lneg",ILProp1::Neg,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fneg,"fneg",ILProp1::Neg,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dneg,"dneg",ILProp1::Neg,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bneg,"bneg",ILProp1::Neg,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sneg,"sneg",ILProp1::Neg,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iabs,"iabs",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse | ILProp3::Abs,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::labs,"labs",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse | ILProp3::Abs,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fabs,"fabs",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse | ILProp3::Abs,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dabs,"dabs",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse | ILProp3::Abs,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ishl,"ishl",ILProp1::LeftShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lshl,"lshl",ILProp1::LeftShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_CHILD(TR::Int64, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bshl,"bshl",ILProp1::LeftShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_CHILD(TR::Int8, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sshl,"sshl",ILProp1::LeftShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_CHILD(TR::Int16, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ishr,"ishr",ILProp1::RightShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lshr,"lshr",ILProp1::RightShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_CHILD(TR::Int64, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bshr,"bshr",ILProp1::RightShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_CHILD(TR::Int8, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sshr,"sshr",ILProp1::RightShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_CHILD(TR::Int16, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iushr,"iushr",ILProp1::RightShift | ILProp1::ShiftLogical,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lushr,"lushr",ILProp1::RightShift | ILProp1::ShiftLogical,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_CHILD(TR::Int64, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bushr,"bushr",ILProp1::RightShift | ILProp1::ShiftLogical,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_CHILD(TR::Int8, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sushr,"sushr",ILProp1::RightShift | ILProp1::ShiftLogical,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_CHILD(TR::Int16, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::irol,"irol",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::LeftRotate,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lrol,"lrol",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::LeftRotate,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_CHILD(TR::Int64, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iand,"iand",ILProp1::Commutative | ILProp1::Associative | ILProp1::And,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::iand,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::land,"land",ILProp1::Commutative | ILProp1::Associative | ILProp1::And,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::land,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::band,"band",ILProp1::Commutative | ILProp1::Associative | ILProp1::And,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::band,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sand,"sand",ILProp1::Commutative | ILProp1::Associative | ILProp1::And,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::sand,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ior,"ior",ILProp1::Commutative | ILProp1::Associative | ILProp1::Or,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::ior,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lor,"lor",ILProp1::Commutative | ILProp1::Associative | ILProp1::Or,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::lor,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bor,"bor",ILProp1::Commutative | ILProp1::Associative | ILProp1::Or,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::bor,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sor,"sor",ILProp1::Commutative | ILProp1::Associative | ILProp1::Or,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::sor,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ixor,"ixor",ILProp1::Commutative | ILProp1::Associative | ILProp1::Xor,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::ixor,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lxor,"lxor",ILProp1::Commutative | ILProp1::Associative | ILProp1::Xor,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::lxor,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bxor,"bxor",ILProp1::Commutative | ILProp1::Associative | ILProp1::Xor,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::bxor,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sxor,"sxor",ILProp1::Commutative | ILProp1::Associative | ILProp1::Xor,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::sxor,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::i2l,"i2l",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::i2f,"i2f",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::i2d,"i2d",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::i2b,"i2b",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::i2s,"i2s",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::i2a,"i2a",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iu2l,"iu2l",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iu2f,"iu2f",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iu2d,"iu2d",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iu2a,"iu2a",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::l2i,"l2i",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::l2f,"l2f",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::l2d,"l2d",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::l2b,"l2b",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::l2s,"l2s",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::l2a,"l2a",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lu2f,"lu2f",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lu2d,"lu2d",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lu2a,"lu2a",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::f2i,"f2i",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::f2l,"f2l",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::f2d,"f2d",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::f2b,"f2b",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::f2s,"f2s",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::d2i,"d2i",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::d2l,"d2l",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::d2f,"d2f",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::d2b,"d2b",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::d2s,"d2s",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::b2i,"b2i",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::b2l,"b2l",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::b2f,"b2f",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::b2d,"b2d",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::b2s,"b2s",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::b2a,"b2a",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bu2i,"bu2i",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bu2l,"bu2l",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bu2f,"bu2f",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bu2d,"bu2d",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bu2s,"bu2s",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bu2a,"bu2a",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::s2i,"s2i",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::s2l,"s2l",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::s2f,"s2f",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::s2d,"s2d",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::s2b,"s2b",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::s2a,"s2a",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::su2i,"su2i",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::su2l,"su2l",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::su2f,"su2f",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::su2d,"su2d",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::su2a,"su2a",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::a2i,"a2i",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::a2l,"a2l",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::a2b,"a2b",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::a2s,"a2s",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::icmpeq,"icmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::icmpeq,TR::icmpne,TR::BadILOp,TR::ificmpeq) \
-   MACRO(TR::icmpne,"icmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::icmpne,TR::icmpeq,TR::BadILOp,TR::ificmpne) \
-   MACRO(TR::icmplt,"icmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::icmpgt,TR::icmpge,TR::BadILOp,TR::ificmplt) \
-   MACRO(TR::icmpge,"icmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::icmple,TR::icmplt,TR::BadILOp,TR::ificmpge) \
-   MACRO(TR::icmpgt,"icmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::icmplt,TR::icmple,TR::BadILOp,TR::ificmpgt) \
-   MACRO(TR::icmple,"icmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::icmpge,TR::icmpgt,TR::BadILOp,TR::ificmple) \
-   MACRO(TR::iucmpeq,"iucmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::iucmpeq,TR::iucmpne,TR::BadILOp,TR::ifiucmpeq) \
-   MACRO(TR::iucmpne,"iucmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::iucmpne,TR::iucmpeq,TR::BadILOp,TR::ifiucmpne) \
-   MACRO(TR::iucmplt,"iucmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::iucmpgt,TR::iucmpge,TR::BadILOp,TR::ifiucmplt) \
-   MACRO(TR::iucmpge,"iucmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::iucmple,TR::iucmplt,TR::BadILOp,TR::ifiucmpge) \
-   MACRO(TR::iucmpgt,"iucmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::iucmplt,TR::iucmple,TR::BadILOp,TR::ifiucmpgt) \
-   MACRO(TR::iucmple,"iucmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::iucmpge,TR::iucmpgt,TR::BadILOp,TR::ifiucmple) \
-   MACRO(TR::lcmpeq,"lcmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::lcmpeq,TR::lcmpne,TR::BadILOp,TR::iflcmpeq) \
-   MACRO(TR::lcmpne,"lcmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::lcmpne,TR::lcmpeq,TR::BadILOp,TR::iflcmpne) \
-   MACRO(TR::lcmplt,"lcmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::lcmpgt,TR::lcmpge,TR::BadILOp,TR::iflcmplt) \
-   MACRO(TR::lcmpge,"lcmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::lcmple,TR::lcmplt,TR::BadILOp,TR::iflcmpge) \
-   MACRO(TR::lcmpgt,"lcmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::lcmplt,TR::lcmple,TR::BadILOp,TR::iflcmpgt) \
-   MACRO(TR::lcmple,"lcmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::lcmpge,TR::lcmpgt,TR::BadILOp,TR::iflcmple) \
-   MACRO(TR::lucmpeq,"lucmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::lucmpeq,TR::lucmpne,TR::BadILOp,TR::iflucmpeq) \
-   MACRO(TR::lucmpne,"lucmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::lucmpne,TR::lucmpeq,TR::BadILOp,TR::iflucmpne) \
-   MACRO(TR::lucmplt,"lucmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::lucmpgt,TR::lucmpge,TR::BadILOp,TR::iflucmplt) \
-   MACRO(TR::lucmpge,"lucmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::lucmple,TR::lucmplt,TR::BadILOp,TR::iflucmpge) \
-   MACRO(TR::lucmpgt,"lucmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::lucmplt,TR::lucmple,TR::BadILOp,TR::iflucmpgt) \
-   MACRO(TR::lucmple,"lucmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::lucmpge,TR::lucmpgt,TR::BadILOp,TR::iflucmple) \
-   MACRO(TR::fcmpeq,"fcmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmpeq,TR::fcmpneu,TR::BadILOp,TR::iffcmpeq) \
-   MACRO(TR::fcmpne,"fcmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmpne,TR::fcmpequ,TR::BadILOp,TR::iffcmpne) \
-   MACRO(TR::fcmplt,"fcmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmpgt,TR::fcmpgeu,TR::BadILOp,TR::iffcmplt) \
-   MACRO(TR::fcmpge,"fcmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmple,TR::fcmpltu,TR::BadILOp,TR::iffcmpge) \
-   MACRO(TR::fcmpgt,"fcmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmplt,TR::fcmpleu,TR::BadILOp,TR::iffcmpgt) \
-   MACRO(TR::fcmple,"fcmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmpge,TR::fcmpgtu,TR::BadILOp,TR::iffcmple) \
-   MACRO(TR::fcmpequ,"fcmpequ",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmpequ,TR::fcmpne,TR::BadILOp,TR::iffcmpequ) \
-   MACRO(TR::fcmpneu,"fcmpneu",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmpneu,TR::fcmpeq,TR::BadILOp,TR::iffcmpneu) \
-   MACRO(TR::fcmpltu,"fcmpltu",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmpgtu,TR::fcmpge,TR::BadILOp,TR::iffcmpltu) \
-   MACRO(TR::fcmpgeu,"fcmpgeu",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmpleu,TR::fcmplt,TR::BadILOp,TR::iffcmpgeu) \
-   MACRO(TR::fcmpgtu,"fcmpgtu",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmpltu,TR::fcmple,TR::BadILOp,TR::iffcmpgtu) \
-   MACRO(TR::fcmpleu,"fcmpleu",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::fcmpgeu,TR::fcmpgt,TR::BadILOp,TR::iffcmpleu) \
-   MACRO(TR::dcmpeq,"dcmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmpeq,TR::dcmpneu,TR::BadILOp,TR::ifdcmpeq) \
-   MACRO(TR::dcmpne,"dcmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmpne,TR::dcmpequ,TR::BadILOp,TR::ifdcmpne) \
-   MACRO(TR::dcmplt,"dcmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmpgt,TR::dcmpgeu,TR::BadILOp,TR::ifdcmplt) \
-   MACRO(TR::dcmpge,"dcmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmple,TR::dcmpltu,TR::BadILOp,TR::ifdcmpge) \
-   MACRO(TR::dcmpgt,"dcmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmplt,TR::dcmpleu,TR::BadILOp,TR::ifdcmpgt) \
-   MACRO(TR::dcmple,"dcmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmpge,TR::dcmpgtu,TR::BadILOp,TR::ifdcmple) \
-   MACRO(TR::dcmpequ,"dcmpequ",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmpequ,TR::dcmpne,TR::BadILOp,TR::ifdcmpequ) \
-   MACRO(TR::dcmpneu,"dcmpneu",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmpneu,TR::dcmpeq,TR::BadILOp,TR::ifdcmpneu) \
-   MACRO(TR::dcmpltu,"dcmpltu",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmpgtu,TR::dcmpge,TR::BadILOp,TR::ifdcmpltu) \
-   MACRO(TR::dcmpgeu,"dcmpgeu",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmpleu,TR::dcmplt,TR::BadILOp,TR::ifdcmpgeu) \
-   MACRO(TR::dcmpgtu,"dcmpgtu",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmpltu,TR::dcmple,TR::BadILOp,TR::ifdcmpgtu) \
-   MACRO(TR::dcmpleu,"dcmpleu",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::dcmpgeu,TR::dcmpgt,TR::BadILOp,TR::ifdcmpleu) \
-   MACRO(TR::acmpeq,"acmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Address),TR::acmpeq,TR::acmpne,TR::BadILOp,TR::ifacmpeq) \
-   MACRO(TR::acmpne,"acmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Address),TR::acmpne,TR::acmpeq,TR::BadILOp,TR::ifacmpne) \
-   MACRO(TR::acmplt,"acmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::UnsignedCompare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Address),TR::acmpgt,TR::acmpge,TR::BadILOp,TR::ifacmplt) \
-   MACRO(TR::acmpge,"acmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::UnsignedCompare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Address),TR::acmple,TR::acmplt,TR::BadILOp,TR::ifacmpge) \
-   MACRO(TR::acmpgt,"acmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::UnsignedCompare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Address),TR::acmplt,TR::acmple,TR::BadILOp,TR::ifacmpgt) \
-   MACRO(TR::acmple,"acmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::UnsignedCompare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Address),TR::acmpge,TR::acmpgt,TR::BadILOp,TR::ifacmple) \
-   MACRO(TR::bcmpeq,"bcmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::bcmpeq,TR::bcmpne,TR::BadILOp,TR::ifbcmpeq) \
-   MACRO(TR::bcmpne,"bcmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::bcmpne,TR::bcmpeq,TR::BadILOp,TR::ifbcmpne) \
-   MACRO(TR::bcmplt,"bcmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::bcmpgt,TR::bcmpge,TR::BadILOp,TR::ifbcmplt) \
-   MACRO(TR::bcmpge,"bcmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::bcmple,TR::bcmplt,TR::BadILOp,TR::ifbcmpge) \
-   MACRO(TR::bcmpgt,"bcmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::bcmplt,TR::bcmple,TR::BadILOp,TR::ifbcmpgt) \
-   MACRO(TR::bcmple,"bcmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::bcmpge,TR::bcmpgt,TR::BadILOp,TR::ifbcmple) \
-   MACRO(TR::bucmpeq,"bucmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::bucmpeq,TR::bucmpne,TR::BadILOp,TR::ifbucmpeq) \
-   MACRO(TR::bucmpne,"bucmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::bucmpne,TR::bucmpeq,TR::BadILOp,TR::ifbucmpne) \
-   MACRO(TR::bucmplt,"bucmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::bucmpgt,TR::bucmpge,TR::BadILOp,TR::ifbucmplt) \
-   MACRO(TR::bucmpge,"bucmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::bucmple,TR::bucmplt,TR::BadILOp,TR::ifbucmpge) \
-   MACRO(TR::bucmpgt,"bucmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::bucmplt,TR::bucmple,TR::BadILOp,TR::ifbucmpgt) \
-   MACRO(TR::bucmple,"bucmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::bucmpge,TR::bucmpgt,TR::BadILOp,TR::ifbucmple) \
-   MACRO(TR::scmpeq,"scmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::scmpeq,TR::scmpne,TR::BadILOp,TR::ifscmpeq) \
-   MACRO(TR::scmpne,"scmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::scmpne,TR::scmpeq,TR::BadILOp,TR::ifscmpne) \
-   MACRO(TR::scmplt,"scmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::scmpgt,TR::scmpge,TR::BadILOp,TR::ifscmplt) \
-   MACRO(TR::scmpge,"scmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::scmple,TR::scmplt,TR::BadILOp,TR::ifscmpge) \
-   MACRO(TR::scmpgt,"scmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::scmplt,TR::scmple,TR::BadILOp,TR::ifscmpgt) \
-   MACRO(TR::scmple,"scmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::scmpge,TR::scmpgt,TR::BadILOp,TR::ifscmple) \
-   MACRO(TR::sucmpeq,"sucmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::sucmpeq,TR::sucmpne,TR::BadILOp,TR::ifsucmpeq) \
-   MACRO(TR::sucmpne,"sucmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::sucmpne,TR::sucmpeq,TR::BadILOp,TR::ifsucmpne) \
-   MACRO(TR::sucmplt,"sucmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::sucmpgt,TR::sucmpge,TR::BadILOp,TR::ifsucmplt) \
-   MACRO(TR::sucmpge,"sucmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::sucmple,TR::sucmplt,TR::BadILOp,TR::ifsucmpge) \
-   MACRO(TR::sucmpgt,"sucmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::sucmplt,TR::sucmple,TR::BadILOp,TR::ifsucmpgt) \
-   MACRO(TR::sucmple,"sucmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::sucmpge,TR::sucmpgt,TR::BadILOp,TR::ifsucmple) \
-   MACRO(TR::lcmp,"lcmp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation,ILProp3::Signum,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fcmpl,"fcmpl",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fcmpg,"fcmpg",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dcmpl,"dcmpl",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dcmpg,"dcmpg",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ificmpeq,"ificmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int32),TR::ificmpeq,TR::ificmpne,TR::icmpeq,TR::BadILOp) \
-   MACRO(TR::ificmpne,"ificmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int32),TR::ificmpne,TR::ificmpeq,TR::icmpne,TR::BadILOp) \
-   MACRO(TR::ificmplt,"ificmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int32),TR::ificmpgt,TR::ificmpge,TR::icmplt,TR::BadILOp) \
-   MACRO(TR::ificmpge,"ificmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int32),TR::ificmple,TR::ificmplt,TR::icmpge,TR::BadILOp) \
-   MACRO(TR::ificmpgt,"ificmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int32),TR::ificmplt,TR::ificmple,TR::icmpgt,TR::BadILOp) \
-   MACRO(TR::ificmple,"ificmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int32),TR::ificmpge,TR::ificmpgt,TR::icmple,TR::BadILOp) \
-   MACRO(TR::ifiucmpeq,"ifiucmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::ifiucmpeq,TR::ifiucmpne,TR::iucmpeq,TR::BadILOp) \
-   MACRO(TR::ifiucmpne,"ifiucmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::ifiucmpne,TR::ifiucmpeq,TR::iucmpne,TR::BadILOp) \
-   MACRO(TR::ifiucmplt,"ifiucmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::ifiucmpgt,TR::ifiucmpge,TR::iucmplt,TR::BadILOp) \
-   MACRO(TR::ifiucmpge,"ifiucmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::ifiucmple,TR::ifiucmplt,TR::iucmpge,TR::BadILOp) \
-   MACRO(TR::ifiucmpgt,"ifiucmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::ifiucmplt,TR::ifiucmple,TR::iucmpgt,TR::BadILOp) \
-   MACRO(TR::ifiucmple,"ifiucmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::ifiucmpge,TR::ifiucmpgt,TR::iucmple,TR::BadILOp) \
-   MACRO(TR::iflcmpeq,"iflcmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int64),TR::iflcmpeq,TR::iflcmpne,TR::lcmpeq,TR::BadILOp) \
-   MACRO(TR::iflcmpne,"iflcmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int64),TR::iflcmpne,TR::iflcmpeq,TR::lcmpne,TR::BadILOp) \
-   MACRO(TR::iflcmplt,"iflcmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int64),TR::iflcmpgt,TR::iflcmpge,TR::lcmplt,TR::BadILOp) \
-   MACRO(TR::iflcmpge,"iflcmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int64),TR::iflcmple,TR::iflcmplt,TR::lcmpge,TR::BadILOp) \
-   MACRO(TR::iflcmpgt,"iflcmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int64),TR::iflcmplt,TR::iflcmple,TR::lcmpgt,TR::BadILOp) \
-   MACRO(TR::iflcmple,"iflcmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int64),TR::iflcmpge,TR::iflcmpgt,TR::lcmple,TR::BadILOp) \
-   MACRO(TR::iflucmpeq,"iflucmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::iflucmpeq,TR::iflucmpne,TR::lucmpeq,TR::BadILOp) \
-   MACRO(TR::iflucmpne,"iflucmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::iflucmpne,TR::iflucmpeq,TR::lucmpne,TR::BadILOp) \
-   MACRO(TR::iflucmplt,"iflucmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::iflucmpgt,TR::iflucmpge,TR::lucmplt,TR::BadILOp) \
-   MACRO(TR::iflucmpge,"iflucmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::iflucmple,TR::iflucmplt,TR::lucmpge,TR::BadILOp) \
-   MACRO(TR::iflucmpgt,"iflucmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::iflucmplt,TR::iflucmple,TR::lucmpgt,TR::BadILOp) \
-   MACRO(TR::iflucmple,"iflucmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::iflucmpge,TR::iflucmpgt,TR::lucmple,TR::BadILOp) \
-   MACRO(TR::iffcmpeq,"iffcmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmpeq,TR::iffcmpneu,TR::fcmpeq,TR::BadILOp) \
-   MACRO(TR::iffcmpne,"iffcmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmpne,TR::iffcmpequ,TR::fcmpne,TR::BadILOp) \
-   MACRO(TR::iffcmplt,"iffcmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmpgt,TR::iffcmpgeu,TR::fcmplt,TR::BadILOp) \
-   MACRO(TR::iffcmpge,"iffcmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmple,TR::iffcmpltu,TR::fcmpge,TR::BadILOp) \
-   MACRO(TR::iffcmpgt,"iffcmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmplt,TR::iffcmpleu,TR::fcmpgt,TR::BadILOp) \
-   MACRO(TR::iffcmple,"iffcmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmpge,TR::iffcmpgtu,TR::fcmple,TR::BadILOp) \
-   MACRO(TR::iffcmpequ,"iffcmpequ",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmpequ,TR::iffcmpne,TR::fcmpequ,TR::BadILOp) \
-   MACRO(TR::iffcmpneu,"iffcmpneu",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmpneu,TR::iffcmpeq,TR::fcmpneu,TR::BadILOp) \
-   MACRO(TR::iffcmpltu,"iffcmpltu",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmpgtu,TR::iffcmpge,TR::fcmpltu,TR::BadILOp) \
-   MACRO(TR::iffcmpgeu,"iffcmpgeu",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmpleu,TR::iffcmplt,TR::fcmpgeu,TR::BadILOp) \
-   MACRO(TR::iffcmpgtu,"iffcmpgtu",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmpltu,TR::iffcmple,TR::fcmpgtu,TR::BadILOp) \
-   MACRO(TR::iffcmpleu,"iffcmpleu",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Float),TR::iffcmpgeu,TR::iffcmpgt,TR::fcmpleu,TR::BadILOp) \
-   MACRO(TR::ifdcmpeq,"ifdcmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmpeq,TR::ifdcmpneu,TR::dcmpeq,TR::BadILOp) \
-   MACRO(TR::ifdcmpne,"ifdcmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmpne,TR::ifdcmpequ,TR::dcmpne,TR::BadILOp) \
-   MACRO(TR::ifdcmplt,"ifdcmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmpgt,TR::ifdcmpgeu,TR::dcmplt,TR::BadILOp) \
-   MACRO(TR::ifdcmpge,"ifdcmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmple,TR::ifdcmpltu,TR::dcmpge,TR::BadILOp) \
-   MACRO(TR::ifdcmpgt,"ifdcmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmplt,TR::ifdcmpleu,TR::dcmpgt,TR::BadILOp) \
-   MACRO(TR::ifdcmple,"ifdcmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmpge,TR::ifdcmpgtu,TR::dcmple,TR::BadILOp) \
-   MACRO(TR::ifdcmpequ,"ifdcmpequ",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmpequ,TR::ifdcmpne,TR::dcmpequ,TR::BadILOp) \
-   MACRO(TR::ifdcmpneu,"ifdcmpneu",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmpneu,TR::ifdcmpeq,TR::dcmpneu,TR::BadILOp) \
-   MACRO(TR::ifdcmpltu,"ifdcmpltu",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmpgtu,TR::ifdcmpge,TR::dcmpltu,TR::BadILOp) \
-   MACRO(TR::ifdcmpgeu,"ifdcmpgeu",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmpleu,TR::ifdcmplt,TR::dcmpgeu,TR::BadILOp) \
-   MACRO(TR::ifdcmpgtu,"ifdcmpgtu",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmpltu,TR::ifdcmple,TR::dcmpgtu,TR::BadILOp) \
-   MACRO(TR::ifdcmpleu,"ifdcmpleu",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered,0,TR::NoType,0,TWO_SAME_CHILD(TR::Double),TR::ifdcmpgeu,TR::ifdcmpgt,TR::dcmpleu,TR::BadILOp) \
-   MACRO(TR::ifacmpeq,"ifacmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Address),TR::ifacmpeq,TR::ifacmpne,TR::acmpeq,TR::BadILOp) \
-   MACRO(TR::ifacmpne,"ifacmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Address),TR::ifacmpne,TR::ifacmpeq,TR::acmpne,TR::BadILOp) \
-   MACRO(TR::ifacmplt,"ifacmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess,0,TR::NoType,0,TWO_SAME_CHILD(TR::Address),TR::ifacmpgt,TR::ifacmpge,TR::acmplt,TR::BadILOp) \
-   MACRO(TR::ifacmpge,"ifacmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Address),TR::ifacmple,TR::ifacmplt,TR::acmpge,TR::BadILOp) \
-   MACRO(TR::ifacmpgt,"ifacmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Address),TR::ifacmplt,TR::ifacmple,TR::acmpgt,TR::BadILOp) \
-   MACRO(TR::ifacmple,"ifacmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Address),TR::ifacmpge,TR::ifacmpgt,TR::acmple,TR::BadILOp) \
-   MACRO(TR::ifbcmpeq,"ifbcmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int8),TR::ifbcmpeq,TR::ifbcmpne,TR::bcmpeq,TR::BadILOp) \
-   MACRO(TR::ifbcmpne,"ifbcmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int8),TR::ifbcmpne,TR::ifbcmpeq,TR::bcmpne,TR::BadILOp) \
-   MACRO(TR::ifbcmplt,"ifbcmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int8),TR::ifbcmpgt,TR::ifbcmpge,TR::bcmplt,TR::BadILOp) \
-   MACRO(TR::ifbcmpge,"ifbcmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int8),TR::ifbcmple,TR::ifbcmplt,TR::bcmpge,TR::BadILOp) \
-   MACRO(TR::ifbcmpgt,"ifbcmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int8),TR::ifbcmplt,TR::ifbcmple,TR::bcmpgt,TR::BadILOp) \
-   MACRO(TR::ifbcmple,"ifbcmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int8),TR::ifbcmpge,TR::ifbcmpgt,TR::bcmple,TR::BadILOp) \
-   MACRO(TR::ifbucmpeq,"ifbucmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::ifbucmpeq,TR::ifbucmpne,TR::bucmpeq,TR::BadILOp) \
-   MACRO(TR::ifbucmpne,"ifbucmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::ifbucmpne,TR::ifbucmpeq,TR::bucmpne,TR::BadILOp) \
-   MACRO(TR::ifbucmplt,"ifbucmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::ifbucmpgt,TR::ifbucmpge,TR::bucmplt,TR::BadILOp) \
-   MACRO(TR::ifbucmpge,"ifbucmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::ifbucmple,TR::ifbucmplt,TR::bucmpge,TR::BadILOp) \
-   MACRO(TR::ifbucmpgt,"ifbucmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::ifbucmplt,TR::ifbucmple,TR::bucmpgt,TR::BadILOp) \
-   MACRO(TR::ifbucmple,"ifbucmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::ifbucmpge,TR::ifbucmpgt,TR::bucmple,TR::BadILOp) \
-   MACRO(TR::ifscmpeq,"ifscmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int16),TR::ifscmpeq,TR::ifscmpne,TR::scmpeq,TR::BadILOp) \
-   MACRO(TR::ifscmpne,"ifscmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int16),TR::ifscmpne,TR::ifscmpeq,TR::scmpne,TR::BadILOp) \
-   MACRO(TR::ifscmplt,"ifscmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int16),TR::ifscmpgt,TR::ifscmpge,TR::scmplt,TR::BadILOp) \
-   MACRO(TR::ifscmpge,"ifscmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int16),TR::ifscmple,TR::ifscmplt,TR::scmpge,TR::BadILOp) \
-   MACRO(TR::ifscmpgt,"ifscmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfGreater,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int16),TR::ifscmplt,TR::ifscmple,TR::scmpgt,TR::BadILOp) \
-   MACRO(TR::ifscmple,"ifscmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,0,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int16),TR::ifscmpge,TR::ifscmpgt,TR::scmple,TR::BadILOp) \
-   MACRO(TR::ifsucmpeq,"ifsucmpeq",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int16),TR::ifsucmpeq,TR::ifsucmpne,TR::sucmpeq,TR::BadILOp) \
-   MACRO(TR::ifsucmpne,"ifsucmpne",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int16),TR::ifsucmpne,TR::ifsucmpeq,TR::sucmpne,TR::BadILOp) \
-   MACRO(TR::ifsucmplt,"ifsucmplt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int16),TR::ifsucmpgt,TR::ifsucmpge,TR::sucmplt,TR::BadILOp) \
-   MACRO(TR::ifsucmpge,"ifsucmpge",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int16),TR::ifsucmple,TR::ifsucmplt,TR::sucmpge,TR::BadILOp) \
-   MACRO(TR::ifsucmpgt,"ifsucmpgt",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int16),TR::ifsucmplt,TR::ifsucmple,TR::sucmpgt,TR::BadILOp) \
-   MACRO(TR::ifsucmple,"ifsucmple",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int16),TR::ifsucmpge,TR::ifsucmpgt,TR::sucmple,TR::BadILOp) \
-   MACRO(TR::loadaddr,"loadaddr",ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::LoadAddress,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ZEROCHK,"ZEROCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::Check| ILProp2::MayUseSystemStack,0,0,TR::NoType,ILTypeProp::Reference,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::callIf,"callIf",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,0,CHILD_COUNT(ILChildProp::UnspecifiedChildCount) | FIRST_CHILD(TR::Int32) | SECOND_CHILD(ILChildProp::UnspecifiedChildType) | THIRD_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iRegLoad,"iRegLoad",ILProp1::LoadReg,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::aRegLoad,"aRegLoad",ILProp1::LoadReg,0,0,0,TR::Address,ILTypeProp::Reference,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lRegLoad,"lRegLoad",ILProp1::LoadReg,0,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fRegLoad,"fRegLoad",ILProp1::LoadReg,0,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dRegLoad,"dRegLoad",ILProp1::LoadReg,0,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sRegLoad,"sRegLoad",ILProp1::LoadReg,0,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bRegLoad,"bRegLoad",ILProp1::LoadReg,0,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iRegStore,"iRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::aRegStore,"aRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lRegStore,"lRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fRegStore,"fRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dRegStore,"dRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sRegStore,"sRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bRegStore,"bRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::GlRegDeps,"GlRegDeps",0,0,0,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iselect,"iselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,THREE_CHILD(TR::Int32, TR::Int32, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lselect,"lselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,THREE_CHILD(TR::Int32, TR::Int64, TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bselect,"bselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,THREE_CHILD(TR::Int32, TR::Int8, TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sselect,"sselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,THREE_CHILD(TR::Int32, TR::Int16, TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::aselect,"aselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Address,ILTypeProp::Reference,THREE_CHILD(TR::Int32, TR::Address, TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fselect,"fselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,THREE_CHILD(TR::Int32, TR::Float, TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dselect,"dselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,THREE_CHILD(TR::Int32, TR::Double, TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::treetop,"treetop",ILProp1::TreeTop,0,0,0,TR::NoType,0,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::MethodEnterHook,"MethodEnterHook",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::MustBeLowered| ILProp2::MayUseSystemStack,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::MethodExitHook,"MethodExitHook",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::MustBeLowered| ILProp2::MayUseSystemStack,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::PassThrough,"PassThrough",0,ILProp2::ValueNumberShare,0,0,TR::NoType,0,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::compressedRefs,"compressedRefs",ILProp1::TreeTop,0,0,0,TR::Address,ILTypeProp::Reference,TWO_CHILD(ILChildProp::UnspecifiedChildType, TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::BBStart,"BBStart",ILProp1::TreeTop,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::BBEnd,"BBEnd",ILProp1::TreeTop,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::virem,"virem",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vimin,"vimin",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vimax,"vimax",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vigetelem,"vigetelem",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::visetelem,"visetelem",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vimergel,"vimergel",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vimergeh,"vimergeh",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpeq,"vicmpeq",0,0,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpgt,"vicmpgt",0,0,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpge,"vicmpge",0,0,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmplt,"vicmplt",0,0,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmple,"vicmple",0,0,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpalleq,"vicmpalleq",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpallne,"vicmpallne",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpallgt,"vicmpallgt",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpallge,"vicmpallge",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpalllt,"vicmpalllt",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpallle,"vicmpallle",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpanyeq,"vicmpanyeq",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpanyne,"vicmpanyne",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpanygt,"vicmpanygt",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpanyge,"vicmpanyge",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpanylt,"vicmpanylt",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vicmpanyle,"vicmpanyle",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vnot,"vnot",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vbitselect,"vbitselect",0,0,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vperm,"vperm",0,0,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vsplats,"vsplats",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdmergel,"vdmergel",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdmergeh,"vdmergeh",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdsetelem,"vdsetelem",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdgetelem,"vdgetelem",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdsel,"vdsel",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdrem,"vdrem",ILProp1::Rem,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdmadd,"vdmadd",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdnmsub,"vdnmsub",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdmsub,"vdmsub",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdmax,"vdmax",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max,0,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdmin,"vdmin",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min,0,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpeq,"vdcmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::VectorInt64,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpeq,TR::vdcmpne,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpne,"vdcmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::VectorInt64,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpne,TR::vdcmpeq,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpgt,"vdcmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::VectorInt64,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmplt,TR::vdcmple,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpge,"vdcmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::VectorInt64,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmple,TR::vdcmplt,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmplt,"vdcmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::VectorInt64,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpgt,TR::vdcmpge,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmple,"vdcmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::VectorInt64,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpge,TR::vdcmpgt,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpalleq,"vdcmpalleq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpalleq,TR::vdcmpallne,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpallne,"vdcmpallne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpallne,TR::vdcmpalleq,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpallgt,"vdcmpallgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpalllt,TR::vdcmpallle,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpallge,"vdcmpallge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpallle,TR::vdcmpalllt,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpalllt,"vdcmpalllt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpallgt,TR::vdcmpallge,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpallle,"vdcmpallle",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpallge,TR::vdcmpallgt,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpanyeq,"vdcmpanyeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpanyeq,TR::vdcmpanyne,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpanyne,"vdcmpanyne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpanyne,TR::vdcmpanyeq,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpanygt,"vdcmpanygt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpanylt,TR::vdcmpanyle,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpanyge,"vdcmpanyge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpanyle,TR::vdcmpanylt,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpanylt,"vdcmpanylt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpanygt,TR::vdcmpanyge,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdcmpanyle,"vdcmpanyle",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vdcmpanyge,TR::vdcmpanygt,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdsqrt,"vdsqrt",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdlog,"vdlog",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vinc,"vinc",ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdec,"vdec",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vneg,"vneg",ILProp1::Neg,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vcom,"vcom",ILProp1::Neg,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vadd,"vadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vsub,"vsub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vmul,"vmul",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdiv,"vdiv",ILProp1::Div,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vrem,"vrem",ILProp1::Rem,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vand,"vand",ILProp1::Commutative | ILProp1::Associative | ILProp1::And,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vor,"vor",ILProp1::Commutative | ILProp1::Associative | ILProp1::Or,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vxor,"vxor",ILProp1::Commutative | ILProp1::Associative | ILProp1::Xor,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vshl,"vshl",ILProp1::LeftShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vushr,"vushr",ILProp1::RightShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vshr,"vshr",ILProp1::RightShift,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vcmpeq,"vcmpeq",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vcmpeq,TR::vcmpne,TR::BadILOp,TR::ificmpeq) \
-   MACRO(TR::vcmpne,"vcmpne",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vcmpne,TR::vcmpeq,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vcmplt,"vcmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vcmpgt,TR::vcmpge,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vucmplt,"vucmplt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::Unsigned | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vcmpgt,TR::vcmpge,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vcmpgt,"vcmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vcmplt,TR::vcmple,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vucmpgt,"vucmpgt",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::Unsigned | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vcmplt,TR::vcmple,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vcmple,"vcmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vcmpge,TR::vcmpgt,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vucmple,"vucmple",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::Unsigned | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vcmpge,TR::vcmpgt,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vcmpge,"vcmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vcmple,TR::vcmplt,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vucmpge,"vucmpge",ILProp1::BooleanCompare,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare,ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::Unsigned | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::vcmple,TR::vcmplt,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vload,"vload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vloadi,"vloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vstore,"vstore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vstorei,"vstorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vrand,"vrand",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::VectorReduction,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vreturn,"vreturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vcall,"vcall",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vcalli,"vcalli",ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vselect,"vselect",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::HasNoDataType,THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::v2v,"v2v",ILProp1::Conversion,ILProp2::ValueNumberShare,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vl2vd,"vl2vd",ILProp1::Conversion,ILProp2::ValueNumberShare,0,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Vector,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vconst,"vconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::getvelem,"getvelem",0,ILProp2::ValueNumberShare,0,0,TR::NoType,ILTypeProp::HasNoDataType,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vsetelem,"vsetelem",0,ILProp2::ValueNumberShare,0,0,TR::NoType,ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vbRegLoad,"vbRegLoad",ILProp1::LoadReg,0,0,0,TR::VectorInt8,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vsRegLoad,"vsRegLoad",ILProp1::LoadReg,0,0,0,TR::VectorInt16,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::viRegLoad,"viRegLoad",ILProp1::LoadReg,0,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vlRegLoad,"vlRegLoad",ILProp1::LoadReg,0,0,0,TR::VectorInt64,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vfRegLoad,"vfRegLoad",ILProp1::LoadReg,0,0,0,TR::VectorFloat,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdRegLoad,"vdRegLoad",ILProp1::LoadReg,0,0,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vbRegStore,"vbRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::VectorInt8,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vsRegStore,"vsRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::VectorInt16,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::viRegStore,"viRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::VectorInt32,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vlRegStore,"vlRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::VectorInt64,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vfRegStore,"vfRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::VectorFloat,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::vdRegStore,"vdRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::VectorDouble,ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iuconst,"iuconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::luconst,"luconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::buconst,"buconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iuload,"iuload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::luload,"luload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::buload,"buload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iuloadi,"iuloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::luloadi,"luloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::buloadi,"buloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Unsigned,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iustore,"iustore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lustore,"lustore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bustore,"bustore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Unsigned,ONE_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iustorei,"iustorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_CHILD(TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lustorei,"lustorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_CHILD(TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bustorei,"bustorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Unsigned,TWO_CHILD(TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iureturn,"iureturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lureturn,"lureturn",ILProp1::Return | ILProp1::TreeTop,ILProp2::MayUseSystemStack,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iucall,"iucall",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lucall,"lucall",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iuadd,"iuadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::iuadd,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::luadd,"luadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::luadd,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::buadd,"buadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::buadd,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iusub,"iusub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lusub,"lusub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::busub,"busub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iuneg,"iuneg",ILProp1::Neg,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::luneg,"luneg",ILProp1::Neg,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::f2iu,"f2iu",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::f2lu,"f2lu",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::f2bu,"f2bu",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Unsigned,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::f2c,"f2c",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Unsigned,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::d2iu,"d2iu",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::d2lu,"d2lu",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::d2bu,"d2bu",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Unsigned,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::d2c,"d2c",ILProp1::Conversion,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Unsigned,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iuRegLoad,"iuRegLoad",ILProp1::LoadReg,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::luRegLoad,"luRegLoad",ILProp1::LoadReg,0,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iuRegStore,"iuRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::luRegStore,"luRegStore",ILProp1::StoreReg | ILProp1::TreeTop,0,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::cconst,"cconst",ILProp1::LoadConst,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::cload,"cload",ILProp1::LoadVar | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::cloadi,"cloadi",ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Unsigned,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::cstore,"cstore",ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Unsigned,ONE_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::cstorei,"cstorei",ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Unsigned,TWO_CHILD(TR::Address, TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::monent,"monent",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::NoType,0,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::monexit,"monexit",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::NoType,0,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::monexitfence,"monexitfence",ILProp1::TreeTop,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::tstart,"tstart",ILProp1::HasSymbolRef | ILProp1::TreeTop,ILProp2::JumpWithMultipleTargets,ILProp3::HasBranchChild,0,TR::NoType,0,THREE_SAME_CHILD(TR::NoType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::tfinish,"tfinish",ILProp1::HasSymbolRef | ILProp1::TreeTop,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::tabort,"tabort",ILProp1::HasSymbolRef | ILProp1::TreeTop,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::instanceof,"instanceof",ILProp1::HasSymbolRef,ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::checkcast,"checkcast",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::Check | ILProp2::CheckCast| ILProp2::MayUseSystemStack,0,0,TR::Address,ILTypeProp::Reference,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::checkcastAndNULLCHK,"checkcastAndNULLCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::Check | ILProp2::CheckCast| ILProp2::MayUseSystemStack,0,0,TR::Address,ILTypeProp::Reference,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::New,"new",ILProp1::HasSymbolRef,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::newvalue,"newvalue",ILProp1::HasSymbolRef,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::newarray,"newarray",ILProp1::HasSymbolRef,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::anewarray,"anewarray",ILProp1::HasSymbolRef,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::variableNew,"variableNew",ILProp1::HasSymbolRef,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::variableNewArray,"variableNewArray",ILProp1::HasSymbolRef,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::multianewarray,"multianewarray",ILProp1::HasSymbolRef,ILProp2::MustBeLowered | ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::arraylength,"arraylength",0,ILProp2::MustBeLowered | ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::ArrayLength,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::contigarraylength,"contigarraylength",0,ILProp2::MustBeLowered | ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::ArrayLength,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::discontigarraylength,"discontigarraylength",0,ILProp2::MustBeLowered | ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::ArrayLength,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::icalli,"icalli",ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::IndirectCallType,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iucalli,"iucalli",ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ILChildProp::IndirectCallType,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lcalli,"lcalli",ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ILChildProp::IndirectCallType,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lucalli,"lucalli",ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,ILChildProp::IndirectCallType,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fcalli,"fcalli",ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ILChildProp::IndirectCallType,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dcalli,"dcalli",ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ILChildProp::IndirectCallType,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::acalli,"acalli",ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,ILChildProp::IndirectCallType,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::calli,"calli",ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,0,ILChildProp::IndirectCallType,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fence,"fence",ILProp1::TreeTop | ILProp1::HasSymbolRef,0,ILProp3::Fence | ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::luaddh,"luaddh",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::luaddh,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::cadd,"cadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int16),TR::cadd,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::aiadd,"aiadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,TWO_CHILD(TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::aiuadd,"aiuadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,TWO_CHILD(TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::aladd,"aladd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,TWO_CHILD(TR::Address, TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::aluadd,"aluadd",ILProp1::Commutative | ILProp1::Associative | ILProp1::Add,ILProp2::ValueNumberShare,ILProp3::LikeUse,0,TR::Address,ILTypeProp::Reference,TWO_CHILD(TR::Address, TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lusubh,"lusubh",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::csub,"csub",ILProp1::Sub,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::imulh,"imulh",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::imulh,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iumulh,"iumulh",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::iumulh,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lmulh,"lmulh",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::lmulh,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lumulh,"lumulh",ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::lumulh,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ibits2f,"ibits2f",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fbits2i,"fbits2i",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lbits2d,"lbits2d",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dbits2l,"dbits2l",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lookup,"lookup",ILProp1::TreeTop | ILProp1::Switch,ILProp2::JumpWithMultipleTargets,ILProp3::HasBranchChild,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::trtLookup,"trtLookup",ILProp1::TreeTop | ILProp1::Switch,ILProp2::JumpWithMultipleTargets,ILProp3::HasBranchChild,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::Case,"case",ILProp1::Branch | ILProp1::TreeTop,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::table,"table",ILProp1::TreeTop | ILProp1::Switch,ILProp2::JumpWithMultipleTargets,ILProp3::HasBranchChild,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::exceptionRangeFence,"exceptionRangeFence",ILProp1::TreeTop | ILProp1::HasSymbolRef,0,ILProp3::ExceptionRangeFence,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dbgFence,"dbgFence",ILProp1::TreeTop,0,ILProp3::ExceptionRangeFence,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::NULLCHK,"NULLCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::NullCheck| ILProp2::MayUseSystemStack,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ResolveCHK,"ResolveCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::ResolveCheck| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ResolveAndNULLCHK,"ResolveAndNULLCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::NullCheck | ILProp2::ResolveCheck| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::DIVCHK,"DIVCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::Check| ILProp2::MayUseSystemStack,0,0,TR::NoType,0,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::OverflowCHK,"OverflowCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::Check| ILProp2::MayUseSystemStack | ILProp2::CanRaiseException,0,0,TR::NoType,0,THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::UnsignedOverflowCHK,"UnsignedOverflowCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::Check| ILProp2::MayUseSystemStack | ILProp2::CanRaiseException,0,0,TR::NoType,0,THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::BNDCHK,"BNDCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::BndCheck| ILProp2::MayUseSystemStack,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ArrayCopyBNDCHK,"ArrayCopyBNDCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::BndCheck| ILProp2::MayUseSystemStack,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::BNDCHKwithSpineCHK,"BNDCHKwithSpineCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::BndCheck| ILProp2::MayUseSystemStack,ILProp3::SpineCheck,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::SpineCHK,"SpineCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::Check,ILProp3::SpineCheck,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ArrayStoreCHK,"ArrayStoreCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check| ILProp2::MayUseSystemStack,0,0,TR::Address,ILTypeProp::Reference,ONE_CHILD(ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ArrayCHK,"ArrayCHK",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check| ILProp2::MayUseSystemStack,0,0,TR::Address,ILTypeProp::Reference,TWO_SAME_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::Ret,"Ret",ILProp1::TreeTop,0,0,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::arraycopy,"arraycopy",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::MayUseSystemStack | ILProp2::CanRaiseException | 0,ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::arrayset,"arrayset",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::arraytranslate,"arraytranslate",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::arraytranslateAndTest,"arraytranslateAndTest",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CanRaiseException | ILProp2::BndCheck,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::long2String,"long2String",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bitOpMem,"bitOpMem",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CondCodeComputation,ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts,0,TR::Int32,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bitOpMemND,"bitOpMemND",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::arraycmp,"arraycmp",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CondCodeComputation,ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,THREE_CHILD(TR::Address, TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::arraycmpWithPad,"arraycmpWithPad",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::CondCodeComputation,ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::allocationFence,"allocationFence",ILProp1::TreeTop,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::loadFence,"loadFence",ILProp1::TreeTop | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::storeFence,"storeFence",ILProp1::TreeTop | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fullFence,"fullFence",ILProp1::TreeTop | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::MergeNew,"MergeNew",ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::CanRaiseException| ILProp2::MayUseSystemStack,ILProp3::LikeDef,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::computeCC,"computeCC",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation,0,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::butest,"butest",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sutest,"sutest",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bucmp,"bucmp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare | ILProp2::CondCodeComputation,ILProp3::Signum,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bcmp,"bcmp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation,ILProp3::Signum,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sucmp,"sucmp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare | ILProp2::CondCodeComputation,ILProp3::Signum,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::scmp,"scmp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation,ILProp3::Signum,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iucmp,"iucmp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare | ILProp2::CondCodeComputation,ILProp3::Signum,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::icmp,"icmp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation,ILProp3::Signum,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lucmp,"lucmp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare | ILProp2::CondCodeComputation,ILProp3::Signum,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ificmpo,"ificmpo",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::OverflowCompare,0,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::ificmpno,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ificmpno,"ificmpno",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::OverflowCompare,0,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::ificmpo,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iflcmpo,"iflcmpo",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::OverflowCompare,0,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::iflcmpno,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iflcmpno,"iflcmpno",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::OverflowCompare,0,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::iflcmpo,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ificmno,"ificmno",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::OverflowCompare,0,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::ificmnno,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ificmnno,"ificmnno",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::OverflowCompare,0,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::ificmno,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iflcmno,"iflcmno",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::OverflowCompare,0,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::iflcmnno,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iflcmnno,"iflcmnno",ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop,ILProp2::OverflowCompare,0,0,TR::NoType,0,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::iflcmno,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iuaddc,"iuaddc",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectAdd,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::luaddc,"luaddc",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectAdd,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iusubb,"iusubb",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectSub,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lusubb,"lusubb",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectSub,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::icmpset,"icmpset",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,THREE_CHILD(TR::Address, TR::Int32, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lcmpset,"lcmpset",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,THREE_CHILD(TR::Address, TR::Int64, TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bztestnset,"bztestnset",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_CHILD(TR::Address, ILChildProp::UnspecifiedChildType),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ibatomicor,"ibatomicor",ILProp1::LoadVar | ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_CHILD(TR::Address, TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::isatomicor,"isatomicor",ILProp1::LoadVar | ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_CHILD(TR::Address, TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iiatomicor,"iiatomicor",ILProp1::LoadVar | ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_CHILD(TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ilatomicor,"ilatomicor",ILProp1::LoadVar | ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef,ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::NoType,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_CHILD(TR::Address, TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dexp,"dexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::SignedExponentiation,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::branch,"branch",ILProp1::Branch | ILProp1::CompBranchOnly | ILProp1::TreeTop,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::igoto,"igoto",ILProp1::TreeTop,ILProp2::JumpWithMultipleTargets,0,0,TR::NoType,0,ONE_CHILD(TR::Address),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bexp,"bexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::SignedExponentiation,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::buexp,"buexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::UnsignedExponentiation,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int8),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sexp,"sexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::SignedExponentiation,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::cexp,"cexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::UnsignedExponentiation,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int16),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iexp,"iexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::SignedExponentiation,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iuexp,"iuexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::UnsignedExponentiation,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lexp,"lexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::SignedExponentiation,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::luexp,"luexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::UnsignedExponentiation,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fexp,"fexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::SignedExponentiation,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fuexp,"fuexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::UnsignedExponentiation,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_CHILD(TR::Float, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::duexp,"duexp",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::UnsignedExponentiation,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_CHILD(TR::Double, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ixfrs,"ixfrs",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lxfrs,"lxfrs",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fxfrs,"fxfrs",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dxfrs,"dxfrs",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fint,"fint",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dint,"dint",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fnint,"fnint",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dnint,"dnint",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fsqrt,"fsqrt",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dsqrt,"dsqrt",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::getstack,"getstack",0,0,0,0,TR::Address,ILTypeProp::Reference,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dealloca,"dealloca",0,0,0,0,TR::NoType,0,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::idoz,"idoz",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dcos,"dcos",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dsin,"dsin",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dtan,"dtan",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dcosh,"dcosh",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dsinh,"dsinh",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dtanh,"dtanh",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dacos,"dacos",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dasin,"dasin",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::datan,"datan",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::datan2,"datan2",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dlog,"dlog",ILProp1::Call | ILProp1::HasSymbolRef,0,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dfloor,"dfloor",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ffloor,"ffloor",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dceil,"dceil",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fceil,"fceil",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,ONE_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ibranch,"ibranch",ILProp1::TreeTop,ILProp2::JumpWithMultipleTargets,0,0,TR::NoType,0,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::mbranch,"mbranch",ILProp1::Branch,ILProp2::JumpWithMultipleTargets,0,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::getpm,"getpm",0,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::setpm,"setpm",ILProp1::TreeTop,0,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::loadAutoOffset,"loadAutoOffset",ILProp1::HasSymbolRef,0,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,ILChildProp::NoChildren,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::imax,"imax",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iumax,"iumax",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lmax,"lmax",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lumax,"lumax",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fmax,"fmax",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dmax,"dmax",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::imin,"imin",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::iumin,"iumin",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lmin,"lmin",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lumin,"lumin",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Unsigned,TWO_SAME_CHILD(TR::Int64),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::fmin,"fmin",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min,0,0,TR::Float,ILTypeProp::Size_4 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Float),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::dmin,"dmin",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min,0,0,TR::Double,ILTypeProp::Size_8 | ILTypeProp::Floating_Point,TWO_SAME_CHILD(TR::Double),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::trt,"trt",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::SupportedForPRE,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::trtSimple,"trtSimple",ILProp1::Call | ILProp1::HasSymbolRef,ILProp2::SupportedForPRE,ILProp3::LikeUse | ILProp3::LikeDef,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ihbit,"ihbit",0,ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ilbit,"ilbit",0,ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::inolz,"inolz",0,ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::inotz,"inotz",0,ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ipopcnt,"ipopcnt",0,ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lhbit,"lhbit",0,ILProp2::SupportedForPRE,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::llbit,"llbit",0,ILProp2::SupportedForPRE,0,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lnolz,"lnolz",0,ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lnotz,"lnotz",0,ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lpopcnt,"lpopcnt",0,ILProp2::SupportedForPRE,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ibyteswap,"ibyteswap",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ByteSwap,0,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,ONE_CHILD(TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::bbitpermute,"bbitpermute",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int8,ILTypeProp::Size_1 | ILTypeProp::Integer,THREE_CHILD(TR::Int8, TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::sbitpermute,"sbitpermute",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int16,ILTypeProp::Size_2 | ILTypeProp::Integer,THREE_CHILD(TR::Int16, TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::ibitpermute,"ibitpermute",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int32,ILTypeProp::Size_4 | ILTypeProp::Integer,THREE_CHILD(TR::Int32, TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::lbitpermute,"lbitpermute",0,ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,ILProp3::LikeUse,0,TR::Int64,ILTypeProp::Size_8 | ILTypeProp::Integer,THREE_CHILD(TR::Int64, TR::Address, TR::Int32),TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) \
-   MACRO(TR::Prefetch,"Prefetch",ILProp1::TreeTop | ILProp1::HasSymbolRef,0,0,0,TR::NoType,0,ILChildProp::Unspecified,TR::BadILOp,TR::BadILOp,TR::BadILOp,TR::BadILOp) 
+   MACRO(\
+      TR::BadILOp, /* .opcode */ \
+      "BadILOp", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      BadILOp = 0, /* illegal op hopefully help with uninitialized nodes */ \
+   ) \
+   MACRO(\
+      TR::aconst, /* .opcode */ \
+      "aconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      aconst, /* load address constant (zero value means NULL) */ \
+   ) \
+   MACRO(\
+      TR::iconst, /* .opcode */ \
+      "iconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iconst, /* load integer constant (32-bit signed 2's complement) */ \
+   ) \
+   MACRO(\
+      TR::lconst, /* .opcode */ \
+      "lconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lconst, /* load long integer constant (64-bit signed 2's complement) */ \
+   ) \
+   MACRO(\
+      TR::fconst, /* .opcode */ \
+      "fconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fconst, /* load float constant (32-bit ieee fp) */ \
+   ) \
+   MACRO(\
+      TR::dconst, /* .opcode */ \
+      "dconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dconst, /* load double constant (64-bit ieee fp) */ \
+   ) \
+   MACRO(\
+      TR::bconst, /* .opcode */ \
+      "bconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bconst, /* load byte integer constant (8-bit signed 2's complement) */ \
+   ) \
+   MACRO(\
+      TR::sconst, /* .opcode */ \
+      "sconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sconst, /* load short integer constant (16-bit signed 2's complement) */ \
+   ) \
+   MACRO(\
+      TR::iload, /* .opcode */ \
+      "iload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iload, /* load integer */ \
+   ) \
+   MACRO(\
+      TR::fload, /* .opcode */ \
+      "fload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fload, /* load float */ \
+   ) \
+   MACRO(\
+      TR::dload, /* .opcode */ \
+      "dload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dload, /* load double */ \
+   ) \
+   MACRO(\
+      TR::aload, /* .opcode */ \
+      "aload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      aload, /* load address */ \
+   ) \
+   MACRO(\
+      TR::bload, /* .opcode */ \
+      "bload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bload, /* load byte */ \
+   ) \
+   MACRO(\
+      TR::sload, /* .opcode */ \
+      "sload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sload, /* load short integer */ \
+   ) \
+   MACRO(\
+      TR::lload, /* .opcode */ \
+      "lload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lload, /* load long integer */ \
+   ) \
+   MACRO(\
+      TR::irdbar, /* .opcode */ \
+      "irdbar", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      irdbar, /* read barrier for load integer */ \
+   ) \
+   MACRO(\
+      TR::frdbar, /* .opcode */ \
+      "frdbar", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      frdbar, /* read barrier for load float */ \
+   ) \
+   MACRO(\
+      TR::drdbar, /* .opcode */ \
+      "drdbar", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      drdbar, /* read barrier for load double */ \
+   ) \
+   MACRO(\
+      TR::ardbar, /* .opcode */ \
+      "ardbar", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ardbar, /* read barrier for load address */ \
+   ) \
+   MACRO(\
+      TR::brdbar, /* .opcode */ \
+      "brdbar", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      brdbar, /* read barrier for load byte */ \
+   ) \
+   MACRO(\
+      TR::srdbar, /* .opcode */ \
+      "srdbar", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      srdbar, /* load short integer */ \
+   ) \
+   MACRO(\
+      TR::lrdbar, /* .opcode */ \
+      "lrdbar", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lrdbar, /* load long integer */ \
+   ) \
+   MACRO(\
+      TR::iloadi, /* .opcode */ \
+      "iloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iloadi, /* load indirect integer */ \
+   ) \
+   MACRO(\
+      TR::floadi, /* .opcode */ \
+      "floadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      floadi, /* load indirect float */ \
+   ) \
+   MACRO(\
+      TR::dloadi, /* .opcode */ \
+      "dloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dloadi, /* load indirect double */ \
+   ) \
+   MACRO(\
+      TR::aloadi, /* .opcode */ \
+      "aloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      aloadi, /* load indirect address */ \
+   ) \
+   MACRO(\
+      TR::bloadi, /* .opcode */ \
+      "bloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bloadi, /* load indirect byte */ \
+   ) \
+   MACRO(\
+      TR::sloadi, /* .opcode */ \
+      "sloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sloadi, /* load indirect short integer */ \
+   ) \
+   MACRO(\
+      TR::lloadi, /* .opcode */ \
+      "lloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lloadi, /* load indirect long integer */ \
+   ) \
+   MACRO(\
+      TR::irdbari, /* .opcode */ \
+      "irdbari", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      irdbari, /* read barrier for load indirect integer */ \
+   ) \
+   MACRO(\
+      TR::frdbari, /* .opcode */ \
+      "frdbari", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      frdbari, /* read barrier for load indirect float */ \
+   ) \
+   MACRO(\
+      TR::drdbari, /* .opcode */ \
+      "drdbari", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      drdbari, /* read barrier for load indirect double */ \
+   ) \
+   MACRO(\
+      TR::ardbari, /* .opcode */ \
+      "ardbari", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ardbari, /* read barrier for load indirect address */ \
+   ) \
+   MACRO(\
+      TR::brdbari, /* .opcode */ \
+      "brdbari", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      brdbari, /* read barrier for load indirect byte */ \
+   ) \
+   MACRO(\
+      TR::srdbari, /* .opcode */ \
+      "srdbari", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      srdbari, /* read barrier for load indirect short integer */ \
+   ) \
+   MACRO(\
+      TR::lrdbari, /* .opcode */ \
+      "lrdbari", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::ReadBarrierLoad, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lrdbari, /* read barrier for load indirect long integer */ \
+   ) \
+   MACRO(\
+      TR::istore, /* .opcode */ \
+      "istore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      istore, /* store integer */ \
+   ) \
+   MACRO(\
+      TR::lstore, /* .opcode */ \
+      "lstore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lstore, /* store long integer */ \
+   ) \
+   MACRO(\
+      TR::fstore, /* .opcode */ \
+      "fstore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fstore, /* store float */ \
+   ) \
+   MACRO(\
+      TR::dstore, /* .opcode */ \
+      "dstore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dstore, /* store double */ \
+   ) \
+   MACRO(\
+      TR::astore, /* .opcode */ \
+      "astore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      astore, /* store address */ \
+   ) \
+   MACRO(\
+      TR::bstore, /* .opcode */ \
+      "bstore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bstore, /* store byte */ \
+   ) \
+   MACRO(\
+      TR::sstore, /* .opcode */ \
+      "sstore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sstore, /* store short integer */ \
+   ) \
+   MACRO(\
+      TR::iwrtbar, /* .opcode */ \
+      "iwrtbar", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int32, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iwrtbar, /* write barrier for store direct integer */ \
+   ) \
+   MACRO(\
+      TR::lwrtbar, /* .opcode */ \
+      "lwrtbar", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int64, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lwrtbar, /* write barrier for store direct long integer */ \
+   ) \
+   MACRO(\
+      TR::fwrtbar, /* .opcode */ \
+      "fwrtbar", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_CHILD(TR::Float, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fwrtbar, /* write barrier for store direct float */ \
+   ) \
+   MACRO(\
+      TR::dwrtbar, /* .opcode */ \
+      "dwrtbar", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_CHILD(TR::Double, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dwrtbar, /* write barrier for store direct double */ \
+   ) \
+   MACRO(\
+      TR::awrtbar, /* .opcode */ \
+      "awrtbar", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      awrtbar, /* write barrier for store direct address */ \
+   ) \
+   MACRO(\
+      TR::bwrtbar, /* .opcode */ \
+      "bwrtbar", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int8, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bwrtbar, /* write barrier for store direct byte */ \
+   ) \
+   MACRO(\
+      TR::swrtbar, /* .opcode */ \
+      "swrtbar", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int16, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      swrtbar, /* write barrier for store direct short integer */ \
+   ) \
+   MACRO(\
+      TR::lstorei, /* .opcode */ \
+      "lstorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lstorei, /* store indirect long integer           (child1 a, child2 l) */ \
+   ) \
+   MACRO(\
+      TR::fstorei, /* .opcode */ \
+      "fstorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fstorei, /* store indirect float                  (child1 a, child2 f) */ \
+   ) \
+   MACRO(\
+      TR::dstorei, /* .opcode */ \
+      "dstorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dstorei, /* store indirect double                 (child1 a, child2 d) */ \
+   ) \
+   MACRO(\
+      TR::astorei, /* .opcode */ \
+      "astorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      astorei, /* store indirect address                (child1 a dest, child2 a value) */ \
+   ) \
+   MACRO(\
+      TR::bstorei, /* .opcode */ \
+      "bstorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bstorei, /* store indirect byte                   (child1 a, child2 b) */ \
+   ) \
+   MACRO(\
+      TR::sstorei, /* .opcode */ \
+      "sstorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sstorei, /* store indirect short integer          (child1 a, child2 s) */ \
+   ) \
+   MACRO(\
+      TR::istorei, /* .opcode */ \
+      "istorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      istorei, /* store indirect integer                (child1 a, child2 i) */ \
+   ) \
+   MACRO(\
+      TR::lwrtbari, /* .opcode */ \
+      "lwrtbari", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Address, TR::Int64, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lwrtbari, /* write barrier for store indirect long integer */ \
+   ) \
+   MACRO(\
+      TR::fwrtbari, /* .opcode */ \
+      "fwrtbari", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      THREE_CHILD(TR::Address, TR::Float, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fwrtbari, /* write barrier for store indirect float */ \
+   ) \
+   MACRO(\
+      TR::dwrtbari, /* .opcode */ \
+      "dwrtbari", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      THREE_CHILD(TR::Address, TR::Double, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dwrtbari, /* write barrier for store indirect double */ \
+   ) \
+   MACRO(\
+      TR::awrtbari, /* .opcode */ \
+      "awrtbari", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      THREE_CHILD(TR::Address, TR::Address, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      awrtbari, /* write barrier for store indirect address */ \
+   ) \
+   MACRO(\
+      TR::bwrtbari, /* .opcode */ \
+      "bwrtbari", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Address, TR::Int8, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bwrtbari, /* write barrier for store indirect byte */ \
+   ) \
+   MACRO(\
+      TR::swrtbari, /* .opcode */ \
+      "swrtbari", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Address, TR::Int16, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      swrtbari, /* write barrier for store indirect short integer */ \
+   ) \
+   MACRO(\
+      TR::iwrtbari, /* .opcode */ \
+      "iwrtbari", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::WriteBarrierStore| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Address, TR::Int32, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iwrtbari, /* write barrier for store indirect integer */ \
+   ) \
+   MACRO(\
+      TR::Goto, /* .opcode */ \
+      "goto", /* .name */ \
+      ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      Goto, /* goto label address */ \
+   ) \
+   MACRO(\
+      TR::ireturn, /* .opcode */ \
+      "ireturn", /* .name */ \
+      ILProp1::Return | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ireturn, /* return an integer */ \
+   ) \
+   MACRO(\
+      TR::lreturn, /* .opcode */ \
+      "lreturn", /* .name */ \
+      ILProp1::Return | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lreturn, /* return a long integer */ \
+   ) \
+   MACRO(\
+      TR::freturn, /* .opcode */ \
+      "freturn", /* .name */ \
+      ILProp1::Return | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      freturn, /* return a float */ \
+   ) \
+   MACRO(\
+      TR::dreturn, /* .opcode */ \
+      "dreturn", /* .name */ \
+      ILProp1::Return | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dreturn, /* return a double */ \
+   ) \
+   MACRO(\
+      TR::areturn, /* .opcode */ \
+      "areturn", /* .name */ \
+      ILProp1::Return | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      areturn, /* return an address */ \
+   ) \
+   MACRO(\
+      TR::Return, /* .opcode */ \
+      "return", /* .name */ \
+      ILProp1::Return | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      Return, /* void return */ \
+   ) \
+   MACRO(\
+      TR::asynccheck, /* .opcode */ \
+      "asynccheck", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::MustBeLowered| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      asynccheck, /* GC point */ \
+   ) \
+   MACRO(\
+      TR::athrow, /* .opcode */ \
+      "athrow", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::MustBeLowered | ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      athrow, /* throw an exception */ \
+   ) \
+   MACRO(\
+      TR::icall, /* .opcode */ \
+      "icall", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      icall, /* direct call returning integer */ \
+   ) \
+   MACRO(\
+      TR::lcall, /* .opcode */ \
+      "lcall", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lcall, /* direct call returning long integer */ \
+   ) \
+   MACRO(\
+      TR::fcall, /* .opcode */ \
+      "fcall", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fcall, /* direct call returning float */ \
+   ) \
+   MACRO(\
+      TR::dcall, /* .opcode */ \
+      "dcall", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dcall, /* direct call returning double */ \
+   ) \
+   MACRO(\
+      TR::acall, /* .opcode */ \
+      "acall", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      acall, /* direct call returning reference */ \
+   ) \
+   MACRO(\
+      TR::call, /* .opcode */ \
+      "call", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      call, /* direct call returning void */ \
+   ) \
+   MACRO(\
+      TR::iadd, /* .opcode */ \
+      "iadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::iadd, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iadd, /* add 2 integers */ \
+   ) \
+   MACRO(\
+      TR::ladd, /* .opcode */ \
+      "ladd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::ladd, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ladd, /* add 2 long integers */ \
+   ) \
+   MACRO(\
+      TR::fadd, /* .opcode */ \
+      "fadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fadd, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fadd, /* add 2 floats */ \
+   ) \
+   MACRO(\
+      TR::dadd, /* .opcode */ \
+      "dadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dadd, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dadd, /* add 2 doubles */ \
+   ) \
+   MACRO(\
+      TR::badd, /* .opcode */ \
+      "badd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::badd, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      badd, /* add 2 bytes */ \
+   ) \
+   MACRO(\
+      TR::sadd, /* .opcode */ \
+      "sadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::sadd, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sadd, /* add 2 short integers */ \
+   ) \
+   MACRO(\
+      TR::isub, /* .opcode */ \
+      "isub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      isub, /* subtract 2 integers                (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::lsub, /* .opcode */ \
+      "lsub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lsub, /* subtract 2 long integers           (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::fsub, /* .opcode */ \
+      "fsub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fsub, /* subtract 2 floats                  (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::dsub, /* .opcode */ \
+      "dsub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dsub, /* subtract 2 doubles                 (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::bsub, /* .opcode */ \
+      "bsub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bsub, /* subtract 2 bytes                   (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::ssub, /* .opcode */ \
+      "ssub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ssub, /* subtract 2 short integers          (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::asub, /* .opcode */ \
+      "asub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      asub, /* subtract 2 addresses (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::imul, /* .opcode */ \
+      "imul", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::imul, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      imul, /* multiply 2 integers */ \
+   ) \
+   MACRO(\
+      TR::lmul, /* .opcode */ \
+      "lmul", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lmul, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lmul, /* multiply 2 signed or unsigned long integers */ \
+   ) \
+   MACRO(\
+      TR::fmul, /* .opcode */ \
+      "fmul", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fmul, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fmul, /* multiply 2 floats */ \
+   ) \
+   MACRO(\
+      TR::dmul, /* .opcode */ \
+      "dmul", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dmul, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dmul, /* multiply 2 doubles */ \
+   ) \
+   MACRO(\
+      TR::bmul, /* .opcode */ \
+      "bmul", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bmul, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bmul, /* multiply 2 bytes */ \
+   ) \
+   MACRO(\
+      TR::smul, /* .opcode */ \
+      "smul", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::smul, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      smul, /* multiply 2 short integers */ \
+   ) \
+   MACRO(\
+      TR::idiv, /* .opcode */ \
+      "idiv", /* .name */ \
+      ILProp1::Div, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      idiv, /* divide 2 integers                (child1 / child2) */ \
+   ) \
+   MACRO(\
+      TR::ldiv, /* .opcode */ \
+      "ldiv", /* .name */ \
+      ILProp1::Div, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ldiv, /* divide 2 long integers           (child1 / child2) */ \
+   ) \
+   MACRO(\
+      TR::fdiv, /* .opcode */ \
+      "fdiv", /* .name */ \
+      ILProp1::Div, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fdiv, /* divide 2 floats                  (child1 / child2) */ \
+   ) \
+   MACRO(\
+      TR::ddiv, /* .opcode */ \
+      "ddiv", /* .name */ \
+      ILProp1::Div, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ddiv, /* divide 2 doubles                 (child1 / child2) */ \
+   ) \
+   MACRO(\
+      TR::bdiv, /* .opcode */ \
+      "bdiv", /* .name */ \
+      ILProp1::Div, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bdiv, /* divide 2 bytes                   (child1 / child2) */ \
+   ) \
+   MACRO(\
+      TR::sdiv, /* .opcode */ \
+      "sdiv", /* .name */ \
+      ILProp1::Div, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sdiv, /* divide 2 short integers          (child1 / child2) */ \
+   ) \
+   MACRO(\
+      TR::iudiv, /* .opcode */ \
+      "iudiv", /* .name */ \
+      ILProp1::Div, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iudiv, /* divide 2 unsigned integers       (child1 / child2) */ \
+   ) \
+   MACRO(\
+      TR::ludiv, /* .opcode */ \
+      "ludiv", /* .name */ \
+      ILProp1::Div, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ludiv, /* divide 2 unsigned long integers  (child1 / child2) */ \
+   ) \
+   MACRO(\
+      TR::irem, /* .opcode */ \
+      "irem", /* .name */ \
+      ILProp1::Rem, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      irem, /* remainder of 2 integers                (child1 % child2) */ \
+   ) \
+   MACRO(\
+      TR::lrem, /* .opcode */ \
+      "lrem", /* .name */ \
+      ILProp1::Rem, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lrem, /* remainder of 2 long integers           (child1 % child2) */ \
+   ) \
+   MACRO(\
+      TR::frem, /* .opcode */ \
+      "frem", /* .name */ \
+      ILProp1::Rem, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      frem, /* remainder of 2 floats                  (child1 % child2) */ \
+   ) \
+   MACRO(\
+      TR::drem, /* .opcode */ \
+      "drem", /* .name */ \
+      ILProp1::Rem, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      drem, /* remainder of 2 doubles                 (child1 % child2) */ \
+   ) \
+   MACRO(\
+      TR::brem, /* .opcode */ \
+      "brem", /* .name */ \
+      ILProp1::Rem, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      brem, /* remainder of 2 bytes                   (child1 % child2) */ \
+   ) \
+   MACRO(\
+      TR::srem, /* .opcode */ \
+      "srem", /* .name */ \
+      ILProp1::Rem, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      srem, /* remainder of 2 short integers          (child1 % child2) */ \
+   ) \
+   MACRO(\
+      TR::iurem, /* .opcode */ \
+      "iurem", /* .name */ \
+      ILProp1::Rem, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iurem, /* remainder of 2 unsigned integers       (child1 % child2) */ \
+   ) \
+   MACRO(\
+      TR::ineg, /* .opcode */ \
+      "ineg", /* .name */ \
+      ILProp1::Neg, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ineg, /* negate an integer */ \
+   ) \
+   MACRO(\
+      TR::lneg, /* .opcode */ \
+      "lneg", /* .name */ \
+      ILProp1::Neg, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lneg, /* negate a long integer */ \
+   ) \
+   MACRO(\
+      TR::fneg, /* .opcode */ \
+      "fneg", /* .name */ \
+      ILProp1::Neg, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fneg, /* negate a float */ \
+   ) \
+   MACRO(\
+      TR::dneg, /* .opcode */ \
+      "dneg", /* .name */ \
+      ILProp1::Neg, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dneg, /* negate a double */ \
+   ) \
+   MACRO(\
+      TR::bneg, /* .opcode */ \
+      "bneg", /* .name */ \
+      ILProp1::Neg, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bneg, /* negate a bytes */ \
+   ) \
+   MACRO(\
+      TR::sneg, /* .opcode */ \
+      "sneg", /* .name */ \
+      ILProp1::Neg, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sneg, /* negate a short integer */ \
+   ) \
+   MACRO(\
+      TR::iabs, /* .opcode */ \
+      "iabs", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::Abs, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iabs, /* absolute value of integer */ \
+   ) \
+   MACRO(\
+      TR::labs, /* .opcode */ \
+      "labs", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::Abs, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      labs, /* absolute value of long */ \
+   ) \
+   MACRO(\
+      TR::fabs, /* .opcode */ \
+      "fabs", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::Abs, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fabs, /* absolute value of float */ \
+   ) \
+   MACRO(\
+      TR::dabs, /* .opcode */ \
+      "dabs", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::Abs, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dabs, /* absolute value of double */ \
+   ) \
+   MACRO(\
+      TR::ishl, /* .opcode */ \
+      "ishl", /* .name */ \
+      ILProp1::LeftShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ishl, /* shift integer left                (child1 << child2) */ \
+   ) \
+   MACRO(\
+      TR::lshl, /* .opcode */ \
+      "lshl", /* .name */ \
+      ILProp1::LeftShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int64, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lshl, /* shift long integer left           (child1 << child2) */ \
+   ) \
+   MACRO(\
+      TR::bshl, /* .opcode */ \
+      "bshl", /* .name */ \
+      ILProp1::LeftShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int8, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bshl, /* shift byte left                   (child1 << child2) */ \
+   ) \
+   MACRO(\
+      TR::sshl, /* .opcode */ \
+      "sshl", /* .name */ \
+      ILProp1::LeftShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int16, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sshl, /* shift short integer left          (child1 << child2) */ \
+   ) \
+   MACRO(\
+      TR::ishr, /* .opcode */ \
+      "ishr", /* .name */ \
+      ILProp1::RightShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ishr, /* shift integer right arithmetically               (child1 >> child2) */ \
+   ) \
+   MACRO(\
+      TR::lshr, /* .opcode */ \
+      "lshr", /* .name */ \
+      ILProp1::RightShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int64, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lshr, /* shift long integer right arithmetically          (child1 >> child2) */ \
+   ) \
+   MACRO(\
+      TR::bshr, /* .opcode */ \
+      "bshr", /* .name */ \
+      ILProp1::RightShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int8, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bshr, /* shift byte right arithmetically                  (child1 >> child2) */ \
+   ) \
+   MACRO(\
+      TR::sshr, /* .opcode */ \
+      "sshr", /* .name */ \
+      ILProp1::RightShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int16, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sshr, /* shift short integer arithmetically               (child1 >> child2) */ \
+   ) \
+   MACRO(\
+      TR::iushr, /* .opcode */ \
+      "iushr", /* .name */ \
+      ILProp1::RightShift | ILProp1::ShiftLogical, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iushr, /* shift integer right logically                   (child1 >> child2) */ \
+   ) \
+   MACRO(\
+      TR::lushr, /* .opcode */ \
+      "lushr", /* .name */ \
+      ILProp1::RightShift | ILProp1::ShiftLogical, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int64, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lushr, /* shift long integer right logically              (child1 >> child2) */ \
+   ) \
+   MACRO(\
+      TR::bushr, /* .opcode */ \
+      "bushr", /* .name */ \
+      ILProp1::RightShift | ILProp1::ShiftLogical, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int8, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bushr, /* shift byte right logically                      (child1 >> child2) */ \
+   ) \
+   MACRO(\
+      TR::sushr, /* .opcode */ \
+      "sushr", /* .name */ \
+      ILProp1::RightShift | ILProp1::ShiftLogical, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int16, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sushr, /* shift short integer right logically             (child1 >> child2) */ \
+   ) \
+   MACRO(\
+      TR::irol, /* .opcode */ \
+      "irol", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::LeftRotate, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      irol, /* rotate integer left */ \
+   ) \
+   MACRO(\
+      TR::lrol, /* .opcode */ \
+      "lrol", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::LeftRotate, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Int64, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lrol, /* rotate long integer left */ \
+   ) \
+   MACRO(\
+      TR::iand, /* .opcode */ \
+      "iand", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::And, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::iand, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iand, /* boolean and of 2 integers */ \
+   ) \
+   MACRO(\
+      TR::land, /* .opcode */ \
+      "land", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::And, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::land, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      land, /* boolean and of 2 long integers */ \
+   ) \
+   MACRO(\
+      TR::band, /* .opcode */ \
+      "band", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::And, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::band, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      band, /* boolean and of 2 bytes */ \
+   ) \
+   MACRO(\
+      TR::sand, /* .opcode */ \
+      "sand", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::And, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::sand, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sand, /* boolean and of 2 short integers */ \
+   ) \
+   MACRO(\
+      TR::ior, /* .opcode */ \
+      "ior", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Or, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ior, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ior, /* boolean or of 2 integers */ \
+   ) \
+   MACRO(\
+      TR::lor, /* .opcode */ \
+      "lor", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Or, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lor, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lor, /* boolean or of 2 long integers */ \
+   ) \
+   MACRO(\
+      TR::bor, /* .opcode */ \
+      "bor", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Or, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bor, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bor, /* boolean or of 2 bytes */ \
+   ) \
+   MACRO(\
+      TR::sor, /* .opcode */ \
+      "sor", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Or, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::sor, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sor, /* boolean or of 2 short integers */ \
+   ) \
+   MACRO(\
+      TR::ixor, /* .opcode */ \
+      "ixor", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Xor, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ixor, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ixor, /* boolean xor of 2 integers */ \
+   ) \
+   MACRO(\
+      TR::lxor, /* .opcode */ \
+      "lxor", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Xor, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lxor, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lxor, /* boolean xor of 2 long integers */ \
+   ) \
+   MACRO(\
+      TR::bxor, /* .opcode */ \
+      "bxor", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Xor, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bxor, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bxor, /* boolean xor of 2 bytes */ \
+   ) \
+   MACRO(\
+      TR::sxor, /* .opcode */ \
+      "sxor", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Xor, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::sxor, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sxor, /* boolean xor of 2 short integers */ \
+   ) \
+   MACRO(\
+      TR::i2l, /* .opcode */ \
+      "i2l", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      i2l, /* convert integer to long integer with sign extension */ \
+   ) \
+   MACRO(\
+      TR::i2f, /* .opcode */ \
+      "i2f", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      i2f, /* convert integer to float */ \
+   ) \
+   MACRO(\
+      TR::i2d, /* .opcode */ \
+      "i2d", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      i2d, /* convert integer to double */ \
+   ) \
+   MACRO(\
+      TR::i2b, /* .opcode */ \
+      "i2b", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      i2b, /* convert integer to byte */ \
+   ) \
+   MACRO(\
+      TR::i2s, /* .opcode */ \
+      "i2s", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      i2s, /* convert integer to short integer */ \
+   ) \
+   MACRO(\
+      TR::i2a, /* .opcode */ \
+      "i2a", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      i2a, /* convert integer to address */ \
+   ) \
+   MACRO(\
+      TR::iu2l, /* .opcode */ \
+      "iu2l", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iu2l, /* convert unsigned integer to long integer with zero extension */ \
+   ) \
+   MACRO(\
+      TR::iu2f, /* .opcode */ \
+      "iu2f", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iu2f, /* convert unsigned integer to float */ \
+   ) \
+   MACRO(\
+      TR::iu2d, /* .opcode */ \
+      "iu2d", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iu2d, /* convert unsigned integer to double */ \
+   ) \
+   MACRO(\
+      TR::iu2a, /* .opcode */ \
+      "iu2a", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iu2a, /* convert unsigned integer to address */ \
+   ) \
+   MACRO(\
+      TR::l2i, /* .opcode */ \
+      "l2i", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      l2i, /* convert long integer to integer */ \
+   ) \
+   MACRO(\
+      TR::l2f, /* .opcode */ \
+      "l2f", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      l2f, /* convert long integer to float */ \
+   ) \
+   MACRO(\
+      TR::l2d, /* .opcode */ \
+      "l2d", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      l2d, /* convert long integer to double */ \
+   ) \
+   MACRO(\
+      TR::l2b, /* .opcode */ \
+      "l2b", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      l2b, /* convert long integer to byte */ \
+   ) \
+   MACRO(\
+      TR::l2s, /* .opcode */ \
+      "l2s", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      l2s, /* convert long integer to short integer */ \
+   ) \
+   MACRO(\
+      TR::l2a, /* .opcode */ \
+      "l2a", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      l2a, /* convert long integer to address */ \
+   ) \
+   MACRO(\
+      TR::lu2f, /* .opcode */ \
+      "lu2f", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lu2f, /* convert unsigned long integer to float */ \
+   ) \
+   MACRO(\
+      TR::lu2d, /* .opcode */ \
+      "lu2d", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lu2d, /* convert unsigned long integer to double */ \
+   ) \
+   MACRO(\
+      TR::lu2a, /* .opcode */ \
+      "lu2a", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lu2a, /* convert unsigned long integer to address */ \
+   ) \
+   MACRO(\
+      TR::f2i, /* .opcode */ \
+      "f2i", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      f2i, /* convert float to integer */ \
+   ) \
+   MACRO(\
+      TR::f2l, /* .opcode */ \
+      "f2l", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      f2l, /* convert float to long integer */ \
+   ) \
+   MACRO(\
+      TR::f2d, /* .opcode */ \
+      "f2d", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      f2d, /* convert float to double */ \
+   ) \
+   MACRO(\
+      TR::f2b, /* .opcode */ \
+      "f2b", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      f2b, /* convert float to byte */ \
+   ) \
+   MACRO(\
+      TR::f2s, /* .opcode */ \
+      "f2s", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      f2s, /* convert float to short integer */ \
+   ) \
+   MACRO(\
+      TR::d2i, /* .opcode */ \
+      "d2i", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      d2i, /* convert double to integer */ \
+   ) \
+   MACRO(\
+      TR::d2l, /* .opcode */ \
+      "d2l", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      d2l, /* convert double to long integer */ \
+   ) \
+   MACRO(\
+      TR::d2f, /* .opcode */ \
+      "d2f", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      d2f, /* convert double to float */ \
+   ) \
+   MACRO(\
+      TR::d2b, /* .opcode */ \
+      "d2b", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      d2b, /* convert double to byte */ \
+   ) \
+   MACRO(\
+      TR::d2s, /* .opcode */ \
+      "d2s", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      d2s, /* convert double to short integer */ \
+   ) \
+   MACRO(\
+      TR::b2i, /* .opcode */ \
+      "b2i", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      b2i, /* convert byte to integer with sign extension */ \
+   ) \
+   MACRO(\
+      TR::b2l, /* .opcode */ \
+      "b2l", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      b2l, /* convert byte to long integer with sign extension */ \
+   ) \
+   MACRO(\
+      TR::b2f, /* .opcode */ \
+      "b2f", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      b2f, /* convert byte to float */ \
+   ) \
+   MACRO(\
+      TR::b2d, /* .opcode */ \
+      "b2d", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      b2d, /* convert byte to double */ \
+   ) \
+   MACRO(\
+      TR::b2s, /* .opcode */ \
+      "b2s", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      b2s, /* convert byte to short integer with sign extension */ \
+   ) \
+   MACRO(\
+      TR::b2a, /* .opcode */ \
+      "b2a", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      b2a, /* convert byte to address */ \
+   ) \
+   MACRO(\
+      TR::bu2i, /* .opcode */ \
+      "bu2i", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bu2i, /* convert byte to integer with zero extension */ \
+   ) \
+   MACRO(\
+      TR::bu2l, /* .opcode */ \
+      "bu2l", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bu2l, /* convert byte to long integer with zero extension */ \
+   ) \
+   MACRO(\
+      TR::bu2f, /* .opcode */ \
+      "bu2f", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bu2f, /* convert unsigned byte to float */ \
+   ) \
+   MACRO(\
+      TR::bu2d, /* .opcode */ \
+      "bu2d", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bu2d, /* convert unsigned byte to double */ \
+   ) \
+   MACRO(\
+      TR::bu2s, /* .opcode */ \
+      "bu2s", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bu2s, /* convert byte to short integer with zero extension */ \
+   ) \
+   MACRO(\
+      TR::bu2a, /* .opcode */ \
+      "bu2a", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bu2a, /* convert unsigned byte to unsigned address */ \
+   ) \
+   MACRO(\
+      TR::s2i, /* .opcode */ \
+      "s2i", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      s2i, /* convert short integer to integer with sign extension */ \
+   ) \
+   MACRO(\
+      TR::s2l, /* .opcode */ \
+      "s2l", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SignExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      s2l, /* convert short integer to long integer with sign extension */ \
+   ) \
+   MACRO(\
+      TR::s2f, /* .opcode */ \
+      "s2f", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      s2f, /* convert short integer to float */ \
+   ) \
+   MACRO(\
+      TR::s2d, /* .opcode */ \
+      "s2d", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      s2d, /* convert short integer to double */ \
+   ) \
+   MACRO(\
+      TR::s2b, /* .opcode */ \
+      "s2b", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      s2b, /* convert short integer to byte */ \
+   ) \
+   MACRO(\
+      TR::s2a, /* .opcode */ \
+      "s2a", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      s2a, /* convert short integer to address */ \
+   ) \
+   MACRO(\
+      TR::su2i, /* .opcode */ \
+      "su2i", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      su2i, /* zero extend short to int */ \
+   ) \
+   MACRO(\
+      TR::su2l, /* .opcode */ \
+      "su2l", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ZeroExtension, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      su2l, /* zero extend char to long */ \
+   ) \
+   MACRO(\
+      TR::su2f, /* .opcode */ \
+      "su2f", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      su2f, /* convert char to float */ \
+   ) \
+   MACRO(\
+      TR::su2d, /* .opcode */ \
+      "su2d", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      su2d, /* convert char to double */ \
+   ) \
+   MACRO(\
+      TR::su2a, /* .opcode */ \
+      "su2a", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      su2a, /* convert char to address */ \
+   ) \
+   MACRO(\
+      TR::a2i, /* .opcode */ \
+      "a2i", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      a2i, /* convert address to integer */ \
+   ) \
+   MACRO(\
+      TR::a2l, /* .opcode */ \
+      "a2l", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      a2l, /* convert address to long integer */ \
+   ) \
+   MACRO(\
+      TR::a2b, /* .opcode */ \
+      "a2b", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      a2b, /* convert address to byte */ \
+   ) \
+   MACRO(\
+      TR::a2s, /* .opcode */ \
+      "a2s", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      a2s, /* convert address to short */ \
+   ) \
+   MACRO(\
+      TR::icmpeq, /* .opcode */ \
+      "icmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::icmpeq, /* .swapChildrenOpCode */ \
+      TR::icmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ificmpeq, /* .ifCompareOpCode */ \
+      icmpeq, /* integer compare if equal */ \
+   ) \
+   MACRO(\
+      TR::icmpne, /* .opcode */ \
+      "icmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::icmpne, /* .swapChildrenOpCode */ \
+      TR::icmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ificmpne, /* .ifCompareOpCode */ \
+      icmpne, /* integer compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::icmplt, /* .opcode */ \
+      "icmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::icmpgt, /* .swapChildrenOpCode */ \
+      TR::icmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ificmplt, /* .ifCompareOpCode */ \
+      icmplt, /* integer compare if less than */ \
+   ) \
+   MACRO(\
+      TR::icmpge, /* .opcode */ \
+      "icmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::icmple, /* .swapChildrenOpCode */ \
+      TR::icmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ificmpge, /* .ifCompareOpCode */ \
+      icmpge, /* integer compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::icmpgt, /* .opcode */ \
+      "icmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::icmplt, /* .swapChildrenOpCode */ \
+      TR::icmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ificmpgt, /* .ifCompareOpCode */ \
+      icmpgt, /* integer compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::icmple, /* .opcode */ \
+      "icmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::icmpge, /* .swapChildrenOpCode */ \
+      TR::icmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ificmple, /* .ifCompareOpCode */ \
+      icmple, /* integer compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::iucmpeq, /* .opcode */ \
+      "iucmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::iucmpeq, /* .swapChildrenOpCode */ \
+      TR::iucmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifiucmpeq, /* .ifCompareOpCode */ \
+      iucmpeq, /* unsigned integer compare if equal */ \
+   ) \
+   MACRO(\
+      TR::iucmpne, /* .opcode */ \
+      "iucmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::iucmpne, /* .swapChildrenOpCode */ \
+      TR::iucmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifiucmpne, /* .ifCompareOpCode */ \
+      iucmpne, /* unsigned integer compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::iucmplt, /* .opcode */ \
+      "iucmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::iucmpgt, /* .swapChildrenOpCode */ \
+      TR::iucmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifiucmplt, /* .ifCompareOpCode */ \
+      iucmplt, /* unsigned integer compare if less than */ \
+   ) \
+   MACRO(\
+      TR::iucmpge, /* .opcode */ \
+      "iucmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::iucmple, /* .swapChildrenOpCode */ \
+      TR::iucmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifiucmpge, /* .ifCompareOpCode */ \
+      iucmpge, /* unsigned integer compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::iucmpgt, /* .opcode */ \
+      "iucmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::iucmplt, /* .swapChildrenOpCode */ \
+      TR::iucmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifiucmpgt, /* .ifCompareOpCode */ \
+      iucmpgt, /* unsigned integer compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::iucmple, /* .opcode */ \
+      "iucmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::iucmpge, /* .swapChildrenOpCode */ \
+      TR::iucmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifiucmple, /* .ifCompareOpCode */ \
+      iucmple, /* unsigned integer compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::lcmpeq, /* .opcode */ \
+      "lcmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lcmpeq, /* .swapChildrenOpCode */ \
+      TR::lcmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflcmpeq, /* .ifCompareOpCode */ \
+      lcmpeq, /* long compare if equal */ \
+   ) \
+   MACRO(\
+      TR::lcmpne, /* .opcode */ \
+      "lcmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lcmpne, /* .swapChildrenOpCode */ \
+      TR::lcmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflcmpne, /* .ifCompareOpCode */ \
+      lcmpne, /* long compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::lcmplt, /* .opcode */ \
+      "lcmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lcmpgt, /* .swapChildrenOpCode */ \
+      TR::lcmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflcmplt, /* .ifCompareOpCode */ \
+      lcmplt, /* long compare if less than */ \
+   ) \
+   MACRO(\
+      TR::lcmpge, /* .opcode */ \
+      "lcmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lcmple, /* .swapChildrenOpCode */ \
+      TR::lcmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflcmpge, /* .ifCompareOpCode */ \
+      lcmpge, /* long compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::lcmpgt, /* .opcode */ \
+      "lcmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lcmplt, /* .swapChildrenOpCode */ \
+      TR::lcmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflcmpgt, /* .ifCompareOpCode */ \
+      lcmpgt, /* long compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::lcmple, /* .opcode */ \
+      "lcmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lcmpge, /* .swapChildrenOpCode */ \
+      TR::lcmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflcmple, /* .ifCompareOpCode */ \
+      lcmple, /* long compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::lucmpeq, /* .opcode */ \
+      "lucmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lucmpeq, /* .swapChildrenOpCode */ \
+      TR::lucmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflucmpeq, /* .ifCompareOpCode */ \
+      lucmpeq, /* unsigned long compare if equal */ \
+   ) \
+   MACRO(\
+      TR::lucmpne, /* .opcode */ \
+      "lucmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lucmpne, /* .swapChildrenOpCode */ \
+      TR::lucmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflucmpne, /* .ifCompareOpCode */ \
+      lucmpne, /* unsigned long compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::lucmplt, /* .opcode */ \
+      "lucmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lucmpgt, /* .swapChildrenOpCode */ \
+      TR::lucmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflucmplt, /* .ifCompareOpCode */ \
+      lucmplt, /* unsigned long compare if less than */ \
+   ) \
+   MACRO(\
+      TR::lucmpge, /* .opcode */ \
+      "lucmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lucmple, /* .swapChildrenOpCode */ \
+      TR::lucmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflucmpge, /* .ifCompareOpCode */ \
+      lucmpge, /* unsigned long compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::lucmpgt, /* .opcode */ \
+      "lucmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lucmplt, /* .swapChildrenOpCode */ \
+      TR::lucmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflucmpgt, /* .ifCompareOpCode */ \
+      lucmpgt, /* unsigned long compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::lucmple, /* .opcode */ \
+      "lucmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lucmpge, /* .swapChildrenOpCode */ \
+      TR::lucmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iflucmple, /* .ifCompareOpCode */ \
+      lucmple, /* unsigned long compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::fcmpeq, /* .opcode */ \
+      "fcmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmpeq, /* .swapChildrenOpCode */ \
+      TR::fcmpneu, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmpeq, /* .ifCompareOpCode */ \
+      fcmpeq, /* float compare if equal */ \
+   ) \
+   MACRO(\
+      TR::fcmpne, /* .opcode */ \
+      "fcmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmpne, /* .swapChildrenOpCode */ \
+      TR::fcmpequ, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmpne, /* .ifCompareOpCode */ \
+      fcmpne, /* float compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::fcmplt, /* .opcode */ \
+      "fcmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmpgt, /* .swapChildrenOpCode */ \
+      TR::fcmpgeu, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmplt, /* .ifCompareOpCode */ \
+      fcmplt, /* float compare if less than */ \
+   ) \
+   MACRO(\
+      TR::fcmpge, /* .opcode */ \
+      "fcmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmple, /* .swapChildrenOpCode */ \
+      TR::fcmpltu, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmpge, /* .ifCompareOpCode */ \
+      fcmpge, /* float compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::fcmpgt, /* .opcode */ \
+      "fcmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmplt, /* .swapChildrenOpCode */ \
+      TR::fcmpleu, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmpgt, /* .ifCompareOpCode */ \
+      fcmpgt, /* float compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::fcmple, /* .opcode */ \
+      "fcmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmpge, /* .swapChildrenOpCode */ \
+      TR::fcmpgtu, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmple, /* .ifCompareOpCode */ \
+      fcmple, /* float compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::fcmpequ, /* .opcode */ \
+      "fcmpequ", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmpequ, /* .swapChildrenOpCode */ \
+      TR::fcmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmpequ, /* .ifCompareOpCode */ \
+      fcmpequ, /* float compare if equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::fcmpneu, /* .opcode */ \
+      "fcmpneu", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmpneu, /* .swapChildrenOpCode */ \
+      TR::fcmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmpneu, /* .ifCompareOpCode */ \
+      fcmpneu, /* float compare if not equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::fcmpltu, /* .opcode */ \
+      "fcmpltu", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmpgtu, /* .swapChildrenOpCode */ \
+      TR::fcmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmpltu, /* .ifCompareOpCode */ \
+      fcmpltu, /* float compare if less than or unordered */ \
+   ) \
+   MACRO(\
+      TR::fcmpgeu, /* .opcode */ \
+      "fcmpgeu", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmpleu, /* .swapChildrenOpCode */ \
+      TR::fcmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmpgeu, /* .ifCompareOpCode */ \
+      fcmpgeu, /* float compare if greater than or equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::fcmpgtu, /* .opcode */ \
+      "fcmpgtu", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmpltu, /* .swapChildrenOpCode */ \
+      TR::fcmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmpgtu, /* .ifCompareOpCode */ \
+      fcmpgtu, /* float compare if greater than or unordered */ \
+   ) \
+   MACRO(\
+      TR::fcmpleu, /* .opcode */ \
+      "fcmpleu", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::fcmpgeu, /* .swapChildrenOpCode */ \
+      TR::fcmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::iffcmpleu, /* .ifCompareOpCode */ \
+      fcmpleu, /* float compare if less than or equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::dcmpeq, /* .opcode */ \
+      "dcmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmpeq, /* .swapChildrenOpCode */ \
+      TR::dcmpneu, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmpeq, /* .ifCompareOpCode */ \
+      dcmpeq, /* double compare if equal */ \
+   ) \
+   MACRO(\
+      TR::dcmpne, /* .opcode */ \
+      "dcmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmpne, /* .swapChildrenOpCode */ \
+      TR::dcmpequ, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmpne, /* .ifCompareOpCode */ \
+      dcmpne, /* double compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::dcmplt, /* .opcode */ \
+      "dcmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmpgt, /* .swapChildrenOpCode */ \
+      TR::dcmpgeu, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmplt, /* .ifCompareOpCode */ \
+      dcmplt, /* double compare if less than */ \
+   ) \
+   MACRO(\
+      TR::dcmpge, /* .opcode */ \
+      "dcmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmple, /* .swapChildrenOpCode */ \
+      TR::dcmpltu, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmpge, /* .ifCompareOpCode */ \
+      dcmpge, /* double compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::dcmpgt, /* .opcode */ \
+      "dcmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmplt, /* .swapChildrenOpCode */ \
+      TR::dcmpleu, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmpgt, /* .ifCompareOpCode */ \
+      dcmpgt, /* double compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::dcmple, /* .opcode */ \
+      "dcmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmpge, /* .swapChildrenOpCode */ \
+      TR::dcmpgtu, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmple, /* .ifCompareOpCode */ \
+      dcmple, /* double compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::dcmpequ, /* .opcode */ \
+      "dcmpequ", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmpequ, /* .swapChildrenOpCode */ \
+      TR::dcmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmpequ, /* .ifCompareOpCode */ \
+      dcmpequ, /* double compare if equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::dcmpneu, /* .opcode */ \
+      "dcmpneu", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmpneu, /* .swapChildrenOpCode */ \
+      TR::dcmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmpneu, /* .ifCompareOpCode */ \
+      dcmpneu, /* double compare if not equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::dcmpltu, /* .opcode */ \
+      "dcmpltu", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmpgtu, /* .swapChildrenOpCode */ \
+      TR::dcmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmpltu, /* .ifCompareOpCode */ \
+      dcmpltu, /* double compare if less than or unordered */ \
+   ) \
+   MACRO(\
+      TR::dcmpgeu, /* .opcode */ \
+      "dcmpgeu", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmpleu, /* .swapChildrenOpCode */ \
+      TR::dcmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmpgeu, /* .ifCompareOpCode */ \
+      dcmpgeu, /* double compare if greater than or equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::dcmpgtu, /* .opcode */ \
+      "dcmpgtu", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmpltu, /* .swapChildrenOpCode */ \
+      TR::dcmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmpgtu, /* .ifCompareOpCode */ \
+      dcmpgtu, /* double compare if greater than or unordered */ \
+   ) \
+   MACRO(\
+      TR::dcmpleu, /* .opcode */ \
+      "dcmpleu", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::dcmpgeu, /* .swapChildrenOpCode */ \
+      TR::dcmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifdcmpleu, /* .ifCompareOpCode */ \
+      dcmpleu, /* double compare if less than or equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::acmpeq, /* .opcode */ \
+      "acmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::acmpeq, /* .swapChildrenOpCode */ \
+      TR::acmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifacmpeq, /* .ifCompareOpCode */ \
+      acmpeq, /* address compare if equal */ \
+   ) \
+   MACRO(\
+      TR::acmpne, /* .opcode */ \
+      "acmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::acmpne, /* .swapChildrenOpCode */ \
+      TR::acmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifacmpne, /* .ifCompareOpCode */ \
+      acmpne, /* address compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::acmplt, /* .opcode */ \
+      "acmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::UnsignedCompare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::acmpgt, /* .swapChildrenOpCode */ \
+      TR::acmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifacmplt, /* .ifCompareOpCode */ \
+      acmplt, /* address compare if less than */ \
+   ) \
+   MACRO(\
+      TR::acmpge, /* .opcode */ \
+      "acmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::UnsignedCompare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::acmple, /* .swapChildrenOpCode */ \
+      TR::acmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifacmpge, /* .ifCompareOpCode */ \
+      acmpge, /* address compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::acmpgt, /* .opcode */ \
+      "acmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::UnsignedCompare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::acmplt, /* .swapChildrenOpCode */ \
+      TR::acmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifacmpgt, /* .ifCompareOpCode */ \
+      acmpgt, /* address compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::acmple, /* .opcode */ \
+      "acmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::UnsignedCompare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::acmpge, /* .swapChildrenOpCode */ \
+      TR::acmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifacmple, /* .ifCompareOpCode */ \
+      acmple, /* address compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::bcmpeq, /* .opcode */ \
+      "bcmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bcmpeq, /* .swapChildrenOpCode */ \
+      TR::bcmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbcmpeq, /* .ifCompareOpCode */ \
+      bcmpeq, /* byte compare if equal */ \
+   ) \
+   MACRO(\
+      TR::bcmpne, /* .opcode */ \
+      "bcmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bcmpne, /* .swapChildrenOpCode */ \
+      TR::bcmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbcmpne, /* .ifCompareOpCode */ \
+      bcmpne, /* byte compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::bcmplt, /* .opcode */ \
+      "bcmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bcmpgt, /* .swapChildrenOpCode */ \
+      TR::bcmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbcmplt, /* .ifCompareOpCode */ \
+      bcmplt, /* byte compare if less than */ \
+   ) \
+   MACRO(\
+      TR::bcmpge, /* .opcode */ \
+      "bcmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bcmple, /* .swapChildrenOpCode */ \
+      TR::bcmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbcmpge, /* .ifCompareOpCode */ \
+      bcmpge, /* byte compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::bcmpgt, /* .opcode */ \
+      "bcmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bcmplt, /* .swapChildrenOpCode */ \
+      TR::bcmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbcmpgt, /* .ifCompareOpCode */ \
+      bcmpgt, /* byte compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::bcmple, /* .opcode */ \
+      "bcmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bcmpge, /* .swapChildrenOpCode */ \
+      TR::bcmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbcmple, /* .ifCompareOpCode */ \
+      bcmple, /* byte compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::bucmpeq, /* .opcode */ \
+      "bucmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bucmpeq, /* .swapChildrenOpCode */ \
+      TR::bucmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbucmpeq, /* .ifCompareOpCode */ \
+      bucmpeq, /* unsigned byte compare if equal */ \
+   ) \
+   MACRO(\
+      TR::bucmpne, /* .opcode */ \
+      "bucmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bucmpne, /* .swapChildrenOpCode */ \
+      TR::bucmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbucmpne, /* .ifCompareOpCode */ \
+      bucmpne, /* unsigned byte compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::bucmplt, /* .opcode */ \
+      "bucmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bucmpgt, /* .swapChildrenOpCode */ \
+      TR::bucmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbucmplt, /* .ifCompareOpCode */ \
+      bucmplt, /* unsigned byte compare if less than */ \
+   ) \
+   MACRO(\
+      TR::bucmpge, /* .opcode */ \
+      "bucmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bucmple, /* .swapChildrenOpCode */ \
+      TR::bucmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbucmpge, /* .ifCompareOpCode */ \
+      bucmpge, /* unsigned byte compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::bucmpgt, /* .opcode */ \
+      "bucmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bucmplt, /* .swapChildrenOpCode */ \
+      TR::bucmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbucmpgt, /* .ifCompareOpCode */ \
+      bucmpgt, /* unsigned byte compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::bucmple, /* .opcode */ \
+      "bucmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::bucmpge, /* .swapChildrenOpCode */ \
+      TR::bucmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifbucmple, /* .ifCompareOpCode */ \
+      bucmple, /* unsigned byte compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::scmpeq, /* .opcode */ \
+      "scmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::scmpeq, /* .swapChildrenOpCode */ \
+      TR::scmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifscmpeq, /* .ifCompareOpCode */ \
+      scmpeq, /* short integer compare if equal */ \
+   ) \
+   MACRO(\
+      TR::scmpne, /* .opcode */ \
+      "scmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::scmpne, /* .swapChildrenOpCode */ \
+      TR::scmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifscmpne, /* .ifCompareOpCode */ \
+      scmpne, /* short integer compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::scmplt, /* .opcode */ \
+      "scmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::scmpgt, /* .swapChildrenOpCode */ \
+      TR::scmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifscmplt, /* .ifCompareOpCode */ \
+      scmplt, /* short integer compare if less than */ \
+   ) \
+   MACRO(\
+      TR::scmpge, /* .opcode */ \
+      "scmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::scmple, /* .swapChildrenOpCode */ \
+      TR::scmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifscmpge, /* .ifCompareOpCode */ \
+      scmpge, /* short integer compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::scmpgt, /* .opcode */ \
+      "scmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::scmplt, /* .swapChildrenOpCode */ \
+      TR::scmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifscmpgt, /* .ifCompareOpCode */ \
+      scmpgt, /* short integer compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::scmple, /* .opcode */ \
+      "scmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::scmpge, /* .swapChildrenOpCode */ \
+      TR::scmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifscmple, /* .ifCompareOpCode */ \
+      scmple, /* short integer compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::sucmpeq, /* .opcode */ \
+      "sucmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::sucmpeq, /* .swapChildrenOpCode */ \
+      TR::sucmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifsucmpeq, /* .ifCompareOpCode */ \
+      sucmpeq, /* char compare if equal */ \
+   ) \
+   MACRO(\
+      TR::sucmpne, /* .opcode */ \
+      "sucmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::sucmpne, /* .swapChildrenOpCode */ \
+      TR::sucmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifsucmpne, /* .ifCompareOpCode */ \
+      sucmpne, /* char compare if not equal */ \
+   ) \
+   MACRO(\
+      TR::sucmplt, /* .opcode */ \
+      "sucmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::sucmpgt, /* .swapChildrenOpCode */ \
+      TR::sucmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifsucmplt, /* .ifCompareOpCode */ \
+      sucmplt, /* char compare if less than */ \
+   ) \
+   MACRO(\
+      TR::sucmpge, /* .opcode */ \
+      "sucmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::sucmple, /* .swapChildrenOpCode */ \
+      TR::sucmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifsucmpge, /* .ifCompareOpCode */ \
+      sucmpge, /* char compare if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::sucmpgt, /* .opcode */ \
+      "sucmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::sucmplt, /* .swapChildrenOpCode */ \
+      TR::sucmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifsucmpgt, /* .ifCompareOpCode */ \
+      sucmpgt, /* char compare if greater than */ \
+   ) \
+   MACRO(\
+      TR::sucmple, /* .opcode */ \
+      "sucmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::sucmpge, /* .swapChildrenOpCode */ \
+      TR::sucmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ifsucmple, /* .ifCompareOpCode */ \
+      sucmple, /* char compare if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::lcmp, /* .opcode */ \
+      "lcmp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::Signum, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lcmp, /* long compare (1 if child1 > child2, 0 if child1 == child2, -1 if child1 < child2) */ \
+   ) \
+   MACRO(\
+      TR::fcmpl, /* .opcode */ \
+      "fcmpl", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fcmpl, /* float compare l (1 if child1 > child2, 0 if child1 == child2, -1 if child1 < child2 or unordered) */ \
+   ) \
+   MACRO(\
+      TR::fcmpg, /* .opcode */ \
+      "fcmpg", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fcmpg, /* float compare g (1 if child1 > child2 or unordered, 0 if child1 == child2, -1 if child1 < child2) */ \
+   ) \
+   MACRO(\
+      TR::dcmpl, /* .opcode */ \
+      "dcmpl", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dcmpl, /* double compare l (1 if child1 > child2, 0 if child1 == child2, -1 if child1 < child2 or unordered) */ \
+   ) \
+   MACRO(\
+      TR::dcmpg, /* .opcode */ \
+      "dcmpg", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dcmpg, /* double compare g (1 if child1 > child2 or unordered, 0 if child1 == child2, -1 if child1 < child2) */ \
+   ) \
+   MACRO(\
+      TR::ificmpeq, /* .opcode */ \
+      "ificmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ificmpeq, /* .swapChildrenOpCode */ \
+      TR::ificmpne, /* .reverseBranchOpCode */ \
+      TR::icmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ificmpeq, /* integer compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::ificmpne, /* .opcode */ \
+      "ificmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ificmpne, /* .swapChildrenOpCode */ \
+      TR::ificmpeq, /* .reverseBranchOpCode */ \
+      TR::icmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ificmpne, /* integer compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::ificmplt, /* .opcode */ \
+      "ificmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ificmpgt, /* .swapChildrenOpCode */ \
+      TR::ificmpge, /* .reverseBranchOpCode */ \
+      TR::icmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ificmplt, /* integer compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::ificmpge, /* .opcode */ \
+      "ificmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ificmple, /* .swapChildrenOpCode */ \
+      TR::ificmplt, /* .reverseBranchOpCode */ \
+      TR::icmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ificmpge, /* integer compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::ificmpgt, /* .opcode */ \
+      "ificmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ificmplt, /* .swapChildrenOpCode */ \
+      TR::ificmple, /* .reverseBranchOpCode */ \
+      TR::icmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ificmpgt, /* integer compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::ificmple, /* .opcode */ \
+      "ificmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ificmpge, /* .swapChildrenOpCode */ \
+      TR::ificmpgt, /* .reverseBranchOpCode */ \
+      TR::icmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ificmple, /* integer compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifiucmpeq, /* .opcode */ \
+      "ifiucmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ifiucmpeq, /* .swapChildrenOpCode */ \
+      TR::ifiucmpne, /* .reverseBranchOpCode */ \
+      TR::iucmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifiucmpeq, /* unsigned integer compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::ifiucmpne, /* .opcode */ \
+      "ifiucmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ifiucmpne, /* .swapChildrenOpCode */ \
+      TR::ifiucmpeq, /* .reverseBranchOpCode */ \
+      TR::iucmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifiucmpne, /* unsigned integer compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::ifiucmplt, /* .opcode */ \
+      "ifiucmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ifiucmpgt, /* .swapChildrenOpCode */ \
+      TR::ifiucmpge, /* .reverseBranchOpCode */ \
+      TR::iucmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifiucmplt, /* unsigned integer compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::ifiucmpge, /* .opcode */ \
+      "ifiucmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ifiucmple, /* .swapChildrenOpCode */ \
+      TR::ifiucmplt, /* .reverseBranchOpCode */ \
+      TR::iucmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifiucmpge, /* unsigned integer compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifiucmpgt, /* .opcode */ \
+      "ifiucmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ifiucmplt, /* .swapChildrenOpCode */ \
+      TR::ifiucmple, /* .reverseBranchOpCode */ \
+      TR::iucmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifiucmpgt, /* unsigned integer compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::ifiucmple, /* .opcode */ \
+      "ifiucmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::ifiucmpge, /* .swapChildrenOpCode */ \
+      TR::ifiucmpgt, /* .reverseBranchOpCode */ \
+      TR::iucmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifiucmple, /* unsigned integer compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::iflcmpeq, /* .opcode */ \
+      "iflcmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflcmpeq, /* .swapChildrenOpCode */ \
+      TR::iflcmpne, /* .reverseBranchOpCode */ \
+      TR::lcmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflcmpeq, /* long compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::iflcmpne, /* .opcode */ \
+      "iflcmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflcmpne, /* .swapChildrenOpCode */ \
+      TR::iflcmpeq, /* .reverseBranchOpCode */ \
+      TR::lcmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflcmpne, /* long compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::iflcmplt, /* .opcode */ \
+      "iflcmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflcmpgt, /* .swapChildrenOpCode */ \
+      TR::iflcmpge, /* .reverseBranchOpCode */ \
+      TR::lcmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflcmplt, /* long compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::iflcmpge, /* .opcode */ \
+      "iflcmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflcmple, /* .swapChildrenOpCode */ \
+      TR::iflcmplt, /* .reverseBranchOpCode */ \
+      TR::lcmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflcmpge, /* long compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::iflcmpgt, /* .opcode */ \
+      "iflcmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflcmplt, /* .swapChildrenOpCode */ \
+      TR::iflcmple, /* .reverseBranchOpCode */ \
+      TR::lcmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflcmpgt, /* long compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::iflcmple, /* .opcode */ \
+      "iflcmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflcmpge, /* .swapChildrenOpCode */ \
+      TR::iflcmpgt, /* .reverseBranchOpCode */ \
+      TR::lcmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflcmple, /* long compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::iflucmpeq, /* .opcode */ \
+      "iflucmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflucmpeq, /* .swapChildrenOpCode */ \
+      TR::iflucmpne, /* .reverseBranchOpCode */ \
+      TR::lucmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflucmpeq, /* unsigned long compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::iflucmpne, /* .opcode */ \
+      "iflucmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflucmpne, /* .swapChildrenOpCode */ \
+      TR::iflucmpeq, /* .reverseBranchOpCode */ \
+      TR::lucmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflucmpne, /* unsigned long compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::iflucmplt, /* .opcode */ \
+      "iflucmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflucmpgt, /* .swapChildrenOpCode */ \
+      TR::iflucmpge, /* .reverseBranchOpCode */ \
+      TR::lucmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflucmplt, /* unsigned long compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::iflucmpge, /* .opcode */ \
+      "iflucmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflucmple, /* .swapChildrenOpCode */ \
+      TR::iflucmplt, /* .reverseBranchOpCode */ \
+      TR::lucmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflucmpge, /* unsigned long compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::iflucmpgt, /* .opcode */ \
+      "iflucmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflucmplt, /* .swapChildrenOpCode */ \
+      TR::iflucmple, /* .reverseBranchOpCode */ \
+      TR::lucmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflucmpgt, /* unsigned long compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::iflucmple, /* .opcode */ \
+      "iflucmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::iflucmpge, /* .swapChildrenOpCode */ \
+      TR::iflucmpgt, /* .reverseBranchOpCode */ \
+      TR::lucmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflucmple, /* unsigned long compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::iffcmpeq, /* .opcode */ \
+      "iffcmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmpeq, /* .swapChildrenOpCode */ \
+      TR::iffcmpneu, /* .reverseBranchOpCode */ \
+      TR::fcmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmpeq, /* float compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::iffcmpne, /* .opcode */ \
+      "iffcmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmpne, /* .swapChildrenOpCode */ \
+      TR::iffcmpequ, /* .reverseBranchOpCode */ \
+      TR::fcmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmpne, /* float compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::iffcmplt, /* .opcode */ \
+      "iffcmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmpgt, /* .swapChildrenOpCode */ \
+      TR::iffcmpgeu, /* .reverseBranchOpCode */ \
+      TR::fcmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmplt, /* float compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::iffcmpge, /* .opcode */ \
+      "iffcmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmple, /* .swapChildrenOpCode */ \
+      TR::iffcmpltu, /* .reverseBranchOpCode */ \
+      TR::fcmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmpge, /* float compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::iffcmpgt, /* .opcode */ \
+      "iffcmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmplt, /* .swapChildrenOpCode */ \
+      TR::iffcmpleu, /* .reverseBranchOpCode */ \
+      TR::fcmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmpgt, /* float compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::iffcmple, /* .opcode */ \
+      "iffcmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmpge, /* .swapChildrenOpCode */ \
+      TR::iffcmpgtu, /* .reverseBranchOpCode */ \
+      TR::fcmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmple, /* float compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::iffcmpequ, /* .opcode */ \
+      "iffcmpequ", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmpequ, /* .swapChildrenOpCode */ \
+      TR::iffcmpne, /* .reverseBranchOpCode */ \
+      TR::fcmpequ, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmpequ, /* float compare and branch if equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::iffcmpneu, /* .opcode */ \
+      "iffcmpneu", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmpneu, /* .swapChildrenOpCode */ \
+      TR::iffcmpeq, /* .reverseBranchOpCode */ \
+      TR::fcmpneu, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmpneu, /* float compare and branch if not equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::iffcmpltu, /* .opcode */ \
+      "iffcmpltu", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmpgtu, /* .swapChildrenOpCode */ \
+      TR::iffcmpge, /* .reverseBranchOpCode */ \
+      TR::fcmpltu, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmpltu, /* float compare and branch if less than or unordered */ \
+   ) \
+   MACRO(\
+      TR::iffcmpgeu, /* .opcode */ \
+      "iffcmpgeu", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmpleu, /* .swapChildrenOpCode */ \
+      TR::iffcmplt, /* .reverseBranchOpCode */ \
+      TR::fcmpgeu, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmpgeu, /* float compare and branch if greater than or equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::iffcmpgtu, /* .opcode */ \
+      "iffcmpgtu", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmpltu, /* .swapChildrenOpCode */ \
+      TR::iffcmple, /* .reverseBranchOpCode */ \
+      TR::fcmpgtu, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmpgtu, /* float compare and branch if greater than or unordered */ \
+   ) \
+   MACRO(\
+      TR::iffcmpleu, /* .opcode */ \
+      "iffcmpleu", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::iffcmpgeu, /* .swapChildrenOpCode */ \
+      TR::iffcmpgt, /* .reverseBranchOpCode */ \
+      TR::fcmpleu, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iffcmpleu, /* float compare and branch if less than or equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::ifdcmpeq, /* .opcode */ \
+      "ifdcmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmpeq, /* .swapChildrenOpCode */ \
+      TR::ifdcmpneu, /* .reverseBranchOpCode */ \
+      TR::dcmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmpeq, /* double compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::ifdcmpne, /* .opcode */ \
+      "ifdcmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmpne, /* .swapChildrenOpCode */ \
+      TR::ifdcmpequ, /* .reverseBranchOpCode */ \
+      TR::dcmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmpne, /* double compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::ifdcmplt, /* .opcode */ \
+      "ifdcmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmpgt, /* .swapChildrenOpCode */ \
+      TR::ifdcmpgeu, /* .reverseBranchOpCode */ \
+      TR::dcmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmplt, /* double compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::ifdcmpge, /* .opcode */ \
+      "ifdcmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmple, /* .swapChildrenOpCode */ \
+      TR::ifdcmpltu, /* .reverseBranchOpCode */ \
+      TR::dcmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmpge, /* double compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifdcmpgt, /* .opcode */ \
+      "ifdcmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmplt, /* .swapChildrenOpCode */ \
+      TR::ifdcmpleu, /* .reverseBranchOpCode */ \
+      TR::dcmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmpgt, /* double compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::ifdcmple, /* .opcode */ \
+      "ifdcmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmpge, /* .swapChildrenOpCode */ \
+      TR::ifdcmpgtu, /* .reverseBranchOpCode */ \
+      TR::dcmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmple, /* double compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifdcmpequ, /* .opcode */ \
+      "ifdcmpequ", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmpequ, /* .swapChildrenOpCode */ \
+      TR::ifdcmpne, /* .reverseBranchOpCode */ \
+      TR::dcmpequ, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmpequ, /* double compare and branch if equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::ifdcmpneu, /* .opcode */ \
+      "ifdcmpneu", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmpneu, /* .swapChildrenOpCode */ \
+      TR::ifdcmpeq, /* .reverseBranchOpCode */ \
+      TR::dcmpneu, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmpneu, /* double compare and branch if not equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::ifdcmpltu, /* .opcode */ \
+      "ifdcmpltu", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmpgtu, /* .swapChildrenOpCode */ \
+      TR::ifdcmpge, /* .reverseBranchOpCode */ \
+      TR::dcmpltu, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmpltu, /* double compare and branch if less than or unordered */ \
+   ) \
+   MACRO(\
+      TR::ifdcmpgeu, /* .opcode */ \
+      "ifdcmpgeu", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmpleu, /* .swapChildrenOpCode */ \
+      TR::ifdcmplt, /* .reverseBranchOpCode */ \
+      TR::dcmpgeu, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmpgeu, /* double compare and branch if greater than or equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::ifdcmpgtu, /* .opcode */ \
+      "ifdcmpgtu", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmpltu, /* .swapChildrenOpCode */ \
+      TR::ifdcmple, /* .reverseBranchOpCode */ \
+      TR::dcmpgtu, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmpgtu, /* double compare and branch if greater than or unordered */ \
+   ) \
+   MACRO(\
+      TR::ifdcmpleu, /* .opcode */ \
+      "ifdcmpleu", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual | ILProp3::CompareTrueIfUnordered, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::ifdcmpgeu, /* .swapChildrenOpCode */ \
+      TR::ifdcmpgt, /* .reverseBranchOpCode */ \
+      TR::dcmpleu, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifdcmpleu, /* double compare and branch if less than or equal or unordered */ \
+   ) \
+   MACRO(\
+      TR::ifacmpeq, /* .opcode */ \
+      "ifacmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::ifacmpeq, /* .swapChildrenOpCode */ \
+      TR::ifacmpne, /* .reverseBranchOpCode */ \
+      TR::acmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifacmpeq, /* address compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::ifacmpne, /* .opcode */ \
+      "ifacmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::ifacmpne, /* .swapChildrenOpCode */ \
+      TR::ifacmpeq, /* .reverseBranchOpCode */ \
+      TR::acmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifacmpne, /* address compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::ifacmplt, /* .opcode */ \
+      "ifacmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::ifacmpgt, /* .swapChildrenOpCode */ \
+      TR::ifacmpge, /* .reverseBranchOpCode */ \
+      TR::acmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifacmplt, /* address compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::ifacmpge, /* .opcode */ \
+      "ifacmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::ifacmple, /* .swapChildrenOpCode */ \
+      TR::ifacmplt, /* .reverseBranchOpCode */ \
+      TR::acmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifacmpge, /* address compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifacmpgt, /* .opcode */ \
+      "ifacmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::ifacmplt, /* .swapChildrenOpCode */ \
+      TR::ifacmple, /* .reverseBranchOpCode */ \
+      TR::acmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifacmpgt, /* address compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::ifacmple, /* .opcode */ \
+      "ifacmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::ifacmpge, /* .swapChildrenOpCode */ \
+      TR::ifacmpgt, /* .reverseBranchOpCode */ \
+      TR::acmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifacmple, /* address compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifbcmpeq, /* .opcode */ \
+      "ifbcmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbcmpeq, /* .swapChildrenOpCode */ \
+      TR::ifbcmpne, /* .reverseBranchOpCode */ \
+      TR::bcmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbcmpeq, /* byte compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::ifbcmpne, /* .opcode */ \
+      "ifbcmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbcmpne, /* .swapChildrenOpCode */ \
+      TR::ifbcmpeq, /* .reverseBranchOpCode */ \
+      TR::bcmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbcmpne, /* byte compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::ifbcmplt, /* .opcode */ \
+      "ifbcmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbcmpgt, /* .swapChildrenOpCode */ \
+      TR::ifbcmpge, /* .reverseBranchOpCode */ \
+      TR::bcmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbcmplt, /* byte compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::ifbcmpge, /* .opcode */ \
+      "ifbcmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbcmple, /* .swapChildrenOpCode */ \
+      TR::ifbcmplt, /* .reverseBranchOpCode */ \
+      TR::bcmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbcmpge, /* byte compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifbcmpgt, /* .opcode */ \
+      "ifbcmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbcmplt, /* .swapChildrenOpCode */ \
+      TR::ifbcmple, /* .reverseBranchOpCode */ \
+      TR::bcmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbcmpgt, /* byte compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::ifbcmple, /* .opcode */ \
+      "ifbcmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbcmpge, /* .swapChildrenOpCode */ \
+      TR::ifbcmpgt, /* .reverseBranchOpCode */ \
+      TR::bcmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbcmple, /* byte compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifbucmpeq, /* .opcode */ \
+      "ifbucmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbucmpeq, /* .swapChildrenOpCode */ \
+      TR::ifbucmpne, /* .reverseBranchOpCode */ \
+      TR::bucmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbucmpeq, /* unsigned byte compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::ifbucmpne, /* .opcode */ \
+      "ifbucmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbucmpne, /* .swapChildrenOpCode */ \
+      TR::ifbucmpeq, /* .reverseBranchOpCode */ \
+      TR::bucmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbucmpne, /* unsigned byte compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::ifbucmplt, /* .opcode */ \
+      "ifbucmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbucmpgt, /* .swapChildrenOpCode */ \
+      TR::ifbucmpge, /* .reverseBranchOpCode */ \
+      TR::bucmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbucmplt, /* unsigned byte compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::ifbucmpge, /* .opcode */ \
+      "ifbucmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbucmple, /* .swapChildrenOpCode */ \
+      TR::ifbucmplt, /* .reverseBranchOpCode */ \
+      TR::bucmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbucmpge, /* unsigned byte compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifbucmpgt, /* .opcode */ \
+      "ifbucmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbucmplt, /* .swapChildrenOpCode */ \
+      TR::ifbucmple, /* .reverseBranchOpCode */ \
+      TR::bucmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbucmpgt, /* unsigned byte compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::ifbucmple, /* .opcode */ \
+      "ifbucmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::ifbucmpge, /* .swapChildrenOpCode */ \
+      TR::ifbucmpgt, /* .reverseBranchOpCode */ \
+      TR::bucmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifbucmple, /* unsigned byte compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifscmpeq, /* .opcode */ \
+      "ifscmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifscmpeq, /* .swapChildrenOpCode */ \
+      TR::ifscmpne, /* .reverseBranchOpCode */ \
+      TR::scmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifscmpeq, /* short integer compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::ifscmpne, /* .opcode */ \
+      "ifscmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifscmpne, /* .swapChildrenOpCode */ \
+      TR::ifscmpeq, /* .reverseBranchOpCode */ \
+      TR::scmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifscmpne, /* short integer compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::ifscmplt, /* .opcode */ \
+      "ifscmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifscmpgt, /* .swapChildrenOpCode */ \
+      TR::ifscmpge, /* .reverseBranchOpCode */ \
+      TR::scmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifscmplt, /* short integer compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::ifscmpge, /* .opcode */ \
+      "ifscmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifscmple, /* .swapChildrenOpCode */ \
+      TR::ifscmplt, /* .reverseBranchOpCode */ \
+      TR::scmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifscmpge, /* short integer compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifscmpgt, /* .opcode */ \
+      "ifscmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifscmplt, /* .swapChildrenOpCode */ \
+      TR::ifscmple, /* .reverseBranchOpCode */ \
+      TR::scmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifscmpgt, /* short integer compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::ifscmple, /* .opcode */ \
+      "ifscmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifscmpge, /* .swapChildrenOpCode */ \
+      TR::ifscmpgt, /* .reverseBranchOpCode */ \
+      TR::scmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifscmple, /* short integer compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifsucmpeq, /* .opcode */ \
+      "ifsucmpeq", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifsucmpeq, /* .swapChildrenOpCode */ \
+      TR::ifsucmpne, /* .reverseBranchOpCode */ \
+      TR::sucmpeq, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifsucmpeq, /* char compare and branch if equal */ \
+   ) \
+   MACRO(\
+      TR::ifsucmpne, /* .opcode */ \
+      "ifsucmpne", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifsucmpne, /* .swapChildrenOpCode */ \
+      TR::ifsucmpeq, /* .reverseBranchOpCode */ \
+      TR::sucmpne, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifsucmpne, /* char compare and branch if not equal */ \
+   ) \
+   MACRO(\
+      TR::ifsucmplt, /* .opcode */ \
+      "ifsucmplt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifsucmpgt, /* .swapChildrenOpCode */ \
+      TR::ifsucmpge, /* .reverseBranchOpCode */ \
+      TR::sucmplt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifsucmplt, /* char compare and branch if less than */ \
+   ) \
+   MACRO(\
+      TR::ifsucmpge, /* .opcode */ \
+      "ifsucmpge", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifsucmple, /* .swapChildrenOpCode */ \
+      TR::ifsucmplt, /* .reverseBranchOpCode */ \
+      TR::sucmpge, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifsucmpge, /* char compare and branch if greater than or equal */ \
+   ) \
+   MACRO(\
+      TR::ifsucmpgt, /* .opcode */ \
+      "ifsucmpgt", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifsucmplt, /* .swapChildrenOpCode */ \
+      TR::ifsucmple, /* .reverseBranchOpCode */ \
+      TR::sucmpgt, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifsucmpgt, /* char compare and branch if greater than */ \
+   ) \
+   MACRO(\
+      TR::ifsucmple, /* .opcode */ \
+      "ifsucmple", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::ifsucmpge, /* .swapChildrenOpCode */ \
+      TR::ifsucmpgt, /* .reverseBranchOpCode */ \
+      TR::sucmple, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ifsucmple, /* char compare and branch if less than or equal */ \
+   ) \
+   MACRO(\
+      TR::loadaddr, /* .opcode */ \
+      "loadaddr", /* .name */ \
+      ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack | ILProp2::LoadAddress, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      loadaddr, /* load address of non-heap storage item (Auto, Parm, Static or Method) */ \
+   ) \
+   MACRO(\
+      TR::ZEROCHK, /* .opcode */ \
+      "ZEROCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::Check| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ZEROCHK, /* Zero-check an int.  Symref indicates call to perform when first child is zero.  Other children are arguments to the call. */ \
+   ) \
+   MACRO(\
+      TR::callIf, /* .opcode */ \
+      "callIf", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      CHILD_COUNT(ILChildProp::UnspecifiedChildCount) | FIRST_CHILD(TR::Int32) | SECOND_CHILD(ILChildProp::UnspecifiedChildType) | THIRD_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      callIf, /* Call symref if first child evaluates to true.  Other childrem are arguments to the call. */ \
+   ) \
+   MACRO(\
+      TR::iRegLoad, /* .opcode */ \
+      "iRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iRegLoad, /* Load integer global register */ \
+   ) \
+   MACRO(\
+      TR::aRegLoad, /* .opcode */ \
+      "aRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      aRegLoad, /* Load address global register */ \
+   ) \
+   MACRO(\
+      TR::lRegLoad, /* .opcode */ \
+      "lRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lRegLoad, /* Load long integer global register */ \
+   ) \
+   MACRO(\
+      TR::fRegLoad, /* .opcode */ \
+      "fRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fRegLoad, /* Load float global register */ \
+   ) \
+   MACRO(\
+      TR::dRegLoad, /* .opcode */ \
+      "dRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dRegLoad, /* Load double global register */ \
+   ) \
+   MACRO(\
+      TR::sRegLoad, /* .opcode */ \
+      "sRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sRegLoad, /* Load short global register */ \
+   ) \
+   MACRO(\
+      TR::bRegLoad, /* .opcode */ \
+      "bRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bRegLoad, /* Load byte global register */ \
+   ) \
+   MACRO(\
+      TR::iRegStore, /* .opcode */ \
+      "iRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iRegStore, /* Store integer global register */ \
+   ) \
+   MACRO(\
+      TR::aRegStore, /* .opcode */ \
+      "aRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      aRegStore, /* Store address global register */ \
+   ) \
+   MACRO(\
+      TR::lRegStore, /* .opcode */ \
+      "lRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lRegStore, /* Store long integer global register */ \
+   ) \
+   MACRO(\
+      TR::fRegStore, /* .opcode */ \
+      "fRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fRegStore, /* Store float global register */ \
+   ) \
+   MACRO(\
+      TR::dRegStore, /* .opcode */ \
+      "dRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dRegStore, /* Store double global register */ \
+   ) \
+   MACRO(\
+      TR::sRegStore, /* .opcode */ \
+      "sRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sRegStore, /* Store short global register */ \
+   ) \
+   MACRO(\
+      TR::bRegStore, /* .opcode */ \
+      "bRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bRegStore, /* Store byte global register */ \
+   ) \
+   MACRO(\
+      TR::GlRegDeps, /* .opcode */ \
+      "GlRegDeps", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      GlRegDeps, /* Global Register Dependency List */ \
+   ) \
+   MACRO(\
+      TR::iselect, /* .opcode */ \
+      "iselect", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Int32, TR::Int32, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iselect, /* Select Operator:  Based on the result of the first child, take the value of the */ \
+   ) \
+   MACRO(\
+      TR::lselect, /* .opcode */ \
+      "lselect", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Int32, TR::Int64, TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lselect, /* second (first child evaluates to true) or third(first child evaluates to false) child */ \
+   ) \
+   MACRO(\
+      TR::bselect, /* .opcode */ \
+      "bselect", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Int32, TR::Int8, TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bselect, \
+   ) \
+   MACRO(\
+      TR::sselect, /* .opcode */ \
+      "sselect", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Int32, TR::Int16, TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sselect, \
+   ) \
+   MACRO(\
+      TR::aselect, /* .opcode */ \
+      "aselect", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      THREE_CHILD(TR::Int32, TR::Address, TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      aselect, \
+   ) \
+   MACRO(\
+      TR::fselect, /* .opcode */ \
+      "fselect", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      THREE_CHILD(TR::Int32, TR::Float, TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fselect, \
+   ) \
+   MACRO(\
+      TR::dselect, /* .opcode */ \
+      "dselect", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      THREE_CHILD(TR::Int32, TR::Double, TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dselect, \
+   ) \
+   MACRO(\
+      TR::treetop, /* .opcode */ \
+      "treetop", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      treetop, /* tree top to anchor subtrees with side-effects */ \
+   ) \
+   MACRO(\
+      TR::MethodEnterHook, /* .opcode */ \
+      "MethodEnterHook", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::MustBeLowered| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      MethodEnterHook, /* called after a frame is built, temps initialized, and monitor acquired (if necessary) */ \
+   ) \
+   MACRO(\
+      TR::MethodExitHook, /* .opcode */ \
+      "MethodExitHook", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::MustBeLowered| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      MethodExitHook, /* called immediately before returning, frame not yet collapsed, monitor released (if necessary) */ \
+   ) \
+   MACRO(\
+      TR::PassThrough, /* .opcode */ \
+      "PassThrough", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      PassThrough, /* Dummy node that represents its single child. */ \
+   ) \
+   MACRO(\
+      TR::compressedRefs, /* .opcode */ \
+      "compressedRefs", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_CHILD(ILChildProp::UnspecifiedChildType, TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      compressedRefs, /* no-op anchor providing optimizable subexpressions used for compression/decompression.  First child is address load/store, second child is heap base displacement */ \
+   ) \
+   MACRO(\
+      TR::BBStart, /* .opcode */ \
+      "BBStart", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      BBStart, /* Start of Basic Block */ \
+   ) \
+   MACRO(\
+      TR::BBEnd, /* .opcode */ \
+      "BBEnd", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      BBEnd, /* End of Basic Block */ \
+   ) \
+   MACRO(\
+      TR::virem, /* .opcode */ \
+      "virem", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      virem, /* vector integer remainder */ \
+   ) \
+   MACRO(\
+      TR::vimin, /* .opcode */ \
+      "vimin", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vimin, /* vector integer minimum */ \
+   ) \
+   MACRO(\
+      TR::vimax, /* .opcode */ \
+      "vimax", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vimax, /* vector integer maximum */ \
+   ) \
+   MACRO(\
+      TR::vigetelem, /* .opcode */ \
+      "vigetelem", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vigetelem, /* get vector int element */ \
+   ) \
+   MACRO(\
+      TR::visetelem, /* .opcode */ \
+      "visetelem", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      visetelem, /* set vector int element */ \
+   ) \
+   MACRO(\
+      TR::vimergel, /* .opcode */ \
+      "vimergel", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vimergel, /* vector int merge low */ \
+   ) \
+   MACRO(\
+      TR::vimergeh, /* .opcode */ \
+      "vimergeh", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vimergeh, /* vector int merge high */ \
+   ) \
+   MACRO(\
+      TR::vicmpeq, /* .opcode */ \
+      "vicmpeq", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpeq, /* vector integer compare equal  (return vector mask) */ \
+   ) \
+   MACRO(\
+      TR::vicmpgt, /* .opcode */ \
+      "vicmpgt", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpgt, /* vector integer compare greater than */ \
+   ) \
+   MACRO(\
+      TR::vicmpge, /* .opcode */ \
+      "vicmpge", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpge, /* vector integer compare greater equal */ \
+   ) \
+   MACRO(\
+      TR::vicmplt, /* .opcode */ \
+      "vicmplt", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmplt, /* vector integer compare less than */ \
+   ) \
+   MACRO(\
+      TR::vicmple, /* .opcode */ \
+      "vicmple", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmple, /* vector integer compare less equal */ \
+   ) \
+   MACRO(\
+      TR::vicmpalleq, /* .opcode */ \
+      "vicmpalleq", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpalleq, /* vector integer all equal (return boolean) */ \
+   ) \
+   MACRO(\
+      TR::vicmpallne, /* .opcode */ \
+      "vicmpallne", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpallne, /* vector integer all not equal */ \
+   ) \
+   MACRO(\
+      TR::vicmpallgt, /* .opcode */ \
+      "vicmpallgt", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpallgt, /* vector integer all greater than */ \
+   ) \
+   MACRO(\
+      TR::vicmpallge, /* .opcode */ \
+      "vicmpallge", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpallge, /* vector integer all greater equal */ \
+   ) \
+   MACRO(\
+      TR::vicmpalllt, /* .opcode */ \
+      "vicmpalllt", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpalllt, /* vector integer all less than */ \
+   ) \
+   MACRO(\
+      TR::vicmpallle, /* .opcode */ \
+      "vicmpallle", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpallle, /* vector integer all less equal */ \
+   ) \
+   MACRO(\
+      TR::vicmpanyeq, /* .opcode */ \
+      "vicmpanyeq", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpanyeq, /* vector integer any equal */ \
+   ) \
+   MACRO(\
+      TR::vicmpanyne, /* .opcode */ \
+      "vicmpanyne", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpanyne, /* vector integer any not equal */ \
+   ) \
+   MACRO(\
+      TR::vicmpanygt, /* .opcode */ \
+      "vicmpanygt", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpanygt, /* vector integer any greater than */ \
+   ) \
+   MACRO(\
+      TR::vicmpanyge, /* .opcode */ \
+      "vicmpanyge", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpanyge, /* vector integer any greater equal */ \
+   ) \
+   MACRO(\
+      TR::vicmpanylt, /* .opcode */ \
+      "vicmpanylt", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpanylt, /* vector integer any less than */ \
+   ) \
+   MACRO(\
+      TR::vicmpanyle, /* .opcode */ \
+      "vicmpanyle", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vicmpanyle, /* vector integer any less equal */ \
+   ) \
+   MACRO(\
+      TR::vnot, /* .opcode */ \
+      "vnot", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vnot, /* vector boolean not */ \
+   ) \
+   MACRO(\
+      TR::vbitselect, /* .opcode */ \
+      "vbitselect", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vbitselect, /* vector bit select */ \
+   ) \
+   MACRO(\
+      TR::vperm, /* .opcode */ \
+      "vperm", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vperm, /* vector permute */ \
+   ) \
+   MACRO(\
+      TR::vsplats, /* .opcode */ \
+      "vsplats", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vsplats, /* vector splats */ \
+   ) \
+   MACRO(\
+      TR::vdmergel, /* .opcode */ \
+      "vdmergel", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdmergel, /* vector double merge low */ \
+   ) \
+   MACRO(\
+      TR::vdmergeh, /* .opcode */ \
+      "vdmergeh", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdmergeh, /* vector double merge high */ \
+   ) \
+   MACRO(\
+      TR::vdsetelem, /* .opcode */ \
+      "vdsetelem", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdsetelem, /* set vector double element */ \
+   ) \
+   MACRO(\
+      TR::vdgetelem, /* .opcode */ \
+      "vdgetelem", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdgetelem, /* get vector double element */ \
+   ) \
+   MACRO(\
+      TR::vdsel, /* .opcode */ \
+      "vdsel", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdsel, /* get vector select double */ \
+   ) \
+   MACRO(\
+      TR::vdrem, /* .opcode */ \
+      "vdrem", /* .name */ \
+      ILProp1::Rem, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdrem, /* vector double remainder */ \
+   ) \
+   MACRO(\
+      TR::vdmadd, /* .opcode */ \
+      "vdmadd", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdmadd, /* vector double fused multiply add */ \
+   ) \
+   MACRO(\
+      TR::vdnmsub, /* .opcode */ \
+      "vdnmsub", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdnmsub, /* vector double fused negative multiply subtract */ \
+   ) \
+   MACRO(\
+      TR::vdmsub, /* .opcode */ \
+      "vdmsub", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdmsub, /* vector double fused multiply subtract */ \
+   ) \
+   MACRO(\
+      TR::vdmax, /* .opcode */ \
+      "vdmax", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdmax, /* vector double maximum */ \
+   ) \
+   MACRO(\
+      TR::vdmin, /* .opcode */ \
+      "vdmin", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdmin, /* vector double minimum */ \
+   ) \
+   MACRO(\
+      TR::vdcmpeq, /* .opcode */ \
+      "vdcmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt64, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpeq, /* .swapChildrenOpCode */ \
+      TR::vdcmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpeq, /* vector double compare equal  (return vector mask) */ \
+   ) \
+   MACRO(\
+      TR::vdcmpne, /* .opcode */ \
+      "vdcmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt64, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpne, /* .swapChildrenOpCode */ \
+      TR::vdcmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpne, /* vector double compare not equal  (return vector mask) */ \
+   ) \
+   MACRO(\
+      TR::vdcmpgt, /* .opcode */ \
+      "vdcmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt64, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmplt, /* .swapChildrenOpCode */ \
+      TR::vdcmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpgt, /* vector double compare greater than */ \
+   ) \
+   MACRO(\
+      TR::vdcmpge, /* .opcode */ \
+      "vdcmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt64, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmple, /* .swapChildrenOpCode */ \
+      TR::vdcmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpge, /* vector double compare greater equal */ \
+   ) \
+   MACRO(\
+      TR::vdcmplt, /* .opcode */ \
+      "vdcmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt64, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpgt, /* .swapChildrenOpCode */ \
+      TR::vdcmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmplt, /* vector double compare less than */ \
+   ) \
+   MACRO(\
+      TR::vdcmple, /* .opcode */ \
+      "vdcmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt64, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpge, /* .swapChildrenOpCode */ \
+      TR::vdcmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmple, /* vector double compare less equal */ \
+   ) \
+   MACRO(\
+      TR::vdcmpalleq, /* .opcode */ \
+      "vdcmpalleq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpalleq, /* .swapChildrenOpCode */ \
+      TR::vdcmpallne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpalleq, /* vector double compare all equal  (return boolean) */ \
+   ) \
+   MACRO(\
+      TR::vdcmpallne, /* .opcode */ \
+      "vdcmpallne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpallne, /* .swapChildrenOpCode */ \
+      TR::vdcmpalleq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpallne, /* vector double compare all not equal  (return boolean) */ \
+   ) \
+   MACRO(\
+      TR::vdcmpallgt, /* .opcode */ \
+      "vdcmpallgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpalllt, /* .swapChildrenOpCode */ \
+      TR::vdcmpallle, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpallgt, /* vector double compare all greater than */ \
+   ) \
+   MACRO(\
+      TR::vdcmpallge, /* .opcode */ \
+      "vdcmpallge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpallle, /* .swapChildrenOpCode */ \
+      TR::vdcmpalllt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpallge, /* vector double compare all greater equal */ \
+   ) \
+   MACRO(\
+      TR::vdcmpalllt, /* .opcode */ \
+      "vdcmpalllt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpallgt, /* .swapChildrenOpCode */ \
+      TR::vdcmpallge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpalllt, /* vector double compare all less than */ \
+   ) \
+   MACRO(\
+      TR::vdcmpallle, /* .opcode */ \
+      "vdcmpallle", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpallge, /* .swapChildrenOpCode */ \
+      TR::vdcmpallgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpallle, /* vector double compare all less equal */ \
+   ) \
+   MACRO(\
+      TR::vdcmpanyeq, /* .opcode */ \
+      "vdcmpanyeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpanyeq, /* .swapChildrenOpCode */ \
+      TR::vdcmpanyne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpanyeq, /* vector double compare any equal  (return boolean) */ \
+   ) \
+   MACRO(\
+      TR::vdcmpanyne, /* .opcode */ \
+      "vdcmpanyne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpanyne, /* .swapChildrenOpCode */ \
+      TR::vdcmpanyeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpanyne, /* vector double compare any not equal  (return boolean) */ \
+   ) \
+   MACRO(\
+      TR::vdcmpanygt, /* .opcode */ \
+      "vdcmpanygt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpanylt, /* .swapChildrenOpCode */ \
+      TR::vdcmpanyle, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpanygt, /* vector double compare any greater than */ \
+   ) \
+   MACRO(\
+      TR::vdcmpanyge, /* .opcode */ \
+      "vdcmpanyge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpanyle, /* .swapChildrenOpCode */ \
+      TR::vdcmpanylt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpanyge, /* vector double compare any greater equal */ \
+   ) \
+   MACRO(\
+      TR::vdcmpanylt, /* .opcode */ \
+      "vdcmpanylt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpanygt, /* .swapChildrenOpCode */ \
+      TR::vdcmpanyge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpanylt, /* vector double compare any less than */ \
+   ) \
+   MACRO(\
+      TR::vdcmpanyle, /* .opcode */ \
+      "vdcmpanyle", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vdcmpanyge, /* .swapChildrenOpCode */ \
+      TR::vdcmpanygt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdcmpanyle, /* vector double compare any less equal */ \
+   ) \
+   MACRO(\
+      TR::vdsqrt, /* .opcode */ \
+      "vdsqrt", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdsqrt, /* vector double square root */ \
+   ) \
+   MACRO(\
+      TR::vdlog, /* .opcode */ \
+      "vdlog", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdlog, /* vector double natural log */ \
+   ) \
+   MACRO(\
+      TR::vinc, /* .opcode */ \
+      "vinc", /* .name */ \
+      ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vinc, /* vector increment */ \
+   ) \
+   MACRO(\
+      TR::vdec, /* .opcode */ \
+      "vdec", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdec, /* vector decrement */ \
+   ) \
+   MACRO(\
+      TR::vneg, /* .opcode */ \
+      "vneg", /* .name */ \
+      ILProp1::Neg, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vneg, /* vector negation */ \
+   ) \
+   MACRO(\
+      TR::vcom, /* .opcode */ \
+      "vcom", /* .name */ \
+      ILProp1::Neg, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vcom, /* vector complement */ \
+   ) \
+   MACRO(\
+      TR::vadd, /* .opcode */ \
+      "vadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vadd, /* vector add */ \
+   ) \
+   MACRO(\
+      TR::vsub, /* .opcode */ \
+      "vsub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vsub, /* vector subtract */ \
+   ) \
+   MACRO(\
+      TR::vmul, /* .opcode */ \
+      "vmul", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vmul, /* vector multiply */ \
+   ) \
+   MACRO(\
+      TR::vdiv, /* .opcode */ \
+      "vdiv", /* .name */ \
+      ILProp1::Div, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdiv, /* vector divide */ \
+   ) \
+   MACRO(\
+      TR::vrem, /* .opcode */ \
+      "vrem", /* .name */ \
+      ILProp1::Rem, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vrem, /* vector remainder */ \
+   ) \
+   MACRO(\
+      TR::vand, /* .opcode */ \
+      "vand", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::And, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vand, /* vector logical AND */ \
+   ) \
+   MACRO(\
+      TR::vor, /* .opcode */ \
+      "vor", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Or, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vor, /* vector logical OR */ \
+   ) \
+   MACRO(\
+      TR::vxor, /* .opcode */ \
+      "vxor", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Xor, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vxor, /* vector exclusive OR integer */ \
+   ) \
+   MACRO(\
+      TR::vshl, /* .opcode */ \
+      "vshl", /* .name */ \
+      ILProp1::LeftShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vshl, /* vector shift left */ \
+   ) \
+   MACRO(\
+      TR::vushr, /* .opcode */ \
+      "vushr", /* .name */ \
+      ILProp1::RightShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vushr, /* vector shift right logical */ \
+   ) \
+   MACRO(\
+      TR::vshr, /* .opcode */ \
+      "vshr", /* .name */ \
+      ILProp1::RightShift, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vshr, /* vector shift right arithmetic */ \
+   ) \
+   MACRO(\
+      TR::vcmpeq, /* .opcode */ \
+      "vcmpeq", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vcmpeq, /* .swapChildrenOpCode */ \
+      TR::vcmpne, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::ificmpeq, /* .ifCompareOpCode */ \
+      vcmpeq, /* vector compare equal */ \
+   ) \
+   MACRO(\
+      TR::vcmpne, /* .opcode */ \
+      "vcmpne", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vcmpne, /* .swapChildrenOpCode */ \
+      TR::vcmpeq, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vcmpne, /* vector compare not equal */ \
+   ) \
+   MACRO(\
+      TR::vcmplt, /* .opcode */ \
+      "vcmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vcmpgt, /* .swapChildrenOpCode */ \
+      TR::vcmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vcmplt, /* vector compare less than */ \
+   ) \
+   MACRO(\
+      TR::vucmplt, /* .opcode */ \
+      "vucmplt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::Unsigned | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vcmpgt, /* .swapChildrenOpCode */ \
+      TR::vcmpge, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vucmplt, /* vector unsigned compare less than */ \
+   ) \
+   MACRO(\
+      TR::vcmpgt, /* .opcode */ \
+      "vcmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vcmplt, /* .swapChildrenOpCode */ \
+      TR::vcmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vcmpgt, /* vector compare greater than */ \
+   ) \
+   MACRO(\
+      TR::vucmpgt, /* .opcode */ \
+      "vucmpgt", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::Unsigned | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vcmplt, /* .swapChildrenOpCode */ \
+      TR::vcmple, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vucmpgt, /* vector unsigned compare greater than */ \
+   ) \
+   MACRO(\
+      TR::vcmple, /* .opcode */ \
+      "vcmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vcmpge, /* .swapChildrenOpCode */ \
+      TR::vcmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vcmple, /* vector compare less or equal */ \
+   ) \
+   MACRO(\
+      TR::vucmple, /* .opcode */ \
+      "vucmple", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::Unsigned | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vcmpge, /* .swapChildrenOpCode */ \
+      TR::vcmpgt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vucmple, /* vector unsigned compare less or equal */ \
+   ) \
+   MACRO(\
+      TR::vcmpge, /* .opcode */ \
+      "vcmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vcmple, /* .swapChildrenOpCode */ \
+      TR::vcmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vcmpge, /* vector compare greater or equal */ \
+   ) \
+   MACRO(\
+      TR::vucmpge, /* .opcode */ \
+      "vucmpge", /* .name */ \
+      ILProp1::BooleanCompare, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, /* .properties2 */ \
+      ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::Unsigned | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::vcmple, /* .swapChildrenOpCode */ \
+      TR::vcmplt, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vucmpge, /* vector unsigned compare greater or equal */ \
+   ) \
+   MACRO(\
+      TR::vload, /* .opcode */ \
+      "vload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vload, /* load vector */ \
+   ) \
+   MACRO(\
+      TR::vloadi, /* .opcode */ \
+      "vloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vloadi, /* load indirect vector */ \
+   ) \
+   MACRO(\
+      TR::vstore, /* .opcode */ \
+      "vstore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vstore, /* store vector */ \
+   ) \
+   MACRO(\
+      TR::vstorei, /* .opcode */ \
+      "vstorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vstorei, /* store indirect vector */ \
+   ) \
+   MACRO(\
+      TR::vrand, /* .opcode */ \
+      "vrand", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::VectorReduction, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vrand, /* AND all elements into single value of element size */ \
+   ) \
+   MACRO(\
+      TR::vreturn, /* .opcode */ \
+      "vreturn", /* .name */ \
+      ILProp1::Return | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vreturn, /* return a vector */ \
+   ) \
+   MACRO(\
+      TR::vcall, /* .opcode */ \
+      "vcall", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vcall, /* direct call returning a vector */ \
+   ) \
+   MACRO(\
+      TR::vcalli, /* .opcode */ \
+      "vcalli", /* .name */ \
+      ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vcalli, /* indirect call returning a vector */ \
+   ) \
+   MACRO(\
+      TR::vselect, /* .opcode */ \
+      "vselect", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Select, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vselect, /* vector select operator */ \
+   ) \
+   MACRO(\
+      TR::v2v, /* .opcode */ \
+      "v2v", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      v2v, /* vector to vector conversion. preserves bit pattern (noop), only changes datatype */ \
+   ) \
+   MACRO(\
+      TR::vl2vd, /* .opcode */ \
+      "vl2vd", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vl2vd, /* vector to vector conversion. converts each long element to double */ \
+   ) \
+   MACRO(\
+      TR::vconst, /* .opcode */ \
+      "vconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vconst, /* vector constant */ \
+   ) \
+   MACRO(\
+      TR::getvelem, /* .opcode */ \
+      "getvelem", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      getvelem, /* get vector element, returns a scalar */ \
+   ) \
+   MACRO(\
+      TR::vsetelem, /* .opcode */ \
+      "vsetelem", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vsetelem, /* vector set element */ \
+   ) \
+   MACRO(\
+      TR::vbRegLoad, /* .opcode */ \
+      "vbRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt8, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vbRegLoad, /* Load vector global register */ \
+   ) \
+   MACRO(\
+      TR::vsRegLoad, /* .opcode */ \
+      "vsRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt16, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vsRegLoad, /* Load vector global register */ \
+   ) \
+   MACRO(\
+      TR::viRegLoad, /* .opcode */ \
+      "viRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      viRegLoad, /* Load vector global register */ \
+   ) \
+   MACRO(\
+      TR::vlRegLoad, /* .opcode */ \
+      "vlRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt64, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vlRegLoad, /* Load vector global register */ \
+   ) \
+   MACRO(\
+      TR::vfRegLoad, /* .opcode */ \
+      "vfRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorFloat, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vfRegLoad, /* Load vector global register */ \
+   ) \
+   MACRO(\
+      TR::vdRegLoad, /* .opcode */ \
+      "vdRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdRegLoad, /* Load vector global register */ \
+   ) \
+   MACRO(\
+      TR::vbRegStore, /* .opcode */ \
+      "vbRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt8, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vbRegStore, /* Store vector global register */ \
+   ) \
+   MACRO(\
+      TR::vsRegStore, /* .opcode */ \
+      "vsRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt16, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vsRegStore, /* Store vector global register */ \
+   ) \
+   MACRO(\
+      TR::viRegStore, /* .opcode */ \
+      "viRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt32, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      viRegStore, /* Store vector global register */ \
+   ) \
+   MACRO(\
+      TR::vlRegStore, /* .opcode */ \
+      "vlRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorInt64, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vlRegStore, /* Store vector global register */ \
+   ) \
+   MACRO(\
+      TR::vfRegStore, /* .opcode */ \
+      "vfRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorFloat, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vfRegStore, /* Store vector global register */ \
+   ) \
+   MACRO(\
+      TR::vdRegStore, /* .opcode */ \
+      "vdRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::VectorDouble, /* .dataType */ \
+      ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      vdRegStore, /* Store vector global register */ \
+   ) \
+   MACRO(\
+      TR::iuconst, /* .opcode */ \
+      "iuconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iuconst, /* load unsigned integer constant (32-but unsigned) */ \
+   ) \
+   MACRO(\
+      TR::luconst, /* .opcode */ \
+      "luconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      luconst, /* load unsigned long integer constant (64-bit unsigned) */ \
+   ) \
+   MACRO(\
+      TR::buconst, /* .opcode */ \
+      "buconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      buconst, /* load unsigned byte integer constant (8-bit unsigned) */ \
+   ) \
+   MACRO(\
+      TR::iuload, /* .opcode */ \
+      "iuload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iuload, /* load unsigned integer */ \
+   ) \
+   MACRO(\
+      TR::luload, /* .opcode */ \
+      "luload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      luload, /* load unsigned long integer */ \
+   ) \
+   MACRO(\
+      TR::buload, /* .opcode */ \
+      "buload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      buload, /* load unsigned byte */ \
+   ) \
+   MACRO(\
+      TR::iuloadi, /* .opcode */ \
+      "iuloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iuloadi, /* load indirect unsigned integer */ \
+   ) \
+   MACRO(\
+      TR::luloadi, /* .opcode */ \
+      "luloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      luloadi, /* load indirect unsigned long integer */ \
+   ) \
+   MACRO(\
+      TR::buloadi, /* .opcode */ \
+      "buloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      buloadi, /* load indirect unsigned byte */ \
+   ) \
+   MACRO(\
+      TR::iustore, /* .opcode */ \
+      "iustore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iustore, /* store unsigned integer */ \
+   ) \
+   MACRO(\
+      TR::lustore, /* .opcode */ \
+      "lustore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lustore, /* store unsigned long integer */ \
+   ) \
+   MACRO(\
+      TR::bustore, /* .opcode */ \
+      "bustore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bustore, /* store unsigned byte */ \
+   ) \
+   MACRO(\
+      TR::iustorei, /* .opcode */ \
+      "iustorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iustorei, /* store indirect unsigned integer       (child1 a, child2 i) */ \
+   ) \
+   MACRO(\
+      TR::lustorei, /* .opcode */ \
+      "lustorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lustorei, /* store indirect unsigned long integer  (child1 a, child2 l) */ \
+   ) \
+   MACRO(\
+      TR::bustorei, /* .opcode */ \
+      "bustorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bustorei, /* store indirect unsigned byte          (child1 a, child2 b) */ \
+   ) \
+   MACRO(\
+      TR::iureturn, /* .opcode */ \
+      "iureturn", /* .name */ \
+      ILProp1::Return | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iureturn, /* return an unsigned integer */ \
+   ) \
+   MACRO(\
+      TR::lureturn, /* .opcode */ \
+      "lureturn", /* .name */ \
+      ILProp1::Return | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lureturn, /* return a long unsigned integer */ \
+   ) \
+   MACRO(\
+      TR::iucall, /* .opcode */ \
+      "iucall", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iucall, /* direct call returning unsigned integer */ \
+   ) \
+   MACRO(\
+      TR::lucall, /* .opcode */ \
+      "lucall", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lucall, /* direct call returning unsigned long integer */ \
+   ) \
+   MACRO(\
+      TR::iuadd, /* .opcode */ \
+      "iuadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::iuadd, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iuadd, /* add 2 unsigned integers */ \
+   ) \
+   MACRO(\
+      TR::luadd, /* .opcode */ \
+      "luadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::luadd, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      luadd, /* add 2 unsigned long integers */ \
+   ) \
+   MACRO(\
+      TR::buadd, /* .opcode */ \
+      "buadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::buadd, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      buadd, /* add 2 unsigned bytes */ \
+   ) \
+   MACRO(\
+      TR::iusub, /* .opcode */ \
+      "iusub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iusub, /* subtract 2 unsigned integers       (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::lusub, /* .opcode */ \
+      "lusub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lusub, /* subtract 2 unsigned long integers  (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::busub, /* .opcode */ \
+      "busub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      busub, /* subtract 2 unsigned bytes          (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::iuneg, /* .opcode */ \
+      "iuneg", /* .name */ \
+      ILProp1::Neg, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iuneg, /* negate an unsigned integer */ \
+   ) \
+   MACRO(\
+      TR::luneg, /* .opcode */ \
+      "luneg", /* .name */ \
+      ILProp1::Neg, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      luneg, /* negate a unsigned long integer */ \
+   ) \
+   MACRO(\
+      TR::f2iu, /* .opcode */ \
+      "f2iu", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      f2iu, /* convert float to unsigned integer */ \
+   ) \
+   MACRO(\
+      TR::f2lu, /* .opcode */ \
+      "f2lu", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      f2lu, /* convert float to unsigned long integer */ \
+   ) \
+   MACRO(\
+      TR::f2bu, /* .opcode */ \
+      "f2bu", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      f2bu, /* convert float to unsigned byte */ \
+   ) \
+   MACRO(\
+      TR::f2c, /* .opcode */ \
+      "f2c", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      f2c, /* convert float to char */ \
+   ) \
+   MACRO(\
+      TR::d2iu, /* .opcode */ \
+      "d2iu", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      d2iu, /* convert double to unsigned integer */ \
+   ) \
+   MACRO(\
+      TR::d2lu, /* .opcode */ \
+      "d2lu", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      d2lu, /* convert double to unsigned long integer */ \
+   ) \
+   MACRO(\
+      TR::d2bu, /* .opcode */ \
+      "d2bu", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      d2bu, /* convert double to unsigned byte */ \
+   ) \
+   MACRO(\
+      TR::d2c, /* .opcode */ \
+      "d2c", /* .name */ \
+      ILProp1::Conversion, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      d2c, /* convert double to char */ \
+   ) \
+   MACRO(\
+      TR::iuRegLoad, /* .opcode */ \
+      "iuRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iuRegLoad, /* Load unsigned integer global register */ \
+   ) \
+   MACRO(\
+      TR::luRegLoad, /* .opcode */ \
+      "luRegLoad", /* .name */ \
+      ILProp1::LoadReg, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      luRegLoad, /* Load unsigned long integer global register */ \
+   ) \
+   MACRO(\
+      TR::iuRegStore, /* .opcode */ \
+      "iuRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iuRegStore, /* Store unsigned integer global register */ \
+   ) \
+   MACRO(\
+      TR::luRegStore, /* .opcode */ \
+      "luRegStore", /* .name */ \
+      ILProp1::StoreReg | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      luRegStore, /* Store long integer global register */ \
+   ) \
+   MACRO(\
+      TR::cconst, /* .opcode */ \
+      "cconst", /* .name */ \
+      ILProp1::LoadConst, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      cconst, /* load unicode constant (16-bit unsigned) */ \
+   ) \
+   MACRO(\
+      TR::cload, /* .opcode */ \
+      "cload", /* .name */ \
+      ILProp1::LoadVar | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      cload, /* load short unsigned integer */ \
+   ) \
+   MACRO(\
+      TR::cloadi, /* .opcode */ \
+      "cloadi", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      cloadi, /* load indirect unsigned short integer */ \
+   ) \
+   MACRO(\
+      TR::cstore, /* .opcode */ \
+      "cstore", /* .name */ \
+      ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ONE_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      cstore, /* store unsigned short integer */ \
+   ) \
+   MACRO(\
+      TR::cstorei, /* .opcode */ \
+      "cstorei", /* .name */ \
+      ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      cstorei, /* store indirect unsigned short integer (child1 a, child2 c) */ \
+   ) \
+   MACRO(\
+      TR::monent, /* .opcode */ \
+      "monent", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      monent, /* acquire lock for synchronising method */ \
+   ) \
+   MACRO(\
+      TR::monexit, /* .opcode */ \
+      "monexit", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      monexit, /* release lock for synchronising method */ \
+   ) \
+   MACRO(\
+      TR::monexitfence, /* .opcode */ \
+      "monexitfence", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      monexitfence, /* denotes the end of a monitored region solely for live monitor meta data */ \
+   ) \
+   MACRO(\
+      TR::tstart, /* .opcode */ \
+      "tstart", /* .name */ \
+      ILProp1::HasSymbolRef | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::JumpWithMultipleTargets, /* .properties2 */ \
+      ILProp3::HasBranchChild, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      THREE_SAME_CHILD(TR::NoType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      tstart, /* transaction begin */ \
+   ) \
+   MACRO(\
+      TR::tfinish, /* .opcode */ \
+      "tfinish", /* .name */ \
+      ILProp1::HasSymbolRef | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      tfinish, /* transaction end */ \
+   ) \
+   MACRO(\
+      TR::tabort, /* .opcode */ \
+      "tabort", /* .name */ \
+      ILProp1::HasSymbolRef | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      tabort, /* transaction abort */ \
+   ) \
+   MACRO(\
+      TR::instanceof, /* .opcode */ \
+      "instanceof", /* .name */ \
+      ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      instanceof, /* instanceof - symref is the class object, cp index is in the */ \
+   ) \
+   MACRO(\
+      TR::checkcast, /* .opcode */ \
+      "checkcast", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::Check | ILProp2::CheckCast| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      checkcast, /* checkcast */ \
+   ) \
+   MACRO(\
+      TR::checkcastAndNULLCHK, /* .opcode */ \
+      "checkcastAndNULLCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::Check | ILProp2::CheckCast| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      checkcastAndNULLCHK, /* checkcast and NULL check the underlying object reference */ \
+   ) \
+   MACRO(\
+      TR::New, /* .opcode */ \
+      "new", /* .name */ \
+      ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      New, /* new - child is class */ \
+   ) \
+   MACRO(\
+      TR::newvalue, /* .opcode */ \
+      "newvalue", /* .name */ \
+      ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      newvalue, /* allocate and initialize - children provide field values */ \
+   ) \
+   MACRO(\
+      TR::newarray, /* .opcode */ \
+      "newarray", /* .name */ \
+      ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      newarray, /* new array of primitives */ \
+   ) \
+   MACRO(\
+      TR::anewarray, /* .opcode */ \
+      "anewarray", /* .name */ \
+      ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      anewarray, /* new array of objects */ \
+   ) \
+   MACRO(\
+      TR::variableNew, /* .opcode */ \
+      "variableNew", /* .name */ \
+      ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      variableNew, /* new - child is class, type not known at compile time */ \
+   ) \
+   MACRO(\
+      TR::variableNewArray, /* .opcode */ \
+      "variableNewArray", /* .name */ \
+      ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      variableNewArray, /* new array - type not known at compile time, type must be a j9class, do not use type enums */ \
+   ) \
+   MACRO(\
+      TR::multianewarray, /* .opcode */ \
+      "multianewarray", /* .name */ \
+      ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::MustBeLowered | ILProp2::CanRaiseException| ILProp2::MayUseSystemStack | ILProp2::New, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      multianewarray, /* multi-dimensional new array of objects */ \
+   ) \
+   MACRO(\
+      TR::arraylength, /* .opcode */ \
+      "arraylength", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::MustBeLowered | ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::ArrayLength, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      arraylength, /* number of elements in an array */ \
+   ) \
+   MACRO(\
+      TR::contigarraylength, /* .opcode */ \
+      "contigarraylength", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::MustBeLowered | ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::ArrayLength, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      contigarraylength, /* number of elements in a contiguous array */ \
+   ) \
+   MACRO(\
+      TR::discontigarraylength, /* .opcode */ \
+      "discontigarraylength", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::MustBeLowered | ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::ArrayLength, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      discontigarraylength, /* number of elements in a discontiguous array */ \
+   ) \
+   MACRO(\
+      TR::icalli, /* .opcode */ \
+      "icalli", /* .name */ \
+      ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::IndirectCallType, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      icalli, /* indirect call returning integer (child1 is addr of function) */ \
+   ) \
+   MACRO(\
+      TR::iucalli, /* .opcode */ \
+      "iucalli", /* .name */ \
+      ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::IndirectCallType, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iucalli, /* indirect call returning unsigned integer (child1 is addr of function) */ \
+   ) \
+   MACRO(\
+      TR::lcalli, /* .opcode */ \
+      "lcalli", /* .name */ \
+      ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::IndirectCallType, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lcalli, /* indirect call returning long integer (child1 is addr of function) */ \
+   ) \
+   MACRO(\
+      TR::lucalli, /* .opcode */ \
+      "lucalli", /* .name */ \
+      ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::IndirectCallType, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lucalli, /* indirect call returning unsigned long integer (child1 is addr of function) */ \
+   ) \
+   MACRO(\
+      TR::fcalli, /* .opcode */ \
+      "fcalli", /* .name */ \
+      ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::IndirectCallType, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fcalli, /* indirect call returning float (child1 is addr of function) */ \
+   ) \
+   MACRO(\
+      TR::dcalli, /* .opcode */ \
+      "dcalli", /* .name */ \
+      ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::IndirectCallType, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dcalli, /* indirect call returning double (child1 is addr of function) */ \
+   ) \
+   MACRO(\
+      TR::acalli, /* .opcode */ \
+      "acalli", /* .name */ \
+      ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ILChildProp::IndirectCallType, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      acalli, /* indirect call returning reference */ \
+   ) \
+   MACRO(\
+      TR::calli, /* .opcode */ \
+      "calli", /* .name */ \
+      ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::IndirectCallType, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      calli, /* indirect call returning void (child1 is addr of function) */ \
+   ) \
+   MACRO(\
+      TR::fence, /* .opcode */ \
+      "fence", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::Fence | ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fence, /* barrier to optimization */ \
+   ) \
+   MACRO(\
+      TR::luaddh, /* .opcode */ \
+      "luaddh", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::luaddh, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      luaddh, /* add 2 unsigned long integers (the high parts of prior luadd) as high part of 128bit addition. */ \
+   ) \
+   MACRO(\
+      TR::cadd, /* .opcode */ \
+      "cadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::cadd, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      cadd, /* add 2 unsigned short integers */ \
+   ) \
+   MACRO(\
+      TR::aiadd, /* .opcode */ \
+      "aiadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      aiadd, /* add integer to address with address result (child1 a, child2 i) */ \
+   ) \
+   MACRO(\
+      TR::aiuadd, /* .opcode */ \
+      "aiuadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      aiuadd, /* add unsigned integer to address with address result (child1 a, child2 i) */ \
+   ) \
+   MACRO(\
+      TR::aladd, /* .opcode */ \
+      "aladd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      aladd, /* add long integer to address with address result (child1 a, child2 i) (64-bit only) */ \
+   ) \
+   MACRO(\
+      TR::aluadd, /* .opcode */ \
+      "aluadd", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, /* .properties1 */ \
+      ILProp2::ValueNumberShare, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      aluadd, /* add unsigned long integer to address with address result (child1 a, child2 i) (64-bit only) */ \
+   ) \
+   MACRO(\
+      TR::lusubh, /* .opcode */ \
+      "lusubh", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lusubh, /* subtract 2 unsigned long integers (the high parts of prior lusub) as high part of 128bit subtraction. */ \
+   ) \
+   MACRO(\
+      TR::csub, /* .opcode */ \
+      "csub", /* .name */ \
+      ILProp1::Sub, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      csub, /* subtract 2 unsigned short integers (child1 - child2) */ \
+   ) \
+   MACRO(\
+      TR::imulh, /* .opcode */ \
+      "imulh", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::imulh, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      imulh, /* multiply 2 integers, and return the high word of the product */ \
+   ) \
+   MACRO(\
+      TR::iumulh, /* .opcode */ \
+      "iumulh", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::iumulh, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iumulh, /* multiply 2 unsigned integers, and return the high word of the product */ \
+   ) \
+   MACRO(\
+      TR::lmulh, /* .opcode */ \
+      "lmulh", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lmulh, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lmulh, /* multiply 2 long integers, and return the high word of the product */ \
+   ) \
+   MACRO(\
+      TR::lumulh, /* .opcode */ \
+      "lumulh", /* .name */ \
+      ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::lumulh, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lumulh, /* multiply 2 unsigned long integers, and return the high word of the product */ \
+   ) \
+   MACRO(\
+      TR::ibits2f, /* .opcode */ \
+      "ibits2f", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ibits2f, /* type-coerce int to float */ \
+   ) \
+   MACRO(\
+      TR::fbits2i, /* .opcode */ \
+      "fbits2i", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fbits2i, /* type-coerce float to int */ \
+   ) \
+   MACRO(\
+      TR::lbits2d, /* .opcode */ \
+      "lbits2d", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lbits2d, /* type-coerce long to double */ \
+   ) \
+   MACRO(\
+      TR::dbits2l, /* .opcode */ \
+      "dbits2l", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dbits2l, /* type-coerce double to long */ \
+   ) \
+   MACRO(\
+      TR::lookup, /* .opcode */ \
+      "lookup", /* .name */ \
+      ILProp1::TreeTop | ILProp1::Switch, /* .properties1 */ \
+      ILProp2::JumpWithMultipleTargets, /* .properties2 */ \
+      ILProp3::HasBranchChild, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lookup, /* lookupswitch (child1 is selector expression, child2 the default destination, subsequent children are case nodes */ \
+   ) \
+   MACRO(\
+      TR::trtLookup, /* .opcode */ \
+      "trtLookup", /* .name */ \
+      ILProp1::TreeTop | ILProp1::Switch, /* .properties1 */ \
+      ILProp2::JumpWithMultipleTargets, /* .properties2 */ \
+      ILProp3::HasBranchChild, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      trtLookup, /* special lookupswitch (child1 must be trt, child2 the default destination, subsequent children are case nodes) */ \
+   ) \
+   MACRO(\
+      TR::Case, /* .opcode */ \
+      "case", /* .name */ \
+      ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      Case, /* case nodes that are children of TR_switch.  Uses the branchdestination and the int const field */ \
+   ) \
+   MACRO(\
+      TR::table, /* .opcode */ \
+      "table", /* .name */ \
+      ILProp1::TreeTop | ILProp1::Switch, /* .properties1 */ \
+      ILProp2::JumpWithMultipleTargets, /* .properties2 */ \
+      ILProp3::HasBranchChild, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      table, /* tableswitch (child1 is the selector, child2 the default destination, subsequent children are the branch targets */ \
+   ) \
+   MACRO(\
+      TR::exceptionRangeFence, /* .opcode */ \
+      "exceptionRangeFence", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::ExceptionRangeFence, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      exceptionRangeFence, /* (J9) SymbolReference is the aliasing effect, initializer is where the code address gets put when binary is generated */ \
+   ) \
+   MACRO(\
+      TR::dbgFence, /* .opcode */ \
+      "dbgFence", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::ExceptionRangeFence, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dbgFence, /* used to delimit code (stmts) for debug info.  Has no symbol reference. */ \
+   ) \
+   MACRO(\
+      TR::NULLCHK, /* .opcode */ \
+      "NULLCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::NullCheck| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      NULLCHK, /* Null check a pointer.  child 1 is indirect reference. Symbolref indicates failure action/destination */ \
+   ) \
+   MACRO(\
+      TR::ResolveCHK, /* .opcode */ \
+      "ResolveCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::ResolveCheck| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ResolveCHK, /* Resolve check a static, field or method. child 1 is reference to be resolved. Symbolref indicates failure action/destination */ \
+   ) \
+   MACRO(\
+      TR::ResolveAndNULLCHK, /* .opcode */ \
+      "ResolveAndNULLCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::NullCheck | ILProp2::ResolveCheck| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ResolveAndNULLCHK, /* Resolve check a static, field or method and Null check the underlying pointer.  child 1 is reference to be resolved. Symbolref indicates failure action/destination */ \
+   ) \
+   MACRO(\
+      TR::DIVCHK, /* .opcode */ \
+      "DIVCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::Check| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      DIVCHK, /* Divide by zero check. child 1 is the divide. Symbolref indicates failure action/destination */ \
+   ) \
+   MACRO(\
+      TR::OverflowCHK, /* .opcode */ \
+      "OverflowCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::Check| ILProp2::MayUseSystemStack | ILProp2::CanRaiseException, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      OverflowCHK, /* Overflow check. child 1 is the operation node(add, mul, sub). Child 2 and child 3 are the operands of the operation of the operation. Symbolref indicates failure action/destination */ \
+   ) \
+   MACRO(\
+      TR::UnsignedOverflowCHK, /* .opcode */ \
+      "UnsignedOverflowCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::Check| ILProp2::MayUseSystemStack | ILProp2::CanRaiseException, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      UnsignedOverflowCHK, /* UnsignedOverflow check. child 1 is the operation node(add, mul, sub). Child 2 and child 3 are the operands of the operation of the operation. Symbolref indicates failure action/destination */ \
+   ) \
+   MACRO(\
+      TR::BNDCHK, /* .opcode */ \
+      "BNDCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::BndCheck| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      BNDCHK, /* Array bounds check, checks that child 1 > child 2 >= 0 (child 1 is bound, 2 is index). Symbolref indicates failure action/destination */ \
+   ) \
+   MACRO(\
+      TR::ArrayCopyBNDCHK, /* .opcode */ \
+      "ArrayCopyBNDCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::BndCheck| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ArrayCopyBNDCHK, /* Array copy bounds check, checks that child 1 >= child 2. Symbolref indicates failure action/destination */ \
+   ) \
+   MACRO(\
+      TR::BNDCHKwithSpineCHK, /* .opcode */ \
+      "BNDCHKwithSpineCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check | ILProp2::BndCheck| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::SpineCheck, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      BNDCHKwithSpineCHK, /* Array bounds check and spine check */ \
+   ) \
+   MACRO(\
+      TR::SpineCHK, /* .opcode */ \
+      "SpineCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::Check, /* .properties2 */ \
+      ILProp3::SpineCheck, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      SpineCHK, /* Check if the base array has a spine */ \
+   ) \
+   MACRO(\
+      TR::ArrayStoreCHK, /* .opcode */ \
+      "ArrayStoreCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ONE_CHILD(ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ArrayStoreCHK, /* Array store check. child 1 is object, 2 is array. Symbolref indicates failure action/destination */ \
+   ) \
+   MACRO(\
+      TR::ArrayCHK, /* .opcode */ \
+      "ArrayCHK", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::CanRaiseException | ILProp2::Check| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ArrayCHK, /* Array compatibility check. child 1 is object1, 2 is object2. Symbolref indicates failure action/destination */ \
+   ) \
+   MACRO(\
+      TR::Ret, /* .opcode */ \
+      "Ret", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      Ret, /* Used by ilGen only */ \
+   ) \
+   MACRO(\
+      TR::arraycopy, /* .opcode */ \
+      "arraycopy", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::MayUseSystemStack | ILProp2::CanRaiseException | 0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      arraycopy, /* Call to System.arraycopy that may be partially inlined */ \
+   ) \
+   MACRO(\
+      TR::arrayset, /* .opcode */ \
+      "arrayset", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      arrayset, /* Inline code for memory initialization of part of an array */ \
+   ) \
+   MACRO(\
+      TR::arraytranslate, /* .opcode */ \
+      "arraytranslate", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      arraytranslate, /* Inline code for translation of part of an array to another form via lookup */ \
+   ) \
+   MACRO(\
+      TR::arraytranslateAndTest, /* .opcode */ \
+      "arraytranslateAndTest", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException | ILProp2::BndCheck, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      arraytranslateAndTest, /* Inline code for scanning of part of an array for a particular 8-bit character */ \
+   ) \
+   MACRO(\
+      TR::long2String, /* .opcode */ \
+      "long2String", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      long2String, /* Convert integer/long value to String */ \
+   ) \
+   MACRO(\
+      TR::bitOpMem, /* .opcode */ \
+      "bitOpMem", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bitOpMem, /* bit operations (AND, OR, XOR) for memory to memory */ \
+   ) \
+   MACRO(\
+      TR::bitOpMemND, /* .opcode */ \
+      "bitOpMemND", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bitOpMemND, /* 3 operand(source1,source2,target) version of bitOpMem */ \
+   ) \
+   MACRO(\
+      TR::arraycmp, /* .opcode */ \
+      "arraycmp", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Address, TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      arraycmp, /* Inline code for memory comparison of part of an array */ \
+   ) \
+   MACRO(\
+      TR::arraycmpWithPad, /* .opcode */ \
+      "arraycmpWithPad", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      arraycmpWithPad, /* memory comparison when src1 length != src2 length and padding is needed */ \
+   ) \
+   MACRO(\
+      TR::allocationFence, /* .opcode */ \
+      "allocationFence", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      allocationFence, /* Internal fence guarding escape of newObject & final fields - eliminatable */ \
+   ) \
+   MACRO(\
+      TR::loadFence, /* .opcode */ \
+      "loadFence", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      loadFence, /* JEP171: prohibits loadLoad and loadStore reordering (on globals) */ \
+   ) \
+   MACRO(\
+      TR::storeFence, /* .opcode */ \
+      "storeFence", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      storeFence, /* JEP171: prohibits loadStore and storeStore reordering (on globals) */ \
+   ) \
+   MACRO(\
+      TR::fullFence, /* .opcode */ \
+      "fullFence", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fullFence, /* JEP171: prohibits loadLoad, loadStore, storeLoad, and storeStore reordering (on globals) */ \
+   ) \
+   MACRO(\
+      TR::MergeNew, /* .opcode */ \
+      "MergeNew", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      MergeNew, /* Parent for New etc. nodes that can all be allocated together */ \
+   ) \
+   MACRO(\
+      TR::computeCC, /* .opcode */ \
+      "computeCC", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      computeCC, /* compute Condition Codes */ \
+   ) \
+   MACRO(\
+      TR::butest, /* .opcode */ \
+      "butest", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      butest, /* zEmulator: mask unsigned byte (UInt8) and set condition codes */ \
+   ) \
+   MACRO(\
+      TR::sutest, /* .opcode */ \
+      "sutest", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sutest, /* zEmulator: mask unsigned short (UInt16) and set condition codes */ \
+   ) \
+   MACRO(\
+      TR::bucmp, /* .opcode */ \
+      "bucmp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare | ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::Signum, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bucmp, /* Currently only valid for zEmulator. Based on the ordering of the two children set the return value: */ \
+   ) \
+   MACRO(\
+      TR::bcmp, /* .opcode */ \
+      "bcmp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::Signum, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bcmp, /* 0 : child1 == child2 */ \
+   ) \
+   MACRO(\
+      TR::sucmp, /* .opcode */ \
+      "sucmp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare | ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::Signum, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sucmp, /* 1 : child1 < child2 */ \
+   ) \
+   MACRO(\
+      TR::scmp, /* .opcode */ \
+      "scmp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::Signum, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      scmp, /* 2 : child1 > child2 */ \
+   ) \
+   MACRO(\
+      TR::iucmp, /* .opcode */ \
+      "iucmp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare | ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::Signum, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iucmp, \
+   ) \
+   MACRO(\
+      TR::icmp, /* .opcode */ \
+      "icmp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::Signum, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      icmp, \
+   ) \
+   MACRO(\
+      TR::lucmp, /* .opcode */ \
+      "lucmp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare | ILProp2::CondCodeComputation, /* .properties2 */ \
+      ILProp3::Signum, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lucmp, \
+   ) \
+   MACRO(\
+      TR::ificmpo, /* .opcode */ \
+      "ificmpo", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::OverflowCompare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::ificmpno, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ificmpo, /* integer compare and branch if overflow */ \
+   ) \
+   MACRO(\
+      TR::ificmpno, /* .opcode */ \
+      "ificmpno", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::OverflowCompare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::ificmpo, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ificmpno, /* integer compare and branch if not overflow */ \
+   ) \
+   MACRO(\
+      TR::iflcmpo, /* .opcode */ \
+      "iflcmpo", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::OverflowCompare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::iflcmpno, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflcmpo, /* long compare and branch if overflow */ \
+   ) \
+   MACRO(\
+      TR::iflcmpno, /* .opcode */ \
+      "iflcmpno", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::OverflowCompare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::iflcmpo, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflcmpno, /* long compare and branch if not overflow */ \
+   ) \
+   MACRO(\
+      TR::ificmno, /* .opcode */ \
+      "ificmno", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::OverflowCompare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::ificmnno, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ificmno, /* integer compare negative and branch if overflow */ \
+   ) \
+   MACRO(\
+      TR::ificmnno, /* .opcode */ \
+      "ificmnno", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::OverflowCompare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::ificmno, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ificmnno, /* integer compare negative and branch if not overflow */ \
+   ) \
+   MACRO(\
+      TR::iflcmno, /* .opcode */ \
+      "iflcmno", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::OverflowCompare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::iflcmnno, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflcmno, /* long compare negative and branch if overflow */ \
+   ) \
+   MACRO(\
+      TR::iflcmnno, /* .opcode */ \
+      "iflcmnno", /* .name */ \
+      ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::OverflowCompare, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::iflcmno, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iflcmnno, /* long compare negative and branch if not overflow */ \
+   ) \
+   MACRO(\
+      TR::iuaddc, /* .opcode */ \
+      "iuaddc", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectAdd, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iuaddc, /* Currently only valid for zEmulator.  Add two unsigned ints with carry */ \
+   ) \
+   MACRO(\
+      TR::luaddc, /* .opcode */ \
+      "luaddc", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectAdd, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      luaddc, /* Add two longs with carry */ \
+   ) \
+   MACRO(\
+      TR::iusubb, /* .opcode */ \
+      "iusubb", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectSub, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iusubb, /* Subtract two ints with borrow */ \
+   ) \
+   MACRO(\
+      TR::lusubb, /* .opcode */ \
+      "lusubb", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::SelectSub, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lusubb, /* Subtract two longs with borrow */ \
+   ) \
+   MACRO(\
+      TR::icmpset, /* .opcode */ \
+      "icmpset", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Address, TR::Int32, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      icmpset, /* icmpset(pointer,c,r): compare *pointer with c, if it matches, replace with r.  Returns 0 on match, 1 otherwise */ \
+   ) \
+   MACRO(\
+      TR::lcmpset, /* .opcode */ \
+      "lcmpset", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Address, TR::Int64, TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lcmpset, /* the operation is done atomically - return type is int for both [il]cmpset */ \
+   ) \
+   MACRO(\
+      TR::bztestnset, /* .opcode */ \
+      "bztestnset", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, ILChildProp::UnspecifiedChildType), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bztestnset, /* bztestnset(pointer,c): atomically sets *pointer to c and returns the original value of *p (represents Test And Set on Z) */ \
+   ) \
+   MACRO(\
+      TR::ibatomicor, /* .opcode */ \
+      "ibatomicor", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ibatomicor, \
+   ) \
+   MACRO(\
+      TR::isatomicor, /* .opcode */ \
+      "isatomicor", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      isatomicor, \
+   ) \
+   MACRO(\
+      TR::iiatomicor, /* .opcode */ \
+      "iiatomicor", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iiatomicor, \
+   ) \
+   MACRO(\
+      TR::ilatomicor, /* .opcode */ \
+      "ilatomicor", /* .name */ \
+      ILProp1::LoadVar | ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::ValueNumberShare| ILProp2::MayUseSystemStack, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_CHILD(TR::Address, TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ilatomicor, \
+   ) \
+   MACRO(\
+      TR::dexp, /* .opcode */ \
+      "dexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::SignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dexp, /* double exponent */ \
+   ) \
+   MACRO(\
+      TR::branch, /* .opcode */ \
+      "branch", /* .name */ \
+      ILProp1::Branch | ILProp1::CompBranchOnly | ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      branch, /* generic branch --> DEPRECATED use TR::case instead */ \
+   ) \
+   MACRO(\
+      TR::igoto, /* .opcode */ \
+      "igoto", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::JumpWithMultipleTargets, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ONE_CHILD(TR::Address), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      igoto, /* indirect goto, branches to the address specified by a child */ \
+   ) \
+   MACRO(\
+      TR::bexp, /* .opcode */ \
+      "bexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::SignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bexp, /* signed byte exponent  (raise signed byte to power) */ \
+   ) \
+   MACRO(\
+      TR::buexp, /* .opcode */ \
+      "buexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::UnsignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int8), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      buexp, /* unsigned byte exponent */ \
+   ) \
+   MACRO(\
+      TR::sexp, /* .opcode */ \
+      "sexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::SignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sexp, /* short exponent */ \
+   ) \
+   MACRO(\
+      TR::cexp, /* .opcode */ \
+      "cexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::UnsignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int16), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      cexp, /* unsigned short exponent */ \
+   ) \
+   MACRO(\
+      TR::iexp, /* .opcode */ \
+      "iexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::SignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iexp, /* integer exponent */ \
+   ) \
+   MACRO(\
+      TR::iuexp, /* .opcode */ \
+      "iuexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::UnsignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iuexp, /* unsigned integer exponent */ \
+   ) \
+   MACRO(\
+      TR::lexp, /* .opcode */ \
+      "lexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::SignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lexp, /* long exponent */ \
+   ) \
+   MACRO(\
+      TR::luexp, /* .opcode */ \
+      "luexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::UnsignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      luexp, /* unsigned long exponent */ \
+   ) \
+   MACRO(\
+      TR::fexp, /* .opcode */ \
+      "fexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::SignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fexp, /* float exponent */ \
+   ) \
+   MACRO(\
+      TR::fuexp, /* .opcode */ \
+      "fuexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::UnsignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_CHILD(TR::Float, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fuexp, /* float base to unsigned integral exponent */ \
+   ) \
+   MACRO(\
+      TR::duexp, /* .opcode */ \
+      "duexp", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::UnsignedExponentiation, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_CHILD(TR::Double, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      duexp, /* double base to unsigned integral exponent */ \
+   ) \
+   MACRO(\
+      TR::ixfrs, /* .opcode */ \
+      "ixfrs", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ixfrs, /* transfer sign integer */ \
+   ) \
+   MACRO(\
+      TR::lxfrs, /* .opcode */ \
+      "lxfrs", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lxfrs, /* transfer sign long */ \
+   ) \
+   MACRO(\
+      TR::fxfrs, /* .opcode */ \
+      "fxfrs", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fxfrs, /* transfer sign float */ \
+   ) \
+   MACRO(\
+      TR::dxfrs, /* .opcode */ \
+      "dxfrs", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dxfrs, /* transfer sign double */ \
+   ) \
+   MACRO(\
+      TR::fint, /* .opcode */ \
+      "fint", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fint, /* truncate float to int */ \
+   ) \
+   MACRO(\
+      TR::dint, /* .opcode */ \
+      "dint", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dint, /* truncate double to int */ \
+   ) \
+   MACRO(\
+      TR::fnint, /* .opcode */ \
+      "fnint", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fnint, /* round float to nearest int */ \
+   ) \
+   MACRO(\
+      TR::dnint, /* .opcode */ \
+      "dnint", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dnint, /* round double to nearest int */ \
+   ) \
+   MACRO(\
+      TR::fsqrt, /* .opcode */ \
+      "fsqrt", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fsqrt, /* square root of float */ \
+   ) \
+   MACRO(\
+      TR::dsqrt, /* .opcode */ \
+      "dsqrt", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dsqrt, /* square root of double */ \
+   ) \
+   MACRO(\
+      TR::getstack, /* .opcode */ \
+      "getstack", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Address, /* .dataType */ \
+      ILTypeProp::Reference, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      getstack, /* returns current value of SP */ \
+   ) \
+   MACRO(\
+      TR::dealloca, /* .opcode */ \
+      "dealloca", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dealloca, /* resets value of SP */ \
+   ) \
+   MACRO(\
+      TR::idoz, /* .opcode */ \
+      "idoz", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      idoz, /* difference or zero */ \
+   ) \
+   MACRO(\
+      TR::dcos, /* .opcode */ \
+      "dcos", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dcos, /* cos of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::dsin, /* .opcode */ \
+      "dsin", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dsin, /* sin of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::dtan, /* .opcode */ \
+      "dtan", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dtan, /* tan of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::dcosh, /* .opcode */ \
+      "dcosh", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dcosh, /* cos of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::dsinh, /* .opcode */ \
+      "dsinh", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dsinh, /* sin of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::dtanh, /* .opcode */ \
+      "dtanh", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dtanh, /* tan of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::dacos, /* .opcode */ \
+      "dacos", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dacos, /* arccos of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::dasin, /* .opcode */ \
+      "dasin", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dasin, /* arcsin of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::datan, /* .opcode */ \
+      "datan", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      datan, /* arctan of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::datan2, /* .opcode */ \
+      "datan2", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      datan2, /* arctan2 of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::dlog, /* .opcode */ \
+      "dlog", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dlog, /* log of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::dfloor, /* .opcode */ \
+      "dfloor", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dfloor, /* floor of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::ffloor, /* .opcode */ \
+      "ffloor", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ffloor, /* floor of float, returning float */ \
+   ) \
+   MACRO(\
+      TR::dceil, /* .opcode */ \
+      "dceil", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dceil, /* ceil of double, returning double */ \
+   ) \
+   MACRO(\
+      TR::fceil, /* .opcode */ \
+      "fceil", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      ONE_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fceil, /* ceil of float, returning float */ \
+   ) \
+   MACRO(\
+      TR::ibranch, /* .opcode */ \
+      "ibranch", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      ILProp2::JumpWithMultipleTargets, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ibranch, /* generic indirct branch --> first child is a constant indicating the mask */ \
+   ) \
+   MACRO(\
+      TR::mbranch, /* .opcode */ \
+      "mbranch", /* .name */ \
+      ILProp1::Branch, /* .properties1 */ \
+      ILProp2::JumpWithMultipleTargets, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      mbranch, /* generic branch to multiple potential targets */ \
+   ) \
+   MACRO(\
+      TR::getpm, /* .opcode */ \
+      "getpm", /* .name */ \
+      0, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      getpm, /* get program mask */ \
+   ) \
+   MACRO(\
+      TR::setpm, /* .opcode */ \
+      "setpm", /* .name */ \
+      ILProp1::TreeTop, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      setpm, /* set program mask */ \
+   ) \
+   MACRO(\
+      TR::loadAutoOffset, /* .opcode */ \
+      "loadAutoOffset", /* .name */ \
+      ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      ILChildProp::NoChildren, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      loadAutoOffset, /* loads the offset (from the SP) of an auto */ \
+   ) \
+   MACRO(\
+      TR::imax, /* .opcode */ \
+      "imax", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      imax, /* max of 2 or more integers */ \
+   ) \
+   MACRO(\
+      TR::iumax, /* .opcode */ \
+      "iumax", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iumax, /* max of 2 or more unsigned integers */ \
+   ) \
+   MACRO(\
+      TR::lmax, /* .opcode */ \
+      "lmax", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lmax, /* max of 2 or more longs */ \
+   ) \
+   MACRO(\
+      TR::lumax, /* .opcode */ \
+      "lumax", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lumax, /* max of 2 or more unsigned longs */ \
+   ) \
+   MACRO(\
+      TR::fmax, /* .opcode */ \
+      "fmax", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fmax, /* max of 2 or more floats */ \
+   ) \
+   MACRO(\
+      TR::dmax, /* .opcode */ \
+      "dmax", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dmax, /* max of 2 or more doubles */ \
+   ) \
+   MACRO(\
+      TR::imin, /* .opcode */ \
+      "imin", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      imin, /* min of 2 or more integers */ \
+   ) \
+   MACRO(\
+      TR::iumin, /* .opcode */ \
+      "iumin", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      iumin, /* min of 2 or more unsigned integers */ \
+   ) \
+   MACRO(\
+      TR::lmin, /* .opcode */ \
+      "lmin", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lmin, /* min of 2 or more longs */ \
+   ) \
+   MACRO(\
+      TR::lumin, /* .opcode */ \
+      "lumin", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Unsigned, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Int64), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lumin, /* min of 2 or more unsigned longs */ \
+   ) \
+   MACRO(\
+      TR::fmin, /* .opcode */ \
+      "fmin", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Float, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Float), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      fmin, /* min of 2 or more floats */ \
+   ) \
+   MACRO(\
+      TR::dmin, /* .opcode */ \
+      "dmin", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Double, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Floating_Point, /* .typeProperties */ \
+      TWO_SAME_CHILD(TR::Double), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      dmin, /* min of 2 or more doubles */ \
+   ) \
+   MACRO(\
+      TR::trt, /* .opcode */ \
+      "trt", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      trt, /* translate and test */ \
+   ) \
+   MACRO(\
+      TR::trtSimple, /* .opcode */ \
+      "trtSimple", /* .name */ \
+      ILProp1::Call | ILProp1::HasSymbolRef, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse | ILProp3::LikeDef, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      trtSimple, /* same as TRT but ignoring the returned source byte address and table entry value */ \
+   ) \
+   MACRO(\
+      TR::ihbit, /* .opcode */ \
+      "ihbit", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ihbit, \
+   ) \
+   MACRO(\
+      TR::ilbit, /* .opcode */ \
+      "ilbit", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ilbit, \
+   ) \
+   MACRO(\
+      TR::inolz, /* .opcode */ \
+      "inolz", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      inolz, \
+   ) \
+   MACRO(\
+      TR::inotz, /* .opcode */ \
+      "inotz", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      inotz, \
+   ) \
+   MACRO(\
+      TR::ipopcnt, /* .opcode */ \
+      "ipopcnt", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ipopcnt, \
+   ) \
+   MACRO(\
+      TR::lhbit, /* .opcode */ \
+      "lhbit", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lhbit, \
+   ) \
+   MACRO(\
+      TR::llbit, /* .opcode */ \
+      "llbit", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      llbit, \
+   ) \
+   MACRO(\
+      TR::lnolz, /* .opcode */ \
+      "lnolz", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lnolz, \
+   ) \
+   MACRO(\
+      TR::lnotz, /* .opcode */ \
+      "lnotz", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lnotz, \
+   ) \
+   MACRO(\
+      TR::lpopcnt, /* .opcode */ \
+      "lpopcnt", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::SupportedForPRE, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lpopcnt, \
+   ) \
+   MACRO(\
+      TR::ibyteswap, /* .opcode */ \
+      "ibyteswap", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ByteSwap, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      ONE_CHILD(TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ibyteswap, /* swap bytes in an integer */ \
+   ) \
+   MACRO(\
+      TR::bbitpermute, /* .opcode */ \
+      "bbitpermute", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int8, /* .dataType */ \
+      ILTypeProp::Size_1 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Int8, TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      bbitpermute, \
+   ) \
+   MACRO(\
+      TR::sbitpermute, /* .opcode */ \
+      "sbitpermute", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int16, /* .dataType */ \
+      ILTypeProp::Size_2 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Int16, TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      sbitpermute, \
+   ) \
+   MACRO(\
+      TR::ibitpermute, /* .opcode */ \
+      "ibitpermute", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int32, /* .dataType */ \
+      ILTypeProp::Size_4 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Int32, TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      ibitpermute, \
+   ) \
+   MACRO(\
+      TR::lbitpermute, /* .opcode */ \
+      "lbitpermute", /* .name */ \
+      0, /* .properties1 */ \
+      ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, /* .properties2 */ \
+      ILProp3::LikeUse, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::Int64, /* .dataType */ \
+      ILTypeProp::Size_8 | ILTypeProp::Integer, /* .typeProperties */ \
+      THREE_CHILD(TR::Int64, TR::Address, TR::Int32), /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      lbitpermute, \
+   ) 
 #endif

@@ -37,7 +37,7 @@
    swapChildrenOpcode, \
    reverseBranchOpcode, \
    boolCompareOpcode, \
-   ifCompareOpcode) \
+   ifCompareOpcode, ...) \
    \
    { \
    opcode, \

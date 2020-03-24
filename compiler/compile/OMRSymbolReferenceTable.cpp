@@ -1783,6 +1783,13 @@ OMR::SymbolReferenceTable::findOrCreatePendingPushTemporary(
    }
 
 TR::SymbolReference *
+OMR::SymbolReferenceTable::createNamedStatic(TR::ResolvedMethodSymbol *owningMethodSymbol, TR::DataType type, const char *name) 
+   {
+   TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(trHeapMemory(),type, name);
+   return new (trHeapMemory()) TR::SymbolReference(self(),sym,owningMethodSymbol->getResolvedMethodIndex(),owningMethodSymbol->incTempIndex(fe()));
+   }
+
+TR::SymbolReference *
 OMR::SymbolReferenceTable::createLocalObject(int32_t objectSize, TR::ResolvedMethodSymbol * owningMethodSymbol, TR::SymbolReference *classSymRef)
    {
    int32_t             slot              = owningMethodSymbol->incTempIndex(fe());

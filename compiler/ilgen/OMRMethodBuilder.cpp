@@ -34,6 +34,7 @@
 #include "il/Node_inlines.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
+#include "il/StaticSymbol.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
@@ -108,6 +109,7 @@ OMR::MethodBuilder::MethodBuilder(TR::TypeDictionary *types, TR::VirtualMachineS
    _symbolNameFromSlot(std::less<int32_t>(), trMemory()->heapMemoryRegion()),
    _symbolIsArray(str_comparator, trMemory()->heapMemoryRegion()),
    _memoryLocations(str_comparator, trMemory()->heapMemoryRegion()),
+   _globals(str_comparator,trMemory()->heapMemoryRegion()),
    _functions(str_comparator, trMemory()->heapMemoryRegion()),
    _cachedParameterTypes(0),
    _definingFile(""),
@@ -140,6 +142,7 @@ OMR::MethodBuilder::MethodBuilder(TR::MethodBuilder *callerMB, TR::VirtualMachin
    _symbolNameFromSlot(std::less<int32_t>(), trMemory()->heapMemoryRegion()),
    _symbolIsArray(str_comparator, trMemory()->heapMemoryRegion()),
    _memoryLocations(str_comparator, trMemory()->heapMemoryRegion()),
+   _globals(str_comparator,trMemory()->heapMemoryRegion()),
    _functions(str_comparator, trMemory()->heapMemoryRegion()),
    _cachedParameterTypes(0),
    _definingFile(""),
@@ -436,9 +439,19 @@ OMR::MethodBuilder::lookupSymbol(const char *name)
       }
    else
       {
-      symRef = symRefTab()->createTemporary(_methodSymbol, primitiveType);
-      const char *adjustedName = adjustNameForInlinedSite(name);
-      symRef->getSymbol()->getAutoSymbol()->setName(adjustedName);
+      GlobalMap::iterator globalsIterator = _globals.find(name);
+      if(globalsIterator != _globals.end())
+         {
+         symRef = symRefTab()->createNamedStatic(_methodSymbol, primitiveType, name);
+         symRef->getSymbol()->getStaticSymbol()->setStaticAddress((*globalsIterator).second);
+         symRef->getSymbol()->setVolatile();
+         }
+      else
+         {
+         symRef = symRefTab()->createTemporary(_methodSymbol, primitiveType);
+         const char *adjustedName = adjustNameForInlinedSite(name);
+         symRef->getSymbol()->getAutoSymbol()->setName(adjustedName);
+         }
       _symbolNameFromSlot.insert(std::make_pair(symRef->getCPIndex(), name));
 
       // also do the symbol name mapping in caller so references to parameters can be shown in logs
@@ -508,6 +521,15 @@ OMR::MethodBuilder::DefineMemory(const char *name, TR::IlType *dt, void *locatio
 
    _symbolTypes.insert(std::make_pair(name, dt));
    _memoryLocations.insert(std::make_pair(name, location));
+   }
+
+void
+OMR::MethodBuilder::DefineGlobal(const char *name, TR::IlType *dt, void *location)
+   {
+   TR_ASSERT_FATAL(_globals.find(name) == _globals.end(), "Global '%s' already defined", name);
+
+   _globals.insert(std::make_pair(name, location));
+   _symbolTypes.insert(std::make_pair(name, dt));
    }
 
 void

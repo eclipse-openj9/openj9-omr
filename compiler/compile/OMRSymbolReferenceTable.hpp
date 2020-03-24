@@ -483,6 +483,15 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType, bool isReference = true,
          bool isInternalPointer = false, bool reuseAuto = true, bool isAdjunct = false, size_t size = 0);
    TR::SymbolReference * createTemporary(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::DataType, bool isInternalPointer = false, size_t size = 0);
+
+   /**
+    * Create a named static symbol
+    * @param[in] owningMethodSymbol symbol of the method for which the static symbol is defined
+    * @param[in] type data type of the named static symbol
+    * @param[in] name name of the static symbol
+    * @returns the symbol reference of the created static symbol
+    */
+   TR::SymbolReference * createNamedStatic(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::DataType type, const char * name);
    TR::SymbolReference * findStaticSymbol(TR_ResolvedMethod * owningMethod, int32_t cpIndex, TR::DataType);
 
    /** \brief

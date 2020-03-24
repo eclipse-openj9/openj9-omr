@@ -36,6 +36,10 @@
 #include <sys/types.h> /* Some historical implementations need this file, POSIX.1-2001 does not. */
 #include <sys/socket.h>
 
+typedef struct sockaddr omr_os_sockaddr;
+typedef struct sockaddr_in omr_os_sockaddr_in; /* IPv4 */
+typedef struct sockaddr_in6 omr_os_sockaddr_in6; /* IPv6 */
+
 /* Address Family */
 #define OS_SOCK_AF_UNSPEC AF_UNSPEC
 #define OS_SOCK_AF_INET AF_INET

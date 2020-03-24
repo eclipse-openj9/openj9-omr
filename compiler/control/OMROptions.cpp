@@ -1027,6 +1027,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"randomSeedRaw",      "R\tUses the supplied random seed as-is; see also randomSeedSignatureHash", RESET_OPTION_BIT(TR_RandomSeedSignatureHash),  "F" },
    {"randomSeedSignatureHash","R\tSet random seed value based on a hash of the method's signature, in order to get varying seeds while maintaining reproducibility", SET_OPTION_BIT(TR_RandomSeedSignatureHash),  "F" },
    {"reduceCountsForMethodsCompiledDuringStartup", "M\tNeeds SCC compilation hints\t", SET_OPTION_BIT(TR_ReduceCountsForMethodsCompiledDuringStartup), "F", NOT_IN_SUBSET },
+   {"realTimeGC",         "I\tSupport the real time GC", SET_OPTION_BIT(TR_RealTimeGC), "F" },
    {"regmap",             "C\tgenerate GC maps with register maps", SET_OPTION_BIT(TR_RegisterMaps), NULL, NOT_IN_SUBSET},
    {"reportEvents",       "C\tcompile event reporting hooks into code", SET_OPTION_BIT(TR_ReportMethodEnter | TR_ReportMethodExit)},
    {"reportMethodEnterExit", "D\treport method enter and exit",                   SET_OPTION_BIT(TR_ReportMethodEnter | TR_ReportMethodExit), "F"},
@@ -1654,8 +1655,6 @@ int32_t       OMR::Options::_numUsableCompilationThreads = -1; // -1 means not i
 
 int32_t       OMR::Options::_trampolineSpacePercentage = 0; // 0 means no change from default
 
-bool          OMR::Options::_realTimeGC=false;
-
 bool          OMR::Options::_countsAreProvidedByUser = false;
 TR_YesNoMaybe OMR::Options::_startupTimeMatters = TR_maybe;
 
@@ -1902,6 +1901,17 @@ OMR::Options::Options(TR::Options &other) :
       _logFile = NULL;
    }
 
+void
+OMR::Options::setRealTimeGC(bool m)
+   {
+   self()->setOption(TR_RealTimeGC, m);
+   }
+
+bool
+OMR::Options::realTimeGC()
+   {
+   return self()->getOption(TR_RealTimeGC);
+   }
 
 char *
 OMR::Options::latePostProcessJIT(void *jitConfig)

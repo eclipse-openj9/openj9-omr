@@ -11766,5 +11766,21 @@
       TR::BadILOp, /* .booleanCompareOpCode */ \
       TR::BadILOp, /* .ifCompareOpCode */ \
       lbitpermute, \
+   ) \
+   MACRO(\
+      TR::Prefetch, /* .opcode */ \
+      "Prefetch", /* .name */ \
+      ILProp1::TreeTop | ILProp1::HasSymbolRef, /* .properties1 */ \
+      0, /* .properties2 */ \
+      0, /* .properties3 */ \
+      0, /* .properties4 */ \
+      TR::NoType, /* .dataType */ \
+      0, /* .typeProperties */ \
+      ILChildProp::Unspecified, /* .childProperties */ \
+      TR::BadILOp, /* .swapChildrenOpCode */ \
+      TR::BadILOp, /* .reverseBranchOpCode */ \
+      TR::BadILOp, /* .booleanCompareOpCode */ \
+      TR::BadILOp, /* .ifCompareOpCode */ \
+      Prefetch, /* Prefetch */ \
    ) 
 #endif

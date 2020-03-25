@@ -30,6 +30,7 @@
 #if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrsock.h"
 
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <string.h> 
 #include <unistd.h>
@@ -481,19 +482,27 @@ omrsock_shutdown(struct OMRPortLibrary *portLibrary)
 uint16_t
 omrsock_htons(struct OMRPortLibrary *portLibrary, uint16_t val)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	return htons(val);
 }
 
 uint32_t
 omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	return htonl(val);
 }
 
 int32_t
 omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if (NULL == addrNetworkOrder) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	if (1 != inet_pton(get_os_family(addrFamily), addr, addrNetworkOrder)) {
+		return OMRPORT_ERROR_SOCK_INET_PTON_FAILED;
+	}
+
+	return 0;
 }
 
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

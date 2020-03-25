@@ -127,6 +127,8 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
 
    self()->getLinkage()->setParameterLinkageRegisterIndex(self()->comp()->getJittedMethodSymbol());
 
+   if (self()->comp()->target().isSMP())
+      self()->setEnforceStoreOrder();
    }
 
 void

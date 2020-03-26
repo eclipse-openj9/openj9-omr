@@ -1,4 +1,4 @@
-// Copyright (c) 1998, 2019 IBM Corp. and others
+// Copyright (c) 1998, 2020 IBM Corp. and others
 //
 // This program and the accompanying materials are made available under
 // the terms of the Eclipse Public License 2.0 which accompanies this
@@ -659,13 +659,13 @@ TraceEvent=Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_SIGXFSZ Group
 
 // sl trace points
 
-TraceEntry=Trc_PRT_sl_close_shared_library_Entry Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_close_shared_library descriptor=%d"
-TraceExit=Trc_PRT_sl_close_shared_library_Exit Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_close_shared_library result=%d"
-TraceEntry=Trc_PRT_sl_lookup_name_Entry Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_lookup_name descriptor=%d, name=%s, argSignature=%s"
-TraceExit=Trc_PRT_sl_lookup_name_Exit1 Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_lookup_name descriptor=%d"
-TraceExit=Trc_PRT_sl_lookup_name_Exit2 Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_lookup_name %s(%s) not found in %d, result=%d"
-TraceExit=Trc_PRT_sl_lookup_name_Exit3 Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_lookup_name could not allocate buffer of length=%d, result=%d"
-TraceEntry=Trc_PRT_sl_open_shared_library_Entry Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_open_shared_library name=%s, flags=%d"
+TraceEntry=Trc_PRT_sl_close_shared_library_Entry Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_close_shared_library descriptor=%p"
+TraceExit=Trc_PRT_sl_close_shared_library_Exit Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_close_shared_library result=%zd"
+TraceEntry=Trc_PRT_sl_lookup_name_Entry Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_lookup_name descriptor=%p, name=%s, argSignature=%s"
+TraceExit=Trc_PRT_sl_lookup_name_Exit1 Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_lookup_name function=%p"
+TraceExit=Trc_PRT_sl_lookup_name_Exit2 Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_lookup_name %s(%s) not found in %p, result=%d"
+TraceExit=Trc_PRT_sl_lookup_name_Exit3 Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_lookup_name could not allocate buffer of length=%p, result=%d"
+TraceEntry=Trc_PRT_sl_open_shared_library_Entry Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_open_shared_library name=%s, flags=%zx"
 TraceEvent=Trc_PRT_sl_open_shared_library_Event1 Group=sl Overhead=1 Level=1 NoEnv Template="omrsl_open_shared_library using mangledName %s"
 TraceExit=Trc_PRT_sl_open_shared_library_Exit1 Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_open_shared_library handle=%p"
 TraceExit=Trc_PRT_sl_open_shared_library_Exit2 Group=sl Overhead=1 Level=10 NoEnv Template="omrsl_open_shared_library result=%d"
@@ -1076,7 +1076,7 @@ TraceExit=Trc_PRT_signal_omrsig_is_master_signal_handler_exiting Group=signal Ov
 TraceException=Trc_PRT_readCgroupFile_fgets_failed Group=sysinfo Overhead=1 Level=3 NoEnv Template="readCgroupFile: fgets failed for %s with errno=%d"
 TraceException=Trc_PRT_isRunningInContainer_fgets_failed Group=sysinfo Overhead=1 Level=3 NoEnv Template="isRunningInContainer: unexpected format of file %s with errno=%d"
 
-TraceException=Trc_PRT_signal_mapPortLibSignalToOSSignal_ERROR_unknown_signal Group=signal Overhead=1 Level=3 NoEnv Template="omrsignal: mapPortLibSignalToOSSignal: ERROR, unknown signal, portLibSignal=0x%X" 
+TraceException=Trc_PRT_signal_mapPortLibSignalToOSSignal_ERROR_unknown_signal Group=signal Overhead=1 Level=3 NoEnv Template="omrsignal: mapPortLibSignalToOSSignal: ERROR, unknown signal, portLibSignal=0x%X"
 
 TraceException=Trc_PRT_retrieveLinuxCgroupMemoryStats_invalidValue Group=sysinfo Overhead=1 Level=1 NoEnv Template="retrieveLinuxCgroupMemoryStats: Value of field \"%s\" in file %s is invalid"
 TraceEvent=Trc_PRT_retrieveLinuxMemoryStats_CgroupMemoryStatsFailed Group=sysinfo Overhead=1 Level=1 NoEnv Template="retrieveLinuxMemoryStats: Failed to retrieve memory stats of cgroup with error code=%d"

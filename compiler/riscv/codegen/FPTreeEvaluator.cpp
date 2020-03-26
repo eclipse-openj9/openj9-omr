@@ -600,11 +600,10 @@ commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, bool revers
    startLabel->setStartInternalControlFlow();
    joinLabel->setEndInternalControlFlow();
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
-   addDependency(deps, cmpReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(deps, trgReg, TR::RealRegister::NoReg, TR_FPR, cg);
-   addDependency(deps, src2Reg, TR::RealRegister::NoReg, TR_FPR, cg);
-
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+   deps->addPostCondition(cmpReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
 
    if (reverse)
       generateRTYPE(op, node, cmpReg, src2Reg, src1Reg, cg);
@@ -749,3 +748,64 @@ OMR::RV::TreeEvaluator::dcmpgEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	// TODO:RV: Enable TR::TreeEvaluator::dcmpgEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
 	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
+
+static TR::Register *
+commonFpSelectEvaluator(TR::Node *node, bool isDouble, TR::CodeGenerator *cg)
+   {
+   TR::Node *condNode = node->getChild(0);
+   TR::Node *trueNode   = node->getChild(1);
+   TR::Node *falseNode  = node->getChild(2);
+
+   TR::Register *condReg = cg->evaluate(condNode);
+   TR::Register *trueReg = cg->evaluate(trueNode);
+   TR::Register *falseReg = cg->evaluate(falseNode);
+   TR::RealRegister *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
+
+   if (!cg->canClobberNodesRegister(trueNode))
+      {
+      TR::Register* resultReg = cg->allocateRegister(TR_FPR);
+      if (isDouble)
+         generateRTYPE(TR::InstOpCode::_fsgnj_d, node, resultReg, trueReg, trueReg, cg);
+      else
+         generateRTYPE(TR::InstOpCode::_fsgnj_s, node, resultReg, trueReg, trueReg, cg);
+      trueReg = resultReg;
+      }
+
+   TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *joinLabel = generateLabelSymbol(cg);
+
+   startLabel->setStartInternalControlFlow();
+   joinLabel->setEndInternalControlFlow();
+
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+   deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(trueReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(falseReg, TR::RealRegister::NoReg);
+
+   generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
+   generateBTYPE(TR::InstOpCode::_bne, node, joinLabel, condReg, zero, cg);
+   if (isDouble)
+      generateRTYPE(TR::InstOpCode::_fsgnj_d, node, trueReg, falseReg, falseReg, cg);
+   else
+      generateRTYPE(TR::InstOpCode::_fsgnj_s, node, trueReg, falseReg, falseReg, cg);
+   generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
+
+   node->setRegister(trueReg);
+   cg->decReferenceCount(condNode);
+   cg->decReferenceCount(trueNode);
+   cg->decReferenceCount(falseNode);
+
+   return trueReg;
+   }
+
+TR::Register *
+OMR::RV::TreeEvaluator::fselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonFpSelectEvaluator(node, false, cg);
+   }
+
+TR::Register *
+OMR::RV::TreeEvaluator::dselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonFpSelectEvaluator(node, true, cg);
+   }

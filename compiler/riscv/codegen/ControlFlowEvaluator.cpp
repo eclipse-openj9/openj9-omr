@@ -502,6 +502,45 @@ OMR::RV::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
 
+// also handles lselect, aselect, bselect, sselect
+TR::Register *
+OMR::RV::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *condNode = node->getChild(0);
+   TR::Node *trueNode   = node->getChild(1);
+   TR::Node *falseNode  = node->getChild(2);
+
+   TR::Register *condReg = cg->evaluate(condNode);
+   TR::Register *trueReg = cg->gprClobberEvaluate(trueNode);
+   TR::Register *falseReg = cg->evaluate(falseNode);
+   TR::RealRegister *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
+
+
+   TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *joinLabel = generateLabelSymbol(cg);
+
+   startLabel->setStartInternalControlFlow();
+   joinLabel->setEndInternalControlFlow();
+
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3,cg->trMemory());
+   deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(trueReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(falseReg, TR::RealRegister::NoReg);
+
+   generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
+   generateBTYPE(TR::InstOpCode::_bne, node, joinLabel, condReg, zero, cg);
+   generateITYPE(TR::InstOpCode::_addi, node, trueReg, falseReg, 0, cg);
+   generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
+
+   node->setRegister(trueReg);
+   cg->decReferenceCount(condNode);
+   cg->decReferenceCount(trueNode);
+   cg->decReferenceCount(falseNode);
+
+   return trueReg;
+   }
+
+
 TR::Register *
 OMR::RV::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
@@ -588,9 +627,9 @@ commonMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGener
    startLabel->setStartInternalControlFlow();
    joinLabel->setEndInternalControlFlow();
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
-   addDependency(deps, src1Reg, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(deps, src2Reg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+   deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
+   deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
 
    generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
    generateBTYPE(op, node, joinLabel, src1Reg, src2Reg, cg);

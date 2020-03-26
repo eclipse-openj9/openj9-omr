@@ -83,6 +83,20 @@ public:
    bool isPrimitiveClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return false; }
    bool isAnonymousClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return false; }
    bool isValueTypeClass(TR_OpaqueClassBlock *) { return false; }
+
+   /**
+    * \brief
+    *    Checks whether instances of the specified class can be trivially initialized by
+    *    "zeroing" their fields
+    *
+    * \param clazz
+    *    The class that is to be checked
+    *
+    * \return
+    *    `true` if instances of the specified class can be initialized by zeroing their fields;
+    *    `false` otherwise (if some special initialization is required for some fields)
+    */
+   bool isZeroInitializable(TR_OpaqueClassBlock *clazz) { return true; }
    bool isPrimitiveArray(TR::Compilation *comp, TR_OpaqueClassBlock *) { return false; }
    bool isReferenceArray(TR::Compilation *comp, TR_OpaqueClassBlock *) { return false; }
    bool isClassArray(TR::Compilation *comp, TR_OpaqueClassBlock *) { return false; }

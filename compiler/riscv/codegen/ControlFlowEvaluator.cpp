@@ -522,10 +522,10 @@ OMR::RV::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    startLabel->setStartInternalControlFlow();
    joinLabel->setEndInternalControlFlow();
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3,cg->trMemory());
-   addDependency(deps, condReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(deps, trueReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(deps, falseReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3,cg->trMemory());
+   deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(trueReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(falseReg, TR::RealRegister::NoReg);
 
    generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
    generateBTYPE(TR::InstOpCode::_bne, node, joinLabel, condReg, zero, cg);
@@ -627,9 +627,9 @@ commonMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGener
    startLabel->setStartInternalControlFlow();
    joinLabel->setEndInternalControlFlow();
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
-   addDependency(deps, src1Reg, TR::RealRegister::NoReg, TR_GPR, cg);
-   addDependency(deps, src2Reg, TR::RealRegister::NoReg, TR_GPR, cg);
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+   deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
+   deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
 
    generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
    generateBTYPE(op, node, joinLabel, src1Reg, src2Reg, cg);

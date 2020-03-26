@@ -442,7 +442,7 @@
    TR::TreeEvaluator::selectEvaluator,      // TR::bselect
    TR::TreeEvaluator::selectEvaluator,      // TR::sselect
    TR::TreeEvaluator::selectEvaluator,      // TR::aselect
-   TR::TreeEvaluator::selectEvaluator,      // TR::fselect
+   TR::TreeEvaluator::dselectEvaluator,      // TR::fselect
    TR::TreeEvaluator::dselectEvaluator,     // TR::dselect
    TR::TreeEvaluator::treetopEvaluator,     // TR::treetop
    TR::TreeEvaluator::badILOpEvaluator,     // TR::MethodEnterHook

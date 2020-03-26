@@ -452,8 +452,6 @@ class FloatSelectInt32CompareTest : public SelectTest<int32_t, float> {};
 TEST_P(FloatSelectInt32CompareTest, UsingLoadParam) {
     SKIP_ON_X86(MissingImplementation);
     SKIP_ON_HAMMER(MissingImplementation);
-    SKIP_ON_S390(KnownBug);
-    SKIP_ON_S390X(KnownBug);
     SKIP_ON_ARM(MissingImplementation);
     SKIP_ON_AARCH64(MissingImplementation);
 
@@ -527,8 +525,6 @@ class DoubleSelectInt32CompareTest : public SelectTest<int32_t, double> {};
 TEST_P(DoubleSelectInt32CompareTest, UsingLoadParam) {
     SKIP_ON_X86(MissingImplementation);
     SKIP_ON_HAMMER(MissingImplementation);
-    SKIP_ON_S390(KnownBug);
-    SKIP_ON_S390X(KnownBug);
     SKIP_ON_ARM(MissingImplementation);
     SKIP_ON_AARCH64(MissingImplementation);
 

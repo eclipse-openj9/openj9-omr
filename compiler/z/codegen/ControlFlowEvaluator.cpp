@@ -2726,97 +2726,47 @@ OMR::Z::TreeEvaluator::dselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node *conditionNode = node->getFirstChild();
    TR::Node *trueValueNode = node->getSecondChild();
    TR::Node *falseValueNode = node->getThirdChild();
-
-   TR::Register *trueValueReg = cg->evaluate(trueValueNode);
-   TR::Register *falseValueReg = cg->evaluate(falseValueNode);
-
-   TR::Register *vectorSelReg = cg->allocateRegister(TR_VRF);
-   TR::Register *returnReg = cg->allocateRegister(TR_FPR);
-
-   if (conditionNode->getOpCode().isCompareDouble())
+   TR::Register *resultReg = cg->gprClobberEvaluate(trueValueNode);
+   TR::Register *conditionReg = cg->evaluate(conditionNode);
+   TR::Register *falseValReg = cg->evaluate(falseValueNode);
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z13) && node->getOpCode().isDouble())
       {
-      TR::Node *firstCmpValue = conditionNode->getFirstChild();
-      TR::Node *secondCmpValue = conditionNode->getSecondChild();
-
-      TR::Register *firstCmpReg = cg->evaluate(firstCmpValue);
-      TR::Register *secondCmpReg = cg->evaluate(secondCmpValue);
-
-      TR::InstOpCode::Mnemonic compareOp = TR::InstOpCode::BAD;
-      TR::ILOpCodes ifOp = conditionNode->getOpCodeValue();
-
-      switch (ifOp)
-         {
-         case TR::dcmpne:
-         case TR::dcmpneu:
-         case TR::dcmpeq:
-         case TR::dcmpequ:
-            compareOp = TR::InstOpCode::VFCE;
-            break;
-         case TR::dcmplt:
-         case TR::dcmpgt:
-         case TR::dcmpleu:
-         case TR::dcmpgeu:
-            compareOp = TR::InstOpCode::VFCH;
-            break;
-         case TR::dcmpltu:
-         case TR::dcmpgtu:
-         case TR::dcmple:
-         case TR::dcmpge:
-            compareOp = TR::InstOpCode::VFCHE;
-            break;
-         }
-
-      // To handle unordered compares, we switch the compare operation, since the vector compare instructions return false for unordered.
-      // For example, if the original compare is dcmpgeu:
-      //    (x >= y [true if unordered]) ? a : b
-      //    switch to (x < y) ? b : a;
-      // So that only if x < y, do we select the "false value"
-
-      if (ifOp == TR::dcmpgeu || ifOp == TR::dcmpgtu || ifOp == TR::dcmplt || ifOp == TR::dcmple)
-         generateVRRcInstruction(cg, compareOp, node, vectorSelReg, secondCmpReg, firstCmpReg, 1, 0, 3);
-      else
-         generateVRRcInstruction(cg, compareOp, node, vectorSelReg, firstCmpReg, secondCmpReg, 1, 0, 3);
-
-      // The above operation returns 0's for not equals, so we must swap the true and false values to select the correct "true value" for cmpne operations
-      // Swap the values for unordered comparisons also (see above)
-      if (ifOp == TR::dcmpne || conditionNode->getOpCode().isCompareTrueIfUnordered())
-         generateVRReInstruction(cg, TR::InstOpCode::VSEL, node, returnReg, falseValueReg, trueValueReg, vectorSelReg);
-      else
-         generateVRReInstruction(cg, TR::InstOpCode::VSEL, node, returnReg, trueValueReg, falseValueReg, vectorSelReg);
-
-      cg->stopUsingRegister(firstCmpReg);
-      cg->stopUsingRegister(secondCmpReg);
-      }
-   else
-      {
-      TR::Register *conditionReg = cg->evaluate(conditionNode);
+      TR::Register *vectorSelReg = cg->allocateRegister(TR_VRF);
       TR::Register *tempReg = cg->allocateRegister(TR_FPR);
       TR::Register *vzeroReg = cg->allocateRegister(TR_VRF);
-
+      // Convert 32 Bit register to 64 Bit (Comparison Child of the select node is 32 bit)
+      generateRRInstruction(cg, TR::InstOpCode::LLGFR, node, conditionReg, conditionReg);
       // convert to floating point
       generateRRInstruction(cg, TR::InstOpCode::LDGR, node, tempReg, conditionReg);
-
       // generate compare with zero
       generateVRIaInstruction(cg, TR::InstOpCode::VGBM, node, vzeroReg, 0, 0);
       generateVRRcInstruction(cg, TR::InstOpCode::VFCE, node, vectorSelReg, tempReg, vzeroReg, 1, 0, 3);
-
       // generate select - if condition == 0, vectorSelReg will contain all 1s, so false and true are swapped
-      generateVRReInstruction(cg, TR::InstOpCode::VSEL, node, returnReg, falseValueReg, trueValueReg, vectorSelReg);
-
+      generateVRReInstruction(cg, TR::InstOpCode::VSEL, node, resultReg, falseValReg, resultReg, vectorSelReg);
       cg->stopUsingRegister(tempReg);
       cg->stopUsingRegister(vzeroReg);
-      cg->stopUsingRegister(conditionReg);
+      cg->stopUsingRegister(vectorSelReg);
       }
-
-   node->setRegister(returnReg);
-
-   cg->stopUsingRegister(trueValueReg);
-   cg->stopUsingRegister(falseValueReg);
-   cg->stopUsingRegister(vectorSelReg);
-
+   else
+      {
+      TR::LabelSymbol *cFlowRegionEnd = generateLabelSymbol(cg);
+      TR::LabelSymbol *cFlowRegionStart = generateLabelSymbol(cg);
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node , cFlowRegionStart);
+      TR::RegisterDependencyConditions* conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
+      conditions->addPostCondition(resultReg, TR::RealRegister::AssignAny);
+      conditions->addPostCondition(falseValReg, TR::RealRegister::AssignAny);
+      conditions->addPostCondition(conditionReg, TR::RealRegister::AssignAny);
+      generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CL, node, conditionReg, 0, TR::InstOpCode::COND_BNE, cFlowRegionEnd, false, false);
+      generateRRInstruction(cg, node->getOpCode().isDouble() ? TR::InstOpCode::LDR : TR::InstOpCode::LER, node,  resultReg, falseValReg);
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, conditions);
+      cFlowRegionStart->setStartInternalControlFlow();
+      cFlowRegionEnd->setEndInternalControlFlow();
+      }
+   node->setRegister(resultReg);
+   cg->stopUsingRegister(falseValReg);
+   cg->stopUsingRegister(conditionReg);
    cg->decReferenceCount(trueValueNode);
    cg->decReferenceCount(falseValueNode);
-   cg->recursivelyDecReferenceCount(conditionNode);
-
-   return returnReg;
+   cg->decReferenceCount(conditionNode);
+   return resultReg;
    }

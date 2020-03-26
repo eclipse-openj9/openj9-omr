@@ -860,6 +860,10 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 	{
 		OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 		const char *testName = "omrsysinfo_test_sysinfo_set_limit_FILE_DESCRIPTORS";
+#if defined(OSX)
+		portTestEnv->log("Skipping test: sysinfo_test_sysinfo_set_limit_FILE_DESCRIPTORS: resource limits unsupported on macOS, see issue #4990 for more details\n");
+		reportTestExit(OMRPORTLIB, testName);
+#else /* defined(OSX) */
 		uint32_t rc = OMRPORT_LIMIT_UNKNOWN;
 		uint64_t originalSoftLimit = 0;
 		uint64_t finalSoftLimit = 0;
@@ -1023,6 +1027,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 	}
 
 	reportTestExit(OMRPORTLIB, testName);
+#endif /* defined(OSX) */
 }
 
 #if defined(AIXPPC)

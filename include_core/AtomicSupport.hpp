@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -205,9 +205,9 @@ public:
 		asm volatile("lock orl $0x0,(%%rsp)" ::: "memory");
 #elif defined(ARM) /* defined(J9HAMMER) */
 		__sync_synchronize();
-#elif defined(AARCH64) /* defined(ARM) */
+#elif defined(OMR_ARCH_AARCH64) /* defined(ARM) */
 		__asm __volatile ("dmb ish":::"memory");
-#elif defined(S390) /* defined(AARCH64) */
+#elif defined(S390) /* defined(OMR_ARCH_AARCH64) */
 		asm volatile("bcr 15,0":::"memory");
 #else /* defined(S390) */
 		asm volatile("":::"memory");
@@ -240,9 +240,9 @@ public:
 #elif defined(__GNUC__)
 #if defined(ARM)
 		__sync_synchronize();
-#elif defined(AARCH64) /* defined(ARM) */
+#elif defined(OMR_ARCH_AARCH64) /* defined(ARM) */
 		__asm __volatile ("dmb ishst":::"memory");
-#else /* defined(AARCH64) */
+#else /* defined(OMR_ARCH_AARCH64) */
 		asm volatile("":::"memory");
 #endif /* defined(ARM) */
 #elif defined(J9ZOS390)
@@ -270,9 +270,9 @@ public:
 #elif defined(__GNUC__)
 #if defined(ARM)
 		__sync_synchronize();
-#elif defined(AARCH64) /* defined(ARM) */
+#elif defined(OMR_ARCH_AARCH64) /* defined(ARM) */
 		__asm __volatile ("dmb ishld":::"memory");
-#else /* defined(AARCH64) */
+#else /* defined(OMR_ARCH_AARCH64) */
 		asm volatile("":::"memory");
 #endif /* defined(ARM) */
 #elif defined(J9ZOS390)

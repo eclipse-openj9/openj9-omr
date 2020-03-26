@@ -218,3 +218,7 @@ set(OMR_ENV_GCC OFF CACHE BOOL "TODO: Document")
 set(OMR_OPT_CUDA OFF CACHE BOOL "Enable CUDA support in OMR. See also: OMR_CUDA_HOME in FindOmrCuda.cmake")
 
 set(OMR_SANITIZE OFF CACHE STRING "Sanitizer selection. Only has an effect on GNU or Clang")
+
+if(OMR_HOST_OS STREQUAL "win")
+	set(OMR_WINDOWS_NOMINMAX ON CACHE BOOL "Define NOMINMAX in every compilation unit; prevents Windows headers from polluting the global namespace with 'min' and 'max' macros.")
+endif()

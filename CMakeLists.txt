@@ -96,6 +96,10 @@ if(OMR_OS_ZOS)
 	endif()
 endif()
 
+if(OMR_WINDOWS_NOMINMAX)
+	target_compile_definitions(omr_base INTERFACE -DNOMINMAX)
+endif()
+
 install(
 	TARGETS omr_base
 	EXPORT OmrTargets

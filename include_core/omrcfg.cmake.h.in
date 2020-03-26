@@ -126,6 +126,11 @@
 #cmakedefine OMR_ARCH_ARM
 
 /**
+ * This spec targets AARCH64 processors.
+ */
+#cmakedefine OMR_ARCH_AARCH64
+
+/**
  * This spec targets x86 processors.
  */
 #cmakedefine OMR_ARCH_X86

@@ -362,14 +362,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
       // dont add dependencies if reg is real register
       if (vr && vr->getRealRegister()!=NULL) return;
 
-      if (_addCursorForPre >= _numPreConditions)
-         {
-         // Printf added so it triggers some output even in prod build.
-         // If this failure is triggered in a prod build, you might
-         // not get a SEGV nor any meaningful error msg.
-         TR_ASSERT(0,"ERROR: addPreCondition list overflow\n");
-         _cg->comp()->failCompilation<TR::CompilationException>("addPreCondition list overflow, abort compilation\n");
-         }
+      TR_ASSERT_FATAL(_addCursorForPre < _numPreConditions,"addPreCondition list overflow. addCursorForPre(%d), numPreConditions(%d), virtual register name(%s) and pointer(%p)\n",_addCursorForPre, _numPreConditions,vr->getRegisterName(_cg->comp()),vr);
       _preConditions->setDependencyInfo(_addCursorForPre++, vr, rr, flag);
       }
 
@@ -405,14 +398,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
       // dont add dependencies if reg is real register
       if (vr && vr->getRealRegister()!=NULL) return;
-      if (_addCursorForPost >= _numPostConditions)
-         {
-         // Printf added so it triggers some output even in prod build.
-         // If this failure is triggered in a prod build, you might
-         // not get a SEGV nor any meaningful error msg.
-         TR_ASSERT(0,"ERROR: addPostCondition list overflow\n");
-         _cg->comp()->failCompilation<TR::CompilationException>("addPostCondition list overflow, abort compilation\n");
-         }
+      TR_ASSERT_FATAL(_addCursorForPost < _numPostConditions,"addPostCondition list overflow. addCursorForPost(%d), numPostConditions(%d), virtual register name(%s) and pointer(%p)\n",_addCursorForPost, _numPostConditions,vr->getRegisterName(_cg->comp()),vr);
       _postConditions->setDependencyInfo(_addCursorForPost++, vr, rr, flag);
       }
 

@@ -124,6 +124,11 @@
 #undef OMR_ARCH_ARM
 
 /**
+ * This spec targets AARCH64 processors.
+ */
+#undef OMR_ARCH_AARCH64
+
+/**
  * This spec targets x86 processors.
  */
 #undef OMR_ARCH_X86

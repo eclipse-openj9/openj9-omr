@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,7 +29,6 @@
 #include "AllocateDescription.hpp"
 #include "AtomicOperations.hpp"
 #include "CycleState.hpp"
-#include "Debug.hpp"
 #include "EnvironmentBase.hpp"
 #include "Heap.hpp"
 #include "MemoryPoolAddressOrderedList.hpp"
@@ -38,8 +37,6 @@
 #include "MemorySubSpaceRegionIterator.hpp"
 #include "HeapRegionDescriptor.hpp"
 #include "LargeObjectAllocateStats.hpp"
-
-#include "ModronAssertions.h"
 
 #define JVM_INITIALIZATION_COLLECTIONS 4
 
@@ -280,7 +277,6 @@ MM_MemoryPoolLargeObjects::resizeLOA(MM_EnvironmentBase* env)
 			/* If minimum required now zero then there is no storage available for transfer */
 			if (0 < contractRequired) {
 
-
 				/* LOA base may land in a middle of a live object, but it should be fine */
 				newLOABase = (void*)((uint8_t*)_currentLOABase + contractRequired);
 
@@ -298,28 +294,12 @@ MM_MemoryPoolLargeObjects::resizeLOA(MM_EnvironmentBase* env)
 				oldLOARatio = _currentLOARatio;
 
 				/* Does this leave a reasonable sized LOA ? */
-				if (!isSizeEnoughForLOA(env, (_loaSize > spaceDelta) ? (_loaSize - spaceDelta) : 0)) {
-					/* No.. make LOA empty as not even big enough for one free chunk of LOA */
-					spaceDelta = _loaSize;
-					_soaSize += spaceDelta;
-					_loaSize = 0;
-					_currentLOABase = LOA_EMPTY;
-					_currentLOARatio = 0;
-				} else {
-					_soaSize += spaceDelta;
-					_loaSize -= spaceDelta;
-					_currentLOABase = newLOABase;
-					_currentLOARatio = ((double)_loaSize) / (_loaSize + _soaSize);
-
-					/* Rounding during float operations may result in a new LOA ratio less than
-					 * minimum so fix up if necessary
-					 */
-					if (_currentLOARatio < _extensions->largeObjectAreaMinimumRatio) {
-						_currentLOARatio = _extensions->largeObjectAreaMinimumRatio;
-					}
-					assume0(0 != _currentLOARatio);
+				newLOAsize = (_loaSize > spaceDelta) ? (_loaSize - spaceDelta) : 0;
+				uintptr_t oldLOAsize = _loaSize;
+				Assert_MM_true((_loaSize + _soaSize) == _memorySubSpace->getActiveMemorySize());
+				if (!checkAndSetSizeForLOA(env, newLOAsize, 0, newLOABase)) {
+					spaceDelta = oldLOAsize;
 				}
-
 				Trc_MM_LOAResize_resizeLOA4(env->getLanguageVMThread(), oldLOARatio, _currentLOARatio);
 
 				_extensions->heap->getResizeStats()->setLastLoaResizeReason(LOA_CONTRACT_MIN_SOA);
@@ -452,31 +432,20 @@ void
 MM_MemoryPoolLargeObjects::resetLOASize(MM_EnvironmentBase* env, double newLOARatio)
 {
 	uintptr_t oldLOASize = _loaSize;
-	uintptr_t newLOASize, oldAreaSize;
 	HeapResizeType resizeType = HEAP_NO_RESIZE;
 
 	/* Has LOA changed in size ? */
 	if (_currentLOARatio != newLOARatio) {
 
 		/* Get total size of owning subspace */
-		oldAreaSize = _memorySubSpace->getActiveMemorySize();
+		uintptr_t oldAreaSize = _memorySubSpace->getActiveMemorySize();
 
 		/* Calculate LOA size based on new loa ratio */
-		newLOASize = MM_Math::roundToCeiling(_extensions->heapAlignment, (uintptr_t)(oldAreaSize * newLOARatio));
+		uintptr_t newLOASize = MM_Math::roundToCeiling(_extensions->heapAlignment, (uintptr_t)(oldAreaSize * newLOARatio));
 
 		uintptr_t resizeSize = 0;
 		/* Does this leave a reasonable sized LOA ? */
-		if (!isSizeEnoughForLOA(env, newLOASize)) {
-			/* No.. make LOA empty as not even big enough for one free chunk */
-			_currentLOARatio = 0;
-			_soaSize = oldAreaSize;
-			_loaSize = 0;
-		} else {
-			_currentLOARatio = newLOARatio;
-			_loaSize = newLOASize;
-			/* ..and SOA is whats left after LOA allocation */
-			_soaSize = oldAreaSize - _loaSize;
-		}
+		checkAndSetSizeForLOA(env, newLOASize, newLOARatio);
 
 		/* Rememeber if we expanded or contracted the LOA */
 		if ( _loaSize > oldLOASize) {
@@ -487,9 +456,6 @@ MM_MemoryPoolLargeObjects::resetLOASize(MM_EnvironmentBase* env, double newLOARa
 			resizeSize = oldLOASize - newLOASize;
 		}
 		/* else, could be newLOASize == oldLOASize  (originally expand, but not big enough) */
-
-		/* and new LOA base if LOA ratio > 0 */
-		_currentLOABase = _currentLOARatio > 0 ? determineLOABase(env, _soaSize) : LOA_EMPTY;
 
 		Trc_MM_LOAResize_resetLOASize(env->getLanguageVMThread(), _currentLOABase);
 
@@ -895,24 +861,20 @@ MM_MemoryPoolLargeObjects::collectorAllocateTLH(MM_EnvironmentBase* env, MM_Allo
 void
 MM_MemoryPoolLargeObjects::expandWithRange(MM_EnvironmentBase* env, uintptr_t expandSize, void* lowAddress, void* highAddress, bool canCoalesce)
 {
-	uintptr_t oldAreaSize, newLOASize;
-
 	Assert_MM_true(MM_Math::roundToCeiling(_extensions->heapAlignment, expandSize) == expandSize);
 
 	/* Get total size of owning subspace.. this will be post expand size */
-	oldAreaSize = _memorySubSpace->getActiveMemorySize();
+	uintptr_t oldAreaSize = _memorySubSpace->getActiveMemorySize();
 
 	/* Is this the initial expand ? */
 	if (0 == _currentOldAreaSize) {
 
 		/* Work out initial SOA to LOA split */
-		newLOASize = (uintptr_t)(oldAreaSize * _currentLOARatio);
-		_loaSize = MM_Math::roundToCeiling(_extensions->heapAlignment, newLOASize);
+		uintptr_t newLOASize = (uintptr_t)(oldAreaSize * _currentLOARatio);
+		newLOASize = MM_Math::roundToCeiling(_extensions->heapAlignment, newLOASize);
 
-		/* SOA is what is left after LOA allocation */
-		_soaSize = oldAreaSize - _loaSize;
-
-		_currentLOABase = _loaSize > 0 ? determineLOABase(env, _soaSize) : LOA_EMPTY;
+		/* avoid LOA is initially smaller than largeObjectMinimumSize due to small initial heap size(via Xms option) */
+		checkAndSetSizeForLOA(env, newLOASize, _currentLOARatio);
 
 		_memoryPoolSmallObjects->expandWithRange(env, _soaSize, lowAddress, _currentLOABase, canCoalesce);
 

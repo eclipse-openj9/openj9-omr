@@ -39,6 +39,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ BadILOp = 0, /* illegal op hopefully help with uninitialized nodes */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aconst, \
@@ -56,6 +57,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aconst, /* load address constant (zero value means NULL) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainAConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iconst, \
@@ -73,6 +75,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iconst, /* load integer constant (32-bit signed 2's complement) */ \
       /* .simplifierHandler    = */ constSimplifier, \
+      /* .vpHandler            = */ constrainIntConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lconst, \
@@ -90,6 +93,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lconst, /* load long integer constant (64-bit signed 2's complement) */ \
       /* .simplifierHandler    = */ lconstSimplifier, \
+      /* .vpHandler            = */ constrainLongConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fconst, \
@@ -107,6 +111,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fconst, /* load float constant (32-bit ieee fp) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainFloatConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dconst, \
@@ -124,6 +129,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dconst, /* load double constant (64-bit ieee fp) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainLongConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bconst, \
@@ -141,6 +147,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bconst, /* load byte integer constant (8-bit signed 2's complement) */ \
       /* .simplifierHandler    = */ constSimplifier, \
+      /* .vpHandler            = */ constrainByteConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sconst, \
@@ -158,6 +165,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sconst, /* load short integer constant (16-bit signed 2's complement) */ \
       /* .simplifierHandler    = */ constSimplifier, \
+      /* .vpHandler            = */ constrainShortConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iload, \
@@ -175,6 +183,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iload, /* load integer */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fload, \
@@ -192,6 +201,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fload, /* load float */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainFload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dload, \
@@ -209,6 +219,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dload, /* load double */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainDload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aload, \
@@ -226,6 +237,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aload, /* load address */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainAload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bload, \
@@ -243,6 +255,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bload, /* load byte */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sload, \
@@ -260,6 +273,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sload, /* load short integer */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainShortLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lload, \
@@ -277,6 +291,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lload, /* load long integer */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainLload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::irdbar, \
@@ -294,6 +309,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ irdbar, /* read barrier for load integer */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::frdbar, \
@@ -311,6 +327,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ frdbar, /* read barrier for load float */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainFload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::drdbar, \
@@ -328,6 +345,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ drdbar, /* read barrier for load double */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainDload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ardbar, \
@@ -345,6 +363,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ardbar, /* read barrier for load address */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainAload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::brdbar, \
@@ -362,6 +381,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ brdbar, /* read barrier for load byte */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::srdbar, \
@@ -379,6 +399,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ srdbar, /* load short integer */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainShortLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lrdbar, \
@@ -396,6 +417,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lrdbar, /* load long integer */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainLload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iloadi, \
@@ -413,6 +435,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iloadi, /* load indirect integer */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainIiload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::floadi, \
@@ -430,6 +453,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ floadi, /* load indirect float */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainFload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dloadi, \
@@ -447,6 +471,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dloadi, /* load indirect double */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainDload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aloadi, \
@@ -464,6 +489,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aloadi, /* load indirect address */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainIaload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bloadi, \
@@ -481,6 +507,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bloadi, /* load indirect byte */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sloadi, \
@@ -498,6 +525,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sloadi, /* load indirect short integer */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainShortLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lloadi, \
@@ -515,6 +543,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lloadi, /* load indirect long integer */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainLload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::irdbari, \
@@ -532,6 +561,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ irdbari, /* read barrier for load indirect integer */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainIiload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::frdbari, \
@@ -549,6 +579,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ frdbari, /* read barrier for load indirect float */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainFload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::drdbari, \
@@ -566,6 +597,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ drdbari, /* read barrier for load indirect double */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainDload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ardbari, \
@@ -583,6 +615,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ardbari, /* read barrier for load indirect address */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainIaload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::brdbari, \
@@ -600,6 +633,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ brdbari, /* read barrier for load indirect byte */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::srdbari, \
@@ -617,6 +651,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ srdbari, /* read barrier for load indirect short integer */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainShortLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lrdbari, \
@@ -634,6 +669,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lrdbari, /* read barrier for load indirect long integer */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainLload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::istore, \
@@ -651,6 +687,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ istore, /* store integer */ \
       /* .simplifierHandler    = */ directStoreSimplifier, \
+      /* .vpHandler            = */ constrainIntStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lstore, \
@@ -668,6 +705,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lstore, /* store long integer */ \
       /* .simplifierHandler    = */ lstoreSimplifier, \
+      /* .vpHandler            = */ constrainLongStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fstore, \
@@ -685,6 +723,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fstore, /* store float */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dstore, \
@@ -702,6 +741,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dstore, /* store double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::astore, \
@@ -719,6 +759,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ astore, /* store address */ \
       /* .simplifierHandler    = */ astoreSimplifier, \
+      /* .vpHandler            = */ constrainAstore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bstore, \
@@ -736,6 +777,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bstore, /* store byte */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sstore, \
@@ -753,6 +795,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sstore, /* store short integer */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iwrtbar, \
@@ -770,6 +813,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iwrtbar, /* write barrier for store direct integer */ \
       /* .simplifierHandler    = */ directStoreSimplifier, \
+      /* .vpHandler            = */ constrainIntStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lwrtbar, \
@@ -787,6 +831,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lwrtbar, /* write barrier for store direct long integer */ \
       /* .simplifierHandler    = */ lstoreSimplifier, \
+      /* .vpHandler            = */ constrainLongStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fwrtbar, \
@@ -804,6 +849,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fwrtbar, /* write barrier for store direct float */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dwrtbar, \
@@ -821,6 +867,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dwrtbar, /* write barrier for store direct double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::awrtbar, \
@@ -838,6 +885,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ awrtbar, /* write barrier for store direct address */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainWrtBar, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bwrtbar, \
@@ -855,6 +903,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bwrtbar, /* write barrier for store direct byte */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::swrtbar, \
@@ -872,6 +921,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ swrtbar, /* write barrier for store direct short integer */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lstorei, \
@@ -889,6 +939,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lstorei, /* store indirect long integer           (child1 a, child2 l) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fstorei, \
@@ -906,6 +957,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fstorei, /* store indirect float                  (child1 a, child2 f) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dstorei, \
@@ -923,6 +975,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dstorei, /* store indirect double                 (child1 a, child2 d) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::astorei, \
@@ -940,6 +993,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ astorei, /* store indirect address                (child1 a dest, child2 a value) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainAstore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bstorei, \
@@ -957,6 +1011,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bstorei, /* store indirect byte                   (child1 a, child2 b) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sstorei, \
@@ -974,6 +1029,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sstorei, /* store indirect short integer          (child1 a, child2 s) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::istorei, \
@@ -991,6 +1047,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ istorei, /* store indirect integer                (child1 a, child2 i) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lwrtbari, \
@@ -1008,6 +1065,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lwrtbari, /* write barrier for store indirect long integer */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fwrtbari, \
@@ -1025,6 +1083,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fwrtbari, /* write barrier for store indirect float */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dwrtbari, \
@@ -1042,6 +1101,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dwrtbari, /* write barrier for store indirect double */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::awrtbari, \
@@ -1059,6 +1119,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ awrtbari, /* write barrier for store indirect address */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainWrtBar, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bwrtbari, \
@@ -1076,6 +1137,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bwrtbari, /* write barrier for store indirect byte */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::swrtbari, \
@@ -1093,6 +1155,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ swrtbari, /* write barrier for store indirect short integer */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iwrtbari, \
@@ -1110,6 +1173,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iwrtbari, /* write barrier for store indirect integer */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::Goto, \
@@ -1127,6 +1191,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Goto, /* goto label address */ \
       /* .simplifierHandler    = */ gotoSimplifier, \
+      /* .vpHandler            = */ constrainGoto, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ireturn, \
@@ -1144,6 +1209,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ireturn, /* return an integer */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainReturn, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lreturn, \
@@ -1161,6 +1227,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lreturn, /* return a long integer */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainReturn, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::freturn, \
@@ -1178,6 +1245,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ freturn, /* return a float */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainReturn, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dreturn, \
@@ -1195,6 +1263,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dreturn, /* return a double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainReturn, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::areturn, \
@@ -1212,6 +1281,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ areturn, /* return an address */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainReturn, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::Return, \
@@ -1229,6 +1299,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Return, /* void return */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainReturn, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::asynccheck, \
@@ -1246,6 +1317,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ asynccheck, /* GC point */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::athrow, \
@@ -1263,6 +1335,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ athrow, /* throw an exception */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainThrow, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icall, \
@@ -1280,6 +1353,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ icall, /* direct call returning integer */ \
       /* .simplifierHandler    = */ ifdCallSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcall, \
@@ -1297,6 +1371,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lcall, /* direct call returning long integer */ \
       /* .simplifierHandler    = */ lcallSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcall, \
@@ -1314,6 +1389,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fcall, /* direct call returning float */ \
       /* .simplifierHandler    = */ ifdCallSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcall, \
@@ -1331,6 +1407,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcall, /* direct call returning double */ \
       /* .simplifierHandler    = */ ifdCallSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acall, \
@@ -1348,6 +1425,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ acall, /* direct call returning reference */ \
       /* .simplifierHandler    = */ acallSimplifier, \
+      /* .vpHandler            = */ constrainAcall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::call, \
@@ -1365,6 +1443,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ call, /* direct call returning void */ \
       /* .simplifierHandler    = */ vcallSimplifier, \
+      /* .vpHandler            = */ constrainVcall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iadd, \
@@ -1382,6 +1461,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iadd, /* add 2 integers */ \
       /* .simplifierHandler    = */ iaddSimplifier, \
+      /* .vpHandler            = */ constrainAdd, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ladd, \
@@ -1399,6 +1479,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ladd, /* add 2 long integers */ \
       /* .simplifierHandler    = */ laddSimplifier, \
+      /* .vpHandler            = */ constrainAdd, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fadd, \
@@ -1416,6 +1497,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fadd, /* add 2 floats */ \
       /* .simplifierHandler    = */ faddSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dadd, \
@@ -1433,6 +1515,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dadd, /* add 2 doubles */ \
       /* .simplifierHandler    = */ daddSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::badd, \
@@ -1450,6 +1533,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ badd, /* add 2 bytes */ \
       /* .simplifierHandler    = */ baddSimplifier, \
+      /* .vpHandler            = */ constrainAdd, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sadd, \
@@ -1467,6 +1551,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sadd, /* add 2 short integers */ \
       /* .simplifierHandler    = */ saddSimplifier, \
+      /* .vpHandler            = */ constrainAdd, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::isub, \
@@ -1484,6 +1569,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ isub, /* subtract 2 integers                (child1 - child2) */ \
       /* .simplifierHandler    = */ isubSimplifier, \
+      /* .vpHandler            = */ constrainSubtract, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lsub, \
@@ -1501,6 +1587,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lsub, /* subtract 2 long integers           (child1 - child2) */ \
       /* .simplifierHandler    = */ lsubSimplifier, \
+      /* .vpHandler            = */ constrainSubtract, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fsub, \
@@ -1518,6 +1605,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fsub, /* subtract 2 floats                  (child1 - child2) */ \
       /* .simplifierHandler    = */ fsubSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dsub, \
@@ -1535,6 +1623,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dsub, /* subtract 2 doubles                 (child1 - child2) */ \
       /* .simplifierHandler    = */ dsubSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bsub, \
@@ -1552,6 +1641,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bsub, /* subtract 2 bytes                   (child1 - child2) */ \
       /* .simplifierHandler    = */ bsubSimplifier, \
+      /* .vpHandler            = */ constrainSubtract, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ssub, \
@@ -1569,6 +1659,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ssub, /* subtract 2 short integers          (child1 - child2) */ \
       /* .simplifierHandler    = */ ssubSimplifier, \
+      /* .vpHandler            = */ constrainSubtract, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::asub, \
@@ -1586,6 +1677,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ asub, /* subtract 2 addresses (child1 - child2) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainSubtract, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::imul, \
@@ -1603,6 +1695,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ imul, /* multiply 2 integers */ \
       /* .simplifierHandler    = */ imulSimplifier, \
+      /* .vpHandler            = */ constrainImul, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lmul, \
@@ -1620,6 +1713,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lmul, /* multiply 2 signed or unsigned long integers */ \
       /* .simplifierHandler    = */ lmulSimplifier, \
+      /* .vpHandler            = */ constrainLmul, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fmul, \
@@ -1637,6 +1731,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fmul, /* multiply 2 floats */ \
       /* .simplifierHandler    = */ fmulSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dmul, \
@@ -1654,6 +1749,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dmul, /* multiply 2 doubles */ \
       /* .simplifierHandler    = */ dmulSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bmul, \
@@ -1671,6 +1767,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bmul, /* multiply 2 bytes */ \
       /* .simplifierHandler    = */ bmulSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::smul, \
@@ -1688,6 +1785,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ smul, /* multiply 2 short integers */ \
       /* .simplifierHandler    = */ smulSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::idiv, \
@@ -1705,6 +1803,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ idiv, /* divide 2 integers                (child1 / child2) */ \
       /* .simplifierHandler    = */ idivSimplifier, \
+      /* .vpHandler            = */ constrainIdiv, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ldiv, \
@@ -1722,6 +1821,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ldiv, /* divide 2 long integers           (child1 / child2) */ \
       /* .simplifierHandler    = */ ldivSimplifier, \
+      /* .vpHandler            = */ constrainLdiv, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fdiv, \
@@ -1739,6 +1839,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fdiv, /* divide 2 floats                  (child1 / child2) */ \
       /* .simplifierHandler    = */ fdivSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ddiv, \
@@ -1756,6 +1857,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ddiv, /* divide 2 doubles                 (child1 / child2) */ \
       /* .simplifierHandler    = */ ddivSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bdiv, \
@@ -1773,6 +1875,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bdiv, /* divide 2 bytes                   (child1 / child2) */ \
       /* .simplifierHandler    = */ bdivSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sdiv, \
@@ -1790,6 +1893,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sdiv, /* divide 2 short integers          (child1 / child2) */ \
       /* .simplifierHandler    = */ sdivSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iudiv, \
@@ -1807,6 +1911,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iudiv, /* divide 2 unsigned integers       (child1 / child2) */ \
       /* .simplifierHandler    = */ idivSimplifier, \
+      /* .vpHandler            = */ constrainIdiv, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ludiv, \
@@ -1824,6 +1929,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ludiv, /* divide 2 unsigned long integers  (child1 / child2) */ \
       /* .simplifierHandler    = */ ldivSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::irem, \
@@ -1841,6 +1947,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ irem, /* remainder of 2 integers                (child1 % child2) */ \
       /* .simplifierHandler    = */ iremSimplifier, \
+      /* .vpHandler            = */ constrainIrem, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lrem, \
@@ -1858,6 +1965,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lrem, /* remainder of 2 long integers           (child1 % child2) */ \
       /* .simplifierHandler    = */ lremSimplifier, \
+      /* .vpHandler            = */ constrainLrem, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::frem, \
@@ -1875,6 +1983,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ frem, /* remainder of 2 floats                  (child1 % child2) */ \
       /* .simplifierHandler    = */ fremSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::drem, \
@@ -1892,6 +2001,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ drem, /* remainder of 2 doubles                 (child1 % child2) */ \
       /* .simplifierHandler    = */ dremSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::brem, \
@@ -1909,6 +2019,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ brem, /* remainder of 2 bytes                   (child1 % child2) */ \
       /* .simplifierHandler    = */ bremSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::srem, \
@@ -1926,6 +2037,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ srem, /* remainder of 2 short integers          (child1 % child2) */ \
       /* .simplifierHandler    = */ sremSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iurem, \
@@ -1943,6 +2055,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iurem, /* remainder of 2 unsigned integers       (child1 % child2) */ \
       /* .simplifierHandler    = */ iremSimplifier, \
+      /* .vpHandler            = */ constrainIrem, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ineg, \
@@ -1960,6 +2073,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ineg, /* negate an integer */ \
       /* .simplifierHandler    = */ inegSimplifier, \
+      /* .vpHandler            = */ constrainIneg, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lneg, \
@@ -1977,6 +2091,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lneg, /* negate a long integer */ \
       /* .simplifierHandler    = */ lnegSimplifier, \
+      /* .vpHandler            = */ constrainLneg, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fneg, \
@@ -1994,6 +2109,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fneg, /* negate a float */ \
       /* .simplifierHandler    = */ fnegSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dneg, \
@@ -2011,6 +2127,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dneg, /* negate a double */ \
       /* .simplifierHandler    = */ dnegSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bneg, \
@@ -2028,6 +2145,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bneg, /* negate a bytes */ \
       /* .simplifierHandler    = */ bnegSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sneg, \
@@ -2045,6 +2163,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sneg, /* negate a short integer */ \
       /* .simplifierHandler    = */ snegSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iabs, \
@@ -2062,6 +2181,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iabs, /* absolute value of integer */ \
       /* .simplifierHandler    = */ ilfdabsSimplifier, \
+      /* .vpHandler            = */ constrainIabs, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::labs, \
@@ -2079,6 +2199,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ labs, /* absolute value of long */ \
       /* .simplifierHandler    = */ ilfdabsSimplifier, \
+      /* .vpHandler            = */ constrainLabs, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fabs, \
@@ -2096,6 +2217,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fabs, /* absolute value of float */ \
       /* .simplifierHandler    = */ ilfdabsSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dabs, \
@@ -2113,6 +2235,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dabs, /* absolute value of double */ \
       /* .simplifierHandler    = */ ilfdabsSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ishl, \
@@ -2130,6 +2253,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ishl, /* shift integer left                (child1 << child2) */ \
       /* .simplifierHandler    = */ ishlSimplifier, \
+      /* .vpHandler            = */ constrainIshl, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lshl, \
@@ -2147,6 +2271,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lshl, /* shift long integer left           (child1 << child2) */ \
       /* .simplifierHandler    = */ lshlSimplifier, \
+      /* .vpHandler            = */ constrainLshl, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bshl, \
@@ -2164,6 +2289,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bshl, /* shift byte left                   (child1 << child2) */ \
       /* .simplifierHandler    = */ bshlSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sshl, \
@@ -2181,6 +2307,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sshl, /* shift short integer left          (child1 << child2) */ \
       /* .simplifierHandler    = */ sshlSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ishr, \
@@ -2198,6 +2325,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ishr, /* shift integer right arithmetically               (child1 >> child2) */ \
       /* .simplifierHandler    = */ ishrSimplifier, \
+      /* .vpHandler            = */ constrainIshr, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lshr, \
@@ -2215,6 +2343,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lshr, /* shift long integer right arithmetically          (child1 >> child2) */ \
       /* .simplifierHandler    = */ lshrSimplifier, \
+      /* .vpHandler            = */ constrainLshr, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bshr, \
@@ -2232,6 +2361,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bshr, /* shift byte right arithmetically                  (child1 >> child2) */ \
       /* .simplifierHandler    = */ bshrSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sshr, \
@@ -2249,6 +2379,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sshr, /* shift short integer arithmetically               (child1 >> child2) */ \
       /* .simplifierHandler    = */ sshrSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iushr, \
@@ -2266,6 +2397,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iushr, /* shift integer right logically                   (child1 >> child2) */ \
       /* .simplifierHandler    = */ iushrSimplifier, \
+      /* .vpHandler            = */ constrainIushr, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lushr, \
@@ -2283,6 +2415,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lushr, /* shift long integer right logically              (child1 >> child2) */ \
       /* .simplifierHandler    = */ lushrSimplifier, \
+      /* .vpHandler            = */ constrainLushr, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bushr, \
@@ -2300,6 +2433,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bushr, /* shift byte right logically                      (child1 >> child2) */ \
       /* .simplifierHandler    = */ bushrSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sushr, \
@@ -2317,6 +2451,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sushr, /* shift short integer right logically             (child1 >> child2) */ \
       /* .simplifierHandler    = */ sushrSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::irol, \
@@ -2334,6 +2469,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ irol, /* rotate integer left */ \
       /* .simplifierHandler    = */ irolSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lrol, \
@@ -2351,6 +2487,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lrol, /* rotate long integer left */ \
       /* .simplifierHandler    = */ lrolSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iand, \
@@ -2368,6 +2505,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iand, /* boolean and of 2 integers */ \
       /* .simplifierHandler    = */ iandSimplifier, \
+      /* .vpHandler            = */ constrainIand, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::land, \
@@ -2385,6 +2523,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ land, /* boolean and of 2 long integers */ \
       /* .simplifierHandler    = */ landSimplifier, \
+      /* .vpHandler            = */ constrainLand, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::band, \
@@ -2402,6 +2541,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ band, /* boolean and of 2 bytes */ \
       /* .simplifierHandler    = */ bandSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sand, \
@@ -2419,6 +2559,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sand, /* boolean and of 2 short integers */ \
       /* .simplifierHandler    = */ sandSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ior, \
@@ -2436,6 +2577,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ior, /* boolean or of 2 integers */ \
       /* .simplifierHandler    = */ iorSimplifier, \
+      /* .vpHandler            = */ constrainIor, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lor, \
@@ -2453,6 +2595,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lor, /* boolean or of 2 long integers */ \
       /* .simplifierHandler    = */ lorSimplifier, \
+      /* .vpHandler            = */ constrainLor, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bor, \
@@ -2470,6 +2613,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bor, /* boolean or of 2 bytes */ \
       /* .simplifierHandler    = */ borSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sor, \
@@ -2487,6 +2631,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sor, /* boolean or of 2 short integers */ \
       /* .simplifierHandler    = */ sorSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ixor, \
@@ -2504,6 +2649,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ixor, /* boolean xor of 2 integers */ \
       /* .simplifierHandler    = */ ixorSimplifier, \
+      /* .vpHandler            = */ constrainIxor, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lxor, \
@@ -2521,6 +2667,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lxor, /* boolean xor of 2 long integers */ \
       /* .simplifierHandler    = */ lxorSimplifier, \
+      /* .vpHandler            = */ constrainLxor, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bxor, \
@@ -2538,6 +2685,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bxor, /* boolean xor of 2 bytes */ \
       /* .simplifierHandler    = */ bxorSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sxor, \
@@ -2555,6 +2703,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sxor, /* boolean xor of 2 short integers */ \
       /* .simplifierHandler    = */ sxorSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2l, \
@@ -2572,6 +2721,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2l, /* convert integer to long integer with sign extension */ \
       /* .simplifierHandler    = */ i2lSimplifier, \
+      /* .vpHandler            = */ constrainI2l, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2f, \
@@ -2589,6 +2739,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2f, /* convert integer to float */ \
       /* .simplifierHandler    = */ i2fSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2d, \
@@ -2606,6 +2757,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2d, /* convert integer to double */ \
       /* .simplifierHandler    = */ i2dSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2b, \
@@ -2623,6 +2775,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2b, /* convert integer to byte */ \
       /* .simplifierHandler    = */ i2bSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToByte, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2s, \
@@ -2640,6 +2793,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2s, /* convert integer to short integer */ \
       /* .simplifierHandler    = */ i2sSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToShort, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2a, \
@@ -2657,6 +2811,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2a, /* convert integer to address */ \
       /* .simplifierHandler    = */ i2aSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iu2l, \
@@ -2674,6 +2829,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iu2l, /* convert unsigned integer to long integer with zero extension */ \
       /* .simplifierHandler    = */ iu2lSimplifier, \
+      /* .vpHandler            = */ constrainIu2l, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iu2f, \
@@ -2691,6 +2847,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iu2f, /* convert unsigned integer to float */ \
       /* .simplifierHandler    = */ iu2fSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iu2d, \
@@ -2708,6 +2865,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iu2d, /* convert unsigned integer to double */ \
       /* .simplifierHandler    = */ iu2dSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iu2a, \
@@ -2725,6 +2883,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iu2a, /* convert unsigned integer to address */ \
       /* .simplifierHandler    = */ i2aSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2i, \
@@ -2742,6 +2901,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2i, /* convert long integer to integer */ \
       /* .simplifierHandler    = */ l2iSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToInt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2f, \
@@ -2759,6 +2919,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2f, /* convert long integer to float */ \
       /* .simplifierHandler    = */ l2fSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2d, \
@@ -2776,6 +2937,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2d, /* convert long integer to double */ \
       /* .simplifierHandler    = */ l2dSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2b, \
@@ -2793,6 +2955,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2b, /* convert long integer to byte */ \
       /* .simplifierHandler    = */ l2bSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToByte, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2s, \
@@ -2810,6 +2973,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2s, /* convert long integer to short integer */ \
       /* .simplifierHandler    = */ l2sSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToShort, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2a, \
@@ -2827,6 +2991,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2a, /* convert long integer to address */ \
       /* .simplifierHandler    = */ l2aSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lu2f, \
@@ -2844,6 +3009,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lu2f, /* convert unsigned long integer to float */ \
       /* .simplifierHandler    = */ lu2fSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lu2d, \
@@ -2861,6 +3027,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lu2d, /* convert unsigned long integer to double */ \
       /* .simplifierHandler    = */ lu2dSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lu2a, \
@@ -2878,6 +3045,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lu2a, /* convert unsigned long integer to address */ \
       /* .simplifierHandler    = */ l2aSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2i, \
@@ -2895,6 +3063,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2i, /* convert float to integer */ \
       /* .simplifierHandler    = */ f2iSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2l, \
@@ -2912,6 +3081,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2l, /* convert float to long integer */ \
       /* .simplifierHandler    = */ f2lSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2d, \
@@ -2929,6 +3099,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2d, /* convert float to double */ \
       /* .simplifierHandler    = */ f2dSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2b, \
@@ -2946,6 +3117,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2b, /* convert float to byte */ \
       /* .simplifierHandler    = */ f2bSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToByte, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2s, \
@@ -2963,6 +3135,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2s, /* convert float to short integer */ \
       /* .simplifierHandler    = */ f2sSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToShort, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2i, \
@@ -2980,6 +3153,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2i, /* convert double to integer */ \
       /* .simplifierHandler    = */ d2iSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2l, \
@@ -2997,6 +3171,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2l, /* convert double to long integer */ \
       /* .simplifierHandler    = */ d2lSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2f, \
@@ -3014,6 +3189,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2f, /* convert double to float */ \
       /* .simplifierHandler    = */ d2fSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2b, \
@@ -3031,6 +3207,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2b, /* convert double to byte */ \
       /* .simplifierHandler    = */ d2bSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToByte, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2s, \
@@ -3048,6 +3225,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2s, /* convert double to short integer */ \
       /* .simplifierHandler    = */ d2sSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToShort, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2i, \
@@ -3065,6 +3243,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2i, /* convert byte to integer with sign extension */ \
       /* .simplifierHandler    = */ b2iSimplifier, \
+      /* .vpHandler            = */ constrainB2i, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2l, \
@@ -3082,6 +3261,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2l, /* convert byte to long integer with sign extension */ \
       /* .simplifierHandler    = */ b2lSimplifier, \
+      /* .vpHandler            = */ constrainB2l, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2f, \
@@ -3099,6 +3279,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2f, /* convert byte to float */ \
       /* .simplifierHandler    = */ b2fSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2d, \
@@ -3116,6 +3297,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2d, /* convert byte to double */ \
       /* .simplifierHandler    = */ b2dSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2s, \
@@ -3133,6 +3315,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2s, /* convert byte to short integer with sign extension */ \
       /* .simplifierHandler    = */ b2sSimplifier, \
+      /* .vpHandler            = */ constrainB2s, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2a, \
@@ -3150,6 +3333,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2a, /* convert byte to address */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2i, \
@@ -3167,6 +3351,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2i, /* convert byte to integer with zero extension */ \
       /* .simplifierHandler    = */ bu2iSimplifier, \
+      /* .vpHandler            = */ constrainBu2i, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2l, \
@@ -3184,6 +3369,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2l, /* convert byte to long integer with zero extension */ \
       /* .simplifierHandler    = */ bu2lSimplifier, \
+      /* .vpHandler            = */ constrainBu2l, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2f, \
@@ -3201,6 +3387,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2f, /* convert unsigned byte to float */ \
       /* .simplifierHandler    = */ bu2fSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2d, \
@@ -3218,6 +3405,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2d, /* convert unsigned byte to double */ \
       /* .simplifierHandler    = */ bu2dSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2s, \
@@ -3235,6 +3423,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2s, /* convert byte to short integer with zero extension */ \
       /* .simplifierHandler    = */ bu2sSimplifier, \
+      /* .vpHandler            = */ constrainBu2s, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2a, \
@@ -3252,6 +3441,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2a, /* convert unsigned byte to unsigned address */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2i, \
@@ -3269,6 +3459,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2i, /* convert short integer to integer with sign extension */ \
       /* .simplifierHandler    = */ s2iSimplifier, \
+      /* .vpHandler            = */ constrainS2i, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2l, \
@@ -3286,6 +3477,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2l, /* convert short integer to long integer with sign extension */ \
       /* .simplifierHandler    = */ s2lSimplifier, \
+      /* .vpHandler            = */ constrainS2l, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2f, \
@@ -3303,6 +3495,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2f, /* convert short integer to float */ \
       /* .simplifierHandler    = */ s2fSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2d, \
@@ -3320,6 +3513,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2d, /* convert short integer to double */ \
       /* .simplifierHandler    = */ s2dSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2b, \
@@ -3337,6 +3531,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2b, /* convert short integer to byte */ \
       /* .simplifierHandler    = */ s2bSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToByte, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2a, \
@@ -3354,6 +3549,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2a, /* convert short integer to address */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::su2i, \
@@ -3371,6 +3567,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ su2i, /* zero extend short to int */ \
       /* .simplifierHandler    = */ su2iSimplifier, \
+      /* .vpHandler            = */ constrainSu2i, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::su2l, \
@@ -3388,6 +3585,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ su2l, /* zero extend char to long */ \
       /* .simplifierHandler    = */ su2lSimplifier, \
+      /* .vpHandler            = */ constrainSu2l, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::su2f, \
@@ -3405,6 +3603,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ su2f, /* convert char to float */ \
       /* .simplifierHandler    = */ su2fSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::su2d, \
@@ -3422,6 +3621,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ su2d, /* convert char to double */ \
       /* .simplifierHandler    = */ su2dSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::su2a, \
@@ -3439,6 +3639,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ su2a, /* convert char to address */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::a2i, \
@@ -3456,6 +3657,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ a2i, /* convert address to integer */ \
       /* .simplifierHandler    = */ a2iSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::a2l, \
@@ -3473,6 +3675,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ a2l, /* convert address to long integer */ \
       /* .simplifierHandler    = */ a2lSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::a2b, \
@@ -3490,6 +3693,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ a2b, /* convert address to byte */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::a2s, \
@@ -3507,6 +3711,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ a2s, /* convert address to short */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmpeq, \
@@ -3524,6 +3729,7 @@
       /* .ifCompareOpCode      = */ TR::ificmpeq, \
       /* .description          = */ icmpeq, /* integer compare if equal */ \
       /* .simplifierHandler    = */ icmpeqSimplifier, \
+      /* .vpHandler            = */ constrainCmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmpne, \
@@ -3541,6 +3747,7 @@
       /* .ifCompareOpCode      = */ TR::ificmpne, \
       /* .description          = */ icmpne, /* integer compare if not equal */ \
       /* .simplifierHandler    = */ icmpneSimplifier, \
+      /* .vpHandler            = */ constrainCmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmplt, \
@@ -3558,6 +3765,7 @@
       /* .ifCompareOpCode      = */ TR::ificmplt, \
       /* .description          = */ icmplt, /* integer compare if less than */ \
       /* .simplifierHandler    = */ icmpltSimplifier, \
+      /* .vpHandler            = */ constrainCmplt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmpge, \
@@ -3575,6 +3783,7 @@
       /* .ifCompareOpCode      = */ TR::ificmpge, \
       /* .description          = */ icmpge, /* integer compare if greater than or equal */ \
       /* .simplifierHandler    = */ icmpgeSimplifier, \
+      /* .vpHandler            = */ constrainCmpge, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmpgt, \
@@ -3592,6 +3801,7 @@
       /* .ifCompareOpCode      = */ TR::ificmpgt, \
       /* .description          = */ icmpgt, /* integer compare if greater than */ \
       /* .simplifierHandler    = */ icmpgtSimplifier, \
+      /* .vpHandler            = */ constrainCmpgt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmple, \
@@ -3609,6 +3819,7 @@
       /* .ifCompareOpCode      = */ TR::ificmple, \
       /* .description          = */ icmple, /* integer compare if less than or equal */ \
       /* .simplifierHandler    = */ icmpleSimplifier, \
+      /* .vpHandler            = */ constrainCmple, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmpeq, \
@@ -3626,6 +3837,7 @@
       /* .ifCompareOpCode      = */ TR::ifiucmpeq, \
       /* .description          = */ iucmpeq, /* unsigned integer compare if equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmpne, \
@@ -3643,6 +3855,7 @@
       /* .ifCompareOpCode      = */ TR::ifiucmpne, \
       /* .description          = */ iucmpne, /* unsigned integer compare if not equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmplt, \
@@ -3660,6 +3873,7 @@
       /* .ifCompareOpCode      = */ TR::ifiucmplt, \
       /* .description          = */ iucmplt, /* unsigned integer compare if less than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmpge, \
@@ -3677,6 +3891,7 @@
       /* .ifCompareOpCode      = */ TR::ifiucmpge, \
       /* .description          = */ iucmpge, /* unsigned integer compare if greater than or equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmpgt, \
@@ -3694,6 +3909,7 @@
       /* .ifCompareOpCode      = */ TR::ifiucmpgt, \
       /* .description          = */ iucmpgt, /* unsigned integer compare if greater than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmple, \
@@ -3711,6 +3927,7 @@
       /* .ifCompareOpCode      = */ TR::ifiucmple, \
       /* .description          = */ iucmple, /* unsigned integer compare if less than or equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmpeq, \
@@ -3728,6 +3945,7 @@
       /* .ifCompareOpCode      = */ TR::iflcmpeq, \
       /* .description          = */ lcmpeq, /* long compare if equal */ \
       /* .simplifierHandler    = */ lcmpeqSimplifier, \
+      /* .vpHandler            = */ constrainCmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmpne, \
@@ -3745,6 +3963,7 @@
       /* .ifCompareOpCode      = */ TR::iflcmpne, \
       /* .description          = */ lcmpne, /* long compare if not equal */ \
       /* .simplifierHandler    = */ lcmpneSimplifier, \
+      /* .vpHandler            = */ constrainCmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmplt, \
@@ -3762,6 +3981,7 @@
       /* .ifCompareOpCode      = */ TR::iflcmplt, \
       /* .description          = */ lcmplt, /* long compare if less than */ \
       /* .simplifierHandler    = */ lcmpltSimplifier, \
+      /* .vpHandler            = */ constrainCmplt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmpge, \
@@ -3779,6 +3999,7 @@
       /* .ifCompareOpCode      = */ TR::iflcmpge, \
       /* .description          = */ lcmpge, /* long compare if greater than or equal */ \
       /* .simplifierHandler    = */ lcmpgeSimplifier, \
+      /* .vpHandler            = */ constrainCmpge, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmpgt, \
@@ -3796,6 +4017,7 @@
       /* .ifCompareOpCode      = */ TR::iflcmpgt, \
       /* .description          = */ lcmpgt, /* long compare if greater than */ \
       /* .simplifierHandler    = */ lcmpgtSimplifier, \
+      /* .vpHandler            = */ constrainCmpgt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmple, \
@@ -3813,6 +4035,7 @@
       /* .ifCompareOpCode      = */ TR::iflcmple, \
       /* .description          = */ lcmple, /* long compare if less than or equal */ \
       /* .simplifierHandler    = */ lcmpleSimplifier, \
+      /* .vpHandler            = */ constrainCmple, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmpeq, \
@@ -3830,6 +4053,7 @@
       /* .ifCompareOpCode      = */ TR::iflucmpeq, \
       /* .description          = */ lucmpeq, /* unsigned long compare if equal */ \
       /* .simplifierHandler    = */ lcmpeqSimplifier, \
+      /* .vpHandler            = */ constrainCmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmpne, \
@@ -3847,6 +4071,7 @@
       /* .ifCompareOpCode      = */ TR::iflucmpne, \
       /* .description          = */ lucmpne, /* unsigned long compare if not equal */ \
       /* .simplifierHandler    = */ lcmpneSimplifier, \
+      /* .vpHandler            = */ constrainCmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmplt, \
@@ -3864,6 +4089,7 @@
       /* .ifCompareOpCode      = */ TR::iflucmplt, \
       /* .description          = */ lucmplt, /* unsigned long compare if less than */ \
       /* .simplifierHandler    = */ lucmpltSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmpge, \
@@ -3881,6 +4107,7 @@
       /* .ifCompareOpCode      = */ TR::iflucmpge, \
       /* .description          = */ lucmpge, /* unsigned long compare if greater than or equal */ \
       /* .simplifierHandler    = */ lucmpgeSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmpgt, \
@@ -3898,6 +4125,7 @@
       /* .ifCompareOpCode      = */ TR::iflucmpgt, \
       /* .description          = */ lucmpgt, /* unsigned long compare if greater than */ \
       /* .simplifierHandler    = */ lucmpgtSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmple, \
@@ -3915,6 +4143,7 @@
       /* .ifCompareOpCode      = */ TR::iflucmple, \
       /* .description          = */ lucmple, /* unsigned long compare if less than or equal */ \
       /* .simplifierHandler    = */ lucmpleSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpeq, \
@@ -3932,6 +4161,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmpeq, \
       /* .description          = */ fcmpeq, /* float compare if equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpne, \
@@ -3949,6 +4179,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmpne, \
       /* .description          = */ fcmpne, /* float compare if not equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmplt, \
@@ -3966,6 +4197,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmplt, \
       /* .description          = */ fcmplt, /* float compare if less than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpge, \
@@ -3983,6 +4215,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmpge, \
       /* .description          = */ fcmpge, /* float compare if greater than or equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpgt, \
@@ -4000,6 +4233,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmpgt, \
       /* .description          = */ fcmpgt, /* float compare if greater than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmple, \
@@ -4017,6 +4251,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmple, \
       /* .description          = */ fcmple, /* float compare if less than or equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpequ, \
@@ -4034,6 +4269,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmpequ, \
       /* .description          = */ fcmpequ, /* float compare if equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpneu, \
@@ -4051,6 +4287,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmpneu, \
       /* .description          = */ fcmpneu, /* float compare if not equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpltu, \
@@ -4068,6 +4305,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmpltu, \
       /* .description          = */ fcmpltu, /* float compare if less than or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpgeu, \
@@ -4085,6 +4323,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmpgeu, \
       /* .description          = */ fcmpgeu, /* float compare if greater than or equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpgtu, \
@@ -4102,6 +4341,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmpgtu, \
       /* .description          = */ fcmpgtu, /* float compare if greater than or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpleu, \
@@ -4119,6 +4359,7 @@
       /* .ifCompareOpCode      = */ TR::iffcmpleu, \
       /* .description          = */ fcmpleu, /* float compare if less than or equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpeq, \
@@ -4136,6 +4377,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmpeq, \
       /* .description          = */ dcmpeq, /* double compare if equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpne, \
@@ -4153,6 +4395,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmpne, \
       /* .description          = */ dcmpne, /* double compare if not equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmplt, \
@@ -4170,6 +4413,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmplt, \
       /* .description          = */ dcmplt, /* double compare if less than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpge, \
@@ -4187,6 +4431,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmpge, \
       /* .description          = */ dcmpge, /* double compare if greater than or equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpgt, \
@@ -4204,6 +4449,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmpgt, \
       /* .description          = */ dcmpgt, /* double compare if greater than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmple, \
@@ -4221,6 +4467,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmple, \
       /* .description          = */ dcmple, /* double compare if less than or equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpequ, \
@@ -4238,6 +4485,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmpequ, \
       /* .description          = */ dcmpequ, /* double compare if equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpneu, \
@@ -4255,6 +4503,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmpneu, \
       /* .description          = */ dcmpneu, /* double compare if not equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpltu, \
@@ -4272,6 +4521,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmpltu, \
       /* .description          = */ dcmpltu, /* double compare if less than or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpgeu, \
@@ -4289,6 +4539,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmpgeu, \
       /* .description          = */ dcmpgeu, /* double compare if greater than or equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpgtu, \
@@ -4306,6 +4557,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmpgtu, \
       /* .description          = */ dcmpgtu, /* double compare if greater than or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpleu, \
@@ -4323,6 +4575,7 @@
       /* .ifCompareOpCode      = */ TR::ifdcmpleu, \
       /* .description          = */ dcmpleu, /* double compare if less than or equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmpeq, \
@@ -4340,6 +4593,7 @@
       /* .ifCompareOpCode      = */ TR::ifacmpeq, \
       /* .description          = */ acmpeq, /* address compare if equal */ \
       /* .simplifierHandler    = */ acmpeqSimplifier, \
+      /* .vpHandler            = */ constrainCmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmpne, \
@@ -4357,6 +4611,7 @@
       /* .ifCompareOpCode      = */ TR::ifacmpne, \
       /* .description          = */ acmpne, /* address compare if not equal */ \
       /* .simplifierHandler    = */ acmpneSimplifier, \
+      /* .vpHandler            = */ constrainCmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmplt, \
@@ -4374,6 +4629,7 @@
       /* .ifCompareOpCode      = */ TR::ifacmplt, \
       /* .description          = */ acmplt, /* address compare if less than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmpge, \
@@ -4391,6 +4647,7 @@
       /* .ifCompareOpCode      = */ TR::ifacmpge, \
       /* .description          = */ acmpge, /* address compare if greater than or equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmpgt, \
@@ -4408,6 +4665,7 @@
       /* .ifCompareOpCode      = */ TR::ifacmpgt, \
       /* .description          = */ acmpgt, /* address compare if greater than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmple, \
@@ -4425,6 +4683,7 @@
       /* .ifCompareOpCode      = */ TR::ifacmple, \
       /* .description          = */ acmple, /* address compare if less than or equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmpeq, \
@@ -4442,6 +4701,7 @@
       /* .ifCompareOpCode      = */ TR::ifbcmpeq, \
       /* .description          = */ bcmpeq, /* byte compare if equal */ \
       /* .simplifierHandler    = */ bcmpeqSimplifier, \
+      /* .vpHandler            = */ constrainCmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmpne, \
@@ -4459,6 +4719,7 @@
       /* .ifCompareOpCode      = */ TR::ifbcmpne, \
       /* .description          = */ bcmpne, /* byte compare if not equal */ \
       /* .simplifierHandler    = */ bcmpneSimplifier, \
+      /* .vpHandler            = */ constrainCmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmplt, \
@@ -4476,6 +4737,7 @@
       /* .ifCompareOpCode      = */ TR::ifbcmplt, \
       /* .description          = */ bcmplt, /* byte compare if less than */ \
       /* .simplifierHandler    = */ bcmpltSimplifier, \
+      /* .vpHandler            = */ constrainCmplt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmpge, \
@@ -4493,6 +4755,7 @@
       /* .ifCompareOpCode      = */ TR::ifbcmpge, \
       /* .description          = */ bcmpge, /* byte compare if greater than or equal */ \
       /* .simplifierHandler    = */ bcmpgeSimplifier, \
+      /* .vpHandler            = */ constrainCmpge, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmpgt, \
@@ -4510,6 +4773,7 @@
       /* .ifCompareOpCode      = */ TR::ifbcmpgt, \
       /* .description          = */ bcmpgt, /* byte compare if greater than */ \
       /* .simplifierHandler    = */ bcmpgtSimplifier, \
+      /* .vpHandler            = */ constrainCmpgt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmple, \
@@ -4527,6 +4791,7 @@
       /* .ifCompareOpCode      = */ TR::ifbcmple, \
       /* .description          = */ bcmple, /* byte compare if less than or equal */ \
       /* .simplifierHandler    = */ bcmpleSimplifier, \
+      /* .vpHandler            = */ constrainCmple, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmpeq, \
@@ -4544,6 +4809,7 @@
       /* .ifCompareOpCode      = */ TR::ifbucmpeq, \
       /* .description          = */ bucmpeq, /* unsigned byte compare if equal */ \
       /* .simplifierHandler    = */ bcmpeqSimplifier, \
+      /* .vpHandler            = */ constrainCmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmpne, \
@@ -4561,6 +4827,7 @@
       /* .ifCompareOpCode      = */ TR::ifbucmpne, \
       /* .description          = */ bucmpne, /* unsigned byte compare if not equal */ \
       /* .simplifierHandler    = */ bcmpneSimplifier, \
+      /* .vpHandler            = */ constrainCmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmplt, \
@@ -4578,6 +4845,7 @@
       /* .ifCompareOpCode      = */ TR::ifbucmplt, \
       /* .description          = */ bucmplt, /* unsigned byte compare if less than */ \
       /* .simplifierHandler    = */ bcmpltSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmpge, \
@@ -4595,6 +4863,7 @@
       /* .ifCompareOpCode      = */ TR::ifbucmpge, \
       /* .description          = */ bucmpge, /* unsigned byte compare if greater than or equal */ \
       /* .simplifierHandler    = */ bcmpgeSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmpgt, \
@@ -4612,6 +4881,7 @@
       /* .ifCompareOpCode      = */ TR::ifbucmpgt, \
       /* .description          = */ bucmpgt, /* unsigned byte compare if greater than */ \
       /* .simplifierHandler    = */ bcmpgtSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmple, \
@@ -4629,6 +4899,7 @@
       /* .ifCompareOpCode      = */ TR::ifbucmple, \
       /* .description          = */ bucmple, /* unsigned byte compare if less than or equal */ \
       /* .simplifierHandler    = */ bcmpleSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmpeq, \
@@ -4646,6 +4917,7 @@
       /* .ifCompareOpCode      = */ TR::ifscmpeq, \
       /* .description          = */ scmpeq, /* short integer compare if equal */ \
       /* .simplifierHandler    = */ scmpeqSimplifier, \
+      /* .vpHandler            = */ constrainCmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmpne, \
@@ -4663,6 +4935,7 @@
       /* .ifCompareOpCode      = */ TR::ifscmpne, \
       /* .description          = */ scmpne, /* short integer compare if not equal */ \
       /* .simplifierHandler    = */ scmpneSimplifier, \
+      /* .vpHandler            = */ constrainCmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmplt, \
@@ -4680,6 +4953,7 @@
       /* .ifCompareOpCode      = */ TR::ifscmplt, \
       /* .description          = */ scmplt, /* short integer compare if less than */ \
       /* .simplifierHandler    = */ scmpltSimplifier, \
+      /* .vpHandler            = */ constrainCmplt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmpge, \
@@ -4697,6 +4971,7 @@
       /* .ifCompareOpCode      = */ TR::ifscmpge, \
       /* .description          = */ scmpge, /* short integer compare if greater than or equal */ \
       /* .simplifierHandler    = */ scmpgeSimplifier, \
+      /* .vpHandler            = */ constrainCmpge, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmpgt, \
@@ -4714,6 +4989,7 @@
       /* .ifCompareOpCode      = */ TR::ifscmpgt, \
       /* .description          = */ scmpgt, /* short integer compare if greater than */ \
       /* .simplifierHandler    = */ scmpgtSimplifier, \
+      /* .vpHandler            = */ constrainCmpgt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmple, \
@@ -4731,6 +5007,7 @@
       /* .ifCompareOpCode      = */ TR::ifscmple, \
       /* .description          = */ scmple, /* short integer compare if less than or equal */ \
       /* .simplifierHandler    = */ scmpleSimplifier, \
+      /* .vpHandler            = */ constrainCmple, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmpeq, \
@@ -4748,6 +5025,7 @@
       /* .ifCompareOpCode      = */ TR::ifsucmpeq, \
       /* .description          = */ sucmpeq, /* char compare if equal */ \
       /* .simplifierHandler    = */ sucmpeqSimplifier, \
+      /* .vpHandler            = */ constrainCmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmpne, \
@@ -4765,6 +5043,7 @@
       /* .ifCompareOpCode      = */ TR::ifsucmpne, \
       /* .description          = */ sucmpne, /* char compare if not equal */ \
       /* .simplifierHandler    = */ sucmpneSimplifier, \
+      /* .vpHandler            = */ constrainCmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmplt, \
@@ -4782,6 +5061,7 @@
       /* .ifCompareOpCode      = */ TR::ifsucmplt, \
       /* .description          = */ sucmplt, /* char compare if less than */ \
       /* .simplifierHandler    = */ sucmpltSimplifier, \
+      /* .vpHandler            = */ constrainCmplt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmpge, \
@@ -4799,6 +5079,7 @@
       /* .ifCompareOpCode      = */ TR::ifsucmpge, \
       /* .description          = */ sucmpge, /* char compare if greater than or equal */ \
       /* .simplifierHandler    = */ sucmpgeSimplifier, \
+      /* .vpHandler            = */ constrainCmpge, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmpgt, \
@@ -4816,6 +5097,7 @@
       /* .ifCompareOpCode      = */ TR::ifsucmpgt, \
       /* .description          = */ sucmpgt, /* char compare if greater than */ \
       /* .simplifierHandler    = */ sucmpgtSimplifier, \
+      /* .vpHandler            = */ constrainCmpgt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmple, \
@@ -4833,6 +5115,7 @@
       /* .ifCompareOpCode      = */ TR::ifsucmple, \
       /* .description          = */ sucmple, /* char compare if less than or equal */ \
       /* .simplifierHandler    = */ sucmpleSimplifier, \
+      /* .vpHandler            = */ constrainCmple, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmp, \
@@ -4850,6 +5133,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lcmp, /* long compare (1 if child1 > child2, 0 if child1 == child2, -1 if child1 < child2) */ \
       /* .simplifierHandler    = */ lcmpSimplifier, \
+      /* .vpHandler            = */ constrainFloatCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpl, \
@@ -4867,6 +5151,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fcmpl, /* float compare l (1 if child1 > child2, 0 if child1 == child2, -1 if child1 < child2 or unordered) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainFloatCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpg, \
@@ -4884,6 +5169,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fcmpg, /* float compare g (1 if child1 > child2 or unordered, 0 if child1 == child2, -1 if child1 < child2) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainFloatCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpl, \
@@ -4901,6 +5187,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcmpl, /* double compare l (1 if child1 > child2, 0 if child1 == child2, -1 if child1 < child2 or unordered) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainFloatCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpg, \
@@ -4918,6 +5205,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcmpg, /* double compare g (1 if child1 > child2 or unordered, 0 if child1 == child2, -1 if child1 < child2) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainFloatCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpeq, \
@@ -4935,6 +5223,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpeq, /* integer compare and branch if equal */ \
       /* .simplifierHandler    = */ ificmpeqSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpne, \
@@ -4952,6 +5241,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpne, /* integer compare and branch if not equal */ \
       /* .simplifierHandler    = */ ificmpneSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmplt, \
@@ -4969,6 +5259,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmplt, /* integer compare and branch if less than */ \
       /* .simplifierHandler    = */ ificmpltSimplifier, \
+      /* .vpHandler            = */ constrainIfcmplt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpge, \
@@ -4986,6 +5277,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpge, /* integer compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ ificmpgeSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpge, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpgt, \
@@ -5003,6 +5295,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpgt, /* integer compare and branch if greater than */ \
       /* .simplifierHandler    = */ ificmpgtSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpgt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmple, \
@@ -5020,6 +5313,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmple, /* integer compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ ificmpleSimplifier, \
+      /* .vpHandler            = */ constrainIfcmple, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmpeq, \
@@ -5037,6 +5331,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmpeq, /* unsigned integer compare and branch if equal */ \
       /* .simplifierHandler    = */ ificmpeqSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmpne, \
@@ -5054,6 +5349,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmpne, /* unsigned integer compare and branch if not equal */ \
       /* .simplifierHandler    = */ ificmpneSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmplt, \
@@ -5071,6 +5367,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmplt, /* unsigned integer compare and branch if less than */ \
       /* .simplifierHandler    = */ ificmpltSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmpge, \
@@ -5088,6 +5385,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmpge, /* unsigned integer compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ ificmpgeSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmpgt, \
@@ -5105,6 +5403,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmpgt, /* unsigned integer compare and branch if greater than */ \
       /* .simplifierHandler    = */ ificmpgtSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmple, \
@@ -5122,6 +5421,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmple, /* unsigned integer compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ ificmpleSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpeq, \
@@ -5139,6 +5439,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpeq, /* long compare and branch if equal */ \
       /* .simplifierHandler    = */ iflcmpeqSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpne, \
@@ -5156,6 +5457,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpne, /* long compare and branch if not equal */ \
       /* .simplifierHandler    = */ iflcmpneSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmplt, \
@@ -5173,6 +5475,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmplt, /* long compare and branch if less than */ \
       /* .simplifierHandler    = */ iflcmpltSimplifier, \
+      /* .vpHandler            = */ constrainIfcmplt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpge, \
@@ -5190,6 +5493,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpge, /* long compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ iflcmpgeSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpge, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpgt, \
@@ -5207,6 +5511,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpgt, /* long compare and branch if greater than */ \
       /* .simplifierHandler    = */ iflcmpgtSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpgt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmple, \
@@ -5224,6 +5529,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmple, /* long compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ iflcmpleSimplifier, \
+      /* .vpHandler            = */ constrainIfcmple, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmpeq, \
@@ -5241,6 +5547,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmpeq, /* unsigned long compare and branch if equal */ \
       /* .simplifierHandler    = */ iflcmpeqSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmpne, \
@@ -5258,6 +5565,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmpne, /* unsigned long compare and branch if not equal */ \
       /* .simplifierHandler    = */ iflcmpneSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmplt, \
@@ -5275,6 +5583,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmplt, /* unsigned long compare and branch if less than */ \
       /* .simplifierHandler    = */ iflcmpltSimplifier, \
+      /* .vpHandler            = */ constrainIfcmplt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmpge, \
@@ -5292,6 +5601,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmpge, /* unsigned long compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ iflcmpgeSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpge, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmpgt, \
@@ -5309,6 +5619,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmpgt, /* unsigned long compare and branch if greater than */ \
       /* .simplifierHandler    = */ iflcmpgtSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpgt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmple, \
@@ -5326,6 +5637,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmple, /* unsigned long compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ iflcmpleSimplifier, \
+      /* .vpHandler            = */ constrainIfcmple, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpeq, \
@@ -5343,6 +5655,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpeq, /* float compare and branch if equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpne, \
@@ -5360,6 +5673,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpne, /* float compare and branch if not equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmplt, \
@@ -5377,6 +5691,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmplt, /* float compare and branch if less than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpge, \
@@ -5394,6 +5709,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpge, /* float compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpgt, \
@@ -5411,6 +5727,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpgt, /* float compare and branch if greater than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmple, \
@@ -5428,6 +5745,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmple, /* float compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpequ, \
@@ -5445,6 +5763,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpequ, /* float compare and branch if equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpneu, \
@@ -5462,6 +5781,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpneu, /* float compare and branch if not equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpltu, \
@@ -5479,6 +5799,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpltu, /* float compare and branch if less than or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpgeu, \
@@ -5496,6 +5817,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpgeu, /* float compare and branch if greater than or equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpgtu, \
@@ -5513,6 +5835,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpgtu, /* float compare and branch if greater than or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpleu, \
@@ -5530,6 +5853,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpleu, /* float compare and branch if less than or equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpeq, \
@@ -5547,6 +5871,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpeq, /* double compare and branch if equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpne, \
@@ -5564,6 +5889,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpne, /* double compare and branch if not equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmplt, \
@@ -5581,6 +5907,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmplt, /* double compare and branch if less than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpge, \
@@ -5598,6 +5925,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpge, /* double compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpgt, \
@@ -5615,6 +5943,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpgt, /* double compare and branch if greater than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmple, \
@@ -5632,6 +5961,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmple, /* double compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpequ, \
@@ -5649,6 +5979,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpequ, /* double compare and branch if equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpneu, \
@@ -5666,6 +5997,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpneu, /* double compare and branch if not equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpltu, \
@@ -5683,6 +6015,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpltu, /* double compare and branch if less than or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpgeu, \
@@ -5700,6 +6033,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpgeu, /* double compare and branch if greater than or equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpgtu, \
@@ -5717,6 +6051,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpgtu, /* double compare and branch if greater than or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpleu, \
@@ -5734,6 +6069,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpleu, /* double compare and branch if less than or equal or unordered */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmpeq, \
@@ -5751,6 +6087,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmpeq, /* address compare and branch if equal */ \
       /* .simplifierHandler    = */ ifacmpeqSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpeq, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmpne, \
@@ -5768,6 +6105,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmpne, /* address compare and branch if not equal */ \
       /* .simplifierHandler    = */ ifacmpneSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpne, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmplt, \
@@ -5785,6 +6123,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmplt, /* address compare and branch if less than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIfcmplt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmpge, \
@@ -5802,6 +6141,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmpge, /* address compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpge, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmpgt, \
@@ -5819,6 +6159,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmpgt, /* address compare and branch if greater than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIfcmpgt, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmple, \
@@ -5836,6 +6177,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmple, /* address compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIfcmple, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmpeq, \
@@ -5853,6 +6195,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmpeq, /* byte compare and branch if equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmpne, \
@@ -5870,6 +6213,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmpne, /* byte compare and branch if not equal */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmplt, \
@@ -5887,6 +6231,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmplt, /* byte compare and branch if less than */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmpge, \
@@ -5904,6 +6249,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmpge, /* byte compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmpgt, \
@@ -5921,6 +6267,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmpgt, /* byte compare and branch if greater than */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmple, \
@@ -5938,6 +6285,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmple, /* byte compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmpeq, \
@@ -5955,6 +6303,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmpeq, /* unsigned byte compare and branch if equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmpne, \
@@ -5972,6 +6321,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmpne, /* unsigned byte compare and branch if not equal */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmplt, \
@@ -5989,6 +6339,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmplt, /* unsigned byte compare and branch if less than */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmpge, \
@@ -6006,6 +6357,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmpge, /* unsigned byte compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmpgt, \
@@ -6023,6 +6375,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmpgt, /* unsigned byte compare and branch if greater than */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmple, \
@@ -6040,6 +6393,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmple, /* unsigned byte compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmpeq, \
@@ -6057,6 +6411,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmpeq, /* short integer compare and branch if equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmpne, \
@@ -6074,6 +6429,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmpne, /* short integer compare and branch if not equal */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmplt, \
@@ -6091,6 +6447,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmplt, /* short integer compare and branch if less than */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmpge, \
@@ -6108,6 +6465,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmpge, /* short integer compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmpgt, \
@@ -6125,6 +6483,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmpgt, /* short integer compare and branch if greater than */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmple, \
@@ -6142,6 +6501,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmple, /* short integer compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmpeq, \
@@ -6159,6 +6519,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmpeq, /* char compare and branch if equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmpne, \
@@ -6176,6 +6537,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmpne, /* char compare and branch if not equal */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmplt, \
@@ -6193,6 +6555,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmplt, /* char compare and branch if less than */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmpge, \
@@ -6210,6 +6573,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmpge, /* char compare and branch if greater than or equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmpgt, \
@@ -6227,6 +6591,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmpgt, /* char compare and branch if greater than */ \
       /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmple, \
@@ -6244,6 +6609,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmple, /* char compare and branch if less than or equal */ \
       /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::loadaddr, \
@@ -6261,6 +6627,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ loadaddr, /* load address of non-heap storage item (Auto, Parm, Static or Method) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainLoadaddr, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ZEROCHK, \
@@ -6278,6 +6645,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ZEROCHK, /* Zero-check an int.  Symref indicates call to perform when first child is zero.  Other children are arguments to the call. */ \
       /* .simplifierHandler    = */ lowerTreeSimplifier, \
+      /* .vpHandler            = */ constrainZeroChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::callIf, \
@@ -6295,6 +6663,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ callIf, /* Call symref if first child evaluates to true.  Other childrem are arguments to the call. */ \
       /* .simplifierHandler    = */ lowerTreeSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iRegLoad, \
@@ -6312,6 +6681,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iRegLoad, /* Load integer global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aRegLoad, \
@@ -6329,6 +6699,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aRegLoad, /* Load address global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lRegLoad, \
@@ -6346,6 +6717,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lRegLoad, /* Load long integer global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fRegLoad, \
@@ -6363,6 +6735,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fRegLoad, /* Load float global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dRegLoad, \
@@ -6380,6 +6753,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dRegLoad, /* Load double global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sRegLoad, \
@@ -6397,6 +6771,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sRegLoad, /* Load short global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bRegLoad, \
@@ -6414,6 +6789,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bRegLoad, /* Load byte global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iRegStore, \
@@ -6431,6 +6807,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iRegStore, /* Store integer global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aRegStore, \
@@ -6448,6 +6825,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aRegStore, /* Store address global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lRegStore, \
@@ -6465,6 +6843,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lRegStore, /* Store long integer global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fRegStore, \
@@ -6482,6 +6861,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fRegStore, /* Store float global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dRegStore, \
@@ -6499,6 +6879,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dRegStore, /* Store double global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sRegStore, \
@@ -6516,6 +6897,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sRegStore, /* Store short global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bRegStore, \
@@ -6533,6 +6915,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bRegStore, /* Store byte global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::GlRegDeps, \
@@ -6550,6 +6933,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ GlRegDeps, /* Global Register Dependency List */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iselect, \
@@ -6567,6 +6951,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iselect, /* Select Operator:  Based on the result of the first child, take the value of the */ \
       /* .simplifierHandler    = */ selectSimplifier, \
+      /* .vpHandler            = */ constrainChildrenFirstToLast, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lselect, \
@@ -6584,6 +6969,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lselect, /* second (first child evaluates to true) or third(first child evaluates to false) child */ \
       /* .simplifierHandler    = */ selectSimplifier, \
+      /* .vpHandler            = */ constrainChildrenFirstToLast, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bselect, \
@@ -6601,6 +6987,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bselect, \
       /* .simplifierHandler    = */ selectSimplifier, \
+      /* .vpHandler            = */ constrainChildrenFirstToLast, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sselect, \
@@ -6618,6 +7005,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sselect, \
       /* .simplifierHandler    = */ selectSimplifier, \
+      /* .vpHandler            = */ constrainChildrenFirstToLast, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aselect, \
@@ -6635,6 +7023,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aselect, \
       /* .simplifierHandler    = */ selectSimplifier, \
+      /* .vpHandler            = */ constrainChildrenFirstToLast, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fselect, \
@@ -6652,6 +7041,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fselect, \
       /* .simplifierHandler    = */ selectSimplifier, \
+      /* .vpHandler            = */ constrainChildrenFirstToLast, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dselect, \
@@ -6669,6 +7059,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dselect, \
       /* .simplifierHandler    = */ selectSimplifier, \
+      /* .vpHandler            = */ constrainChildrenFirstToLast, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::treetop, \
@@ -6686,6 +7077,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ treetop, /* tree top to anchor subtrees with side-effects */ \
       /* .simplifierHandler    = */ treetopSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::MethodEnterHook, \
@@ -6703,6 +7095,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ MethodEnterHook, /* called after a frame is built, temps initialized, and monitor acquired (if necessary) */ \
       /* .simplifierHandler    = */ lowerTreeSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::MethodExitHook, \
@@ -6720,6 +7113,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ MethodExitHook, /* called immediately before returning, frame not yet collapsed, monitor released (if necessary) */ \
       /* .simplifierHandler    = */ lowerTreeSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::PassThrough, \
@@ -6737,6 +7131,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ PassThrough, /* Dummy node that represents its single child. */ \
       /* .simplifierHandler    = */ passThroughSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::compressedRefs, \
@@ -6754,6 +7149,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ compressedRefs, /* no-op anchor providing optimizable subexpressions used for compression/decompression.  First child is address load/store, second child is heap base displacement */ \
       /* .simplifierHandler    = */ anchorSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::BBStart, \
@@ -6771,6 +7167,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ BBStart, /* Start of Basic Block */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::BBEnd, \
@@ -6788,6 +7185,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ BBEnd, /* End of Basic Block */ \
       /* .simplifierHandler    = */ endBlockSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::virem, \
@@ -6805,6 +7203,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ virem, /* vector integer remainder */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vimin, \
@@ -6822,6 +7221,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vimin, /* vector integer minimum */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vimax, \
@@ -6839,6 +7239,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vimax, /* vector integer maximum */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vigetelem, \
@@ -6856,6 +7257,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vigetelem, /* get vector int element */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::visetelem, \
@@ -6873,6 +7275,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ visetelem, /* set vector int element */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vimergel, \
@@ -6890,6 +7293,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vimergel, /* vector int merge low */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vimergeh, \
@@ -6907,6 +7311,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vimergeh, /* vector int merge high */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpeq, \
@@ -6924,6 +7329,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpeq, /* vector integer compare equal  (return vector mask) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpgt, \
@@ -6941,6 +7347,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpgt, /* vector integer compare greater than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpge, \
@@ -6958,6 +7365,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpge, /* vector integer compare greater equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmplt, \
@@ -6975,6 +7383,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmplt, /* vector integer compare less than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmple, \
@@ -6992,6 +7401,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmple, /* vector integer compare less equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpalleq, \
@@ -7009,6 +7419,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpalleq, /* vector integer all equal (return boolean) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpallne, \
@@ -7026,6 +7437,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpallne, /* vector integer all not equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpallgt, \
@@ -7043,6 +7455,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpallgt, /* vector integer all greater than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpallge, \
@@ -7060,6 +7473,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpallge, /* vector integer all greater equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpalllt, \
@@ -7077,6 +7491,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpalllt, /* vector integer all less than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpallle, \
@@ -7094,6 +7509,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpallle, /* vector integer all less equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanyeq, \
@@ -7111,6 +7527,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanyeq, /* vector integer any equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanyne, \
@@ -7128,6 +7545,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanyne, /* vector integer any not equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanygt, \
@@ -7145,6 +7563,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanygt, /* vector integer any greater than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanyge, \
@@ -7162,6 +7581,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanyge, /* vector integer any greater equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanylt, \
@@ -7179,6 +7599,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanylt, /* vector integer any less than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanyle, \
@@ -7196,6 +7617,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanyle, /* vector integer any less equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vnot, \
@@ -7213,6 +7635,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vnot, /* vector boolean not */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vbitselect, \
@@ -7230,6 +7653,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vbitselect, /* vector bit select */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vperm, \
@@ -7247,6 +7671,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vperm, /* vector permute */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vsplats, \
@@ -7264,6 +7689,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vsplats, /* vector splats */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmergel, \
@@ -7281,6 +7707,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmergel, /* vector double merge low */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmergeh, \
@@ -7298,6 +7725,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmergeh, /* vector double merge high */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdsetelem, \
@@ -7315,6 +7743,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdsetelem, /* set vector double element */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdgetelem, \
@@ -7332,6 +7761,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdgetelem, /* get vector double element */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdsel, \
@@ -7349,6 +7779,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdsel, /* get vector select double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdrem, \
@@ -7366,6 +7797,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdrem, /* vector double remainder */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmadd, \
@@ -7383,6 +7815,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmadd, /* vector double fused multiply add */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdnmsub, \
@@ -7400,6 +7833,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdnmsub, /* vector double fused negative multiply subtract */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmsub, \
@@ -7417,6 +7851,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmsub, /* vector double fused multiply subtract */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmax, \
@@ -7434,6 +7869,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmax, /* vector double maximum */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmin, \
@@ -7451,6 +7887,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmin, /* vector double minimum */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpeq, \
@@ -7468,6 +7905,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpeq, /* vector double compare equal  (return vector mask) */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpne, \
@@ -7485,6 +7923,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpne, /* vector double compare not equal  (return vector mask) */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpgt, \
@@ -7502,6 +7941,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpgt, /* vector double compare greater than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpge, \
@@ -7519,6 +7959,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpge, /* vector double compare greater equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmplt, \
@@ -7536,6 +7977,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmplt, /* vector double compare less than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmple, \
@@ -7553,6 +7995,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmple, /* vector double compare less equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpalleq, \
@@ -7570,6 +8013,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpalleq, /* vector double compare all equal  (return boolean) */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpallne, \
@@ -7587,6 +8031,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpallne, /* vector double compare all not equal  (return boolean) */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpallgt, \
@@ -7604,6 +8049,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpallgt, /* vector double compare all greater than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpallge, \
@@ -7621,6 +8067,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpallge, /* vector double compare all greater equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpalllt, \
@@ -7638,6 +8085,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpalllt, /* vector double compare all less than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpallle, \
@@ -7655,6 +8103,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpallle, /* vector double compare all less equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanyeq, \
@@ -7672,6 +8121,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanyeq, /* vector double compare any equal  (return boolean) */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanyne, \
@@ -7689,6 +8139,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanyne, /* vector double compare any not equal  (return boolean) */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanygt, \
@@ -7706,6 +8157,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanygt, /* vector double compare any greater than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanyge, \
@@ -7723,6 +8175,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanyge, /* vector double compare any greater equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanylt, \
@@ -7740,6 +8193,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanylt, /* vector double compare any less than */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanyle, \
@@ -7757,6 +8211,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanyle, /* vector double compare any less equal */ \
       /* .simplifierHandler    = */ normalizeCmpSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdsqrt, \
@@ -7774,6 +8229,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdsqrt, /* vector double square root */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdlog, \
@@ -7791,6 +8247,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdlog, /* vector double natural log */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vinc, \
@@ -7808,6 +8265,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vinc, /* vector increment */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdec, \
@@ -7825,6 +8283,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdec, /* vector decrement */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vneg, \
@@ -7842,6 +8301,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vneg, /* vector negation */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcom, \
@@ -7859,6 +8319,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcom, /* vector complement */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vadd, \
@@ -7876,6 +8337,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vadd, /* vector add */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainAdd, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vsub, \
@@ -7893,6 +8355,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vsub, /* vector subtract */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainSubtract, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vmul, \
@@ -7910,6 +8373,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vmul, /* vector multiply */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdiv, \
@@ -7927,6 +8391,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdiv, /* vector divide */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vrem, \
@@ -7944,6 +8409,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vrem, /* vector remainder */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vand, \
@@ -7961,6 +8427,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vand, /* vector logical AND */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vor, \
@@ -7978,6 +8445,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vor, /* vector logical OR */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vxor, \
@@ -7995,6 +8463,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vxor, /* vector exclusive OR integer */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vshl, \
@@ -8012,6 +8481,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vshl, /* vector shift left */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vushr, \
@@ -8029,6 +8499,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vushr, /* vector shift right logical */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vshr, \
@@ -8046,6 +8517,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vshr, /* vector shift right arithmetic */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmpeq, \
@@ -8063,6 +8535,7 @@
       /* .ifCompareOpCode      = */ TR::ificmpeq, \
       /* .description          = */ vcmpeq, /* vector compare equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmpne, \
@@ -8080,6 +8553,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcmpne, /* vector compare not equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmplt, \
@@ -8097,6 +8571,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcmplt, /* vector compare less than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vucmplt, \
@@ -8114,6 +8589,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vucmplt, /* vector unsigned compare less than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmpgt, \
@@ -8131,6 +8607,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcmpgt, /* vector compare greater than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vucmpgt, \
@@ -8148,6 +8625,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vucmpgt, /* vector unsigned compare greater than */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmple, \
@@ -8165,6 +8643,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcmple, /* vector compare less or equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vucmple, \
@@ -8182,6 +8661,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vucmple, /* vector unsigned compare less or equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmpge, \
@@ -8199,6 +8679,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcmpge, /* vector compare greater or equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vucmpge, \
@@ -8216,6 +8697,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vucmpge, /* vector unsigned compare greater or equal */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCmp, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vload, \
@@ -8233,6 +8715,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vload, /* load vector */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vloadi, \
@@ -8250,6 +8733,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vloadi, /* load indirect vector */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vstore, \
@@ -8267,6 +8751,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vstore, /* store vector */ \
       /* .simplifierHandler    = */ directStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vstorei, \
@@ -8284,6 +8769,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vstorei, /* store indirect vector */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vrand, \
@@ -8301,6 +8787,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vrand, /* AND all elements into single value of element size */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vreturn, \
@@ -8318,6 +8805,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vreturn, /* return a vector */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainReturn, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcall, \
@@ -8335,6 +8823,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcall, /* direct call returning a vector */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcalli, \
@@ -8352,6 +8841,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcalli, /* indirect call returning a vector */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vselect, \
@@ -8369,6 +8859,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vselect, /* vector select operator */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildrenFirstToLast, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::v2v, \
@@ -8386,6 +8877,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ v2v, /* vector to vector conversion. preserves bit pattern (noop), only changes datatype */ \
       /* .simplifierHandler    = */ v2vSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vl2vd, \
@@ -8403,6 +8895,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vl2vd, /* vector to vector conversion. converts each long element to double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vconst, \
@@ -8420,6 +8913,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vconst, /* vector constant */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::getvelem, \
@@ -8437,6 +8931,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ getvelem, /* get vector element, returns a scalar */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vsetelem, \
@@ -8454,6 +8949,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vsetelem, /* vector set element */ \
       /* .simplifierHandler    = */ vsetelemSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vbRegLoad, \
@@ -8471,6 +8967,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vbRegLoad, /* Load vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vsRegLoad, \
@@ -8488,6 +8985,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vsRegLoad, /* Load vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::viRegLoad, \
@@ -8505,6 +9003,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ viRegLoad, /* Load vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vlRegLoad, \
@@ -8522,6 +9021,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vlRegLoad, /* Load vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vfRegLoad, \
@@ -8539,6 +9039,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vfRegLoad, /* Load vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdRegLoad, \
@@ -8556,6 +9057,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdRegLoad, /* Load vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vbRegStore, \
@@ -8573,6 +9075,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vbRegStore, /* Store vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vsRegStore, \
@@ -8590,6 +9093,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vsRegStore, /* Store vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::viRegStore, \
@@ -8607,6 +9111,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ viRegStore, /* Store vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vlRegStore, \
@@ -8624,6 +9129,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vlRegStore, /* Store vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vfRegStore, \
@@ -8641,6 +9147,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vfRegStore, /* Store vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdRegStore, \
@@ -8658,6 +9165,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdRegStore, /* Store vector global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuconst, \
@@ -8675,6 +9183,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuconst, /* load unsigned integer constant (32-but unsigned) */ \
       /* .simplifierHandler    = */ constSimplifier, \
+      /* .vpHandler            = */ constrainIntConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luconst, \
@@ -8692,6 +9201,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luconst, /* load unsigned long integer constant (64-bit unsigned) */ \
       /* .simplifierHandler    = */ lconstSimplifier, \
+      /* .vpHandler            = */ constrainLongConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::buconst, \
@@ -8709,6 +9219,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ buconst, /* load unsigned byte integer constant (8-bit unsigned) */ \
       /* .simplifierHandler    = */ constSimplifier, \
+      /* .vpHandler            = */ constrainByteConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuload, \
@@ -8726,6 +9237,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuload, /* load unsigned integer */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luload, \
@@ -8743,6 +9255,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luload, /* load unsigned long integer */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainLload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::buload, \
@@ -8760,6 +9273,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ buload, /* load unsigned byte */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuloadi, \
@@ -8777,6 +9291,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuloadi, /* load indirect unsigned integer */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainIiload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luloadi, \
@@ -8794,6 +9309,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luloadi, /* load indirect unsigned long integer */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainLload, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::buloadi, \
@@ -8811,6 +9327,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ buloadi, /* load indirect unsigned byte */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iustore, \
@@ -8828,6 +9345,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iustore, /* store unsigned integer */ \
       /* .simplifierHandler    = */ directStoreSimplifier, \
+      /* .vpHandler            = */ constrainIntStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lustore, \
@@ -8845,6 +9363,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lustore, /* store unsigned long integer */ \
       /* .simplifierHandler    = */ lstoreSimplifier, \
+      /* .vpHandler            = */ constrainLongStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bustore, \
@@ -8862,6 +9381,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bustore, /* store unsigned byte */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iustorei, \
@@ -8879,6 +9399,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iustorei, /* store indirect unsigned integer       (child1 a, child2 i) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lustorei, \
@@ -8896,6 +9417,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lustorei, /* store indirect unsigned long integer  (child1 a, child2 l) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bustorei, \
@@ -8913,6 +9435,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bustorei, /* store indirect unsigned byte          (child1 a, child2 b) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iureturn, \
@@ -8930,6 +9453,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iureturn, /* return an unsigned integer */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainReturn, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lureturn, \
@@ -8947,6 +9471,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lureturn, /* return a long unsigned integer */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainReturn, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucall, \
@@ -8964,6 +9489,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iucall, /* direct call returning unsigned integer */ \
       /* .simplifierHandler    = */ ifdCallSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucall, \
@@ -8981,6 +9507,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lucall, /* direct call returning unsigned long integer */ \
       /* .simplifierHandler    = */ lcallSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuadd, \
@@ -8998,6 +9525,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuadd, /* add 2 unsigned integers */ \
       /* .simplifierHandler    = */ iaddSimplifier, \
+      /* .vpHandler            = */ constrainAdd, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luadd, \
@@ -9015,6 +9543,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luadd, /* add 2 unsigned long integers */ \
       /* .simplifierHandler    = */ laddSimplifier, \
+      /* .vpHandler            = */ constrainAdd, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::buadd, \
@@ -9032,6 +9561,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ buadd, /* add 2 unsigned bytes */ \
       /* .simplifierHandler    = */ baddSimplifier, \
+      /* .vpHandler            = */ constrainAdd, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iusub, \
@@ -9049,6 +9579,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iusub, /* subtract 2 unsigned integers       (child1 - child2) */ \
       /* .simplifierHandler    = */ isubSimplifier, \
+      /* .vpHandler            = */ constrainSubtract, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lusub, \
@@ -9066,6 +9597,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lusub, /* subtract 2 unsigned long integers  (child1 - child2) */ \
       /* .simplifierHandler    = */ lsubSimplifier, \
+      /* .vpHandler            = */ constrainSubtract, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::busub, \
@@ -9083,6 +9615,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ busub, /* subtract 2 unsigned bytes          (child1 - child2) */ \
       /* .simplifierHandler    = */ bsubSimplifier, \
+      /* .vpHandler            = */ constrainSubtract, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuneg, \
@@ -9100,6 +9633,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuneg, /* negate an unsigned integer */ \
       /* .simplifierHandler    = */ inegSimplifier, \
+      /* .vpHandler            = */ constrainIneg, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luneg, \
@@ -9117,6 +9651,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luneg, /* negate a unsigned long integer */ \
       /* .simplifierHandler    = */ lnegSimplifier, \
+      /* .vpHandler            = */ constrainLneg, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2iu, \
@@ -9134,6 +9669,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2iu, /* convert float to unsigned integer */ \
       /* .simplifierHandler    = */ f2iSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2lu, \
@@ -9151,6 +9687,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2lu, /* convert float to unsigned long integer */ \
       /* .simplifierHandler    = */ f2lSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2bu, \
@@ -9168,6 +9705,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2bu, /* convert float to unsigned byte */ \
       /* .simplifierHandler    = */ f2bSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2c, \
@@ -9185,6 +9723,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2c, /* convert float to char */ \
       /* .simplifierHandler    = */ f2cSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToChar, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2iu, \
@@ -9202,6 +9741,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2iu, /* convert double to unsigned integer */ \
       /* .simplifierHandler    = */ d2iSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2lu, \
@@ -9219,6 +9759,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2lu, /* convert double to unsigned long integer */ \
       /* .simplifierHandler    = */ d2lSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2bu, \
@@ -9236,6 +9777,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2bu, /* convert double to unsigned byte */ \
       /* .simplifierHandler    = */ d2bSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2c, \
@@ -9253,6 +9795,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2c, /* convert double to char */ \
       /* .simplifierHandler    = */ d2cSimplifier, \
+      /* .vpHandler            = */ constrainNarrowToChar, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuRegLoad, \
@@ -9270,6 +9813,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuRegLoad, /* Load unsigned integer global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luRegLoad, \
@@ -9287,6 +9831,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luRegLoad, /* Load unsigned long integer global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuRegStore, \
@@ -9304,6 +9849,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuRegStore, /* Store unsigned integer global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luRegStore, \
@@ -9321,6 +9867,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luRegStore, /* Store long integer global register */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cconst, \
@@ -9338,6 +9885,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cconst, /* load unicode constant (16-bit unsigned) */ \
       /* .simplifierHandler    = */ constSimplifier, \
+      /* .vpHandler            = */ constrainShortConst, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cload, \
@@ -9355,6 +9903,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cload, /* load short unsigned integer */ \
       /* .simplifierHandler    = */ directLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cloadi, \
@@ -9372,6 +9921,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cloadi, /* load indirect unsigned short integer */ \
       /* .simplifierHandler    = */ indirectLoadSimplifier, \
+      /* .vpHandler            = */ constrainIntLoad, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cstore, \
@@ -9389,6 +9939,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cstore, /* store unsigned short integer */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cstorei, \
@@ -9406,6 +9957,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cstorei, /* store indirect unsigned short integer (child1 a, child2 c) */ \
       /* .simplifierHandler    = */ indirectStoreSimplifier, \
+      /* .vpHandler            = */ constrainStore, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::monent, \
@@ -9423,6 +9975,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ monent, /* acquire lock for synchronising method */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainMonent, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::monexit, \
@@ -9440,6 +9993,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ monexit, /* release lock for synchronising method */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainMonexit, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::monexitfence, \
@@ -9457,6 +10011,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ monexitfence, /* denotes the end of a monitored region solely for live monitor meta data */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainMonexitfence, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::tstart, \
@@ -9474,6 +10029,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ tstart, /* transaction begin */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainTstart, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::tfinish, \
@@ -9491,6 +10047,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ tfinish, /* transaction end */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainTfinish, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::tabort, \
@@ -9508,6 +10065,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ tabort, /* transaction abort */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainTabort, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::instanceof, \
@@ -9525,6 +10083,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ instanceof, /* instanceof - symref is the class object, cp index is in the */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainInstanceOf, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::checkcast, \
@@ -9542,6 +10101,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ checkcast, /* checkcast */ \
       /* .simplifierHandler    = */ checkcastSimplifier, \
+      /* .vpHandler            = */ constrainCheckcast, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::checkcastAndNULLCHK, \
@@ -9559,6 +10119,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ checkcastAndNULLCHK, /* checkcast and NULL check the underlying object reference */ \
       /* .simplifierHandler    = */ checkcastAndNULLCHKSimplifier, \
+      /* .vpHandler            = */ constrainCheckcastNullChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::New, \
@@ -9576,6 +10137,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ New, /* new - child is class */ \
       /* .simplifierHandler    = */ NewSimplifier, \
+      /* .vpHandler            = */ constrainNew, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::newvalue, \
@@ -9593,6 +10155,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ newvalue, /* allocate and initialize - children provide field values */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::newarray, \
@@ -9610,6 +10173,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ newarray, /* new array of primitives */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainNewArray, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::anewarray, \
@@ -9627,6 +10191,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ anewarray, /* new array of objects */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainANewArray, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::variableNew, \
@@ -9644,6 +10209,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ variableNew, /* new - child is class, type not known at compile time */ \
       /* .simplifierHandler    = */ variableNewSimplifier, \
+      /* .vpHandler            = */ constrainVariableNew, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::variableNewArray, \
@@ -9661,6 +10227,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ variableNewArray, /* new array - type not known at compile time, type must be a j9class, do not use type enums */ \
       /* .simplifierHandler    = */ variableNewSimplifier, \
+      /* .vpHandler            = */ constrainVariableNewArray, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::multianewarray, \
@@ -9678,6 +10245,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ multianewarray, /* multi-dimensional new array of objects */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainMultiANewArray, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraylength, \
@@ -9695,6 +10263,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraylength, /* number of elements in an array */ \
       /* .simplifierHandler    = */ arrayLengthSimplifier, \
+      /* .vpHandler            = */ constrainArraylength, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::contigarraylength, \
@@ -9712,6 +10281,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ contigarraylength, /* number of elements in a contiguous array */ \
       /* .simplifierHandler    = */ arrayLengthSimplifier, \
+      /* .vpHandler            = */ constrainArraylength, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::discontigarraylength, \
@@ -9729,6 +10299,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ discontigarraylength, /* number of elements in a discontiguous array */ \
       /* .simplifierHandler    = */ arrayLengthSimplifier, \
+      /* .vpHandler            = */ constrainArraylength, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icalli, \
@@ -9746,6 +10317,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ icalli, /* indirect call returning integer (child1 is addr of function) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucalli, \
@@ -9763,6 +10335,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iucalli, /* indirect call returning unsigned integer (child1 is addr of function) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcalli, \
@@ -9780,6 +10353,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lcalli, /* indirect call returning long integer (child1 is addr of function) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucalli, \
@@ -9797,6 +10371,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lucalli, /* indirect call returning unsigned long integer (child1 is addr of function) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcalli, \
@@ -9814,6 +10389,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fcalli, /* indirect call returning float (child1 is addr of function) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcalli, \
@@ -9831,6 +10407,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcalli, /* indirect call returning double (child1 is addr of function) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acalli, \
@@ -9848,6 +10425,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ acalli, /* indirect call returning reference */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainAcall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::calli, \
@@ -9865,6 +10443,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ calli, /* indirect call returning void (child1 is addr of function) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCall, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fence, \
@@ -9882,6 +10461,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fence, /* barrier to optimization */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luaddh, \
@@ -9899,6 +10479,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luaddh, /* add 2 unsigned long integers (the high parts of prior luadd) as high part of 128bit addition. */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cadd, \
@@ -9916,6 +10497,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cadd, /* add 2 unsigned short integers */ \
       /* .simplifierHandler    = */ caddSimplifier, \
+      /* .vpHandler            = */ constrainAdd, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aiadd, \
@@ -9933,6 +10515,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aiadd, /* add integer to address with address result (child1 a, child2 i) */ \
       /* .simplifierHandler    = */ iaddSimplifier, \
+      /* .vpHandler            = */ constrainAddressRef, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aiuadd, \
@@ -9950,6 +10533,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aiuadd, /* add unsigned integer to address with address result (child1 a, child2 i) */ \
       /* .simplifierHandler    = */ iaddSimplifier, \
+      /* .vpHandler            = */ constrainAddressRef, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aladd, \
@@ -9967,6 +10551,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aladd, /* add long integer to address with address result (child1 a, child2 i) (64-bit only) */ \
       /* .simplifierHandler    = */ laddSimplifier, \
+      /* .vpHandler            = */ constrainAddressRef, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aluadd, \
@@ -9984,6 +10569,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aluadd, /* add unsigned long integer to address with address result (child1 a, child2 i) (64-bit only) */ \
       /* .simplifierHandler    = */ laddSimplifier, \
+      /* .vpHandler            = */ constrainAddressRef, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lusubh, \
@@ -10001,6 +10587,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lusubh, /* subtract 2 unsigned long integers (the high parts of prior lusub) as high part of 128bit subtraction. */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::csub, \
@@ -10018,6 +10605,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ csub, /* subtract 2 unsigned short integers (child1 - child2) */ \
       /* .simplifierHandler    = */ csubSimplifier, \
+      /* .vpHandler            = */ constrainSubtract, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::imulh, \
@@ -10035,6 +10623,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ imulh, /* multiply 2 integers, and return the high word of the product */ \
       /* .simplifierHandler    = */ imulhSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iumulh, \
@@ -10052,6 +10641,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iumulh, /* multiply 2 unsigned integers, and return the high word of the product */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lmulh, \
@@ -10069,6 +10659,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lmulh, /* multiply 2 long integers, and return the high word of the product */ \
       /* .simplifierHandler    = */ lmulhSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lumulh, \
@@ -10086,6 +10677,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lumulh, /* multiply 2 unsigned long integers, and return the high word of the product */ \
       /* .simplifierHandler    = */ lmulhSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ibits2f, \
@@ -10103,6 +10695,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibits2f, /* type-coerce int to float */ \
       /* .simplifierHandler    = */ ibits2fSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fbits2i, \
@@ -10120,6 +10713,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fbits2i, /* type-coerce float to int */ \
       /* .simplifierHandler    = */ fbits2iSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lbits2d, \
@@ -10137,6 +10731,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lbits2d, /* type-coerce long to double */ \
       /* .simplifierHandler    = */ lbits2dSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dbits2l, \
@@ -10154,6 +10749,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dbits2l, /* type-coerce double to long */ \
       /* .simplifierHandler    = */ dbits2lSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lookup, \
@@ -10171,6 +10767,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lookup, /* lookupswitch (child1 is selector expression, child2 the default destination, subsequent children are case nodes */ \
       /* .simplifierHandler    = */ lookupSwitchSimplifier, \
+      /* .vpHandler            = */ constrainSwitch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::trtLookup, \
@@ -10188,6 +10785,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ trtLookup, /* special lookupswitch (child1 must be trt, child2 the default destination, subsequent children are case nodes) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::Case, \
@@ -10205,6 +10803,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Case, /* case nodes that are children of TR_switch.  Uses the branchdestination and the int const field */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCase, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::table, \
@@ -10222,6 +10821,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ table, /* tableswitch (child1 is the selector, child2 the default destination, subsequent children are the branch targets */ \
       /* .simplifierHandler    = */ tableSwitchSimplifier, \
+      /* .vpHandler            = */ constrainSwitch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::exceptionRangeFence, \
@@ -10239,6 +10839,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ exceptionRangeFence, /* (J9) SymbolReference is the aliasing effect, initializer is where the code address gets put when binary is generated */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dbgFence, \
@@ -10256,6 +10857,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dbgFence, /* used to delimit code (stmts) for debug info.  Has no symbol reference. */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::NULLCHK, \
@@ -10273,6 +10875,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ NULLCHK, /* Null check a pointer.  child 1 is indirect reference. Symbolref indicates failure action/destination */ \
       /* .simplifierHandler    = */ nullchkSimplifier, \
+      /* .vpHandler            = */ constrainNullChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ResolveCHK, \
@@ -10290,6 +10893,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ResolveCHK, /* Resolve check a static, field or method. child 1 is reference to be resolved. Symbolref indicates failure action/destination */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainResolveChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ResolveAndNULLCHK, \
@@ -10307,6 +10911,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ResolveAndNULLCHK, /* Resolve check a static, field or method and Null check the underlying pointer.  child 1 is reference to be resolved. Symbolref indicates failure action/destination */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainResolveNullChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::DIVCHK, \
@@ -10324,6 +10929,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ DIVCHK, /* Divide by zero check. child 1 is the divide. Symbolref indicates failure action/destination */ \
       /* .simplifierHandler    = */ divchkSimplifier, \
+      /* .vpHandler            = */ constrainDivChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::OverflowCHK, \
@@ -10341,6 +10947,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ OverflowCHK, /* Overflow check. child 1 is the operation node(add, mul, sub). Child 2 and child 3 are the operands of the operation of the operation. Symbolref indicates failure action/destination */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainOverflowChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::UnsignedOverflowCHK, \
@@ -10358,6 +10965,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ UnsignedOverflowCHK, /* UnsignedOverflow check. child 1 is the operation node(add, mul, sub). Child 2 and child 3 are the operands of the operation of the operation. Symbolref indicates failure action/destination */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainUnsignedOverflowChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::BNDCHK, \
@@ -10375,6 +10983,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ BNDCHK, /* Array bounds check, checks that child 1 > child 2 >= 0 (child 1 is bound, 2 is index). Symbolref indicates failure action/destination */ \
       /* .simplifierHandler    = */ bndchkSimplifier, \
+      /* .vpHandler            = */ constrainBndChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ArrayCopyBNDCHK, \
@@ -10392,6 +11001,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ArrayCopyBNDCHK, /* Array copy bounds check, checks that child 1 >= child 2. Symbolref indicates failure action/destination */ \
       /* .simplifierHandler    = */ arraycopybndchkSimplifier, \
+      /* .vpHandler            = */ constrainArrayCopyBndChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::BNDCHKwithSpineCHK, \
@@ -10409,6 +11019,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ BNDCHKwithSpineCHK, /* Array bounds check and spine check */ \
       /* .simplifierHandler    = */ bndchkwithspinechkSimplifier, \
+      /* .vpHandler            = */ constrainBndChkWithSpineChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::SpineCHK, \
@@ -10426,6 +11037,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ SpineCHK, /* Check if the base array has a spine */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ArrayStoreCHK, \
@@ -10443,6 +11055,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ArrayStoreCHK, /* Array store check. child 1 is object, 2 is array. Symbolref indicates failure action/destination */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainArrayStoreChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ArrayCHK, \
@@ -10460,6 +11073,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ArrayCHK, /* Array compatibility check. child 1 is object1, 2 is object2. Symbolref indicates failure action/destination */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainArrayChk, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::Ret, \
@@ -10477,6 +11091,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Ret, /* Used by ilGen only */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraycopy, \
@@ -10494,6 +11109,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraycopy, /* Call to System.arraycopy that may be partially inlined */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainArraycopy, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arrayset, \
@@ -10511,6 +11127,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arrayset, /* Inline code for memory initialization of part of an array */ \
       /* .simplifierHandler    = */ arraysetSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraytranslate, \
@@ -10528,6 +11145,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraytranslate, /* Inline code for translation of part of an array to another form via lookup */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraytranslateAndTest, \
@@ -10545,6 +11163,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraytranslateAndTest, /* Inline code for scanning of part of an array for a particular 8-bit character */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainTRT, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::long2String, \
@@ -10562,6 +11181,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ long2String, /* Convert integer/long value to String */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bitOpMem, \
@@ -10579,6 +11199,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bitOpMem, /* bit operations (AND, OR, XOR) for memory to memory */ \
       /* .simplifierHandler    = */ bitOpMemSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bitOpMemND, \
@@ -10596,6 +11217,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bitOpMemND, /* 3 operand(source1,source2,target) version of bitOpMem */ \
       /* .simplifierHandler    = */ bitOpMemNDSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraycmp, \
@@ -10613,6 +11235,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraycmp, /* Inline code for memory comparison of part of an array */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraycmpWithPad, \
@@ -10630,6 +11253,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraycmpWithPad, /* memory comparison when src1 length != src2 length and padding is needed */ \
       /* .simplifierHandler    = */ arrayCmpWithPadSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::allocationFence, \
@@ -10647,6 +11271,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ allocationFence, /* Internal fence guarding escape of newObject & final fields - eliminatable */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::loadFence, \
@@ -10664,6 +11289,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ loadFence, /* JEP171: prohibits loadLoad and loadStore reordering (on globals) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::storeFence, \
@@ -10681,6 +11307,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ storeFence, /* JEP171: prohibits loadStore and storeStore reordering (on globals) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fullFence, \
@@ -10698,6 +11325,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fullFence, /* JEP171: prohibits loadLoad, loadStore, storeLoad, and storeStore reordering (on globals) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::MergeNew, \
@@ -10715,6 +11343,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ MergeNew, /* Parent for New etc. nodes that can all be allocated together */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::computeCC, \
@@ -10732,6 +11361,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ computeCC, /* compute Condition Codes */ \
       /* .simplifierHandler    = */ computeCCSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::butest, \
@@ -10749,6 +11379,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ butest, /* zEmulator: mask unsigned byte (UInt8) and set condition codes */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sutest, \
@@ -10766,6 +11397,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sutest, /* zEmulator: mask unsigned short (UInt16) and set condition codes */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmp, \
@@ -10783,6 +11415,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bucmp, /* Currently only valid for zEmulator. Based on the ordering of the two children set the return value: */ \
       /* .simplifierHandler    = */ bucmpSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmp, \
@@ -10800,6 +11433,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bcmp, /* 0 : child1 == child2 */ \
       /* .simplifierHandler    = */ bcmpSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmp, \
@@ -10817,6 +11451,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sucmp, /* 1 : child1 < child2 */ \
       /* .simplifierHandler    = */ sucmpSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmp, \
@@ -10834,6 +11469,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ scmp, /* 2 : child1 > child2 */ \
       /* .simplifierHandler    = */ scmpSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmp, \
@@ -10851,6 +11487,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iucmp, \
       /* .simplifierHandler    = */ iucmpSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmp, \
@@ -10868,6 +11505,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ icmp, \
       /* .simplifierHandler    = */ icmpSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmp, \
@@ -10885,6 +11523,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lucmp, \
       /* .simplifierHandler    = */ lucmpSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpo, \
@@ -10902,6 +11541,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpo, /* integer compare and branch if overflow */ \
       /* .simplifierHandler    = */ ifxcmpoSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpno, \
@@ -10919,6 +11559,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpno, /* integer compare and branch if not overflow */ \
       /* .simplifierHandler    = */ ifxcmpoSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpo, \
@@ -10936,6 +11577,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpo, /* long compare and branch if overflow */ \
       /* .simplifierHandler    = */ ifxcmpoSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpno, \
@@ -10953,6 +11595,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpno, /* long compare and branch if not overflow */ \
       /* .simplifierHandler    = */ ifxcmpoSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmno, \
@@ -10970,6 +11613,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmno, /* integer compare negative and branch if overflow */ \
       /* .simplifierHandler    = */ ifxcmnoSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmnno, \
@@ -10987,6 +11631,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmnno, /* integer compare negative and branch if not overflow */ \
       /* .simplifierHandler    = */ ifxcmnoSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmno, \
@@ -11004,6 +11649,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmno, /* long compare negative and branch if overflow */ \
       /* .simplifierHandler    = */ ifxcmnoSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmnno, \
@@ -11021,6 +11667,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmnno, /* long compare negative and branch if not overflow */ \
       /* .simplifierHandler    = */ ifxcmnoSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuaddc, \
@@ -11038,6 +11685,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuaddc, /* Currently only valid for zEmulator.  Add two unsigned ints with carry */ \
       /* .simplifierHandler    = */ iaddSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luaddc, \
@@ -11055,6 +11703,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luaddc, /* Add two longs with carry */ \
       /* .simplifierHandler    = */ laddSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iusubb, \
@@ -11072,6 +11721,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iusubb, /* Subtract two ints with borrow */ \
       /* .simplifierHandler    = */ isubSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lusubb, \
@@ -11089,6 +11739,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lusubb, /* Subtract two longs with borrow */ \
       /* .simplifierHandler    = */ lsubSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmpset, \
@@ -11106,6 +11757,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ icmpset, /* icmpset(pointer,c,r): compare *pointer with c, if it matches, replace with r.  Returns 0 on match, 1 otherwise */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmpset, \
@@ -11123,6 +11775,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lcmpset, /* the operation is done atomically - return type is int for both [il]cmpset */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bztestnset, \
@@ -11140,6 +11793,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bztestnset, /* bztestnset(pointer,c): atomically sets *pointer to c and returns the original value of *p (represents Test And Set on Z) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ibatomicor, \
@@ -11157,6 +11811,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibatomicor, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::isatomicor, \
@@ -11174,6 +11829,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ isatomicor, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iiatomicor, \
@@ -11191,6 +11847,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iiatomicor, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ilatomicor, \
@@ -11208,6 +11865,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ilatomicor, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dexp, \
@@ -11225,6 +11883,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dexp, /* double exponent */ \
       /* .simplifierHandler    = */ expSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::branch, \
@@ -11242,6 +11901,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ branch, /* generic branch --> DEPRECATED use TR::case instead */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainCondBranch, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::igoto, \
@@ -11259,6 +11919,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ igoto, /* indirect goto, branches to the address specified by a child */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIgoto, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bexp, \
@@ -11276,6 +11937,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bexp, /* signed byte exponent  (raise signed byte to power) */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::buexp, \
@@ -11293,6 +11955,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ buexp, /* unsigned byte exponent */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sexp, \
@@ -11310,6 +11973,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sexp, /* short exponent */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cexp, \
@@ -11327,6 +11991,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cexp, /* unsigned short exponent */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iexp, \
@@ -11344,6 +12009,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iexp, /* integer exponent */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuexp, \
@@ -11361,6 +12027,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuexp, /* unsigned integer exponent */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lexp, \
@@ -11378,6 +12045,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lexp, /* long exponent */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luexp, \
@@ -11395,6 +12063,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luexp, /* unsigned long exponent */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fexp, \
@@ -11412,6 +12081,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fexp, /* float exponent */ \
       /* .simplifierHandler    = */ expSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fuexp, \
@@ -11429,6 +12099,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fuexp, /* float base to unsigned integral exponent */ \
       /* .simplifierHandler    = */ expSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::duexp, \
@@ -11446,6 +12117,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ duexp, /* double base to unsigned integral exponent */ \
       /* .simplifierHandler    = */ expSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ixfrs, \
@@ -11463,6 +12135,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ixfrs, /* transfer sign integer */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lxfrs, \
@@ -11480,6 +12153,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lxfrs, /* transfer sign long */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fxfrs, \
@@ -11497,6 +12171,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fxfrs, /* transfer sign float */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dxfrs, \
@@ -11514,6 +12189,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dxfrs, /* transfer sign double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fint, \
@@ -11531,6 +12207,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fint, /* truncate float to int */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dint, \
@@ -11548,6 +12225,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dint, /* truncate double to int */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fnint, \
@@ -11565,6 +12243,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fnint, /* round float to nearest int */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dnint, \
@@ -11582,6 +12261,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dnint, /* round double to nearest int */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fsqrt, \
@@ -11599,6 +12279,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fsqrt, /* square root of float */ \
       /* .simplifierHandler    = */ fsqrtSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dsqrt, \
@@ -11616,6 +12297,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dsqrt, /* square root of double */ \
       /* .simplifierHandler    = */ dsqrtSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::getstack, \
@@ -11633,6 +12315,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ getstack, /* returns current value of SP */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dealloca, \
@@ -11650,6 +12333,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dealloca, /* resets value of SP */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::idoz, \
@@ -11667,6 +12351,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ idoz, /* difference or zero */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcos, \
@@ -11684,6 +12369,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcos, /* cos of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dsin, \
@@ -11701,6 +12387,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dsin, /* sin of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dtan, \
@@ -11718,6 +12405,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dtan, /* tan of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcosh, \
@@ -11735,6 +12423,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcosh, /* cos of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dsinh, \
@@ -11752,6 +12441,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dsinh, /* sin of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dtanh, \
@@ -11769,6 +12459,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dtanh, /* tan of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dacos, \
@@ -11786,6 +12477,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dacos, /* arccos of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dasin, \
@@ -11803,6 +12495,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dasin, /* arcsin of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::datan, \
@@ -11820,6 +12513,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ datan, /* arctan of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::datan2, \
@@ -11837,6 +12531,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ datan2, /* arctan2 of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dlog, \
@@ -11854,6 +12549,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dlog, /* log of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dfloor, \
@@ -11871,6 +12567,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dfloor, /* floor of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ffloor, \
@@ -11888,6 +12585,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ffloor, /* floor of float, returning float */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dceil, \
@@ -11905,6 +12603,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dceil, /* ceil of double, returning double */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fceil, \
@@ -11922,6 +12621,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fceil, /* ceil of float, returning float */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ibranch, \
@@ -11939,6 +12639,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibranch, /* generic indirct branch --> first child is a constant indicating the mask */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIgoto, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::mbranch, \
@@ -11956,6 +12657,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ mbranch, /* generic branch to multiple potential targets */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIgoto, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::getpm, \
@@ -11973,6 +12675,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ getpm, /* get program mask */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::setpm, \
@@ -11990,6 +12693,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ setpm, /* set program mask */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::loadAutoOffset, \
@@ -12007,6 +12711,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ loadAutoOffset, /* loads the offset (from the SP) of an auto */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::imax, \
@@ -12024,6 +12729,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ imax, /* max of 2 or more integers */ \
       /* .simplifierHandler    = */ imaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iumax, \
@@ -12041,6 +12747,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iumax, /* max of 2 or more unsigned integers */ \
       /* .simplifierHandler    = */ imaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lmax, \
@@ -12058,6 +12765,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lmax, /* max of 2 or more longs */ \
       /* .simplifierHandler    = */ lmaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lumax, \
@@ -12075,6 +12783,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lumax, /* max of 2 or more unsigned longs */ \
       /* .simplifierHandler    = */ lmaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fmax, \
@@ -12092,6 +12801,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fmax, /* max of 2 or more floats */ \
       /* .simplifierHandler    = */ fmaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dmax, \
@@ -12109,6 +12819,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dmax, /* max of 2 or more doubles */ \
       /* .simplifierHandler    = */ dmaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::imin, \
@@ -12126,6 +12837,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ imin, /* min of 2 or more integers */ \
       /* .simplifierHandler    = */ imaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iumin, \
@@ -12143,6 +12855,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iumin, /* min of 2 or more unsigned integers */ \
       /* .simplifierHandler    = */ imaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lmin, \
@@ -12160,6 +12873,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lmin, /* min of 2 or more longs */ \
       /* .simplifierHandler    = */ lmaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lumin, \
@@ -12177,6 +12891,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lumin, /* min of 2 or more unsigned longs */ \
       /* .simplifierHandler    = */ lmaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fmin, \
@@ -12194,6 +12909,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fmin, /* min of 2 or more floats */ \
       /* .simplifierHandler    = */ fmaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dmin, \
@@ -12211,6 +12927,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dmin, /* min of 2 or more doubles */ \
       /* .simplifierHandler    = */ dmaxminSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::trt, \
@@ -12228,6 +12945,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ trt, /* translate and test */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::trtSimple, \
@@ -12245,6 +12963,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ trtSimple, /* same as TRT but ignoring the returned source byte address and table entry value */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ihbit, \
@@ -12262,6 +12981,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ihbit, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntegerHighestOneBit, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ilbit, \
@@ -12279,6 +12999,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ilbit, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntegerLowestOneBit, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::inolz, \
@@ -12296,6 +13017,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ inolz, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntegerNumberOfLeadingZeros, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::inotz, \
@@ -12313,6 +13035,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ inotz, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntegerNumberOfTrailingZeros, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ipopcnt, \
@@ -12330,6 +13053,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ipopcnt, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainIntegerBitCount, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lhbit, \
@@ -12347,6 +13071,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lhbit, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainLongHighestOneBit, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::llbit, \
@@ -12364,6 +13089,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ llbit, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainLongLowestOneBit, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lnolz, \
@@ -12381,6 +13107,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lnolz, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainLongNumberOfLeadingZeros, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lnotz, \
@@ -12398,6 +13125,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lnotz, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainLongNumberOfTrailingZeros, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lpopcnt, \
@@ -12415,6 +13143,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lpopcnt, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainLongBitCount, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ibyteswap, \
@@ -12432,6 +13161,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibyteswap, /* swap bytes in an integer */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bbitpermute, \
@@ -12449,6 +13179,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bbitpermute, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sbitpermute, \
@@ -12466,6 +13197,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sbitpermute, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ibitpermute, \
@@ -12483,6 +13215,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibitpermute, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lbitpermute, \
@@ -12500,6 +13233,7 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lbitpermute, \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::Prefetch, \
@@ -12517,5 +13251,6 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Prefetch, /* Prefetch */ \
       /* .simplifierHandler    = */ dftSimplifier, \
+      /* .vpHandler            = */ constrainChildren, \
    ) 
 #endif

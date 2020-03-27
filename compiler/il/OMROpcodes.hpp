@@ -38,6 +38,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ BadILOp = 0, /* illegal op hopefully help with uninitialized nodes */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aconst, \
@@ -54,6 +55,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aconst, /* load address constant (zero value means NULL) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iconst, \
@@ -70,6 +72,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iconst, /* load integer constant (32-bit signed 2's complement) */ \
+      /* .simplifierHandler    = */ constSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lconst, \
@@ -86,6 +89,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lconst, /* load long integer constant (64-bit signed 2's complement) */ \
+      /* .simplifierHandler    = */ lconstSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fconst, \
@@ -102,6 +106,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fconst, /* load float constant (32-bit ieee fp) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dconst, \
@@ -118,6 +123,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dconst, /* load double constant (64-bit ieee fp) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bconst, \
@@ -134,6 +140,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bconst, /* load byte integer constant (8-bit signed 2's complement) */ \
+      /* .simplifierHandler    = */ constSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sconst, \
@@ -150,6 +157,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sconst, /* load short integer constant (16-bit signed 2's complement) */ \
+      /* .simplifierHandler    = */ constSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iload, \
@@ -166,6 +174,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iload, /* load integer */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fload, \
@@ -182,6 +191,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fload, /* load float */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dload, \
@@ -198,6 +208,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dload, /* load double */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aload, \
@@ -214,6 +225,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aload, /* load address */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bload, \
@@ -230,6 +242,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bload, /* load byte */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sload, \
@@ -246,6 +259,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sload, /* load short integer */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lload, \
@@ -262,6 +276,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lload, /* load long integer */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::irdbar, \
@@ -278,6 +293,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ irdbar, /* read barrier for load integer */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::frdbar, \
@@ -294,6 +310,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ frdbar, /* read barrier for load float */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::drdbar, \
@@ -310,6 +327,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ drdbar, /* read barrier for load double */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ardbar, \
@@ -326,6 +344,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ardbar, /* read barrier for load address */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::brdbar, \
@@ -342,6 +361,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ brdbar, /* read barrier for load byte */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::srdbar, \
@@ -358,6 +378,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ srdbar, /* load short integer */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lrdbar, \
@@ -374,6 +395,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lrdbar, /* load long integer */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iloadi, \
@@ -390,6 +412,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iloadi, /* load indirect integer */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::floadi, \
@@ -406,6 +429,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ floadi, /* load indirect float */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dloadi, \
@@ -422,6 +446,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dloadi, /* load indirect double */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aloadi, \
@@ -438,6 +463,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aloadi, /* load indirect address */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bloadi, \
@@ -454,6 +480,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bloadi, /* load indirect byte */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sloadi, \
@@ -470,6 +497,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sloadi, /* load indirect short integer */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lloadi, \
@@ -486,6 +514,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lloadi, /* load indirect long integer */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::irdbari, \
@@ -502,6 +531,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ irdbari, /* read barrier for load indirect integer */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::frdbari, \
@@ -518,6 +548,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ frdbari, /* read barrier for load indirect float */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::drdbari, \
@@ -534,6 +565,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ drdbari, /* read barrier for load indirect double */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ardbari, \
@@ -550,6 +582,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ardbari, /* read barrier for load indirect address */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::brdbari, \
@@ -566,6 +599,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ brdbari, /* read barrier for load indirect byte */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::srdbari, \
@@ -582,6 +616,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ srdbari, /* read barrier for load indirect short integer */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lrdbari, \
@@ -598,6 +633,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lrdbari, /* read barrier for load indirect long integer */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::istore, \
@@ -614,6 +650,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ istore, /* store integer */ \
+      /* .simplifierHandler    = */ directStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lstore, \
@@ -630,6 +667,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lstore, /* store long integer */ \
+      /* .simplifierHandler    = */ lstoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fstore, \
@@ -646,6 +684,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fstore, /* store float */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dstore, \
@@ -662,6 +701,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dstore, /* store double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::astore, \
@@ -678,6 +718,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ astore, /* store address */ \
+      /* .simplifierHandler    = */ astoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bstore, \
@@ -694,6 +735,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bstore, /* store byte */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sstore, \
@@ -710,6 +752,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sstore, /* store short integer */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iwrtbar, \
@@ -726,6 +769,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iwrtbar, /* write barrier for store direct integer */ \
+      /* .simplifierHandler    = */ directStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lwrtbar, \
@@ -742,6 +786,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lwrtbar, /* write barrier for store direct long integer */ \
+      /* .simplifierHandler    = */ lstoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fwrtbar, \
@@ -758,6 +803,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fwrtbar, /* write barrier for store direct float */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dwrtbar, \
@@ -774,6 +820,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dwrtbar, /* write barrier for store direct double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::awrtbar, \
@@ -790,6 +837,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ awrtbar, /* write barrier for store direct address */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bwrtbar, \
@@ -806,6 +854,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bwrtbar, /* write barrier for store direct byte */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::swrtbar, \
@@ -822,6 +871,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ swrtbar, /* write barrier for store direct short integer */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lstorei, \
@@ -838,6 +888,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lstorei, /* store indirect long integer           (child1 a, child2 l) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fstorei, \
@@ -854,6 +905,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fstorei, /* store indirect float                  (child1 a, child2 f) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dstorei, \
@@ -870,6 +922,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dstorei, /* store indirect double                 (child1 a, child2 d) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::astorei, \
@@ -886,6 +939,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ astorei, /* store indirect address                (child1 a dest, child2 a value) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bstorei, \
@@ -902,6 +956,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bstorei, /* store indirect byte                   (child1 a, child2 b) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sstorei, \
@@ -918,6 +973,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sstorei, /* store indirect short integer          (child1 a, child2 s) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::istorei, \
@@ -934,6 +990,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ istorei, /* store indirect integer                (child1 a, child2 i) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lwrtbari, \
@@ -950,6 +1007,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lwrtbari, /* write barrier for store indirect long integer */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fwrtbari, \
@@ -966,6 +1024,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fwrtbari, /* write barrier for store indirect float */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dwrtbari, \
@@ -982,6 +1041,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dwrtbari, /* write barrier for store indirect double */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::awrtbari, \
@@ -998,6 +1058,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ awrtbari, /* write barrier for store indirect address */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bwrtbari, \
@@ -1014,6 +1075,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bwrtbari, /* write barrier for store indirect byte */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::swrtbari, \
@@ -1030,6 +1092,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ swrtbari, /* write barrier for store indirect short integer */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iwrtbari, \
@@ -1046,6 +1109,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iwrtbari, /* write barrier for store indirect integer */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::Goto, \
@@ -1062,6 +1126,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Goto, /* goto label address */ \
+      /* .simplifierHandler    = */ gotoSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ireturn, \
@@ -1078,6 +1143,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ireturn, /* return an integer */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lreturn, \
@@ -1094,6 +1160,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lreturn, /* return a long integer */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::freturn, \
@@ -1110,6 +1177,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ freturn, /* return a float */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dreturn, \
@@ -1126,6 +1194,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dreturn, /* return a double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::areturn, \
@@ -1142,6 +1211,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ areturn, /* return an address */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::Return, \
@@ -1158,6 +1228,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Return, /* void return */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::asynccheck, \
@@ -1174,6 +1245,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ asynccheck, /* GC point */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::athrow, \
@@ -1190,6 +1262,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ athrow, /* throw an exception */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icall, \
@@ -1206,6 +1279,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ icall, /* direct call returning integer */ \
+      /* .simplifierHandler    = */ ifdCallSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcall, \
@@ -1222,6 +1296,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lcall, /* direct call returning long integer */ \
+      /* .simplifierHandler    = */ lcallSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcall, \
@@ -1238,6 +1313,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fcall, /* direct call returning float */ \
+      /* .simplifierHandler    = */ ifdCallSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcall, \
@@ -1254,6 +1330,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcall, /* direct call returning double */ \
+      /* .simplifierHandler    = */ ifdCallSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acall, \
@@ -1270,6 +1347,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ acall, /* direct call returning reference */ \
+      /* .simplifierHandler    = */ acallSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::call, \
@@ -1286,6 +1364,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ call, /* direct call returning void */ \
+      /* .simplifierHandler    = */ vcallSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iadd, \
@@ -1302,6 +1381,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iadd, /* add 2 integers */ \
+      /* .simplifierHandler    = */ iaddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ladd, \
@@ -1318,6 +1398,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ladd, /* add 2 long integers */ \
+      /* .simplifierHandler    = */ laddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fadd, \
@@ -1334,6 +1415,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fadd, /* add 2 floats */ \
+      /* .simplifierHandler    = */ faddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dadd, \
@@ -1350,6 +1432,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dadd, /* add 2 doubles */ \
+      /* .simplifierHandler    = */ daddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::badd, \
@@ -1366,6 +1449,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ badd, /* add 2 bytes */ \
+      /* .simplifierHandler    = */ baddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sadd, \
@@ -1382,6 +1466,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sadd, /* add 2 short integers */ \
+      /* .simplifierHandler    = */ saddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::isub, \
@@ -1398,6 +1483,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ isub, /* subtract 2 integers                (child1 - child2) */ \
+      /* .simplifierHandler    = */ isubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lsub, \
@@ -1414,6 +1500,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lsub, /* subtract 2 long integers           (child1 - child2) */ \
+      /* .simplifierHandler    = */ lsubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fsub, \
@@ -1430,6 +1517,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fsub, /* subtract 2 floats                  (child1 - child2) */ \
+      /* .simplifierHandler    = */ fsubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dsub, \
@@ -1446,6 +1534,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dsub, /* subtract 2 doubles                 (child1 - child2) */ \
+      /* .simplifierHandler    = */ dsubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bsub, \
@@ -1462,6 +1551,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bsub, /* subtract 2 bytes                   (child1 - child2) */ \
+      /* .simplifierHandler    = */ bsubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ssub, \
@@ -1478,6 +1568,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ssub, /* subtract 2 short integers          (child1 - child2) */ \
+      /* .simplifierHandler    = */ ssubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::asub, \
@@ -1494,6 +1585,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ asub, /* subtract 2 addresses (child1 - child2) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::imul, \
@@ -1510,6 +1602,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ imul, /* multiply 2 integers */ \
+      /* .simplifierHandler    = */ imulSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lmul, \
@@ -1526,6 +1619,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lmul, /* multiply 2 signed or unsigned long integers */ \
+      /* .simplifierHandler    = */ lmulSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fmul, \
@@ -1542,6 +1636,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fmul, /* multiply 2 floats */ \
+      /* .simplifierHandler    = */ fmulSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dmul, \
@@ -1558,6 +1653,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dmul, /* multiply 2 doubles */ \
+      /* .simplifierHandler    = */ dmulSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bmul, \
@@ -1574,6 +1670,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bmul, /* multiply 2 bytes */ \
+      /* .simplifierHandler    = */ bmulSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::smul, \
@@ -1590,6 +1687,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ smul, /* multiply 2 short integers */ \
+      /* .simplifierHandler    = */ smulSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::idiv, \
@@ -1606,6 +1704,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ idiv, /* divide 2 integers                (child1 / child2) */ \
+      /* .simplifierHandler    = */ idivSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ldiv, \
@@ -1622,6 +1721,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ldiv, /* divide 2 long integers           (child1 / child2) */ \
+      /* .simplifierHandler    = */ ldivSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fdiv, \
@@ -1638,6 +1738,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fdiv, /* divide 2 floats                  (child1 / child2) */ \
+      /* .simplifierHandler    = */ fdivSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ddiv, \
@@ -1654,6 +1755,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ddiv, /* divide 2 doubles                 (child1 / child2) */ \
+      /* .simplifierHandler    = */ ddivSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bdiv, \
@@ -1670,6 +1772,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bdiv, /* divide 2 bytes                   (child1 / child2) */ \
+      /* .simplifierHandler    = */ bdivSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sdiv, \
@@ -1686,6 +1789,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sdiv, /* divide 2 short integers          (child1 / child2) */ \
+      /* .simplifierHandler    = */ sdivSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iudiv, \
@@ -1702,6 +1806,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iudiv, /* divide 2 unsigned integers       (child1 / child2) */ \
+      /* .simplifierHandler    = */ idivSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ludiv, \
@@ -1718,6 +1823,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ludiv, /* divide 2 unsigned long integers  (child1 / child2) */ \
+      /* .simplifierHandler    = */ ldivSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::irem, \
@@ -1734,6 +1840,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ irem, /* remainder of 2 integers                (child1 % child2) */ \
+      /* .simplifierHandler    = */ iremSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lrem, \
@@ -1750,6 +1857,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lrem, /* remainder of 2 long integers           (child1 % child2) */ \
+      /* .simplifierHandler    = */ lremSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::frem, \
@@ -1766,6 +1874,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ frem, /* remainder of 2 floats                  (child1 % child2) */ \
+      /* .simplifierHandler    = */ fremSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::drem, \
@@ -1782,6 +1891,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ drem, /* remainder of 2 doubles                 (child1 % child2) */ \
+      /* .simplifierHandler    = */ dremSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::brem, \
@@ -1798,6 +1908,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ brem, /* remainder of 2 bytes                   (child1 % child2) */ \
+      /* .simplifierHandler    = */ bremSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::srem, \
@@ -1814,6 +1925,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ srem, /* remainder of 2 short integers          (child1 % child2) */ \
+      /* .simplifierHandler    = */ sremSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iurem, \
@@ -1830,6 +1942,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iurem, /* remainder of 2 unsigned integers       (child1 % child2) */ \
+      /* .simplifierHandler    = */ iremSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ineg, \
@@ -1846,6 +1959,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ineg, /* negate an integer */ \
+      /* .simplifierHandler    = */ inegSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lneg, \
@@ -1862,6 +1976,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lneg, /* negate a long integer */ \
+      /* .simplifierHandler    = */ lnegSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fneg, \
@@ -1878,6 +1993,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fneg, /* negate a float */ \
+      /* .simplifierHandler    = */ fnegSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dneg, \
@@ -1894,6 +2010,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dneg, /* negate a double */ \
+      /* .simplifierHandler    = */ dnegSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bneg, \
@@ -1910,6 +2027,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bneg, /* negate a bytes */ \
+      /* .simplifierHandler    = */ bnegSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sneg, \
@@ -1926,6 +2044,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sneg, /* negate a short integer */ \
+      /* .simplifierHandler    = */ snegSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iabs, \
@@ -1942,6 +2061,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iabs, /* absolute value of integer */ \
+      /* .simplifierHandler    = */ ilfdabsSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::labs, \
@@ -1958,6 +2078,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ labs, /* absolute value of long */ \
+      /* .simplifierHandler    = */ ilfdabsSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fabs, \
@@ -1974,6 +2095,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fabs, /* absolute value of float */ \
+      /* .simplifierHandler    = */ ilfdabsSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dabs, \
@@ -1990,6 +2112,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dabs, /* absolute value of double */ \
+      /* .simplifierHandler    = */ ilfdabsSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ishl, \
@@ -2006,6 +2129,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ishl, /* shift integer left                (child1 << child2) */ \
+      /* .simplifierHandler    = */ ishlSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lshl, \
@@ -2022,6 +2146,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lshl, /* shift long integer left           (child1 << child2) */ \
+      /* .simplifierHandler    = */ lshlSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bshl, \
@@ -2038,6 +2163,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bshl, /* shift byte left                   (child1 << child2) */ \
+      /* .simplifierHandler    = */ bshlSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sshl, \
@@ -2054,6 +2180,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sshl, /* shift short integer left          (child1 << child2) */ \
+      /* .simplifierHandler    = */ sshlSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ishr, \
@@ -2070,6 +2197,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ishr, /* shift integer right arithmetically               (child1 >> child2) */ \
+      /* .simplifierHandler    = */ ishrSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lshr, \
@@ -2086,6 +2214,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lshr, /* shift long integer right arithmetically          (child1 >> child2) */ \
+      /* .simplifierHandler    = */ lshrSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bshr, \
@@ -2102,6 +2231,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bshr, /* shift byte right arithmetically                  (child1 >> child2) */ \
+      /* .simplifierHandler    = */ bshrSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sshr, \
@@ -2118,6 +2248,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sshr, /* shift short integer arithmetically               (child1 >> child2) */ \
+      /* .simplifierHandler    = */ sshrSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iushr, \
@@ -2134,6 +2265,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iushr, /* shift integer right logically                   (child1 >> child2) */ \
+      /* .simplifierHandler    = */ iushrSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lushr, \
@@ -2150,6 +2282,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lushr, /* shift long integer right logically              (child1 >> child2) */ \
+      /* .simplifierHandler    = */ lushrSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bushr, \
@@ -2166,6 +2299,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bushr, /* shift byte right logically                      (child1 >> child2) */ \
+      /* .simplifierHandler    = */ bushrSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sushr, \
@@ -2182,6 +2316,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sushr, /* shift short integer right logically             (child1 >> child2) */ \
+      /* .simplifierHandler    = */ sushrSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::irol, \
@@ -2198,6 +2333,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ irol, /* rotate integer left */ \
+      /* .simplifierHandler    = */ irolSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lrol, \
@@ -2214,6 +2350,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lrol, /* rotate long integer left */ \
+      /* .simplifierHandler    = */ lrolSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iand, \
@@ -2230,6 +2367,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iand, /* boolean and of 2 integers */ \
+      /* .simplifierHandler    = */ iandSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::land, \
@@ -2246,6 +2384,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ land, /* boolean and of 2 long integers */ \
+      /* .simplifierHandler    = */ landSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::band, \
@@ -2262,6 +2401,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ band, /* boolean and of 2 bytes */ \
+      /* .simplifierHandler    = */ bandSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sand, \
@@ -2278,6 +2418,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sand, /* boolean and of 2 short integers */ \
+      /* .simplifierHandler    = */ sandSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ior, \
@@ -2294,6 +2435,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ior, /* boolean or of 2 integers */ \
+      /* .simplifierHandler    = */ iorSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lor, \
@@ -2310,6 +2452,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lor, /* boolean or of 2 long integers */ \
+      /* .simplifierHandler    = */ lorSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bor, \
@@ -2326,6 +2469,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bor, /* boolean or of 2 bytes */ \
+      /* .simplifierHandler    = */ borSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sor, \
@@ -2342,6 +2486,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sor, /* boolean or of 2 short integers */ \
+      /* .simplifierHandler    = */ sorSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ixor, \
@@ -2358,6 +2503,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ixor, /* boolean xor of 2 integers */ \
+      /* .simplifierHandler    = */ ixorSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lxor, \
@@ -2374,6 +2520,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lxor, /* boolean xor of 2 long integers */ \
+      /* .simplifierHandler    = */ lxorSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bxor, \
@@ -2390,6 +2537,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bxor, /* boolean xor of 2 bytes */ \
+      /* .simplifierHandler    = */ bxorSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sxor, \
@@ -2406,6 +2554,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sxor, /* boolean xor of 2 short integers */ \
+      /* .simplifierHandler    = */ sxorSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2l, \
@@ -2422,6 +2571,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2l, /* convert integer to long integer with sign extension */ \
+      /* .simplifierHandler    = */ i2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2f, \
@@ -2438,6 +2588,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2f, /* convert integer to float */ \
+      /* .simplifierHandler    = */ i2fSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2d, \
@@ -2454,6 +2605,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2d, /* convert integer to double */ \
+      /* .simplifierHandler    = */ i2dSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2b, \
@@ -2470,6 +2622,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2b, /* convert integer to byte */ \
+      /* .simplifierHandler    = */ i2bSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2s, \
@@ -2486,6 +2639,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2s, /* convert integer to short integer */ \
+      /* .simplifierHandler    = */ i2sSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::i2a, \
@@ -2502,6 +2656,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ i2a, /* convert integer to address */ \
+      /* .simplifierHandler    = */ i2aSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iu2l, \
@@ -2518,6 +2673,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iu2l, /* convert unsigned integer to long integer with zero extension */ \
+      /* .simplifierHandler    = */ iu2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iu2f, \
@@ -2534,6 +2690,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iu2f, /* convert unsigned integer to float */ \
+      /* .simplifierHandler    = */ iu2fSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iu2d, \
@@ -2550,6 +2707,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iu2d, /* convert unsigned integer to double */ \
+      /* .simplifierHandler    = */ iu2dSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iu2a, \
@@ -2566,6 +2724,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iu2a, /* convert unsigned integer to address */ \
+      /* .simplifierHandler    = */ i2aSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2i, \
@@ -2582,6 +2741,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2i, /* convert long integer to integer */ \
+      /* .simplifierHandler    = */ l2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2f, \
@@ -2598,6 +2758,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2f, /* convert long integer to float */ \
+      /* .simplifierHandler    = */ l2fSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2d, \
@@ -2614,6 +2775,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2d, /* convert long integer to double */ \
+      /* .simplifierHandler    = */ l2dSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2b, \
@@ -2630,6 +2792,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2b, /* convert long integer to byte */ \
+      /* .simplifierHandler    = */ l2bSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2s, \
@@ -2646,6 +2809,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2s, /* convert long integer to short integer */ \
+      /* .simplifierHandler    = */ l2sSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::l2a, \
@@ -2662,6 +2826,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ l2a, /* convert long integer to address */ \
+      /* .simplifierHandler    = */ l2aSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lu2f, \
@@ -2678,6 +2843,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lu2f, /* convert unsigned long integer to float */ \
+      /* .simplifierHandler    = */ lu2fSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lu2d, \
@@ -2694,6 +2860,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lu2d, /* convert unsigned long integer to double */ \
+      /* .simplifierHandler    = */ lu2dSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lu2a, \
@@ -2710,6 +2877,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lu2a, /* convert unsigned long integer to address */ \
+      /* .simplifierHandler    = */ l2aSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2i, \
@@ -2726,6 +2894,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2i, /* convert float to integer */ \
+      /* .simplifierHandler    = */ f2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2l, \
@@ -2742,6 +2911,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2l, /* convert float to long integer */ \
+      /* .simplifierHandler    = */ f2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2d, \
@@ -2758,6 +2928,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2d, /* convert float to double */ \
+      /* .simplifierHandler    = */ f2dSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2b, \
@@ -2774,6 +2945,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2b, /* convert float to byte */ \
+      /* .simplifierHandler    = */ f2bSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2s, \
@@ -2790,6 +2962,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2s, /* convert float to short integer */ \
+      /* .simplifierHandler    = */ f2sSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2i, \
@@ -2806,6 +2979,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2i, /* convert double to integer */ \
+      /* .simplifierHandler    = */ d2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2l, \
@@ -2822,6 +2996,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2l, /* convert double to long integer */ \
+      /* .simplifierHandler    = */ d2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2f, \
@@ -2838,6 +3013,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2f, /* convert double to float */ \
+      /* .simplifierHandler    = */ d2fSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2b, \
@@ -2854,6 +3030,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2b, /* convert double to byte */ \
+      /* .simplifierHandler    = */ d2bSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2s, \
@@ -2870,6 +3047,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2s, /* convert double to short integer */ \
+      /* .simplifierHandler    = */ d2sSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2i, \
@@ -2886,6 +3064,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2i, /* convert byte to integer with sign extension */ \
+      /* .simplifierHandler    = */ b2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2l, \
@@ -2902,6 +3081,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2l, /* convert byte to long integer with sign extension */ \
+      /* .simplifierHandler    = */ b2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2f, \
@@ -2918,6 +3098,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2f, /* convert byte to float */ \
+      /* .simplifierHandler    = */ b2fSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2d, \
@@ -2934,6 +3115,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2d, /* convert byte to double */ \
+      /* .simplifierHandler    = */ b2dSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2s, \
@@ -2950,6 +3132,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2s, /* convert byte to short integer with sign extension */ \
+      /* .simplifierHandler    = */ b2sSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::b2a, \
@@ -2966,6 +3149,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ b2a, /* convert byte to address */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2i, \
@@ -2982,6 +3166,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2i, /* convert byte to integer with zero extension */ \
+      /* .simplifierHandler    = */ bu2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2l, \
@@ -2998,6 +3183,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2l, /* convert byte to long integer with zero extension */ \
+      /* .simplifierHandler    = */ bu2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2f, \
@@ -3014,6 +3200,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2f, /* convert unsigned byte to float */ \
+      /* .simplifierHandler    = */ bu2fSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2d, \
@@ -3030,6 +3217,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2d, /* convert unsigned byte to double */ \
+      /* .simplifierHandler    = */ bu2dSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2s, \
@@ -3046,6 +3234,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2s, /* convert byte to short integer with zero extension */ \
+      /* .simplifierHandler    = */ bu2sSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bu2a, \
@@ -3062,6 +3251,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bu2a, /* convert unsigned byte to unsigned address */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2i, \
@@ -3078,6 +3268,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2i, /* convert short integer to integer with sign extension */ \
+      /* .simplifierHandler    = */ s2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2l, \
@@ -3094,6 +3285,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2l, /* convert short integer to long integer with sign extension */ \
+      /* .simplifierHandler    = */ s2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2f, \
@@ -3110,6 +3302,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2f, /* convert short integer to float */ \
+      /* .simplifierHandler    = */ s2fSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2d, \
@@ -3126,6 +3319,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2d, /* convert short integer to double */ \
+      /* .simplifierHandler    = */ s2dSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2b, \
@@ -3142,6 +3336,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2b, /* convert short integer to byte */ \
+      /* .simplifierHandler    = */ s2bSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::s2a, \
@@ -3158,6 +3353,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ s2a, /* convert short integer to address */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::su2i, \
@@ -3174,6 +3370,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ su2i, /* zero extend short to int */ \
+      /* .simplifierHandler    = */ su2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::su2l, \
@@ -3190,6 +3387,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ su2l, /* zero extend char to long */ \
+      /* .simplifierHandler    = */ su2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::su2f, \
@@ -3206,6 +3404,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ su2f, /* convert char to float */ \
+      /* .simplifierHandler    = */ su2fSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::su2d, \
@@ -3222,6 +3421,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ su2d, /* convert char to double */ \
+      /* .simplifierHandler    = */ su2dSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::su2a, \
@@ -3238,6 +3438,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ su2a, /* convert char to address */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::a2i, \
@@ -3254,6 +3455,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ a2i, /* convert address to integer */ \
+      /* .simplifierHandler    = */ a2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::a2l, \
@@ -3270,6 +3472,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ a2l, /* convert address to long integer */ \
+      /* .simplifierHandler    = */ a2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::a2b, \
@@ -3286,6 +3489,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ a2b, /* convert address to byte */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::a2s, \
@@ -3302,6 +3506,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ a2s, /* convert address to short */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmpeq, \
@@ -3318,6 +3523,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ificmpeq, \
       /* .description          = */ icmpeq, /* integer compare if equal */ \
+      /* .simplifierHandler    = */ icmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmpne, \
@@ -3334,6 +3540,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ificmpne, \
       /* .description          = */ icmpne, /* integer compare if not equal */ \
+      /* .simplifierHandler    = */ icmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmplt, \
@@ -3350,6 +3557,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ificmplt, \
       /* .description          = */ icmplt, /* integer compare if less than */ \
+      /* .simplifierHandler    = */ icmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmpge, \
@@ -3366,6 +3574,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ificmpge, \
       /* .description          = */ icmpge, /* integer compare if greater than or equal */ \
+      /* .simplifierHandler    = */ icmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmpgt, \
@@ -3382,6 +3591,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ificmpgt, \
       /* .description          = */ icmpgt, /* integer compare if greater than */ \
+      /* .simplifierHandler    = */ icmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmple, \
@@ -3398,6 +3608,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ificmple, \
       /* .description          = */ icmple, /* integer compare if less than or equal */ \
+      /* .simplifierHandler    = */ icmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmpeq, \
@@ -3414,6 +3625,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifiucmpeq, \
       /* .description          = */ iucmpeq, /* unsigned integer compare if equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmpne, \
@@ -3430,6 +3642,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifiucmpne, \
       /* .description          = */ iucmpne, /* unsigned integer compare if not equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmplt, \
@@ -3446,6 +3659,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifiucmplt, \
       /* .description          = */ iucmplt, /* unsigned integer compare if less than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmpge, \
@@ -3462,6 +3676,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifiucmpge, \
       /* .description          = */ iucmpge, /* unsigned integer compare if greater than or equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmpgt, \
@@ -3478,6 +3693,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifiucmpgt, \
       /* .description          = */ iucmpgt, /* unsigned integer compare if greater than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmple, \
@@ -3494,6 +3710,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifiucmple, \
       /* .description          = */ iucmple, /* unsigned integer compare if less than or equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmpeq, \
@@ -3510,6 +3727,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflcmpeq, \
       /* .description          = */ lcmpeq, /* long compare if equal */ \
+      /* .simplifierHandler    = */ lcmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmpne, \
@@ -3526,6 +3744,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflcmpne, \
       /* .description          = */ lcmpne, /* long compare if not equal */ \
+      /* .simplifierHandler    = */ lcmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmplt, \
@@ -3542,6 +3761,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflcmplt, \
       /* .description          = */ lcmplt, /* long compare if less than */ \
+      /* .simplifierHandler    = */ lcmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmpge, \
@@ -3558,6 +3778,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflcmpge, \
       /* .description          = */ lcmpge, /* long compare if greater than or equal */ \
+      /* .simplifierHandler    = */ lcmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmpgt, \
@@ -3574,6 +3795,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflcmpgt, \
       /* .description          = */ lcmpgt, /* long compare if greater than */ \
+      /* .simplifierHandler    = */ lcmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmple, \
@@ -3590,6 +3812,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflcmple, \
       /* .description          = */ lcmple, /* long compare if less than or equal */ \
+      /* .simplifierHandler    = */ lcmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmpeq, \
@@ -3606,6 +3829,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflucmpeq, \
       /* .description          = */ lucmpeq, /* unsigned long compare if equal */ \
+      /* .simplifierHandler    = */ lcmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmpne, \
@@ -3622,6 +3846,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflucmpne, \
       /* .description          = */ lucmpne, /* unsigned long compare if not equal */ \
+      /* .simplifierHandler    = */ lcmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmplt, \
@@ -3638,6 +3863,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflucmplt, \
       /* .description          = */ lucmplt, /* unsigned long compare if less than */ \
+      /* .simplifierHandler    = */ lucmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmpge, \
@@ -3654,6 +3880,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflucmpge, \
       /* .description          = */ lucmpge, /* unsigned long compare if greater than or equal */ \
+      /* .simplifierHandler    = */ lucmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmpgt, \
@@ -3670,6 +3897,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflucmpgt, \
       /* .description          = */ lucmpgt, /* unsigned long compare if greater than */ \
+      /* .simplifierHandler    = */ lucmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmple, \
@@ -3686,6 +3914,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflucmple, \
       /* .description          = */ lucmple, /* unsigned long compare if less than or equal */ \
+      /* .simplifierHandler    = */ lucmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpeq, \
@@ -3702,6 +3931,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmpeq, \
       /* .description          = */ fcmpeq, /* float compare if equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpne, \
@@ -3718,6 +3948,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmpne, \
       /* .description          = */ fcmpne, /* float compare if not equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmplt, \
@@ -3734,6 +3965,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmplt, \
       /* .description          = */ fcmplt, /* float compare if less than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpge, \
@@ -3750,6 +3982,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmpge, \
       /* .description          = */ fcmpge, /* float compare if greater than or equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpgt, \
@@ -3766,6 +3999,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmpgt, \
       /* .description          = */ fcmpgt, /* float compare if greater than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmple, \
@@ -3782,6 +4016,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmple, \
       /* .description          = */ fcmple, /* float compare if less than or equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpequ, \
@@ -3798,6 +4033,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmpequ, \
       /* .description          = */ fcmpequ, /* float compare if equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpneu, \
@@ -3814,6 +4050,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmpneu, \
       /* .description          = */ fcmpneu, /* float compare if not equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpltu, \
@@ -3830,6 +4067,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmpltu, \
       /* .description          = */ fcmpltu, /* float compare if less than or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpgeu, \
@@ -3846,6 +4084,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmpgeu, \
       /* .description          = */ fcmpgeu, /* float compare if greater than or equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpgtu, \
@@ -3862,6 +4101,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmpgtu, \
       /* .description          = */ fcmpgtu, /* float compare if greater than or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpleu, \
@@ -3878,6 +4118,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iffcmpleu, \
       /* .description          = */ fcmpleu, /* float compare if less than or equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpeq, \
@@ -3894,6 +4135,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmpeq, \
       /* .description          = */ dcmpeq, /* double compare if equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpne, \
@@ -3910,6 +4152,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmpne, \
       /* .description          = */ dcmpne, /* double compare if not equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmplt, \
@@ -3926,6 +4169,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmplt, \
       /* .description          = */ dcmplt, /* double compare if less than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpge, \
@@ -3942,6 +4186,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmpge, \
       /* .description          = */ dcmpge, /* double compare if greater than or equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpgt, \
@@ -3958,6 +4203,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmpgt, \
       /* .description          = */ dcmpgt, /* double compare if greater than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmple, \
@@ -3974,6 +4220,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmple, \
       /* .description          = */ dcmple, /* double compare if less than or equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpequ, \
@@ -3990,6 +4237,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmpequ, \
       /* .description          = */ dcmpequ, /* double compare if equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpneu, \
@@ -4006,6 +4254,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmpneu, \
       /* .description          = */ dcmpneu, /* double compare if not equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpltu, \
@@ -4022,6 +4271,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmpltu, \
       /* .description          = */ dcmpltu, /* double compare if less than or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpgeu, \
@@ -4038,6 +4288,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmpgeu, \
       /* .description          = */ dcmpgeu, /* double compare if greater than or equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpgtu, \
@@ -4054,6 +4305,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmpgtu, \
       /* .description          = */ dcmpgtu, /* double compare if greater than or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpleu, \
@@ -4070,6 +4322,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifdcmpleu, \
       /* .description          = */ dcmpleu, /* double compare if less than or equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmpeq, \
@@ -4086,6 +4339,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifacmpeq, \
       /* .description          = */ acmpeq, /* address compare if equal */ \
+      /* .simplifierHandler    = */ acmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmpne, \
@@ -4102,6 +4356,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifacmpne, \
       /* .description          = */ acmpne, /* address compare if not equal */ \
+      /* .simplifierHandler    = */ acmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmplt, \
@@ -4118,6 +4373,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifacmplt, \
       /* .description          = */ acmplt, /* address compare if less than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmpge, \
@@ -4134,6 +4390,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifacmpge, \
       /* .description          = */ acmpge, /* address compare if greater than or equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmpgt, \
@@ -4150,6 +4407,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifacmpgt, \
       /* .description          = */ acmpgt, /* address compare if greater than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acmple, \
@@ -4166,6 +4424,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifacmple, \
       /* .description          = */ acmple, /* address compare if less than or equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmpeq, \
@@ -4182,6 +4441,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbcmpeq, \
       /* .description          = */ bcmpeq, /* byte compare if equal */ \
+      /* .simplifierHandler    = */ bcmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmpne, \
@@ -4198,6 +4458,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbcmpne, \
       /* .description          = */ bcmpne, /* byte compare if not equal */ \
+      /* .simplifierHandler    = */ bcmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmplt, \
@@ -4214,6 +4475,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbcmplt, \
       /* .description          = */ bcmplt, /* byte compare if less than */ \
+      /* .simplifierHandler    = */ bcmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmpge, \
@@ -4230,6 +4492,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbcmpge, \
       /* .description          = */ bcmpge, /* byte compare if greater than or equal */ \
+      /* .simplifierHandler    = */ bcmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmpgt, \
@@ -4246,6 +4509,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbcmpgt, \
       /* .description          = */ bcmpgt, /* byte compare if greater than */ \
+      /* .simplifierHandler    = */ bcmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmple, \
@@ -4262,6 +4526,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbcmple, \
       /* .description          = */ bcmple, /* byte compare if less than or equal */ \
+      /* .simplifierHandler    = */ bcmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmpeq, \
@@ -4278,6 +4543,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbucmpeq, \
       /* .description          = */ bucmpeq, /* unsigned byte compare if equal */ \
+      /* .simplifierHandler    = */ bcmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmpne, \
@@ -4294,6 +4560,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbucmpne, \
       /* .description          = */ bucmpne, /* unsigned byte compare if not equal */ \
+      /* .simplifierHandler    = */ bcmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmplt, \
@@ -4310,6 +4577,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbucmplt, \
       /* .description          = */ bucmplt, /* unsigned byte compare if less than */ \
+      /* .simplifierHandler    = */ bcmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmpge, \
@@ -4326,6 +4594,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbucmpge, \
       /* .description          = */ bucmpge, /* unsigned byte compare if greater than or equal */ \
+      /* .simplifierHandler    = */ bcmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmpgt, \
@@ -4342,6 +4611,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbucmpgt, \
       /* .description          = */ bucmpgt, /* unsigned byte compare if greater than */ \
+      /* .simplifierHandler    = */ bcmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmple, \
@@ -4358,6 +4628,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifbucmple, \
       /* .description          = */ bucmple, /* unsigned byte compare if less than or equal */ \
+      /* .simplifierHandler    = */ bcmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmpeq, \
@@ -4374,6 +4645,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifscmpeq, \
       /* .description          = */ scmpeq, /* short integer compare if equal */ \
+      /* .simplifierHandler    = */ scmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmpne, \
@@ -4390,6 +4662,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifscmpne, \
       /* .description          = */ scmpne, /* short integer compare if not equal */ \
+      /* .simplifierHandler    = */ scmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmplt, \
@@ -4406,6 +4679,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifscmplt, \
       /* .description          = */ scmplt, /* short integer compare if less than */ \
+      /* .simplifierHandler    = */ scmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmpge, \
@@ -4422,6 +4696,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifscmpge, \
       /* .description          = */ scmpge, /* short integer compare if greater than or equal */ \
+      /* .simplifierHandler    = */ scmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmpgt, \
@@ -4438,6 +4713,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifscmpgt, \
       /* .description          = */ scmpgt, /* short integer compare if greater than */ \
+      /* .simplifierHandler    = */ scmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmple, \
@@ -4454,6 +4730,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifscmple, \
       /* .description          = */ scmple, /* short integer compare if less than or equal */ \
+      /* .simplifierHandler    = */ scmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmpeq, \
@@ -4470,6 +4747,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifsucmpeq, \
       /* .description          = */ sucmpeq, /* char compare if equal */ \
+      /* .simplifierHandler    = */ sucmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmpne, \
@@ -4486,6 +4764,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifsucmpne, \
       /* .description          = */ sucmpne, /* char compare if not equal */ \
+      /* .simplifierHandler    = */ sucmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmplt, \
@@ -4502,6 +4781,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifsucmplt, \
       /* .description          = */ sucmplt, /* char compare if less than */ \
+      /* .simplifierHandler    = */ sucmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmpge, \
@@ -4518,6 +4798,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifsucmpge, \
       /* .description          = */ sucmpge, /* char compare if greater than or equal */ \
+      /* .simplifierHandler    = */ sucmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmpgt, \
@@ -4534,6 +4815,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifsucmpgt, \
       /* .description          = */ sucmpgt, /* char compare if greater than */ \
+      /* .simplifierHandler    = */ sucmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmple, \
@@ -4550,6 +4832,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifsucmple, \
       /* .description          = */ sucmple, /* char compare if less than or equal */ \
+      /* .simplifierHandler    = */ sucmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmp, \
@@ -4566,6 +4849,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lcmp, /* long compare (1 if child1 > child2, 0 if child1 == child2, -1 if child1 < child2) */ \
+      /* .simplifierHandler    = */ lcmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpl, \
@@ -4582,6 +4866,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fcmpl, /* float compare l (1 if child1 > child2, 0 if child1 == child2, -1 if child1 < child2 or unordered) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcmpg, \
@@ -4598,6 +4883,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fcmpg, /* float compare g (1 if child1 > child2 or unordered, 0 if child1 == child2, -1 if child1 < child2) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpl, \
@@ -4614,6 +4900,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcmpl, /* double compare l (1 if child1 > child2, 0 if child1 == child2, -1 if child1 < child2 or unordered) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcmpg, \
@@ -4630,6 +4917,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcmpg, /* double compare g (1 if child1 > child2 or unordered, 0 if child1 == child2, -1 if child1 < child2) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpeq, \
@@ -4646,6 +4934,7 @@
       /* .booleanCompareOpCode = */ TR::icmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpeq, /* integer compare and branch if equal */ \
+      /* .simplifierHandler    = */ ificmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpne, \
@@ -4662,6 +4951,7 @@
       /* .booleanCompareOpCode = */ TR::icmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpne, /* integer compare and branch if not equal */ \
+      /* .simplifierHandler    = */ ificmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmplt, \
@@ -4678,6 +4968,7 @@
       /* .booleanCompareOpCode = */ TR::icmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmplt, /* integer compare and branch if less than */ \
+      /* .simplifierHandler    = */ ificmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpge, \
@@ -4694,6 +4985,7 @@
       /* .booleanCompareOpCode = */ TR::icmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpge, /* integer compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ ificmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpgt, \
@@ -4710,6 +5002,7 @@
       /* .booleanCompareOpCode = */ TR::icmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpgt, /* integer compare and branch if greater than */ \
+      /* .simplifierHandler    = */ ificmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmple, \
@@ -4726,6 +5019,7 @@
       /* .booleanCompareOpCode = */ TR::icmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmple, /* integer compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ ificmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmpeq, \
@@ -4742,6 +5036,7 @@
       /* .booleanCompareOpCode = */ TR::iucmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmpeq, /* unsigned integer compare and branch if equal */ \
+      /* .simplifierHandler    = */ ificmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmpne, \
@@ -4758,6 +5053,7 @@
       /* .booleanCompareOpCode = */ TR::iucmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmpne, /* unsigned integer compare and branch if not equal */ \
+      /* .simplifierHandler    = */ ificmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmplt, \
@@ -4774,6 +5070,7 @@
       /* .booleanCompareOpCode = */ TR::iucmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmplt, /* unsigned integer compare and branch if less than */ \
+      /* .simplifierHandler    = */ ificmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmpge, \
@@ -4790,6 +5087,7 @@
       /* .booleanCompareOpCode = */ TR::iucmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmpge, /* unsigned integer compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ ificmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmpgt, \
@@ -4806,6 +5104,7 @@
       /* .booleanCompareOpCode = */ TR::iucmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmpgt, /* unsigned integer compare and branch if greater than */ \
+      /* .simplifierHandler    = */ ificmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifiucmple, \
@@ -4822,6 +5121,7 @@
       /* .booleanCompareOpCode = */ TR::iucmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifiucmple, /* unsigned integer compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ ificmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpeq, \
@@ -4838,6 +5138,7 @@
       /* .booleanCompareOpCode = */ TR::lcmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpeq, /* long compare and branch if equal */ \
+      /* .simplifierHandler    = */ iflcmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpne, \
@@ -4854,6 +5155,7 @@
       /* .booleanCompareOpCode = */ TR::lcmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpne, /* long compare and branch if not equal */ \
+      /* .simplifierHandler    = */ iflcmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmplt, \
@@ -4870,6 +5172,7 @@
       /* .booleanCompareOpCode = */ TR::lcmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmplt, /* long compare and branch if less than */ \
+      /* .simplifierHandler    = */ iflcmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpge, \
@@ -4886,6 +5189,7 @@
       /* .booleanCompareOpCode = */ TR::lcmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpge, /* long compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ iflcmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpgt, \
@@ -4902,6 +5206,7 @@
       /* .booleanCompareOpCode = */ TR::lcmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpgt, /* long compare and branch if greater than */ \
+      /* .simplifierHandler    = */ iflcmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmple, \
@@ -4918,6 +5223,7 @@
       /* .booleanCompareOpCode = */ TR::lcmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmple, /* long compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ iflcmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmpeq, \
@@ -4934,6 +5240,7 @@
       /* .booleanCompareOpCode = */ TR::lucmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmpeq, /* unsigned long compare and branch if equal */ \
+      /* .simplifierHandler    = */ iflcmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmpne, \
@@ -4950,6 +5257,7 @@
       /* .booleanCompareOpCode = */ TR::lucmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmpne, /* unsigned long compare and branch if not equal */ \
+      /* .simplifierHandler    = */ iflcmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmplt, \
@@ -4966,6 +5274,7 @@
       /* .booleanCompareOpCode = */ TR::lucmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmplt, /* unsigned long compare and branch if less than */ \
+      /* .simplifierHandler    = */ iflcmpltSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmpge, \
@@ -4982,6 +5291,7 @@
       /* .booleanCompareOpCode = */ TR::lucmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmpge, /* unsigned long compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ iflcmpgeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmpgt, \
@@ -4998,6 +5308,7 @@
       /* .booleanCompareOpCode = */ TR::lucmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmpgt, /* unsigned long compare and branch if greater than */ \
+      /* .simplifierHandler    = */ iflcmpgtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmple, \
@@ -5014,6 +5325,7 @@
       /* .booleanCompareOpCode = */ TR::lucmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflucmple, /* unsigned long compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ iflcmpleSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpeq, \
@@ -5030,6 +5342,7 @@
       /* .booleanCompareOpCode = */ TR::fcmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpeq, /* float compare and branch if equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpne, \
@@ -5046,6 +5359,7 @@
       /* .booleanCompareOpCode = */ TR::fcmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpne, /* float compare and branch if not equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmplt, \
@@ -5062,6 +5376,7 @@
       /* .booleanCompareOpCode = */ TR::fcmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmplt, /* float compare and branch if less than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpge, \
@@ -5078,6 +5393,7 @@
       /* .booleanCompareOpCode = */ TR::fcmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpge, /* float compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpgt, \
@@ -5094,6 +5410,7 @@
       /* .booleanCompareOpCode = */ TR::fcmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpgt, /* float compare and branch if greater than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmple, \
@@ -5110,6 +5427,7 @@
       /* .booleanCompareOpCode = */ TR::fcmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmple, /* float compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpequ, \
@@ -5126,6 +5444,7 @@
       /* .booleanCompareOpCode = */ TR::fcmpequ, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpequ, /* float compare and branch if equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpneu, \
@@ -5142,6 +5461,7 @@
       /* .booleanCompareOpCode = */ TR::fcmpneu, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpneu, /* float compare and branch if not equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpltu, \
@@ -5158,6 +5478,7 @@
       /* .booleanCompareOpCode = */ TR::fcmpltu, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpltu, /* float compare and branch if less than or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpgeu, \
@@ -5174,6 +5495,7 @@
       /* .booleanCompareOpCode = */ TR::fcmpgeu, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpgeu, /* float compare and branch if greater than or equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpgtu, \
@@ -5190,6 +5512,7 @@
       /* .booleanCompareOpCode = */ TR::fcmpgtu, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpgtu, /* float compare and branch if greater than or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iffcmpleu, \
@@ -5206,6 +5529,7 @@
       /* .booleanCompareOpCode = */ TR::fcmpleu, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iffcmpleu, /* float compare and branch if less than or equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpeq, \
@@ -5222,6 +5546,7 @@
       /* .booleanCompareOpCode = */ TR::dcmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpeq, /* double compare and branch if equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpne, \
@@ -5238,6 +5563,7 @@
       /* .booleanCompareOpCode = */ TR::dcmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpne, /* double compare and branch if not equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmplt, \
@@ -5254,6 +5580,7 @@
       /* .booleanCompareOpCode = */ TR::dcmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmplt, /* double compare and branch if less than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpge, \
@@ -5270,6 +5597,7 @@
       /* .booleanCompareOpCode = */ TR::dcmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpge, /* double compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpgt, \
@@ -5286,6 +5614,7 @@
       /* .booleanCompareOpCode = */ TR::dcmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpgt, /* double compare and branch if greater than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmple, \
@@ -5302,6 +5631,7 @@
       /* .booleanCompareOpCode = */ TR::dcmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmple, /* double compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpequ, \
@@ -5318,6 +5648,7 @@
       /* .booleanCompareOpCode = */ TR::dcmpequ, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpequ, /* double compare and branch if equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpneu, \
@@ -5334,6 +5665,7 @@
       /* .booleanCompareOpCode = */ TR::dcmpneu, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpneu, /* double compare and branch if not equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpltu, \
@@ -5350,6 +5682,7 @@
       /* .booleanCompareOpCode = */ TR::dcmpltu, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpltu, /* double compare and branch if less than or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpgeu, \
@@ -5366,6 +5699,7 @@
       /* .booleanCompareOpCode = */ TR::dcmpgeu, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpgeu, /* double compare and branch if greater than or equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpgtu, \
@@ -5382,6 +5716,7 @@
       /* .booleanCompareOpCode = */ TR::dcmpgtu, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpgtu, /* double compare and branch if greater than or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifdcmpleu, \
@@ -5398,6 +5733,7 @@
       /* .booleanCompareOpCode = */ TR::dcmpleu, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifdcmpleu, /* double compare and branch if less than or equal or unordered */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmpeq, \
@@ -5414,6 +5750,7 @@
       /* .booleanCompareOpCode = */ TR::acmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmpeq, /* address compare and branch if equal */ \
+      /* .simplifierHandler    = */ ifacmpeqSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmpne, \
@@ -5430,6 +5767,7 @@
       /* .booleanCompareOpCode = */ TR::acmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmpne, /* address compare and branch if not equal */ \
+      /* .simplifierHandler    = */ ifacmpneSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmplt, \
@@ -5446,6 +5784,7 @@
       /* .booleanCompareOpCode = */ TR::acmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmplt, /* address compare and branch if less than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmpge, \
@@ -5462,6 +5801,7 @@
       /* .booleanCompareOpCode = */ TR::acmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmpge, /* address compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmpgt, \
@@ -5478,6 +5818,7 @@
       /* .booleanCompareOpCode = */ TR::acmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmpgt, /* address compare and branch if greater than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifacmple, \
@@ -5494,6 +5835,7 @@
       /* .booleanCompareOpCode = */ TR::acmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifacmple, /* address compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmpeq, \
@@ -5510,6 +5852,7 @@
       /* .booleanCompareOpCode = */ TR::bcmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmpeq, /* byte compare and branch if equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmpne, \
@@ -5526,6 +5869,7 @@
       /* .booleanCompareOpCode = */ TR::bcmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmpne, /* byte compare and branch if not equal */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmplt, \
@@ -5542,6 +5886,7 @@
       /* .booleanCompareOpCode = */ TR::bcmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmplt, /* byte compare and branch if less than */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmpge, \
@@ -5558,6 +5903,7 @@
       /* .booleanCompareOpCode = */ TR::bcmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmpge, /* byte compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmpgt, \
@@ -5574,6 +5920,7 @@
       /* .booleanCompareOpCode = */ TR::bcmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmpgt, /* byte compare and branch if greater than */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbcmple, \
@@ -5590,6 +5937,7 @@
       /* .booleanCompareOpCode = */ TR::bcmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbcmple, /* byte compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmpeq, \
@@ -5606,6 +5954,7 @@
       /* .booleanCompareOpCode = */ TR::bucmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmpeq, /* unsigned byte compare and branch if equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmpne, \
@@ -5622,6 +5971,7 @@
       /* .booleanCompareOpCode = */ TR::bucmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmpne, /* unsigned byte compare and branch if not equal */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmplt, \
@@ -5638,6 +5988,7 @@
       /* .booleanCompareOpCode = */ TR::bucmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmplt, /* unsigned byte compare and branch if less than */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmpge, \
@@ -5654,6 +6005,7 @@
       /* .booleanCompareOpCode = */ TR::bucmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmpge, /* unsigned byte compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmpgt, \
@@ -5670,6 +6022,7 @@
       /* .booleanCompareOpCode = */ TR::bucmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmpgt, /* unsigned byte compare and branch if greater than */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifbucmple, \
@@ -5686,6 +6039,7 @@
       /* .booleanCompareOpCode = */ TR::bucmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifbucmple, /* unsigned byte compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmpeq, \
@@ -5702,6 +6056,7 @@
       /* .booleanCompareOpCode = */ TR::scmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmpeq, /* short integer compare and branch if equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmpne, \
@@ -5718,6 +6073,7 @@
       /* .booleanCompareOpCode = */ TR::scmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmpne, /* short integer compare and branch if not equal */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmplt, \
@@ -5734,6 +6090,7 @@
       /* .booleanCompareOpCode = */ TR::scmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmplt, /* short integer compare and branch if less than */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmpge, \
@@ -5750,6 +6107,7 @@
       /* .booleanCompareOpCode = */ TR::scmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmpge, /* short integer compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmpgt, \
@@ -5766,6 +6124,7 @@
       /* .booleanCompareOpCode = */ TR::scmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmpgt, /* short integer compare and branch if greater than */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifscmple, \
@@ -5782,6 +6141,7 @@
       /* .booleanCompareOpCode = */ TR::scmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmple, /* short integer compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmpeq, \
@@ -5798,6 +6158,7 @@
       /* .booleanCompareOpCode = */ TR::sucmpeq, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmpeq, /* char compare and branch if equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmpne, \
@@ -5814,6 +6175,7 @@
       /* .booleanCompareOpCode = */ TR::sucmpne, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmpne, /* char compare and branch if not equal */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmplt, \
@@ -5830,6 +6192,7 @@
       /* .booleanCompareOpCode = */ TR::sucmplt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmplt, /* char compare and branch if less than */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmpge, \
@@ -5846,6 +6209,7 @@
       /* .booleanCompareOpCode = */ TR::sucmpge, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmpge, /* char compare and branch if greater than or equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmpgt, \
@@ -5862,6 +6226,7 @@
       /* .booleanCompareOpCode = */ TR::sucmpgt, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmpgt, /* char compare and branch if greater than */ \
+      /* .simplifierHandler    = */ ifCmpWithoutEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmple, \
@@ -5878,6 +6243,7 @@
       /* .booleanCompareOpCode = */ TR::sucmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifsucmple, /* char compare and branch if less than or equal */ \
+      /* .simplifierHandler    = */ ifCmpWithEqualitySimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::loadaddr, \
@@ -5894,6 +6260,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ loadaddr, /* load address of non-heap storage item (Auto, Parm, Static or Method) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ZEROCHK, \
@@ -5910,6 +6277,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ZEROCHK, /* Zero-check an int.  Symref indicates call to perform when first child is zero.  Other children are arguments to the call. */ \
+      /* .simplifierHandler    = */ lowerTreeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::callIf, \
@@ -5926,6 +6294,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ callIf, /* Call symref if first child evaluates to true.  Other childrem are arguments to the call. */ \
+      /* .simplifierHandler    = */ lowerTreeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iRegLoad, \
@@ -5942,6 +6311,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iRegLoad, /* Load integer global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aRegLoad, \
@@ -5958,6 +6328,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aRegLoad, /* Load address global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lRegLoad, \
@@ -5974,6 +6345,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lRegLoad, /* Load long integer global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fRegLoad, \
@@ -5990,6 +6362,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fRegLoad, /* Load float global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dRegLoad, \
@@ -6006,6 +6379,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dRegLoad, /* Load double global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sRegLoad, \
@@ -6022,6 +6396,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sRegLoad, /* Load short global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bRegLoad, \
@@ -6038,6 +6413,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bRegLoad, /* Load byte global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iRegStore, \
@@ -6054,6 +6430,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iRegStore, /* Store integer global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aRegStore, \
@@ -6070,6 +6447,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aRegStore, /* Store address global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lRegStore, \
@@ -6086,6 +6464,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lRegStore, /* Store long integer global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fRegStore, \
@@ -6102,6 +6481,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fRegStore, /* Store float global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dRegStore, \
@@ -6118,6 +6498,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dRegStore, /* Store double global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sRegStore, \
@@ -6134,6 +6515,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sRegStore, /* Store short global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bRegStore, \
@@ -6150,6 +6532,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bRegStore, /* Store byte global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::GlRegDeps, \
@@ -6166,6 +6549,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ GlRegDeps, /* Global Register Dependency List */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iselect, \
@@ -6182,6 +6566,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iselect, /* Select Operator:  Based on the result of the first child, take the value of the */ \
+      /* .simplifierHandler    = */ selectSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lselect, \
@@ -6198,6 +6583,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lselect, /* second (first child evaluates to true) or third(first child evaluates to false) child */ \
+      /* .simplifierHandler    = */ selectSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bselect, \
@@ -6214,6 +6600,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bselect, \
+      /* .simplifierHandler    = */ selectSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sselect, \
@@ -6230,6 +6617,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sselect, \
+      /* .simplifierHandler    = */ selectSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aselect, \
@@ -6246,6 +6634,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aselect, \
+      /* .simplifierHandler    = */ selectSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fselect, \
@@ -6262,6 +6651,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fselect, \
+      /* .simplifierHandler    = */ selectSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dselect, \
@@ -6278,6 +6668,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dselect, \
+      /* .simplifierHandler    = */ selectSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::treetop, \
@@ -6294,6 +6685,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ treetop, /* tree top to anchor subtrees with side-effects */ \
+      /* .simplifierHandler    = */ treetopSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::MethodEnterHook, \
@@ -6310,6 +6702,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ MethodEnterHook, /* called after a frame is built, temps initialized, and monitor acquired (if necessary) */ \
+      /* .simplifierHandler    = */ lowerTreeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::MethodExitHook, \
@@ -6326,6 +6719,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ MethodExitHook, /* called immediately before returning, frame not yet collapsed, monitor released (if necessary) */ \
+      /* .simplifierHandler    = */ lowerTreeSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::PassThrough, \
@@ -6342,6 +6736,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ PassThrough, /* Dummy node that represents its single child. */ \
+      /* .simplifierHandler    = */ passThroughSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::compressedRefs, \
@@ -6358,6 +6753,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ compressedRefs, /* no-op anchor providing optimizable subexpressions used for compression/decompression.  First child is address load/store, second child is heap base displacement */ \
+      /* .simplifierHandler    = */ anchorSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::BBStart, \
@@ -6374,6 +6770,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ BBStart, /* Start of Basic Block */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::BBEnd, \
@@ -6390,6 +6787,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ BBEnd, /* End of Basic Block */ \
+      /* .simplifierHandler    = */ endBlockSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::virem, \
@@ -6406,6 +6804,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ virem, /* vector integer remainder */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vimin, \
@@ -6422,6 +6821,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vimin, /* vector integer minimum */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vimax, \
@@ -6438,6 +6838,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vimax, /* vector integer maximum */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vigetelem, \
@@ -6454,6 +6855,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vigetelem, /* get vector int element */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::visetelem, \
@@ -6470,6 +6872,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ visetelem, /* set vector int element */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vimergel, \
@@ -6486,6 +6889,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vimergel, /* vector int merge low */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vimergeh, \
@@ -6502,6 +6906,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vimergeh, /* vector int merge high */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpeq, \
@@ -6518,6 +6923,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpeq, /* vector integer compare equal  (return vector mask) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpgt, \
@@ -6534,6 +6940,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpgt, /* vector integer compare greater than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpge, \
@@ -6550,6 +6957,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpge, /* vector integer compare greater equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmplt, \
@@ -6566,6 +6974,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmplt, /* vector integer compare less than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmple, \
@@ -6582,6 +6991,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmple, /* vector integer compare less equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpalleq, \
@@ -6598,6 +7008,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpalleq, /* vector integer all equal (return boolean) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpallne, \
@@ -6614,6 +7025,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpallne, /* vector integer all not equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpallgt, \
@@ -6630,6 +7042,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpallgt, /* vector integer all greater than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpallge, \
@@ -6646,6 +7059,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpallge, /* vector integer all greater equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpalllt, \
@@ -6662,6 +7076,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpalllt, /* vector integer all less than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpallle, \
@@ -6678,6 +7093,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpallle, /* vector integer all less equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanyeq, \
@@ -6694,6 +7110,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanyeq, /* vector integer any equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanyne, \
@@ -6710,6 +7127,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanyne, /* vector integer any not equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanygt, \
@@ -6726,6 +7144,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanygt, /* vector integer any greater than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanyge, \
@@ -6742,6 +7161,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanyge, /* vector integer any greater equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanylt, \
@@ -6758,6 +7178,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanylt, /* vector integer any less than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vicmpanyle, \
@@ -6774,6 +7195,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vicmpanyle, /* vector integer any less equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vnot, \
@@ -6790,6 +7212,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vnot, /* vector boolean not */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vbitselect, \
@@ -6806,6 +7229,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vbitselect, /* vector bit select */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vperm, \
@@ -6822,6 +7246,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vperm, /* vector permute */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vsplats, \
@@ -6838,6 +7263,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vsplats, /* vector splats */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmergel, \
@@ -6854,6 +7280,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmergel, /* vector double merge low */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmergeh, \
@@ -6870,6 +7297,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmergeh, /* vector double merge high */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdsetelem, \
@@ -6886,6 +7314,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdsetelem, /* set vector double element */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdgetelem, \
@@ -6902,6 +7331,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdgetelem, /* get vector double element */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdsel, \
@@ -6918,6 +7348,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdsel, /* get vector select double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdrem, \
@@ -6934,6 +7365,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdrem, /* vector double remainder */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmadd, \
@@ -6950,6 +7382,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmadd, /* vector double fused multiply add */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdnmsub, \
@@ -6966,6 +7399,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdnmsub, /* vector double fused negative multiply subtract */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmsub, \
@@ -6982,6 +7416,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmsub, /* vector double fused multiply subtract */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmax, \
@@ -6998,6 +7433,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmax, /* vector double maximum */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdmin, \
@@ -7014,6 +7450,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdmin, /* vector double minimum */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpeq, \
@@ -7030,6 +7467,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpeq, /* vector double compare equal  (return vector mask) */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpne, \
@@ -7046,6 +7484,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpne, /* vector double compare not equal  (return vector mask) */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpgt, \
@@ -7062,6 +7501,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpgt, /* vector double compare greater than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpge, \
@@ -7078,6 +7518,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpge, /* vector double compare greater equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmplt, \
@@ -7094,6 +7535,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmplt, /* vector double compare less than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmple, \
@@ -7110,6 +7552,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmple, /* vector double compare less equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpalleq, \
@@ -7126,6 +7569,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpalleq, /* vector double compare all equal  (return boolean) */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpallne, \
@@ -7142,6 +7586,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpallne, /* vector double compare all not equal  (return boolean) */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpallgt, \
@@ -7158,6 +7603,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpallgt, /* vector double compare all greater than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpallge, \
@@ -7174,6 +7620,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpallge, /* vector double compare all greater equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpalllt, \
@@ -7190,6 +7637,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpalllt, /* vector double compare all less than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpallle, \
@@ -7206,6 +7654,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpallle, /* vector double compare all less equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanyeq, \
@@ -7222,6 +7671,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanyeq, /* vector double compare any equal  (return boolean) */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanyne, \
@@ -7238,6 +7688,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanyne, /* vector double compare any not equal  (return boolean) */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanygt, \
@@ -7254,6 +7705,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanygt, /* vector double compare any greater than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanyge, \
@@ -7270,6 +7722,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanyge, /* vector double compare any greater equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanylt, \
@@ -7286,6 +7739,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanylt, /* vector double compare any less than */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdcmpanyle, \
@@ -7302,6 +7756,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdcmpanyle, /* vector double compare any less equal */ \
+      /* .simplifierHandler    = */ normalizeCmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdsqrt, \
@@ -7318,6 +7773,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdsqrt, /* vector double square root */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdlog, \
@@ -7334,6 +7790,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdlog, /* vector double natural log */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vinc, \
@@ -7350,6 +7807,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vinc, /* vector increment */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdec, \
@@ -7366,6 +7824,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdec, /* vector decrement */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vneg, \
@@ -7382,6 +7841,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vneg, /* vector negation */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcom, \
@@ -7398,6 +7858,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcom, /* vector complement */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vadd, \
@@ -7414,6 +7875,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vadd, /* vector add */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vsub, \
@@ -7430,6 +7892,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vsub, /* vector subtract */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vmul, \
@@ -7446,6 +7909,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vmul, /* vector multiply */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdiv, \
@@ -7462,6 +7926,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdiv, /* vector divide */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vrem, \
@@ -7478,6 +7943,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vrem, /* vector remainder */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vand, \
@@ -7494,6 +7960,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vand, /* vector logical AND */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vor, \
@@ -7510,6 +7977,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vor, /* vector logical OR */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vxor, \
@@ -7526,6 +7994,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vxor, /* vector exclusive OR integer */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vshl, \
@@ -7542,6 +8011,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vshl, /* vector shift left */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vushr, \
@@ -7558,6 +8028,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vushr, /* vector shift right logical */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vshr, \
@@ -7574,6 +8045,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vshr, /* vector shift right arithmetic */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmpeq, \
@@ -7590,6 +8062,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ificmpeq, \
       /* .description          = */ vcmpeq, /* vector compare equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmpne, \
@@ -7606,6 +8079,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcmpne, /* vector compare not equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmplt, \
@@ -7622,6 +8096,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcmplt, /* vector compare less than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vucmplt, \
@@ -7638,6 +8113,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vucmplt, /* vector unsigned compare less than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmpgt, \
@@ -7654,6 +8130,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcmpgt, /* vector compare greater than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vucmpgt, \
@@ -7670,6 +8147,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vucmpgt, /* vector unsigned compare greater than */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmple, \
@@ -7686,6 +8164,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcmple, /* vector compare less or equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vucmple, \
@@ -7702,6 +8181,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vucmple, /* vector unsigned compare less or equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcmpge, \
@@ -7718,6 +8198,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcmpge, /* vector compare greater or equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vucmpge, \
@@ -7734,6 +8215,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vucmpge, /* vector unsigned compare greater or equal */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vload, \
@@ -7750,6 +8232,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vload, /* load vector */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vloadi, \
@@ -7766,6 +8249,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vloadi, /* load indirect vector */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vstore, \
@@ -7782,6 +8266,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vstore, /* store vector */ \
+      /* .simplifierHandler    = */ directStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vstorei, \
@@ -7798,6 +8283,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vstorei, /* store indirect vector */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vrand, \
@@ -7814,6 +8300,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vrand, /* AND all elements into single value of element size */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vreturn, \
@@ -7830,6 +8317,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vreturn, /* return a vector */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcall, \
@@ -7846,6 +8334,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcall, /* direct call returning a vector */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vcalli, \
@@ -7862,6 +8351,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vcalli, /* indirect call returning a vector */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vselect, \
@@ -7878,6 +8368,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vselect, /* vector select operator */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::v2v, \
@@ -7894,6 +8385,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ v2v, /* vector to vector conversion. preserves bit pattern (noop), only changes datatype */ \
+      /* .simplifierHandler    = */ v2vSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vl2vd, \
@@ -7910,6 +8402,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vl2vd, /* vector to vector conversion. converts each long element to double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vconst, \
@@ -7926,6 +8419,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vconst, /* vector constant */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::getvelem, \
@@ -7942,6 +8436,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ getvelem, /* get vector element, returns a scalar */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vsetelem, \
@@ -7958,6 +8453,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vsetelem, /* vector set element */ \
+      /* .simplifierHandler    = */ vsetelemSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vbRegLoad, \
@@ -7974,6 +8470,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vbRegLoad, /* Load vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vsRegLoad, \
@@ -7990,6 +8487,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vsRegLoad, /* Load vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::viRegLoad, \
@@ -8006,6 +8504,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ viRegLoad, /* Load vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vlRegLoad, \
@@ -8022,6 +8521,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vlRegLoad, /* Load vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vfRegLoad, \
@@ -8038,6 +8538,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vfRegLoad, /* Load vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdRegLoad, \
@@ -8054,6 +8555,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdRegLoad, /* Load vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vbRegStore, \
@@ -8070,6 +8572,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vbRegStore, /* Store vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vsRegStore, \
@@ -8086,6 +8589,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vsRegStore, /* Store vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::viRegStore, \
@@ -8102,6 +8606,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ viRegStore, /* Store vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vlRegStore, \
@@ -8118,6 +8623,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vlRegStore, /* Store vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vfRegStore, \
@@ -8134,6 +8640,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vfRegStore, /* Store vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::vdRegStore, \
@@ -8150,6 +8657,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ vdRegStore, /* Store vector global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuconst, \
@@ -8166,6 +8674,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuconst, /* load unsigned integer constant (32-but unsigned) */ \
+      /* .simplifierHandler    = */ constSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luconst, \
@@ -8182,6 +8691,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luconst, /* load unsigned long integer constant (64-bit unsigned) */ \
+      /* .simplifierHandler    = */ lconstSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::buconst, \
@@ -8198,6 +8708,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ buconst, /* load unsigned byte integer constant (8-bit unsigned) */ \
+      /* .simplifierHandler    = */ constSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuload, \
@@ -8214,6 +8725,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuload, /* load unsigned integer */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luload, \
@@ -8230,6 +8742,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luload, /* load unsigned long integer */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::buload, \
@@ -8246,6 +8759,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ buload, /* load unsigned byte */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuloadi, \
@@ -8262,6 +8776,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuloadi, /* load indirect unsigned integer */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luloadi, \
@@ -8278,6 +8793,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luloadi, /* load indirect unsigned long integer */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::buloadi, \
@@ -8294,6 +8810,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ buloadi, /* load indirect unsigned byte */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iustore, \
@@ -8310,6 +8827,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iustore, /* store unsigned integer */ \
+      /* .simplifierHandler    = */ directStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lustore, \
@@ -8326,6 +8844,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lustore, /* store unsigned long integer */ \
+      /* .simplifierHandler    = */ lstoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bustore, \
@@ -8342,6 +8861,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bustore, /* store unsigned byte */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iustorei, \
@@ -8358,6 +8878,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iustorei, /* store indirect unsigned integer       (child1 a, child2 i) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lustorei, \
@@ -8374,6 +8895,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lustorei, /* store indirect unsigned long integer  (child1 a, child2 l) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bustorei, \
@@ -8390,6 +8912,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bustorei, /* store indirect unsigned byte          (child1 a, child2 b) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iureturn, \
@@ -8406,6 +8929,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iureturn, /* return an unsigned integer */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lureturn, \
@@ -8422,6 +8946,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lureturn, /* return a long unsigned integer */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucall, \
@@ -8438,6 +8963,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iucall, /* direct call returning unsigned integer */ \
+      /* .simplifierHandler    = */ ifdCallSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucall, \
@@ -8454,6 +8980,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lucall, /* direct call returning unsigned long integer */ \
+      /* .simplifierHandler    = */ lcallSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuadd, \
@@ -8470,6 +8997,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuadd, /* add 2 unsigned integers */ \
+      /* .simplifierHandler    = */ iaddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luadd, \
@@ -8486,6 +9014,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luadd, /* add 2 unsigned long integers */ \
+      /* .simplifierHandler    = */ laddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::buadd, \
@@ -8502,6 +9031,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ buadd, /* add 2 unsigned bytes */ \
+      /* .simplifierHandler    = */ baddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iusub, \
@@ -8518,6 +9048,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iusub, /* subtract 2 unsigned integers       (child1 - child2) */ \
+      /* .simplifierHandler    = */ isubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lusub, \
@@ -8534,6 +9065,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lusub, /* subtract 2 unsigned long integers  (child1 - child2) */ \
+      /* .simplifierHandler    = */ lsubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::busub, \
@@ -8550,6 +9082,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ busub, /* subtract 2 unsigned bytes          (child1 - child2) */ \
+      /* .simplifierHandler    = */ bsubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuneg, \
@@ -8566,6 +9099,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuneg, /* negate an unsigned integer */ \
+      /* .simplifierHandler    = */ inegSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luneg, \
@@ -8582,6 +9116,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luneg, /* negate a unsigned long integer */ \
+      /* .simplifierHandler    = */ lnegSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2iu, \
@@ -8598,6 +9133,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2iu, /* convert float to unsigned integer */ \
+      /* .simplifierHandler    = */ f2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2lu, \
@@ -8614,6 +9150,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2lu, /* convert float to unsigned long integer */ \
+      /* .simplifierHandler    = */ f2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2bu, \
@@ -8630,6 +9167,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2bu, /* convert float to unsigned byte */ \
+      /* .simplifierHandler    = */ f2bSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::f2c, \
@@ -8646,6 +9184,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ f2c, /* convert float to char */ \
+      /* .simplifierHandler    = */ f2cSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2iu, \
@@ -8662,6 +9201,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2iu, /* convert double to unsigned integer */ \
+      /* .simplifierHandler    = */ d2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2lu, \
@@ -8678,6 +9218,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2lu, /* convert double to unsigned long integer */ \
+      /* .simplifierHandler    = */ d2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2bu, \
@@ -8694,6 +9235,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2bu, /* convert double to unsigned byte */ \
+      /* .simplifierHandler    = */ d2bSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::d2c, \
@@ -8710,6 +9252,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ d2c, /* convert double to char */ \
+      /* .simplifierHandler    = */ d2cSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuRegLoad, \
@@ -8726,6 +9269,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuRegLoad, /* Load unsigned integer global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luRegLoad, \
@@ -8742,6 +9286,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luRegLoad, /* Load unsigned long integer global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuRegStore, \
@@ -8758,6 +9303,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuRegStore, /* Store unsigned integer global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luRegStore, \
@@ -8774,6 +9320,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luRegStore, /* Store long integer global register */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cconst, \
@@ -8790,6 +9337,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cconst, /* load unicode constant (16-bit unsigned) */ \
+      /* .simplifierHandler    = */ constSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cload, \
@@ -8806,6 +9354,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cload, /* load short unsigned integer */ \
+      /* .simplifierHandler    = */ directLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cloadi, \
@@ -8822,6 +9371,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cloadi, /* load indirect unsigned short integer */ \
+      /* .simplifierHandler    = */ indirectLoadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cstore, \
@@ -8838,6 +9388,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cstore, /* store unsigned short integer */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cstorei, \
@@ -8854,6 +9405,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cstorei, /* store indirect unsigned short integer (child1 a, child2 c) */ \
+      /* .simplifierHandler    = */ indirectStoreSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::monent, \
@@ -8870,6 +9422,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ monent, /* acquire lock for synchronising method */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::monexit, \
@@ -8886,6 +9439,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ monexit, /* release lock for synchronising method */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::monexitfence, \
@@ -8902,6 +9456,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ monexitfence, /* denotes the end of a monitored region solely for live monitor meta data */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::tstart, \
@@ -8918,6 +9473,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ tstart, /* transaction begin */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::tfinish, \
@@ -8934,6 +9490,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ tfinish, /* transaction end */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::tabort, \
@@ -8950,6 +9507,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ tabort, /* transaction abort */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::instanceof, \
@@ -8966,6 +9524,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ instanceof, /* instanceof - symref is the class object, cp index is in the */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::checkcast, \
@@ -8982,6 +9541,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ checkcast, /* checkcast */ \
+      /* .simplifierHandler    = */ checkcastSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::checkcastAndNULLCHK, \
@@ -8998,6 +9558,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ checkcastAndNULLCHK, /* checkcast and NULL check the underlying object reference */ \
+      /* .simplifierHandler    = */ checkcastAndNULLCHKSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::New, \
@@ -9014,6 +9575,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ New, /* new - child is class */ \
+      /* .simplifierHandler    = */ NewSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::newvalue, \
@@ -9030,6 +9592,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ newvalue, /* allocate and initialize - children provide field values */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::newarray, \
@@ -9046,6 +9609,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ newarray, /* new array of primitives */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::anewarray, \
@@ -9062,6 +9626,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ anewarray, /* new array of objects */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::variableNew, \
@@ -9078,6 +9643,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ variableNew, /* new - child is class, type not known at compile time */ \
+      /* .simplifierHandler    = */ variableNewSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::variableNewArray, \
@@ -9094,6 +9660,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ variableNewArray, /* new array - type not known at compile time, type must be a j9class, do not use type enums */ \
+      /* .simplifierHandler    = */ variableNewSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::multianewarray, \
@@ -9110,6 +9677,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ multianewarray, /* multi-dimensional new array of objects */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraylength, \
@@ -9126,6 +9694,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraylength, /* number of elements in an array */ \
+      /* .simplifierHandler    = */ arrayLengthSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::contigarraylength, \
@@ -9142,6 +9711,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ contigarraylength, /* number of elements in a contiguous array */ \
+      /* .simplifierHandler    = */ arrayLengthSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::discontigarraylength, \
@@ -9158,6 +9728,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ discontigarraylength, /* number of elements in a discontiguous array */ \
+      /* .simplifierHandler    = */ arrayLengthSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icalli, \
@@ -9174,6 +9745,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ icalli, /* indirect call returning integer (child1 is addr of function) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucalli, \
@@ -9190,6 +9762,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iucalli, /* indirect call returning unsigned integer (child1 is addr of function) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcalli, \
@@ -9206,6 +9779,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lcalli, /* indirect call returning long integer (child1 is addr of function) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucalli, \
@@ -9222,6 +9796,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lucalli, /* indirect call returning unsigned long integer (child1 is addr of function) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcalli, \
@@ -9238,6 +9813,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fcalli, /* indirect call returning float (child1 is addr of function) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcalli, \
@@ -9254,6 +9830,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcalli, /* indirect call returning double (child1 is addr of function) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::acalli, \
@@ -9270,6 +9847,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ acalli, /* indirect call returning reference */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::calli, \
@@ -9286,6 +9864,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ calli, /* indirect call returning void (child1 is addr of function) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fence, \
@@ -9302,6 +9881,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fence, /* barrier to optimization */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luaddh, \
@@ -9318,6 +9898,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luaddh, /* add 2 unsigned long integers (the high parts of prior luadd) as high part of 128bit addition. */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cadd, \
@@ -9334,6 +9915,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cadd, /* add 2 unsigned short integers */ \
+      /* .simplifierHandler    = */ caddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aiadd, \
@@ -9350,6 +9932,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aiadd, /* add integer to address with address result (child1 a, child2 i) */ \
+      /* .simplifierHandler    = */ iaddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aiuadd, \
@@ -9366,6 +9949,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aiuadd, /* add unsigned integer to address with address result (child1 a, child2 i) */ \
+      /* .simplifierHandler    = */ iaddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aladd, \
@@ -9382,6 +9966,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aladd, /* add long integer to address with address result (child1 a, child2 i) (64-bit only) */ \
+      /* .simplifierHandler    = */ laddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::aluadd, \
@@ -9398,6 +9983,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ aluadd, /* add unsigned long integer to address with address result (child1 a, child2 i) (64-bit only) */ \
+      /* .simplifierHandler    = */ laddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lusubh, \
@@ -9414,6 +10000,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lusubh, /* subtract 2 unsigned long integers (the high parts of prior lusub) as high part of 128bit subtraction. */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::csub, \
@@ -9430,6 +10017,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ csub, /* subtract 2 unsigned short integers (child1 - child2) */ \
+      /* .simplifierHandler    = */ csubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::imulh, \
@@ -9446,6 +10034,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ imulh, /* multiply 2 integers, and return the high word of the product */ \
+      /* .simplifierHandler    = */ imulhSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iumulh, \
@@ -9462,6 +10051,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iumulh, /* multiply 2 unsigned integers, and return the high word of the product */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lmulh, \
@@ -9478,6 +10068,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lmulh, /* multiply 2 long integers, and return the high word of the product */ \
+      /* .simplifierHandler    = */ lmulhSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lumulh, \
@@ -9494,6 +10085,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lumulh, /* multiply 2 unsigned long integers, and return the high word of the product */ \
+      /* .simplifierHandler    = */ lmulhSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ibits2f, \
@@ -9510,6 +10102,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibits2f, /* type-coerce int to float */ \
+      /* .simplifierHandler    = */ ibits2fSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fbits2i, \
@@ -9526,6 +10119,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fbits2i, /* type-coerce float to int */ \
+      /* .simplifierHandler    = */ fbits2iSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lbits2d, \
@@ -9542,6 +10136,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lbits2d, /* type-coerce long to double */ \
+      /* .simplifierHandler    = */ lbits2dSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dbits2l, \
@@ -9558,6 +10153,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dbits2l, /* type-coerce double to long */ \
+      /* .simplifierHandler    = */ dbits2lSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lookup, \
@@ -9574,6 +10170,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lookup, /* lookupswitch (child1 is selector expression, child2 the default destination, subsequent children are case nodes */ \
+      /* .simplifierHandler    = */ lookupSwitchSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::trtLookup, \
@@ -9590,6 +10187,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ trtLookup, /* special lookupswitch (child1 must be trt, child2 the default destination, subsequent children are case nodes) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::Case, \
@@ -9606,6 +10204,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Case, /* case nodes that are children of TR_switch.  Uses the branchdestination and the int const field */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::table, \
@@ -9622,6 +10221,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ table, /* tableswitch (child1 is the selector, child2 the default destination, subsequent children are the branch targets */ \
+      /* .simplifierHandler    = */ tableSwitchSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::exceptionRangeFence, \
@@ -9638,6 +10238,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ exceptionRangeFence, /* (J9) SymbolReference is the aliasing effect, initializer is where the code address gets put when binary is generated */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dbgFence, \
@@ -9654,6 +10255,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dbgFence, /* used to delimit code (stmts) for debug info.  Has no symbol reference. */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::NULLCHK, \
@@ -9670,6 +10272,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ NULLCHK, /* Null check a pointer.  child 1 is indirect reference. Symbolref indicates failure action/destination */ \
+      /* .simplifierHandler    = */ nullchkSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ResolveCHK, \
@@ -9686,6 +10289,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ResolveCHK, /* Resolve check a static, field or method. child 1 is reference to be resolved. Symbolref indicates failure action/destination */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ResolveAndNULLCHK, \
@@ -9702,6 +10306,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ResolveAndNULLCHK, /* Resolve check a static, field or method and Null check the underlying pointer.  child 1 is reference to be resolved. Symbolref indicates failure action/destination */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::DIVCHK, \
@@ -9718,6 +10323,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ DIVCHK, /* Divide by zero check. child 1 is the divide. Symbolref indicates failure action/destination */ \
+      /* .simplifierHandler    = */ divchkSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::OverflowCHK, \
@@ -9734,6 +10340,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ OverflowCHK, /* Overflow check. child 1 is the operation node(add, mul, sub). Child 2 and child 3 are the operands of the operation of the operation. Symbolref indicates failure action/destination */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::UnsignedOverflowCHK, \
@@ -9750,6 +10357,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ UnsignedOverflowCHK, /* UnsignedOverflow check. child 1 is the operation node(add, mul, sub). Child 2 and child 3 are the operands of the operation of the operation. Symbolref indicates failure action/destination */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::BNDCHK, \
@@ -9766,6 +10374,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ BNDCHK, /* Array bounds check, checks that child 1 > child 2 >= 0 (child 1 is bound, 2 is index). Symbolref indicates failure action/destination */ \
+      /* .simplifierHandler    = */ bndchkSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ArrayCopyBNDCHK, \
@@ -9782,6 +10391,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ArrayCopyBNDCHK, /* Array copy bounds check, checks that child 1 >= child 2. Symbolref indicates failure action/destination */ \
+      /* .simplifierHandler    = */ arraycopybndchkSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::BNDCHKwithSpineCHK, \
@@ -9798,6 +10408,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ BNDCHKwithSpineCHK, /* Array bounds check and spine check */ \
+      /* .simplifierHandler    = */ bndchkwithspinechkSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::SpineCHK, \
@@ -9814,6 +10425,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ SpineCHK, /* Check if the base array has a spine */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ArrayStoreCHK, \
@@ -9830,6 +10442,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ArrayStoreCHK, /* Array store check. child 1 is object, 2 is array. Symbolref indicates failure action/destination */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ArrayCHK, \
@@ -9846,6 +10459,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ArrayCHK, /* Array compatibility check. child 1 is object1, 2 is object2. Symbolref indicates failure action/destination */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::Ret, \
@@ -9862,6 +10476,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Ret, /* Used by ilGen only */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraycopy, \
@@ -9878,6 +10493,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraycopy, /* Call to System.arraycopy that may be partially inlined */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arrayset, \
@@ -9894,6 +10510,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arrayset, /* Inline code for memory initialization of part of an array */ \
+      /* .simplifierHandler    = */ arraysetSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraytranslate, \
@@ -9910,6 +10527,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraytranslate, /* Inline code for translation of part of an array to another form via lookup */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraytranslateAndTest, \
@@ -9926,6 +10544,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraytranslateAndTest, /* Inline code for scanning of part of an array for a particular 8-bit character */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::long2String, \
@@ -9942,6 +10561,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ long2String, /* Convert integer/long value to String */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bitOpMem, \
@@ -9958,6 +10578,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bitOpMem, /* bit operations (AND, OR, XOR) for memory to memory */ \
+      /* .simplifierHandler    = */ bitOpMemSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bitOpMemND, \
@@ -9974,6 +10595,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bitOpMemND, /* 3 operand(source1,source2,target) version of bitOpMem */ \
+      /* .simplifierHandler    = */ bitOpMemNDSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraycmp, \
@@ -9990,6 +10612,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraycmp, /* Inline code for memory comparison of part of an array */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::arraycmpWithPad, \
@@ -10006,6 +10629,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ arraycmpWithPad, /* memory comparison when src1 length != src2 length and padding is needed */ \
+      /* .simplifierHandler    = */ arrayCmpWithPadSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::allocationFence, \
@@ -10022,6 +10646,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ allocationFence, /* Internal fence guarding escape of newObject & final fields - eliminatable */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::loadFence, \
@@ -10038,6 +10663,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ loadFence, /* JEP171: prohibits loadLoad and loadStore reordering (on globals) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::storeFence, \
@@ -10054,6 +10680,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ storeFence, /* JEP171: prohibits loadStore and storeStore reordering (on globals) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fullFence, \
@@ -10070,6 +10697,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fullFence, /* JEP171: prohibits loadLoad, loadStore, storeLoad, and storeStore reordering (on globals) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::MergeNew, \
@@ -10086,6 +10714,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ MergeNew, /* Parent for New etc. nodes that can all be allocated together */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::computeCC, \
@@ -10102,6 +10731,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ computeCC, /* compute Condition Codes */ \
+      /* .simplifierHandler    = */ computeCCSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::butest, \
@@ -10118,6 +10748,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ butest, /* zEmulator: mask unsigned byte (UInt8) and set condition codes */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sutest, \
@@ -10134,6 +10765,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sutest, /* zEmulator: mask unsigned short (UInt16) and set condition codes */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bucmp, \
@@ -10150,6 +10782,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bucmp, /* Currently only valid for zEmulator. Based on the ordering of the two children set the return value: */ \
+      /* .simplifierHandler    = */ bucmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bcmp, \
@@ -10166,6 +10799,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bcmp, /* 0 : child1 == child2 */ \
+      /* .simplifierHandler    = */ bcmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmp, \
@@ -10182,6 +10816,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sucmp, /* 1 : child1 < child2 */ \
+      /* .simplifierHandler    = */ sucmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::scmp, \
@@ -10198,6 +10833,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ scmp, /* 2 : child1 > child2 */ \
+      /* .simplifierHandler    = */ scmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iucmp, \
@@ -10214,6 +10850,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iucmp, \
+      /* .simplifierHandler    = */ iucmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmp, \
@@ -10230,6 +10867,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ icmp, \
+      /* .simplifierHandler    = */ icmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmp, \
@@ -10246,6 +10884,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lucmp, \
+      /* .simplifierHandler    = */ lucmpSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpo, \
@@ -10262,6 +10901,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpo, /* integer compare and branch if overflow */ \
+      /* .simplifierHandler    = */ ifxcmpoSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmpno, \
@@ -10278,6 +10918,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmpno, /* integer compare and branch if not overflow */ \
+      /* .simplifierHandler    = */ ifxcmpoSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpo, \
@@ -10294,6 +10935,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpo, /* long compare and branch if overflow */ \
+      /* .simplifierHandler    = */ ifxcmpoSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmpno, \
@@ -10310,6 +10952,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmpno, /* long compare and branch if not overflow */ \
+      /* .simplifierHandler    = */ ifxcmpoSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmno, \
@@ -10326,6 +10969,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmno, /* integer compare negative and branch if overflow */ \
+      /* .simplifierHandler    = */ ifxcmnoSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ificmnno, \
@@ -10342,6 +10986,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ificmnno, /* integer compare negative and branch if not overflow */ \
+      /* .simplifierHandler    = */ ifxcmnoSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmno, \
@@ -10358,6 +11003,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmno, /* long compare negative and branch if overflow */ \
+      /* .simplifierHandler    = */ ifxcmnoSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflcmnno, \
@@ -10374,6 +11020,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmnno, /* long compare negative and branch if not overflow */ \
+      /* .simplifierHandler    = */ ifxcmnoSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuaddc, \
@@ -10390,6 +11037,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuaddc, /* Currently only valid for zEmulator.  Add two unsigned ints with carry */ \
+      /* .simplifierHandler    = */ iaddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luaddc, \
@@ -10406,6 +11054,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luaddc, /* Add two longs with carry */ \
+      /* .simplifierHandler    = */ laddSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iusubb, \
@@ -10422,6 +11071,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iusubb, /* Subtract two ints with borrow */ \
+      /* .simplifierHandler    = */ isubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lusubb, \
@@ -10438,6 +11088,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lusubb, /* Subtract two longs with borrow */ \
+      /* .simplifierHandler    = */ lsubSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::icmpset, \
@@ -10454,6 +11105,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ icmpset, /* icmpset(pointer,c,r): compare *pointer with c, if it matches, replace with r.  Returns 0 on match, 1 otherwise */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcmpset, \
@@ -10470,6 +11122,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lcmpset, /* the operation is done atomically - return type is int for both [il]cmpset */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bztestnset, \
@@ -10486,6 +11139,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bztestnset, /* bztestnset(pointer,c): atomically sets *pointer to c and returns the original value of *p (represents Test And Set on Z) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ibatomicor, \
@@ -10502,6 +11156,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibatomicor, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::isatomicor, \
@@ -10518,6 +11173,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ isatomicor, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iiatomicor, \
@@ -10534,6 +11190,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iiatomicor, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ilatomicor, \
@@ -10550,6 +11207,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ilatomicor, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dexp, \
@@ -10566,6 +11224,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dexp, /* double exponent */ \
+      /* .simplifierHandler    = */ expSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::branch, \
@@ -10582,6 +11241,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ branch, /* generic branch --> DEPRECATED use TR::case instead */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::igoto, \
@@ -10598,6 +11258,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ igoto, /* indirect goto, branches to the address specified by a child */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bexp, \
@@ -10614,6 +11275,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bexp, /* signed byte exponent  (raise signed byte to power) */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::buexp, \
@@ -10630,6 +11292,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ buexp, /* unsigned byte exponent */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sexp, \
@@ -10646,6 +11309,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sexp, /* short exponent */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cexp, \
@@ -10662,6 +11326,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ cexp, /* unsigned short exponent */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iexp, \
@@ -10678,6 +11343,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iexp, /* integer exponent */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuexp, \
@@ -10694,6 +11360,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iuexp, /* unsigned integer exponent */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lexp, \
@@ -10710,6 +11377,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lexp, /* long exponent */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::luexp, \
@@ -10726,6 +11394,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luexp, /* unsigned long exponent */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fexp, \
@@ -10742,6 +11411,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fexp, /* float exponent */ \
+      /* .simplifierHandler    = */ expSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fuexp, \
@@ -10758,6 +11428,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fuexp, /* float base to unsigned integral exponent */ \
+      /* .simplifierHandler    = */ expSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::duexp, \
@@ -10774,6 +11445,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ duexp, /* double base to unsigned integral exponent */ \
+      /* .simplifierHandler    = */ expSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ixfrs, \
@@ -10790,6 +11462,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ixfrs, /* transfer sign integer */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lxfrs, \
@@ -10806,6 +11479,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lxfrs, /* transfer sign long */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fxfrs, \
@@ -10822,6 +11496,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fxfrs, /* transfer sign float */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dxfrs, \
@@ -10838,6 +11513,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dxfrs, /* transfer sign double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fint, \
@@ -10854,6 +11530,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fint, /* truncate float to int */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dint, \
@@ -10870,6 +11547,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dint, /* truncate double to int */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fnint, \
@@ -10886,6 +11564,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fnint, /* round float to nearest int */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dnint, \
@@ -10902,6 +11581,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dnint, /* round double to nearest int */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fsqrt, \
@@ -10918,6 +11598,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fsqrt, /* square root of float */ \
+      /* .simplifierHandler    = */ fsqrtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dsqrt, \
@@ -10934,6 +11615,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dsqrt, /* square root of double */ \
+      /* .simplifierHandler    = */ dsqrtSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::getstack, \
@@ -10950,6 +11632,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ getstack, /* returns current value of SP */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dealloca, \
@@ -10966,6 +11649,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dealloca, /* resets value of SP */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::idoz, \
@@ -10982,6 +11666,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ idoz, /* difference or zero */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcos, \
@@ -10998,6 +11683,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcos, /* cos of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dsin, \
@@ -11014,6 +11700,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dsin, /* sin of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dtan, \
@@ -11030,6 +11717,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dtan, /* tan of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dcosh, \
@@ -11046,6 +11734,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dcosh, /* cos of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dsinh, \
@@ -11062,6 +11751,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dsinh, /* sin of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dtanh, \
@@ -11078,6 +11768,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dtanh, /* tan of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dacos, \
@@ -11094,6 +11785,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dacos, /* arccos of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dasin, \
@@ -11110,6 +11802,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dasin, /* arcsin of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::datan, \
@@ -11126,6 +11819,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ datan, /* arctan of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::datan2, \
@@ -11142,6 +11836,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ datan2, /* arctan2 of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dlog, \
@@ -11158,6 +11853,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dlog, /* log of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dfloor, \
@@ -11174,6 +11870,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dfloor, /* floor of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ffloor, \
@@ -11190,6 +11887,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ffloor, /* floor of float, returning float */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dceil, \
@@ -11206,6 +11904,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dceil, /* ceil of double, returning double */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fceil, \
@@ -11222,6 +11921,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fceil, /* ceil of float, returning float */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ibranch, \
@@ -11238,6 +11938,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibranch, /* generic indirct branch --> first child is a constant indicating the mask */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::mbranch, \
@@ -11254,6 +11955,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ mbranch, /* generic branch to multiple potential targets */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::getpm, \
@@ -11270,6 +11972,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ getpm, /* get program mask */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::setpm, \
@@ -11286,6 +11989,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ setpm, /* set program mask */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::loadAutoOffset, \
@@ -11302,6 +12006,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ loadAutoOffset, /* loads the offset (from the SP) of an auto */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::imax, \
@@ -11318,6 +12023,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ imax, /* max of 2 or more integers */ \
+      /* .simplifierHandler    = */ imaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iumax, \
@@ -11334,6 +12040,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iumax, /* max of 2 or more unsigned integers */ \
+      /* .simplifierHandler    = */ imaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lmax, \
@@ -11350,6 +12057,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lmax, /* max of 2 or more longs */ \
+      /* .simplifierHandler    = */ lmaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lumax, \
@@ -11366,6 +12074,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lumax, /* max of 2 or more unsigned longs */ \
+      /* .simplifierHandler    = */ lmaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fmax, \
@@ -11382,6 +12091,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fmax, /* max of 2 or more floats */ \
+      /* .simplifierHandler    = */ fmaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dmax, \
@@ -11398,6 +12108,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dmax, /* max of 2 or more doubles */ \
+      /* .simplifierHandler    = */ dmaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::imin, \
@@ -11414,6 +12125,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ imin, /* min of 2 or more integers */ \
+      /* .simplifierHandler    = */ imaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iumin, \
@@ -11430,6 +12142,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iumin, /* min of 2 or more unsigned integers */ \
+      /* .simplifierHandler    = */ imaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lmin, \
@@ -11446,6 +12159,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lmin, /* min of 2 or more longs */ \
+      /* .simplifierHandler    = */ lmaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lumin, \
@@ -11462,6 +12176,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lumin, /* min of 2 or more unsigned longs */ \
+      /* .simplifierHandler    = */ lmaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fmin, \
@@ -11478,6 +12193,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ fmin, /* min of 2 or more floats */ \
+      /* .simplifierHandler    = */ fmaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::dmin, \
@@ -11494,6 +12210,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ dmin, /* min of 2 or more doubles */ \
+      /* .simplifierHandler    = */ dmaxminSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::trt, \
@@ -11510,6 +12227,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ trt, /* translate and test */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::trtSimple, \
@@ -11526,6 +12244,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ trtSimple, /* same as TRT but ignoring the returned source byte address and table entry value */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ihbit, \
@@ -11542,6 +12261,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ihbit, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ilbit, \
@@ -11558,6 +12278,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ilbit, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::inolz, \
@@ -11574,6 +12295,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ inolz, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::inotz, \
@@ -11590,6 +12312,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ inotz, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ipopcnt, \
@@ -11606,6 +12329,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ipopcnt, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lhbit, \
@@ -11622,6 +12346,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lhbit, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::llbit, \
@@ -11638,6 +12363,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ llbit, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lnolz, \
@@ -11654,6 +12380,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lnolz, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lnotz, \
@@ -11670,6 +12397,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lnotz, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lpopcnt, \
@@ -11686,6 +12414,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lpopcnt, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ibyteswap, \
@@ -11702,6 +12431,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibyteswap, /* swap bytes in an integer */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bbitpermute, \
@@ -11718,6 +12448,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bbitpermute, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sbitpermute, \
@@ -11734,6 +12465,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ sbitpermute, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ibitpermute, \
@@ -11750,6 +12482,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibitpermute, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lbitpermute, \
@@ -11766,6 +12499,7 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lbitpermute, \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) \
    MACRO(\
       /* .opcode               = */ TR::Prefetch, \
@@ -11782,5 +12516,6 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Prefetch, /* Prefetch */ \
+      /* .simplifierHandler    = */ dftSimplifier, \
    ) 
 #endif

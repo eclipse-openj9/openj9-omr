@@ -3495,7 +3495,10 @@ TR::VPConstraint *TR::VPFixedClass::intersect1(TR::VPConstraint *other, OMR::Val
             }
 
          if ((*thisSig != 'L') && ((*otherSig == 'L') || (*otherSig == '[')))
-            return NULL;
+            {
+            if (! ((*thisSig == '[') && (otherLen == 18 && !strncmp(otherSig, "Ljava/lang/Object;", 18))) )
+               return NULL;
+            }
 
          // retain the fact that its a fixed type
          return this;

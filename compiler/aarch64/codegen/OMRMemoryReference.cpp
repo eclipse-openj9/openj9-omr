@@ -915,7 +915,7 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
             *wcursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::movkw) | ((upper | TR::MOV_LSL16) << 5);
             immreg->setRegisterFieldRD(wcursor);
             wcursor++;
-            *wcursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::addx) | (TR::EXT_SXTW << 13);
+            *wcursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::addextx) | (TR::EXT_SXTW << 13);
             base->setRegisterFieldRN(wcursor);
             immreg->setRegisterFieldRM(wcursor);
             treg->setRegisterFieldRD(wcursor);

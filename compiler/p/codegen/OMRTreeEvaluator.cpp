@@ -4395,7 +4395,7 @@ TR::Register *OMR::Power::TreeEvaluator::setmemoryEvaluator(TR::Node *node, TR::
    valueNode = node->getChild(2);
 
    TR::Register         *dstAddrReg, *lengthReg, *valueReg;
-   bool stopUsingCopyReg1, stopUsingCopyReg2, stopUsingCopyReg3 = false;
+   bool stopUsingCopyReg1, stopUsingCopyReg2 = false, stopUsingCopyReg3 = false;
 
    stopUsingCopyReg1 = TR::TreeEvaluator::stopUsingCopyReg(dstAddrNode, dstAddrReg, cg);
 

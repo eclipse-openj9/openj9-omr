@@ -3056,7 +3056,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
       }  // ...if 64BitTarget
    else  // if 32bit mode
       {
-      rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, addrRegister, cg->hiValue(address) & 0x0000ffff);
+      rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, addrRegister, cg->hiValue(address));
 
       if (isInt64)
          {

@@ -124,9 +124,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * instr)
       case OMR::Instruction::IsDep:
          print(pOutFile, (TR::PPCDepInstruction *)instr);
          break;
-      case OMR::Instruction::IsDepImm:
-         print(pOutFile, (TR::PPCDepImmInstruction *)instr);
-         break;
       case OMR::Instruction::IsDepImmSym:
          print(pOutFile, (TR::PPCDepImmSymInstruction *)instr);
          break;
@@ -381,16 +378,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCSrc1Instruction * instr)
    trfflush(_comp->getOutFile());
    }
 
-void
-TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmInstruction * instr)
-   {
-   printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT, getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
-   if (instr->getDependencyConditions())
-      print(pOutFile, instr->getDependencyConditions());
-   trfflush(_comp->getOutFile());
-   }
-
 // Returns true if the given call symbol reference refers to a method address
 // that is outside of the range of legal branch offsets. Sets distance to the
 // branch distance (either to the method directly or to the trampoline) as a
@@ -496,19 +483,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1ImmInstruction * instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
-   if (instr->getOpCodeValue() ==  TR::InstOpCode::mtcrf)
-      {
-      trfprintf(pOutFile, POINTER_PRINTF_FORMAT ", ", (intptr_t)(int32_t)instr->getSourceImmediate());
-      print(pOutFile, instr->getTargetRegister(), TR_WordReg);
-      }
-   else
-      {
-      print(pOutFile, instr->getTargetRegister(), TR_WordReg);
-      if (instr->getOpCodeValue() !=  TR::InstOpCode::mfcr)
-         {
-         trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT, (intptr_t)(int32_t)instr->getSourceImmediate());
-         }
-      }
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+   trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT, (intptr_t)(int32_t)instr->getSourceImmediate());
 
    trfflush(_comp->getOutFile());
    }
@@ -522,12 +498,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src1ImmInstruction * instr)
    print(pOutFile, instr->getSource1Register(), TR_WordReg);
    TR::InstOpCode::Mnemonic op =  instr->getOpCodeValue();
 
-   if (op == TR::InstOpCode::subfic || op == TR::InstOpCode::addi || op == TR::InstOpCode::addi2 ||
-       op == TR::InstOpCode::addic  || op == TR::InstOpCode::addic_r ||
-       op == TR::InstOpCode::addis  || op == TR::InstOpCode::mulli)
-      trfprintf(pOutFile, ", %d", (signed short)instr->getSourceImmediate());
-   else
-      trfprintf(pOutFile, ", " "%d", (intptr_t)(int32_t)instr->getSourceImmediate());
+   trfprintf(pOutFile, ", " "%d", (intptr_t)(int32_t)instr->getSourceImmediate());
 
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());

@@ -44,7 +44,9 @@ class intParts  {
       int32_t getValue()              { return intVal; }
       int32_t setValue(int32_t value) { return intVal=value; }
       int32_t getHighBits()           { return (uint32_t)intVal >> 16; }
+      int32_t getHighBitsSigned()     { return intVal >> 16; }
       int32_t getLowBits()            { return (uint32_t)intVal & 0xffff; }
+      int32_t getLowBitsSigned()      { return (intVal << 16) >> 16; }
       int32_t getLowSign()            { return ((uint32_t)intVal >> 15) & 0x1; }
       int32_t getHighSign()           { return (uint32_t)intVal >> 31; }
       int32_t getByte3()              { return (uint32_t)intVal >> 24; }

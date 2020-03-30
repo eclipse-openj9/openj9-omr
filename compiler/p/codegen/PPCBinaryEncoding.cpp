@@ -56,44 +56,747 @@ namespace TR { class Register; }
 
 static bool reversedConditionalBranchOpCode(TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic *rop);
 
+static bool isValidInSignExtendedField(uint32_t value, uint32_t mask)
+   {
+   uint32_t signMask = ~(mask >> 1);
+
+   return (value & signMask) == 0 || (value & signMask) == signMask;
+   }
+
+static bool canUseAsVsxRegister(TR::RealRegister *reg)
+   {
+   switch (reg->getKind())
+      {
+      case TR_FPR:
+      case TR_VRF:
+      case TR_VSX_SCALAR:
+      case TR_VSX_VECTOR:
+         return true;
+
+      default:
+         return false;
+      }
+   }
+
+/**
+ * Fills in the RT field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | RT       |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
+static void fillFieldRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RT field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RT field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRT(cursor);
+   }
+
+/**
+ * Fills in the FRT field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | FRT      |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
+static void fillFieldFRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRT field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_FPR, "Attempt to fill FRT field with %s, which is not an FPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRT(cursor);
+   }
+
+/**
+ * Fills in the VRT field of a binary-encoded instruction with the provided vector register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | VRT      |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
+static void fillFieldVRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRT field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_VRF, "Attempt to fill VRT field with %s, which is not a VR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRT(cursor);
+   }
+
+/**
+ * Fills in the XT field of a binary-encoded instruction with the provided VSX register:
+ *
+ * +------+----------+---------------------------------------+----+
+ * |      | XT       |                                       | XT |
+ * | 0    | 6        | 11                                    | 31 |
+ * +------+----------+---------------------------------------+----+
+ */
+static void fillFieldXT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XT field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XT field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldXT(cursor);
+   }
+
+/**
+ * Fills in the RS field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | RS       |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
+static void fillFieldRS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RS field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RS field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRS(cursor);
+   }
+
+/**
+ * Fills in the XS field of a binary-encoded instruction with the provided VSX register:
+ *
+ * +------+----------+---------------------------------------+----+
+ * |      | XS       |                                       | XS |
+ * | 0    | 6        | 11                                    | 31 |
+ * +------+----------+---------------------------------------+----+
+ */
+static void fillFieldXS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XS field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XS field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldXS(cursor);
+   }
+
+/**
+ * Fills in the RA field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +-----------------+----------+---------------------------------+
+ * |                 | RA       |                                 |
+ * | 0               | 11       | 16                              |
+ * +-----------------+----------+---------------------------------+
+ */
+static void fillFieldRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RA field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RA field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRA(cursor);
+   }
+
+/**
+ * Fills in the FRA field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +-----------------+----------+---------------------------------+
+ * |                 | FRA      |                                 |
+ * | 0               | 11       | 16                              |
+ * +-----------------+----------+---------------------------------+
+ */
+static void fillFieldFRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRA field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_FPR, "Attempt to fill FRA field with %s, which is not an FPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldFRA(cursor);
+   }
+
+/**
+ * Fills in the VRA field of a binary-encoded instruction with the provided vector register:
+ *
+ * +-----------------+----------+---------------------------------+
+ * |                 | VRA      |                                 |
+ * | 0               | 11       | 16                              |
+ * +-----------------+----------+---------------------------------+
+ */
+static void fillFieldVRA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRA field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_VRF, "Attempt to fill VRA field with %s, which is not a VR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRA(cursor);
+   }
+
+/**
+ * Fills in the XA field of a binary-encoded instruction with the provided VSX register:
+ *
+ * +-----------------+----------+------------------+----+---------+
+ * |                 | XA       |                  | XA |         |
+ * | 0               | 11       | 16               | 29 | 30      |
+ * +-----------------+----------+------------------+----+---------+
+ */
+static void fillFieldXA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XA field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XA field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldXA(cursor);
+   }
+
+/**
+ * Fills in the RB field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +------------------------+--------+----------------------------+
+ * |                        | RB     |                            |
+ * | 0                      | 16     | 21                         |
+ * +------------------------+--------+----------------------------+
+ */
+static void fillFieldRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RB field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RB field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRB(cursor);
+   }
+
+/**
+ * Fills in the FRB field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +------------------------+--------+----------------------------+
+ * |                        | FRB    |                            |
+ * | 0                      | 16     | 21                         |
+ * +------------------------+--------+----------------------------+
+ */
+static void fillFieldFRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRB field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_FPR, "Attempt to fill FRB field with %s, which is not an FPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldFRB(cursor);
+   }
+
+/**
+ * Fills in the FRB field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +------------------------+--------+----------------------------+
+ * |                        | FRB    |                            |
+ * | 0                      | 16     | 21                         |
+ * +------------------------+--------+----------------------------+
+ */
+static void fillFieldVRB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRB field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_VRF, "Attempt to fill VRB field with %s, which is not a VR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRB(cursor);
+   }
+
+/**
+ * Fills in the XB field of a binary-encoded instruction with the provided VSX register:
+ *
+ * +----------------------------+----------+------------+----+----+
+ * |                            | XB       |            | XB |    |
+ * | 0                          | 16       | 21         | 30 | 31 |
+ * +----------------------------+----------+------------+----+----+
+ */
+static void fillFieldXB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XB field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XB field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldXB(cursor);
+   }
+
+/**
+ * Fills in the RC field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +---------------------------------+--------+-------------------+
+ * |                                 | RC     |                   |
+ * | 0                               | 21     | 26                |
+ * +---------------------------------+--------+-------------------+
+ */
+static void fillFieldRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RC field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RC field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRC(cursor);
+   }
+
+/**
+ * Fills in the FRC field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +---------------------------------+--------+-------------------+
+ * |                                 | FRC    |                   |
+ * | 0                               | 21     | 26                |
+ * +---------------------------------+--------+-------------------+
+ */
+static void fillFieldFRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRC field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_FPR, "Attempt to fill FRC field with %s, which is not an FPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldFRC(cursor);
+   }
+
+/**
+ * Fills in the VRC field of a binary-encoded instruction with the provided vector register:
+ *
+ * +---------------------------------+--------+-------------------+
+ * |                                 | VRC    |                   |
+ * | 0                               | 21     | 26                |
+ * +---------------------------------+--------+-------------------+
+ */
+static void fillFieldVRC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRC field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_VRF, "Attempt to fill VRC field with %s, which is not a VR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRC(cursor);
+   }
+
+/**
+ * Fills in the XC field of a binary-encoded instruction with the provided VSX register:
+ *
+ * +---------------------------+------+-----+----+--------------+
+ * |                           | XC   |     | XC |              |
+ * | 0                         | 21   | 26  | 28 | 29           |
+ * +---------------------------+------+-----+----+--------------+
+ */
+static void fillFieldXC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XC field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XC field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldXC(cursor);
+   }
+
+/**
+ * Fills in the condition register part of the BI field of a binary-encoded instruction with the
+ * provided condition register:
+ *
+ * +------------+-----+-------------------------------------------+
+ * |            | BI  |                                           |
+ * | 0          | 11  | 14                                        |
+ * +------------+-----+-------------------------------------------+
+ *
+ * Note that the ISA defines the BI field to also include the part which determines which bit of
+ * the condition register is checked. This needs to be filled in using separate means. Typically,
+ * this is done by including the correct value of that part of the field as part of the binary
+ * encoding template of an extended mnemonic, e.g. beq.
+ */
+static void fillFieldBI(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BI field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_CCR, "Attempt to fill BI field with %s, which is not a CCR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldBI(cursor);
+   }
+
+/**
+ * Fills in the BF field of a binary-encoded instruction with the provided condition register:
+ *
+ * +------+-----+-------------------------------------------------+
+ * |      | BF  |                                                 |
+ * | 0    | 6   | 9                                               |
+ * +------+-----+-------------------------------------------------+
+ *
+ * This can also be used to fill in the condition register part of the BT field, with the part
+ * determining which bit should being filled in by other means.
+ */
+static void fillFieldBF(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BF field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_CCR, "Attempt to fill BF field with %s, which is not a CCR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRT(cursor);
+   }
+
+/**
+ * Fills in the BFA field of a binary-encoded instruction with the provided condition register:
+ *
+ * +------------------+-----+-------------------------------------+
+ * |                  | BFA |                                     |
+ * | 0                | 11  | 14                                  |
+ * +------------------+-----+-------------------------------------+
+ *
+ * This can also be used to fill in the condition register part of the BA field, with the part
+ * determining which bit should being filled in by other means.
+ */
+static void fillFieldBFA(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BFA field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_CCR, "Attempt to fill BFA field with %s, which is not a CCR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRA(cursor);
+   }
+
+/**
+ * Fills in the BFA field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +------------------+-----+-------------------------------------+
+ * |                  | BFA |                                     |
+ * | 0                | 11  | 14                                  |
+ * +------------------+-----+-------------------------------------+
+ */
+static void fillFieldBFA(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x7) == val, "0x%x is out-of-range for BFA field", val);
+   *cursor |= val << 18;
+   }
+
+/**
+ * Fills in the BFB field of a binary-encoded instruction with the provided condition register:
+ *
+ * +------------------------+-----+-------------------------------+
+ * |                        | BFB |                               |
+ * | 0                      | 14  | 17                            |
+ * +------------------------+-----+-------------------------------+
+ *
+ * This can also be used to fill in the condition register part of the BB field, with the part
+ * determining which bit should being filled in by other means.
+ */
+static void fillFieldBFB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BFB field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_CCR, "Attempt to fill BFB field with %s, which is not a CCR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRB(cursor);
+   }
+
+/**
+ * Fills in the U field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +-----------------------+-----+--------------------------------+
+ * |                       | U   |                                |
+ * | 0                     | 16  | 20                             |
+ * +-----------------------+-----+--------------------------------+
+ */
+static void fillFieldU(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xfu) == val, "0x%x is out-of-range for U field", val);
+   *cursor |= val << 12;
+   }
+
+/**
+ * Fills in the BF and W fields of a binary-encoded instruction with the provided immediate value.
+ * The bottom 7 bits are used to populate the BF field, while the 8th bit is used to populate the
+ * W field.
+ *
+ * +------+-----+-----+----+--------------------------------------+
+ * |      | BF  |     | W  |                                      |
+ * | 0    | 6   | 9   | 15 | 16                                   |
+ * +------+-----+-----+----+--------------------------------------+
+ */
+static void fillFieldBFW(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xfu) == val, "0x%x is out-of-range for BF/W field", val);
+   *cursor |= ((val ^ 0x8) & 0x8) << 13;
+   *cursor |= (val & 0x7) << 23;
+   }
+
+/**
+ * Fills in the FLM field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +------+---------+---------------------------------------------+
+ * |      | FLM     |                                             |
+ * | 0    | 7       | 15                                          |
+ * +------+---------+---------------------------------------------+
+ */
+static void fillFieldFLM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xffu) == val, "0x%x is out-of-range for FLM field", val);
+   *cursor |= val << 17;
+   }
+
+/**
+ * Fills in the FXM field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------+----------+----------------------------+
+ * |                      | FXM      |                            |
+ * | 0                    | 12       | 20                         |
+ * +----------------------+----------+----------------------------+
+ */
+static void fillFieldFXM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xffu) == val, "0x%x is out-of-range for FXM field", val);
+   *cursor |= val << 12;
+   }
+
+/**
+ * Fills in the FXM field of a binary-encoded instruction with the provided immediate value in the
+ * same way as fillFieldFXM, while also asserting that exactly one bit in that field should be set.
+ */
+static void fillFieldFXM1(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, populationCount(val) == 1, "0x%x is invalid for FXM field, expecting exactly 1 bit set", val);
+   fillFieldFXM(instr, cursor, val);
+   }
+
+/**
+ * Fills in the DCM or DQM field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+--------+------------------------+
+ * |                            | DCM    |                        |
+ * | 0                          | 16     | 22                     |
+ * +----------------------------+--------+------------------------+
+ */
+static void fillFieldDCM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3fu) == val, "0x%x is out-of-range for DCM/DQM field", val);
+   *cursor |= val << 10;
+   }
+
+/**
+ * Fills in a 5-bit SH field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+----------+----------------------+
+ * |                            | SH       |                      |
+ * | 0                          | 16       | 21                   |
+ * +----------------------------+----------+----------------------+
+ */
+static void fillFieldSH5(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1fu) == val, "0x%x is out-of-range for SH(5) field", val);
+   *cursor |= val << 11;
+   }
+
+/**
+ * Fills in a 6-bit SH field (as as used in MD-form and XS-form instructions) of a binary-encoded
+ * instruction with the provided immediate value:
+ *
+ * +----------------------------+----------+------------+----+----+
+ * |                            | SH       |            | SH |    |
+ * | 0                          | 16       | 21         | 30 | 31 |
+ * +----------------------------+----------+------------+----+----+
+ */
+static void fillFieldSH6(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3fu) == val, "0x%x is out-of-range for SH(6) field", val);
+   *cursor |= (val & 0x1fu) << 11;
+   *cursor |= (val & 0x20u) >> 4;
+   }
+
+/**
+ * Fills in the SIM field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +-----------------+----------+---------------------------------+
+ * |                 | SIM      |                                 |
+ * | 0               | 11       | 16                              |
+ * +-----------------+----------+---------------------------------+
+ */
+static void fillFieldSIM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0x1fu), "0x%x is out-of-range for SIM field", val);
+   *cursor |= (val & 0x1f) << 16;
+   }
+
+/**
+ * Fills in the 16-bit SI field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+---------------------------------+
+ * |                            | SI                              |
+ * | 0                          | 16                              |
+ * +----------------------------+---------------------------------+
+ */
+static void fillFieldSI16(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffu), "0x%x is out-of-range for SI(16) field", val);
+   *cursor |= val & 0xffff;
+   }
+
+/**
+ * Fills in the 5-bit SI field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+----------+----------------------+
+ * |                            | SI       |                      |
+ * | 0                          | 16       | 21                   |
+ * +----------------------------+----------+----------------------+
+ */
+static void fillFieldSI5(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0x1fu), "0x%x is out-of-range for SI(5) field", val);
+   *cursor |= (val & 0x1f) << 11;
+   }
+
+/**
+ * Fills in the UIM field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +-----------------+----------+---------------------------------+
+ * |                 | UIM      |                                 |
+ * | 0               | 11       | 16                              |
+ * +-----------------+----------+---------------------------------+
+ *
+ * The numBits argument specifies the bit length of the UIM field being filled.
+ */
+static void fillFieldUIM(TR::Instruction *instr, uint32_t *cursor, int32_t numBits, uint32_t val)
+   {
+   uint32_t fieldMask = (1u << numBits) - 1;
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & fieldMask) == val, "0x%x is out-of-range for UIM(%d) field", val, numBits);
+   *cursor |= val << 16;
+   }
+
+/**
+ * Fills in the 16-bit UI field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+---------------------------------+
+ * |                            | UI                              |
+ * | 0                          | 16                              |
+ * +----------------------------+---------------------------------+
+ */
+static void fillFieldUI16(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   // TODO: This is a hack until PIC sites are reworked. Currently, the PIC site handling code
+   // assumes that the entire address is in the immediate of the instruction, so we can't chop it to
+   // 16 bits like we should.
+   if (!instr->cg()->comp()->isPICSite(instr))
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xffffu) == val, "0x%x is out-of-range for UI field", val);
+   *cursor |= val & 0xffff;
+   }
+
+/**
+ * Fills in the me/mb field (as used in MD-form and MDS-form instructions) of a binary-encoded
+ * instruction with the provided immediate value:
+ *
+ * +------------------------------------+---------+---------------+
+ * |                                    | MDM     |               |
+ * | 0                                  | 21      | 27            |
+ * +------------------------------------+---------+---------------+
+ */
+static void fillFieldMDM(TR::Instruction *instr, uint32_t *cursor, int32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3f) == val, "0x%x is out-of-range for me/mb field", val);
+   *cursor |= (val & 0x1f) << 6;
+   *cursor |= (val & 0x20);
+   }
+
+/**
+ * Fills in the the MB field (as used in M-form instructions) of a binary-encoded instruction with
+ * the provided immediate value:
+ *
+ * +------------------------------------+---------+---------------+
+ * |                                    | MB      |               |
+ * | 0                                  | 21      | 26            |
+ * +------------------------------------+---------+---------------+
+ */
+static void fillFieldMB(TR::Instruction *instr, uint32_t *cursor, int32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for MB field", val);
+   *cursor |= val << 6;
+   }
+
+/**
+ * Fills in the ME field (as used in M-form instructions) of a binary-encoded instruction with the
+ * provided immediate value:
+ *
+ * +----------------------------------------------+----------+----+
+ * |                                              | ME       |    |
+ * | 0                                            | 26       | 31 |
+ * +----------------------------------------------+----------+----+
+ */
+static void fillFieldME(TR::Instruction *instr, uint32_t *cursor, int32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1f) == val, "0x%x is out-of-range for ME field", val);
+   *cursor |= val << 1;
+   }
+
+/**
+ * Fills in the RMC field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +---------------------------------------+-----+----------------+
+ * |                                       | RMC |                |
+ * | 0                                     | 21  | 23             |
+ * +---------------------------------------+-----+----------------+
+ */
+static void fillFieldRMC(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3) == val, "0x%llx is out-of-range for RMC field", val);
+   *cursor |= static_cast<uint32_t>(val << 9);
+   }
+
+/**
+ * Fills in the SHB field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +--------------------------------------------+-----+-----------+
+ * |                                            | SHB |           |
+ * | 0                                          | 22  | 26        |
+ * +--------------------------------------------+-----+-----------+
+ */
+static void fillFieldSHB(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xf) == val, "0x%llx is out-of-range for SHB field", val);
+   *cursor |= static_cast<uint32_t>(val << 6);
+   }
+
+/**
+ * Fills in the DM field (as used in XX3-form instructions) of a binary-encoded instruction with
+ * the provided immediate value:
+ *
+ * +----------------------------------+-----+---------------------+
+ * |                                  | DM  |                     |
+ * | 0                                | 22  | 24                  |
+ * +----------------------------------+-----+---------------------+
+ */
+static void fillFieldDM(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3) == val, "0x%llx is out-of-range for DM field", val);
+   *cursor |= static_cast<uint32_t>(val << 8);
+   }
+
+/**
+ * Fills in the SHW field (as used in XX3-form instructions) of a binary-encoded instruction with
+ * the provided immediate value:
+ *
+ * +----------------------------------+-----+---------------------+
+ * |                                  | SHW |                     |
+ * | 0                                | 22  | 24                  |
+ * +----------------------------------+-----+---------------------+
+ */
+static void fillFieldSHW(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3) == val, "0x%llx is out-of-range for SHW field", val);
+   *cursor |= static_cast<uint32_t>(val << 8);
+   }
+
 uint8_t *
 OMR::Power::Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = self()->cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   if (self()->getOpCodeValue() == TR::InstOpCode::assocreg)
-      {
-      }
-   else
-      {
-      cursor = self()->getOpCode().copyBinaryToBuffer(instructionStart);
-      if (self()->getOpCodeValue() == TR::InstOpCode::genop)
-         {
-         TR::RealRegister::RegNum nopreg = self()->cg()->comp()->target().cpu.id() > TR_PPCp6 ? TR::RealRegister::gr2 : TR::RealRegister::gr1;
-         TR::RealRegister *r = self()->cg()->machine()->getRealRegister(nopreg);
-         r->setRegisterFieldRS((uint32_t *) cursor);
-         r->setRegisterFieldRA((uint32_t *) cursor);
-         }
-       cursor += PPC_INSTRUCTION_LENGTH;
-      }
+   uint8_t *cursor = instructionStart;
+   TR::InstOpCode& opCode = self()->getOpCode();
+
+   cursor = opCode.copyBinaryToBuffer(cursor);
+   self()->fillBinaryEncodingFields(reinterpret_cast<uint32_t*>(cursor));
+
+   cursor += opCode.getBinaryLength();
+
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(
+      self(),
+      (cursor - instructionStart) <= self()->getEstimatedBinaryLength(),
+      "Estimated binary length was %u bytes, but actual length was %u bytes",
+      self()->getEstimatedBinaryLength(),
+      static_cast<uint32_t>(cursor - instructionStart)
+   );
+
    self()->setBinaryLength(cursor - instructionStart);
    self()->setBinaryEncoding(instructionStart);
+
    return cursor;
+   }
+
+void
+OMR::Power::Instruction::fillBinaryEncodingFields(uint32_t *cursor)
+   {
+   switch (self()->getOpCode().getFormat())
+      {
+      case FORMAT_NONE:
+         break;
+
+      case FORMAT_DIRECT:
+         // TODO: Split genop into two instructions depending on version of Power in use
+         if (self()->getOpCodeValue() == TR::InstOpCode::genop)
+            {
+            TR::RealRegister *r = self()->cg()->machine()->getRealRegister(TR::Compiler->target.cpu.id() > TR_PPCp6 ? TR::RealRegister::gr2 : TR::RealRegister::gr1);
+            fillFieldRA(self(), cursor, r);
+            fillFieldRS(self(), cursor, r);
+            }
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by Instruction", self()->getOpCode().getFormat());
+      }
    }
 
 int32_t
 OMR::Power::Instruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   if (self()->getOpCodeValue() == TR::InstOpCode::assocreg)
-      {
-      self()->setEstimatedBinaryLength(0);
-      return currentEstimate;
-      }
-   else
-      {
-      self()->setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH);
-      return currentEstimate + self()->getEstimatedBinaryLength();
-      }
+   int8_t maxLength = self()->getOpCode().getMaxBinaryLength();
+
+   self()->setEstimatedBinaryLength(maxLength);
+   return currentEstimate + maxLength;
    }
 
 uint8_t *TR::PPCAlignmentNopInstruction::generateBinaryEncoding()
@@ -154,49 +857,38 @@ uint8_t TR::PPCAlignmentNopInstruction::getBinaryLengthLowerBound()
    return 0;
    }
 
-uint8_t *TR::PPCLabelInstruction::generateBinaryEncoding()
+void TR::PPCLabelInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t        *instructionStart = cg()->getBinaryBufferCursor();
-   TR::LabelSymbol *label            = getLabelSymbol();
-   uint8_t        *cursor           = instructionStart;
+   TR::LabelSymbol *label = getLabelSymbol();
 
-   if (getOpCode().isBranchOp())
+   switch (getOpCode().getFormat())
       {
-          cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-          if (label->getCodeLocation() != NULL)
-             {
-             *(int32_t *)cursor |= ((label->getCodeLocation()-cursor) &
-                                    0x03fffffc);
-             }
-          else
-             {
-             cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
-             }
-          cursor += 4;
+      case FORMAT_NONE:
+         if (getOpCodeValue() == TR::InstOpCode::label)
+            label->setCodeLocation(reinterpret_cast<uint8_t*>(cursor));
+         break;
+
+      case FORMAT_I_FORM:
+         if (label->getCodeLocation())
+            cg()->apply24BitLabelRelativeRelocation(reinterpret_cast<int32_t*>(cursor), label);
+         else
+            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(reinterpret_cast<uint8_t*>(cursor), label));
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCLabelInstruction", getOpCode().getFormat());
       }
-   else // regular LABEL
-      {
-      label->setCodeLocation(instructionStart);
-      }
-   setBinaryLength(cursor - instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   setBinaryEncoding(instructionStart);
-   return cursor;
    }
 
 int32_t TR::PPCLabelInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   if (getOpCode().isBranchOp())
-      {
-      setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH);
-      }
-   else
-      {
-      setEstimatedBinaryLength(0);
+   if (getOpCodeValue() == TR::InstOpCode::label)
       getLabelSymbol()->setEstimatedCodeLocation(currentEstimate);
-      }
-   return currentEstimate + getEstimatedBinaryLength();
+
+   return self()->TR::Instruction::estimateBinaryLength(currentEstimate);
    }
+
+// TODO This should probably be refactored and moved onto OMR::Power::InstOpCode
 static bool reversedConditionalBranchOpCode(TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic *rop)
    {
    switch (op)
@@ -256,10 +948,9 @@ static bool reversedConditionalBranchOpCode(TR::InstOpCode::Mnemonic op, TR::Ins
       }
    }
 
-
 void TR::PPCConditionalBranchInstruction::expandIntoFarBranch()
    {
-   TR_ASSERT_FATAL(getLabelSymbol(), "Attempt to expand conditional branch %p without a label", self());
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), getLabelSymbol(), "Cannot expand conditional branch without a label");
 
    if (comp()->getOption(TR_TraceCG))
       traceMsg(comp(), "Expanding conditional branch instruction %p into a far branch\n", self());
@@ -284,41 +975,44 @@ void TR::PPCConditionalBranchInstruction::expandIntoFarBranch()
    _farRelocation = true;
    }
 
-uint8_t *TR::PPCConditionalBranchInstruction::generateBinaryEncoding()
+void TR::PPCConditionalBranchInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t        *instructionStart = cg()->getBinaryBufferCursor();
-   TR::LabelSymbol *label            = getLabelSymbol();
-   uint8_t        *cursor           = instructionStart;
-   TR::Compilation *comp = cg()->comp();
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   // bclr doesn't have a label
-   insertConditionRegister((uint32_t *)cursor);
-   if (label)
+   switch (getOpCode().getFormat())
       {
-      if (label->getCodeLocation() != NULL)
-         *(int32_t *)cursor |= ((label->getCodeLocation()-cursor) & 0xffff);
-      else
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, label));
+      case FORMAT_B_FORM:
+         {
+         TR::LabelSymbol *label = getLabelSymbol();
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), label, "B-form conditional branch has no label");
+
+         if (label->getCodeLocation())
+            cg()->apply16BitLabelRelativeRelocation(reinterpret_cast<int32_t*>(cursor), label);
+         else
+            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(reinterpret_cast<uint8_t*>(cursor), label));
+         break;
+         }
+
+      case FORMAT_XL_FORM_BRANCH:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !getLabelSymbol(), "XL-form conditional branch has a label");
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCConditionalBranchInstruction", getOpCode().getFormat());
       }
 
-   // set up prediction bits if there is any.
+   fillFieldBI(self(), cursor, toRealRegister(_conditionRegister));
    if (haveHint())
       {
       if (getOpCode().setsCTR())
-         *(int32_t *)instructionStart |= (getLikeliness() ? PPCOpProp_BranchLikelyMaskCtr : PPCOpProp_BranchUnlikelyMaskCtr);
+         *cursor |= (getLikeliness() ? PPCOpProp_BranchLikelyMaskCtr : PPCOpProp_BranchUnlikelyMaskCtr);
       else
-         *(int32_t *)instructionStart |= (getLikeliness() ? PPCOpProp_BranchLikelyMask : PPCOpProp_BranchUnlikelyMask) ;
+         *cursor |= (getLikeliness() ? PPCOpProp_BranchLikelyMask : PPCOpProp_BranchUnlikelyMask);
       }
-
-   cursor += 4;
-   setBinaryLength(cursor - instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   setBinaryEncoding(instructionStart);
-   return cursor;
    }
 
 int32_t TR::PPCConditionalBranchInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), getOpCode().getMaxBinaryLength() == PPC_INSTRUCTION_LENGTH, "Format %d cannot be binary encoded by PPCConditionalBranchInstruction", getOpCode().getFormat());
+
    // Conditional branches can be expanded into a conditional branch around an unconditional branch if the target label
    // is out of range for a simple bc instruction. This is done by expandFarConditionalBranches, which runs after binary
    // length estimation but before binary encoding and will call PPCConditionalBranchInstruction::expandIntoFarBranch to
@@ -326,52 +1020,27 @@ int32_t TR::PPCConditionalBranchInstruction::estimateBinaryLength(int32_t curren
    // could be expanded to ensure that the binary length estimates are correct.
    setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 2);
    setEstimatedBinaryLocation(currentEstimate);
+
    return currentEstimate + getEstimatedBinaryLength();
    }
 
-uint8_t *TR::PPCAdminInstruction::generateBinaryEncoding()
+void TR::PPCAdminInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t  *instructionStart = cg()->getBinaryBufferCursor();
-   int i;
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), getOpCode().getFormat() == FORMAT_NONE, "Format %d cannot be binary encoded by PPCAdminInstruction", getOpCode().getFormat());
 
-   if (_fenceNode != NULL)    // must be TR::InstOpCode::fence
+   if (getOpCodeValue() == TR::InstOpCode::fence)
       {
-      uint32_t rtype = _fenceNode->getRelocationType();
-      if (rtype == TR_AbsoluteAddress)
-         {
-         for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
-            {
-            uint8_t **target = (uint8_t **)_fenceNode->getRelocationDestination(i);
-            *target = instructionStart;
-            }
-         }
-      else if (rtype == TR_EntryRelative32Bit)
-	 {
-         for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
-	    {
-            *(uint32_t *)(_fenceNode->getRelocationDestination(i)) = cg()->getCodeLength();
-	    }
-	 }
-      else // entryrelative16bit
-         {
-         for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
-            {
-            *(uint16_t *)(_fenceNode->getRelocationDestination(i)) = (uint16_t)cg()->getCodeLength();
-            }
-         }
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), _fenceNode, "Fence instruction is missing a fence node");
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), _fenceNode->getRelocationType() == TR_EntryRelative32Bit, "Unhandled relocation type %u", _fenceNode->getRelocationType());
+
+      for (int i = 0; i < _fenceNode->getNumRelocations(); i++)
+         *static_cast<uint32_t*>(_fenceNode->getRelocationDestination(i)) = cg()->getCodeLength();
       }
-   setBinaryLength(0);
-   setBinaryEncoding(instructionStart);
-
-   return instructionStart;
+   else
+      {
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !_fenceNode, "Non-fence instruction has a fence node %p", _fenceNode);
+      }
    }
-
-int32_t TR::PPCAdminInstruction::estimateBinaryLength(int32_t currentEstimate)
-   {
-   setEstimatedBinaryLength(0);
-   return currentEstimate;
-   }
-
 
 void
 TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
@@ -433,117 +1102,150 @@ TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
    }
 
-
-uint8_t *TR::PPCImmInstruction::generateBinaryEncoding()
+void TR::PPCImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   TR::Compilation *comp = cg()->comp();
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   *(int32_t *)cursor = (int32_t)getSourceImmediate();
+   addMetaDataForCodeAddress(reinterpret_cast<uint8_t*>(cursor));
 
-   addMetaDataForCodeAddress(cursor);
-
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
-   }
-
-uint8_t *TR::PPCImm2Instruction::generateBinaryEncoding()
-   {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertImmediateField(toPPCCursor(cursor));
-   insertImmediateField2(toPPCCursor(cursor));
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
-   }
-
-uint8_t *TR::PPCSrc1Instruction::generateBinaryEncoding()
-   {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertSource1Register(toPPCCursor(cursor));
-   if (getOpCodeValue() == TR::InstOpCode::mtfsf |
-       getOpCodeValue() == TR::InstOpCode::mtfsfl ||
-       getOpCodeValue() == TR::InstOpCode::mtfsfw)
+   switch (getOpCode().getFormat())
       {
-      insertMaskField(toPPCCursor(cursor));
+      case FORMAT_DD:
+         *cursor = getSourceImmediate();
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCImmInstruction", getOpCode().getFormat());
       }
-   else
+   }
+
+void TR::PPCImm2Instruction::fillBinaryEncodingFields(uint32_t* cursor)
+   {
+   uint32_t imm1 = getSourceImmediate();
+   uint32_t imm2 = getSourceImmediate2();
+
+   switch (getOpCode().getFormat())
       {
-      insertImmediateField(toPPCCursor(cursor));
+      case FORMAT_MTFSFI:
+         fillFieldU(self(), cursor, imm1);
+         fillFieldBFW(self(), cursor, imm2);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCImm2Instruction", getOpCode().getFormat());
       }
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength()) ;
-   return cursor;
    }
 
-uint8_t *TR::PPCDepImmInstruction::generateBinaryEncoding()
+void TR::PPCSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   *(int32_t *)cursor = (int32_t)getSourceImmediate();
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
-   }
+   TR::RealRegister *src = toRealRegister(getSource1Register());
+   uint32_t imm = getSourceImmediate();
 
-uint8_t *TR::PPCTrg1Instruction::generateBinaryEncoding()
-   {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
-   }
-
-uint8_t *TR::PPCTrg1Src1Instruction::generateBinaryEncoding()
-   {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-
-   if (isRegCopy() && (toRealRegister(getTargetRegister()) == toRealRegister(getSource1Register())))
+   switch (getOpCode().getFormat())
       {
+      case FORMAT_MTFSF:
+         fillFieldFRB(self(), cursor, src);
+         fillFieldFLM(self(), cursor, imm);
+         break;
+
+      case FORMAT_RS:
+         fillFieldRS(self(), cursor, src);
+         break;
+
+      case FORMAT_RA_SI16:
+         fillFieldRA(self(), cursor, src);
+         fillFieldSI16(self(), cursor, imm);
+         break;
+
+      case FORMAT_RA_SI5:
+         fillFieldRA(self(), cursor, src);
+         fillFieldSI5(self(), cursor, imm);
+         break;
+
+      case FORMAT_RS_FXM:
+         fillFieldRS(self(), cursor, src);
+         fillFieldFXM(self(), cursor, imm);
+         break;
+
+      case FORMAT_RS_FXM1:
+         fillFieldRS(self(), cursor, src);
+         fillFieldFXM1(self(), cursor, imm);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCSrc1Instruction", getOpCode().getFormat());
       }
-   else
+   }
+
+void TR::PPCTrg1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
+   {
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+
+   switch (getOpCode().getFormat())
       {
-      cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-      insertTargetRegister(toPPCCursor(cursor));
-      insertSource1Register(toPPCCursor(cursor));
-      cursor += PPC_INSTRUCTION_LENGTH;
+      case FORMAT_RT:
+         fillFieldRT(self(), cursor, trg);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Instruction", getOpCode().getFormat());
       }
-   setBinaryLength(cursor - instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   setBinaryEncoding(instructionStart);
-   return cursor;
    }
 
-int32_t TR::PPCTrg1ImmInstruction::estimateBinaryLength(int32_t currentEstimate)
+void TR::PPCTrg1Src1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH);
-   return currentEstimate + getEstimatedBinaryLength();
-   }
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src = toRealRegister(getSource1Register());
 
-static TR::Instruction *loadReturnAddress(TR::Node * node, uintptr_t value, TR::Register *trgReg, TR::Instruction *cursor)
-   {
-   return cursor->cg()->loadAddressConstantFixed(node, value, trgReg, cursor);
-   }
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RA_RS:
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         break;
 
+      case FORMAT_RT_RA:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         break;
+
+      case FORMAT_FRT_FRB:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldFRB(self(), cursor, src);
+         break;
+
+      case FORMAT_BF_BFA:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldBFA(self(), cursor, src);
+         break;
+
+      case FORMAT_RA_XS:
+         fillFieldRA(self(), cursor, trg);
+         fillFieldXS(self(), cursor, src);
+         break;
+
+      case FORMAT_XT_RA:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         break;
+
+      case FORMAT_RT_BFA:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldBFA(self(), cursor, src);
+         break;
+
+      case FORMAT_VRT_VRB:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRB(self(), cursor, src);
+         break;
+
+      case FORMAT_XT_XB:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXB(self(), cursor, src);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src1Instruction", getOpCode().getFormat());
+      }
+   }
 
 void
 TR::PPCTrg1ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
@@ -563,46 +1265,45 @@ TR::PPCTrg1ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       }
    }
 
-
-uint8_t *TR::PPCTrg1ImmInstruction::generateBinaryEncoding()
+void
+TR::PPCTrg1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   uint32_t imm = getSourceImmediate();
 
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
+   addMetaDataForCodeAddress(reinterpret_cast<uint8_t*>(cursor));
 
-   if (getOpCodeValue() == TR::InstOpCode::mtcrf ||
-       getOpCodeValue() == TR::InstOpCode::mfocrf)
+   switch (getOpCode().getFormat())
       {
-      *((int32_t *)cursor) |= (getSourceImmediate()<<12);
-      if ((cg()->comp()->target().cpu.id() >= TR_PPCgp) &&
-          ((getSourceImmediate() & (getSourceImmediate() - 1)) == 0))
-         // convert to PPC AS single field form
-         *((int32_t *)cursor) |= 0x00100000;
-      }
-   else if (getOpCodeValue() == TR::InstOpCode::mfcr)
-      {
-      if ((cg()->comp()->target().cpu.id() >= TR_PPCgp) &&
-          ((getSourceImmediate() & (getSourceImmediate() - 1)) == 0))
-         // convert to PPC AS single field form
-         *((int32_t *)cursor) |= (getSourceImmediate()<<12) | 0x00100000;
-      else
-         TR_ASSERT(getSourceImmediate() == 0xFF, "Bad field mask on mfcr");
-      }
-   else
-      {
-      insertImmediateField(toPPCCursor(cursor));
-      }
+      case FORMAT_RT_SI16:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldSI16(self(), cursor, imm);
+         break;
 
-   addMetaDataForCodeAddress(cursor);
+      case FORMAT_BF_BFAI:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldBFA(self(), cursor, imm);
+         break;
 
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+      case FORMAT_RT_FXM:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldFXM(self(), cursor, imm);
+         break;
+
+      case FORMAT_RT_FXM1:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldFXM1(self(), cursor, imm);
+         break;
+
+      case FORMAT_VRT_SIM:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldSIM(self(), cursor, imm);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1ImmInstruction", getOpCode().getFormat());
+      }
    }
-
 
 void
 TR::PPCTrg1Src1ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
@@ -619,228 +1320,409 @@ TR::PPCTrg1Src1ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       }
    }
 
-
-uint8_t *TR::PPCTrg1Src1ImmInstruction::generateBinaryEncoding()
+void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src = toRealRegister(getSource1Register());
+   uint32_t imm = getSourceImmediate();
 
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   insertSource1Register(toPPCCursor(cursor));
-   if (getOpCodeValue() == TR::InstOpCode::srawi || getOpCodeValue() == TR::InstOpCode::srawi_r ||
-       getOpCodeValue() == TR::InstOpCode::sradi || getOpCodeValue() == TR::InstOpCode::sradi_r ||
-       getOpCodeValue() == TR::InstOpCode::extswsli)
+   addMetaDataForCodeAddress(reinterpret_cast<uint8_t*>(cursor));
+
+   switch (getOpCode().getFormat())
       {
-      insertShiftAmount(toPPCCursor(cursor));
+      case FORMAT_RT_RA_SI16:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         fillFieldSI16(self(), cursor, imm);
+         break;
+
+      case FORMAT_RA_RS_UI16:
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldUI16(self(), cursor, imm);
+         break;
+
+      case FORMAT_BF_RA_SI16:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         fillFieldSI16(self(), cursor, imm);
+         break;
+
+      case FORMAT_BF_RA_UI16:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         fillFieldUI16(self(), cursor, imm);
+         break;
+
+      case FORMAT_BF_FRA_DM:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src);
+         fillFieldDCM(self(), cursor, imm);
+         break;
+
+      case FORMAT_RA_RS_SH5:
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH5(self(), cursor, imm);
+         break;
+
+      case FORMAT_RA_RS_SH6:
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH6(self(), cursor, imm);
+         break;
+
+      case FORMAT_VRT_VRB_UIM4:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRB(self(), cursor, src);
+         fillFieldUIM(self(), cursor, 4, imm);
+         break;
+
+      case FORMAT_VRT_VRB_UIM3:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRB(self(), cursor, src);
+         fillFieldUIM(self(), cursor, 3, imm);
+         break;
+
+      case FORMAT_VRT_VRB_UIM2:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRB(self(), cursor, src);
+         fillFieldUIM(self(), cursor, 2, imm);
+         break;
+
+      case FORMAT_XT_XB_UIM2:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXB(self(), cursor, src);
+         fillFieldUIM(self(), cursor, 2, imm);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src1ImmInstruction", getOpCode().getFormat());
       }
-   else if (getOpCodeValue() == TR::InstOpCode::dtstdg)
+   }
+
+static std::pair<int32_t, int32_t> getMaskEnds64(TR::Instruction *instr, uint64_t mask)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask != 0, "Cannot encode a mask of 0");
+
+   int32_t lead = leadingZeroes(mask);
+   int32_t trail = trailingZeroes(mask);
+
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask == ((0xffffffffffffffffuLL >> lead) & (0xffffffffffffffffuLL << trail)), "Mask of 0x%llx has more than one group of 1 bits", mask);
+
+   return std::make_pair(lead, 63 - trail);
+   }
+
+static std::pair<int32_t, int32_t> getMaskEnds32(TR::Instruction *instr, uint64_t mask)
+   {
+   // TODO While it would be nice to enable this assert, there are numerous false positives at the
+   //      moment due to use of int32_t for masks. When converted to int64_t to generate an rlwinm
+   //      instruction, this causes the mask to be improperly sign-extended. We *should* be using
+   //      unsigned integers instead, but this assert needs to remain disabled until that can be
+   //      fixed.
+   // TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (mask & 0xffffffff) == mask, "Invalid 32-bit mask 0x%llx", mask);
+   mask &= 0xffffffff;
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask != 0, "Cannot encode a mask of 0");
+
+   uint32_t mask32 = static_cast<uint32_t>(mask);
+
+   if (mask32 != 0xffffffffu && (mask32 & 0x80000001u) == 0x80000001u)
       {
-      setSourceImmediate(getSourceImmediate() << 10);
-      insertImmediateField(toPPCCursor(cursor));
+      int32_t lead = leadingZeroes(~mask32);
+      int32_t trail = trailingZeroes(~mask32);
+
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask32 == ~((0xffffffffu >> lead) & (0xffffffffu << trail)), "Mask of 0x%x has more than one group of 1 bits", mask32);
+
+      return std::make_pair(32 - trail, lead - 1);
       }
    else
       {
-      insertImmediateField(toPPCCursor(cursor));
+      int32_t lead = leadingZeroes(mask32);
+      int32_t trail = trailingZeroes(mask32);
+
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mask32 == ((0xffffffffu >> lead) & (0xffffffffu << trail)), "Mask of 0x%x has more than one group of 1 bits", mask32);
+
+      return std::make_pair(lead, 31 - trail);
       }
-
-   addMetaDataForCodeAddress(cursor);
-
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
    }
 
-
-static void insertMaskField(uint32_t *instruction, TR::InstOpCode::Mnemonic op, int64_t lmask)
+void TR::PPCTrg1Src1Imm2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   int32_t encoding;
-   // A mask is is a string of 1 bits surrounded by a string of 0 bits.
-   // For word instructions it is specified through its start and stop bit
-   // numbers.  Note - the mask is considered circular so the start bit
-   // number may be greater than the stop bit number.
-   // Examples:     input     start   stop
-   //              00FFFF00      8     23
-   //              00000001     31     31
-   //              80000001     31      0
-   //              FFFFFFFF      0     31  (somewhat arbitrary)
-   //              00000000      ?      ?  (illegal)
-   //
-   // For doubleword instructions only one of the start bit or stop bit is
-   // specified and the other is implicit in the instruction.  The bit
-   // number is strangely encoded in that the low order bit 5 comes first
-   // and the high order bits after.  The field is in bit positions 21-26.
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src = toRealRegister(getSource1Register());
+   uint32_t imm1 = getSourceImmediate();
+   uint64_t imm2 = getLongMask();
 
-   // For these instructions the immediate is not a mask but a 1-bit immediate operand
-   if (op == TR::InstOpCode::cmprb)
+   switch (getOpCode().getFormat())
       {
-      // populate 1-bit L field
-      encoding = (((uint32_t)lmask) & 0x1) << 21;
-      *instruction |= encoding;
-      return;
-      }
-
-   // For these instructions the immediate is not a mask but a 2-bit immediate operand
-   if (op == TR::InstOpCode::xxpermdi ||
-       op == TR::InstOpCode::xxsldwi)
-      {
-      encoding = (((uint32_t)lmask) & 0x3) << 8;
-      *instruction |= encoding;
-      return;
-      }
-
-   if (op == TR::InstOpCode::addex ||
-       op == TR::InstOpCode::addex_r)
-      {
-      encoding = (((uint32_t)lmask) & 0x3) << 9;
-      *instruction |= encoding;
-      return;
-      }
-
-   // For these instructions the immediate is not a mask but a 4-bit immediate operand
-   if (op == TR::InstOpCode::vsldoi)
-      {
-      encoding = (((uint32_t)lmask) & 0xf)<< 6;
-      *instruction |= encoding;
-      return;
-      }
-
-   TR::InstOpCode       opCode(op);
-
-   if (opCode.isCRLogical())
-      {
-      encoding = (((uint32_t) lmask) & 0xffffffff);
-      *instruction |= encoding;
-      return;
-      }
-
-   TR_ASSERT(lmask, "A mask of 0 cannot be encoded");
-
-   if (opCode.isDoubleWord())
-      {
-      int bitnum;
-
-      if (opCode.useMaskEnd())
-	 {
-         TR_ASSERT(contiguousBits(lmask) &&
-		((lmask & CONSTANT64(0x8000000000000000)) != 0) &&
-		((lmask == -1) || ((lmask & 0x1) == 0)),
-		"Bad doubleword mask for ME encoding");
-         bitnum = leadingOnes(lmask) - 1;
-	 }
-      else
-	 {
-         bitnum = leadingZeroes(lmask);
-	 // assert on cases like 0xffffff00000000ff
-         TR_ASSERT((bitnum != 0) || (lmask == -1) || ((lmask & 0x1) == 0) ||
-                             (op!=TR::InstOpCode::rldic   &&
-                              op!=TR::InstOpCode::rldimi  &&
-                              op!=TR::InstOpCode::rldic_r &&
-                              op!=TR::InstOpCode::rldimi_r),
-                "Cannot handle wrap-around, check mask for correctness");
-	 }
-      encoding = ((bitnum&0x1f)<<6) | ((bitnum&0x20));
-
-      }
-   else // single word
-      {
-      // special case the 3-bit rounding mode fields
-      if (op == TR::InstOpCode::drrnd || op == TR::InstOpCode::dqua)
+      case FORMAT_RLDIC:
          {
-         encoding = (lmask << 9) & 0x600;
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH6(self(), cursor, imm1);
+
+         auto maskEnds = getMaskEnds64(self(), imm2);
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.second == 63 - imm1 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldic-form for shift by %u", imm2, imm1);
+         fillFieldMDM(self(), cursor, maskEnds.first);
+         break;
          }
-      else
+
+      case FORMAT_RLDICL:
          {
-         int32_t mask = lmask&0xffffffff;
-         int32_t maskBegin;
-         int32_t maskEnd;
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH6(self(), cursor, imm1);
 
-         maskBegin = leadingZeroes(~mask & (2*mask));
-         maskBegin = (maskBegin + (maskBegin != 32)) & 0x1f;
-         maskEnd  = leadingZeroes(mask & ~(2*mask));
-         encoding = 32*maskBegin + maskEnd << 1; // shift encrypted mask into position
+         auto maskEnds = getMaskEnds64(self(), imm2);
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.second == 63 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldicl-form", imm2);
+         fillFieldMDM(self(), cursor, maskEnds.first);
+         break;
          }
+
+      case FORMAT_RLDICR:
+         {
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH6(self(), cursor, imm1);
+
+         auto maskEnds = getMaskEnds64(self(), imm2);
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.first == 0 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldicr-form", imm2);
+         fillFieldMDM(self(), cursor, maskEnds.second);
+         break;
+         }
+
+      case FORMAT_RLWINM:
+         {
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src);
+         fillFieldSH5(self(), cursor, imm1);
+
+         auto maskEnds = getMaskEnds32(self(), imm2);
+         fillFieldMB(self(), cursor, maskEnds.first);
+         fillFieldME(self(), cursor, maskEnds.second);
+         break;
+         }
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src1Imm2Instruction", getOpCode().getFormat());
       }
-   *instruction |= encoding;
    }
 
-uint8_t *TR::PPCTrg1Src1Imm2Instruction::generateBinaryEncoding()
+void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   insertSource1Register(toPPCCursor(cursor));
-   insertShiftAmount(toPPCCursor(cursor));
-   insertMaskField(toPPCCursor(cursor), getOpCodeValue(), getLongMask());
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src1 = toRealRegister(getSource1Register());
+   TR::RealRegister *src2 = toRealRegister(getSource2Register());
+
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RT_RA_RB:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_RA_RS_RB:
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_BF_RA_RB:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_BF_FRA_FRB:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src1);
+         fillFieldFRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_FRT_FRA_FRB:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src1);
+         fillFieldFRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_VRT_RA_RB:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_VRT_VRA_VRB:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRA(self(), cursor, src1);
+         fillFieldVRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_XT_XA_XB:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXA(self(), cursor, src1);
+         fillFieldXB(self(), cursor, src2);
+         break;
+
+      case FORMAT_FRT_FRA_FRC:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src1);
+         fillFieldFRC(self(), cursor, src2);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src2Instruction", getOpCode().getFormat());
+      }
    }
 
-
-uint8_t *TR::PPCTrg1Src2Instruction::generateBinaryEncoding()
+void TR::PPCTrg1Src2ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src1 = toRealRegister(getSource1Register());
+   TR::RealRegister *src2 = toRealRegister(getSource2Register());
+   uint64_t imm = getLongMask();
 
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   insertSource1Register(toPPCCursor(cursor));
-   insertSource2Register(toPPCCursor(cursor));
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_BF_RA_RB_L:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), (imm & 1) == imm, "0x%llx is out-of-range for L field");
+         *cursor |= imm << 21;
+
+         break;
+
+      case FORMAT_BT_BA_BB:
+         fillFieldBF(self(), cursor, trg);
+         fillFieldBFA(self(), cursor, src1);
+         fillFieldBFB(self(), cursor, src2);
+
+         // TODO The API for specifying which CCR fields to use should be improved
+         *cursor |= imm;
+
+         break;
+
+      case FORMAT_FRT_FRA_FRB_RMC:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src1);
+         fillFieldFRB(self(), cursor, src2);
+         fillFieldRMC(self(), cursor, imm);
+
+         break;
+
+      case FORMAT_RLDCL:
+         {
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+
+         auto maskEnds = getMaskEnds64(self(), imm);
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), maskEnds.second == 63 && maskEnds.first <= maskEnds.second, "Mask of 0x%llx does not match rldcl-form", imm);
+
+         fillFieldMDM(self(), cursor, maskEnds.first);
+
+         break;
+         }
+
+      case FORMAT_RLWNM:
+         {
+         fillFieldRA(self(), cursor, trg);
+         fillFieldRS(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+
+         auto maskEnds = getMaskEnds32(self(), imm);
+         fillFieldMB(self(), cursor, maskEnds.first);
+         fillFieldME(self(), cursor, maskEnds.second);
+
+         break;
+         }
+
+      case FORMAT_VRT_VRA_VRB_SHB:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRA(self(), cursor, src1);
+         fillFieldVRB(self(), cursor, src2);
+         fillFieldSHB(self(), cursor, imm);
+         break;
+
+      case FORMAT_XT_XA_XB_DM:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXA(self(), cursor, src1);
+         fillFieldXB(self(), cursor, src2);
+         fillFieldDM(self(), cursor, imm);
+         break;
+
+      case FORMAT_XT_XA_XB_SHW:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXA(self(), cursor, src1);
+         fillFieldXB(self(), cursor, src2);
+         fillFieldSHW(self(), cursor, imm);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src2ImmInstruction", getOpCode().getFormat());
+      }
    }
 
-uint8_t *TR::PPCTrg1Src2ImmInstruction::generateBinaryEncoding()
+void TR::PPCTrg1Src3Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   insertSource1Register(toPPCCursor(cursor));
-   insertSource2Register(toPPCCursor(cursor));
-   insertMaskField(toPPCCursor(cursor), getOpCodeValue(), getLongMask());
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::RealRegister *src1 = toRealRegister(getSource1Register());
+   TR::RealRegister *src2 = toRealRegister(getSource2Register());
+   TR::RealRegister *src3 = toRealRegister(getSource3Register());
 
-   return cursor;
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RT_RA_RB_RC:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         fillFieldRC(self(), cursor, src3);
+         break;
+
+      case FORMAT_FRT_FRA_FRC_FRB:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldFRA(self(), cursor, src1);
+         fillFieldFRC(self(), cursor, src2);
+         fillFieldFRB(self(), cursor, src3);
+         break;
+
+      case FORMAT_VRT_VRA_VRB_VRC:
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldVRA(self(), cursor, src1);
+         fillFieldVRB(self(), cursor, src2);
+         fillFieldVRC(self(), cursor, src3);
+         break;
+
+      case FORMAT_XT_XA_XB_XC:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldXA(self(), cursor, src1);
+         fillFieldXB(self(), cursor, src2);
+         fillFieldXC(self(), cursor, src3);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src3Instruction", getOpCode().getFormat());
+      }
    }
 
-uint8_t *TR::PPCTrg1Src3Instruction::generateBinaryEncoding()
+void TR::PPCSrc2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertTargetRegister(toPPCCursor(cursor));
-   insertSource1Register(toPPCCursor(cursor));
-   insertSource2Register(toPPCCursor(cursor));
-   insertSource3Register(toPPCCursor(cursor));
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
+   TR::RealRegister *src1 = toRealRegister(getSource1Register());
+   TR::RealRegister *src2 = toRealRegister(getSource2Register());
+
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RA_RB:
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCSrc2Instruction", getOpCode().getFormat());
+      }
    }
-
-uint8_t *TR::PPCSrc2Instruction::generateBinaryEncoding()
-   {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   insertSource1Register(toPPCCursor(cursor));
-   insertSource2Register(toPPCCursor(cursor));
-
-   cursor += PPC_INSTRUCTION_LENGTH;
-   setBinaryLength(PPC_INSTRUCTION_LENGTH);
-   setBinaryEncoding(instructionStart);
-   return cursor;
-   }
-
 
 uint8_t *TR::PPCMemSrc1Instruction::generateBinaryEncoding()
    {

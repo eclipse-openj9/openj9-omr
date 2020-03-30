@@ -3017,7 +3017,7 @@ OMR::CodeGenerator::addStaticRelocation(const TR::StaticRelocation &relocation)
 intptr_t OMR::CodeGenerator::hiValue(intptr_t address)
    {
    if (self()->comp()->compileRelocatableCode()) // We don't want to store values using HI_VALUE at compile time, otherwise, we do this a 2nd time when we relocate (and new value is based on old one)
-      return ((address >> 16) & 0x0000FFFF);
+      return address >> 16;
    else
       return HI_VALUE(address);
    }

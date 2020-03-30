@@ -76,9 +76,9 @@ class InstOpCode: public OMR::InstOpCode
       uint32_t opcode;
 
       /** \brief
-       *     The instruction format as defined by the Power ISA (Section 1.6).
+       *     The instruction format, defining the fields filled by the binary encoder.
        */
-      uint8_t format;
+      PPCInstructionFormat format;
 
       /** \brief
        *     The minimum architecture level set (ALS) which introduced this instruction.
@@ -94,107 +94,111 @@ class InstOpCode: public OMR::InstOpCode
    static const OpCodeMetaData metadata[NumOpCodes];
 
    bool isRecordForm() {return (metadata[_mnemonic].properties & PPCOpProp_IsRecordForm)!=0;}
+   bool hasRecordForm() {return (metadata[_mnemonic].properties & PPCOpProp_HasRecordForm)!=0;}
 
-        bool hasRecordForm() {return (metadata[_mnemonic].properties & PPCOpProp_HasRecordForm)!=0;}
+   bool singleFPOp() {return (metadata[_mnemonic].properties & PPCOpProp_SingleFP)!=0;}
+   bool doubleFPOp() {return (metadata[_mnemonic].properties & PPCOpProp_DoubleFP)!=0;}
+   bool gprOp() {return (metadata[_mnemonic].properties & (PPCOpProp_DoubleFP | PPCOpProp_SingleFP))==0;}
+   bool fprOp() {return (metadata[_mnemonic].properties & (PPCOpProp_DoubleFP | PPCOpProp_SingleFP))!=0;}
 
-        bool singleFPOp() {return (metadata[_mnemonic].properties & PPCOpProp_SingleFP)!=0;}
+   bool useAlternateFormat() {return (metadata[_mnemonic].properties & PPCOpProp_AltFormat)!=0;}
+   bool useAlternateFormatx() {return (metadata[_mnemonic].properties & PPCOpProp_AltFormatx)!=0;}
 
-        bool doubleFPOp() {return (metadata[_mnemonic].properties & PPCOpProp_DoubleFP)!=0;}
+   bool readsCarryFlag() {return (metadata[_mnemonic].properties & PPCOpProp_ReadsCarryFlag)!=0;}
+   bool setsCarryFlag() {return (metadata[_mnemonic].properties & PPCOpProp_SetsCarryFlag)!=0;}
 
-        bool gprOp() {return (metadata[_mnemonic].properties & (PPCOpProp_DoubleFP | PPCOpProp_SingleFP))==0;}
+   bool setsOverflowFlag() {return (metadata[_mnemonic].properties & PPCOpProp_SetsOverflowFlag)!=0;}
 
-        bool fprOp() {return (metadata[_mnemonic].properties & (PPCOpProp_DoubleFP | PPCOpProp_SingleFP))!=0;}
+   bool usesCountRegister() {return (metadata[_mnemonic].properties & PPCOpProp_UsesCtr)!=0;}
+   bool setsCountRegister() {return (metadata[_mnemonic].properties & PPCOpProp_SetsCtr)!=0;}
 
-        bool useAlternateFormat() {return (metadata[_mnemonic].properties & PPCOpProp_AltFormat)!=0;}
+   bool isBranchOp() {return (metadata[_mnemonic].properties & PPCOpProp_BranchOp)!=0;}
+   bool isLoad() {return (metadata[_mnemonic].properties & PPCOpProp_IsLoad)!=0;}
+   bool isStore() {return (metadata[_mnemonic].properties & PPCOpProp_IsStore)!=0;}
+   bool isRegCopy() {return (metadata[_mnemonic].properties & PPCOpProp_IsRegCopy)!=0;}
+   bool isUpdate() {return (metadata[_mnemonic].properties & PPCOpProp_UpdateForm)!=0;}
+   bool isDoubleWord() {return (metadata[_mnemonic].properties & PPCOpProp_DWord)!=0;}
+   bool isCall() {return _mnemonic==bl;}
+   bool isTrap() {return (metadata[_mnemonic].properties & PPCOpProp_Trap)!=0;}
+   bool isTMAbort() {return (metadata[_mnemonic].properties & PPCOpProp_TMAbort)!=0;}
 
-        bool useAlternateFormatx() {return (metadata[_mnemonic].properties & PPCOpProp_AltFormatx)!=0;}
+   bool isFloat() {return (metadata[_mnemonic].properties & (PPCOpProp_SingleFP|PPCOpProp_DoubleFP))!=0;}
+   bool isVMX() {return (metadata[_mnemonic].properties & PPCOpProp_IsVMX)!=0;}
+   bool isVSX() {return (metadata[_mnemonic].properties & PPCOpProp_IsVSX)!=0;}
 
-        bool readsCarryFlag() {return (metadata[_mnemonic].properties & PPCOpProp_ReadsCarryFlag)!=0;}
+   bool usesTarget() {return (metadata[_mnemonic].properties & PPCOpProp_UsesTarget)!=0;}
+   bool useMaskEnd() {return (metadata[_mnemonic].properties & PPCOpProp_UseMaskEnd)!=0;}
 
-        bool setsCarryFlag() {return (metadata[_mnemonic].properties & PPCOpProp_SetsCarryFlag)!=0;}
+   bool isRotateOrShift() {return (metadata[_mnemonic].properties & PPCOpProp_IsRotateOrShift)!=0;}
+   bool isCompare() {return (metadata[_mnemonic].properties & PPCOpProp_CompareOp)!=0;}
 
-        bool setsOverflowFlag() {return (metadata[_mnemonic].properties & PPCOpProp_SetsOverflowFlag)!=0;}
+   bool readsFPSCR() {return (metadata[_mnemonic].properties & PPCOpProp_ReadsFPSCR)!=0;}
+   bool setsFPSCR() {return (metadata[_mnemonic].properties & PPCOpProp_SetsFPSCR)!=0;}
 
-        bool usesCountRegister() {return (metadata[_mnemonic].properties & PPCOpProp_UsesCtr)!=0;}
+   bool isSyncSideEffectFree() {return (metadata[_mnemonic].properties & PPCOpProp_SyncSideEffectFree)!=0;}
 
-        bool setsCountRegister() {return (metadata[_mnemonic].properties & PPCOpProp_SetsCtr)!=0;}
+   bool offsetRequiresWordAlignment() { return (metadata[_mnemonic].properties & PPCOpProp_OffsetRequiresWordAlignment)!=0;}
 
-        bool isBranchOp() {return (metadata[_mnemonic].properties & PPCOpProp_BranchOp)!=0;}
+   bool setsCTR() {return (metadata[_mnemonic].properties & PPCOpProp_SetsCtr)!=0;}
+   bool usesCTR() {return (metadata[_mnemonic].properties & PPCOpProp_UsesCtr)!=0;}
 
-        bool isLoad() {return (metadata[_mnemonic].properties & PPCOpProp_IsLoad)!=0;}
+   bool isCRLogical() {return (metadata[_mnemonic].properties & PPCOpProp_CRLogical)!=0;}
 
-        bool isStore() {return (metadata[_mnemonic].properties & PPCOpProp_IsStore)!=0;}
+   bool isLongRunningFPOp() {return _mnemonic==fdiv  ||
+                                    _mnemonic==fdivs ||
+                                    _mnemonic==fsqrt ||
+                                    _mnemonic==fsqrts;}
 
-        bool isRegCopy() {return (metadata[_mnemonic].properties & PPCOpProp_IsRegCopy)!=0;}
+   bool isFXMult() {return _mnemonic==mullw  ||
+                           _mnemonic==mulli  ||
+                           _mnemonic==mulhw  ||
+                           _mnemonic==mulhd  ||
+                           _mnemonic==mulhwu ||
+                           _mnemonic==mulhdu;}
 
-        bool isUpdate() {return (metadata[_mnemonic].properties & PPCOpProp_UpdateForm)!=0;}
+   bool isAdmin() {return _mnemonic==ret      ||
+                          _mnemonic==fence    ||
+                          _mnemonic==proc     ||
+                          _mnemonic==assocreg ||
+                          _mnemonic==dd;}
 
-        bool isDoubleWord() {return (metadata[_mnemonic].properties & PPCOpProp_DWord)!=0;}
+   static const uint32_t getOpCodeBinaryEncoding(Mnemonic opCode)
+      {return metadata[opCode].opcode;}
+   const uint32_t getOpCodeBinaryEncoding()
+      {return getOpCodeBinaryEncoding(_mnemonic);}
 
-        bool isCall() {return _mnemonic==bl;}
+   const OpCodeMetaData& getMetaData() { return metadata[_mnemonic]; }
+   PPCInstructionFormat getFormat() { return getMetaData().format; }
+   const char* getMnemonicName() { return getMetaData().name; }
 
-        bool isTrap() {return (metadata[_mnemonic].properties & PPCOpProp_Trap)!=0;}
+   int8_t getBinaryLength()
+      {
+      switch (getFormat())
+         {
+         case FORMAT_NONE:
+            return 0;
+         default:
+            return 4;
+         }
+      }
 
-        bool isTMAbort() {return (metadata[_mnemonic].properties & PPCOpProp_TMAbort)!=0;}
+   int8_t getMaxBinaryLength()
+      {
+      return getBinaryLength();
+      }
 
-        bool isFloat() {return (metadata[_mnemonic].properties & (PPCOpProp_SingleFP|PPCOpProp_DoubleFP))!=0;}
-
-        bool isVMX() {return (metadata[_mnemonic].properties & PPCOpProp_IsVMX)!=0;}
-
-        bool isVSX() {return (metadata[_mnemonic].properties & PPCOpProp_IsVSX)!=0;}
-
-        bool usesTarget() {return (metadata[_mnemonic].properties & PPCOpProp_UsesTarget)!=0;}
-
-        bool useMaskEnd() {return (metadata[_mnemonic].properties & PPCOpProp_UseMaskEnd)!=0;}
-
-        bool isRotateOrShift() {return (metadata[_mnemonic].properties & PPCOpProp_IsRotateOrShift)!=0;}
-
-        bool isCompare() {return (metadata[_mnemonic].properties & PPCOpProp_CompareOp)!=0;}
-
-        bool readsFPSCR() {return (metadata[_mnemonic].properties & PPCOpProp_ReadsFPSCR)!=0;}
-
-        bool setsFPSCR() {return (metadata[_mnemonic].properties & PPCOpProp_SetsFPSCR)!=0;}
-
-        bool isSyncSideEffectFree() {return (metadata[_mnemonic].properties & PPCOpProp_SyncSideEffectFree)!=0;}
-
-        bool offsetRequiresWordAlignment() { return (metadata[_mnemonic].properties & PPCOpProp_OffsetRequiresWordAlignment)!=0;}
-
-        bool setsCTR() {return (metadata[_mnemonic].properties & PPCOpProp_SetsCtr)!=0;}
-
-        bool usesCTR() {return (metadata[_mnemonic].properties & PPCOpProp_UsesCtr)!=0;}
-
-        bool isCRLogical() {return (metadata[_mnemonic].properties & PPCOpProp_CRLogical)!=0;}
-
-        bool isLongRunningFPOp() {return _mnemonic==fdiv  ||
-                                         _mnemonic==fdivs ||
-                                         _mnemonic==fsqrt ||
-                                         _mnemonic==fsqrts;}
-
-        bool isFXMult() {return _mnemonic==mullw  ||
-                                _mnemonic==mulli  ||
-                                _mnemonic==mulhw  ||
-                                _mnemonic==mulhd  ||
-                                _mnemonic==mulhwu ||
-                                _mnemonic==mulhdu;}
-
-        bool isAdmin() {return _mnemonic==ret      ||
-                               _mnemonic==fence    ||
-                               _mnemonic==proc     ||
-                               _mnemonic==assocreg ||
-                               _mnemonic==dd;}
-
-        const char* getMnemonicName() { return metadata[_mnemonic].name; }
-
-        static const uint32_t getOpCodeBinaryEncoding(Mnemonic opCode)
-           {return metadata[opCode].opcode;}
-        const uint32_t getOpCodeBinaryEncoding()
-           {return getOpCodeBinaryEncoding(_mnemonic);}
-
-        uint8_t *copyBinaryToBuffer(uint8_t *cursor)
-           {
-           *reinterpret_cast<uint32_t*>(cursor) = metadata[_mnemonic].opcode;
-           return cursor;
-           }
+   uint8_t *copyBinaryToBuffer(uint8_t *cursor)
+      {
+      switch (getFormat())
+         {
+         case FORMAT_NONE:
+            break;
+         default:
+            *reinterpret_cast<uint32_t*>(cursor) = metadata[_mnemonic].opcode;
+            break;
+         }
+      return cursor;
+      }
    };
 }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -744,7 +744,7 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction     *cur
       else
          crtemp->setHasBeenAssignedInMethod(true);
       crtemp_state = crtemp->getState();
-      TR::Instruction *ccrInstr = generateTrg1ImmInstruction(self()->cg(), TR::InstOpCode::mtcrf, currentNode, crtemp, 1<<(7-toPPCCRBackingStore(location)->getCcrFieldIndex()), currentInstruction);
+      TR::Instruction *ccrInstr = generateSrc1Instruction(self()->cg(), TR::InstOpCode::mtocrf, currentNode, crtemp, 1<<(7-toPPCCRBackingStore(location)->getCcrFieldIndex()), currentInstruction);
       self()->cg()->traceRAInstruction(ccrInstr);
       }
 
@@ -1108,7 +1108,7 @@ TR::RealRegister *OMR::Power::Machine::reverseSpillState(TR::Instruction      *c
             sindex = (tindex - sindex) * 4;
          self()->cg()->traceRAInstruction(generateTrg1Src1Imm2Instruction(self()->cg(), TR::InstOpCode::rlwinm, currentNode, crtemp, crtemp, sindex, 0xFFFFFFFF, currentInstruction));
          }
-      self()->cg()->traceRAInstruction(generateTrg1ImmInstruction(self()->cg(), TR::InstOpCode::mfcr, currentNode, crtemp, 0xFF, currentInstruction));
+      self()->cg()->traceRAInstruction(generateTrg1Instruction(self()->cg(), TR::InstOpCode::mfcr, currentNode, crtemp, currentInstruction));
       }
 
    return targetRegister;

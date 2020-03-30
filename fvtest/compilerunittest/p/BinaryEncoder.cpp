@@ -119,7 +119,7 @@ public:
     BinaryInstruction getBlankEncoding(TR::InstOpCode opCode) {
         opCode.copyBinaryToBuffer(reinterpret_cast<uint8_t*>(&buf[0]));
 
-        return getEncodedInstruction(4);
+        return getEncodedInstruction(opCode.getBinaryLength());
     }
 
     BinaryInstruction findDifferingBits(TR::InstOpCode op1, TR::InstOpCode op2) {
@@ -905,14 +905,13 @@ INSTANTIATE_TEST_CASE_P(Branch, PPCRecordFormSanityTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::bun,   TR::InstOpCode::bad, BinaryInstruction())
 ));
 
-// TODO: Disabled due to known issue with encoding mtfsfi. instructions
-/*INSTANTIATE_TEST_CASE_P(SprMove, PPCImm2EncodingTest, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(SprMove, PPCImm2EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::mtfsfi, 0x0, 0x0, 0xfc01010cu),
     std::make_tuple(TR::InstOpCode::mtfsfi, 0xf, 0x0, 0xfc01f10cu),
     std::make_tuple(TR::InstOpCode::mtfsfi, 0x0, 0xf, 0xff80010cu),
     std::make_tuple(TR::InstOpCode::mtfsfi, 0x0, 0x7, 0xff81010cu),
     std::make_tuple(TR::InstOpCode::mtfsfi, 0x0, 0x8, 0xfc00010cu)
-));*/
+));
 
 INSTANTIATE_TEST_CASE_P(SprMove, PPCTrg1EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::mfcr,      TR::RealRegister::gr0,  0x7c000026u),
@@ -937,13 +936,12 @@ INSTANTIATE_TEST_CASE_P(SprMove, PPCTrg1ImmEncodingTest, ::testing::Values(
 INSTANTIATE_TEST_CASE_P(SprMove, PPCSrc1EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::mtctr,  TR::RealRegister::gr0,     0u, 0x7c0903a6u),
     std::make_tuple(TR::InstOpCode::mtctr,  TR::RealRegister::gr31,    0u, 0x7fe903a6u),
-    // TODO: Disabled due to known issue with encoding mtfsf., mtfsfl., and mtfsfw. instructions
-    /*std::make_tuple(TR::InstOpCode::mtfsf,  TR::RealRegister::fp0,  0xffu, 0xfdfe058eu),
+    std::make_tuple(TR::InstOpCode::mtfsf,  TR::RealRegister::fp0,  0xffu, 0xfdfe058eu),
     std::make_tuple(TR::InstOpCode::mtfsf,  TR::RealRegister::fp31, 0x00u, 0xfc00fd8eu),
     std::make_tuple(TR::InstOpCode::mtfsfl, TR::RealRegister::fp0,  0xffu, 0xfffe058eu),
     std::make_tuple(TR::InstOpCode::mtfsfl, TR::RealRegister::fp31, 0x00u, 0xfe00fd8eu),
     std::make_tuple(TR::InstOpCode::mtfsfw, TR::RealRegister::fp0,  0xffu, 0xfdff058eu),
-    std::make_tuple(TR::InstOpCode::mtfsfw, TR::RealRegister::fp31, 0x00u, 0xfc01fd8eu),*/
+    std::make_tuple(TR::InstOpCode::mtfsfw, TR::RealRegister::fp31, 0x00u, 0xfc01fd8eu),
     std::make_tuple(TR::InstOpCode::mtlr,   TR::RealRegister::gr0,     0u, 0x7c0803a6u),
     std::make_tuple(TR::InstOpCode::mtlr,   TR::RealRegister::gr31,    0u, 0x7fe803a6u)
 ));
@@ -1418,6 +1416,15 @@ INSTANTIATE_TEST_CASE_P(ConditionLogic, PPCTrg1Src1EncodingTest, ::testing::Valu
     std::make_tuple(TR::InstOpCode::setb, TR::RealRegister::gr0,  TR::RealRegister::cr7, 0x7c1c0100u)
 ));
 
+INSTANTIATE_TEST_CASE_P(ConditionLogic, PPCSrc1EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::mtcr,   TR::RealRegister::gr0,      0, 0x7c0ff120u),
+    std::make_tuple(TR::InstOpCode::mtcr,   TR::RealRegister::gr31,     0, 0x7feff120u),
+    std::make_tuple(TR::InstOpCode::mtocrf, TR::RealRegister::gr0,  0x01u, 0x7c101120u),
+    std::make_tuple(TR::InstOpCode::mtocrf, TR::RealRegister::gr31, 0x01u, 0x7ff01120u),
+    std::make_tuple(TR::InstOpCode::mtocrf, TR::RealRegister::gr0,  0x80u, 0x7c180120u),
+    std::make_tuple(TR::InstOpCode::mtocrf, TR::RealRegister::gr31, 0x80u, 0x7ff80120u)
+));
+
 INSTANTIATE_TEST_CASE_P(ConditionLogic, PPCTrg1ImmEncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::mfocrf, TR::RealRegister::gr0,  0x01u, 0x7c101026u),
     std::make_tuple(TR::InstOpCode::mfocrf, TR::RealRegister::gr31, 0x01u, 0x7ff01026u),
@@ -1500,6 +1507,8 @@ INSTANTIATE_TEST_CASE_P(ConditionLogic, PPCRecordFormSanityTest, ::testing::Valu
     std::make_tuple(TR::InstOpCode::crxor,  TR::InstOpCode::bad, BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::mcrf,   TR::InstOpCode::bad, BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::mfocrf, TR::InstOpCode::bad, BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::mtcr,   TR::InstOpCode::bad, BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::mtocrf, TR::InstOpCode::bad, BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::setb,   TR::InstOpCode::bad, BinaryInstruction())
 ));
 
@@ -1606,11 +1615,10 @@ INSTANTIATE_TEST_CASE_P(BitCounting, PPCRecordFormSanityTest, ::testing::Values(
 ));
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotate, PPCTrg1Src1ImmEncodingTest, ::testing::Values(
-    // TODO: Disabled due to known issues with encoding extswsli and extswsli. instructions
-    /*std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr1,  TR::RealRegister::gr2,   0u, 0x7c4106f4u),
+    std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr1,  TR::RealRegister::gr2,   0u, 0x7c4106f4u),
     std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr31, TR::RealRegister::gr0,  20u, 0x7c1fa6f4u),
     std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr0,  TR::RealRegister::gr31, 63u, 0x7fe0fef6u),
-    std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr15, TR::RealRegister::gr16, 32u, 0x7e0f06f6u),*/
+    std::make_tuple(TR::InstOpCode::extswsli, TR::RealRegister::gr15, TR::RealRegister::gr16, 32u, 0x7e0f06f6u),
     std::make_tuple(TR::InstOpCode::sradi,    TR::RealRegister::gr1,  TR::RealRegister::gr2,   0u, 0x7c410674u),
     std::make_tuple(TR::InstOpCode::sradi,    TR::RealRegister::gr31, TR::RealRegister::gr0,  20u, 0x7c1fa674u),
     std::make_tuple(TR::InstOpCode::sradi,    TR::RealRegister::gr0,  TR::RealRegister::gr31, 63u, 0x7fe0fe76u),
@@ -2229,8 +2237,7 @@ INSTANTIATE_TEST_CASE_P(VSXVectorFixed, PPCTrg1Src2ImmEncodingTest, ::testing::V
     std::make_tuple(TR::InstOpCode::xxsldwi,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,     3, 0xf0000310u)
 ));
 
-// TODO: Disabled due to known issues encoding xxsel instructions
-/*INSTANTIATE_TEST_CASE_P(VSXVectorFixed, PPCTrg1Src3EncodingTest, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(VSXVectorFixed, PPCTrg1Src3EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr31, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  0xf3e00030u),
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr63, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  0xf3e00031u),
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr0,  TR::RealRegister::vsr31, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  0xf01f0030u),
@@ -2239,7 +2246,7 @@ INSTANTIATE_TEST_CASE_P(VSXVectorFixed, PPCTrg1Src2ImmEncodingTest, ::testing::V
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr63, TR::RealRegister::vsr0,  0xf000f832u),
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr31, 0xf00007f0u),
     std::make_tuple(TR::InstOpCode::xxsel, TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr0,  TR::RealRegister::vsr63, 0xf00007f8u)
-));*/
+));
 
 INSTANTIATE_TEST_CASE_P(VSXVectorFixed, PPCRecordFormSanityTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::xxland,   TR::InstOpCode::bad, BinaryInstruction()),
@@ -2681,11 +2688,10 @@ INSTANTIATE_TEST_CASE_P(FloatRound, PPCRecordFormSanityTest, ::testing::Values(
 ));
 
 INSTANTIATE_TEST_CASE_P(DFP, PPCTrg1Src1ImmEncodingTest, ::testing::Values(
-    // TODO: Disabled due to known issues encoding dtstdc instructions
-    /*std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr0, TR::RealRegister::fp31, 0x3fu, 0xec1ffd84u),
+    std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr0, TR::RealRegister::fp31, 0x3fu, 0xec1ffd84u),
     std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr7, TR::RealRegister::fp0,  0x3fu, 0xef80fd84u),
     std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr0, TR::RealRegister::fp31, 0x00u, 0xec1f0184u),
-    std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr7, TR::RealRegister::fp0,  0x00u, 0xef800184u),*/
+    std::make_tuple(TR::InstOpCode::dtstdc, TR::RealRegister::cr7, TR::RealRegister::fp0,  0x00u, 0xef800184u),
     std::make_tuple(TR::InstOpCode::dtstdg, TR::RealRegister::cr0, TR::RealRegister::fp31, 0x3fu, 0xec1ffdc4u),
     std::make_tuple(TR::InstOpCode::dtstdg, TR::RealRegister::cr7, TR::RealRegister::fp0,  0x3fu, 0xef80fdc4u),
     std::make_tuple(TR::InstOpCode::dtstdg, TR::RealRegister::cr0, TR::RealRegister::fp31, 0x00u, 0xec1f01c4u),
@@ -2709,8 +2715,7 @@ INSTANTIATE_TEST_CASE_P(DFP, PPCTrg1Src1EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::dxex,    TR::RealRegister::fp0,  TR::RealRegister::fp31, 0xec00fac4u)
 ));
 
-// TODO: Disabled due to assert failures encoding dqua/drrnd instructions with 0 immediates
-/*INSTANTIATE_TEST_CASE_P(DFP, PPCTrg1Src2ImmEncodingTest, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(DFP, PPCTrg1Src2ImmEncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::dqua,  TR::RealRegister::fp31, TR::RealRegister::fp0,  TR::RealRegister::fp0,  0x0u, 0xefe00006u),
     std::make_tuple(TR::InstOpCode::dqua,  TR::RealRegister::fp0,  TR::RealRegister::fp31, TR::RealRegister::fp0,  0x0u, 0xec1f0006u),
     std::make_tuple(TR::InstOpCode::dqua,  TR::RealRegister::fp0,  TR::RealRegister::fp0,  TR::RealRegister::fp31, 0x0u, 0xec00f806u),
@@ -2723,7 +2728,7 @@ INSTANTIATE_TEST_CASE_P(DFP, PPCTrg1Src1EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::drrnd, TR::RealRegister::fp0,  TR::RealRegister::fp0,  TR::RealRegister::fp0,  0x3u, 0xec000646u),
     std::make_tuple(TR::InstOpCode::drrnd, TR::RealRegister::fp0,  TR::RealRegister::fp0,  TR::RealRegister::fp0,  0x2u, 0xec000446u),
     std::make_tuple(TR::InstOpCode::drrnd, TR::RealRegister::fp0,  TR::RealRegister::fp0,  TR::RealRegister::fp0,  0x1u, 0xec000246u)
-));*/
+));
 
 INSTANTIATE_TEST_CASE_P(DFP, PPCRecordFormSanityTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::dcffix,  TR::InstOpCode::dcffix_r,  0x00000001u),

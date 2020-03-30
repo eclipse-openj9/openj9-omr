@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -89,13 +89,13 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
             fillReg = cg->allocateRegister();
             if (dofastPath && cg->comp()->target().is64Bit())
                {
-               generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, fillReg, halfword);
+               generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, fillReg, (int16_t)halfword);
                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, fillReg, fillReg,  16, 0xffff0000);
                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldimi, node, fillReg, fillReg,  32, 0xffffffff00000000ULL);
                }
             else
                {
-               generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, fillReg, halfword);
+               generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, fillReg, (int16_t)halfword);
                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, fillReg, fillReg, halfword);
                }
             }
@@ -110,13 +110,13 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
             fillReg = cg->allocateRegister();
             if (dofastPath && cg->comp()->target().is64Bit())
                {
-               generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, fillReg, halfword);
+               generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, fillReg, (int16_t)halfword);
                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, fillReg, fillReg,  16, 0xffff0000);
                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldimi, node, fillReg, fillReg,  32, 0xffffffff00000000ULL);
                }
             else
                {
-               generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, fillReg, halfword);
+               generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, fillReg, (int16_t)halfword);
                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, fillReg, fillReg, halfword);
                }
             }

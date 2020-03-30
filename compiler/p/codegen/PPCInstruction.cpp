@@ -324,19 +324,6 @@ TR::PPCImmInstruction *TR::PPCImmInstruction::getPPCImmInstruction()
    }
 #endif
 
-// TR::PPCImm2Instruction:: member functions
-
-
-// The following safe virtual downcast method is only used in an assertion
-// check within "toPPCImmInstruction"
-#if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-TR::PPCImm2Instruction *TR::PPCImm2Instruction::getPPCImm2Instruction()
-   {
-   return this;
-   }
-#endif
-
-
 // TR::PPCSrc1Instruction:: member functions
 
 bool TR::PPCSrc1Instruction::refsRegister(TR::Register *reg)
@@ -382,13 +369,6 @@ bool TR::PPCSrc1Instruction::usesRegister(TR::Register *reg)
       return true;
       }
    return false;
-   }
-
-// TR::PPCDepImmInstruction:: member functions
-
-TR::PPCDepImmInstruction *TR::PPCDepImmInstruction::getPPCDepImmInstruction()
-   {
-   return this;
    }
 
 // TR::PPCTrg1Instruction:: member functions

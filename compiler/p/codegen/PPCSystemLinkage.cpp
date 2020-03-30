@@ -700,7 +700,7 @@ TR::PPCSystemLinkage::createPrologue(
         machine->getRealRegister(TR::RealRegister::cr3)->getHasBeenAssignedInMethod() ||
         machine->getRealRegister(TR::RealRegister::cr4)->getHasBeenAssignedInMethod() )
       {
-      cursor = generateTrg1ImmInstruction(cg(), TR::InstOpCode::mfcr, firstNode, gr0, 0xff, cursor);
+      cursor = generateTrg1Instruction(cg(), TR::InstOpCode::mfcr, firstNode, gr0, cursor);
       cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_st, firstNode, new (trHeapMemory()) TR::MemoryReference(sp, TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress(), cg()), gr0, cursor);
       }
 
@@ -829,7 +829,7 @@ TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
         machine->getRealRegister(TR::RealRegister::cr4)->getHasBeenAssignedInMethod() )
       {
       cursor = generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, currentNode, gr0, new (trHeapMemory()) TR::MemoryReference(sp, TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress(), cg()), cursor);
-      cursor = generateTrg1ImmInstruction(cg(), TR::InstOpCode::mtcrf, currentNode, gr0, 0xff, cursor);
+      cursor = generateSrc1Instruction(cg(), TR::InstOpCode::mtcr, currentNode, gr0, 0, cursor);
       }
 
    }
@@ -1299,7 +1299,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                if (!cg()->canClobberNodesRegister(child, 0))
                   {
                   tempRegister = cg()->allocateRegister(TR_VSX_VECTOR);
-                  generateTrg1Src1Instruction(cg(), TR::InstOpCode::xxlor, callNode, tempRegister, argReg);
+                  generateTrg1Src2Instruction(cg(), TR::InstOpCode::xxlor, callNode, tempRegister, argReg, argReg);
                   argReg = tempRegister;
                   }
                if (numVectorArgs == 0)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -425,43 +425,19 @@ OMR::RV::TreeEvaluator::lushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register *
-OMR::RV::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::landEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return RorIhelper(node, TR::InstOpCode::_and, TR::InstOpCode::_andi, cg);
-	}
-
-TR::Register *
-OMR::RV::TreeEvaluator::lorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::lorEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-        return RorIhelper(node, TR::InstOpCode::_or, TR::InstOpCode::_ori, cg);
-	}
-
-TR::Register *
-OMR::RV::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::lxorEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return RorIhelper(node, TR::InstOpCode::_xor, TR::InstOpCode::_xori, cg);
-	}
-
-TR::Register *
 OMR::RV::TreeEvaluator::iandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::iandEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return RorIhelper(node, TR::InstOpCode::_and, TR::InstOpCode::_andi, cg);
-	}
+   {
+   return RorIhelper(node, TR::InstOpCode::_and, TR::InstOpCode::_andi, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::iorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::iorEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
+   {
    return RorIhelper(node, TR::InstOpCode::_or, TR::InstOpCode::_ori, cg);
-	}
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::ixorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::ixorEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return RorIhelper(node, TR::InstOpCode::_xor, TR::InstOpCode::_xori, cg);
-	}
+   {
+   return RorIhelper(node, TR::InstOpCode::_xor, TR::InstOpCode::_xori, cg);
+   }

@@ -357,10 +357,129 @@ OMR::RV::TreeEvaluator::ishrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return shiftHelper(node, TR::InstOpCode::_sraw, TR::InstOpCode::_sraiw, cg);
    }
 
+// also handles bushr, sushr and lushr
 TR::Register *
 OMR::RV::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return shiftHelper(node, TR::InstOpCode::_srlw, TR::InstOpCode::_srliw, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+
+   TR::Register *src1Reg;
+   TR::Register *trgReg;
+
+   int width = TR::DataType::getSize(node->getDataType()) * 8;
+
+   if (secondChild->getOpCode().isLoadConst())
+      {
+      /*
+       * If shift amount is a constant value, prefer srli / srliw.
+       *
+       * Only low bits 6 bits (5 for Int32, 4 for Int16, 3 for Int8)
+       * are considered, higher bits are ignored. This is to be consistent
+       * with behavior of srl / srlw.
+       *
+       * If data width is 8 or 16 bits, we have to truncate the value.
+       * We do this by combining the requested right shift by a constant
+       * with "truncation" right shift, for example:
+       *
+       *   For...
+       *
+       *     (bushr
+       *        (<src1>)
+       *        (iconst 5)
+       *
+       *   ...we generate:
+       *
+       *       slliw trg, src1, 24   ;; 24 = 32(reg width) - 8(data width)
+       *       srliw trg, trg,  29   ;; 16 = 32(reg width) - 8(data width) + 5(requested shift amount)
+       *
+       * Finally, if constant is 0, we just pass-through the source value.
+       */
+      int64_t shamt = secondChild->getLongInt() & (width - 1);
+      if (shamt != 0)
+         {
+         src1Reg = cg->evaluate(firstChild);
+         trgReg = cg->allocateRegister(TR_GPR);
+
+         if (width < 32)
+            {
+            generateITYPE(TR::InstOpCode::_slliw, node, trgReg, src1Reg, 32 - width,         cg);
+            generateITYPE(TR::InstOpCode::_srliw, node, trgReg, trgReg,  32 - width + shamt, cg);
+            }
+         else
+            {
+            generateITYPE(width == 64 ? TR::InstOpCode::_srli : TR::InstOpCode::_srliw, node, trgReg, src1Reg, shamt, cg);
+            }
+         }
+      else
+         {
+         trgReg = cg->evaluate(firstChild);
+         }
+      }
+   else
+      {
+      /*
+       * If shift amount is not a constant, use srl / srlw.
+       *
+       * Only low bits 6 bits (5 for Int32, 4 for Int16, 3 for Int8)
+       * are considered, higher bits are ignored.
+       *
+       * If data width is 8 or 16 bits, we have to truncate the value
+       * before doing the requested right shift (to get rid of ones
+       * in higher 24 or 16 bits in case sign bit is set. If data width
+       * is 8bits, use andi rather than shift left, shift right - this
+       * save us one instruction.
+       *
+       * We also have to first clear high 57bits (49 for Int16) of shift
+       * amount.
+       *
+       * Finally, after the actual shift, we truncate again - this is
+       * for case the shift amount happens to be zero and value sign bit
+       * is set (and then cleared by first truncation).
+       */
+
+      TR::Register *src2Reg = nullptr;
+
+      src1Reg = cg->evaluate(firstChild);
+      trgReg = cg->allocateRegister(TR_GPR);
+
+      if (width < 32)
+         {
+         /*
+          * Truncate value (src1Reg). We use trgReg to temporarily hold truncated
+          * value.
+          */
+         if (width == 8)
+            {
+            generateITYPE(TR::InstOpCode::_andi, node, trgReg, src1Reg, 0xFF, cg);
+            }
+         else
+            {
+            generateITYPE(TR::InstOpCode::_slliw, node, trgReg, src1Reg, 16, cg);
+            generateITYPE(TR::InstOpCode::_srliw, node, trgReg, trgReg, 16, cg);
+            }
+         src1Reg = trgReg;
+
+         /*
+          * And clear high 57bits (49 for Int16) of shift amount and store
+          * into src2Reg.
+          */
+         src2Reg = cg->allocateRegister(TR_GPR);
+         generateITYPE(TR::InstOpCode::_andi, node, src2Reg, cg->evaluate(secondChild), width-1, cg);
+         }
+      else
+         {
+         src2Reg = cg->evaluate(secondChild);
+         }
+
+      generateRTYPE(width == 64 ? TR::InstOpCode::_srl : TR::InstOpCode::_srlw, node, trgReg, src1Reg, src2Reg, cg);
+      truncate(node, trgReg, cg);
+      }
+
+   node->setRegister(trgReg);
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   return trgReg;
    }
 
 // also handles lrol
@@ -451,12 +570,6 @@ TR::Register *
 OMR::RV::TreeEvaluator::lshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return shiftHelper(node, TR::InstOpCode::_sra, TR::InstOpCode::_srai, cg);
-   }
-
-TR::Register *
-OMR::RV::TreeEvaluator::lushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return shiftHelper(node, TR::InstOpCode::_srl, TR::InstOpCode::_srli, cg);
    }
 
 // also handles band, sand and land

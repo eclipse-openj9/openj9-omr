@@ -156,9 +156,9 @@
     TR::TreeEvaluator::ishrEvaluator ,	// TR::bshr		// shift byte right arithmetically                  (child1 >> child2)
     TR::TreeEvaluator::ishrEvaluator ,	// TR::sshr		// shift short integer arithmetically               (child1 >> child2)
     TR::TreeEvaluator::iushrEvaluator, // TR::iushr		// shift integer right logically                   (child1 >> child2)
-    TR::TreeEvaluator::lushrEvaluator, // TR::lushr		// shift long integer right logically              (child1 >> child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bushrEvaluator ,	// TR::bushr		// shift byte right logically                      (child1 >> child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sushrEvaluator ,	// TR::sushr		// shift short integer right logically             (child1 >> child2)
+    TR::TreeEvaluator::iushrEvaluator, // TR::lushr		// shift long integer right logically              (child1 >> child2)
+    TR::TreeEvaluator::iushrEvaluator ,	// TR::bushr		// shift byte right logically                      (child1 >> child2)
+    TR::TreeEvaluator::iushrEvaluator ,	// TR::sushr		// shift short integer right logically             (child1 >> child2)
     TR::TreeEvaluator::irolEvaluator, // TR::irol		// rotate integer left
     TR::TreeEvaluator::irolEvaluator, // TR::lrol		// rotate long integer left
     TR::TreeEvaluator::iandEvaluator ,	// TR::iand		// boolean and of 2 integers

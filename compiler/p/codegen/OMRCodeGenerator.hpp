@@ -338,7 +338,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::SymbolReference &getForwardHalfWordArrayCopySymbolReference();
    TR::SymbolReference &getReferenceArrayCopySymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCreferenceArrayCopy, false, false, false); }
    TR::SymbolReference &getGeneralArrayCopySymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCgeneralArrayCopy, false, false, false); }
-   TR::SymbolReference &getArrayTranslateTRTOSimpleVMXSymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayTranslateTRTOSimpleVMX, false, false, false); }
    TR::SymbolReference &getArrayCmpVMXSymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayCmpVMX, false, false, false); }
    TR::SymbolReference &getArrayCmpLenVMXSymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayCmpLenVMX, false, false, false); }
    TR::SymbolReference &getArrayCmpScalarSymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayCmpScalar, false, false, false); }

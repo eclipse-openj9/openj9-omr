@@ -59,8 +59,15 @@ OMR::Power::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnem
 void
 OMR::Power::Instruction::remove()
    {
-   self()->getPrev()->setNext(self()->getNext());
-   self()->getNext()->setPrev(self()->getPrev());
+   if (self()->getPrev())
+      self()->getPrev()->setNext(self()->getNext());
+   else
+      self()->cg()->setFirstInstruction(self()->getNext());
+
+   if (self()->getNext())
+      self()->getNext()->setPrev(self()->getPrev());
+   else
+      self()->cg()->setAppendInstruction(self()->getPrev());
    }
 
 TR::Register*

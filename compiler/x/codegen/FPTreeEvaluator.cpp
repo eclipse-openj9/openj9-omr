@@ -729,7 +729,7 @@ TR::Register *OMR::X86::TreeEvaluator::dsqrtEvaluator(TR::Node *node, TR::CodeGe
    TR::Register *targetRegister = cg->allocateRegister(TR_FPR);
 
    generateRegRegInstruction(SQRTSDRegReg, node, targetRegister, opRegister, cg);
-   
+
    node->setRegister(targetRegister);
    cg->decReferenceCount(operand);
    return targetRegister;
@@ -1439,6 +1439,10 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
          generateLabelInstruction(JE4, node, exceptionLabel, cg);
          }
 
+      //TODO: (omr issue #4969): Remove once support for spills in OOL paths is added
+      TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)2, cg);
+      deps->addPostCondition(targetRegister, TR::RealRegister::NoReg, cg);
+      deps->addPostCondition(sourceRegister, TR::RealRegister::NoReg, cg);
       {
       TR_OutlinedInstructionsGenerator og(exceptionLabel, node, cg);
       // at this point, target is set to -INF and there can only be THREE possible results: -INF, +INF, NaN
@@ -1464,7 +1468,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
       generateLabelInstruction(JMP4, node, endLabel, cg);
       }
 
-      generateLabelInstruction(LABEL, node, endLabel, cg);
+      generateLabelInstruction(LABEL, node, endLabel, deps, cg);
       if (longTarget)
          {
          generateRegInstruction(ROR8Reg1, node, targetRegister, cg);

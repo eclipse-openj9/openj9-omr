@@ -1606,7 +1606,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_RamMethodSequence);
          return;
          }
-      else if (symbol->isStartPC() && cg->needRelocationsForCurrentMethodPC())
+      else if (symbol->isStartPC())
          {
          // use inSnippet, as the relocation mechanism is already set up there
          TR::Register *reg = _baseRegister = cg->allocateRegister();

@@ -2035,14 +2035,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          argSize += gprSize;
       }
 
-   if (!self()->isFirstParmAtFixedOffset())
-      {
-      stackOffset = argSize;
-      }
-   else
-      {
-      stackOffset = self()->getOffsetToFirstParm();
-      }
+   stackOffset = self()->isFirstParmAtFixedOffset() ? self()->getOffsetToFirstParm() : argSize;
 
    //store env register
    stackOffset = self()->storeExtraEnvRegForBuildArgs(callNode, self(), dependencies, isFastJNI, stackOffset, gprSize, numIntegerArgs);

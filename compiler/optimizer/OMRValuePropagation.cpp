@@ -6053,6 +6053,7 @@ bool OMR::ValuePropagation::prepareForBlockVersion(TR_LinkHead<ArrayLengthToVers
          }
 
     TR_OpaqueClassBlock *instanceOfClass = NULL;
+    TR_OpaqueClassBlock *indexSourceObjectClass = NULL;
 
       //check if aloads are invariants
     if (!arrayLen->getOpCode().isLoadDirect())
@@ -6185,9 +6186,21 @@ bool OMR::ValuePropagation::prepareForBlockVersion(TR_LinkHead<ArrayLengthToVers
       if (!shouldAnalyze)
          continue;
 
+      if(baseNode && baseNode->getOpCode().getOpCodeValue() == TR::iloadi)
+         {
+         // Get the class of the field
+         int32_t len;
+         TR::SymbolReference *symRefField = baseNode->getSymbolReference();
+         char *sig = symRefField->getOwningMethod(comp())->classNameOfFieldOrStatic(symRefField->getCPIndex(), len);
+         TR_OpaqueClassBlock *classOfField = (sig)?fe()->getClassFromSignature(sig, len,symRefField->getOwningMethod(comp())):NULL;
+         if (!classOfField)
+            continue;
+         indexSourceObjectClass = classOfField;
+         }
+
       if (!array )
          {
-         createNewBucketForArrayIndex(array, arrayLengths, c, baseNode, bndchkNode, instanceOfClass);
+         createNewBucketForArrayIndex(array, arrayLengths, c, baseNode, bndchkNode, instanceOfClass, indexSourceObjectClass);
          continue;
          }
 
@@ -6299,7 +6312,7 @@ bool OMR::ValuePropagation::prepareForBlockVersion(TR_LinkHead<ArrayLengthToVers
          }//if arrayIndexInfoFound
       else
          {
-         createNewBucketForArrayIndex(array, arrayLengths, c, baseNode, bndchkNode, instanceOfClass);
+         createNewBucketForArrayIndex(array, arrayLengths, c, baseNode, bndchkNode, instanceOfClass, indexSourceObjectClass);
          continue; //next bndchk
          }
 
@@ -6345,8 +6358,14 @@ bool OMR::ValuePropagation::prepareForBlockVersion(TR_LinkHead<ArrayLengthToVers
 
 void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blockInfo, List<TR::Node> *comparisonNodes)
    {
-   //walk arrayLength and for each one walk all buckets - create tests for min and max.
+   // Walk arrayLength and for each one walk all buckets - create tests for min, max, null-tests and instanceof.
+   // Also performs some conservative calculations to decide if the required tests might be to costly.
+   int numBoundChecksRemoved=0, numInstanceOfChecksAdded=0, numOfNullTestsAdded=0;
+   int32_t len;
+   const char *sig;
+   TR_OpaqueClassBlock *clazz;
    TR::Node *nextComparisonNode;
+
    for (ArrayLengthToVersion *arrayLength = blockInfo->_arrayLengths->getFirst(); arrayLength; arrayLength = arrayLength->getNext())
       {
       bool arrayLengthVersioned=false;
@@ -6356,6 +6375,7 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
          if (!arrayIndex->_versionBucket)
             continue;
 
+         numBoundChecksRemoved += arrayIndex->_bndChecks->getSize();
 
          if (performTransformation(comp(), "%s Creating tests outside block_%d for versioning arraylenth %p \n", OPT_DETAILS, blockInfo->_block->getNumber(), arrayLength->_arrayLen))
             {
@@ -6367,7 +6387,6 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
 
             if (arrayIndex->_baseNode)
                {
-
                maxIndex = TR::Node::create(TR::iadd,2, arrayIndex->_baseNode->duplicateTree(), TR::Node::create(arrayLength->_arrayLen,TR::iconst, 0, arrayIndex->_max));
                minIndex = TR::Node::create(TR::iadd,2, arrayIndex->_baseNode->duplicateTree(), TR::Node::create(arrayLength->_arrayLen,TR::iconst, 0, arrayIndex->_min));
                }
@@ -6393,6 +6412,38 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
                traceMsg(comp(), "Second test - Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
             temp.add(nextComparisonNode);
+
+            if (arrayIndex->_baseNode && arrayIndex->_instanceOfClass && 
+                arrayIndex->_baseNode->getOpCode().getOpCodeValue() == TR::iloadi)
+               {
+               // InstanceOf check for the object we load the array index from
+               TR::Node *indexObjectRefChild = arrayIndex->_baseNode->getFirstChild();
+               if (indexObjectRefChild)
+                  {
+                  sig = indexObjectRefChild->getTypeSignature(len);
+                  clazz = sig ? fe()->getClassFromSignature(sig,len,indexObjectRefChild->getSymbolReference()->getOwningMethod(comp())) : NULL;
+                  TR_YesNoMaybe result = clazz ? comp()->fe()->isInstanceOf(arrayIndex->_instanceOfClass,clazz,false) : TR_no;
+                  if (result != TR_yes)
+                     {
+                     if (comp()->compileRelocatableCode())
+                        {
+                        dumpOptDetails(comp(), "%s Abandoned versioning of block_%d because an instanceOf check is needed and this is a relocatable compile.\n", OPT_DETAILS, blockInfo->_block->getNumber());
+                        comparisonNodes->deleteAll();
+                        return;
+                        }
+                     dumpOptDetails(comp(), "%s Creating test for instanceof of %p outside block_%d for versioning array index %p \n", OPT_DETAILS, indexObjectRefChild, blockInfo->_block->getNumber(), arrayIndex->_baseNode);
+                     TR::Node *duplicateClassPtr = TR::Node::createWithSymRef(indexObjectRefChild, TR::loadaddr, 0, comp()->getSymRefTab()->findOrCreateClassSymbol(arrayIndex->_baseNode->getSymbolReference()->getOwningMethodSymbol(comp()), -1, arrayIndex->_instanceOfClass, false));
+                     TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, indexObjectRefChild->duplicateTree(),  duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
+                     TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(arrayIndex->_baseNode, TR::iconst, 0, 0));
+                     temp.add(ificmpeqNode);
+                     numInstanceOfChecksAdded++;
+                     }
+                  else
+                     {
+                     dumpOptDetails(comp(), "%s ctInstanceOf test passed, skipping runtime instanceof of %p outside block_%d for versioning array index %p\n", OPT_DETAILS, indexObjectRefChild, blockInfo->_block->getNumber(), arrayIndex->_baseNode);
+                     }
+                  }
+               }
             }
          }
       if (arrayLengthVersioned)
@@ -6410,17 +6461,49 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
                dumpOptDetails(comp(), "%s Creating test for nullCheck of %p outside block_%d for versioning arraylenth %p \n", OPT_DETAILS, objectRefChild, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
                TR::Node *nullTestNode = TR::Node::createif(TR::ifacmpeq, objectRefChild->duplicateTree(), TR::Node::aconst(objectRefChild, 0));
                comparisonNodes->add(nullTestNode);
+               numOfNullTestsAdded++;
                }
 
-            if (arrayLength->_instanceOfClass && objectRefChild && !comp()->compileRelocatableCode())
+            if (arrayLength->_instanceOfClass && objectRefChild)
                {
-               dumpOptDetails(comp(), "%s Creating test for instanceof of %p outside block_%d for versioning arraylenth %p \n", OPT_DETAILS, objectRefChild, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
-               TR::Node *duplicateClassPtr = TR::Node::createWithSymRef(objectRefChild, TR::loadaddr, 0, comp()->getSymRefTab()->findOrCreateClassSymbol(objectRef->getSymbolReference()->getOwningMethodSymbol(comp()), -1, arrayLength->_instanceOfClass, false));
-               TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, objectRefChild->duplicateTree(),  duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
-               TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(objectRef, TR::iconst, 0, 0));
-               comparisonNodes->add(ificmpeqNode);
-               requestOpt(OMR::localCSE,  true);
-               requestOpt(OMR::localValuePropagation,  true);
+               sig = objectRefChild->getTypeSignature(len);
+               clazz = sig ? fe()->getClassFromSignature(sig,len,objectRefChild->getSymbolReference()->getOwningMethod(comp())) : NULL;
+               TR_YesNoMaybe result = clazz ? comp()->fe()->isInstanceOf(arrayLength->_instanceOfClass,clazz,false) : TR_no;
+               ArrayIndexInfo *arrayIndex = NULL;
+
+               if (result != TR_yes)
+                  {
+                  // Have we already generated an instanceOf for this object/class when handling array indexes?
+                  for (arrayIndex = arrayLength->_arrayIndicesInfo->getFirst(); result != TR_yes && arrayIndex; arrayIndex = arrayIndex->getNext())
+                     {
+                     if (arrayIndex->_versionBucket && arrayIndex->_baseNode->getOpCode().getOpCodeValue() == TR::iloadi && 
+                         objectRefChild == arrayIndex->_baseNode->getFirstChild() && arrayLength->_instanceOfClass == arrayIndex->_instanceOfClass)
+                        {
+                        result = TR_yes; // We already generated an instanceOf check for this object&class combination
+                        dumpOptDetails(comp(), "%s Skipping redundant runtime instanceof of %p outside block_%d for versioning arraylenth %p\n", OPT_DETAILS, objectRefChild, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
+                        }
+                     }
+                  }
+
+               if (result != TR_yes)
+                  {
+                  if (comp()->compileRelocatableCode())
+                     {
+                     dumpOptDetails(comp(), "%s Abandoned versioning of block_%d because an instanceOf check is needed and this is a relocatable compile.\n", OPT_DETAILS, blockInfo->_block->getNumber());
+                     comparisonNodes->deleteAll();
+                     return;
+                     }
+                  dumpOptDetails(comp(), "%s Creating test for instanceof of %p outside block_%d for versioning arraylenth %p \n", OPT_DETAILS, objectRefChild, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
+                  TR::Node *duplicateClassPtr = TR::Node::createWithSymRef(objectRefChild, TR::loadaddr, 0, comp()->getSymRefTab()->findOrCreateClassSymbol(objectRef->getSymbolReference()->getOwningMethodSymbol(comp()), -1, arrayLength->_instanceOfClass, false));
+                  TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, objectRefChild->duplicateTree(),  duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
+                  TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(objectRef, TR::iconst, 0, 0));
+                  comparisonNodes->add(ificmpeqNode);
+                  numInstanceOfChecksAdded++;
+                  }
+               else if (arrayIndex)
+                  {
+                  dumpOptDetails(comp(), "%s ctInstanceOf test passed, skipping runtime instanceof of %p outside block_%d for versioning arraylenth %p\n", OPT_DETAILS, objectRefChild, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
+                  }
                }
 
             if (!objectRef->isNonNull())
@@ -6428,9 +6511,28 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
                dumpOptDetails(comp(), "%s Creating test for nullCheck of %p outside block_%d for versioning arraylenth %p \n", OPT_DETAILS, objectRef, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
                TR::Node *nullTestNode = TR::Node::createif(TR::ifacmpeq, objectRef->duplicateTree(), TR::Node::aconst(objectRef, 0));
                comparisonNodes->add(nullTestNode);
+               numOfNullTestsAdded++;
                }
             }
          comparisonNodes->add(temp);
+         }
+      }
+   // Is this transformation worthwhile? Since we are adding a min & max test it's only a win
+   // if we are removing 3 bound-checks. We estimate a instanceOf is as costly as 3 bound-checks
+   // and null-tests is about as costly as one bound-check
+   if (numBoundChecksRemoved <= 3+(numInstanceOfChecksAdded*3)+numOfNullTestsAdded)
+      {
+      dumpOptDetails(comp(), "%s Abandoned versioning of block_%d, it would require %d instanceOfChecks and %d null-tests while only saving %d boundChecks\n", OPT_DETAILS, blockInfo->_block->getNumber(), numInstanceOfChecksAdded, numOfNullTestsAdded, numBoundChecksRemoved);
+      comparisonNodes->deleteAll();
+      }
+   else
+      {
+      dumpOptDetails(comp(), "%s Versioning of block_%d requires %d instanceOfChecks and %d null-tests while saving %d boundChecks\n", OPT_DETAILS, blockInfo->_block->getNumber(), numInstanceOfChecksAdded, numOfNullTestsAdded, numBoundChecksRemoved);
+      if (numInstanceOfChecksAdded>0)
+         {
+         // We had added an instanceOf, so lets run opts to see if they can be removed
+         requestOpt(OMR::localCSE,  true);
+         requestOpt(OMR::localValuePropagation,  true);
          }
       }
    }
@@ -6576,7 +6678,7 @@ TR::Node *OMR::ValuePropagation::findVarOfSimpleForm(TR::Node *node) //ArrayInde
    }
 
 
-void OMR::ValuePropagation::createNewBucketForArrayIndex(ArrayLengthToVersion *array, TR_LinkHead<ArrayLengthToVersion> *arrayLengths, int32_t c, TR::Node *baseNode, TR::Node *bndchkNode, TR_OpaqueClassBlock *instanceOfClass)
+void OMR::ValuePropagation::createNewBucketForArrayIndex(ArrayLengthToVersion *array, TR_LinkHead<ArrayLengthToVersion> *arrayLengths, int32_t c, TR::Node *baseNode, TR::Node *bndchkNode, TR_OpaqueClassBlock *instanceOfClass, TR_OpaqueClassBlock *indexSourceObjectClass)
    {
    if (!array )
       {         //create a new arrayLengthToVersion
@@ -6592,6 +6694,7 @@ void OMR::ValuePropagation::createNewBucketForArrayIndex(ArrayLengthToVersion *a
    arrayIndex->_max = c;
    arrayIndex->_delta = 0;
    arrayIndex->_baseNode = baseNode;
+   arrayIndex->_instanceOfClass = indexSourceObjectClass;
    arrayIndex->_bndChecks = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
    arrayIndex->_bndChecks->add(bndchkNode);
    arrayIndex->_versionBucket= false;

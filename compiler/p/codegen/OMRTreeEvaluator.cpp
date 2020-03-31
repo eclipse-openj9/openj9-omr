@@ -351,7 +351,7 @@ TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, intptr
    else
       {
       TR::MemoryReference *memRef = new (cg->trHeapMemory()) TR::MemoryReference(baseReg, ((int32_t)loAddr)<<16>>16, opSize, cg);
-      if (op.isLoad())
+      if (!op.isStore())
          nibbles[idx] = cursor = generateTrg1MemInstruction(cg, opCode, node, srcOrTrg, memRef, cursor);
       else
          nibbles[idx] = cursor = generateMemSrc1Instruction(cg, opCode, node, memRef, srcOrTrg, cursor);

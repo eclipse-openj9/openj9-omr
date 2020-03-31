@@ -1294,7 +1294,7 @@ MM_ConcurrentGC::tuneToHeap(MM_EnvironmentBase *env)
 	 */
 	if(0 == heapSize) {
 		Trc_MM_ConcurrentGC_tuneToHeap_Exit1(env->getLanguageVMThread());
-		assume0(!_stwCollectionInProgress);
+		Assert_MM_true(!_stwCollectionInProgress);
 		return;
 	}
 
@@ -2922,11 +2922,7 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 
 	/* Ensure caller acquired exclusive VM access before calling */
 	Assert_MM_mustHaveExclusiveVMAccess(env->getOmrVMThread());
-
-	/* Set flag to show STW collector is active; some operations need to know if they
-	 * are called during a global collect or not, eg heapAddRange
-	 */
-	_stwCollectionInProgress = true;
+	Assert_MM_true(_stwCollectionInProgress);
 
 	/* Assume for now we will need to initialize the mark map. If we subsequenly find
 	 * we got far enough through the concurrent mark cycle then we will reset this flag
@@ -3155,7 +3151,6 @@ MM_ConcurrentGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace 
 	}
 
 	/* Collection is complete so reset flags */
-	_stwCollectionInProgress = false;
 	_forcedKickoff  = false;
 	_stats.clearKickoffReason();
 
@@ -3325,7 +3320,7 @@ MM_ConcurrentGC::heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason re
 	 *
 	 *  It is necessary that _rebuildInitWorkForAdd is set when we're here during an expand (after heapAddRange), or
 	 *  _rebuildInitWorkForRemove in the case of contract. However, it is not a sufficient check to ensure the reason we're
-	 *  here. For instance, when Concurent is on, _rebuildInitWorkForAdd will be set but not cleared.
+	 *  here. For instance, when Concurrent is on, _rebuildInitWorkForAdd will be set but not cleared.
 	 *  As a result, we can have multiple calls of expands interleaved with contracts, resulting in both flags being set.
 	 *  Similarly, we can end up here after scavenger tilt with any of the flags set.
 	 */

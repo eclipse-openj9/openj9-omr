@@ -1437,7 +1437,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitToJitParameterPassing1Arg) {
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix // load
     );
@@ -1489,7 +1489,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitToJitParameterPassing2Arg) {
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(TypeParam, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // load
@@ -1545,7 +1545,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitToJitParameterPassing3Arg) {
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(TypeParam, TypeParam, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
@@ -1605,7 +1605,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitToJitParameterPassing4Arg) {
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(TypeParam, TypeParam, TypeParam, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
@@ -1669,7 +1669,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitToJitParameterPassing5Arg) {
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(TypeParam, TypeParam, TypeParam, TypeParam, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
@@ -1737,7 +1737,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitToJitParameterPassing6Arg) {
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(TypeParam, TypeParam, TypeParam, TypeParam, TypeParam, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
@@ -1809,7 +1809,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitToJitParameterPassing7Arg) {
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(TypeParam, TypeParam, TypeParam, TypeParam, TypeParam, TypeParam, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
@@ -1885,7 +1885,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitToJitParameterPassing8Arg) {
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(TypeParam, TypeParam, TypeParam, TypeParam, TypeParam, TypeParam, TypeParam, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
@@ -1965,7 +1965,7 @@ TYPED_TEST(LinkageTest, SystemLinkageJitToJitParameterPassing9Arg) {
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(TypeParam, TypeParam, TypeParam, TypeParam, TypeParam, TypeParam, TypeParam, TypeParam, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::type, // args
@@ -2256,7 +2256,7 @@ TYPED_TEST(LinkageWithMixedTypesTest, SystemLinkageJitToJitParameterPassing2ArgW
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(double, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix // load
     );
@@ -2308,7 +2308,7 @@ TYPED_TEST(LinkageWithMixedTypesTest, SystemLinkageJitToJitParameterPassing3ArgW
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(double, int32_t, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix // load
     );
@@ -2361,7 +2361,7 @@ TYPED_TEST(LinkageWithMixedTypesTest, SystemLinkageJitToJitParameterPassing4ArgW
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(double, int64_t, float, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix // load
     );
@@ -2415,7 +2415,7 @@ TYPED_TEST(LinkageWithMixedTypesTest, SystemLinkageJitToJitParameterPassing5ArgW
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(float, int32_t, float, int64_t, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix // load
     );
@@ -2470,7 +2470,7 @@ TYPED_TEST(LinkageWithMixedTypesTest, SystemLinkageJitToJitParameterPassing6ArgW
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(float, int32_t, double, int32_t, int64_t, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix // load
     );
@@ -2526,7 +2526,7 @@ TYPED_TEST(LinkageWithMixedTypesTest, SystemLinkageJitToJitParameterPassing7ArgW
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(double, int32_t, double, int32_t, int32_t, int64_t, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix // load
     );
@@ -2583,7 +2583,7 @@ TYPED_TEST(LinkageWithMixedTypesTest, SystemLinkageJitToJitParameterPassing8ArgW
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(int64_t, int64_t, float, double, int32_t, int64_t, int32_t, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix // load
     );
@@ -2641,7 +2641,7 @@ TYPED_TEST(LinkageWithMixedTypesTest, SystemLinkageJitToJitParameterPassing9ArgW
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix, // return
        TypeToString<TypeParam>::prefix, //call
-       reinterpret_cast<uintmax_t>(static_cast<TypeParam(*)(double, int32_t, float, int32_t, int32_t, float, int64_t, int32_t, TypeParam)>(callee_entry_point)), // address
+       reinterpret_cast<uintmax_t>(callee_entry_point), // address
        TypeToString<TypeParam>::type, // args
        TypeToString<TypeParam>::prefix // load
     );

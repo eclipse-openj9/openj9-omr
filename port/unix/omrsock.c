@@ -243,18 +243,18 @@ omrsock_getaddrinfo(struct OMRPortLibrary *portLibrary, char *node, char *servic
 }
 
 int32_t
-omrsock_getaddrinfo_length(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t *length)
+omrsock_addrinfo_length(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t *result)
 {
 	if (NULL == handle) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 
-	*length = handle->length;
+	*result = handle->length;
 	return 0;
 }
 
 int32_t
-omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, uint32_t index)
+omrsock_addrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, int32_t *result)
 {	
 	omr_os_addrinfo *info = NULL;
 	uint32_t i = 0;
@@ -272,12 +272,12 @@ omrsock_getaddrinfo_family(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_
 		}
 	}
 
-	*family = get_omr_family(info->ai_family);
+	*result = get_omr_family(info->ai_family);
 	return 0;
 }
 
 int32_t
-omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, uint32_t index)
+omrsock_addrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, int32_t *result)
 {
 	omr_os_addrinfo *info = NULL;
 	uint32_t i = 0;
@@ -295,12 +295,12 @@ omrsock_getaddrinfo_socktype(struct OMRPortLibrary *portLibrary, omrsock_addrinf
 		}
 	}
 
-	*socktype = get_omr_socktype(info->ai_socktype);
+	*result = get_omr_socktype(info->ai_socktype);
 	return 0;
 }
 
 int32_t
-omrsock_getaddrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *protocol, uint32_t index)
+omrsock_addrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, int32_t *result)
 {
 	omr_os_addrinfo *info = NULL;
 	uint32_t i = 0;
@@ -318,7 +318,7 @@ omrsock_getaddrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinf
 		}
 	}
 
-	*protocol = get_omr_protocol(info->ai_protocol);
+	*result = get_omr_protocol(info->ai_protocol);
 	return 0;
 }
 

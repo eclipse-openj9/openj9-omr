@@ -2115,14 +2115,14 @@ typedef struct OMRPortLibrary {
 	int32_t (*sock_getaddrinfo_create_hints)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t *hints, int32_t family, int32_t socktype, int32_t protocol, int32_t flags) ;
 	/** see @ref omrsock.c::omrsock_getaddrinfo "omrsock_getaddrinfo"*/
 	int32_t (*sock_getaddrinfo)(struct OMRPortLibrary *portLibrary, char *node, char *service, omrsock_addrinfo_t hints, omrsock_addrinfo_t result) ;
-	/** see @ref omrsock.c::omrsock_getaddrinfo_length "omrsock_getaddrinfo_length"*/
-	int32_t (*sock_getaddrinfo_length)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t *length) ;
-	/** see @ref omrsock.c::omrsock_getaddrinfo_family "omrsock_getaddrinfo_family"*/
-	int32_t (*sock_getaddrinfo_family)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *family, uint32_t index) ;
-	/** see @ref omrsock.c::omrsock_getaddrinfo_socktype "omrsock_getaddrinfo_socktype"*/
-	int32_t (*sock_getaddrinfo_socktype)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *socktype, uint32_t index) ;
-	/** see @ref omrsock.c::omrsock_getaddrinfo_protocol "omrsock_getaddrinfo_protocol"*/
-	int32_t (*sock_getaddrinfo_protocol)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, int32_t *protocol, uint32_t index) ;
+	/** see @ref omrsock.c::omrsock_addrinfo_length "omrsock_addrinfo_length"*/
+	int32_t (*sock_addrinfo_length)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t *result) ;
+	/** see @ref omrsock.c::omrsock_addrinfo_family "omrsock_addrinfo_family"*/
+	int32_t (*sock_addrinfo_family)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, int32_t *result) ;
+	/** see @ref omrsock.c::omrsock_addrinfo_socktype "omrsock_addrinfo_socktype"*/
+	int32_t (*sock_addrinfo_socktype)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, int32_t *result) ;
+	/** see @ref omrsock.c::omrsock_addrinfo_protocol "omrsock_addrinfo_protocol"*/
+	int32_t (*sock_addrinfo_protocol)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, int32_t *result) ;
 	/** see @ref omrsock.c::omrsock_freeaddrinfo "omrsock_freeaddrinfo"*/
 	int32_t (*sock_freeaddrinfo)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle) ;
 	/** see @ref omrsock.c::omrsock_socket "omrsock_socket"*/
@@ -2596,10 +2596,10 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsock_startup() privateOmrPortLibrary->sock_startup(privateOmrPortLibrary)
 #define omrsock_getaddrinfo_create_hints(param1,param2,param3,param4,param5) privateOmrPortLibrary->sock_getaddrinfo_create_hints(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
 #define omrsock_getaddrinfo(param1,param2,param3,param4) privateOmrPortLibrary->sock_getaddrinfo(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
-#define omrsock_getaddrinfo_length(param1,param2) privateOmrPortLibrary->sock_getaddrinfo_length(privateOmrPortLibrary, (param1), (param2))
-#define omrsock_getaddrinfo_family(param1,param2,param3) privateOmrPortLibrary->sock_getaddrinfo_family(privateOmrPortLibrary, (param1), (param2), (param3))
-#define omrsock_getaddrinfo_socktype(param1,param2,param3) privateOmrPortLibrary->sock_getaddrinfo_socktype(privateOmrPortLibrary, (param1), (param2), (param3))
-#define omrsock_getaddrinfo_protocol(param1,param2,param3) privateOmrPortLibrary->sock_getaddrinfo_protocol(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_addrinfo_length(param1,param2) privateOmrPortLibrary->sock_addrinfo_length(privateOmrPortLibrary, (param1), (param2))
+#define omrsock_addrinfo_family(param1,param2,param3) privateOmrPortLibrary->sock_addrinfo_family(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_addrinfo_socktype(param1,param2,param3) privateOmrPortLibrary->sock_addrinfo_socktype(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_addrinfo_protocol(param1,param2,param3) privateOmrPortLibrary->sock_addrinfo_protocol(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsock_freeaddrinfo(param1) privateOmrPortLibrary->sock_freeaddrinfo(privateOmrPortLibrary, (param1))
 #define omrsock_socket(param1, param2, param3, param4) privateOmrPortLibrary->sock_socket(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrsock_bind(param1,param2) privateOmrPortLibrary->sock_bind(privateOmrPortLibrary, (param1), (param2))

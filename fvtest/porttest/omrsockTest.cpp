@@ -78,10 +78,10 @@ TEST(PortSockTest, library_function_pointers_not_null)
 
 	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo_create_hints, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo, (void *)NULL);
-	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo_length, (void *)NULL);
-	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo_family, (void *)NULL);
-	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo_socktype, (void *)NULL);
-	EXPECT_NE(OMRPORTLIB->sock_getaddrinfo_protocol, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_addrinfo_length, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_addrinfo_family, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_addrinfo_socktype, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_addrinfo_protocol, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_freeaddrinfo, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_socket, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_bind, (void *)NULL);
@@ -128,47 +128,47 @@ TEST(PortSockTest, create_hints_and_element_extraction)
 	/* Testing invalid arguments: Pointer to OMRAddrInfoNode that is NULL */
 
 	int32_t rc;
-	rc = OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, NULL, &length);
+	rc = OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, NULL, &length);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, NULL, &family, 0);
+	rc = OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, NULL, 0, &family);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, NULL, &sockType, 0);
+	rc = OMRPORTLIB->sock_addrinfo_socktype(OMRPORTLIB, NULL, 0, &sockType);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, NULL, &protocol, 0);
+	rc = OMRPORTLIB->sock_addrinfo_protocol(OMRPORTLIB, NULL, 0, &protocol);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
 	/* Testing invalid arguments: Index is bigger than the length when querying */
 
-	rc = OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, hints, &length);
+	rc = OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, hints, &length);
 	EXPECT_EQ(rc, 0);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, hints, &family, length);
+	rc = OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, hints, length, &family);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, hints, &sockType, length);
+	rc = OMRPORTLIB->sock_addrinfo_socktype(OMRPORTLIB, hints, length, &sockType);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, length);
+	rc = OMRPORTLIB->sock_addrinfo_protocol(OMRPORTLIB, hints, length, &protocol);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
 	/* Get and verify elements of the newly created hints. */
 
-	rc = OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, hints, &length);
+	rc = OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, hints, &length);
 	EXPECT_EQ(rc, 0);
 	EXPECT_EQ(length, 1);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, hints, &family, 0);
+	rc = OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, hints, 0, &family);
 	EXPECT_EQ(rc, 0);
 	EXPECT_EQ(family, hintsFamily);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, hints, &sockType, 0);
+	rc = OMRPORTLIB->sock_addrinfo_socktype(OMRPORTLIB, hints, 0, &sockType);
 	EXPECT_EQ(rc, 0);
 	EXPECT_EQ(sockType, hintsSockType);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, 0);
+	rc = OMRPORTLIB->sock_addrinfo_protocol(OMRPORTLIB, hints, 0, &protocol);
 	EXPECT_EQ(rc, 0);
 	EXPECT_EQ(protocol, hintsProtocol);
 
@@ -179,19 +179,19 @@ TEST(PortSockTest, create_hints_and_element_extraction)
 
 	OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, hintsFamily, hintsSockType, hintsProtocol, hintsFlags);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, hints, &length);
+	rc = OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, hints, &length);
 	EXPECT_EQ(rc, 0);
 	EXPECT_EQ(length, 1);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, hints, &family, 0);
+	rc = OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, hints, 0, &family);
 	EXPECT_EQ(rc, 0);
 	EXPECT_EQ(family, hintsFamily);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, hints, &sockType, 0);
+	rc = OMRPORTLIB->sock_addrinfo_socktype(OMRPORTLIB, hints, 0, &sockType);
 	EXPECT_EQ(rc, 0);
 	EXPECT_EQ(sockType, hintsSockType);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, 0);
+	rc = OMRPORTLIB->sock_addrinfo_protocol(OMRPORTLIB, hints, 0, &protocol);
 	EXPECT_EQ(rc, 0);
 	EXPECT_EQ(protocol, hintsProtocol);
 
@@ -199,13 +199,13 @@ TEST(PortSockTest, create_hints_and_element_extraction)
 
 	hints->length = 5;
 
-	rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, hints, &family, 3);
+	rc = OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, hints, 3, &family);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, hints, &sockType, 3);
+	rc = OMRPORTLIB->sock_addrinfo_socktype(OMRPORTLIB, hints, 3, &sockType);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
-	rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, hints, &protocol, 3);
+	rc = OMRPORTLIB->sock_addrinfo_protocol(OMRPORTLIB, hints, 3, &protocol);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 }
 
@@ -258,19 +258,19 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, (char *)"localhost", NULL, hints, &result);
 	ASSERT_EQ(rc, 0);
 
-	OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, &result, &length);
+	OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length);
 	ASSERT_NE(length, 0);
 
 	for (uint32_t i = 0; i < length; i++) {
-		rc = OMRPORTLIB->sock_getaddrinfo_family(OMRPORTLIB, &result, &family, i);
+		rc = OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, &result, i, &family);
 		EXPECT_EQ(rc, 0);
 		EXPECT_EQ(family, hintsFamily);
 
-		rc = OMRPORTLIB->sock_getaddrinfo_socktype(OMRPORTLIB, &result, &sockType, i);
+		rc = OMRPORTLIB->sock_addrinfo_socktype(OMRPORTLIB, &result, i, &sockType);
 		EXPECT_EQ(rc, 0);
 		EXPECT_EQ(sockType, hintsSockType);
 
-		rc = OMRPORTLIB->sock_getaddrinfo_protocol(OMRPORTLIB, &result, &protocol, i);
+		rc = OMRPORTLIB->sock_addrinfo_protocol(OMRPORTLIB, &result, i, &protocol);
 		EXPECT_EQ(rc, 0);
 	}
 	
@@ -280,7 +280,7 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, (char *)"localhost", NULL, NULL, &result);
 	ASSERT_EQ(rc, 0);
 
-	OMRPORTLIB->sock_getaddrinfo_length(OMRPORTLIB, &result, &length);
+	OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length);
 	ASSERT_NE(length, 0);
 
 	OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, &result);

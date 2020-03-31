@@ -250,7 +250,8 @@ MM_MasterGCThread::masterThreadEntryPoint()
 
 		/* attachVMThread could have allocated and execute a barrier (until point, this thread acted as a mutator thread.
 		 * Flush GC chaches (like barrier buffers) before turning into the master thread */
-		env->flushGCCaches(true);
+		/* TODO: call plain env->initializeGCThread() once downstream projects are ready (subclass Env::init calls base Env::init)  */
+		env->MM_EnvironmentBase::initializeGCThread();
 
 		env->setThreadType(GC_MASTER_THREAD);
 

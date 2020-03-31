@@ -1070,7 +1070,112 @@ void OMR::Power::MemoryReference::mapOpCode(TR::Instruction *currentInstruction)
 
 TR::Instruction *OMR::Power::MemoryReference::expandForUnresolvedSnippet(TR::Instruction *currentInstruction, TR::CodeGenerator *cg)
    {
+#ifdef J9_PROJECT_SPECIFIC
+   TR::Compilation *comp = cg->comp();
+   TR::Node *node = currentInstruction->getNode();
+   TR::Instruction *prevInstruction = currentInstruction->getPrev();
+   TR::UnresolvedDataSnippet *snippet = self()->getUnresolvedSnippet();
+   TR::MemoryReference *newMR = NULL;
+
+   TR::RealRegister *base = toRealRegister(self()->getBaseRegister());
+   TR::RealRegister *index = toRealRegister(self()->getIndexRegister());
+   TR::RealRegister *data = toRealRegister(currentInstruction->getMemoryDataRegister());
+   int32_t displacement = self()->getOffset(*comp);
+
+   currentInstruction->remove();
+
+   TR::Instruction *firstInstruction = generateLabelInstruction(cg, TR::InstOpCode::bl, node, getUnresolvedSnippet()->getSnippetLabel(), prevInstruction);
+   prevInstruction = firstInstruction;
+
+   if (comp->target().is64Bit() && self()->isTOCAccess())
+      {
+      displacement = self()->getTOCOffset();
+
+      if (displacement == PTOC_FULL_INDEX)
+         {
+         prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, data, data, 0, prevInstruction);
+         prevInstruction = generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicr, node, data, data, 32, 0xffffffff00000000ULL, prevInstruction);
+         prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::oris, node, data, data, 0, prevInstruction);
+         prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, data, data, 0, prevInstruction);
+         }
+      else if (displacement < LOWER_IMMED || displacement > UPPER_IMMED)
+         {
+         newMR = new (cg->trHeapMemory()) TR::MemoryReference(self()->getModBase(), LO_VALUE(displacement), self()->getLength(), cg);
+         }
+      }
+   else if (index != NULL || isUsingDelayedIndexedForm())
+      {
+      if (isUsingDelayedIndexedForm())
+         {
+         newMR = new (cg->trHeapMemory()) TR::MemoryReference(cg->machine()->getRealRegister(TR::RealRegister::gr0), base, self()->getLength(), cg);
+         }
+      else
+         {
+         newMR = new (cg->trHeapMemory()) TR::MemoryReference(base, index, self()->getLength(), cg);
+         }
+
+      prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, base, base, 0, prevInstruction);
+      }
+   else
+      {
+      newMR = new (cg->trHeapMemory()) TR::MemoryReference(self()->getModBase(), 0, self()->getLength(), cg);
+      }
+
+   // Since J9UnresolvedDataSnippet will look at this memory reference's registers, modifying them in place to be
+   // correct for binary encoding will cause that to break. Instead, we leave the current memory reference alone and
+   // simply replace the current instruction with an entirely new one.
+   if (newMR != NULL)
+      {
+      switch (currentInstruction->getKind())
+         {
+         case TR::Instruction::IsMem:
+            prevInstruction = generateMemInstruction(
+               cg,
+               currentInstruction->getOpCodeValue(),
+               currentInstruction->getNode(),
+               newMR,
+               prevInstruction
+            );
+            break;
+         case TR::Instruction::IsMemSrc1:
+            prevInstruction = generateMemSrc1Instruction(
+               cg,
+               currentInstruction->getOpCodeValue(),
+               currentInstruction->getNode(),
+               newMR,
+               static_cast<TR::PPCMemSrc1Instruction*>(currentInstruction)->getSourceRegister(),
+               prevInstruction
+            );
+            break;
+         case TR::Instruction::IsTrg1Mem:
+            prevInstruction = generateTrg1MemInstruction(
+               cg,
+               currentInstruction->getOpCodeValue(),
+               currentInstruction->getNode(),
+               static_cast<TR::PPCTrg1MemInstruction*>(currentInstruction)->getTargetRegister(),
+               newMR,
+               prevInstruction
+            );
+            break;
+         default:
+            TR_ASSERT_FATAL_WITH_INSTRUCTION(currentInstruction, false, "Unrecognized instruction kind %d for memory instruction", currentInstruction->getKind());
+         }
+      }
+
+   if (currentInstruction->needsGCMap())
+      {
+      firstInstruction->setNeedsGCMap(currentInstruction->getGCRegisterMask());
+      firstInstruction->setGCMap(currentInstruction->getGCMap());
+      }
+
+   snippet->setDataReferenceInstruction(firstInstruction);
+   snippet->setMemoryReference(self());
+   snippet->setDataRegister(data);
+
+   return prevInstruction;
+#else
    TR_UNIMPLEMENTED();
+#endif
    }
 
 TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction *currentInstruction, TR::CodeGenerator *cg)

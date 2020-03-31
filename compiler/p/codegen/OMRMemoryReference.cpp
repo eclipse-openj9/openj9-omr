@@ -1068,6 +1068,168 @@ void OMR::Power::MemoryReference::mapOpCode(TR::Instruction *currentInstruction)
       }
    }
 
+TR::Instruction *OMR::Power::MemoryReference::expandForUnresolvedSnippet(TR::Instruction *currentInstruction, TR::CodeGenerator *cg)
+   {
+   TR_UNIMPLEMENTED();
+   }
+
+TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction *currentInstruction, TR::CodeGenerator *cg)
+   {
+   // Due to the way the generate*Instruction helpers work, there's no way to use them to generate an instruction at the
+   // start of the instruction stream at the moment. As a result, we cannot peform expansion if the first instruction is
+   // a memory instruction.
+   TR_ASSERT_FATAL(currentInstruction->getPrev(), "The first instruction cannot be a memory instruction");
+
+   self()->mapOpCode(currentInstruction);
+
+   if (self()->getUnresolvedSnippet() != NULL)
+      return self()->expandForUnresolvedSnippet(currentInstruction, cg);
+
+   if (!self()->getBaseRegister())
+      {
+      if (self()->getModBase())
+         self()->setBaseRegister(self()->getModBase());
+      else
+         self()->setBaseRegister(cg->machine()->getRealRegister(TR::RealRegister::gr0));
+      }
+   else
+      {
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(currentInstruction, !self()->getModBase(), "Cannot have mod base and base register");
+      }
+
+   TR::Compilation *comp = cg->comp();
+   TR::Node *node = currentInstruction->getNode();
+   TR::Instruction *prevInstruction = currentInstruction->getPrev();
+
+   TR::RealRegister *base = toRealRegister(self()->getBaseRegister());
+   TR::RealRegister *index = toRealRegister(self()->getIndexRegister());
+   TR::RealRegister *data = toRealRegister(currentInstruction->getMemoryDataRegister());
+   int32_t displacement = self()->getOffset(*comp);
+
+   self()->setOffset(displacement);
+   self()->setDelayedOffsetDone();
+
+   if (comp->target().is64Bit() && self()->isTOCAccess())
+      {
+      int32_t displacement = self()->getTOCOffset();
+      TR::Symbol *symbol = self()->getSymbolReference()->getSymbol();
+      uint64_t addr;
+
+      if (symbol->isStatic())
+         addr = (uint64_t) symbol->getStaticSymbol()->getStaticAddress();
+      else if (symbol->isMethod())
+         addr = (uint64_t) symbol->getMethodSymbol()->getMethodAddress();
+      else
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(currentInstruction, false, "Symbol %s has unrecognized type for PTOC access", comp->getDebug()->getName(symbol));
+
+      if (displacement != PTOC_FULL_INDEX)
+         {
+         if (!self()->getSymbolReference()->isUnresolved() && TR_PPCTableOfConstants::getTOCSlot(displacement) == 0)
+            TR_PPCTableOfConstants::setTOCSlot(displacement, addr);
+
+         if (displacement < LOWER_IMMED || displacement > UPPER_IMMED)
+            {
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, data, base, cg->hiValue(displacement), prevInstruction);
+            self()->setBaseRegister(data);
+            }
+
+         self()->setOffset(LO_VALUE(displacement));
+         }
+      else
+         {
+         TR::Instruction *newInstruction = prevInstruction = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, data, (int16_t)(addr >> 48), prevInstruction);
+         prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, data, data, (addr >> 32) & 0xffff, prevInstruction);
+         prevInstruction = generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicr, node, data, data, 32, 0xffffffff00000000ULL, prevInstruction);
+         prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::oris, node, data, data, (addr >> 16) & 0xffff, prevInstruction);
+         prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, data, data, addr & 0xffff, prevInstruction);
+
+         currentInstruction->remove();
+         currentInstruction = newInstruction;
+         }
+      }
+   else if (self()->isUsingDelayedIndexedForm())
+      {
+      if (index != NULL)
+         {
+         if (displacement < LOWER_IMMED || displacement > UPPER_IMMED)
+            {
+            prevInstruction = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, index, (int16_t)(displacement >> 16), prevInstruction);
+            prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, index, index, displacement & 0xffff, prevInstruction);
+            }
+         else if (displacement != 0)
+            {
+            prevInstruction = generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, index, displacement, prevInstruction);
+            }
+         else
+            {
+            // To implicitly use a displacement of 0, put the base register into the index position and use r0 as the
+            // base register.
+            self()->setIndexRegister(base);
+            self()->setBaseRegister(cg->machine()->getRealRegister(TR::RealRegister::gr0));
+            }
+         }
+      else
+         {
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(
+            currentInstruction,
+            self()->isBaseModifiable(),
+            "Delayed index form without index register requires isBaseModifiable"
+         );
+
+         if (displacement < LOWER_IMMED || displacement > UPPER_IMMED)
+            {
+            prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, base, base, cg->hiValue(displacement), prevInstruction);
+            displacement = LO_VALUE(displacement);
+            }
+
+         if (displacement != 0)
+            prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, base, base, displacement, prevInstruction);
+
+         self()->setIndexRegister(base);
+         self()->setBaseRegister(cg->machine()->getRealRegister(TR::RealRegister::gr0));
+         }
+
+      self()->setOffset(0);
+      }
+   else if (displacement < LOWER_IMMED || displacement > UPPER_IMMED)
+      {
+      if (self()->isBaseModifiable())
+         {
+         prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, base, base, cg->hiValue(displacement), prevInstruction);
+         self()->setOffset(LO_VALUE(displacement));
+         }
+      else
+         {
+         TR::RealRegister *stackPtr = cg->getStackPointerRegister();
+         TR::RealRegister *rX = cg->machine()->getRealRegister(choose_rX(currentInstruction, base));
+         int32_t saveLen = comp->target().is64Bit() ? 8 : 4;
+
+         prevInstruction = generateMemSrc1Instruction(
+            cg,
+            TR::InstOpCode::Op_st,
+            node,
+            new (comp->trHeapMemory()) TR::MemoryReference(stackPtr, -saveLen, saveLen, cg),
+            rX,
+            prevInstruction
+         );
+         prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, rX, base, cg->hiValue(displacement), prevInstruction);
+
+         self()->setBaseRegister(rX);
+         self()->setOffset(LO_VALUE(displacement));
+
+         currentInstruction = generateTrg1MemInstruction(
+            cg,
+            TR::InstOpCode::Op_load,
+            node,
+            rX,
+            new (comp->trHeapMemory()) TR::MemoryReference(stackPtr, -saveLen, saveLen, cg),
+            currentInstruction
+         );
+         }
+      }
+
+   return currentInstruction;
+   }
 
 uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *currentInstruction, uint8_t *cursor, TR::CodeGenerator *cg)
    {

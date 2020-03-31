@@ -1779,6 +1779,12 @@ uint8_t *TR::PPCMemInstruction::generateBinaryEncoding()
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    return cursor;
    }
+
+TR::Instruction *TR::PPCMemInstruction::expandInstruction()
+   {
+   return getMemoryReference()->expandInstruction(self(), cg());
+   }
+
 int32_t TR::PPCMemSrc1Instruction::estimateBinaryLength(int32_t currentEstimate)
    {
    setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength(*cg()));
@@ -1807,6 +1813,11 @@ uint8_t *TR::PPCTrg1MemInstruction::generateBinaryEncoding()
    setBinaryEncoding(instructionStart);
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    return cursor;
+   }
+
+TR::Instruction *TR::PPCTrg1MemInstruction::expandInstruction()
+   {
+   return getMemoryReference()->expandInstruction(self(), cg());
    }
 
 int32_t TR::PPCTrg1MemInstruction::estimateBinaryLength(int32_t currentEstimate)

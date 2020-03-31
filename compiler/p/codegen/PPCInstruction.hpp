@@ -1291,6 +1291,7 @@ class PPCMemInstruction : public TR::Instruction
    virtual int32_t      getOffset()        {return getMemoryReference()->getOffset(*TR::comp());}
 
    virtual uint8_t *generateBinaryEncoding();
+   virtual TR::Instruction *expandInstruction();
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
@@ -1519,6 +1520,7 @@ class PPCTrg1MemInstruction : public PPCTrg1Instruction
    virtual uint8_t *generateBinaryEncoding();
 
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual TR::Instruction *expandInstruction();
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 

@@ -551,7 +551,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
 
 
-
+   TR_PPCBinaryEncodingData _binaryEncodingData;
    TR::RealRegister              *_stackPtrRegister;
    TR::RealRegister              *_methodMetaDataRegister;
    TR::RealRegister              *_tocBaseRegister;

@@ -630,6 +630,9 @@ class PPCAdminInstruction : public TR::Instruction
 
    virtual Kind getKind() { return IsAdmin; }
 
+   virtual TR::Instruction *expandInstruction();
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+
    bool isDebugFence()      {return (_fenceNode!=NULL && _fenceNode->getOpCodeValue() == TR::dbgFence); }
 
    TR::Node * getFenceNode() { return _fenceNode; }

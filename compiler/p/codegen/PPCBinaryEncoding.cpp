@@ -26,6 +26,8 @@
 #include "env/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -1022,6 +1024,30 @@ int32_t TR::PPCConditionalBranchInstruction::estimateBinaryLength(int32_t curren
    setEstimatedBinaryLocation(currentEstimate);
 
    return currentEstimate + getEstimatedBinaryLength();
+   }
+
+TR::Instruction *TR::PPCAdminInstruction::expandInstruction()
+   {
+   if (getOpCodeValue() == TR::InstOpCode::ret)
+      {
+      cg()->getLinkage()->createEpilogue(self());
+      }
+
+   return self();
+   }
+
+int32_t TR::PPCAdminInstruction::estimateBinaryLength(int32_t currentEstimate)
+   {
+   if (getOpCodeValue() == TR::InstOpCode::proc && cg()->supportsJitMethodEntryAlignment())
+      {
+      cg()->setPreJitMethodEntrySize(currentEstimate);
+      self()->setEstimatedBinaryLength(cg()->getJitMethodEntryAlignmentBoundary() - 1);
+      return currentEstimate + cg()->getJitMethodEntryAlignmentBoundary() - 1;
+      }
+   else
+      {
+      return self()->TR::Instruction::estimateBinaryLength(currentEstimate);
+      }
    }
 
 void TR::PPCAdminInstruction::fillBinaryEncodingFields(uint32_t *cursor)

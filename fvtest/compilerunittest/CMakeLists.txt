@@ -34,6 +34,7 @@ set(COMPCGTEST_FILES
 if(OMR_ARCH_POWER)
 	list(APPEND COMPCGTEST_FILES
 		p/BinaryEncoder.cpp
+		p/MemoryReferenceExpansion.cpp
 	)
 endif()
 

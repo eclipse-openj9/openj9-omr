@@ -100,6 +100,28 @@ public:
     TR::CodeGenerator* cg() { return _comp.cg(); }
 };
 
+template <typename T>
+class MakeVector {
+    std::vector<T> _vals;
+
+    void add_vals() {}
+
+    template <typename... Ts>
+    void add_vals(T next_val, Ts... more_vals) {
+        _vals.push_back(next_val);
+        add_vals(more_vals...);
+    }
+public:
+    template <typename... Ts>
+    MakeVector(Ts... vals) {
+        add_vals(vals...);
+    }
+
+    const std::vector<T>& operator*() const {
+        return _vals;
+    }
+};
+
 }
 
 #endif

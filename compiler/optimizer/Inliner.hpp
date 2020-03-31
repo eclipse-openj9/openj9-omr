@@ -129,7 +129,6 @@ class TR_InlinerTracer : public TR_LogTracer
       void dumpCallTarget (TR_CallTarget *, const char *fmt, ...);
       void dumpInline (TR_LinkHead<TR_CallTarget> *targets, const char *fmt, ...);
       void dumpPartialInline (TR_InlineBlocks *partialInline);
-      void dumpPrexArgInfo(TR_PrexArgInfo* argInfo);
 
       void dumpDeadCalls(TR_LinkHead<TR_CallSite> *sites);
 

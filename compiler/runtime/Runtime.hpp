@@ -51,7 +51,6 @@ void initializeJitRuntimeHelperTable(char jvmpi);
 
 enum TR_CCPreLoadedCode
    {
-#if !defined(TR_TARGET_S390)
    TR_AllocPrefetch = 0,
 #if defined(TR_TARGET_POWER)
    TR_ObjAlloc,
@@ -63,7 +62,6 @@ enum TR_CCPreLoadedCode
    TR_arrayStoreCHK,
 #endif // TR_TARGET_POWER
    TR_NonZeroAllocPrefetch,
-#endif // !defined(TR_TARGET_S390)
    TR_numCCPreLoadedCode
    };
 

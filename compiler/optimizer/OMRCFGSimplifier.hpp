@@ -121,6 +121,18 @@ class CFGSimplifier : public TR::Optimization
     */
    bool simplifyInstanceOfTestToCheckcast(bool needToDuplicateTree);
 
+   /**
+    * \brief
+    *    This function tries to match ificmplt/iflcmplt, followed by another ificmplt/ificmpge/iflcmplt/iflcmpge
+    *    that either throws or branches and replace with a BNDCHK.
+    *
+    * \parm needToDuplicateTree
+    *    Boolean to indicate whether or not to duplicate node.
+    *
+    * \return Boolean that indicates true if tranformation is performed based on a matched pattern.
+    */
+   bool simplifyBoundCheckWithThrowException(bool needToDuplicateTree); 
+
    TR::TreeTop *getNextRealTreetop(TR::TreeTop *treeTop);
    TR::TreeTop *getLastRealTreetop(TR::Block *block);
    TR::Block   *getFallThroughBlock(TR::Block *block);

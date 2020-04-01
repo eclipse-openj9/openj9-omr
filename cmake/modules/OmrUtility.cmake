@@ -97,9 +97,8 @@ endmacro(omr_list_contains)
 # processes a template file by first expanding variable references, and then
 # evaluating generator expressions. @ONLY and ESCAPE_QUOTES are treated as
 # they are for configure_file().
-# NOTE: like file(GENERATE ) output is not written until the end cmake evaluation
+# NOTE: like file(GENERATE) output is not written until the end of cmake evaluation
 function(omr_process_template input output)
-
 	set(opts @ONLY ESCAPE_QUOTES)
 	cmake_parse_arguments(opt "${opts}" "" "" ${ARGN})
 
@@ -118,7 +117,7 @@ function(omr_process_template input output)
 	file(READ "${input_abs}" template)
 	string(CONFIGURE "${template}" configured_template ${configure_args})
 	file(GENERATE OUTPUT "${output}" CONTENT "${configured_template}")
-endfunction()
+endfunction(omr_process_template)
 
 # omr_count_true(<out_var> [<values>...] [VARIABLES <variables>...])
 #   count the nuber of <values> and <variables> which evaluate to true
@@ -138,4 +137,45 @@ function(omr_count_true out)
 	endforeach()
 	math(EXPR result "${result}")
 	set("${out}" "${result}" PARENT_SCOPE)
-endfunction()
+endfunction(omr_count_true)
+
+# return the path of the target ${tgt} in VAR
+# (only executable and shared library targets are currently supported)
+function(omr_get_target_path VAR tgt)
+	get_target_property(target_type ${tgt} TYPE)
+	if(target_type STREQUAL "EXECUTABLE")
+		get_target_property(target_directory ${tgt} RUNTIME_OUTPUT_DIRECTORY)
+		get_target_property(target_name      ${tgt} RUNTIME_OUTPUT_NAME)
+		if(NOT target_name)
+			set(target_name "${tgt}${CMAKE_EXECUTABLE_SUFFIX}")
+		endif()
+	elseif(target_type STREQUAL "SHARED_LIBRARY")
+		get_target_property(target_directory ${tgt} LIBRARY_OUTPUT_DIRECTORY)
+		get_target_property(target_name      ${tgt} LIBRARY_OUTPUT_NAME)
+		if(NOT target_name)
+			set(target_name "lib${tgt}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+		endif()
+	else()
+		message(FATAL_ERROR "omr_get_target_path: ${tgt} type is ${target_type}")
+	endif()
+	set(${VAR} "${target_directory}/${target_name}" PARENT_SCOPE)
+endfunction(omr_get_target_path)
+
+# replace the suffix of ${input} with ${new_suffix}
+#
+# The suffix is defined here as the portion string
+# starting with the last "." in the last path segment.
+# This is consistent with:
+#   get_filename_component(suffix ${input} LAST_EXT)
+# without requiring cmake version 3.14.
+function(omr_replace_suffix VAR input new_suffix)
+	string(FIND "${input}" "/" slash_index REVERSE)
+	string(FIND "${input}" "." dot_index REVERSE)
+	if(dot_index GREATER slash_index)
+		string(SUBSTRING "${input}" 0 ${dot_index} base)
+		set(result "${base}${new_suffix}")
+	else()
+		set(result "${input}${new_suffix}")
+	endif()
+	set(${VAR} "${result}" PARENT_SCOPE)
+endfunction(omr_replace_suffix)

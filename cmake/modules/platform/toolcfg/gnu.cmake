@@ -87,20 +87,22 @@ endif()
 
 function(_omr_toolchain_separate_debug_symbols tgt)
 	set(exe_file "$<TARGET_FILE:${tgt}>")
-	set(dbg_file "$<TARGET_FILE:${tgt}>.dbg")
 	if(OMR_OS_OSX)
+		set(dbg_file "${exe_file}.dSYM")
 		add_custom_command(
 			TARGET "${tgt}"
 			POST_BUILD
-			COMMAND dsymutil -f ${exe_file} -o ${dbg_file}
+			COMMAND dsymutil -o "${dbg_file}" "${exe_file}"
 		)
 	else()
+		omr_get_target_path(target_path ${tgt})
+		omr_replace_suffix(dbg_file "${target_path}" ".debuginfo")
 		add_custom_command(
 			TARGET "${tgt}"
 			POST_BUILD
 			COMMAND "${CMAKE_OBJCOPY}" --only-keep-debug "${exe_file}" "${dbg_file}"
 			COMMAND "${CMAKE_OBJCOPY}" --strip-debug "${exe_file}"
-			COMMAND "${CMAKE_OBJCOPY}" "--add-gnu-debuglink=${dbg_file}" "${exe_file}"
+			COMMAND "${CMAKE_OBJCOPY}" --add-gnu-debuglink="${dbg_file}" "${exe_file}"
 		)
 	endif()
 	set_target_properties(${tgt} PROPERTIES OMR_DEBUG_FILE "${dbg_file}")

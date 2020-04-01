@@ -343,12 +343,109 @@ static TR::Register *shiftHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR
    return RorIhelper(node, op, opi, cg);
    }
 
-// also handles bshl and sshl
+// also handles bshl, sshl and lshl
 TR::Register *
 OMR::RV::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return shiftHelper(node, TR::InstOpCode::_sllw, TR::InstOpCode::_slliw, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+
+   TR::Register *src1Reg;
+   TR::Register *trgReg;
+
+   int width = TR::DataType::getSize(node->getDataType()) * 8;
+
+   if (secondChild->getOpCode().isLoadConst())
+      {
+      /*
+       * If shift amount is a constant value, prefer slli / slliw.
+       *
+       * Only low bits 6 bits (5 for Int32, 4 for Int16, 3 for Int8)
+       * are considered, higher bits are ignored. This is to be consistent
+       * with behavior of sll / sllw.
+       *
+       * If data width is 8 or 16 bits, we have to truncate the value.
+       * We do this by combining the requested left shift by a constant
+       * with "truncation" left shift, for example:
+       *
+       *   For...
+       *
+       *     (sshl
+       *        (<src1>)
+       *        (iconst 5)
+       *
+       *   ...we generate:
+       *
+       *       slliw trg, src1, 21   ;; 21 = 32(reg width) - 16(data width) + 5(requested shift amount)
+       *       sraiw trg, trg,  16   ;; 16 = 32(reg width) - 16(data width)
+       *
+       *   This saves us one instruction compared to doing
+       *   `slliw trg, src1, 5` and then standard truncate()
+       *
+       * If constant is 0, we just pass-through the source value.
+       */
+      int64_t shamt = secondChild->getLongInt() & (width - 1);
+      if (shamt != 0)
+         {
+         src1Reg = cg->evaluate(firstChild);
+         trgReg = cg->allocateRegister(TR_GPR);
+         if (width < 32)
+            {
+            generateITYPE(TR::InstOpCode::_slliw, node, trgReg, src1Reg, 32 - width + shamt, cg);
+            generateITYPE(TR::InstOpCode::_sraiw, node, trgReg, trgReg,  32 - width, cg);
+            }
+         else
+            {
+            generateITYPE(width == 64 ? TR::InstOpCode::_slli : TR::InstOpCode::_slliw, node, trgReg, src1Reg, shamt, cg);
+            }
+         }
+      else
+         {
+         trgReg = cg->evaluate(firstChild);
+         }
+      }
+   else
+      {
+      /*
+       * If shift amount is not a constant (i.e., not known statically),
+       * use sll / sllw.
+       *
+       * Only low bits 6 bits (5 for Int32, 4 for Int16, 3 for Int8)
+       * are considered, higher bits are ignored.
+       *
+       * If data width is 8 or 16 bits, we have to first clear high
+       * 57bits (49 for Int16), perform the shift and then truncate.
+       *
+       */
+      TR::Register *src2Reg;
+
+      src1Reg = cg->evaluate(firstChild);
+      src2Reg = cg->evaluate(secondChild);
+      trgReg = cg->allocateRegister(TR_GPR);
+
+      if (width < 32)
+         {
+         /*
+          * Here we temporarily use trgReg to hold shift amount with high
+          * bits cleared (using andi).
+          */
+         generateITYPE(TR::InstOpCode::_andi, node, trgReg, src2Reg, (width-1), cg);
+         generateRTYPE(TR::InstOpCode::_sllw, node, trgReg,  src1Reg, trgReg,   cg);
+         generateITYPE(TR::InstOpCode::_slli, node, trgReg,  trgReg,  64 - width, cg);
+         generateITYPE(TR::InstOpCode::_srai, node, trgReg,  trgReg,  64 - width, cg);
+         }
+      else
+         {
+         generateRTYPE(width == 64 ? TR::InstOpCode::_sll : TR::InstOpCode::_sllw, node, trgReg, src1Reg, src2Reg, cg);
+         }
+      }
+
+   node->setRegister(trgReg);
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   return trgReg;
    }
+
 
 // also handles bshr and sshr
 TR::Register *
@@ -558,12 +655,6 @@ OMR::RV::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    firstChild->decReferenceCount();
    secondChild->decReferenceCount();
    return trgReg;
-   }
-
-TR::Register *
-OMR::RV::TreeEvaluator::lshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return shiftHelper(node, TR::InstOpCode::_sll, TR::InstOpCode::_slli, cg);
    }
 
 TR::Register *

@@ -148,7 +148,7 @@
     TR::TreeEvaluator::fabsEvaluator, // TR::fabs		// absolute value of float
     TR::TreeEvaluator::dabsEvaluator, // TR::dabs		// absolute value of double
     TR::TreeEvaluator::ishlEvaluator, // TR::ishl		// shift integer left                (child1 << child2)
-    TR::TreeEvaluator::lshlEvaluator, // TR::lshl		// shift long integer left           (child1 << child2)
+    TR::TreeEvaluator::ishlEvaluator, // TR::lshl		// shift long integer left           (child1 << child2)
     TR::TreeEvaluator::ishlEvaluator ,	// TR::bshl		// shift byte left                   (child1 << child2)
     TR::TreeEvaluator::ishlEvaluator ,	// TR::sshl		// shift short integer left          (child1 << child2)
     TR::TreeEvaluator::ishrEvaluator, // TR::ishr		// shift integer right arithmetically               (child1 >> child2)

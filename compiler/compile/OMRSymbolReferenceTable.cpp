@@ -1003,7 +1003,7 @@ OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference
    if (!knot)
       return original;
 
-   TR::KnownObjectTable::Index objectIndex = knot->getIndexAt(referenceLocation, isArrayWithConstantElements);
+   TR::KnownObjectTable::Index objectIndex = knot->getOrCreateIndexAt(referenceLocation, isArrayWithConstantElements);
    return findOrCreateSymRefWithKnownObject(original, objectIndex);
    }
 

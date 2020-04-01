@@ -1159,7 +1159,7 @@ TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType
       TR_J9VMBase *fej9 = (TR_J9VMBase *)(vp->comp()->fe());
       uintptr_t objRefOffs = fej9->getOffsetOfJavaLangClassFromClassField();
       uintptr_t *objRef = (uintptr_t*)(type->getClass() + objRefOffs);
-      TR::KnownObjectTable::Index index = knot->getIndexAt(objRef);
+      TR::KnownObjectTable::Index index = knot->getOrCreateIndexAt(objRef);
       type = TR::VPKnownObject::createForJavaLangClass(vp, index);
       }
 #endif
@@ -3559,7 +3559,7 @@ TR::VPConstraint *TR::VPKnownObject::intersect1(TR::VPConstraint *other, OMR::Va
       // - known object should be more specific (though it allows null).
       TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
       TR_ASSERT(knot, "Can't create a TR::VPKnownObject without a known-object table");
-      if (getIndex() == knot->getIndexAt((uintptr_t*)otherConstString->getSymRef()->getSymbol()->castToStaticSymbol()->getStaticAddress()))
+      if (getIndex() == knot->getOrCreateIndexAt((uintptr_t*)otherConstString->getSymRef()->getSymbol()->castToStaticSymbol()->getStaticAddress()))
          return other; // A const string constraint is more specific than known object
       else
          return NULL; // Two different objects

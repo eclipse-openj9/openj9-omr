@@ -343,7 +343,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          }
       else
          {
-         if(cg()->comp()->target().cpu.getSupportsArch(TR::CPU::z14))
+         if(cg()->comp()->target().cpu.getSupportsMiscellaneousInstructionExtensions2Facility())
             {
             // Check for multiplications on z14
             TR::InstOpCode::Mnemonic z14OpCode = TR::InstOpCode::BAD;
@@ -741,8 +741,8 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
       is16BitMemory2Operand = true;
       }
 
-   /**  Attempt to use AGH to add halfworf from memory */
-   if (cg()->comp()->target().cpu.getSupportsArch(TR::CPU::z14) &&
+   /* Attempt to use AGH to add halfword from memory */
+   if (cg()->comp()->target().cpu.getSupportsMiscellaneousInstructionExtensions2Facility() &&
        secondChild->getOpCodeValue() == TR::s2l &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
        secondChild->isSingleRefUnevaluated() &&

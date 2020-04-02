@@ -542,7 +542,6 @@
 
    constSimplifier,         // TR::iuconst
    lconstSimplifier,        // TR::luconst
-   constSimplifier,         // TR::buconst
    directLoadSimplifier,    // TR::iuload
    directLoadSimplifier,    // TR::luload
    directLoadSimplifier,    // TR::buload

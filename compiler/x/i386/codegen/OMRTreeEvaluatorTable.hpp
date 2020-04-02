@@ -521,7 +521,6 @@
  */
    TR::TreeEvaluator::iconstEvaluator,                                 // TR::iuconst
    TR::TreeEvaluator::lconstEvaluator,                                 // TR::luconst
-   TR::TreeEvaluator::bconstEvaluator,                                 // TR::buconst
    TR::TreeEvaluator::iloadEvaluator,                                  // TR::iuload
    TR::TreeEvaluator::lloadEvaluator,                                  // TR::luload
    TR::TreeEvaluator::bloadEvaluator,                                  // TR::buload

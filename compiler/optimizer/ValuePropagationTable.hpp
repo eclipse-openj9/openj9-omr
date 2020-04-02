@@ -685,7 +685,6 @@ const ValuePropagationPtr constraintHandlers[] =
  */
    constrainIntConst,        // TR::iuconst
    constrainLongConst,       // TR::luconst
-   constrainByteConst,       // TR::buconst
    constrainIntLoad,         // TR::iuload
    constrainLload,           // TR::luload
    constrainIntLoad,         // TR::buload

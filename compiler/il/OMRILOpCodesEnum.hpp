@@ -580,7 +580,6 @@
 
    iuconst,  // load unsigned integer constant (32-but unsigned)
    luconst,  // load unsigned long integer constant (64-bit unsigned)
-   buconst,  // load unsigned byte integer constant (8-bit unsigned)
    iuload,   // load unsigned integer
    luload,   // load unsigned long integer
    buload,   // load unsigned byte

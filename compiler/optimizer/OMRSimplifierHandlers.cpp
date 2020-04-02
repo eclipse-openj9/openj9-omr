@@ -5050,10 +5050,10 @@ static bool isDeletedLabelLoadaddr(TR::Node * node)
 //  band                               band
 //    bshl                              ibload
 //      ibload           ===>             loadaddr
-//        loadaddr                      buconst N>>s
-//      iconst s                       buconst M>>s
-//    buconst N
-//  buconst M
+//        loadaddr                      bconst N>>s
+//      iconst s                       bconst M>>s
+//    bconst N
+//  bconst M
 
 static void bitTestingOp(TR::Node * node, TR::Simplifier *s)
   {

@@ -2791,7 +2791,6 @@ int32_t childTypes[] =
  */
    TR::Int32,                     // TR::iuconst
    TR::Int64,                     // TR::luconst
-   TR::Int8,                      // TR::buconst
    TR::Int32,                     // TR::iuload
    TR::Int64,                     // TR::luload
    TR::Int8,                      // TR::buload

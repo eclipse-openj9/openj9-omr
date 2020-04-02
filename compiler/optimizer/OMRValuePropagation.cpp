@@ -6476,7 +6476,7 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
                   // Have we already generated an instanceOf for this object/class when handling array indexes?
                   for (arrayIndex = arrayLength->_arrayIndicesInfo->getFirst(); result != TR_yes && arrayIndex; arrayIndex = arrayIndex->getNext())
                      {
-                     if (arrayIndex->_versionBucket && arrayIndex->_baseNode->getOpCode().getOpCodeValue() == TR::iloadi && 
+                     if (arrayIndex->_versionBucket && arrayIndex->_baseNode && arrayIndex->_baseNode->getOpCode().getOpCodeValue() == TR::iloadi &&
                          objectRefChild == arrayIndex->_baseNode->getFirstChild() && arrayLength->_instanceOfClass == arrayIndex->_instanceOfClass)
                         {
                         result = TR_yes; // We already generated an instanceOf check for this object&class combination

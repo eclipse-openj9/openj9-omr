@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -134,6 +134,8 @@ typedef struct TR_InlinedCallSite
    #if defined(TR_HOST_ARM)
       //dmb
       #define FLUSH_MEMORY(smp) if ( smp ) __asm__(".word 0xf57ff05f");
+   #elif defined(TR_HOST_ARM64)
+      #define FLUSH_MEMORY(smp) if ( smp ) __asm__("dmb sy");
    #else
       #define FLUSH_MEMORY(smp)
    #endif

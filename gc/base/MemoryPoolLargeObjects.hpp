@@ -278,6 +278,8 @@ public:
 		, _loaSize(0)
 		, _soaSize(0)
 		, _currentLOARatio(_extensions->largeObjectAreaInitialRatio)
+		, _minLOAFreeRatio(0)
+		, _loaFreeRatioHistory(NULL)
 		, _soaObjectSizeLWM(UDATA_MAX)
 		, _soaFreeBytesAfterLastGC(0)
 	{

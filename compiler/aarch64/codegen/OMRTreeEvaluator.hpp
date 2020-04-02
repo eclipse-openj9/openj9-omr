@@ -541,7 +541,6 @@ public:
 	static TR::Register *vlRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vfRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vdRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *luconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iuloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *luloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *buloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);

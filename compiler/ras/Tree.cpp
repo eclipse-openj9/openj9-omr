@@ -2789,7 +2789,6 @@ int32_t childTypes[] =
 /*
  *END OF OPCODES REQUIRED BY OMR
  */
-   TR::Int64,                     // TR::luconst
    TR::Int32,                     // TR::iuload
    TR::Int64,                     // TR::luload
    TR::Int8,                      // TR::buload

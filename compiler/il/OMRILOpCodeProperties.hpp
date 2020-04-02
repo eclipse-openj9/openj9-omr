@@ -7948,22 +7948,6 @@
    },
 
    {
-   /* .opcode               = */ TR::luconst,
-   /* .name                 = */ "luconst",
-   /* .properties1          = */ ILProp1::LoadConst,
-   /* .properties2          = */ ILProp2::ValueNumberShare,
-   /* .properties3          = */ ILProp3::LikeUse,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int64,
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned,
-   /* .childProperties      = */ ILChildProp::NoChildren,
-   /* .swapChildrenOpCode   = */ TR::BadILOp,
-   /* .reverseBranchOpCode  = */ TR::BadILOp,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
    /* .opcode               = */ TR::iuload,
    /* .name                 = */ "iuload",
    /* .properties1          = */ ILProp1::LoadVar | ILProp1::HasSymbolRef,

@@ -335,14 +335,6 @@ OMR::RV::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return Rhelper(node, TR::InstOpCode::_rem, cg);
    }
 
-static TR::Register *shiftHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic opi, TR::CodeGenerator *cg)
-   {
-   // TODO: if second arg is an int constant, shall we make mask it so
-   // that we're sure the only low 5 bits are set? This is the assumption
-   // under which we can use RorIhelper. Is this guaranteed at this level?
-   return RorIhelper(node, op, opi, cg);
-   }
-
 // also handles bshl, sshl and lshl
 TR::Register *
 OMR::RV::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -447,11 +439,85 @@ OMR::RV::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 
-// also handles bshr and sshr
+// also handles bshr, sshr and lshr
 TR::Register *
 OMR::RV::TreeEvaluator::ishrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return shiftHelper(node, TR::InstOpCode::_sraw, TR::InstOpCode::_sraiw, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+
+   TR::Register *src1Reg;
+   TR::Register *trgReg;
+
+   int width = TR::DataType::getSize(node->getDataType()) * 8;
+
+   if (secondChild->getOpCode().isLoadConst())
+      {
+      /*
+       * If shift amount is a constant value, prefer srai / sraiw.
+       *
+       * Only low bits 6 bits (5 for Int32, 4 for Int16, 3 for Int8)
+       * are considered, higher bits are ignored. This is to be consistent
+       * with behavior of sra / sraw.
+       *
+       * If data width is 8 or 16 bits, we DO NOT need to truncate.
+       * The value to be shifted should have higher 17 or 25 bits all set
+       * to either one or zero.
+       *
+       * Finally, if constant is 0, we just pass-through the source value.
+       */
+      int64_t shamt = secondChild->getLongInt() & (width - 1);
+      if (shamt != 0)
+         {
+         src1Reg = cg->evaluate(firstChild);
+         trgReg = cg->allocateRegister(TR_GPR);
+
+         generateITYPE(width == 64 ? TR::InstOpCode::_srai : TR::InstOpCode::_sraiw, node, trgReg, src1Reg, shamt, cg);
+         }
+      else
+         {
+         trgReg = cg->evaluate(firstChild);
+         }
+      }
+   else
+      {
+      /*
+       * If shift amount is not a constant (i.e., not known statically),
+       * use sra / sraw.
+       *
+       * Only low bits 6 bits (5 for Int32, 4 for Int16, 3 for Int8)
+       * are considered, higher bits are ignored.
+       *
+       * If data width is 8 or 16 bits, we have to first clear high
+       * 57bits (49 for Int16) and perform the shift. Again, we DO NOT
+       * need to truncate. The value to be shifted should have higher
+       * 17 or 25 bits all set to either one or zero.
+       */
+      TR::Register *src2Reg;
+
+      src1Reg = cg->evaluate(firstChild);
+      src2Reg = cg->evaluate(secondChild);
+      trgReg = cg->allocateRegister(TR_GPR);
+
+      if (width < 32)
+         {
+         /*
+          * Here we temporarily use trgReg to hold shift amount with high
+          * bits cleared (using andi).
+          */
+         generateITYPE(TR::InstOpCode::_andi, node, trgReg, src2Reg, width-1, cg);
+         generateRTYPE(TR::InstOpCode::_sraw, node, trgReg,  src1Reg, trgReg, cg);
+         }
+      else
+         {
+         generateRTYPE(width == 64 ? TR::InstOpCode::_sra : TR::InstOpCode::_sraw, node, trgReg, src1Reg, src2Reg, cg);
+         }
+      }
+
+   node->setRegister(trgReg);
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   return trgReg;
    }
 
 // also handles bushr, sushr and lushr
@@ -657,11 +723,6 @@ OMR::RV::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return trgReg;
    }
 
-TR::Register *
-OMR::RV::TreeEvaluator::lshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return shiftHelper(node, TR::InstOpCode::_sra, TR::InstOpCode::_srai, cg);
-   }
 
 // also handles band, sand and land
 TR::Register *

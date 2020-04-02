@@ -152,7 +152,7 @@
     TR::TreeEvaluator::ishlEvaluator ,	// TR::bshl		// shift byte left                   (child1 << child2)
     TR::TreeEvaluator::ishlEvaluator ,	// TR::sshl		// shift short integer left          (child1 << child2)
     TR::TreeEvaluator::ishrEvaluator, // TR::ishr		// shift integer right arithmetically               (child1 >> child2)
-    TR::TreeEvaluator::lshrEvaluator, // TR::lshr		// shift long integer right arithmetically          (child1 >> child2)
+    TR::TreeEvaluator::ishrEvaluator, // TR::lshr		// shift long integer right arithmetically          (child1 >> child2)
     TR::TreeEvaluator::ishrEvaluator ,	// TR::bshr		// shift byte right arithmetically                  (child1 >> child2)
     TR::TreeEvaluator::ishrEvaluator ,	// TR::sshr		// shift short integer arithmetically               (child1 >> child2)
     TR::TreeEvaluator::iushrEvaluator, // TR::iushr		// shift integer right logically                   (child1 >> child2)

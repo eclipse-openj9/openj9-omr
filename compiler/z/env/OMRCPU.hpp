@@ -179,6 +179,23 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
    bool setSupportsVectorPackedDecimalFacility(bool value);
    
    /** \brief
+    *     Determines whether the Miscellaneous Instruction Extensions 2 (MIE2) facility is available on the current
+    *     processor.
+    */
+   bool getSupportsMiscellaneousInstructionExtensions2Facility();
+
+   /** \brief
+    *     Determines whether the Miscellaneous Instruction Extensions 2 (MIE2) facility is available on the current
+    *     processor.
+    *
+    *  \param value
+    *     Determines whether the Miscellaneous Instruction Extensions 2 facility is available (if \c true) or not (if
+    *     \c false).
+    */
+   bool setSupportsMiscellaneousInstructionExtensions2Facility(bool value);
+
+
+   /** \brief
     *     Determines whether the Miscellaneous Instruction Extensions 3 (MIE3) facility is available on the current
     *     processor.
     */
@@ -281,10 +298,11 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
       S390SupportsVectorPackedDecimalFacility  = 0x00080000,
       S390SupportsGuardedStorageFacility       = 0x00100000,
       S390SupportsSideEffectAccessFacility     = 0x00200000,
-      S390SupportsMIE3                         = 0x00400000,
-      S390SupportsVectorFacilityEnhancement2   = 0x00800000,
-      S390SupportsVectorPDEnhancementFacility  = 0x01000000,
-      S390SupportsVectorFacilityEnhancement1   = 0x02000000,
+      S390SupportsMIE2                         = 0x00400000,
+      S390SupportsMIE3                         = 0x00800000,
+      S390SupportsVectorFacilityEnhancement2   = 0x01000000,
+      S390SupportsVectorPDEnhancementFacility  = 0x02000000,
+      S390SupportsVectorFacilityEnhancement1   = 0x04000000,
       };
 
    Architecture _supportedArch;

@@ -369,6 +369,25 @@ OMR::Z::CPU::setSupportsGuardedStorageFacility(bool value)
    }
 
 bool
+OMR::Z::CPU::getSupportsMiscellaneousInstructionExtensions2Facility()
+   {
+   return _flags.testAny(S390SupportsMIE2);
+   }
+
+bool
+OMR::Z::CPU::setSupportsMiscellaneousInstructionExtensions2Facility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsMIE2);
+      }
+   else
+      {
+      _flags.reset(S390SupportsMIE2);
+      }
+   }
+
+bool
 OMR::Z::CPU::getSupportsMiscellaneousInstructionExtensions3Facility()
    {
    return _flags.testAny(S390SupportsMIE3);

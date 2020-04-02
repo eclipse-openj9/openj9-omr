@@ -245,8 +245,11 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
 
    bool isLoadNodeNested = false;
 
+   // All of the memToRegOpCodes (MGH, MSGC and MSC) used in the if block below
+   // rely on the miscellaneous-instruction-extension facility 2 being installed
+
    // TODO: add MH and MHY here; outside of the z14 if check.
-   if(cg()->comp()->target().cpu.getSupportsArch(TR::CPU::z14))
+   if(cg()->comp()->target().cpu.getSupportsMiscellaneousInstructionExtensions2Facility())
       {
       bool isSetReg2Mem1 = false;
 

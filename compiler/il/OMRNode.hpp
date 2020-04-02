@@ -374,7 +374,6 @@ private:
       switch (opvalue) 
          {
          //Constant
-         case TR::iuconst:
          case TR::luconst:
          case TR::cconst:
 

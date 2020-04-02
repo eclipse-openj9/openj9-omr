@@ -635,7 +635,6 @@
 /*
  *END OF OPCODES REQUIRED BY OMR
  */
-   TR::TreeEvaluator::iconstEvaluator,      // TR::iuconst
    TR::TreeEvaluator::lconstEvaluator,      // TR::luconst
    TR::TreeEvaluator::iloadEvaluator,       // TR::iuload
    TR::TreeEvaluator::lloadEvaluator,       // TR::luload

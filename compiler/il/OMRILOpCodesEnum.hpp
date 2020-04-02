@@ -578,7 +578,6 @@
    vfRegStore,    // Store vector global register
    vdRegStore,    // Store vector global register
 
-   iuconst,  // load unsigned integer constant (32-but unsigned)
    luconst,  // load unsigned long integer constant (64-bit unsigned)
    iuload,   // load unsigned integer
    luload,   // load unsigned long integer

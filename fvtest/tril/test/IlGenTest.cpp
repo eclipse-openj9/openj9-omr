@@ -40,9 +40,9 @@
 
 class IlGenTest : public Tril::Test::JitTest {};
 
-// TODO (#4719): This test is currently broken on AIX and z/OS, since it is not valid to use the return value of
+// TODO (#4719): This test is currently broken on AIX, since it is not valid to use the return value of
 // compileMethodFromDetails as a function pointer.
-#if !defined(AIXPPC) && !defined(J9ZOS390)
+#if !defined(AIXPPC)
 TEST_F(IlGenTest, Return3) {
     auto trees = parseString("(block (ireturn (iconst 3)))");
 

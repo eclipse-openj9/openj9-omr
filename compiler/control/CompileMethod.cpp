@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -379,7 +379,7 @@ compileMethodFromDetails(
          // not ready yet...
          //OMR::MethodMetaDataPOD *metaData = fe.createMethodMetaData(&compiler);
 
-         startPC = compiler.cg()->getCodeStart();
+         startPC = (uint8_t*)compiler.getMethodSymbol()->getMethodAddress();
          uint64_t translationTime = TR::Compiler->vm.getUSecClock() - translationStartTime;
 
          if (TR::Options::isAnyVerboseOptionSet(TR_VerboseCompileEnd, TR_VerbosePerformance))

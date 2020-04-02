@@ -189,19 +189,7 @@ internal_compileMethodBuilder(TR::MethodBuilder *m, void **entry)
    {
    auto rc = m->Compile(entry);
 
-#if defined(J9ZOS390)
-   struct FunctionDescriptor
-   {
-      uint64_t environment;
-      void* func;
-   };
-
-   FunctionDescriptor* fd = new FunctionDescriptor();
-   fd->environment = 0;
-   fd->func = *entry;
-
-   *entry = (void*) fd;
-#elif defined(AIXPPC)
+#if defined(AIXPPC)
    struct FunctionDescriptor
       {
       void* func;

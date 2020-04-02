@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -180,48 +180,44 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
      }
 
    if (cg->getAheadOfTimeCompile() && (comp->getOption(TR_TraceRelocatableDataCG) || comp->getOption(TR_TraceRelocatableDataDetailsCG) || comp->getOption(TR_TraceReloCG)))
-     {
-     traceMsg(comp, "\n<relocatableDataCG>\n");
-     if (comp->getOption(TR_TraceRelocatableDataDetailsCG)) // verbose output
-        {
-        uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
-        traceMsg(comp, "Code start = %8x, Method start pc = %x, Method start pc offset = 0x%x\n", relocatableMethodCodeStart, cg->getCodeStart(), cg->getCodeStart() - relocatableMethodCodeStart);
-        }
-     cg->getAheadOfTimeCompile()->dumpRelocationData();
-     traceMsg(comp, "</relocatableDataCG>\n");
-     }
+      {
+      traceMsg(comp, "\n<relocatableDataCG>\n");
+      if (comp->getOption(TR_TraceRelocatableDataDetailsCG)) // verbose output
+         {
+         uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
+         traceMsg(comp, "Code start = %8x, Method start pc = %x, Method start pc offset = 0x%x\n", relocatableMethodCodeStart, cg->getCodeStart(), cg->getCodeStart() - relocatableMethodCodeStart);
+         }
+      cg->getAheadOfTimeCompile()->dumpRelocationData();
+      traceMsg(comp, "</relocatableDataCG>\n");
+      }
 
-     if (debug("dumpCodeSizes"))
-        {
-        diagnostic("%08d   %s\n", cg->getCodeLength(), comp->signature());
-        }
+   if (debug("dumpCodeSizes"))
+      {
+      diagnostic("%08d   %s\n", cg->getCodeLength(), comp->signature());
+      }
 
-     if (comp->getCurrentMethod() == NULL)
-        {
-        comp->getMethodSymbol()->setMethodAddress(cg->getBinaryBufferStart());
-        }
+   TR_ASSERT(cg->getCodeLength() <= cg->getEstimatedCodeLength(),
+      "Method length estimate must be conservatively large\n"
+      "    codeLength = %d, estimatedCodeLength = %d \n",
+      cg->getCodeLength(), cg->getEstimatedCodeLength()
+   );
 
-     TR_ASSERT(cg->getCodeLength() <= cg->getEstimatedCodeLength(),
-               "Method length estimate must be conservatively large\n"
-               "    codeLength = %d, estimatedCodeLength = %d \n",
-               cg->getCodeLength(), cg->getEstimatedCodeLength()
-               );
+   // also trace the interal stack atlas
+   cg->getStackAtlas()->close(cg);
 
-     // also trace the interal stack atlas
-     cg->getStackAtlas()->close(cg);
+   TR::SimpleRegex * regex = comp->getOptions()->getSlipTrap();
+   if (regex && TR::SimpleRegex::match(regex, comp->getCurrentMethod()))
+      {
+      if (cg->comp()->target().is64Bit())
+         {
+         setDllSlip((char*)cg->getCodeStart(), (char*)cg->getCodeStart() + cg->getCodeLength(), "SLIPDLL64", comp);
+         }
+      else
+         {
+         setDllSlip((char*)cg->getCodeStart(), (char*)cg->getCodeStart() + cg->getCodeLength(), "SLIPDLL31", comp);
+         }
+      }
 
-     TR::SimpleRegex * regex = comp->getOptions()->getSlipTrap();
-     if (regex && TR::SimpleRegex::match(regex, comp->getCurrentMethod()))
-        {
-        if (cg->comp()->target().is64Bit())
-        {
-        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getCodeLength(),"SLIPDLL64", comp);
-        }
-     else
-        {
-        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getCodeLength(),"SLIPDLL31", comp);
-        }
-     }
    if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
       {
       const char * title = "Post Relocation Instructions";
@@ -303,6 +299,9 @@ OMR::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator * cg, TR::CodeGe
    LexicalTimer pt(phase->getName(), comp->phaseTimer());
 
    cg->doBinaryEncoding();
+
+   // Instructions have been emitted, and now we know what the entry point is, so update the compilation method symbol
+   comp->getMethodSymbol()->setMethodAddress(cg->getCodeStart());
 
    if (debug("verifyFinalNodeReferenceCounts"))
       {

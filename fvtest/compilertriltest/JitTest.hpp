@@ -692,6 +692,20 @@ class SkipHelper
    SKIP_ON(OMRPORT_ARCH_S390, reason)
 
 /*
+ * @brief A macro to allow a test to be conditionally skipped on S390 running under the Linux operating system.
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_S390_LINUX(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_S390_LINUX(reason) \
+   switch (0) case 0: default: /* guard against ambiguous else */ \
+   if (strcmp("Linux", omrsysinfo_get_OS_type()) != 0) { /* allow test to proceed normally */ } \
+   else \
+      SKIP_ON(OMRPORT_ARCH_S390X, reason)
+
+/*
  * @brief A macro to allow a test to be conditionally skipped on S390X
  *
  * The basic syntax for using this macro is:
@@ -702,6 +716,19 @@ class SkipHelper
 #define SKIP_ON_S390X(reason) \
    SKIP_ON(OMRPORT_ARCH_S390X, reason)
 
+/*
+ * @brief A macro to allow a test to be conditionally skipped on S390X running under the Linux operating system.
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_S390X_LINUX(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_S390X_LINUX(reason) \
+   switch (0) case 0: default: /* guard against ambiguous else */ \
+   if (strcmp("Linux", omrsysinfo_get_OS_type()) != 0) { /* allow test to proceed normally */ } \
+   else \
+      SKIP_ON(OMRPORT_ARCH_S390X, reason)
 
 /*
  * @brief A macro to allow a test to be conditionally skipped on AMD64

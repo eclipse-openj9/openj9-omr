@@ -31,6 +31,7 @@
 #include "codegen/SystemLinkage.hpp"
 #include "codegen/snippet/PPA1Snippet.hpp"
 #include "codegen/snippet/PPA2Snippet.hpp"
+#include "codegen/ConstantDataSnippet.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
@@ -105,6 +106,23 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
       TR::Instruction* _nop;
       };
 
+   /** \brief
+    *
+    *  Represents the XPLINK function descriptor which is a data structure that represents the address of a function
+    *  retrieved via the C '&' operator. The data structure holds the actual value of the execution entry point of the
+    *  function it describes.
+    *
+    *  [1] https://www-01.ibm.com/servers/resourcelink/svc00100.nsf/pages/zOSV2R3SA380688/$file/ceev100_v2r3.pdf (page 140)
+    */
+   class XPLINKFunctionDescriptorSnippet : public TR::S390ConstantDataSnippet
+      {
+      public:
+
+         XPLINKFunctionDescriptorSnippet(TR::CodeGenerator* cg);
+
+         virtual uint8_t* emitSnippetBody();
+      };
+
    public:
 
    /** \brief
@@ -176,6 +194,7 @@ class S390zOSSystemLinkage : public TR::SystemLinkage
    TR::LabelSymbol* _entryPointMarkerLabel;
    TR::LabelSymbol* _stackPointerUpdateLabel;
 
+   XPLINKFunctionDescriptorSnippet* _xplinkFunctionDescriptorSnippet;
    TR::PPA1Snippet* _ppa1Snippet;
    TR::PPA2Snippet* _ppa2Snippet;
    };

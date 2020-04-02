@@ -2035,32 +2035,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          argSize += gprSize;
       }
 
-   bool isXPLinkToPureOSLinkageCall = false;
-   if (!self()->isFirstParmAtFixedOffset())
-      {
-      stackOffset = argSize;
-      }
-   else
-      {
-      stackOffset = self()->getOffsetToFirstParm();
-
-      if (isXPLinkToPureOSLinkageCall)
-         {
-         // Load argument list (GPR1) pointer here in XPLink to OS linkage call
-         // The OS linkage argument list is embedded in the XPLink outbound argument area
-         // at offset 8 instead of 0 (to bypass collision with long displacement slot)
-         TR::Register *r1Reg = self()->cg()->allocateRegister();
-         if (stackOffset == self()->getOffsetToLongDispSlot())
-            {
-            stackOffset += 8; // avoid first parm at long displacement slot
-            }
-         TR::RealRegister * stackPtr = self()->getNormalStackPointerRealRegister();
-         generateRXInstruction(self()->cg(), TR::InstOpCode::LA, callNode, r1Reg,
-                   generateS390MemoryReference(stackPtr, stackOffset, self()->cg()));
-         dependencies->addPreCondition(r1Reg, TR::RealRegister::GPR1);
-         self()->cg()->stopUsingRegister(r1Reg);
-         }
-      }
+   stackOffset = self()->isFirstParmAtFixedOffset() ? self()->getOffsetToFirstParm() : argSize;
 
    //store env register
    stackOffset = self()->storeExtraEnvRegForBuildArgs(callNode, self(), dependencies, isFastJNI, stackOffset, gprSize, numIntegerArgs);
@@ -2114,28 +2089,24 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
 
                if (self()->isSkipGPRsForFloatParms())
                   {
-                  if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
-                     {
-                     numIntegerArgs++;
-                     }
+                  numIntegerArgs++;
                   }
                break;
                }
          case TR::Double:
 #ifdef J9_PROJECT_SPECIFIC
          case TR::DecimalDouble:
+#endif
             argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
 
             numFloatArgs++;
 
             if (self()->isSkipGPRsForFloatParms())
                {
-               if (numIntegerArgs < self()->getNumIntegerArgumentRegisters())
-                  {
-                  numIntegerArgs += (self()->cg()->comp()->target().is64Bit()) ? 1 : 2;
-                  }
+               numIntegerArgs += (self()->cg()->comp()->target().is64Bit()) ? 1 : 2;
                }
             break;
+#ifdef J9_PROJECT_SPECIFIC
          case TR::DecimalLongDouble:
             if (numFloatArgs%2 == 1)
                { // need to skip fp arg 'hole' for long double arg

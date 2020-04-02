@@ -244,9 +244,11 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    TR::CodeGenerator* cg = self()->cg();
 
+   _xplinkFunctionDescriptorSnippet = new (self()->trHeapMemory()) XPLINKFunctionDescriptorSnippet(cg);
    _ppa1Snippet = new (self()->trHeapMemory()) TR::PPA1Snippet(cg, this);
    _ppa2Snippet = new (self()->trHeapMemory()) TR::PPA2Snippet(cg, this);
 
+   cg->addSnippet(_xplinkFunctionDescriptorSnippet);
    cg->addSnippet(_ppa1Snippet);
    cg->addSnippet(_ppa2Snippet);
 
@@ -526,8 +528,6 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
       TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {
-   TR::CodeGenerator * codeGen = cg();
-
     // WCode specific
     //
     // There are 4 cases for outgoing branch sequences
@@ -550,40 +550,61 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
     //             a) disp is an offset in the environment (aka ADA) containing the
     //                function descriptor body (i.e. not pointer to function descriptor)
     TR_XPLinkCallTypes callType;
+    
+    TR::Register* aeReg = deps->searchPostConditionRegister(getENVPointerRegister());
+    TR::Register* epReg = deps->searchPostConditionRegister(getEntryPointRegister());
+    TR::Register* raReg = deps->searchPostConditionRegister(getReturnAddressRegister());
 
-    // Find GPR6 (xplink) or GPR15 (os linkage) in post conditions
-    TR::Register * systemEntryPointRegister = deps->searchPostConditionRegister(getEntryPointRegister());
-    // Find GPR7 (xplik) or GPR14 (os linkage) in post conditions
-    TR::Register * systemReturnAddressRegister = deps->searchPostConditionRegister(getReturnAddressRegister());
-
-    TR::RegisterDependencyConditions * preDeps = new (trHeapMemory()) TR::RegisterDependencyConditions(deps->getPreConditions(), NULL, deps->getAddCursorForPre(), 0, cg());
+    TR::RegisterDependencyConditions* preDeps = new (trHeapMemory()) TR::RegisterDependencyConditions(deps->getPreConditions(), NULL, deps->getAddCursorForPre(), 0, cg());
+    TR::RegisterDependencyConditions* postDeps = new (trHeapMemory()) TR::RegisterDependencyConditions(NULL, deps->getPostConditions(), 0, deps->getAddCursorForPost(), cg());
 
     if (callNode->getOpCode().isIndirect())
        {
-       generateRRInstruction(cg(), InstOpCode::BASR, callNode, systemReturnAddressRegister, systemEntryPointRegister, preDeps);
+       TR::Register* targetAddress = cg()->evaluate(callNode->getFirstChild());
+
+       generateRSInstruction(cg(), TR::InstOpCode::getLoadMultipleOpCode(), callNode, aeReg, epReg, generateS390MemoryReference(targetAddress, 0, cg()));
+       generateRRInstruction(cg(), InstOpCode::BASR, callNode, raReg, epReg, preDeps);
        callType = TR_XPLinkCallType_BASR;
        }
     else
        {
+       TR::SymbolReference* callSymRef = callNode->getSymbolReference();
+       TR::Symbol* callSymbol = callSymRef->getSymbol();
 
-       TR::SymbolReference *callSymRef = callNode->getSymbolReference();
-       TR::Symbol *callSymbol = callSymRef->getSymbol();
+       if (comp()->isRecursiveMethodTarget(callSymbol))
+          {
+          // No need to load the environment or the entry point for recursive calls because these values are not used
+          // within OMR compiled methods
+          TR::Instruction* callInstr = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, raReg, callSymbol, callSymRef, cg());
+          callInstr->setDependencyConditions(preDeps);
+          }
+       else
+          {
+          struct FunctionDescriptor
+             {
+             void* environment;
+             void* func;
+             };
 
-       TR::Instruction * callInstr = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, systemReturnAddressRegister, callSymbol, callSymRef, cg());
-       callInstr->setDependencyConditions(preDeps);
+          FunctionDescriptor* fd = reinterpret_cast<FunctionDescriptor*>(callSymbol->castToMethodSymbol()->getMethodAddress());
+
+          genLoadAddressConstant(cg(), callNode, reinterpret_cast<uintptr_t>(fd), epReg);
+          generateRSInstruction(cg(), TR::InstOpCode::getLoadMultipleOpCode(), callNode, aeReg, epReg, generateS390MemoryReference(epReg, 0, cg()));
+
+          TR::Instruction* callInstr = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, raReg, fd->func, callSymRef, cg());
+          callInstr->setDependencyConditions(preDeps);
+          }
+
        callType = TR_XPLinkCallType_BRASL7;
        }
 
-    auto cursor = generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, returnFromJNICallLabel);
+    auto cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, callNode, returnFromJNICallLabel);
 
     genCallNOPAndDescriptor(cursor, callNode, callNode, callType);
 
     // Append post-dependencies after NOP
-    TR::LabelSymbol * afterNOP = generateLabelSymbol(cg());
-    TR::RegisterDependencyConditions * postDeps =
-          new (trHeapMemory()) TR::RegisterDependencyConditions(NULL,
-                deps->getPostConditions(), 0, deps->getAddCursorForPost(), cg());
-    generateS390LabelInstruction(codeGen, InstOpCode::LABEL, callNode, afterNOP, postDeps);
+    TR::LabelSymbol* depsLabel = generateLabelSymbol(cg());
+    generateS390LabelInstruction(cg(), InstOpCode::LABEL, callNode, depsLabel, postDeps);
 }
 TR::LabelSymbol*
 TR::S390zOSSystemLinkage::getEntryPointMarkerLabel() const
@@ -1314,4 +1335,55 @@ TR::S390zOSSystemLinkage::XPLINKCallDescriptorRelocation::apply(TR::CodeGenerato
 
    uint8_t* p = getUpdateLocation();
    *reinterpret_cast<int16_t*>(p) = static_cast<int16_t>(offsetToCallDescriptor);
+   }
+
+TR::S390zOSSystemLinkage::XPLINKFunctionDescriptorSnippet::XPLINKFunctionDescriptorSnippet(TR::CodeGenerator* cg)
+   :
+      TR::S390ConstantDataSnippet(cg, NULL, NULL, cg->comp()->target().is32Bit() ? 8 : 16)
+   {
+   if (cg->comp()->target().is32Bit())
+      {
+      *(reinterpret_cast<uint32_t*>(_value) + 0) = 0;
+      *(reinterpret_cast<uint32_t*>(_value) + 1) = 0;
+      }
+   else
+      {
+      *(reinterpret_cast<uint64_t*>(_value) + 0) = 0;
+      *(reinterpret_cast<uint64_t*>(_value) + 1) = 0;
+      }
+   }
+
+uint8_t*
+TR::S390zOSSystemLinkage::XPLINKFunctionDescriptorSnippet::emitSnippetBody()
+   {
+   uint8_t* cursor = cg()->getBinaryBufferCursor();
+
+   // TODO: We should not have to do this here. This should be done by the caller.
+   getSnippetLabel()->setCodeLocation(cursor);
+
+   // Update the method symbol address to point to the function descriptor
+   cg()->comp()->getMethodSymbol()->setMethodAddress(cursor);
+
+   if (cg()->comp()->target().is32Bit())
+      {
+      // Address of function's environment
+      *reinterpret_cast<uint32_t*>(cursor) = 0;
+      cursor += sizeof(uint32_t);
+
+      // Function of function
+      *reinterpret_cast<uint32_t**>(cursor) = reinterpret_cast<uint32_t*>(cg()->getCodeStart());
+      cursor += sizeof(uint32_t);
+      }
+   else
+      {
+      // Address of function's environment
+      *reinterpret_cast<uint64_t*>(cursor) = 0;
+      cursor += sizeof(uint64_t);
+
+      // Function of function
+      *reinterpret_cast<uint64_t**>(cursor) = reinterpret_cast<uint64_t*>(cg()->getCodeStart());
+      cursor += sizeof(uint64_t);
+      }
+
+   return cursor;
    }

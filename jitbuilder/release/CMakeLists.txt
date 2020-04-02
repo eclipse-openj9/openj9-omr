@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -74,6 +74,5 @@ endif()
 
 
 # Additional Tests: These may not run properly on all platforms
-# Mandelbrot takes arguments for its test
-# so will require we enhance create_jitbuilder_target.
-#create_jitbuilder_target(mandelbrot   cpp/samples/Mandelbrot.cpp)
+# Mandelbrot takes arguments for its test so will require we enhance create_jitbuilder_test
+#create_jitbuilder_test(mandelbrot cpp/samples/Mandelbrot.cpp)

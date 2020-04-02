@@ -555,7 +555,6 @@
    TR::TreeEvaluator::gprRegLoadEvaluator,              // TR::luRegLoad
    TR::TreeEvaluator::gprRegStoreEvaluator,             // TR::iuRegStore
    TR::TreeEvaluator::gprRegStoreEvaluator,             // TR::luRegStore
-   TR::TreeEvaluator::iconstEvaluator,                  // TR::cconst
    TR::TreeEvaluator::cloadEvaluator,                   // TR::cload
    TR::TreeEvaluator::cloadEvaluator,                   // TR::cloadi
    TR::TreeEvaluator::cstoreEvaluator,                  // TR::cstore

@@ -573,7 +573,6 @@ public:
 	static TR::Register *luRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iuRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *luRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *cconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);

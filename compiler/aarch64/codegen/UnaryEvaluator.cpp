@@ -49,11 +49,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::bconstEvaluator(TR::Node *node, TR::Cod
    return commonConstEvaluator(node, node->getByte(), cg);
    }
 
-TR::Register *OMR::ARM64::TreeEvaluator::cconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return commonConstEvaluator(node, node->getConst<uint16_t>(), cg);
-   }
-
 TR::Register *OMR::ARM64::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (cg->profiledPointersRequireRelocation() &&

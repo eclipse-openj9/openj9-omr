@@ -373,9 +373,6 @@ private:
       {
       switch (opvalue) 
          {
-         //Constant
-         case TR::cconst:
-
          //Add and Subtract
          case TR::aiuadd: 
          case TR::aluadd: 

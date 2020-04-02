@@ -715,7 +715,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::luRegLoad
    constrainChildren,        // TR::iuRegStore
    constrainChildren,        // TR::luRegStore
-   constrainShortConst,      // TR::cconst
    constrainIntLoad,         // TR::cload
    constrainIntLoad,         // TR::cloadi
    constrainIntStore,        // TR::cstore

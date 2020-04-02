@@ -8460,22 +8460,6 @@
    },
 
    {
-   /* .opcode               = */ TR::cconst,
-   /* .name                 = */ "cconst",
-   /* .properties1          = */ ILProp1::LoadConst,
-   /* .properties2          = */ ILProp2::ValueNumberShare,
-   /* .properties3          = */ ILProp3::LikeUse,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int16,
-   /* .typeProperties       = */ ILTypeProp::Size_2 | ILTypeProp::Unsigned,
-   /* .childProperties      = */ ILChildProp::NoChildren,
-   /* .swapChildrenOpCode   = */ TR::BadILOp,
-   /* .reverseBranchOpCode  = */ TR::BadILOp,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
    /* .opcode               = */ TR::cload,
    /* .name                 = */ "cload",
    /* .properties1          = */ ILProp1::LoadVar | ILProp1::HasSymbolRef,

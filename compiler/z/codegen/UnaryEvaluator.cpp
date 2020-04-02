@@ -134,17 +134,6 @@ OMR::Z::TreeEvaluator::sconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    }
 
 /**
- * cconst Evaluator: load unicode integer constant (16-bit unsigned)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::cconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR::Register * tempReg = node->setRegister(cg->allocateRegister());
-   generateLoad32BitConstant(cg, node, node->getConst<uint16_t>(), tempReg, true);
-   return tempReg;
-   }
-
-/**
  * labsEvaluator -
  */
 TR::Register *

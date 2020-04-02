@@ -1767,7 +1767,7 @@ TR_Arraytranslate::checkStore(TR::Node * storeNode)
 //
 //ifscmpeq --> block <no-stop>
 //  ==>icload at <translate-char>
-//  cconst <termination char>
+//  sconst <termination char>
 //-or-
 //ifXcmpYY --> block <no-stop>
 //  ==>icload at <translate-char>
@@ -2457,7 +2457,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //          iconst -16
    //ifscmpne --> block <no-stop>
    //  ==>icload at <translate-char>
-   //  cconst <termination char>
+   //  sconst <termination char>
    //BBEnd <load-char>
    //BBStart <escape>
    //   goto <escape-block>
@@ -2507,7 +2507,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //          iconst -16
    //ifscmpeq --> block <escape-block>
    //  ==>icload at <translate-char>
-   //  cconst <termination char>
+   //  sconst <termination char>
    //BBEnd <load-char>
    //
    //BBStart <store-char>

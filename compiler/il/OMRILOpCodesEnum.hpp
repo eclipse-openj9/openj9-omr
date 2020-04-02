@@ -610,7 +610,6 @@
    luRegLoad, // Load unsigned long integer global register
    iuRegStore,// Store unsigned integer global register
    luRegStore,// Store long integer global register
-   cconst,   // load unicode constant (16-bit unsigned)
    cload,    // load short unsigned integer
    cloadi,   // load indirect unsigned short integer
    cstore,   // store unsigned short integer

@@ -22,8 +22,8 @@
 # Testarossa build variables. Longer term the distinction between TR and the rest
 # of the OMR code should be heavily reduced. In the mean time, we keep
 # the distinction
-set(TR_HOST_ARCH    z)
-set(TR_HOST_BITS    64)
+set(TR_HOST_ARCH z)
+set(TR_HOST_BITS 64)
 list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_S390 TR_TARGET_S390 _LONG_LONG)
 
 if(OMR_ENV_DATA64)

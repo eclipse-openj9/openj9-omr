@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2019, 2019 IBM Corp. and others
+# Copyright (c) 2019, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,7 +20,7 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-# Include once
+# Include once.
 if(OMRMETALC_)
 	return()
 endif()
@@ -47,25 +47,24 @@ endif()
 
 # omr_compile_metalc(<mfile> <ofile>)
 #
-# Define a METAL-C generated file. Metal C is a Z/OS meta assembly framework.
+# Define a METAL-C generated file. Metal-C is a z/OS meta-assembly framework.
 # METAL-C sources are translated to assembly via the XLC compiler. Once a .mc
 # source has been defined, the resulting .s file can be added to any library as
-# a regular source. This function only works with zos xlc.
+# a regular source. This function only works with z/OS xlc.
 #
-# <mfile> is a metal-c sourcefile. <ofile> is the resulting object file.
+# <mfile> is a METAL-C sourcefile. <ofile> is the resulting object file.
 # By convention, the OMR project names METAL-C sources with a .mc extension.
 #
 # For more information: http://publibz.boulder.ibm.com/epubs/pdf/ccrug100.pdf
-#
 function(omr_compile_metalc mfile ofile)
 	omr_assert(TEST XLC_EXECUTABLE)
 	omr_assert(TEST AS_EXECUTABLE)
 
-	if (NOT IS_ABSOLUTE "${mfile}")
+	if(NOT IS_ABSOLUTE "${mfile}")
 		set(mfile "${CMAKE_CURRENT_SOURCE_DIR}/${mfile}")
 	endif()
 
-	if (NOT IS_ABSOLUTE "${ofile}")
+	if(NOT IS_ABSOLUTE "${ofile}")
 		set(ofile "${CMAKE_CURRENT_BINARY_DIR}/${ofile}")
 	endif()
 
@@ -82,7 +81,7 @@ function(omr_compile_metalc mfile ofile)
 		OUTPUT "${ofile}"
 		MAIN_DEPENDENCY "${cfile}"
 		COMMAND "${XLC_EXECUTABLE}" -qmetal -S ${OMR_METALC_XLC_FLAGS} -o "${sfile}" "${cfile}"
-		COMMAND "${AS_EXECUTABLE}" ${OMR_METALC_ASM_FLAGS}  -o "${ofile}" "${sfile}"
+		COMMAND "${AS_EXECUTABLE}" ${OMR_METALC_ASM_FLAGS} -o "${ofile}" "${sfile}"
 		VERBATIM
 	)
 endfunction(omr_compile_metalc)

@@ -66,15 +66,15 @@ endif()
 if(OMR_JITBUILDER)
 	set(OMR_JITBUILDER_TEST ON CACHE BOOL "")
 
-	## Enable additional JitBuilder tests if running on a supported platform
-        #  (which currently means 64-bit x86 platforms except for Windows)
+	# Enable additional JitBuilder tests if running on a supported platform
+	# (which currently means 64-bit x86 platforms except for Windows).
 	if((OMR_HOST_ARCH STREQUAL "x86" AND NOT OMR_OS_WINDOWS) AND OMR_TEMP_DATA_SIZE STREQUAL "64")
-    		set(OMR_JITBUILDER_TEST_EXTENDED ON)
+		set(OMR_JITBUILDER_TEST_EXTENDED ON)
 	endif()
 
 else()
-    # if JitBuilder isn't enabled, the tests can't be built
-    set(OMR_JITBUILDER_TEST OFF CACHE BOOL "" FORCE)
+	# if JitBuilder isn't enabled, the tests can't be built
+	set(OMR_JITBUILDER_TEST OFF CACHE BOOL "" FORCE)
 endif()
 
 ###

@@ -2995,7 +2995,7 @@ OMR::Options::findOptionSet(TR_Memory * trMemory, int32_t index, int32_t lineNum
 TR::OptionSet *
 OMR::Options::findOptionSet(int32_t index, int32_t lineNum, const char *methodSignature, TR_Hotness hotnessLevel, bool isAOT)
    {
-   TR::OptionSet * optionSet;
+   TR::OptionSet * optionSet = NULL;
    TR::Options *cmdLineOptions = (isAOT) ? _aotCmdLineOptions : _jitCmdLineOptions;
    for (optionSet = cmdLineOptions->_optionSets; optionSet; optionSet = optionSet->getNext())
       {

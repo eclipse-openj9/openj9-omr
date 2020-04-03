@@ -51,16 +51,31 @@ typedef enum MM_GCPolicy {
 	gc_policy_nogc = OMR_GC_POLICY_NOGC
 } MM_GCPolicy;
 
+/* List of write barrier types, grouped by whether they trigger pre or post store.
+ * Group of barriers that triggers POST-store is bewteen OMR_GC_WRITE_BARRIER_TYPE_OLDCHECK and OMR_GC_WRITE_BARRIER_TYPE_ALWAYS
+ * Group of barriers that triggers PRE-store is between OMR_GC_WRITE_BARRIER_TYPE_ALWAYS and OMR_GC_WRITE_BARRIER_TYPE_SATB_AND_OLDCHECK
+ * Check PRE/POST_OBJECT_STORE macros, if modifying these types.
+ */
 #define OMR_GC_WRITE_BARRIER_TYPE_ILLEGAL 0x0
 #define OMR_GC_WRITE_BARRIER_TYPE_NONE 0x1
-#define OMR_GC_WRITE_BARRIER_TYPE_ALWAYS 0x2
-#define OMR_GC_WRITE_BARRIER_TYPE_OLDCHECK 0x3
-#define OMR_GC_WRITE_BARRIER_TYPE_CARDMARK 0x4
-#define OMR_GC_WRITE_BARRIER_TYPE_CARDMARK_INCREMENTAL 0x5
-#define OMR_GC_WRITE_BARRIER_TYPE_CARDMARK_AND_OLDCHECK 0x6
+
+/* group of barriers that will trigger post-store only (check POST_OBJECT_STORE macros, if modifying these types) */
+#define OMR_GC_WRITE_BARRIER_TYPE_OLDCHECK 0x2
+#define OMR_GC_WRITE_BARRIER_TYPE_CARDMARK 0x3
+#define OMR_GC_WRITE_BARRIER_TYPE_CARDMARK_INCREMENTAL 0x4
+#define OMR_GC_WRITE_BARRIER_TYPE_CARDMARK_AND_OLDCHECK 0x5
+
+/* barriers types to trigger both pre-store and post-store
+ * (in theory, SATB_AND_CARDMARK_AND_OLDCHECK would too,
+ * but not needed by any GC policy) */
+#define OMR_GC_WRITE_BARRIER_TYPE_ALWAYS 0x6
+
+/* group of barriers that will trigger pre-store only */
 #define OMR_GC_WRITE_BARRIER_TYPE_SATB 0x7
 #define OMR_GC_WRITE_BARRIER_TYPE_SATB_AND_OLDCHECK 0x8
+
 #define OMR_GC_WRITE_BARRIER_TYPE_COUNT 0x9
+/* end of list of writer barrier types */
 
 #define OMR_GC_READ_BARRIER_TYPE_ILLEGAL 0x0
 #define OMR_GC_READ_BARRIER_TYPE_NONE 0x1
@@ -72,11 +87,11 @@ typedef enum MM_GCPolicy {
 typedef enum MM_GCWriteBarrierType {
 	gc_modron_wrtbar_illegal = OMR_GC_WRITE_BARRIER_TYPE_ILLEGAL,
 	gc_modron_wrtbar_none = OMR_GC_WRITE_BARRIER_TYPE_NONE,
-	gc_modron_wrtbar_always = OMR_GC_WRITE_BARRIER_TYPE_ALWAYS,
 	gc_modron_wrtbar_oldcheck = OMR_GC_WRITE_BARRIER_TYPE_OLDCHECK,
 	gc_modron_wrtbar_cardmark = OMR_GC_WRITE_BARRIER_TYPE_CARDMARK,
 	gc_modron_wrtbar_cardmark_incremental = OMR_GC_WRITE_BARRIER_TYPE_CARDMARK_INCREMENTAL,
 	gc_modron_wrtbar_cardmark_and_oldcheck = OMR_GC_WRITE_BARRIER_TYPE_CARDMARK_AND_OLDCHECK,
+	gc_modron_wrtbar_always = OMR_GC_WRITE_BARRIER_TYPE_ALWAYS,
 	gc_modron_wrtbar_satb = OMR_GC_WRITE_BARRIER_TYPE_SATB,
 	gc_modron_wrtbar_satb_and_oldcheck = OMR_GC_WRITE_BARRIER_TYPE_SATB_AND_OLDCHECK,
 	gc_modron_wrtbar_count = OMR_GC_WRITE_BARRIER_TYPE_COUNT

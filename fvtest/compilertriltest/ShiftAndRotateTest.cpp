@@ -26,7 +26,7 @@
 template <typename T> static
 std::vector<int32_t> test_shifts()
     {
-    int32_t shiftArray[] = {0, 1, 5, 8, 25, 8*sizeof(T) - 1, 8*sizeof(T)};
+    int32_t shiftArray[] = {0, 1, 5, 4*sizeof(T), 8*sizeof(T) - 5, 8*sizeof(T) - 1};
     return std::vector<int32_t>(shiftArray, shiftArray + sizeof(shiftArray)/sizeof(int32_t));
     }
 
@@ -66,30 +66,20 @@ template <typename T> static T rotate(T a, int32_t b)
 
 template <typename Left> static Left shift_left(Left left, int32_t right)
    {
-   int32_t r = right;
-   if (sizeof(Left) <= sizeof(int32_t))
+   if (right < 0 || right >= sizeof(Left) * 8)
       {
-      r = (r & (8 * sizeof(int32_t) - 1));
+      throw std::runtime_error("Shift amount outside 0..width-1 range");
       }
-   else
-      {
-      r = (r & (8 * sizeof(int64_t) - 1));
-      }
-   return left << r;
+   return left << right;
    }
 
 template <typename Left> static Left shift_right(Left left, int32_t right)
    {
-   int32_t r = right;
-   if (sizeof(Left) <= sizeof(int32_t))
+   if (right < 0 || right >= sizeof(Left) * 8)
       {
-      r = (r & (8 * sizeof(int32_t) - 1));
+      throw std::runtime_error("Shift amount outside 0..width-1 range");
       }
-   else
-      {
-      r = (r & (8 * sizeof(int64_t) - 1));
-      }
-   return left >> r;
+   return left >> right;
    }
 
 template <typename T>

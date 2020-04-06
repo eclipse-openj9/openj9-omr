@@ -35,39 +35,6 @@
    /* .properties  = */ PPCOpProp_None,
    },
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::brd, */
-   /* .name        =    "brd", */
-   /* .description =    "Byte-Reverse Doubleword", */
-   /* .opcode      =    0x7C0001B6, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
-   /* .properties  =    PPCOpProp_AltFormatx | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
-
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::brh, */
-   /* .name        =    "brh", */
-   /* .description =    "Byte-Reverse Halfword", */
-   /* .opcode      =    0x7C000176, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
-   /* .properties  =    PPCOpProp_AltFormatx | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
-
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::brw, */
-   /* .name        =    "brw", */
-   /* .description =    "Byte-Reverse Word", */
-   /* .opcode      =    0x7C000136, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
-   /* .properties  =    PPCOpProp_AltFormatx | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
-
    {
    /* .mnemonic    = */ OMR::InstOpCode::add,
    /* .name        = */ "add",

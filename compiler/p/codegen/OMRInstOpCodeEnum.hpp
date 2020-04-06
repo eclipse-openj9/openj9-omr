@@ -26,9 +26,6 @@
 
 
    bad,              // Illegal Opcode
-// brd,              // Byte-Reverse Doubleword
-// brh,              // Byte-Reverse Halfword
-// brw,              // Byte-Reverse Word
    add,              // Add
    add_r,            // Add Rc=1
    addc,             // Add carrying

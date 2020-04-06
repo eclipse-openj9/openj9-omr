@@ -8864,28 +8864,6 @@ static TR::Node* getOriginalCallNode(TR_VirtualGuard* vGuard, TR::Compilation* c
    return NULL;
    }
 
-
-#ifdef J9_PROJECT_SPECIFIC
-static int numConcreteClasses (List<TR_PersistentClassInfo>* subClasses)
-  {
-
-  TR::Compilation* comp = TR::comp();
-  int count = 0;
-  ListIterator<TR_PersistentClassInfo> i(subClasses);
-  for (TR_PersistentClassInfo *ptClassInfo = i.getFirst(); ptClassInfo; ptClassInfo = i.getNext())
-    {
-    TR_OpaqueClassBlock* clazz = ptClassInfo->getClassId();
-    if  (!TR::Compiler->cls.isInterfaceClass(comp, clazz) && !TR::Compiler->cls.isAbstractClass(comp, clazz))
-      {
-      count++;
-      }
-    }
-
-  return count ;
-  }
-#endif
-
-
 static void addDelayedConvertedGuard (TR::Node* node,
                                        TR::Node* callNode,
                                        TR::ResolvedMethodSymbol* methodSymbol,
@@ -9829,48 +9807,48 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                                                    objectClass, cpIndexOrVftSlot, symRef->getOwningMethod(vp->comp()),
                                                    vp->comp(), false, useGetResolvedInterfaceMethod);
 
-        TR_ScratchList<TR_PersistentClassInfo> subClasses(vp->comp()->trMemory());
-
-        //in AOT or when CHOpts are disabled findClassInfoAfterLocking returns NULL unconditionally
-        //we should treat this case conservatively meaning we assume that there are more than two concrete classes in the given hierarchy
-        //most likely rvm will also be NULL in this case, but it is better to not rely on this implicit connection between different
-        //CH queries.
-        TR_PersistentClassInfo *objectClassInfo = vp->comp()->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(objectClass, vp->comp());
-
-        bool searchSucceeded = false;
-
-        if (objectClassInfo)
-          {
-          TR_ClassQueries::collectAllSubClasses(objectClassInfo, &subClasses, vp->comp());
-          subClasses.add(objectClassInfo);
-          searchSucceeded = true;
-          }
-
-      /*
-        the limited version of a transformation is enabled
-        Namely, we only do a transformation if there is no more than one instantiable class in the hierarchy
-        starting from objectClass. If there is more than one concrete class in hierarchy
-        overriding methods in objectClass and if any call was devirtualized by invariantargumentpreexisence downstream
-        we will produce the functionally incorrect code by swapping a profiled test with a method test as
-        the method test is insufficient for the devirtualizations done by invariantargumentpreexisence
-      */
-
-      if (searchSucceeded && numConcreteClasses(&subClasses) < 2 && rvm)
+                if (rvm)
                    {
-                   TR::ResolvedMethodSymbol* cMethodSymbol = vp->comp()->getSymRefTab()->findOrCreateMethodSymbol(
-                   symRef->getOwningMethodIndex(), -1, rvm, methodKind)->getSymbol()->castToResolvedMethodSymbol();
+                   //in AOT or when CHOpts are disabled findClassInfoAfterLocking returns NULL unconditionally
+                   //we should treat this case conservatively meaning we assume that there are more than two concrete classes in the given hierarchy
+                   //most likely rvm will also be NULL in this case, but it is better to not rely on this implicit connection between different
+                   //CH queries.
+                   TR_PersistentClassInfo *objectClassInfo = vp->comp()->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(objectClass, vp->comp());
 
-                   TR_VirtualGuardKind guardKind =
-                      methodSymbol->isInterface()  ? TR_InterfaceGuard :
-                      TR::Compiler->cls.isAbstractClass(vp->comp(), objectClass) ? TR_AbstractGuard : TR_HierarchyGuard;
+                   if (objectClassInfo)
+                      {
+                      TR_ScratchList<TR_PersistentClassInfo> subClasses(vp->comp()->trMemory());
+                      TR_ClassQueries::collectAllSubClasses(objectClassInfo, &subClasses, vp->comp());
+                      subClasses.add(objectClassInfo);
 
-                   TR_VirtualGuardTestType testType = guardKind == TR_HierarchyGuard ? TR_VftTest : TR_MethodTest;
+                      /*
+                      the limited version of a transformation is enabled
+                      Namely, we only do a transformation if there is no more than one instantiable class in the hierarchy
+                      starting from objectClass. If there is more than one concrete class in hierarchy
+                      overriding methods in objectClass and if any call was devirtualized by invariantargumentpreexisence downstream
+                      we will produce the functionally incorrect code by swapping a profiled test with a method test as
+                      the method test is insufficient for the devirtualizations done by invariantargumentpreexisence
+                      */
 
-                   bool doThisTransformation = (guardKind == TR_HierarchyGuard && !vp->comp()->getOption(TR_DisableHierarchyInlining)) ||
-                                               (guardKind == TR_AbstractGuard && !vp->comp()->getOption(TR_DisableAbstractInlining)) ||
-                                               (guardKind == TR_InterfaceGuard && !vp->comp()->getOption(TR_DisableInterfaceInlining));
-                   if (doThisTransformation)
-                      addDelayedConvertedGuard(node, callNode, cMethodSymbol, vGuard, vp, guardKind, testType, objectClass);
+                      if (TR::Compiler->cls.containesZeroOrOneConcreteClass(vp->comp(), &subClasses))
+                         {
+                         TR::ResolvedMethodSymbol* cMethodSymbol = vp->comp()->getSymRefTab()->findOrCreateMethodSymbol(
+                         symRef->getOwningMethodIndex(), -1, rvm, methodKind)->getSymbol()->castToResolvedMethodSymbol();
+
+                         TR_VirtualGuardKind guardKind =
+                            methodSymbol->isInterface()  ? TR_InterfaceGuard :
+                            TR::Compiler->cls.isAbstractClass(vp->comp(), objectClass) ? TR_AbstractGuard : TR_HierarchyGuard;
+
+                         TR_VirtualGuardTestType testType = guardKind == TR_HierarchyGuard ? TR_VftTest : TR_MethodTest;
+
+                         bool doThisTransformation = (guardKind == TR_HierarchyGuard && !vp->comp()->getOption(TR_DisableHierarchyInlining)) ||
+                                                    (guardKind == TR_AbstractGuard && !vp->comp()->getOption(TR_DisableAbstractInlining)) ||
+                                                    (guardKind == TR_InterfaceGuard && !vp->comp()->getOption(TR_DisableInterfaceInlining));
+                         if (doThisTransformation)
+                            addDelayedConvertedGuard(node, callNode, cMethodSymbol, vGuard, vp, guardKind, testType, objectClass);
+                         }
+                      }
+
                    }
                 }
              }

@@ -1080,3 +1080,157 @@
    xvsqrtsp,         // Vector Square Root Single-Precision
    xvsubsp,          // Vector Subtract Single-Precision
    label,            // Destination of a jump
+   brd,              // Byte-Reverse Doubleword
+   brh,              // Byte-Reverse Halfword
+   brw,              // Byte-Reverse Word
+   cfuged,           // Centrifuge Doubleword
+   cntlzdm,          // Count Leading Zeros Doubleword under Mask
+   cnttzdm,          // Count Trailing Zeros Doubleword under Mask
+   dcffixqq,         // DFP Convert from Fixed Quadword Quad
+   dctfixqq,         // DFP Convert to Fixed Quadword Quad
+   lxvkq,            // Load VSX Vector Special Value Quadword
+   lxvp,             // Load VSX Vector Paired
+   lxvpx,            // Load VSX Vector Paired Indexed
+   lxvrbx,           // Load VSX Vector Rightmost Byte Indexed
+   lxvrdx,           // Load VSX Vector Rightmost Doubleword Indexed
+   lxvrhx,           // Load VSX Vector Rightmost Halfword Indexed
+   lxvrwx,           // Load VSX Vector Rightmost Word Indexed
+   paddi,            // Prefixed Add Immediate
+   pdepd,            // Parallel Bits Deposit Doubleword
+   pextd,            // Parallel Bits Extract Doubleword
+   plbz,             // Prefixed Load Byte and Zero
+   pld,              // Prefixed Load Doubleword
+   plfd,             // Prefixed Load Floating-Point Double
+   plfs,             // Prefixed Load Floating-Point Single
+   plha,             // Prefixed Load Halfword Algebraic
+   plhz,             // Prefixed Load Halfword and Zero
+   plq,              // Prefixed Load Quadword
+   plwa,             // Prefixed Load Word Algebraic
+   plwz,             // Prefixed Load Word and Zero
+   plxsd,            // Prefixed Load VSX Scalar Doubleword
+   plxssp,           // Prefixed Load VSX Scalar Single-Precision
+   plxv,             // Prefixed Load VSX Vector
+   plxvp,            // Prefixed Load VSX Vector Paired
+   pstb,             // Prefixed Store Byte
+   pstd,             // Prefixed Store Doubleword
+   pstfd,            // Prefixed Store Floating-Point Double
+   pstfs,            // Prefixed Store Floating-Point Single
+   psth,             // Prefixed Store Halfword
+   pstq,             // Prefixed Store Quadword
+   pstw,             // Prefixed Store Word
+   pstxsd,           // Prefixed Store VSX Scalar Doubleword
+   pstxssp,          // Prefixed Store VSX Scalar Single-Precision
+   pstxv,            // Prefixed Store VSX Vector
+   pstxvp,           // Prefixed Store VSX Vector Paired
+   pnop,             // Prefixed Nop
+   setbc,            // Set Boolean Condition
+   setbcr,           // Set Boolean Condition Reverse
+   setnbc,           // Set Negative Boolean Condition
+   setnbcr,          // Set Negative Boolean Condition Reverse
+   stxvp,            // Store VSX Vector Paired
+   stxvpx,           // Store VSX Vector Paired Indexed
+   stxvrbx,          // Store VSX Rightmost Byte Indexed
+   stxvrdx,          // Store VSX Rightmost Doubleword Indexed
+   stxvrhx,          // Store VSX Rightmost Halfword Indexed
+   stxvrwx,          // Store VSX Rightmost Word Indexed
+   vcfuged,          // Vector Centrifuge Doubleword
+   vclzdm,           // Vector Count Leading Zeros Doubleword under Mask
+   vclrlb,           // Vector Clear Leftmost Bytes
+   vclrrb,           // Vector Clear Rightmost Bytes
+   vcmpequq,         // Vector Compare Equal Quadword
+   vcmpequq_r,       // Vector Compare Equal Quadword Rc=1
+   vcmpgtsq,         // Vector Compare Greater Than Signed Quadword
+   vcmpgtsq_r,       // Vector Compare Greater Than Signed Quadword Rc=1
+   vcmpgtuq,         // Vector Compare Greater Than Unsigned Quadword
+   vcmpgtuq_r,       // Vector Compare Greater Than Unsigned Quadword Rc=1
+   vcmpsq,           // Vector Compare Signed Quadword
+   vcmpuq,           // Vector Compare Unsigned Quadword
+   vctzdm,           // Vector Count Trailing Zeros Doubleword under Mask
+   vdivesd,          // Vector Divide Extended Signed Doubleword
+   vdivesq,          // Vector Divide Extended Signed Quadword
+   vdivesw,          // Vector Divide Extended Signed Word
+   vdiveud,          // Vector Divide Extended Unsigned Doubleword
+   vdiveuq,          // Vector Divide Extended Unsigned Quadword
+   vdiveuw,          // Vector Divide Extended Unsigned Word
+   vdivsd,           // Vector Divide Signed Doubleword
+   vdivsq,           // Vector Divide Signed Quadword
+   vdivsw,           // Vector Divide Signed Word
+   vdivud,           // Vector Divide Unsigned Doubleword
+   vdivuq,           // Vector Divide Unsigned Quadword
+   vdivuw,           // Vector Divide Unsigned Word
+   vextddvlx,        // Vector Extract Double Doubleword to Vector Register Left-Indexed
+   vextddvrx,        // Vector Extract Double Doubleword to Vector Register Right-Indexed
+   vextdubvlx,       // Vector Extract Double Unsigned Byte to Vector Register Left-Indexed
+   vextdubvrx,       // Vector Extract Double Unsigned Byte to Vector Register Right-Indexed
+   vextduhvlx,       // Vector Extract Double Unsigned Halfword to Vector Register Left-Indexed
+   vextduhvrx,       // Vector Extract Double Unsigned Halfword to Vector Register Right-Indexed
+   vextduwvlx,       // Vector Extract Double Unsigned Word to Vector Register Left-Indexed
+   vextduwvrx,       // Vector Extract Double Unsigned Word to Vector Register Right-Indexed
+   vextsd2q,         // Vector Extend Signed Doubleword to Quadword
+   vgnb,             // Vector Gather every Nth Bit
+   vinsblx,          // Vector Insert Byte from GPR Left-Indexed
+   vinsbrx,          // Vector Insert Byte from GPR Right-Indexed
+   vinsbvlx,         // Vector Insert Byte from VSR Left-Indexed
+   vinsbvrx,         // Vector Insert Byte from VSR Right-Indexed
+   vinsd,            // Vector Insert Doubleword from GPR
+   vinsdlx,          // Vector Insert Doubleword from GPR Left-Indexed
+   vinsdrx,          // Vector Insert Doubleword from GPR Right-Indexed
+   vinsdvlx,         // Vector Insert Doubleword from VSR Left-Indexed
+   vinsdvrx,         // Vector Insert Doubleword from VSR Right-Indexed
+   vinshlx,          // Vector Insert Halfword from GPR Left-Indexed
+   vinshrx,          // Vector Insert Halfword from GPR Right-Indexed
+   vinshvlx,         // Vector Insert Halfword from VSR Left-Indexed
+   vinshvrx,         // Vector Insert Halfword from VSR Right-Indexed
+   vinsw,            // Vector Insert Word from GPR
+   vinswlx,          // Vector Insert Word from GPR Left-Indexed
+   vinswrx,          // Vector Insert Word from GPR Right-Indexed
+   vinswvlx,         // Vector Insert Word from VSR Left-Indexed
+   vinswvrx,         // Vector Insert Word from VSR Right-Indexed
+   vmodsd,           // Vector Modulo Signed Doubleword
+   vmodsq,           // Vector Modulo Signed Quadword
+   vmodsw,           // Vector Modulo Signed Word
+   vmodud,           // Vector Modulo Unsigned Doubleword
+   vmoduq,           // Vector Modulo Unsigned Quadword
+   vmoduw,           // Vector Modulo Unsigned Word
+   vmsumcud,         // Vector Multiply-Sum & Write Carry-Out Unsigned Doubleword
+   vmulesd,          // Vector Multiply Even Signed Doubleword
+   vmuleud,          // Vector Multiply Even Unsigned Doubleword
+   vmulhsd,          // Vector Multiply High Signed Doubleword
+   vmulhsw,          // Vector Multiply High Signed Word
+   vmulhud,          // Vector Multiply High Unsigned Doubleword
+   vmulhuw,          // Vector Multiply High Unsigned Word
+   vmulld,           // Vector Multiply Low Doubleword
+   vmulosd,          // Vector Multiply Odd Signed Doubleword
+   vmuloud,          // Vector Multiply Odd Unsigned Doubleword
+   vpdepd,           // Vector Parallel Bits Deposit Doubleword
+   vpextd,           // Vector Parallel Bits Extract Doubleword
+   vrlq,             // Vector Rotate Left Quadword
+   vrlqmi,           // Vector Rotate Left Quadword then Mask Insert
+   vrlqnm,           // Vector Rotate Left Quadword then AND with Mask
+   vsldbi,           // Vector Shift Left Double by Bit Immediate
+   vslq,             // Vector Shift Left Quadword
+   vsraq,            // Vector Shift Right Algebraic Quadword
+   vsrdbi,           // Vector Shift Right Double by Bit Immediate
+   vsrq,             // Vector Shift Right Quadword
+   vstribl,          // Vector String Isolate Byte Left-Justified
+   vstribl_r,        // Vector String Isolate Byte Left-Justified Rc=1
+   vstribr,          // Vector String Isolate Byte Right-Justified
+   vstribr_r,        // Vector String Isolate Byte Right-Justified Rc=1
+   vstrihl,          // Vector String Isolate Halfword Left-Justified
+   vstrihl_r,        // Vector String Isolate Halfword Left-Justified Rc=1
+   vstrihr,          // Vector String Isolate Halfword Right-Justified
+   vstrihr_r,        // Vector String Isolate Halfword Right-Justified Rc=1
+   xscvqpsqz,        // VSX Scalar Convert with Round to Zero Quad-Precision to Signed Quadword
+   xscvqpuqz,        // VSX Scalar Convert with Round to Zero Quad-Precision to Unsigned Quadword
+   xscvsqqp,         // VSX Scalar Convert Signed Quadword to Quad-Precision
+   xscvuqqp,         // VSX Scalar Convert Unsigned Quadword to Quad-Precision
+   xvtlsbb,          // VSX Vector Test Least-Significant Bit by Byte Operation
+   xxblendvb,        // VSX Vector Blend Variable Byte
+   xxblendvd,        // VSX Vector Blend Variable Doubleword
+   xxblendvh,        // VSX Vector Blend Variable Halfword
+   xxblendvw,        // VSX Vector Blend Variable Word
+   xxeval,           // VSX Vector Evaluate
+   xxpermx,          // VSX Vector Permute Extended
+   xxsplti32dx,      // VSX Vector Splat Immediate32 Doubleword Indexed
+   xxspltidp,        // VSX Vector Splat Immediate Double-Precision
+   xxspltiw,         // VSX Vector Splat Immediate Word

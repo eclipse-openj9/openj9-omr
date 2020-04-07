@@ -34,7 +34,6 @@ include(OmrPlatform)
 set(OMR_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(DDR_INFO_DIR "${CMAKE_BINARY_DIR}/ddr_info")
 
-
 set(OMR_SEPARATE_DEBUG_INFO OFF CACHE BOOL "Maintain debug info in a separate file")
 
 function(make_ddr_set set_name)
@@ -53,7 +52,7 @@ function(make_ddr_set set_name)
 	endif()
 
 	add_custom_command(
-		OUTPUT  "${DDR_CONFIG_STAMP}"
+		OUTPUT "${DDR_CONFIG_STAMP}"
 		COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
 		COMMAND "${CMAKE_COMMAND}" -E touch "${DDR_CONFIG_STAMP}"
 		WORKING_DIRECTORY "${DDR_BIN_DIR}"
@@ -69,8 +68,8 @@ function(make_ddr_set set_name)
 	string(CONFIGURE "${cmakelist_template}" cmakelist_template @ONLY)
 	file(GENERATE OUTPUT ${DDR_BIN_DIR}/CMakeLists.txt CONTENT "${cmakelist_template}")
 
-	# Note: DDR sets have themselves as targets to process
-	# This is so that you can process misc headers which don't logically belong to any other target
+	# Note: DDR sets have themselves as targets to process.
+	# This is so that you can process misc headers which don't logically belong to any other target.
 	target_enable_ddr(${DDR_TARGET_NAME})
 	set_property(TARGET "${DDR_TARGET_NAME}" APPEND PROPERTY DDR_TARGETS "${DDR_TARGET_NAME}")
 endfunction(make_ddr_set)
@@ -84,7 +83,7 @@ function(ddr_set_add_targets ddr_set)
 	get_target_property(is_ddrset "${ddr_set}" DDR_SET)
 	omr_assert(FATAL_ERROR TEST is_ddrset MESSAGE "ddrset_add_targets called on ddr-set ${ddr_set}, which is not a ddr set")
 	foreach(tgt IN LISTS ARGN)
-		# Check if the target we are adding is itself a DDR set
+		# Check if the target we are adding is itself a DDR set.
 		get_target_property(tgt_is_ddr_set ${tgt} DDR_SET)
 		if(tgt_is_ddr_set)
 			set_property(TARGET ${ddr_set} APPEND PROPERTY DDR_SUBSETS ${tgt})
@@ -111,13 +110,12 @@ function(target_enable_ddr tgt)
 	set(oneValueArgs "")
 	set(multiValueArgs "")
 
-	# Clear variables
+	# Clear variables.
 	foreach(opt_name IN LISTS options oneValueArgs multiValueArgs)
-		set(opt_${opt_name} )
+		set(opt_${opt_name} "")
 	endforeach()
 
-
-	cmake_parse_arguments(opt "${options}" "${oneValueArgs}" "${multiValueArgs}"  ${ARGN})
+	cmake_parse_arguments(opt "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 	omr_assert(FATAL_ERROR TEST NOT opt_UNPARSED_ARGUMENTS MESSAGE "target_enable_ddr: unrecognized options ${opt_UNPARSED_ARGUMENTS}")
 
 	get_target_property(target_type "${tgt}" TYPE)
@@ -148,16 +146,16 @@ function(target_enable_ddr tgt)
 		"$<JOIN:$<TARGET_PROPERTY:${tgt},DDR_PREINCLUDES>,\n>"
 	)
 	if((target_type MATCHES "EXECUTABLE|SHARED_LIBRARY") AND (NOT opt_NO_DEBUG_INFO))
-		# Default to using config option
+		# Default to using config option.
 		set(use_split_debug ${OMR_SEPARATE_DEBUG_INFO})
 
-		# OMR_SEPARATE_DEBUG_INFO has no impact on windows since it already
-		# uses separate .pdb files
+		# OMR_SEPARATE_DEBUG_INFO has no impact on Windows since it already
+		# uses separate .pdb files.
 		if(OMR_OS_WINDOWS)
 			set(use_split_debug FALSE)
 		endif()
 
-		# DDR requires separate debug info on osx
+		# DDR requires separate debug info on OSX.
 		if(OMR_OS_OSX)
 			set(use_split_debug TRUE)
 		endif()
@@ -176,7 +174,7 @@ function(target_enable_ddr tgt)
 	if(opt_GLOB_HEADERS OR opt_GLOB_HEADERS_RECURSIVE)
 		get_target_property(source_dir ${tgt} SOURCE_DIR)
 		if(opt_GLOB_HEADERS_RECURSIVE)
-			set(glob  GLOB_RECURSE)
+			set(glob GLOB_RECURSE)
 		else()
 			set(glob GLOB)
 		endif()
@@ -186,7 +184,6 @@ function(target_enable_ddr tgt)
 			${c_headers}
 			${cpp_headers}
 		)
-
 	endif()
 endfunction(target_enable_ddr)
 

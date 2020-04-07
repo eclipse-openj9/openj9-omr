@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -51,13 +51,12 @@ install(TARGETS omr_ascii omr_ebcdic
 )
 
 macro(omr_os_global_setup)
-
 	# TODO: Move this out and after platform config.
 	enable_language(ASM-ZOS)
 
 	omr_append_flags(CMAKE_ASM-ZOS_FLAGS ${OMR_PLATFORM_COMPILE_OPTIONS})
 
-	#TODO below is a chunk of the original makefile which still needs to be ported
+	# TODO below is a chunk of the original makefile which still needs to be ported
 	# # This is the first option applied to the C++ linking command.
 	# # It is not applied to the C linking command.
 	# OMR_MK_CXXLINKFLAGS=-Wc,"langlvl(extended)" -+
@@ -78,15 +77,14 @@ macro(omr_os_global_setup)
 		# GLOBAL_SHARED_LIBS+=j9a2e
 	# endif
 
-	#dump DLLs and exes in same dir like on windows
+	# dump DLLs and exes in same dir like on Windows
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-	#apparently above doesnt work like it does on windows. Attempt to work arround
+	# Apparently above doesn't work like it does on Windows. Attempt to work around.
 	set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
-	set(LIBRARY_OUTPUT_PATH  "${CMAKE_BINARY_DIR}")
+	set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 
 	message(STATUS "DEBUG: RUNTIME_OUTPUT_DIR=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 	message(STATUS "DEBUG: CFLAGS=${CMAKE_C_FLAGS}")
 	message(STATUS "DEBUG: EXE LDFLAGS=${CMAKE_EXE_LINKER_FLAGS}")
 	message(STATUS "DEBUG: so LDFLAGS=${CMAKE_SHARED_LINKER_FLAGS}")
-
 endmacro(omr_os_global_setup)

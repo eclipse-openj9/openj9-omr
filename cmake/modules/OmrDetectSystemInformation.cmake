@@ -21,10 +21,10 @@
 
 include(CheckSymbolExists)
 
-# Determine semaphore implementation to use on platform
+# Determine semaphore implementation to use on platform.
 macro(omr_find_semaphore_implementation)
 	set(OMR_SEMAPHORE_IMPLEMENTATION "-NOTFOUND" CACHE STRING "What semaphore implementation to use")
-	set_property(CACHE OMR_SEMAPHORE_IMPLEMENTATION PROPERTY STRINGS posix osx windows zos)
+	set_property(CACHE OMR_SEMAPHORE_IMPLEMENTATION PROPERTY STRINGS osx posix windows zos)
 	mark_as_advanced(OMR_SEMAPHORE_IMPLEMENTATION)
 	if(NOT OMR_SEMAPHORE_IMPLEMENTATION)
 		if(OMR_OS_OSX)
@@ -34,9 +34,9 @@ macro(omr_find_semaphore_implementation)
 		elseif(OMR_OS_ZOS)
 			set(OMR_SEMAPHORE_IMPLEMENTATION zos)
 		else()
-			# for now we assume that if sem_init exists, the rest of the posix semaphore functions are there
+			# For now we assume that if sem_init exists, the rest of the POSIX semaphore functions are there.
 			# Note: cmake requires that test source be able to compile and link, which requires us to tell it
-			# to link against pthread
+			# to link against pthread.
 			set(_OLD_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
 			set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} pthread)
 			check_symbol_exists(sem_init "semaphore.h" HAS_SEM_INIT)
@@ -45,7 +45,7 @@ macro(omr_find_semaphore_implementation)
 				set(OMR_SEMAPHORE_IMPLEMENTATION posix)
 			endif()
 		endif()
-		# Force value of OMR_SEMAPHORE_IMPLEMENTATION
+		# Force value of OMR_SEMAPHORE_IMPLEMENTATION.
 		set_property(CACHE OMR_SEMAPHORE_IMPLEMENTATION PROPERTY VALUE "${OMR_SEMAPHORE_IMPLEMENTATION}")
 	endif()
 
@@ -73,16 +73,14 @@ function(omr_check_dladdr)
 	check_symbol_exists(dladdr "dlfcn.h" OMR_HAVE_DLADDR)
 endfunction()
 
-
 # Translate from CMake's view of the system to the OMR view of the system.
-# Exports a number of variables indicicating platform, os, endianness, etc.
+# Exports a number of variables indicating platform, os, endianness, etc.
 # - OMR_ARCH_{AARCH64,X86,ARM,S390} # TODO: Add POWER
 # - OMR_ENV_DATA{32,64}
 # - OMR_ENV_TARGET_DATASIZE (either 32 or 64)
 # - OMR_ENV_LITTLE_ENDIAN
 # - OMR_HOST_OS
 macro(omr_detect_system_information)
-
 	set(OMR_TEMP_DATA_SIZE "unknown")
 
 	if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|amd64")
@@ -136,7 +134,7 @@ macro(omr_detect_system_information)
 	endif()
 
 	if(NOT (OMR_ENV_DATA64 OR OMR_ENV_DATA32))
-		#Env data size was not set in the cache or via the command line
+		# env data size was not set in the cache or via the command line
 		if(OMR_TEMP_DATA_SIZE STREQUAL 64)
 			set(OMR_ENV_DATA64 ON)
 			set(OMR_ENV_TARGET_DATASIZE 64)
@@ -147,12 +145,12 @@ macro(omr_detect_system_information)
 			message(FATAL_ERROR "Error setting default env data size")
 		endif()
 	else()
-		#Env data size was set in the cache or on the command line
+		# env data size was set in the cache or on the command line
 		if(OMR_ENV_DATA64)
-			#TODO assert OMR_ENV_DATA32 is not also set
+			# TODO assert OMR_ENV_DATA32 is not also set
 			set(OMR_ENV_TARGET_DATASIZE 64)
 		elseif(OMR_ENV_DATA32)
-			#TODO assert OMR_ENV_DATA64 is not also set
+			# TODO assert OMR_ENV_DATA64 is not also set
 			set(OMR_ENV_TARGET_DATASIZE 32)
 		else()
 			message(FATAL_ERROR "Error configuring the env data size")
@@ -181,9 +179,9 @@ macro(omr_detect_system_information)
 		message(FATAL_ERROR "Unsupported OS: ${CMAKE_SYSTEM_NAME}")
 	endif()
 
-	#NOTE: This is based off of the id of the C compiler. This means that
-	# if you mix and match c/c++ compilers it all falls apart.
-	# But that seems like a case we probably don't want to suppot anyway
+	# NOTE: This is based off of the id of the C compiler. This means that
+	# if you mix and match c/c++ compilers it all falls apart,
+	# but that seems like a case we probably don't want to support anyway.
 	if(NOT CMAKE_C_COMPILER_ID)
 		message(WARNING "OMR: C Compiler ID is not set. Did you call omr_detect_system_information before C was enabled?")
 	else()
@@ -192,13 +190,12 @@ macro(omr_detect_system_information)
 		elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
 			set(_OMR_TOOLCONFIG "msvc")
 		elseif(CMAKE_C_COMPILER_ID MATCHES "^(Apple)?Clang$")
-			if("x${CMAKE_C_SIMULATE_ID}" STREQUAL "xMSVC"
-				    OR "x${CMAKE_CXX_SIMULATE_ID}" STREQUAL "xMSVC")
+			if("${CMAKE_C_SIMULATE_ID}" STREQUAL "MSVC" OR "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
 				# clang on Windows mimics MSVC
 				set(_OMR_TOOLCONFIG "msvc")
 			else()
-				#TODO we dont actually have a clang config.
-				# Just use GNU config
+				# TODO we don't actually have a clang config
+				# just use GNU config
 				set(_OMR_TOOLCONFIG "gnu")
 			endif()
 		elseif(CMAKE_C_COMPILER_ID STREQUAL "XL" OR CMAKE_C_COMPILER_ID STREQUAL "zOS")
@@ -217,9 +214,9 @@ macro(omr_detect_system_information)
 	omr_find_semaphore_implementation()
 	omr_check_dladdr()
 
-	# Check if we are a multi config generator
+	# Check if we are a multi config generator.
 	# CMake 3.10 adds GENERATOR_IS_MULTI_CONFIG property
-	# otherwise Visual Studio and XCode are the only multi config generators
+	# otherwise Visual Studio and XCode are the only multi config generators.
 	if(CMAKE_VERSION VERSION_LESS 3.10)
 		get_property(OMR_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 	else()

@@ -61,8 +61,7 @@ if(OMR_HOST_ARCH STREQUAL "s390")
 endif()
 
 # Testarossa build variables. Longer term the distinction between TR and the rest
-# of the OMR code should be heavily reduced. In the mean time, we keep
-# the distinction
+# of the OMR code should be heavily reduced. In the meantime, we keep the distinction.
 
 # TR_COMPILE_OPTIONS are variables appended to CMAKE_{C,CXX}_FLAGS, and so
 # apply to both C and C++ compilations.
@@ -76,9 +75,9 @@ set(PASM_FLAGS -x assembler-with-cpp -E -P)
 set(SPP_CMD ${CMAKE_C_COMPILER})
 set(SPP_FLAGS -x assembler-with-cpp -E -P)
 
-# Configure the platform dependent library for multithreading
-# We dont actually have a clang config and use gnu on non-Windows,
-# so we have to detect Apple Clang here.
+# Configure the platform dependent library for multithreading.
+# We don't actually have a clang config and use gnu on non-Windows,
+# so we have to detect Apple clang here.
 # see ../../OmrDetectSystemInformation.cmake
 if(CMAKE_C_COMPILER_ID MATCHES "^(Apple)?Clang$")
 	set(OMR_PLATFORM_THREAD_LIBRARY pthread)
@@ -113,7 +112,7 @@ function(_omr_toolchain_process_exports TARGET_NAME)
 		return()
 	endif()
 
-	# This does not work on osx
+	# This does not work on OSX.
 	if(OMR_OS_OSX)
 		return()
 	endif()

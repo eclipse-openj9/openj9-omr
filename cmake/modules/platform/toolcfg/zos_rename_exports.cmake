@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2019, 2019 IBM Corp. and others
+# Copyright (c) 2019, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,13 +23,12 @@
 # LIBRARY_FILE_NAME - name of the generated dll file (no path)
 # BINARY_DIR - CMake Binary Dir for the library target
 
-
-# xlc creates the output file name by taking  the name of the generated library
+# xlc creates the output file name by taking the name of the generated library
 # and change the file exentsion to .x. (or appending if no extension exists)
-# ie
-#  foo.so => foo.x
-#  foo.bar.baz => foo.bar.x
-#  foo => foo.x
+# e.g.
+# - foo.so => foo.x
+# - foo.bar.baz => foo.bar.x
+# - foo => foo.x
 
 string(FIND "${LIBRARY_FILE_NAME}" "." dot_pos REVERSE)
 string(SUBSTRING "${LIBRARY_FILE_NAME}" 0 ${dot_pos} base_name)
@@ -38,5 +37,5 @@ set(SRC_FILE "${CMAKE_BINARY_DIR}/${base_name}.x")
 set(DEST_FILE "${LIBRARY_FOLDER}/${base_name}.x")
 
 if(NOT "${SRC_FILE}" STREQUAL "${DEST_FILE}")
-    file(RENAME "${SRC_FILE}" "${DEST_FILE}")
+	file(RENAME "${SRC_FILE}" "${DEST_FILE}")
 endif()

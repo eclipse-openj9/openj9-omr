@@ -299,8 +299,8 @@ timestamps {
                                             ]
                                         ]
                                     } else {
-                                        checkout scm
-                                        setBuildStatus("In Progress","PENDING","${env.GIT_COMMIT}")
+                                        scmVars = checkout scm
+                                        setBuildStatus("In Progress","PENDING","${scmVars.GIT_COMMIT}")
                                     }
                                 }
                                 stage('Build') {
@@ -359,7 +359,7 @@ timestamps {
                         }
                     } finally {
                         if (!params.ghprbPullId) {
-                            setBuildStatus("Complete", currentBuild.currentResult, "${env.GIT_COMMIT}")
+                            setBuildStatus("Complete", currentBuild.currentResult, "${scmVars.GIT_COMMIT}")
                         }
                         cleanWs()
                     }

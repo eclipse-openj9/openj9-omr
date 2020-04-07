@@ -830,7 +830,6 @@
    vmrglw,           // vector merge low word
 // lxsd,             // Load VSX scalar Dword
    lxsdx,            // Load VSX Scalar Doubleword Indexed
-   lxsdux,           // Load VSX Scalar Doubleword with Update Indexed
 // lxssp,            // Load VSX scalar single
 // lxsibzx,          // Load VSX scalar as integer byte & zero indexed
 // lxsihzx,          // Load VSX scalar as integer Hword & zero indexed
@@ -843,16 +842,11 @@
 // lxvx,             // Load VSX vector indexed
 // stxsd,            // Store VSX Scalar Dword
    stxsdx,           // Store VSX Scalar Doubleword Indexed
-   stxsdux,          // Store VSX Scalar Doubleword with Update Indexed
    lxvd2x,           // Load VSX Vector Doubleword*2 Indexed
-   lxvd2ux,          // Load VSX Vector Doubleword*2 with Update Indexed
    lxvdsx,           // Load VSX Vector Doubleword & Splat Indexed
    lxvw4x,           // Load VSX Vector Word*4 Indexed
-   lxvw4ux,          // Load VSX Vector Word*4 with Update Indexed
    stxvd2x,          // store VSX Vector Doubleword*2 Indexed
-   stxvd2ux,         // store VSX Vector Doubleword*2 with Update Indexed
    stxvw4x,          // store VSX Vector Word*4 Indexed
-   stxvw4ux,         // store VSX Vector Word*4 with Update Indexed
 // stxssp,           // Store VSX Scalar SP
    xsabsdp,          // VSX Scalar Absolute Value Double-Precision
    xsadddp,          // VSX Scalar Add Double-Precision

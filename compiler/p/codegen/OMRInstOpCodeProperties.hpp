@@ -9051,20 +9051,6 @@
                         PPCOpProp_AltFormat,
    },
 
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::lxsdux,
-   /* .name        = */ "lxsdux",
-   /* .description =    "Load VSX Scalar Doubleword with Update Indexed", */
-   /* .opcode      = */ 0x7C0004D8,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsLoad |
-                        PPCOpProp_IsVSX |
-                        PPCOpProp_UpdateForm |
-                        PPCOpProp_AltFormat,
-   },
-
    /* { */
    /* .mnemonic    =    OMR::InstOpCode::lxssp, */
    /* .name        =    "lxssp", */
@@ -9208,20 +9194,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::stxsdux,
-   /* .name        = */ "stxsdux",
-   /* .description =    "Store VSX Scalar Doubleword with Update Indexed", */
-   /* .opcode      = */ 0x7C0005D8,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore |
-                        PPCOpProp_IsVSX |
-                        PPCOpProp_UpdateForm |
-                        PPCOpProp_AltFormat,
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::lxvd2x,
    /* .name        = */ "lxvd2x",
    /* .description =    "Load VSX Vector Doubleword*2 Indexed", */
@@ -9230,19 +9202,6 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_AltFormat,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::lxvd2ux,
-   /* .name        = */ "lxvd2ux",
-   /* .description =    "Load VSX Vector Doubleword*2 with Update Indexed", */
-   /* .opcode      = */ 0x7C0006D8,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_IsVSX |
-                        PPCOpProp_UpdateForm |
                         PPCOpProp_AltFormat,
    },
 
@@ -9271,19 +9230,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::lxvw4ux,
-   /* .name        = */ "lxvw4ux",
-   /* .description =    "Load VSX Vector Word*4 with Update Indexed", */
-   /* .opcode      = */ 0x7C000658,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_IsLoad |
-                        PPCOpProp_IsVSX |
-                        PPCOpProp_UpdateForm |
-                        PPCOpProp_AltFormat,
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::stxvd2x,
    /* .name        = */ "stxvd2x",
    /* .description =    "store VSX Vector Doubleword*2 Indexed", */
@@ -9296,19 +9242,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::stxvd2ux,
-   /* .name        = */ "stxvd2ux",
-   /* .description =    "store VSX Vector Doubleword*2 with Update Indexed", */
-   /* .opcode      = */ 0x7C0007D8,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_IsVSX |
-                        PPCOpProp_UpdateForm |
-                        PPCOpProp_AltFormat,
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::stxvw4x,
    /* .name        = */ "stxvw4x",
    /* .description =    "store VSX Vector Word*4 Indexed", */
@@ -9317,19 +9250,6 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVSX |
-                        PPCOpProp_AltFormat,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::stxvw4ux,
-   /* .name        = */ "stxvw4ux",
-   /* .description =    "store VSX Vector Word*4 with Update Indexed", */
-   /* .opcode      = */ 0x7C000758,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_IsStore |
-                        PPCOpProp_IsVSX |
-                        PPCOpProp_UpdateForm |
                         PPCOpProp_AltFormat,
    },
 

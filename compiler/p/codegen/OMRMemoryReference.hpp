@@ -140,7 +140,23 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
       return false;
       }
 
+   /**
+    * \brief Gets the flag indicating whether the delayed offset has already been applied.
+    *
+    * When this flag is set, the delayed offset of this MemoryReference from its register-mapped
+    * symbol has already been applied to this MemoryReference's internal offset and should not be
+    * applied again. When true, getOffset() and getOffset(TR::Compilation&) are guaranteed to
+    * return the same value.
+    *
+    * \see setDelayedOffsetDone()
+    */
    bool isDelayedOffsetDone() { return (_flag & TR_PPCMemoryReferenceControl_DelayedOffsetDone) != 0; }
+
+   /**
+    * \brief Sets the flag to indicate that the delayed offset has been applied.
+    *
+    * \see isDelayedOffsetDone()
+    */
    void setDelayedOffsetDone() { _flag |= TR_PPCMemoryReferenceControl_DelayedOffsetDone; }
 
    int32_t setOffset(int32_t o) {return _offset = o;}

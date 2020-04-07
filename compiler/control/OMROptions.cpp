@@ -5113,6 +5113,9 @@ void OMR::Options::setGlobalAggressiveAOT()
    // there is no need for this when -Xtune:virtualized is used globally
    self()->setOption(TR_DisableHardwareProfilerReducedWarm);
 
+   // low scratch memory threshold
+   self()->setScratchSpaceLimit(DEFAULT_SCRATCH_SPACE_LOWER_BOUND_KB * 1024);
+
    // Set Non-static fields
    self()->setLocalAggressiveAOT();
    }

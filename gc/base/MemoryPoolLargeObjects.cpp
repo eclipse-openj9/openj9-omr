@@ -258,7 +258,7 @@ MM_MemoryPoolLargeObjects::resizeLOA(MM_EnvironmentBase* env)
 			 * We do not just take the current LOA occupancy, but we look into the history of several global GCs and take the highest LOA occupancy.
 			 *
 			 */
-
+			Assert_MM_true((0 <= _minLOAFreeRatio) && (1.0 >= _minLOAFreeRatio));
 			contractRequired = (uintptr_t)((_loaSize - newLOAsize) * _minLOAFreeRatio);
 
 			newLOAsize = _loaSize - contractRequired;
@@ -340,6 +340,7 @@ MM_MemoryPoolLargeObjects::calculateTargetLOARatio(MM_EnvironmentBase* env, uint
 	double newLOARatio = _currentLOARatio;
 	float maxLOAFreeRatio = ((float)_extensions->heapFreeMaximumRatioMultiplier) / ((float)_extensions->heapFreeMinimumRatioDivisor);
 	uintptr_t loaFreeBytes = _memoryPoolLargeObjects->getActualFreeMemorySize();
+	Assert_GC_true_with_message2(env, (loaFreeBytes <= _loaSize), "loaFreeBytes(%zu) should be equal or smaller than _loaSize(%zu).", loaFreeBytes, _loaSize);
 
 	/*
 	 * shift elements to make room for current loa free Ratio
@@ -355,6 +356,7 @@ MM_MemoryPoolLargeObjects::calculateTargetLOARatio(MM_EnvironmentBase* env, uint
 
 	_minLOAFreeRatio = *std::min_element(_loaFreeRatioHistory, _loaFreeRatioHistory + _extensions->loaFreeHistorySize);
 
+	Assert_GC_true_with_message(env, ((0 <= _minLOAFreeRatio) && (1.0 >= _minLOAFreeRatio)), "minLOAFreeRatio(%zu) should be between 0 and 1.0.", _minLOAFreeRatio);
 	/* If we have had an allocation failure in the LOA then we need to consider
 	 * whether its time we expanded the LOA
 	 */

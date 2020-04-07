@@ -1800,3 +1800,13 @@ OMR::Power::MemoryReference::checkRegisters(TR::CodeGenerator *cg)
       self()->consolidateRegisters(NULL, NULL, false, cg);
       }
    }
+
+int32_t
+OMR::Power::MemoryReference::getOffset(TR::Compilation& comp)
+   {
+   int32_t displacement = _offset;
+   if (self()->hasDelayedOffset() && !self()->isDelayedOffsetDone())
+      displacement += _symbolReference->getSymbol()->getOffset();
+
+   return(displacement);
+   }

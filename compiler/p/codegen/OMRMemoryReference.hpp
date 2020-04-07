@@ -86,7 +86,8 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
       TR_PPCMemoryReferenceControl_Index_Modifiable            = 0x02,
       TR_PPCMemoryReferenceControl_Static_TOC                  = 0x04,
       TR_PPCMemoryReferenceControl_Late_Xform                  = 0x08,
-      TR_PPCMemoryReferenceControl_OffsetRequiresWordAlignment = 0x10
+      TR_PPCMemoryReferenceControl_OffsetRequiresWordAlignment = 0x10,
+      TR_PPCMemoryReferenceControl_DelayedOffsetDone           = 0x20
       } TR_PPCMemoryReferenceControl;
 
    MemoryReference(TR::CodeGenerator *cg);
@@ -106,6 +107,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    virtual TR::RegisterDependencyConditions *getConditions() { return _conditions; }
 
    TR::SymbolReference *getSymbolReference() {return _symbolReference;}
+   TR::SymbolReference *setSymbolReference(TR::SymbolReference *symRef) {return (_symbolReference = symRef);}
 
    TR::Register *getBaseRegister() {return _baseRegister;}
    TR::Register *setBaseRegister(TR::Register *br) {return (_baseRegister = br);}
@@ -138,18 +140,29 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
       return false;
       }
 
+   /**
+    * \brief Gets the flag indicating whether the delayed offset has already been applied.
+    *
+    * When this flag is set, the delayed offset of this MemoryReference from its register-mapped
+    * symbol has already been applied to this MemoryReference's internal offset and should not be
+    * applied again. When true, getOffset() and getOffset(TR::Compilation&) are guaranteed to
+    * return the same value.
+    *
+    * \see setDelayedOffsetDone()
+    */
+   bool isDelayedOffsetDone() { return (_flag & TR_PPCMemoryReferenceControl_DelayedOffsetDone) != 0; }
+
+   /**
+    * \brief Sets the flag to indicate that the delayed offset has been applied.
+    *
+    * \see isDelayedOffsetDone()
+    */
+   void setDelayedOffsetDone() { _flag |= TR_PPCMemoryReferenceControl_DelayedOffsetDone; }
+
    int32_t setOffset(int32_t o) {return _offset = o;}
    int32_t getOffset() {return _offset;}
 
-   int32_t getOffset(TR::Compilation& comp)
-      {
-      int32_t displacement = _offset;
-      if (_symbolReference->getSymbol() != NULL &&
-          _symbolReference->getSymbol()->isRegisterMappedSymbol())
-         displacement += _symbolReference->getSymbol()->getOffset();
-
-      return(displacement);
-      }
+   int32_t getOffset(TR::Compilation& comp);
 
    bool isBaseModifiable()
       {

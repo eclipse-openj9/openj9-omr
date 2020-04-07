@@ -299,6 +299,9 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 		}
 	}
 
+	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	
 	rc = OMRPORTLIB->sock_close(OMRPORTLIB, &socket);
 	EXPECT_EQ(rc, 0);
 
@@ -319,12 +322,17 @@ TEST(PortSockTest, create_addressany_IPv4_socket_address)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
 	OMRSockAddrStorage sockAddr;
+	omrsock_socket_t socket = NULL;
 	uint16_t port = 4930;
 	uint8_t addr[4];
 
 	uint32_t inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
 	memcpy(addr, &inaddrAny, 4);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET, addr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
 /**
@@ -340,11 +348,17 @@ TEST(PortSockTest, create_dotted_decimal_IPv4_socket_address)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
 	OMRSockAddrStorage sockAddr;
+	omrsock_socket_t socket = NULL;
 	uint16_t port = 4930;
 	uint8_t addr[4];
 
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET, "127.0.0.1", addr), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET, addr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
+
 }
 
 /**
@@ -360,11 +374,16 @@ TEST(PortSockTest, create_IPv6_socket_address)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
 	OMRSockAddrStorage sockAddr;
+	omrsock_socket_t socket = NULL;
 	uint16_t port = 4930;
 	uint8_t addr6[16];
 
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET6, "::1", addr6), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB,  &sockAddr, OMRSOCK_AF_INET6, addr6, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
 /**
@@ -380,11 +399,16 @@ TEST(PortSockTest, create_in6addrany_IPv6_socket_address)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
 	OMRSockAddrStorage sockAddr;
+	omrsock_socket_t socket = NULL;
 	uint16_t port = 4930;
 	uint8_t addr6[16];
 
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET6, "::0", addr6), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET6, addr6, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
 /**
@@ -400,11 +424,16 @@ TEST(PortSockTest, create_IPv4_mapped_IPv6_Socket_Address)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
 	OMRSockAddrStorage sockAddr;
+	omrsock_socket_t socket = NULL;
 	uint16_t port = 4930;
 	uint8_t addr[4];
 
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET, "127.0.0.1", addr), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET, addr, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
 /**

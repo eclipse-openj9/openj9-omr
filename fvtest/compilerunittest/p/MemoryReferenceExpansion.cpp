@@ -46,13 +46,13 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, zeroDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_EQ(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_EQ(TR::InstOpCode::lwz, instr->getOpCodeValue());
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(baseReg, mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(0, mr->getOffset());
 }
 
@@ -75,13 +75,13 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, smallPositiveDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_EQ(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_EQ(TR::InstOpCode::lwz, instr->getOpCodeValue());
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(baseReg, mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(0x7fff, mr->getOffset());
 }
 
@@ -104,13 +104,13 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, smallNegativeDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_EQ(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_EQ(TR::InstOpCode::lwz, instr->getOpCodeValue());
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(baseReg, mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(-0x8000, mr->getOffset());
 }
 
@@ -135,7 +135,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, largePositiveDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(lastInstr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, lastInstr->getNext());
+    ASSERT_FALSE(lastInstr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsMemSrc1, startInstr->getNext()->getKind());
@@ -148,7 +148,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, largePositiveDisp) {
     ASSERT_EQ(cg()->getStackPointerRegister(), stTempInstr->getMemoryReference()->getBaseRegister());
     ASSERT_TRUE(stTempInstr->getSourceRegister());
     ASSERT_TRUE(stTempInstr->getSourceRegister()->getRealRegister());
-    ASSERT_EQ(NULL, stTempInstr->getMemoryReference()->getIndexRegister());
+    ASSERT_FALSE(stTempInstr->getMemoryReference()->getIndexRegister());
     ASSERT_EQ(
         cg()->comp()->target().is64Bit() ? -8 : -4,
         stTempInstr->getMemoryReference()->getOffset()
@@ -168,7 +168,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, largePositiveDisp) {
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(stTempInstr->getSourceRegister(), mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(-0x8000, mr->getOffset());
 
     ASSERT_TRUE(instr->getNext());
@@ -180,7 +180,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, largePositiveDisp) {
         ldTempInstr->getOpCodeValue()
     );
     ASSERT_EQ(stTempInstr->getSourceRegister(), ldTempInstr->getTargetRegister());
-    ASSERT_EQ(NULL, ldTempInstr->getMemoryReference()->getIndexRegister());
+    ASSERT_FALSE(ldTempInstr->getMemoryReference()->getIndexRegister());
     ASSERT_EQ(
         cg()->comp()->target().is64Bit() ? -8 : -4,
         ldTempInstr->getMemoryReference()->getOffset()
@@ -209,7 +209,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, largeNegativeDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(lastInstr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, lastInstr->getNext());
+    ASSERT_FALSE(lastInstr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsMemSrc1, startInstr->getNext()->getKind());
@@ -222,7 +222,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, largeNegativeDisp) {
     ASSERT_EQ(cg()->getStackPointerRegister(), stTempInstr->getMemoryReference()->getBaseRegister());
     ASSERT_TRUE(stTempInstr->getSourceRegister());
     ASSERT_TRUE(stTempInstr->getSourceRegister()->getRealRegister());
-    ASSERT_EQ(NULL, stTempInstr->getMemoryReference()->getIndexRegister());
+    ASSERT_FALSE(stTempInstr->getMemoryReference()->getIndexRegister());
     ASSERT_EQ(
         cg()->comp()->target().is64Bit() ? -8 : -4,
         stTempInstr->getMemoryReference()->getOffset()
@@ -242,7 +242,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, largeNegativeDisp) {
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(stTempInstr->getSourceRegister(), mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(0x7fff, mr->getOffset());
 
     ASSERT_TRUE(instr->getNext());
@@ -254,7 +254,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, largeNegativeDisp) {
         ldTempInstr->getOpCodeValue()
     );
     ASSERT_EQ(stTempInstr->getSourceRegister(), ldTempInstr->getTargetRegister());
-    ASSERT_EQ(NULL, ldTempInstr->getMemoryReference()->getIndexRegister());
+    ASSERT_FALSE(ldTempInstr->getMemoryReference()->getIndexRegister());
     ASSERT_EQ(
         cg()->comp()->target().is64Bit() ? -8 : -4,
         ldTempInstr->getMemoryReference()->getOffset()
@@ -283,7 +283,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, modBaseLargePositiveDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Src1Imm, startInstr->getNext()->getKind());
@@ -299,7 +299,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, modBaseLargePositiveDisp) {
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(baseReg, mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(-0x8000, mr->getOffset());
 }
 
@@ -324,7 +324,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, modBaseLargeNegativeDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Src1Imm, startInstr->getNext()->getKind());
@@ -340,7 +340,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, modBaseLargeNegativeDisp) {
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(baseReg, mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(0x7fff, mr->getOffset());
 }
 
@@ -364,7 +364,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, simpleIndex) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_EQ(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_EQ(TR::InstOpCode::lwzx, instr->getOpCodeValue());
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
@@ -397,7 +397,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexZeroDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_EQ(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_EQ(TR::InstOpCode::lwzx, instr->getOpCodeValue());
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
@@ -430,7 +430,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexSmallPositiveDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Imm, startInstr->getNext()->getKind());
@@ -472,7 +472,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexSmallNegativeDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Imm, startInstr->getNext()->getKind());
@@ -514,7 +514,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexLargePositiveDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Imm, startInstr->getNext()->getKind());
@@ -565,7 +565,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexLargeNegativeDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Imm, startInstr->getNext()->getKind());
@@ -615,7 +615,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseZeroDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_EQ(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_EQ(TR::InstOpCode::lwzx, instr->getOpCodeValue());
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
@@ -647,7 +647,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseSmallPositive
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Src1Imm, startInstr->getNext()->getKind());
@@ -689,7 +689,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseSmallNegative
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Src1Imm, startInstr->getNext()->getKind());
@@ -731,7 +731,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseLargePositive
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Src1Imm, startInstr->getNext()->getKind());
@@ -782,7 +782,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseLargeNegative
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Src1Imm, startInstr->getNext()->getKind());
@@ -848,13 +848,13 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocSmallPositiveDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_EQ(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_EQ(TR::InstOpCode::ld, instr->getOpCodeValue());
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(tocReg, mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(0x7ff8, mr->getOffset());
 }
 
@@ -895,13 +895,13 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocSmallNegativeDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_EQ(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_EQ(TR::InstOpCode::ld, instr->getOpCodeValue());
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(tocReg, mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(-0x8000, mr->getOffset());
 }
 
@@ -942,7 +942,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocLargePositiveDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Src1Imm, startInstr->getNext()->getKind());
@@ -958,7 +958,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocLargePositiveDisp) {
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(dataReg, mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(-0x8000, mr->getOffset());
 }
 
@@ -999,7 +999,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocLargeNegativeDisp) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_EQ(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Src1Imm, startInstr->getNext()->getKind());
@@ -1015,7 +1015,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocLargeNegativeDisp) {
     ASSERT_EQ(dataReg, instr->getTargetRegister(0));
     ASSERT_EQ(mr, instr->getMemoryReference());
     ASSERT_EQ(dataReg, mr->getBaseRegister());
-    ASSERT_EQ(NULL, mr->getIndexRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
     ASSERT_EQ(0x7ff8, mr->getOffset());
 }
 
@@ -1056,7 +1056,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocFull) {
     ASSERT_EQ(startInstr, cg()->getFirstInstruction());
     ASSERT_NE(instr, startInstr->getNext());
     ASSERT_NE(instr, cg()->getAppendInstruction());
-    ASSERT_EQ(NULL, instr->getNext());
+    ASSERT_FALSE(instr->getNext());
 
     ASSERT_TRUE(startInstr->getNext());
     ASSERT_EQ(TR::Instruction::IsTrg1Imm, startInstr->getNext()->getKind());
@@ -1103,7 +1103,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocFull) {
     ASSERT_EQ(dataReg, oriInstr2->getSource1Register());
     ASSERT_EQ(0xbabe, oriInstr2->getSourceImmediate());
 
-    ASSERT_EQ(NULL, oriInstr2->getNext());
+    ASSERT_FALSE(oriInstr2->getNext());
 }
 
 TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedOffset) {

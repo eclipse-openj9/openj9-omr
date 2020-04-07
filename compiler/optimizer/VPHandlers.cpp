@@ -9830,7 +9830,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                       the method test is insufficient for the devirtualizations done by invariantargumentpreexisence
                       */
 
-                      if (TR::Compiler->cls.containesZeroOrOneConcreteClass(vp->comp(), &subClasses))
+                      if (TR::Compiler->cls.containsZeroOrOneConcreteClass(vp->comp(), &subClasses))
                          {
                          TR::ResolvedMethodSymbol* cMethodSymbol = vp->comp()->getSymRefTab()->findOrCreateMethodSymbol(
                          symRef->getOwningMethodIndex(), -1, rvm, methodKind)->getSymbol()->castToResolvedMethodSymbol();

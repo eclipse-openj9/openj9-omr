@@ -61,7 +61,7 @@ OMR::ClassEnv::classUnloadAssumptionNeedsRelocation(TR::Compilation *comp)
    }
 
 bool 
-OMR::ClassEnv::containesZeroOrOneConcreteClass(TR::Compilation *comp, List<TR_PersistentClassInfo>* subClasses)
+OMR::ClassEnv::containsZeroOrOneConcreteClass(TR::Compilation *comp, List<TR_PersistentClassInfo>* subClasses)
    {
    TR_UNIMPLEMENTED();
    return false;

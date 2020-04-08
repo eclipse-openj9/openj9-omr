@@ -1579,6 +1579,12 @@ INSTANTIATE_TEST_CASE_P(Bitwise, PPCTrg1Src1ImmEncodingTest, ::testing::Values(
 ));
 
 INSTANTIATE_TEST_CASE_P(Bitwise, PPCTrg1Src1EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::brd,   TR::RealRegister::gr31, TR::RealRegister::gr0,  0x7c1f0176u),
+    std::make_tuple(TR::InstOpCode::brd,   TR::RealRegister::gr0,  TR::RealRegister::gr31, 0x7fe00176u),
+    std::make_tuple(TR::InstOpCode::brh,   TR::RealRegister::gr31, TR::RealRegister::gr0,  0x7c1f01b6u),
+    std::make_tuple(TR::InstOpCode::brh,   TR::RealRegister::gr0,  TR::RealRegister::gr31, 0x7fe001b6u),
+    std::make_tuple(TR::InstOpCode::brw,   TR::RealRegister::gr31, TR::RealRegister::gr0,  0x7c1f0136u),
+    std::make_tuple(TR::InstOpCode::brw,   TR::RealRegister::gr0,  TR::RealRegister::gr31, 0x7fe00136u),
     std::make_tuple(TR::InstOpCode::extsb, TR::RealRegister::gr31, TR::RealRegister::gr0,  0x7c1f0774u),
     std::make_tuple(TR::InstOpCode::extsb, TR::RealRegister::gr0,  TR::RealRegister::gr31, 0x7fe00774u),
     std::make_tuple(TR::InstOpCode::extsh, TR::RealRegister::gr31, TR::RealRegister::gr0,  0x7c1f0734u),
@@ -1621,6 +1627,9 @@ INSTANTIATE_TEST_CASE_P(Bitwise, PPCRecordFormSanityTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::andc,  TR::InstOpCode::andc_r,  0x00000001u),
     std::make_tuple(TR::InstOpCode::bad,   TR::InstOpCode::andi_r,  BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::bad,   TR::InstOpCode::andis_r, BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::brd,   TR::InstOpCode::bad,     BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::brh,   TR::InstOpCode::bad,     BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::brw,   TR::InstOpCode::bad,     BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::extsb, TR::InstOpCode::extsb_r, 0x00000001u),
     std::make_tuple(TR::InstOpCode::extsw, TR::InstOpCode::extsw_r, 0x00000001u),
     std::make_tuple(TR::InstOpCode::eqv,   TR::InstOpCode::eqv_r,   0x00000001u),

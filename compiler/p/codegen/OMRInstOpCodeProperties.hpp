@@ -9071,18 +9071,6 @@
    /* }, */
 
    /* { */
-   /* .mnemonic    =    OMR::InstOpCode::lxvl, */
-   /* .name        =    "lxvl", */
-   /* .description =    "Load VSX vector with length", */
-   /* .opcode      =    0x7C00021A, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
-   /* .properties  =    PPCOpProp_IsLoad | */
-   /*                   PPCOpProp_IsVSX | */
-   /*                   PPCOpProp_AltFormat, */
-   /* }, */
-
-   /* { */
    /* .mnemonic    =    OMR::InstOpCode::lxvll, */
    /* .name        =    "lxvll", */
    /* .description =    "Load VSX vector left-justified with length", */
@@ -9316,18 +9304,6 @@
    /* .name        =    "stxvh8x", */
    /* .description =    "Store VSX vector Hword*8 indexed", */
    /* .opcode      =    0x7C000758, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
-   /* .properties  =    PPCOpProp_IsStore | */
-   /*                   PPCOpProp_IsVSX | */
-   /*                   PPCOpProp_AltFormat, */
-   /* }, */
-
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::stxvl, */
-   /* .name        =    "stxvl", */
-   /* .description =    "Store VSX vector with length", */
-   /* .opcode      =    0x7C00031A, */
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsStore | */
@@ -12147,6 +12123,20 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::lxvl,
+   /* .name        = */ "lxvl",
+   /* .description =    "Load VSX Vector with Length", */
+   /* .opcode      = */ 0x7C00021A,
+   /* .format      = */ FORMAT_XT_RA_RB_MEM,
+   // NOTE: This instruction was technically added in Power 9, but the Power 9 chips have
+   //       functional and performance problems with this instruction. As a result, it should not
+   //       be used until Power 10.
+   /* .minimumALS  = */ TR_Processor::TR_PPCp10,
+   /* .properties  = */ PPCOpProp_IsVSX |
+                        PPCOpProp_IsLoad,
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::lxvp,
    /* .name        = */ "lxvp",
    /* .description =    "Load VSX Vector Paired", */
@@ -12544,6 +12534,20 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::stxvl,
+   /* .name        = */ "stxvl",
+   /* .description =    "Store VSX Vector with Length", */
+   /* .opcode      = */ 0x7C00031A,
+   /* .format      = */ FORMAT_XS_RA_RB_MEM,
+   // NOTE: This instruction was technically added in Power 9, but the Power 9 chips have
+   //       functional and performance problems with this instruction. As a result, it should not
+   //       be used until Power 10.
+   /* .minimumALS  = */ TR_Processor::TR_PPCp10,
+   /* .properties  = */ PPCOpProp_IsVSX |
+                        PPCOpProp_IsStore,
    },
 
    {

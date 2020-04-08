@@ -831,7 +831,6 @@
 // lxv,              // Load VSX vector
 // lxvb16x,          // Load VSX vector byte*16 indexed
 // lxvh8x,           // Load VSX vector Hword*8 indexed
-// lxvl,             // Load VSX vector with length
 // lxvll,            // Load VSX vector left-justified with length
 // lxvwsx,           // Load VSX vector word & splat indexed
 // lxvx,             // Load VSX vector indexed
@@ -852,7 +851,6 @@
 // stxv,             // Store VSX vector
 // stxvb16x,         // Store VSX vector byte*16 indexed
 // stxvh8x,          // Store VSX vector Hword*8 indexed
-// stxvl,            // Store VSX vector with length
 // stxvll,           // Store VSX vector left-justified with length
 // stxvx,            // Store VSX vector indexed
 // xsabsqp,          // VSX scalar absolute QP
@@ -1089,6 +1087,7 @@
    dcffixqq,         // DFP Convert from Fixed Quadword Quad
    dctfixqq,         // DFP Convert to Fixed Quadword Quad
    lxvkq,            // Load VSX Vector Special Value Quadword
+   lxvl,             // Load VSX Vector with Length
    lxvp,             // Load VSX Vector Paired
    lxvpx,            // Load VSX Vector Paired Indexed
    lxvrbx,           // Load VSX Vector Rightmost Byte Indexed
@@ -1127,6 +1126,7 @@
    setbcr,           // Set Boolean Condition Reverse
    setnbc,           // Set Negative Boolean Condition
    setnbcr,          // Set Negative Boolean Condition Reverse
+   stxvl,            // Store VSX Vector with Length
    stxvp,            // Store VSX Vector Paired
    stxvpx,           // Store VSX Vector Paired Indexed
    stxvrbx,          // Store VSX Rightmost Byte Indexed

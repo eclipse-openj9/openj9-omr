@@ -40,6 +40,7 @@ namespace OMR { typedef CodeCache CodeCacheConnector; }
 #include "runtime/CodeCacheConfig.hpp"
 #include "runtime/Runtime.hpp"
 #include "runtime/CodeCacheTypes.hpp"
+#include "OMR/Bytes.hpp"
 
 class TR_OpaqueMethodBlock;
 namespace TR { class CodeCache; }
@@ -47,8 +48,6 @@ namespace TR { class CodeCacheManager; }
 namespace TR { class CodeCacheMemorySegment; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Monitor; }
-
-extern uint8_t *align(uint8_t *ptr, uint32_t alignment);
 
 namespace OMR
 {
@@ -82,8 +81,8 @@ public:
    uint8_t *getWarmCodeAlloc()   { return _warmCodeAlloc; }
    uint8_t *getColdCodeAlloc()   { return _coldCodeAlloc; }
 
-   void alignWarmCodeAlloc(uint32_t round)  { _warmCodeAlloc = ::align(_warmCodeAlloc, round); }
-   void alignColdCodeAlloc(uint32_t round)  { _coldCodeAlloc = ::align(_coldCodeAlloc, round); }
+   void alignWarmCodeAlloc(uint32_t round)  { _warmCodeAlloc = reinterpret_cast<uint8_t *>(align(reinterpret_cast<size_t>(_warmCodeAlloc), round)); }
+   void alignColdCodeAlloc(uint32_t round)  { _coldCodeAlloc = reinterpret_cast<uint8_t *>(align(reinterpret_cast<size_t>(_coldCodeAlloc), round)); }
 
    TR::CodeCache * getNextCodeCache()  { return _next; }
 

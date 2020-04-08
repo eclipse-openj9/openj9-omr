@@ -43,7 +43,6 @@
 #include "runtime/CodeCacheMemorySegment.hpp"
 #include "runtime/CodeCacheConfig.hpp"
 #include "runtime/Runtime.hpp"
-#include "OMR/Bytes.hpp"
 
 #ifdef LINUX
 #include <elf.h>

@@ -269,7 +269,6 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegister.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegisterInStruct.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineState.cpp \
-    $(JIT_OMR_DIRTY_DIR)/runtime/Alignment.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/CodeCacheTypes.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCache.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCacheManager.cpp \

@@ -138,6 +138,10 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             {
             return &symRefTab->aliasBuilder.defaultMethodUseAliases();
             }
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::objectEqualityComparisonSymbol))
+            {
+            return &symRefTab->aliasBuilder.defaultMethodUseAliases();
+            }
 
          if (!methodSymbol->isHelper())
             {
@@ -183,6 +187,7 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             case TR_transactionExit:
             case TR_newObject:
             case TR_newObjectNoZeroInit:
+            case TR_acmpHelper:
             case TR_newValue:
             case TR_newValueNoZeroInit:
             case TR_newArray:
@@ -322,7 +327,8 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
          if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arraySetSymbol) ||
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::osrFearPointHelperSymbol) ||
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::potentialOSRPointHelperSymbol) ||
-             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::eaEscapeHelperSymbol))
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::eaEscapeHelperSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::objectEqualityComparisonSymbol))
             {
             return &symRefTab->aliasBuilder.defaultMethodDefAliases();
             }
@@ -368,6 +374,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             case TR_writeBarrierClassStoreRealTimeGC:
             case TR_writeBarrierStoreRealTimeGC:
             case TR_aNewArray:
+            case TR_acmpHelper:
             case TR_newValue:
             case TR_newValueNoZeroInit:
             case TR_newObject:

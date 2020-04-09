@@ -52,38 +52,38 @@
 		bl,                                                     	/* 0x94000000	BL        	 */
 /* Loads and stores */
 	/* Load/store exclusive */
-		stxrb,                                                  	/* 0x08000000	STXRB     	 */
-		stlxrb,                                                 	/* 0x08008000	STLXRB    	 */
-		ldxrb,                                                  	/* 0x08400000	LDXRB     	 */
-		ldaxrb,                                                 	/* 0x08408000	LDAXRB    	 */
-		stlrb,                                                  	/* 0x08808000	STLRB     	 */
-		ldarb,                                                  	/* 0x08C08000	LDARB     	 */
-		stxrh,                                                  	/* 0x48000000	STXRH     	 */
-		stlxrh,                                                 	/* 0x48008000	STLXRH    	 */
-		ldxrh,                                                  	/* 0x48400000	LDXRH     	 */
-		ldaxrh,                                                 	/* 0x48408000	LDAXRH    	 */
-		stlrh,                                                  	/* 0x48808000	STLRH     	 */
-		ldarh,                                                  	/* 0x48C08000	LDARH     	 */
-		stxrw,                                                  	/* 0x88000000	STXR      	 */
-		stlxrw,                                                 	/* 0x88008000	STLXR     	 */
+		stxrb,                                                  	/* 0x08007C00	STXRB     	 */
+		stlxrb,                                                 	/* 0x0800FC00	STLXRB    	 */
+		ldxrb,                                                  	/* 0x085F7C00	LDXRB     	 */
+		ldaxrb,                                                 	/* 0x085FFC00	LDAXRB    	 */
+		stlrb,                                                  	/* 0x089FFC00	STLRB     	 */
+		ldarb,                                                  	/* 0x08DFFC00	LDARB     	 */
+		stxrh,                                                  	/* 0x48007C00	STXRH     	 */
+		stlxrh,                                                 	/* 0x4800FC00	STLXRH    	 */
+		ldxrh,                                                  	/* 0x485F7C00	LDXRH     	 */
+		ldaxrh,                                                 	/* 0x485FFC00	LDAXRH    	 */
+		stlrh,                                                  	/* 0x489FFC00	STLRH     	 */
+		ldarh,                                                  	/* 0x48DFFC00	LDARH     	 */
+		stxrw,                                                  	/* 0x88007C00	STXR      	 */
+		stlxrw,                                                 	/* 0x8800FC00	STLXR     	 */
 		stxpw,                                                  	/* 0x88200000	STXP      	 */
 		stlxpw,                                                 	/* 0x88208000	STLXP     	 */
-		ldxrw,                                                  	/* 0x88400000	LDXR      	 */
-		ldaxrw,                                                 	/* 0x88408000	LDAXR     	 */
-		ldxpw,                                                  	/* 0x88600000	LDXP      	 */
-		ldaxpw,                                                 	/* 0x88608000	LDAXP     	 */
-		stlrw,                                                  	/* 0x88808000	STLR      	 */
-		ldarw,                                                  	/* 0x88C08000	LDAR      	 */
-		stxrx,                                                  	/* 0xC8000000	STXR      	 */
-		stlxrx,                                                 	/* 0xC8008000	STLXR     	 */
+		ldxrw,                                                  	/* 0x885F7C00	LDXR      	 */
+		ldaxrw,                                                 	/* 0x885FFC00	LDAXR     	 */
+		ldxpw,                                                  	/* 0x887F0000	LDXP      	 */
+		ldaxpw,                                                 	/* 0x887F8000	LDAXP     	 */
+		stlrw,                                                  	/* 0x889FFC00	STLR      	 */
+		ldarw,                                                  	/* 0x88DFFC00	LDAR      	 */
+		stxrx,                                                  	/* 0xC8007C00	STXR      	 */
+		stlxrx,                                                 	/* 0xC800FC00	STLXR     	 */
 		stxpx,                                                  	/* 0xC8200000	STXP      	 */
 		stlxpx,                                                 	/* 0xC8208000	STLXP     	 */
-		ldxrx,                                                  	/* 0xC8400000	LDXR      	 */
-		ldaxrx,                                                 	/* 0xC8408000	LDAXR     	 */
-		ldxpx,                                                  	/* 0xC8600000	LDXP      	 */
-		ldaxpx,                                                 	/* 0xC8608000	LDAXP     	 */
-		stlrx,                                                  	/* 0xC8808000	STLR      	 */
-		ldarx,                                                  	/* 0xC8C08000	LDAR      	 */
+		ldxrx,                                                  	/* 0xC85F7C00	LDXR      	 */
+		ldaxrx,                                                 	/* 0xC85FFC00	LDAXR     	 */
+		ldxpx,                                                  	/* 0xC87F0000	LDXP      	 */
+		ldaxpx,                                                 	/* 0xC87F8000	LDAXP     	 */
+		stlrx,                                                  	/* 0xC89FFC00	STLR      	 */
+		ldarx,                                                  	/* 0xC8DFFC00	LDAR      	 */
 	/* Load register (literal) */
 		ldrw,                                                   	/* 0x18000000	LDR       	 */
 		vldrs,                                                  	/* 0x1C000000	LDR       	 */

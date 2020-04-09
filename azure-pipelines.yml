@@ -28,13 +28,12 @@ jobs:
           ctest -V -C Debug
         displayName: "Test"
         workingDirectory: 'build'
-        continueOnError: true
  
       - task: PublishTestResults@2
+        condition: succeededOrFailed()
         inputs:
           testResultsFormat: 'JUnit'
           testResultsFiles: '**/*results.xml'
-          failTaskOnFailedTests: true
         displayName: 'Publish results'
  
   - job:
@@ -86,13 +85,12 @@ jobs:
           ctest -V -j$NUMBER_OF_PROCESSORS
         displayName: "Test"
         workingDirectory: 'build'
-        continueOnError: true
  
       - task: PublishTestResults@2
+        condition: succeededOrFailed()
         inputs:
           testResultsFormat: 'JUnit'
           testResultsFiles: '**/*results.xml'
-          failTaskOnFailedTests: true
         displayName: 'Publish results'
  
   - job:
@@ -148,11 +146,10 @@ jobs:
           ctest -V -j$NUMBER_OF_PROCESSORS
         displayName: "Test"
         workingDirectory: 'build'
-        continueOnError: true
  
       - task: PublishTestResults@2
+        condition: succeededOrFailed()
         inputs:
           testResultsFormat: 'JUnit'
           testResultsFiles: '**/*results.xml'
-          failTaskOnFailedTests: true
         displayName: 'Publish results'

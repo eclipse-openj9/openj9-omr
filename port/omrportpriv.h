@@ -620,7 +620,7 @@ omrsock_startup(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC int32_t
 omrsock_getaddrinfo_create_hints(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t *hints, int32_t family, int32_t socktype, int32_t protocol, int32_t flags);
 extern J9_CFUNC int32_t
-omrsock_getaddrinfo(struct OMRPortLibrary *portLibrary, char *node, char *service, omrsock_addrinfo_t hints, omrsock_addrinfo_t result);
+omrsock_getaddrinfo(struct OMRPortLibrary *portLibrary, const char *node, const char *service, omrsock_addrinfo_t hints, omrsock_addrinfo_t result);
 extern J9_CFUNC int32_t
 omrsock_addrinfo_length(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t *result);
 extern J9_CFUNC int32_t

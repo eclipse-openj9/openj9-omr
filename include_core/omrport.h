@@ -2114,7 +2114,7 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsock.c::omrsock_getaddrinfo_create_hints "omrsock_getaddrinfo_create_hints"*/
 	int32_t (*sock_getaddrinfo_create_hints)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t *hints, int32_t family, int32_t socktype, int32_t protocol, int32_t flags) ;
 	/** see @ref omrsock.c::omrsock_getaddrinfo "omrsock_getaddrinfo"*/
-	int32_t (*sock_getaddrinfo)(struct OMRPortLibrary *portLibrary, char *node, char *service, omrsock_addrinfo_t hints, omrsock_addrinfo_t result) ;
+	int32_t (*sock_getaddrinfo)(struct OMRPortLibrary *portLibrary, const char *node, const char *service, omrsock_addrinfo_t hints, omrsock_addrinfo_t result) ;
 	/** see @ref omrsock.c::omrsock_addrinfo_length "omrsock_addrinfo_length"*/
 	int32_t (*sock_addrinfo_length)(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t *result) ;
 	/** see @ref omrsock.c::omrsock_addrinfo_family "omrsock_addrinfo_family"*/

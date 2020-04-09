@@ -4327,9 +4327,14 @@ TR_CallSite* TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStac
    TR_CallSite *callsite = 0;
    for (callsite = calltarget->_myCallees.getFirst() ; callsite ; callsite = callsite->getNext())
       {
-      debugTrace(tracer(),"callNode->getByteCodeIndex = %d callsite->_byteCodeIndex = %d",callNode->getByteCodeIndex(),callsite->_byteCodeIndex);
+      debugTrace(tracer(),"callNode->getByteCodeIndex = %d callsite->_byteCodeIndex = %d callsite %p",callNode->getByteCodeIndex(), callsite->_byteCodeIndex, callsite);
       if (callNode->getByteCodeIndex() == callsite->_byteCodeIndex)     // we have the call
          {
+         if (callsite->_callNode != NULL)
+            {
+            debugTrace(tracer(),"findAndUpdateCallsiteInGraaph: call at callsite %p has been mapped to callNode %p", callsite, callsite->_callNode);
+            return 0;
+            }
          foundCall = true;
          break;
          }
@@ -4380,12 +4385,6 @@ TR_CallSite* TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStac
       return 0;
       }
 
-   //updating the fields on the callsite now that I have the info.  The rest should be filled out properly in estimatecodesize.
-   callsite->_callNode = callNode;
-   callsite->_callNodeTreeTop = tt;
-   callsite->_parent = parent;
-   callsite->_initialCalleeSymbol = callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->getResolvedMethodSymbol();
-
    if (foundDeadCall)
       {
       int32_t k=0;
@@ -4402,13 +4401,19 @@ TR_CallSite* TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStac
    if (!foundCall)
       return 0;
 
+   if (tracer()->heuristicLevel())
+     {
+     tracer()->dumpCallSite(callsite, "before findAndUpdateCallSiteInGraph for %p", callsite);
+     }
+
+   //updating the fields on the callsite now that I have the info.  The rest should be filled out properly in estimatecodesize.
+   callsite->_callNode = callNode;
+   callsite->_callNodeTreeTop = tt;
+   callsite->_parent = parent;
+   callsite->_initialCalleeSymbol = callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->getResolvedMethodSymbol();
+
    if (callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->isInterface() && callsite->_initialCalleeSymbol)
       debugTrace(tracer(), "findAndUpdateCallSiteInGraph: BAD: Interface call has an initialCalleeSYmbol %p for calNode %p", callsite->_initialCalleeSymbol, callNode);
-
-   if (tracer()->heuristicLevel())
-      {
-      tracer()->dumpCallSite(callsite, "before findAndUpdateCallSiteInGraph for %p", callsite);
-      }
 
    //if ilgen and localopts decided that this was a direct call
    //there isn't much sense to deal with more than one target

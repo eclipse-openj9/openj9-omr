@@ -63,21 +63,21 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x48408000,	/* LDAXRH    	ldaxrh	 */
 		0x48808000,	/* STLRH     	stlrh	 */
 		0x48C08000,	/* LDARH     	ldarh	 */
-		0x88000000,	/* STXR      	stxrw	 */
+		0x88007C00,	/* STXR      	stxrw	 */
 		0x88008000,	/* STLXR     	stlxrw	 */
 		0x88200000,	/* STXP      	stxpw	 */
 		0x88208000,	/* STLXP     	stlxpw	 */
-		0x88400000,	/* LDXR      	ldxrw	 */
+		0x885F7C00,	/* LDXR      	ldxrw	 */
 		0x88408000,	/* LDAXR     	ldaxrw	 */
 		0x88600000,	/* LDXP      	ldxpw	 */
 		0x88608000,	/* LDAXP     	ldaxpw	 */
 		0x88808000,	/* STLR      	stlrw	 */
 		0x88C08000,	/* LDAR      	ldarw	 */
-		0xC8000000,	/* STXR      	stxrx	 */
+		0xC8007C00,	/* STXR      	stxrx	 */
 		0xC8008000,	/* STLXR     	stlxrx	 */
 		0xC8200000,	/* STXP      	stxpx	 */
 		0xC8208000,	/* STLXP     	stlxpx	 */
-		0xC8400000,	/* LDXR      	ldxrx	 */
+		0xC85F7C00,	/* LDXR      	ldxrx	 */
 		0xC8408000,	/* LDAXR     	ldaxrx	 */
 		0xC8600000,	/* LDXP      	ldxpx	 */
 		0xC8608000,	/* LDAXP     	ldaxpx	 */

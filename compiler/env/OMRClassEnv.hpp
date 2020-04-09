@@ -167,7 +167,7 @@ public:
     * @return Returns 'true' if the given list of classes contains less than 
     * 2 concrete classes and false otherwise.
     */
-   bool containesZeroOrOneConcreteClass(TR::Compilation *comp, List<TR_PersistentClassInfo>* subClasses);
+   bool containsZeroOrOneConcreteClass(TR::Compilation *comp, List<TR_PersistentClassInfo>* subClasses);
    };
 
 }

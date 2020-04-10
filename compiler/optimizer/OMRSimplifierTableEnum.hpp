@@ -39,8 +39,7 @@
    boolCompareOpcode, \
    ifCompareOpcode, \
    enumValue, \
-   simplifier, \
-   ...) simplifier,
+   ...) enumValue ## SimplifierHandler,
 
    FOR_EACH_OPCODE(GET_SIMPLIFIER_HANDLER)
 

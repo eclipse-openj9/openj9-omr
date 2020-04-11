@@ -22,6 +22,8 @@
 #ifndef VALUEPROPAGATIONTABLE_INCL
 #define VALUEPROPAGATIONTABLE_INCL
 
+#include "il/OMROpcodes.hpp"
+
 TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainAConst(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainAdd(OMR::ValuePropagation *vp, TR::Node *node);

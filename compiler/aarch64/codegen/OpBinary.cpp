@@ -51,38 +51,38 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x94000000,	/* BL        	bl	 */
 /* Loads and stores */
 	/* Load/store exclusive */
-		0x08000000,	/* STXRB     	stxrb	 */
-		0x08008000,	/* STLXRB    	stlxrb	 */
-		0x08400000,	/* LDXRB     	ldxrb	 */
-		0x08408000,	/* LDAXRB    	ldaxrb	 */
-		0x08808000,	/* STLRB     	stlrb	 */
-		0x08C08000,	/* LDARB     	ldarb	 */
-		0x48000000,	/* STXRH     	stxrh	 */
-		0x48008000,	/* STLXRH    	stlxrh	 */
-		0x48400000,	/* LDXRH     	ldxrh	 */
-		0x48408000,	/* LDAXRH    	ldaxrh	 */
-		0x48808000,	/* STLRH     	stlrh	 */
-		0x48C08000,	/* LDARH     	ldarh	 */
+		0x08007C00,	/* STXRB     	stxrb	 */
+		0x0800FC00,	/* STLXRB    	stlxrb	 */
+		0x085F7C00,	/* LDXRB     	ldxrb	 */
+		0x085FFC00,	/* LDAXRB    	ldaxrb	 */
+		0x089FFC00,	/* STLRB     	stlrb	 */
+		0x08DFFC00,	/* LDARB     	ldarb	 */
+		0x48007C00,	/* STXRH     	stxrh	 */
+		0x4800FC00,	/* STLXRH    	stlxrh	 */
+		0x485F7C00,	/* LDXRH     	ldxrh	 */
+		0x485FFC00,	/* LDAXRH    	ldaxrh	 */
+		0x489FFC00,	/* STLRH     	stlrh	 */
+		0x48DFFC00,	/* LDARH     	ldarh	 */
 		0x88007C00,	/* STXR      	stxrw	 */
-		0x88008000,	/* STLXR     	stlxrw	 */
+		0x8800FC00,	/* STLXR     	stlxrw	 */
 		0x88200000,	/* STXP      	stxpw	 */
 		0x88208000,	/* STLXP     	stlxpw	 */
 		0x885F7C00,	/* LDXR      	ldxrw	 */
-		0x88408000,	/* LDAXR     	ldaxrw	 */
-		0x88600000,	/* LDXP      	ldxpw	 */
-		0x88608000,	/* LDAXP     	ldaxpw	 */
-		0x88808000,	/* STLR      	stlrw	 */
-		0x88C08000,	/* LDAR      	ldarw	 */
+		0x885FFC00,	/* LDAXR     	ldaxrw	 */
+		0x887F0000,	/* LDXP      	ldxpw	 */
+		0x887F8000,	/* LDAXP     	ldaxpw	 */
+		0x889FFC00,	/* STLR      	stlrw	 */
+		0x88DFFC00,	/* LDAR      	ldarw	 */
 		0xC8007C00,	/* STXR      	stxrx	 */
-		0xC8008000,	/* STLXR     	stlxrx	 */
+		0xC800FC00,	/* STLXR     	stlxrx	 */
 		0xC8200000,	/* STXP      	stxpx	 */
 		0xC8208000,	/* STLXP     	stlxpx	 */
 		0xC85F7C00,	/* LDXR      	ldxrx	 */
-		0xC8408000,	/* LDAXR     	ldaxrx	 */
-		0xC8600000,	/* LDXP      	ldxpx	 */
-		0xC8608000,	/* LDAXP     	ldaxpx	 */
-		0xC8808000,	/* STLR      	stlrx	 */
-		0xC8C08000,	/* LDAR      	ldarx	 */
+		0xC85FFC00,	/* LDAXR     	ldaxrx	 */
+		0xC87F0000,	/* LDXP      	ldxpx	 */
+		0xC87F8000,	/* LDAXP     	ldaxpx	 */
+		0xC89FFC00,	/* STLR      	stlrx	 */
+		0xC8DFFC00,	/* LDAR      	ldarx	 */
 	/* Load register (literal) */
 		0x18000000,	/* LDR       	ldrw	 */
 		0x1C000000,	/* LDR       	vldrs	 */

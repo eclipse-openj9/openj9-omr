@@ -1214,6 +1214,12 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
    self()->setOffset(displacement);
    self()->setDelayedOffsetDone();
 
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(
+      currentInstruction,
+      index == NULL || displacement == 0 || self()->isUsingDelayedIndexedForm(),
+      "Cannot have an index register and a displacement unless using delayed indexed form"
+   );
+
    if (comp->target().is64Bit() && self()->isTOCAccess())
       {
       int32_t displacement = self()->getTOCOffset();

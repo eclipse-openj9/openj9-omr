@@ -1105,7 +1105,7 @@ TR::Instruction *OMR::Power::MemoryReference::expandForUnresolvedSnippet(TR::Ins
       }
    else if (index != NULL || isUsingDelayedIndexedForm())
       {
-      if (isUsingDelayedIndexedForm())
+      if (index == NULL)
          {
          newMR = new (cg->trHeapMemory()) TR::MemoryReference(cg->machine()->getRealRegister(TR::RealRegister::gr0), base, self()->getLength(), cg);
          }

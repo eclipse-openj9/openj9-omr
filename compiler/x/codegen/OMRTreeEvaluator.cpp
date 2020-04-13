@@ -254,7 +254,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
          if (cg->constantAddressesCanChangeSize(node) && node && node->getOpCodeValue() == TR::aconst &&
              (node->isClassPointerConstant() || node->isMethodPointerConstant()))
             {
-            movInstruction = generateRegImm64Instruction(MOV8RegImm64, node, target, value, cg, reloKind);
+            movInstruction = generateRegImm64Instruction(currentInstruction, MOV8RegImm64, target, value, cg, reloKind);
             }
          else if (IS_32BIT_UNSIGNED(value))
             {

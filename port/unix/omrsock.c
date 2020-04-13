@@ -494,13 +494,57 @@ omrsock_listen(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_
 int32_t
 omrsock_connect(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_sockaddr_t addr)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	socklen_t addrLength;
+
+	if (NULL == addr || NULL == sock) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	if (OS_SOCK_AF_INET == addr->data.ss_family) {
+		addrLength = sizeof(omr_os_sockaddr_in);
+	}
+	else {
+		addrLength = sizeof(omr_os_sockaddr_in6);
+	}
+
+	if (connect(sock->data, (omr_os_sockaddr *)&addr->data, addrLength) < 0) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_CONNECT_FAILED);
+		return OMRPORT_ERROR_SOCK_CONNECT_FAILED;
+	}
+	return 0;
 }
 
 int32_t
 omrsock_accept(struct OMRPortLibrary *portLibrary, omrsock_socket_t serverSock, omrsock_sockaddr_t addrHandle, omrsock_socket_t *sockHandle)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	int32_t	connSocketDescriptor;
+
+#if defined(OMR_OS_ZOS)
+	int32_t addrLength = sizeof(omr_os_sockaddr_storage);
+#else
+	socklen_t addrLength = sizeof(omr_os_sockaddr_storage);
+#endif
+
+	if (NULL == serverSock || NULL == addrHandle) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	*sockHandle = NULL;
+
+	connSocketDescriptor = accept(serverSock->data, (omr_os_sockaddr *)&addrHandle->data, &addrLength);
+	if (connSocketDescriptor < 0) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_ACCEPT_FAILED);
+		return OMRPORT_ERROR_SOCK_ACCEPT_FAILED;
+	}
+
+	*sockHandle = (omrsock_socket_t)portLibrary->mem_allocate_memory(portLibrary, sizeof(struct OMRSocket), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+	if (*sockHandle == NULL) {
+		close(connSocketDescriptor);
+		return OMRPORT_ERROR_SOCK_SYSTEM_FULL; 
+	}
+
+	(*sockHandle)->data = connSocketDescriptor;
+	return 0;
 }
 
 int32_t

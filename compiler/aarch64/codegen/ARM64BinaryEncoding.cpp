@@ -95,6 +95,12 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
       else
          {
          TR::MethodSymbol *method = symRef->getSymbol()->getMethodSymbol();
+
+         if (cg()->hasCodeCacheSwitched())
+            {
+            cg()->redoTrampolineReservationIfNecessary(this, symRef);
+            }
+
          if (method && method->isHelper())
             {
             intptr_t destination = (intptr_t)symRef->getMethodAddress();

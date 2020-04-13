@@ -75,8 +75,6 @@ public:
    void setComp(TR::Compilation *comp) { _comp = comp; }
 
    Index getEndIndex();                      // Highest index assigned so far + 1
-   Index getIndex(uintptr_t objectPointer); // Must hold vm access for this
-   Index getIndex(uintptr_t objectPointer, bool isArrayWithConstantElements); // Must hold vm access for this
    Index getOrCreateIndex(uintptr_t objectPointer); // Must hold vm access for this
    Index getOrCreateIndex(uintptr_t objectPointer, bool isArrayWithConstantElements); // Must hold vm access for this
    uintptr_t *getPointerLocation(Index index);
@@ -89,8 +87,6 @@ public:
    // API for checking if an known object is an array with immutable elements
    bool isArrayWithConstantElements(Index index);
 
-   Index getIndexAt(uintptr_t *objectReferenceLocation);
-   Index getIndexAt(uintptr_t *objectReferenceLocation, bool isArrayWithConstantElements);
    Index getOrCreateIndexAt(uintptr_t *objectReferenceLocation);
    Index getOrCreateIndexAt(uintptr_t *objectReferenceLocation, bool isArrayWithConstantElements);
    Index getExistingIndexAt(uintptr_t *objectReferenceLocation);

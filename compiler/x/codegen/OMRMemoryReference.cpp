@@ -355,6 +355,10 @@ OMR::X86::MemoryReference::MemoryReference(
       _dataSnippet = TR::UnresolvedDataSnippet::create(cg, _baseNode, &_symbolReference, false, _symbolReference.canCauseGC());
       cg->addSnippet(_dataSnippet);
       }
+   else if (mr.getDataSnippet() != NULL)
+      {
+      _dataSnippet = mr.getDataSnippet();
+      }
    else
       {
       _dataSnippet = NULL;

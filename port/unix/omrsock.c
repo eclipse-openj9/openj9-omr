@@ -26,12 +26,15 @@
  * @brief Sockets
  */
 
-#include <netdb.h>
-#include <string.h> 
-
 #include "omrcfg.h"
 #if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrsock.h"
+
+#include <netdb.h>
+#include <string.h> 
+#include <unistd.h>
+#include <fcntl.h>
+
 #include "omrport.h"
 #include "omrporterror.h"
 #include "omrsockptb.h"
@@ -55,6 +58,8 @@ get_os_family(int32_t omrFamily)
 			return OS_SOCK_AF_INET;
 		case OMRSOCK_AF_INET6:
 			return OS_SOCK_AF_INET6;
+		default:
+			break;
 	}
 	return OS_SOCK_AF_UNSPEC;
 }
@@ -76,6 +81,8 @@ get_os_socktype(int32_t omrSockType)
 			return OS_SOCK_STREAM;
 		case OMRSOCK_DGRAM:
 			return OS_SOCK_DGRAM;
+		default:
+			break;
 	}
 	return OS_SOCK_ANY;
 }
@@ -98,6 +105,8 @@ get_os_protocol(int32_t omrProtocol)
 			return OS_SOCK_IPPROTO_TCP;
 		case OMRSOCK_IPPROTO_UDP:
 			return OS_SOCK_IPPROTO_UDP;
+		default:
+			break;
 	}
 	return OS_SOCK_IPPROTO_DEFAULT;
 }
@@ -122,6 +131,8 @@ get_omr_family(int32_t osFamily)
 			return OMRSOCK_AF_INET;
 		case OS_SOCK_AF_INET6:
 			return OMRSOCK_AF_INET6;
+		default:
+			break;
 	}
 	return OMRSOCK_AF_UNSPEC;
 }
@@ -143,6 +154,8 @@ get_omr_socktype(int32_t osSockType)
 			return OS_SOCK_STREAM;
 		case OMRSOCK_DGRAM:
 			return OS_SOCK_DGRAM;
+		default:
+			break;
 	}
 	return OMRSOCK_ANY;
 }
@@ -164,6 +177,8 @@ get_omr_protocol(int32_t osProtocol)
 			return OMRSOCK_IPPROTO_TCP;
 		case OS_SOCK_IPPROTO_UDP:
 			return OMRSOCK_IPPROTO_UDP;
+		default:
+			break;
 	}
 	return OMRSOCK_IPPROTO_DEFAULT;
 }
@@ -208,7 +223,7 @@ omrsock_getaddrinfo_create_hints(struct OMRPortLibrary *portLibrary, omrsock_add
 }
 
 int32_t
-omrsock_getaddrinfo(struct OMRPortLibrary *portLibrary, char *node, char *service, omrsock_addrinfo_t hints, omrsock_addrinfo_t result)
+omrsock_getaddrinfo(struct OMRPortLibrary *portLibrary, const char *node, const char *service, omrsock_addrinfo_t hints, omrsock_addrinfo_t result)
 {
 	omr_os_addrinfo *addrInfoResults = NULL;
 	omr_os_addrinfo *addrInfoHints = NULL;
@@ -340,7 +355,39 @@ omrsock_freeaddrinfo(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t hand
 int32_t
 omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32_t family, int32_t socktype, int32_t protocol)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	int32_t sockDescriptor = 0;
+	int32_t osFamily = get_os_family(family);
+	int32_t osSockType = get_os_socktype(socktype);
+	int32_t osProtocol = get_os_protocol(protocol);
+	
+	/* Initialize return omrsock_socket_t to NULL. */
+	*sock = NULL;
+
+	if ((osFamily < 0) || (osSockType < 0) || (osProtocol < 0)) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	sockDescriptor = socket(osFamily, osSockType, osProtocol);
+
+	if (sockDescriptor < 0) {
+		return OMRPORT_ERROR_SOCK_SOCKET_CREATION_FAILED;
+	}
+
+	/* Tag this descriptor as being non-inheritable. */
+	int32_t fdflags = fcntl(sockDescriptor, F_GETFD, 0);
+	fcntl(sockDescriptor, F_SETFD, fdflags | FD_CLOEXEC);
+
+	/* Set up the socket structure. */
+	*sock = (omrsock_socket_t)portLibrary->mem_allocate_memory(portLibrary, sizeof(struct OMRSocket), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+	if (NULL == *sock) {
+		close(sockDescriptor);
+		return OMRPORT_ERROR_SOCK_SYSTEM_FULL; 
+	}
+
+	memset(*sock, 0, sizeof(struct OMRSocket));
+	(*sock)->data = sockDescriptor;
+
+	return 0;
 }
 
 int32_t
@@ -394,7 +441,17 @@ omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint
 int32_t
 omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if (NULL == *sock) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	if(0 != close((*sock)->data)) {
+		return OMRPORT_ERROR_SOCK_SOCKET_CLOSE_FAILED;
+	}
+	portLibrary->mem_free_memory(portLibrary, *sock);
+	*sock = NULL;
+
+	return 0;
 }
 
 int32_t

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2019 IBM Corp. and others
+ * Copyright (c) 2013, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -871,7 +871,7 @@ const J9CudaEntryDescriptor driverDescriptors[] = {
 };
 
 /**
- * Expands to a J9CudaEntryDescriptor initializer for a runtime API functioln.
+ * Expands to a J9CudaEntryDescriptor initializer for a runtime API function.
  *
  * version is the minimum required library version
  * name is the function pointer field of J9CudaFunctionTable

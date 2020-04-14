@@ -1220,10 +1220,17 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
       "Cannot have an index register and a displacement unless using delayed indexed form"
    );
 
+   if (self()->getStaticRelocation() != NULL)
+      {
+      prevInstruction = generateLabelInstruction(cg, TR::InstOpCode::label, node, generateLabelSymbol(cg), prevInstruction);
+      self()->getStaticRelocation()->setSource2Instruction(prevInstruction);
+      }
+
    if (comp->target().is64Bit() && self()->isTOCAccess())
       {
       int32_t displacement = self()->getTOCOffset();
-      TR::Symbol *symbol = self()->getSymbolReference()->getSymbol();
+      TR::SymbolReference *symRef = self()->getSymbolReference();
+      TR::Symbol *symbol = symRef->getSymbol();
       uint64_t addr;
 
       if (symbol->isStatic())
@@ -1248,6 +1255,50 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
          }
       else
          {
+         if (cg->comp()->compileRelocatableCode() && symbol->isStatic() && symbol->isClassObject())
+            {
+            prevInstruction = generateLabelInstruction(cg, TR::InstOpCode::label, node, generateLabelSymbol(cg), prevInstruction);
+
+            TR_RelocationRecordInformation *recordInfo = (TR_RelocationRecordInformation*)cg->trMemory()->allocateHeapMemory(sizeof(TR_RelocationRecordInformation));
+
+            if (comp->getOption(TR_UseSymbolValidationManager))
+               {
+               recordInfo->data1 = (uintptr_t)symbol->getStaticSymbol()->getStaticAddress();
+               recordInfo->data2 = (uintptr_t)TR::SymbolType::typeClass;
+               recordInfo->data3 = fixedSequence1;
+               cg->addExternalRelocation(
+                  new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+                     prevInstruction,
+                     (uint8_t*)recordInfo,
+                     TR_DiscontiguousSymbolFromManager,
+                     cg
+                  ),
+                  __FILE__,
+                  __LINE__,
+                  node
+               );
+               }
+            else
+               {
+               recordInfo->data1 = (uintptr_t)symRef;
+               recordInfo->data2 = node == NULL ? -1 : node->getInlinedSiteIndex();
+               recordInfo->data3 = fixedSequence1;
+               cg->addExternalRelocation(
+                  new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+                     prevInstruction,
+                     (uint8_t*)recordInfo,
+                     TR_ClassAddress,
+                     cg
+                  ),
+                  __FILE__,
+                  __LINE__,
+                  node
+               );
+               }
+
+            addr = 0;
+            }
+
          TR::Instruction *newInstruction = prevInstruction = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, data, (int16_t)(addr >> 48), prevInstruction);
          prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, data, data, (addr >> 32) & 0xffff, prevInstruction);
          prevInstruction = generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicr, node, data, data, 32, 0xffffffff00000000ULL, prevInstruction);

@@ -137,6 +137,7 @@ class LocalCSE : public TR::Optimization
    bool doCopyPropagationIfPossible(TR::Node *, TR::Node *, int32_t, TR::Node *, TR::SymbolReference *, vcount_t, bool &);
    void doCommoningIfAvailable(TR::Node *, TR::Node *, int32_t, bool &);
    void doCommoningAgainIfPreviouslyCommoned(TR::Node *, TR::Node *, int32_t);
+   bool canCommonNodeInVolatilePass(TR::Node*);
 
    TR::Node *getNode(TR::Node *node);
 

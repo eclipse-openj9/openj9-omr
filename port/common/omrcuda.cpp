@@ -2512,6 +2512,8 @@ fail:
 			value = (value * 10) + minor;
 		}
 
+		result = J9CUDA_NO_ERROR;
+
 		Trc_PRT_cuda_deviceGetAttribute_result(attribute, value);
 		*valueOut = (int32_t)value;
 	}
@@ -4286,7 +4288,7 @@ omrcuda_hostAlloc(OMRPortLibrary *portLibrary, uintptr_t size, uint32_t flags, v
 
 	Trc_PRT_cuda_hostAlloc_exit(result);
 
-	return J9CUDA_NO_ERROR;
+	return result;
 }
 
 /**

@@ -3679,7 +3679,7 @@ TR_Debug::dump(TR::FILE *pOutFile, TR_CHTable * chTable)
 
          char *sig = TR::Compiler->cls.classNameChars(comp(), clazz, len);
 
-         if (len>256) len = 256;
+         if (len>255) len = 255;
          strncpy(buf, sig, len);
          buf[len] = 0;
 

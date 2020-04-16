@@ -234,8 +234,6 @@
    lbzx,             // Load byte and zero extend indexed
    ld,               // Load dword
    ldarx,            // Load dword and reserve indexed
-   ldmx,             // Load dword monitored indexed
-   lwzmx,            // Load word and zero monitored indexed
    ldu,              // Load dword with update
    ldux,             // Load dword with update indexed
    ldx,              // Load dword indexed

@@ -1569,9 +1569,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsTM() { return _flags4.testAny(SupportsTM);}
    void setSupportsTM() { _flags4.set(SupportsTM);}
 
-   bool getSupportsLM() { return _flags4.testAny(SupportsLM);}
-   void setSupportsLM() { _flags4.set(SupportsLM);}
-
    virtual bool getSupportsTLE();
 
    virtual bool getSupportsIbyteswap();
@@ -1850,7 +1847,7 @@ class OMR_EXTENSIBLE CodeGenerator
       // AVAILABLE                                        = 0x04000000,
       // AVAILABLE                                        = 0x08000000,
       // AVAILABLE                                        = 0x10000000,
-      SupportsLM                                          = 0x20000000,
+      // AVAILABLE                                        = 0x20000000,
 
       DummyLastEnum4
       };

@@ -62,7 +62,6 @@ public:
    bool getPPCSupportsVSX() { return false; }
    bool getPPCSupportsAES() { return false; }
    bool getPPCSupportsTM()  { return false; }
-   bool getPPCSupportsLM()  { return false; }
 
    /** @brief Determines whether the Transactional Memory (TM) facility is available on the current processor.
     *         Alias of getPPCSupportsTM() as a platform agnostic query.

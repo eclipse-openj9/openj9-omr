@@ -60,6 +60,10 @@
 #define MFD_HUGETLB 0x4
 #endif /* MFD_HUGETLB */
 
+#if !defined(MAP_HUGETLB)
+#define MAP_HUGETLB 0x40000
+#endif /* MAP_HUGETLB */
+
 #if defined(OMR_PORT_NUMA_SUPPORT)
 #include <numaif.h>
 #endif /* OMR_PORT_NUMA_SUPPORT */

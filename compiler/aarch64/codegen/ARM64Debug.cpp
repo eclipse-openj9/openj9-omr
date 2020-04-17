@@ -418,6 +418,8 @@ static const char *opCodeToNameMap[] =
    "umsubl",
    "smulh",
    "umulh",
+   "fmaddd",
+   "fmadds",
    "crc32x",
    "crc32cx",
    "crc32b",

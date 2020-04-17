@@ -28,9 +28,6 @@
 #include "env/TRMemory.hpp"
 #include "ras/LogTracer.hpp"
 
-// Temporary macro to coordinate changes between omr and openj9.
-#define TR_PREXARGINFO_TRACER_CLASS TR_LogTracer
-
 class TR_CallSite;
 class TR_InlinerTracer;
 class TR_OpaqueClassBlock;

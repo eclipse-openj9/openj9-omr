@@ -37,6 +37,14 @@ T add(T l, T r) {
     return l + r;
 }
 
+uint64_t aladd(uint64_t l, int64_t r) {
+    return l + r;
+}
+
+uint32_t aiadd(uint32_t l, int32_t r) {
+    return l + r;
+}
+
 template <typename T>
 T sub(T l, T r) {
     return l - r;
@@ -808,6 +816,235 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatArithmetic, ::testing::Combine(
         std::make_tuple<const char*, float (*)(float, float)>("fdiv", static_cast<float (*)(float, float)>(div))
     )));
 
+#ifdef OMR_ENV_DATA64
+/**
+ * uint64_t is used as the first argument type here, because aladd will only 
+ * be used on 64 bit platforms(checked by verifier). Address will be a uint64_t type in this case. 
+ */
+class AddressInt64Arithmetic : public TRTest::OpCodeTest<uint64_t, uint64_t, int64_t> {};
+
+TEST_P(AddressInt64Arithmetic, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Address"
+      "  (block"
+      "    (areturn"
+      "      (%s"
+      "        (aconst %" OMR_PRIu64 ")"
+      "        (lconst %" OMR_PRId64 ")))))",
+      param.opcode.c_str(),
+      param.lhs,
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint64_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(AddressInt64Arithmetic, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Address args=[Address, Int64]"
+      "  (block"
+      "    (areturn"
+      "      (%s"
+      "        (aload parm=0)"
+      "        (lload parm=1)))))",
+      param.opcode.c_str()
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint64_t (*)(uint64_t, int64_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
+}
+
+TEST_P(AddressInt64Arithmetic, UsingLoadParamAndLoadConst) {
+    auto param = TRTest::to_struct(GetParam());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Address args=[Address]"
+      "  (block"
+      "    (areturn"
+      "      (%s"
+      "        (aload parm=0)"
+      "        (lconst %" OMR_PRId64 ")))))",
+      param.opcode.c_str(),
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint64_t (*)(uint64_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs));
+}
+
+TEST_P(AddressInt64Arithmetic, UsingLoadConstAndLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Address args=[Int64]"
+      "  (block"
+      "    (areturn"
+      "      (%s"
+      "        (aconst %" OMR_PRIu64 ")"
+      "        (lload parm=0)))))",
+      param.opcode.c_str(),
+      param.lhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint64_t (*)(int64_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.rhs));
+}
+
+INSTANTIATE_TEST_CASE_P(ArithmeticTest, AddressInt64Arithmetic, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<uint64_t, int64_t>()),
+    ::testing::Values(
+        std::make_tuple<const char*, uint64_t(*)(uint64_t, int64_t)>("aladd", aladd))));
+#endif
+
+#ifdef OMR_ENV_DATA32
+/**
+ * uint32_t is used as the first argument type here, because aiadd will only 
+ * be used on 32 bit platforms(checked by verifier). Address will be a uint32_t type in this case. 
+ */
+class AddressInt32Arithmetic : public TRTest::OpCodeTest<uint32_t, uint32_t, int32_t> {};
+
+TEST_P(AddressInt32Arithmetic, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Address"
+      "  (block"
+      "    (areturn"
+      "      (%s"
+      "        (aconst %" OMR_PRIu32 ")"
+      "        (iconst %" OMR_PRId32 ")))))",
+      param.opcode.c_str(),
+      param.lhs,
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(AddressInt32Arithmetic, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Address args=[Address, Int32]"
+      "  (block"
+      "    (areturn"
+      "      (%s"
+      "        (aload parm=0)"
+      "        (iload parm=1)))))",
+      param.opcode.c_str()
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint32_t (*)(uint32_t, int32_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
+}
+
+TEST_P(AddressInt32Arithmetic, UsingLoadParamAndLoadConst) {
+    auto param = TRTest::to_struct(GetParam());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Address args=[Address]"
+      "  (block"
+      "    (areturn"
+      "      (%s"
+      "        (aload parm=0)"
+      "        (iconst %" OMR_PRId32 ")))))",
+      param.opcode.c_str(),
+      param.rhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint32_t (*)(uint32_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs));
+}
+
+TEST_P(AddressInt32Arithmetic, UsingLoadConstAndLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Address args=[Int32]"
+      "  (block"
+      "    (areturn"
+      "      (%s"
+      "        (aconst %" OMR_PRIu32 ")"
+      "        (iload parm=0)))))",
+      param.opcode.c_str(),
+      param.lhs
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint32_t (*)(int32_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.rhs));
+}
+
+INSTANTIATE_TEST_CASE_P(ArithmeticTest, AddressInt32Arithmetic, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<uint32_t, int32_t>()),
+    ::testing::Values(
+        std::make_tuple<const char*, uint32_t(*)(uint32_t, int32_t)>("aiadd", aiadd))));
+#endif
 
 class DoubleArithmetic : public TRTest::BinaryOpTest<double> {};
 

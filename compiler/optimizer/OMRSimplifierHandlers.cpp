@@ -1973,6 +1973,239 @@ static TR::SymbolReference *getUniqueSymRef(TR::Node *node, bool &isLegal , TR::
    return savedSymRef;
    }
 
+/**
+ * \brief
+ *    Helper function for processSubTreeLeavesForISelectCompare that evaluates
+ *    a comparison between two integer values.
+ *
+ * \param compareType
+ *    The type of comparison to evaluate.
+ *
+ * \param isUnsignedCampare
+ *    True if the outer comparison node supplied to simplifyISelectCompare was
+ *    an unsigned comparison. False if it was a signed comparison.
+ *
+ * \param left
+ *    The first integer value to compare.
+ *
+ * \param right
+ *    The second integer value to compare.
+ *
+ * \return
+ *    True if the comparison evaluates to true. False if the comparison
+ *    evaluates to false.
+ */
+static bool evaluateIntComparison(TR_ComparisonTypes compareType, bool isUnsignedCompare, int64_t left, int64_t right)
+   {
+   switch (compareType)
+      {
+      case TR_cmpEQ:
+         return left == right;
+         break;
+      case TR_cmpNE:
+         return left != right;
+         break;
+      case TR_cmpLT:
+         return isUnsignedCompare ? (uint64_t)left < (uint64_t)right : left < right;
+         break;
+      case TR_cmpLE:
+         return isUnsignedCompare ? (uint64_t)left <= (uint64_t)right : left <= right;
+         break;
+      case TR_cmpGT:
+         return isUnsignedCompare ? (uint64_t)left > (uint64_t)right : left > right;
+         break;
+      case TR_cmpGE:
+         return isUnsignedCompare ? (uint64_t)left >= (uint64_t)right : left >= right;
+         break;
+      default:
+         TR_ASSERT(false, "unhandled TR_ComparisonTypes enum value in simplifier");
+      }
+   }
+
+/**
+ * \brief
+ *    Helper function for simplifyISelectCompare which checks if the iselect
+ *    child of the compare node (and its subtrees) can be simplified.
+ *
+ * \param visited
+ *    Checklist of nodes to check. Initially empty.
+ *
+ * \param node
+ *    The iselect node which could potentially be simplified.
+ *
+ * \return
+ *    True if the iselect node and its subtrees can be simplified by
+ *    simplifyISelectCompare.
+ */
+static bool canProcessSubTreeLeavesForISelectCompare(TR::NodeChecklist &visited, TR::Node *node)
+   {
+   if (visited.contains(node))
+      return true;
+
+   visited.add(node);
+
+   if (node->getOpCodeValue() == TR::PassThrough)
+      return canProcessSubTreeLeavesForISelectCompare(visited, node->getFirstChild());
+
+   if (node->getOpCode().isLoadConst()
+       && node->getDataType().isIntegral())
+      return true;
+
+   if (node->getOpCode().isSelect()
+       && node->getDataType().isIntegral()
+       && node->getReferenceCount() == 1)
+      {
+      TR::Node *left = node->getChild(1);
+      TR::Node *right = node->getChild(2);
+      return canProcessSubTreeLeavesForISelectCompare(visited, left)
+             && canProcessSubTreeLeavesForISelectCompare(visited, right);
+      }
+   return false;
+   }
+
+/**
+ * \brief
+ *    Helper function for simplifyISelectCompare.
+ *
+ * \details
+ *    Recurses down across an iselect node and its subtrees.
+ *
+ *    Replaces the value of constant leaves with zero or one by comparing these
+ *    values to the constant in the outer compare node.
+ *
+ * \param visited
+ *    Checklist of nodes visited while performing this transformation. Initially
+ *    empty.
+ *
+ * \param node
+ *    The iselect node being simplified.
+ *
+ * \param compareType
+ *    The compare type of the original comparison node supplied to
+ *    simplifyISelectCompare.
+ *
+ * \param isUnsignedCampare
+ *    True if the outer comparison node supplied to simplifyISelectCompare was
+ *    an unsigned comparison. False if it was a signed comparison.
+ *
+ * \param constant
+ *    The value of the constant child of the outer comparison node.
+ *
+ * \param s
+ *    The simplifier object.
+ *
+ * \return
+ *    True if a transformation was performed. False otherwise.
+ */
+static bool processSubTreeLeavesForISelectCompare(TR::NodeChecklist &visited, TR::Node *node, TR_ComparisonTypes compareType, bool isUnsignedCompare, int64_t constant, TR::Simplifier *s)
+   {
+   bool toReturn = true;
+   if (visited.contains(node))
+      return toReturn;
+
+   visited.add(node);
+
+   if (node->getOpCode().isSelect()
+       && node->getDataType().isIntegral()
+       && node->getReferenceCount() == 1)
+      {
+      TR::Node *left = node->getChild(1);
+      TR::Node *right = node->getChild(2);
+      if (left->getOpCode().isLoadConst())
+         {
+         if (performTransformation(s->comp(), "%sReplacing constant child of iselect node [" POINTER_PRINTF_FORMAT "] with 0 or 1\n", s->optDetailString(), node))
+            {
+            node->setAndIncChild(1, evaluateIntComparison(compareType, isUnsignedCompare, left->get64bitIntegralValue(), constant) ? TR::Node::createConstOne(left, left->getDataType()) : TR::Node::createConstZeroValue(left, left->getDataType()));
+            left->decReferenceCount();
+            }
+         }
+      else
+         {
+         toReturn |= processSubTreeLeavesForISelectCompare(visited, left, compareType, isUnsignedCompare, constant, s);
+         }
+      if (right->getOpCode().isLoadConst())
+         {
+         if (performTransformation(s->comp(), "%sReplacing constant child of iselect node [" POINTER_PRINTF_FORMAT "] with 0 or 1\n", s->optDetailString(), node))
+            {
+            node->setAndIncChild(2, evaluateIntComparison(compareType, isUnsignedCompare, right->get64bitIntegralValue(), constant) ? TR::Node::createConstOne(right, right->getDataType()) : TR::Node::createConstZeroValue(right, right->getDataType()));
+            right->decReferenceCount();
+            }
+         }
+      else
+         {
+         toReturn |= processSubTreeLeavesForISelectCompare(visited, right, compareType, isUnsignedCompare, constant, s);
+         }
+      }
+   else if (node->getOpCodeValue() == TR::PassThrough)
+      {
+      toReturn = processSubTreeLeavesForISelectCompare(visited, node->getFirstChild(), compareType, isUnsignedCompare, constant, s);
+      }
+   else
+      {
+      toReturn = false;
+      }
+   return toReturn;
+   }
+
+/**
+ * \brief
+ *    Perform a simplification for the case where a comparison node compares the
+ *    result of an integer select node to a constant.
+ *
+ * \details
+ *    A simplification will be performed on the following pattern:
+ *    \verbatim
+ *    comparison
+ *       iselect
+ *       iconst
+ *    \endverbatim
+ *
+ *    Where the iselect node may have more iselect nodes as children, but will
+ *    eventually terminate with constant leaves.
+ *
+ *    The value of the iconst node is compared to the leaves of the iselect
+ *    node and these leaves are replaced either zero or one.
+ *
+ *    Replacing the values of the leaves of the iselect node(s) with zeros and
+ *    ones allows the tree to be further simplified by selectSimplifier.
+ *
+ * \param compare
+ *    The comparison node being simpilfied.
+ *
+ * \param s
+ *    The simplifier object.
+ */
+static void simplifyISelectCompare(TR::Node *compare, TR::Simplifier *s)
+   {
+   static char *disableISelectCompareSimplification = feGetEnv("TR_disableISelectCompareSimplification");
+   if (disableISelectCompareSimplification)
+      return;
+
+   if (compare->getOpCode().isBooleanCompare()
+       && compare->getSecondChild()->getOpCode().isLoadConst()
+       && compare->getSecondChild()->getOpCode().isInteger()
+       && compare->getFirstChild()->getOpCode().isInteger()
+       && compare->getFirstChild()->getOpCode().isSelect()
+       && compare->getFirstChild()->getReferenceCount() == 1)
+      {
+      TR::NodeChecklist safetyVisited(s->comp());
+      TR_ComparisonTypes compareType = TR::ILOpCode::getCompareType(compare->getOpCodeValue());
+      bool isUnsignedCompare = TR::ILOpCode(compare->getOpCode()).isUnsignedCompare();
+      if (canProcessSubTreeLeavesForISelectCompare(safetyVisited, compare->getFirstChild()))
+         {
+         TR::NodeChecklist visited(s->comp());
+         processSubTreeLeavesForISelectCompare(visited, compare->getFirstChild(), compareType, isUnsignedCompare, compare->getSecondChild()->get64bitIntegralValue(), s);
+         TR::Node *constVal = compare->getSecondChild();
+         if (performTransformation(s->comp(), "%sReplacing constant child of compare node [" POINTER_PRINTF_FORMAT "] with 0 after comparison of constants has been folded across children\n", s->optDetailString(), compare))
+            {
+            compare->setAndIncChild(1, TR::Node::createConstZeroValue(compare->getSecondChild(), compare->getSecondChild()->getDataType()));
+            constVal->decReferenceCount();
+            TR::Node::recreate(compare, TR::ILOpCode(TR::ILOpCode::compareOpCode(compare->getFirstChild()->getDataType(), TR_cmpNE, isUnsignedCompare)).convertCmpToIfCmp());
+            }
+         }
+      }
+   }
+
 // We handle two kind of cases here:
 // 1. an ifcmp is comparing with a const (or variable a), it is the first real instruction in the block
 //    the other operand is defined in another blocks, at least one of the def is const (or a),
@@ -5997,6 +6230,12 @@ TR::Node *treetopSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
          return NULL;
          }
       node->setFirst(child);
+      }
+   if (!node->getOpCode().isNullCheck() && node->getFirstChild()->getOpCodeValue() == TR::PassThrough)
+      {
+      TR::Node *passthrough = node->getFirstChild();
+      node->setAndIncChild(0, passthrough->getFirstChild());
+      passthrough->recursivelyDecReferenceCount();
       }
 
    if ((s->comp()->useCompressedPointers() &&
@@ -13044,6 +13283,11 @@ TR::Node* removeArithmeticsUnderIntegralCompare(TR::Node* node,
 
 TR::Node *ificmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13165,6 +13409,11 @@ TR::Node *ificmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *ificmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13267,6 +13516,11 @@ TR::Node *ificmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *ificmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13311,6 +13565,11 @@ TR::Node *ificmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *ificmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13355,6 +13614,11 @@ TR::Node *ificmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *ificmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13399,6 +13663,11 @@ TR::Node *ificmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *ificmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13446,6 +13715,11 @@ TR::Node *ificmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *iflcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13485,6 +13759,11 @@ TR::Node *iflcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *iflcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13524,6 +13803,11 @@ TR::Node *iflcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *iflcmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13561,6 +13845,11 @@ TR::Node *iflcmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *iflcmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13598,6 +13887,11 @@ TR::Node *iflcmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *iflcmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13635,6 +13929,11 @@ TR::Node *iflcmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *iflcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    simplifyChildren(node, block, s);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
@@ -13896,6 +14195,11 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
 
 TR::Node *ifacmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
    simplifyChildren(node, block, s);
@@ -13929,6 +14233,11 @@ TR::Node *ifacmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 //
 TR::Node *ifacmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   // Perform a simplification for the case where an iselect is compared to a
+   // constant. This is done before simplifyChildren because it may allow
+   // further transformations to be done on the children.
+   simplifyISelectCompare(node, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
    simplifyChildren(node, block, s);
@@ -15448,6 +15757,34 @@ TR::Node *endBlockSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 // Select
 //
 
+/**
+ * \brief
+ *    Helper function for selectSimplifier which returns true if the given tree
+ *    can be considered a boolean expression.
+ *
+ * \details
+ *    To be considered a boolean expression, the tree must be comprised of
+ *    comparisons, integer selects, or constant values of zero or one.
+ *
+ * \param node
+ *    The node to check.
+ *
+ * \return
+ *    True if node is a boolean expression. False otherwise.
+ */
+static bool isBooleanExpression(TR::Node *node)
+   {
+   if (node->getOpCode().isBooleanCompare() && !node->getOpCode().isBranch())
+      return true;
+   if (node->getOpCode().isBitwiseLogical())
+      return isBooleanExpression(node->getFirstChild()) && isBooleanExpression(node->getSecondChild());
+   if (node->getOpCode().isSelect() && node->getOpCode().isInteger())
+      return isBooleanExpression(node->getChild(1)) && isBooleanExpression(node->getChild(2));
+   if (node->getOpCode().isLoadConst() && node->getOpCode().isInteger())
+      return node->get64bitIntegralValue() == 0 || node->get64bitIntegralValue() == 1;
+   return false;
+   }
+
 TR::Node *selectSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    simplifyChildren(node, block, s);
@@ -15467,6 +15804,113 @@ TR::Node *selectSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
       if (node->getChild(1)->getOpCode().isInteger() && node->getChild(2)->getOpCode().isInteger())
          if (node->getChild(1)->get64bitIntegralValue() == node->getChild(2)->get64bitIntegralValue())
             return s->replaceNode(node, node->getChild(1), s->_curTree);
+
+   if (node->getOpCode().isInteger()
+       && node->getFirstChild()->getOpCode().isBooleanCompare()
+       && !node->getFirstChild()->getOpCode().isBranch()
+       && node->getChild(1)->getOpCode().isInteger()
+       && node->getChild(2)->getOpCode().isInteger()
+       && node->getDataType() == node->getFirstChild()->getDataType())
+      {
+      // handle case of integer select of the form:
+      //    select
+      //       condition
+      //       const 0/1
+      //       const 0/1
+      // where the two consts are NOT equal (0 == 0 or 1 == 1 was handled above)
+      if (node->getChild(1)->getOpCode().isLoadConst()
+          && node->getChild(2)->getOpCode().isLoadConst())
+         {
+         if (node->getChild(1)->get64bitIntegralValue() == 1
+             && node->getChild(2)->get64bitIntegralValue() == 0)
+            {
+            if (performTransformation(s->comp(), "%sReplacing select with children of constant values 1 and 0 at [" POINTER_PRINTF_FORMAT "] its condition at [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node, node->getFirstChild()))
+               return s->replaceNode(node, node->getFirstChild(), s->_curTree);
+            }
+         else if (node->getChild(1)->get64bitIntegralValue() == 0
+             && node->getChild(2)->get64bitIntegralValue() == 1)
+            {
+            TR::Node *replacement = NULL;
+            if (node->getFirstChild()->getReferenceCount() == 1)
+               {
+               if (performTransformation(s->comp(), "%sReplacing select with children of constant values 0 and 1 at [" POINTER_PRINTF_FORMAT "] with its condition reversed\n", s->optDetailString(), node))
+                  {
+                  TR::Node *replacement = node->getFirstChild();
+                  TR::Node::recreate(replacement, replacement->getOpCode().getOpCodeForReverseBranch());
+                  return s->replaceNode(node, replacement, s->_curTree);
+                  }
+               }
+            else
+               {
+               if (performTransformation(s->comp(), "%sReplacing select with children of constant values 0 and 1 at [" POINTER_PRINTF_FORMAT "] with its condition reversed\n", s->optDetailString(), node))
+                  {
+                  s->anchorChildren(node->getFirstChild(), s->_curTree);
+                  TR::Node *replacement = TR::Node::create(node->getFirstChild(), node->getFirstChild()->getOpCode().getOpCodeForReverseBranch(), 2,
+                                   node->getFirstChild()->getFirstChild(), node->getFirstChild()->getSecondChild());
+                  return s->replaceNode(node, replacement, s->_curTree);
+                  }
+               }
+            }
+         }
+      // handle case of integer select of the form:
+      //    select
+      //       condition
+      //       boolean expression
+      //       const 0/1
+      // or of the form:
+      //    select
+      //       condition
+      //       const 0/1
+      //       boolean expression
+      else if ((node->getChild(2)->getOpCode().isLoadConst()
+                && isBooleanExpression(node->getChild(1)))
+               || (node->getChild(1)->getOpCode().isLoadConst()
+                   && isBooleanExpression(node->getChild(2))))
+         {
+         TR::Node *replacement = NULL;
+         if (node->getChild(2)->getOpCode().isLoadConst())
+            {
+            TR::Node *cond1 = node->getChild(0);
+            TR::Node *cond2 = node->getChild(1);
+            if (node->getChild(2)->get64bitIntegralValue() == 0)
+               {
+               replacement = TR::Node::create(node, TR::iand, 2,
+                                cond1, cond2);
+               }
+            else
+               {
+               if (cond1->getReferenceCount() > 1)
+                  s->anchorChildren(cond1, s->_curTree);
+               replacement = TR::Node::create(node, TR::ior, 2,
+                                TR::Node::create(cond1, cond1->getOpCode().getOpCodeForReverseBranch(), 2, cond1->getFirstChild(), cond1->getSecondChild()),
+                                cond2);
+               }
+            }
+         else
+            {
+            TR::Node *cond1 = node->getChild(0);
+            TR::Node *cond2 = node->getChild(2);
+            if (node->getChild(1)->get64bitIntegralValue() == 0)
+               {
+               if (cond1->getReferenceCount() > 1)
+                  s->anchorChildren(cond1, s->_curTree);
+               replacement = TR::Node::create(node, TR::iand, 2,
+                                TR::Node::create(cond1, cond1->getOpCode().getOpCodeForReverseBranch(), 2, cond1->getFirstChild(), cond1->getSecondChild()),
+                                cond2);
+               }
+            else
+               {
+               replacement = TR::Node::create(node, TR::ior, 2, cond1, cond2);
+               }
+            }
+         if (performTransformation(s->comp(), "%sReplacing select tree of constant leaves at [" POINTER_PRINTF_FORMAT "] with equivalent boolean compare tree at [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node, replacement))
+            {
+            if (node->getReferenceCount() > 1)
+               s->anchorNode(node, s->_curTree);
+            return s->replaceNode(node, replacement, s->_curTree);
+            }
+         }
+      }
 
    return node;
    }

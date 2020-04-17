@@ -291,7 +291,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableDataCacheReclamation",        "I\tdisable the reaping of data caches when they are no longer needed.", SET_OPTION_BIT(TR_DisableDataCacheReclamation),"F", NOT_IN_SUBSET},
    {"disableDeadStoreBailOut",            "O\tdisable bail out of dead store", SET_OPTION_BIT(TR_DisableDeadStoreBailOut), "F"},
    {"disableDeadTreeElimination",         "O\tdisable dead tree elimination",                  TR::Options::disableOptimization, deadTreesElimination, 0, "P"},
-   {"disableDecimalFormatPeephole",       "O\tdisable optimizing DecimalFormat.format(BigDecimal.doubleValue())", SET_OPTION_BIT(TR_DisableDecimalFormatPeephole), "P"},
    {"disableDelayRelocationForAOTCompilations", "M\tDo not relocate code for AOT compilations right away", SET_OPTION_BIT(TR_DisableDelayRelocationForAOTCompilations), "F" },
    {"disableDememoization",               "O\talways call \"memoizing\" getters (like Integer.valueOf) rather than having Escape Analysis turn them into noncontiguous stack allocations", SET_OPTION_BIT(TR_DisableDememoization), "F"},
    {"disableDirectMemoryOps",             "O\tdisable generation of direct memory instructions",SET_OPTION_BIT(TR_DisableDirectMemoryOps), "F"},
@@ -2456,12 +2455,6 @@ OMR::Options::jitPreProcess()
    // --------------------------------------------------------------------------
    // All projects
    //
-
-   // Disable decimal format peephole due to multiple bugs.
-   // Can be re-enabled with -Xjit:!disableDecimalFormatPeephole
-   // The optimisation will be completely removed once issue
-   // #4236 is complete
-   self()->setOption(TR_DisableDecimalFormatPeephole);
 
    self()->setOption(TR_RestrictStaticFieldFolding);
 

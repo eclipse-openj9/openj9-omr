@@ -5828,68 +5828,28 @@ OMR::Z::TreeEvaluator::aloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::aiaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   TR::Register * targetRegister = cg->allocateRegister();
-   TR::Node * firstChild = node->getFirstChild();
-   TR::MemoryReference * aiaddMR = generateS390MemoryReference(cg);
-   TR::Compilation *comp = cg->comp();
-
-   aiaddMR->populateAddTree(node, cg);
-   aiaddMR->eliminateNegativeDisplacement(node, cg);
-   aiaddMR->enforceDisplacementLimit(node, cg, NULL);
-
-   if (node->getOpCodeValue() == TR::aiadd && node->isInternalPointer())
-      {
-      if (node->getPinningArrayPointer())
-         {
-         targetRegister->setContainsInternalPointer();
-         targetRegister->setPinningArrayPointer(node->getPinningArrayPointer());
-         }
-      else if (firstChild->getOpCodeValue() == TR::aload &&
-         firstChild->getSymbolReference()->getSymbol()->isAuto() &&
-         firstChild->getSymbolReference()->getSymbol()->isPinningArrayPointer())
-         {
-         targetRegister->setContainsInternalPointer();
-         if (!firstChild->getSymbolReference()->getSymbol()->isInternalPointer())
-            {
-            targetRegister->setPinningArrayPointer(firstChild->getSymbolReference()->getSymbol()->castToAutoSymbol());
-            }
-         else
-            {
-            targetRegister->setPinningArrayPointer(firstChild->getSymbolReference()->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
-            }
-         }
-      else if (firstChild->getRegister() != NULL && firstChild->getRegister()->containsInternalPointer())
-         {
-         targetRegister->setContainsInternalPointer();
-         targetRegister->setPinningArrayPointer(firstChild->getRegister()->getPinningArrayPointer());
-         }
-      }
-
-   generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, aiaddMR);
-   node->setRegister(targetRegister);
-
-   return targetRegister;
+   return OMR::Z::TreeEvaluator::axaddEvaluator(node, cg);
    }
 
-/**
- * Handles TR_Aladd on 64-bit
- */
 TR::Register *
 OMR::Z::TreeEvaluator::aladdEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
+   return OMR::Z::TreeEvaluator::axaddEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::Z::TreeEvaluator::axaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
+   {
    TR::Compilation *comp = cg->comp();
-   TR_ASSERT(cg->comp()->target().is64Bit(), "aladd should not be seen on 32-bit");
-
    TR::Register * targetRegister = cg->allocateRegister();
-
    TR::Node * firstChild = node->getFirstChild();
-   TR::MemoryReference * aladdMR = generateS390MemoryReference(cg);
+   TR::MemoryReference * axaddMR = generateS390MemoryReference(cg);
 
-   aladdMR->populateAddTree(node, cg);
-   aladdMR->eliminateNegativeDisplacement(node, cg);
-   aladdMR->enforceDisplacementLimit(node, cg, NULL);
+   axaddMR->populateAddTree(node, cg);
+   axaddMR->eliminateNegativeDisplacement(node, cg);
+   axaddMR->enforceDisplacementLimit(node, cg, NULL);
 
-   if (node->getOpCodeValue() == TR::aladd && node->isInternalPointer())
+   if (node->isInternalPointer())
       {
       if (node->getPinningArrayPointer())
          {
@@ -5917,7 +5877,7 @@ OMR::Z::TreeEvaluator::aladdEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          }
       }
 
-   generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, aladdMR);
+   generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, axaddMR);
    node->setRegister(targetRegister);
 
    return targetRegister;

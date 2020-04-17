@@ -130,6 +130,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *aiaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *aladdEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *axaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *laddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *faddEvaluator(TR::Node *node, TR::CodeGenerator *cg);

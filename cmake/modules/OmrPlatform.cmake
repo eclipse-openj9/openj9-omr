@@ -136,9 +136,9 @@ function(omr_add_exports target)
 	omr_process_exports(${target})
 endfunction()
 
-# omr_split_debug(<target>)
-# Moves debug info from a target to a separate file.
-function(omr_split_debug target)
+# omr_process_split_debug(<target>)
+#   Process a target to generate split debug info if requested/required
+function(omr_process_split_debug target)
 	omr_assert(FATAL_ERROR TEST TARGET ${target} MESSAGE "omr_split_debug called on invalid target '${target}'")
 
 	# if we have already processed this target, skip it
@@ -147,11 +147,30 @@ function(omr_split_debug target)
 		return()
 	endif()
 
-	if(COMMAND _omr_toolchain_separate_debug_symbols)
-		_omr_toolchain_separate_debug_symbols("${target}")
-	endif()
-
 	set_target_properties(${target} PROPERTIES OMR_SPLIT_DEBUG_PROCESSED TRUE)
+
+	get_target_property(target_type "${target}" TYPE)
+
+	# Only try making split debug info for exes/shared libs, and only if we have support from the toolchain
+	if((target_type MATCHES "EXECUTABLE|SHARED_LIBRARY") AND (COMMAND _omr_toolchain_separate_debug_symbols))
+		# Default to using config option.
+		set(use_split_debug ${OMR_SEPARATE_DEBUG_INFO})
+
+		# OMR_SEPARATE_DEBUG_INFO has no impact on Windows since it already
+		# uses separate .pdb files.
+		if(OMR_OS_WINDOWS)
+			set(use_split_debug FALSE)
+		endif()
+
+		# DDR requires separate debug info on OSX.
+		if(OMR_OS_OSX)
+			set(use_split_debug TRUE)
+		endif()
+
+		if(use_split_debug)
+			_omr_toolchain_separate_debug_symbols("${target}")
+		endif()
+	endif()
 endfunction()
 
 ###

@@ -146,27 +146,15 @@ function(target_enable_ddr tgt)
 		"$<JOIN:$<TARGET_PROPERTY:${tgt},DDR_PREINCLUDES>,\n>"
 	)
 	if((target_type MATCHES "EXECUTABLE|SHARED_LIBRARY") AND (NOT opt_NO_DEBUG_INFO))
-		# Default to using config option.
-		set(use_split_debug ${OMR_SEPARATE_DEBUG_INFO})
 
-		# OMR_SEPARATE_DEBUG_INFO has no impact on Windows since it already
-		# uses separate .pdb files.
-		if(OMR_OS_WINDOWS)
-			set(use_split_debug FALSE)
+		get_target_property(debug_file "${tgt}" OMR_DEBUG_FILE)
+
+		# if no value is present, assume the debug info lives in the target file
+		if(debug_file STREQUAL "")
+			set(debug_file "$<TARGET_FILE:${tgt}>")
 		endif()
 
-		# DDR requires separate debug info on OSX.
-		if(OMR_OS_OSX)
-			set(use_split_debug TRUE)
-		endif()
-
-		if(use_split_debug)
-			set(MAGIC_TEMPLATE "OUTPUT_FILE\n$<TARGET_FILE:${tgt}>.dbg\n${MAGIC_TEMPLATE}")
-			# Add rules to generate the split debug info
-			omr_split_debug("${tgt}")
-		else()
-			set(MAGIC_TEMPLATE "OUTPUT_FILE\n$<TARGET_FILE:${tgt}>\n${MAGIC_TEMPLATE}")
-		endif()
+		set(MAGIC_TEMPLATE "OUTPUT_FILE\n${debug_file}\n${MAGIC_TEMPLATE}")
 	endif()
 
 	file(GENERATE OUTPUT "${DDR_INFO_DIR}/targets/${tgt}.txt" CONTENT "${MAGIC_TEMPLATE}\n")

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,7 +23,7 @@ include(OmrAssert)
 
 omr_assert(TEST OMR_EXAMPLE)
 
-add_library(omr_example_base INTERFACE)
+omr_add_library(omr_example_base INTERFACE)
 
 target_include_directories(omr_example_base
 	INTERFACE
@@ -37,7 +37,7 @@ target_link_libraries(omr_example_base
 
 # The GC example shows how to use OMR's GC component
 if(OMR_GC)
-	add_executable(gcexample
+	omr_add_executable(gcexample
 		gcmain.cpp
 	)
 

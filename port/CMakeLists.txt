@@ -39,7 +39,7 @@ add_tracegen(common/omrport.tdf)
 
 # Logic below will set the target_includes, and supplement the
 # target_sources
-add_library(omrport_obj OBJECT
+omr_add_library(omrport_obj OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/ut_omrport.c
 )
 
@@ -428,7 +428,7 @@ ddr_set_add_targets(omrddr omrport_obj)
 ### omrport static lib
 ###
 
-add_library(omrport STATIC
+omr_add_library(omrport STATIC
 	$<TARGET_OBJECTS:omrport_obj>
 )
 

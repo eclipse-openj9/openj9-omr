@@ -41,6 +41,7 @@ include(OmrHookgen)
 include(OmrOption)
 include(OmrPlatform)
 include(OmrTracegen)
+include(OmrTargetSupport)
 include(OmrSanitizerSupport)
 
 ###
@@ -75,7 +76,7 @@ enable_testing()
 ### omr_base: basic includes and definitions needed everywhere
 ###
 
-add_library(omr_base INTERFACE)
+omr_add_library(omr_base INTERFACE)
 
 target_include_directories(omr_base
 	INTERFACE

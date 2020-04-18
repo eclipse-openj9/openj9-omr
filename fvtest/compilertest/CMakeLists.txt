@@ -67,7 +67,7 @@ create_omr_compiler_library(
 # Export paths for dependent objects
 make_compiler_target(testcompiler INTERFACE COMPILER testcompiler)
 
-add_executable(compilertest
+omr_add_executable(compilertest
 	tests/main.cpp
 	tests/BuilderTest.cpp
 	tests/FooBarTest.cpp

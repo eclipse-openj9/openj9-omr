@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -111,7 +111,7 @@ include_directories(common)
 
 #TODO also should be able to build dynamic lib
 
-add_library(j9thr_obj OBJECT
+omr_add_library(j9thr_obj OBJECT
 	${resolvedPaths}
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9thr.c
 )
@@ -143,7 +143,7 @@ ddr_add_headers(j9thr_obj
 )
 ddr_set_add_targets(omrddr j9thr_obj)
 
-add_library(j9thrstatic STATIC
+omr_add_library(j9thrstatic STATIC
 	$<TARGET_OBJECTS:j9thr_obj>
 )
 

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,7 +26,7 @@ set(j9avl_public_headers
 	"${omr_SOURCE_DIR}/include_core/avl_api.h"
 )
 
-add_library(j9avl STATIC
+omr_add_library(j9avl STATIC
 	avlsup.c
 	${CMAKE_CURRENT_BINARY_DIR}/ut_avl.c
 )

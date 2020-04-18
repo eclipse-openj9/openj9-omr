@@ -50,7 +50,7 @@ add_tracegen(verbose/j9vgc.tdf)
 
 # Ideally We would handle the tracegen stuff like the hookgen stuff above
 # But for whatever reason that breaks the ninja builds
-add_library(omrgc_tracegen OBJECT
+omr_add_library(omrgc_tracegen OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9mm.c
 	${CMAKE_CURRENT_BINARY_DIR}/ut_omrmm.c
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9vgc.c
@@ -66,7 +66,7 @@ target_compile_definitions(omrgc_tracegen
 		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
 )
 
-add_library(omrgc STATIC
+omr_add_library(omrgc STATIC
 	base/AddressOrderedListPopulator.cpp
 	base/AllocationContext.cpp
 	base/AllocationInterfaceGeneric.cpp

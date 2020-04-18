@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,7 +34,7 @@ set(VPATH "")
 
 add_tracegen(utilcore.tdf j9utilcore)
 
-add_library(omrutil_obj OBJECT
+omr_add_library(omrutil_obj OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9utilcore.c
 )
 
@@ -159,7 +159,7 @@ target_include_directories(omrutil_obj PUBLIC $<TARGET_PROPERTY:${OMR_UTIL_GLUE_
 target_enable_ddr(omrutil_obj)
 ddr_set_add_targets(omrddr omrutil_obj)
 
-add_library(omrutil STATIC
+omr_add_library(omrutil STATIC
 	$<TARGET_OBJECTS:omrutil_obj>
 )
 

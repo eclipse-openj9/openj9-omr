@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,7 +35,7 @@ omr_assert(
 	MESSAGE "OMR_RAS_GLUE_TARGET must be set. Try using the example with OMR_EXAMPLE=ON"
 )
 
-add_library(omrcore STATIC
+omr_add_library(omrcore STATIC
 	OMR_Agent.cpp
 	OMR_MethodDictionary.cpp
 	OMR_Profiler.cpp

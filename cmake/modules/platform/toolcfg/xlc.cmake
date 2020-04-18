@@ -219,5 +219,6 @@ else()
 			COMMAND "${CMAKE_COMMAND}" -E copy ${exe_file} ${dbg_file}
 			COMMAND "${CMAKE_STRIP}" -X32_64 -t ${exe_file}
 		)
+		set_target_properties(${tgt} PROPERTIES OMR_DEBUG_FILE "${dbg_file}")
 	endfunction()
 endif()

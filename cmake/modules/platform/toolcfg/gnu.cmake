@@ -103,6 +103,7 @@ function(_omr_toolchain_separate_debug_symbols tgt)
 			COMMAND "${CMAKE_OBJCOPY}" "--add-gnu-debuglink=${dbg_file}" "${exe_file}"
 		)
 	endif()
+	set_target_properties(${tgt} PROPERTIES OMR_DEBUG_FILE "${dbg_file}")
 endfunction()
 
 function(_omr_toolchain_process_exports TARGET_NAME)

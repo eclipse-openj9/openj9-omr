@@ -101,6 +101,10 @@ add_library(sltestlib SHARED
 	sltestlib/sltest.c
 )
 
+omr_add_exports(sltestlib
+	sl_test1_function
+)
+
 target_compile_options(sltestlib
 	PRIVATE
 		${OMR_PLATFORM_SHARED_COMPILE_OPTIONS}

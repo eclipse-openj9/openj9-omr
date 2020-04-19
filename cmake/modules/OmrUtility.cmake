@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -118,4 +118,24 @@ function(omr_process_template input output)
 	file(READ "${input_abs}" template)
 	string(CONFIGURE "${template}" configured_template ${configure_args})
 	file(GENERATE OUTPUT "${output}" CONTENT "${configured_template}")
+endfunction()
+
+# omr_count_true(<out_var> [<values>...] [VARIABLES <variables>...])
+#   count the nuber of <values> and <variables> which evaluate to true
+#   return the result in <out_var>
+function(omr_count_true out)
+	cmake_parse_arguments(opt "" "" "VARIABLES" ${ARGN})
+	set(result 0)
+	foreach(str IN LISTS opt_UNPARSED_ARGUMENTS)
+		if(str)
+			set(result "${result}+1")
+		endif()
+	endforeach()
+	foreach(str IN LISTS opt_VARIABLES)
+		if("${${str}}")
+			set(result "${result}+1")
+		endif()
+	endforeach()
+	math(EXPR result "${result}")
+	set("${out}" "${result}" PARENT_SCOPE)
 endfunction()

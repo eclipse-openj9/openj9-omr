@@ -53,10 +53,10 @@ class NativeToJitCallMethod : public OMR::JitBuilder::MethodBuilder
 class JitToJitCallMethod : public OMR::JitBuilder::MethodBuilder
    {
    public:
-   JitToJitCallMethod(OMR::JitBuilder::TypeDictionary *types, const char *jitMethodName, void *entry);
+   JitToJitCallMethod(OMR::JitBuilder::TypeDictionary *types, OMR::JitBuilder::MethodBuilder *jitMethodBuilder);
    virtual bool buildIL();
 
-   const char *jitMethodName;
+   OMR::JitBuilder::MethodBuilder *jitMethodBuilder;
    };
 
 #endif // !defined(CALL_INCL)

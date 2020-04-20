@@ -673,6 +673,31 @@ public:
 
    TR_OpaqueMethodBlock * getOwningMethod();
 
+   /** \brief
+    *  Used to get the ram method from the Bytecode Info.
+    * 
+    *  \param *comp
+    *  _compilation of type TR::Compilation
+    * 
+    *  @return 
+    *  Returns the ram method (TR_OpaqueMethodBlock)  from function call getOwningMethod(TR::Compilation *comp, TR_ByteCodeInfo &bcInfo)
+    */
+   TR_OpaqueMethodBlock* getOwningMethod(TR::Compilation *comp);
+
+   /** \brief
+    *  Used to get the ram method from the Bytecode Info.
+    * 
+    *  \param *comp
+    *  _compilation of type TR::Compilation
+    * 
+    *  \param &bcInfo 
+    *  _byteCodeInfo of a node of type TR::Node  
+    * 
+    *  @return 
+    *  Returns the ram method (TR_OpaqueMethodBlock)
+    */
+   static TR_OpaqueMethodBlock* getOwningMethod(TR::Compilation *comp, TR_ByteCodeInfo &bcInfo);
+
    inline TR::DataType    getType();
 
    // TODO: Sink into J9. Depends on OMR::Compilation::getMethodFromNode

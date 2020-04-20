@@ -2035,7 +2035,9 @@ OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, TR::IlValue *
    calleeMB->setReturnBuilder(returnBuilder);
 
    // get calleeMB ready to be part of this compilation
-   // MUST be the OMR::IlBuilder implementation, not the OMR::MethodBuilder one
+   // call initialize on calleeMB in case it has earlier been used outside of this compilation
+   calleeMB->initialize(_details, _methodSymbol, _fe, _symRefTab);
+   // setupBuilderForIL MUST be the OMR::IlBuilder implementation, not the OMR::MethodBuilder one
    calleeMB->OMR::IlBuilder::setupForBuildIL();
 
    // store arguments into parameter values

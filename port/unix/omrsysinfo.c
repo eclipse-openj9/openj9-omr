@@ -233,6 +233,10 @@ static intptr_t omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLi
 #define __power_9() (_system_configuration.implementation == POWER_9)
 #endif /* !defined(__power_9) */
 
+#if defined(J9OS_I5_V6R1) /* vmx_version id only available since TL4 */
+#define __power_vsx() (_system_configuration.vmx_version > 1)
+#endif
+
 #if !defined(J9OS_I5_V7R2) && !defined(J9OS_I5_V6R1)
 /* both i 7.1 and i 7.2 do not support this function */
 #if !defined(SC_TM_VER)

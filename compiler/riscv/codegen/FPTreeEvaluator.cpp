@@ -623,9 +623,9 @@ OMR::RV::TreeEvaluator::fcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return compareHelper(node, TR::InstOpCode::_feq_d, false, cg);
-	}
+   {
+   return compareHelper(node, TR::InstOpCode::_feq_d, false, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -635,9 +635,9 @@ OMR::RV::TreeEvaluator::dcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return compareHelper(node, TR::InstOpCode::_flt_d, false, cg);
-	}
+   {
+   return compareHelper(node, TR::InstOpCode::_flt_d, false, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)

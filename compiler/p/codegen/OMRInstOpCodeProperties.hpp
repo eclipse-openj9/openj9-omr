@@ -73,7 +73,7 @@
    /* .name        = */ "add",
    /* .description =    "Add", */
    /* .opcode      = */ 0x7C000214,
-   /* .format      = */ FORMAT_RT_RA_RB_MEM,
+   /* .format      = */ FORMAT_RT_RA_RB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_HasRecordForm |
                         PPCOpProp_SyncSideEffectFree,

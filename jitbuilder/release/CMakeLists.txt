@@ -26,7 +26,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 macro(create_jitbuilder_test target)
-	add_executable(${target} ${ARGN})
+	omr_add_executable(${target} ${ARGN})
 	target_include_directories(${target} PUBLIC cpp/include)
 	target_link_libraries(${target}
 		jitbuilder

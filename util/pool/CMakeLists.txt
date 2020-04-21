@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,7 +24,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_tracegen(pool.tdf)
 
-add_library(j9pool STATIC
+omr_add_library(j9pool STATIC
 	pool.c
 	pool_cap.c
 	${CMAKE_CURRENT_BINARY_DIR}/ut_pool.c

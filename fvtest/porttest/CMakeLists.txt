@@ -49,7 +49,7 @@ if((OMR_PORT_SOCKET_SUPPORT) AND (NOT OMR_HOST_OS STREQUAL "win"))
 	)
 endif()
 
-add_executable(omrporttest
+omr_add_executable(omrporttest
 	fileTest.cpp
 	heapTest.cpp
 	omrportTest.cpp
@@ -97,7 +97,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 	target_link_libraries(omrporttest j9a2e)
 endif()
 
-add_library(sltestlib SHARED
+omr_add_library(sltestlib SHARED
 	sltestlib/sltest.c
 )
 
@@ -111,7 +111,7 @@ target_compile_options(sltestlib
 )
 
 if(OMR_HOST_OS STREQUAL "aix")
-	add_library(aixbaddep SHARED
+	omr_add_library(aixbaddep SHARED
 		aixbaddep/sltest.c
 	)
 

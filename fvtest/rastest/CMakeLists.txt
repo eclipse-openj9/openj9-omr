@@ -28,7 +28,7 @@ endif()
 add_tracegen(omr_test.tdf)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(bindthreadagent SHARED
+omr_add_library(bindthreadagent SHARED
 	bindthreadagent.c
 	omragent.def
 )
@@ -40,7 +40,7 @@ omr_add_exports(bindthreadagent
 	OMRAgent_OnUnload
 )
 
-add_library(memorycategoriesagent SHARED
+omr_add_library(memorycategoriesagent SHARED
 	memorycategoriesagent.c
 	omragent.def
 )
@@ -52,7 +52,7 @@ omr_add_exports(memorycategoriesagent
 	OMRAgent_OnUnload
 )
 
-add_library(traceagent SHARED
+omr_add_library(traceagent SHARED
 	traceagent.c
 	omragent.def
 )
@@ -64,7 +64,7 @@ omr_add_exports(traceagent
 	OMRAgent_OnUnload
 )
 
-add_library(traceNotStartedAgent SHARED
+omr_add_library(traceNotStartedAgent SHARED
 	traceNotStartedAgent.c
 	omragent.def
 )
@@ -76,7 +76,7 @@ omr_add_exports(traceNotStartedAgent
 	OMRAgent_OnUnload
 )
 
-add_library(cpuLoadAgent SHARED
+omr_add_library(cpuLoadAgent SHARED
 	cpuLoadAgent.c
 	omragent.def
 )
@@ -88,7 +88,7 @@ omr_add_exports(cpuLoadAgent
 	OMRAgent_OnUnload
 )
 
-add_library(invalidAgentMissingOnLoad SHARED
+omr_add_library(invalidAgentMissingOnLoad SHARED
 	invalidAgentMissingOnLoad.c
 	invalidAgentMissingOnLoad.def
 )
@@ -99,7 +99,7 @@ omr_add_exports(invalidAgentMissingOnLoad
 	OMRAgent_OnUnload
 )
 
-add_library(invalidAgentMissingOnUnload SHARED
+omr_add_library(invalidAgentMissingOnUnload SHARED
 	invalidAgentMissingOnUnload.c
 	invalidAgentMissingOnUnload.def
 )
@@ -110,7 +110,7 @@ omr_add_exports(invalidAgentMissingOnUnload
 	OMRAgent_OnLoad
 )
 
-add_library(invalidAgentReturnError SHARED
+omr_add_library(invalidAgentReturnError SHARED
 	invalidAgentReturnError.c
 	omragent.def
 )
@@ -122,7 +122,7 @@ omr_add_exports(invalidAgentReturnError
 	OMRAgent_OnUnload
 )
 
-add_library(sampleSubscriber SHARED
+omr_add_library(sampleSubscriber SHARED
 	sampleSubscriber.c
 	omragent.def
 )
@@ -134,7 +134,7 @@ omr_add_exports(sampleSubscriber
 	OMRAgent_OnUnload
 )
 
-add_library(subscriberAgent SHARED
+omr_add_library(subscriberAgent SHARED
 	subscriberAgent.c
 	omragent.def
 )
@@ -145,7 +145,7 @@ omr_add_exports(subscriberAgent
 	OMRAgent_OnUnload
 )
 
-add_library(subscriberAgentWithJ9thread SHARED
+omr_add_library(subscriberAgentWithJ9thread SHARED
 	subscriberAgentWithJ9thread.c
 	omragent.def
 )
@@ -156,7 +156,7 @@ omr_add_exports(subscriberAgentWithJ9thread
 	OMRAgent_OnUnload
 )
 
-add_library(traceOptionAgent SHARED
+omr_add_library(traceOptionAgent SHARED
 	traceOptionAgent.c
 	omragent.def
 )
@@ -171,7 +171,7 @@ omr_add_exports(traceOptionAgent
 	OMRAgent_OnUnload
 )
 
-add_executable(omrrastest
+omr_add_executable(omrrastest
 	agentNegativeTest.cpp
 	agentTest.cpp
 	main.cpp
@@ -204,7 +204,7 @@ add_dependencies(omrrastest
 	traceNotStartedAgent
 )
 
-add_executable(omrsubscribertest
+omr_add_executable(omrsubscribertest
 	main.cpp
 	rasTestHelpers.cpp
 	subscriberTest.cpp
@@ -226,7 +226,7 @@ add_dependencies(omrsubscribertest
 	subscriberAgentWithJ9thread
 )
 
-add_executable(omrtraceoptiontest
+omr_add_executable(omrtraceoptiontest
 	main.cpp
 	rasTestHelpers.cpp
 	traceOptionTest.cpp

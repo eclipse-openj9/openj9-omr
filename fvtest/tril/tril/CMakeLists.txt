@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,7 +30,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(TRIL_BACKEND_LIB      testcompiler)
 
-add_library(tril STATIC
+omr_add_library(tril STATIC
 	ast.cpp
 	parser.cpp
 	ilgen.cpp
@@ -62,10 +62,10 @@ if(NOT OMR_HOST_OS STREQUAL "win")
 endif()
 
 
-add_executable(tril_dumper compiler.cpp)
+omr_add_executable(tril_dumper compiler.cpp)
 target_link_libraries(tril_dumper tril)
 
-add_executable(tril_compiler compiler.cpp)
+omr_add_executable(tril_compiler compiler.cpp)
 target_link_libraries(tril_compiler tril)
 
 # The platform specific ${TR_CXX_COMPILE_OPTIONS} and ${TR_C_COMPILE_OPTIONS} compile options

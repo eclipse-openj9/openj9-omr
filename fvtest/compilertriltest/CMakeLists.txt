@@ -28,7 +28,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 
-add_executable(comptest
+omr_add_executable(comptest
 	main.cpp
 	JitTestUtilitiesTest.cpp
 	ILValidatorTest.cpp

@@ -495,8 +495,24 @@ bool OMR::ARM64::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumbe
 
 TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type)
    {
-   TR_UNIMPLEMENTED();
-   return 0;
+   TR_GlobalRegisterNumber result;
+
+   if (type == TR::Float || type == TR::Double)
+      {
+      if (linkageRegisterIndex >= self()->getProperties()._numFloatArgumentRegisters)
+         return -1;
+      else
+         result = _fprLinkageGlobalRegisterNumbers[linkageRegisterIndex];
+      }
+   else
+      {
+      if (linkageRegisterIndex >= self()->getProperties()._numIntegerArgumentRegisters)
+         return -1;
+      else
+         result = _gprLinkageGlobalRegisterNumbers[linkageRegisterIndex];
+      }
+
+   return result;
    }
 
 void OMR::ARM64::CodeGenerator::apply24BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label)

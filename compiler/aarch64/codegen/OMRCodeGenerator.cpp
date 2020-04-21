@@ -468,14 +468,24 @@ bool OMR::ARM64::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandi
 
 int32_t OMR::ARM64::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node *node)
    {
-   TR_UNIMPLEMENTED();
-   return 0;
+   if (node->getOpCodeValue() == TR::table)
+      {
+      auto numBranchTableEntries = node->getNumChildren() - 2;
+      return  self()->getNumberOfGlobalGPRs() - ((numBranchTableEntries >= 5) ? 2 : 1);
+      }
+   else if (node->getOpCodeValue() == TR::lookup)
+      {
+      auto numChildren = node->getNumChildren();
+      auto numTmpReg = (!constantIsUnsignedImm12(node->getChild(2)->getCaseConstant())
+         || !constantIsUnsignedImm12(node->getChild(numChildren-1)->getCaseConstant())) ? 2 : 1;
+      return  self()->getNumberOfGlobalGPRs() - numTmpReg;
+      }
+   return INT_MAX;
    }
 
 int32_t OMR::ARM64::CodeGenerator::getMaximumNumberOfFPRsAllowedAcrossEdge(TR::Node *node)
    {
-   TR_UNIMPLEMENTED();
-   return 0;
+   return INT_MAX;
    }
 
 int32_t OMR::ARM64::CodeGenerator::getMaximumNumbersOfAssignableGPRs()

@@ -1027,12 +1027,12 @@ retry:
 			}
 			/* try to use TLH remainder from previous discard */
 			if (((uintptr_t)env->_survivorTLHRemainderTop - (uintptr_t)env->_survivorTLHRemainderBase) >= cacheSize) {
-				Assert_MM_true(NULL != env->_survivorTLHRemainderBase);
-				Assert_MM_true(NULL != env->_survivorTLHRemainderTop);
 				allocateResult = true;
 				addrBase = env->_survivorTLHRemainderBase;
 				addrTop = env->_survivorTLHRemainderTop;
+				Assert_MM_true(NULL != env->_survivorTLHRemainderBase);
 				env->_survivorTLHRemainderBase = NULL;
+				Assert_MM_true(NULL != env->_survivorTLHRemainderTop);
 				env->_survivorTLHRemainderTop = NULL;
 				activateDeferredCopyScanCache(env);
 			} else if (_extensions->tlhSurvivorDiscardThreshold < cacheSize) {
@@ -1139,13 +1139,13 @@ retry:
 			}
 			/* try to use TLH remainder from previous discard. */
 			if (((uintptr_t)env->_tenureTLHRemainderTop - (uintptr_t)env->_tenureTLHRemainderBase) >= cacheSize) {
-				Assert_MM_true(NULL != env->_tenureTLHRemainderBase);
-				Assert_MM_true(NULL != env->_tenureTLHRemainderTop);
 				allocateResult = true;
 				addrBase = env->_tenureTLHRemainderBase;
 				addrTop = env->_tenureTLHRemainderTop;
 				satisfiedInLOA = env->_loaAllocation;
+				Assert_MM_true(NULL != env->_tenureTLHRemainderBase);
 				env->_tenureTLHRemainderBase = NULL;
+				Assert_MM_true(NULL != env->_tenureTLHRemainderTop);
 				env->_tenureTLHRemainderTop = NULL;
 				env->_loaAllocation = false;
 				activateDeferredCopyScanCache(env);
@@ -2025,25 +2025,27 @@ MM_Scavenger::shouldDoFinalNotify(MM_EnvironmentStandard *env)
 	if (_extensions->concurrentScavengeExhaustiveTermination && isCurrentPhaseConcurrent() && !_scavengeCacheFreeList.areAllCachesReturned()) {
 		
 		/* GC threads ran out of work, but not all copy caches are back to the global free pool. They are kept by mutator threads.
-		 * Activate Async Singnal handler which will force Mutator threads to flush their copy caches for scanning. */
+		 * Activate Async Signal handler which will force Mutator threads to flush their copy caches for scanning. */
 		_delegate.signalThreadsToFlushCaches(env);
 
 		/* If no work has been created and no one requested to yeild meanwhile, go and wait for new work */
-		if ((0 == _cachedEntryCount) && !checkAndSetShouldYieldFlag(env)) {
-			Assert_MM_true(!_scavengeCacheFreeList.areAllCachesReturned());
+		if (!checkAndSetShouldYieldFlag(env)) {
+			if (0 == _cachedEntryCount) {
+				Assert_MM_true(!_scavengeCacheFreeList.areAllCachesReturned());
 
-			/* The only known reason for timeout is a rare case if Exclusive VM Access request came from a nonGC party. If we did not have a timeout,
-			 * we would end up wating for mutator threads that hold Copy Caches, but they would not respond if they already released VM access
-			 * and blocked due to ongoing Exclusive, hence creating deadlock. Timeout of 1ms gives a chance to check if we should yield and release VM access.
-			 * Alternative solutions to providing timeout to consider in future:
-			 * 1) notify (via hook) GC that Exclusive is requested (proven to work, but breaks general async nature of how Exclusive Request is requested)
-			 * 2) release VM access prior to blocking (tricky since thread that blocks is not necessarily Master, which is the one that holds VM access)
-			 */
-			omrthread_monitor_wait_timed(_scanCacheMonitor, 1000, 0);
+				/* The only known reason for timeout is a rare case if Exclusive VM Access request came from a nonGC party. If we did not have a timeout,
+				 * we would end up wating for mutator threads that hold Copy Caches, but they would not respond if they already released VM access
+				 * and blocked due to ongoing Exclusive, hence creating deadlock. Timeout of 1ms gives a chance to check if we should yield and release VM access.
+				 * Alternative solutions to providing timeout to consider in future:
+				 * 1) notify (via hook) GC that Exclusive is requested (proven to work, but breaks general async nature of how Exclusive Request is requested)
+				 * 2) release VM access prior to blocking (tricky since thread that blocks is not necessarily Master, which is the one that holds VM access)
+				 */
+				omrthread_monitor_wait_timed(_scanCacheMonitor, 1000, 0);
+			}
+			/* We know there is more work - can't do the final notify yet. Need to help with work and eventually re-evaulate if it's really the end */
+			return false;
 		}
-
-		/* We know there is more work - can't do the final notify yet. Need to help with work and eventually re-evaulate if it's really the end */
-		return false;
+		/* If we have to yield, we do need to notify slave threads to unblock and temporarily completely scan loop */
 	}
 #endif /* #if defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	return true;
@@ -3285,6 +3287,8 @@ MM_Scavenger::abandonSurvivorTLHRemainder(MM_EnvironmentStandard *env)
 		_survivorMemorySubSpace->abandonHeapChunk(env->_survivorTLHRemainderBase, env->_survivorTLHRemainderTop);
 		env->_survivorTLHRemainderBase = NULL;
 		env->_survivorTLHRemainderTop = NULL;
+	} else {
+		Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
 	}
 }
 
@@ -3305,6 +3309,8 @@ MM_Scavenger::abandonTenureTLHRemainder(MM_EnvironmentStandard *env, bool preser
 			saveMasterThreadTenureTLHRemainders(env);
 		}
 		env->_loaAllocation = false;
+	} else {
+		Assert_MM_true(NULL == env->_tenureTLHRemainderTop);
 	}
 }
 
@@ -5051,18 +5057,10 @@ MM_Scavenger::handleInactiveSurvivorCopyScanCache(MM_EnvironmentStandard *curren
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 				currentEnv->_scavengerStats._releaseScanListCount += 1;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
-				if (final) {
-					/* Even if currentEnv != targetEnv, at this final point it should be safe to use target thread env,
-					 * since the mutator thread does not have VM access and we won't race it
-					 */
-					clearCache(targetEnv, cache);
-				} else {
-					clearCache(currentEnv, cache);
-					if (flushCaches) {
-						/* it's unfortunate, but we cannot preserve remainders */
-						abandonSurvivorTLHRemainder(currentEnv);
-					}
-				}
+				/* Even if currentEnv != targetEnv, it should be safe to use target thread env,
+				 * since the mutator thread does not have VM access and we won't race it
+				 */
+				clearCache(targetEnv, cache);
 				/* notify is only needed by the end of concurrent phase */
 				addCacheEntryToScanListAndNotify(targetEnv, cache);
 			}
@@ -5120,18 +5118,10 @@ MM_Scavenger::handleInactiveTenureCopyScanCache(MM_EnvironmentStandard *currentE
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 				targetEnv->_scavengerStats._releaseScanListCount += 1;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
-				if (final) {
-					/* Even if currentEnv != targetEnv, at this final point it should be safe to use target thread env,
-					 * since the mutator thread does not have VM access and we won't race it
-					 */
-					clearCache(targetEnv, cache);
-				} else {
-					clearCache(currentEnv, cache);
-					if (flushCaches) {
-						/* it's unfortunate, but we cannot preserve remainders */
-						abandonTenureTLHRemainder(currentEnv, false);
-					}
-				}
+				/* Even if currentEnv != targetEnv, t should be safe to use target thread env,
+				 * since the mutator thread does not have VM access and we won't race it
+				 */
+				clearCache(targetEnv, cache);
 				addCacheEntryToScanListAndNotify(targetEnv, cache);
 			}
 			/* else we failed to push inactive cache since mutator thread reactivacted it -> concurrent cycle continues */

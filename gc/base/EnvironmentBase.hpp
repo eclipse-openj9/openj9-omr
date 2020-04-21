@@ -559,7 +559,18 @@ public:
 	/**
 	 * Initialization specifically for GC threads
 	 */
-	virtual void initializeGCThread() {}
+	virtual void initializeGCThread() {
+		/* Before a thread turning into a GC one, it shortly acted as a mutator (during thread attach sequence),
+		 * which means it may have allocated or executed an object access barrier.
+		 * We temporarily acquire VM access and to prevent 'bleeding' flushGCCaches into the final thread walk and flush that occurs under exclusive VM access.
+		 * Otherwise there would be:
+		 * 1) a race with abandoning remainder from both this thread and final walk thread
+		 * 2) a race between this thread creating remainder (since flushCaches is true) while final walk is trying to abandon it
+		 */		
+		acquireVMAccess();
+		flushGCCaches(true);
+		releaseVMAccess();
+	}
 
 	MM_GCCode getCycleStateGCCode() { return _cycleState->_gcCode; }
 

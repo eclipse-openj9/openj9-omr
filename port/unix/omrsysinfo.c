@@ -1734,7 +1734,26 @@ find_executable_name(struct OMRPortLibrary *portLibrary, char **result)
 		rc = 0;
 	}
 	return rc;
-#else /* defined(OSX) */
+#elif defined(OMR_OS_BSD)
+	int proc[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
+	size_t size = 0;
+	*result = NULL;
+	if (-1 == sysctl(proc, sizeof(proc) / sizeof(proc[0]), NULL, &size, NULL, 0)) {
+		return -1;
+	}
+
+	*result = portLibrary->mem_allocate_memory(portLibrary, size, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+	if (NULL == *result) {
+		return -1;
+	}
+
+	if (-1 == sysctl(proc, sizeof(proc) / sizeof(proc[0]), *result, &size, NULL, 0)) {
+		portLibrary->mem_free_memory(portLibrary, *result);
+		*result = NULL;
+		return -1;
+	}
+	return 0;
+#else /* defined(OMR_OS_BSD) */
 
 	intptr_t retval = -1;
 	intptr_t length;

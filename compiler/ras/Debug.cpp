@@ -3117,6 +3117,10 @@ const char *TR_Debug::getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR_R
    if (_comp->target().cpu.isARM())
       return getName(realRegNum, size);
 #endif
+#if defined(TR_TARGET_ARM64)
+   if (_comp->target().cpu.isARM64())
+      return getARM64RegisterName(realRegNum, size);
+#endif
    return "???";
    }
 

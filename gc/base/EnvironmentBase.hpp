@@ -147,6 +147,7 @@ public:
 	MM_FreeEntrySizeClassStats _freeEntrySizeClassStats;  /**< GC thread local statistics structure for heap free entry size (sizeClass) distribution */
 
 	uintptr_t _oolTraceAllocationBytes; /**< Tracks the bytes allocated since the last ool object trace */
+	uintptr_t _traceAllocationBytes;  /**< Tracks the bytes allocated since the last object trace include ool and allocation is completed from TLH */
 
 	uintptr_t approxScanCacheCount; /**< Local copy of approximate entries in global Cache Scan List. Updated upon allocation of new cache. */
 
@@ -664,6 +665,7 @@ public:
 		,_slaveThreadCpuTimeNanos(0)
 		,_freeEntrySizeClassStats()
 		,_oolTraceAllocationBytes(0)
+		,_traceAllocationBytes(0)
 		,approxScanCacheCount(0)
 		,_activeValidator(NULL)
 		,_lastSyncPointReached(NULL)
@@ -716,6 +718,7 @@ public:
 		,_slaveThreadCpuTimeNanos(0)
 		,_freeEntrySizeClassStats()
 		,_oolTraceAllocationBytes(0)
+		,_traceAllocationBytes(0)
 		,approxScanCacheCount(0)
 		,_activeValidator(NULL)
 		,_lastSyncPointReached(NULL)

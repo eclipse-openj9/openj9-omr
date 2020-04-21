@@ -664,6 +664,7 @@ public:
 	uintptr_t lowAllocationThreshold; /**< the lower bound of the allocation threshold range */
 	uintptr_t highAllocationThreshold; /**< the upper bound of the allocation threshold range */
 	bool disableInlineCacheForAllocationThreshold; /**< true if inline allocates fall within the allocation threshold*/
+	bool disableInlineAllocationForSamplingBytesGranularity; /**< true if inline allocation should be "disabled" for SamplingBytesGranularity */
 	uintptr_t heapCeiling; /**< the highest point in memory where objects can be addressed (used for the -Xgc:lowMemHeap option) */
 
 	enum HeapInitializationFailureReason {
@@ -1677,6 +1678,7 @@ public:
 		, lowAllocationThreshold(UDATA_MAX)
 		, highAllocationThreshold(UDATA_MAX)
 		, disableInlineCacheForAllocationThreshold(false)
+		, disableInlineAllocationForSamplingBytesGranularity(false)
 		, heapCeiling(0) /* default for normal platforms is 0 (i.e. no ceiling) */
 		, heapInitializationFailureReason(HEAP_INITIALIZATION_FAILURE_REASON_NO_ERROR)
 		, scavengerAlignHotFields(true) /* VM Design 1774: hot field alignment is on by default */

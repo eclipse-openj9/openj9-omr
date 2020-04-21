@@ -1739,7 +1739,7 @@ find_executable_name(struct OMRPortLibrary *portLibrary, char **result)
 	}
 
 	*result = portLibrary->mem_allocate_memory(portLibrary, size, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-	if(NULL == *result){
+	if (NULL == *result) {
 		return -1;
 	}
 

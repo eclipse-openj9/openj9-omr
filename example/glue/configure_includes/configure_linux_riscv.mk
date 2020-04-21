@@ -21,17 +21,15 @@
 
 include $(CONFIG_INCL_DIR)/configure_common.mk
 
-RISCV_CROSSTOOLS_PREFIX=riscv64-unknown-linux-gnu
-
 ifneq (,$(findstring _riscv64, $(SPEC)))
-	RISCV_TARGET=riscv64-unknown-linux-gnu
+  RISCV_CROSSTOOLS_PREFIX ?= riscv64-unknown-linux-gnu
 else
-	RISCV_TARGET=riscv32-unknown-linux-gnu
+  RISCV_CROSSTOOLS_PREFIX ?= riscv32-unknown-linux-gnu
 endif
 
 CONFIGURE_ARGS += \
-    --host=$(RISCV_TARGET) \
-    --target=$(RISCV_TARGET)
+    --host=$(RISCV_CROSSTOOLS_PREFIX) \
+    --target=$(RISCV_CROSSTOOLS_PREFIX)
 
 ifneq (,$(findstring _cross, $(SPEC)))
 CONFIGURE_ARGS += \
@@ -77,17 +75,17 @@ endif
 CONFIGURE_ARGS += libprefix=lib exeext= solibext=.so arlibext=.a objext=.o
 
 ifneq (,$(findstring _cross, $(SPEC)))
-	AR=$(RISCV_CROSSTOOLS_PREFIX)-ar
-	AS=$(RISCV_CROSSTOOLS_PREFIX)-as
-	CC=$(RISCV_CROSSTOOLS_PREFIX)-gcc $(SYSROOT_CFLAGS)
-	CXX=$(RISCV_CROSSTOOLS_PREFIX)-c++ $(SYSROOT_CFLAGS)
-	OBJCOPY=$(RISCV_CROSSTOOLS_PREFIX)-objcopy
+  AR=$(RISCV_CROSSTOOLS_PREFIX)-ar
+  AS=$(RISCV_CROSSTOOLS_PREFIX)-as
+  CC=$(RISCV_CROSSTOOLS_PREFIX)-gcc $(SYSROOT_CFLAGS)
+  CXX=$(RISCV_CROSSTOOLS_PREFIX)-c++ $(SYSROOT_CFLAGS)
+  OBJCOPY=$(RISCV_CROSSTOOLS_PREFIX)-objcopy
 else
-	AR=ar
-	AS=as
-	CC=gcc
-	CXX=c++
-	OBJCOPY=objcopy
+  AR=ar
+  AS=as
+  CC=gcc
+  CXX=c++
+  OBJCOPY=objcopy
 endif
 
 CONFIGURE_ARGS += 'AR=$(AR)'

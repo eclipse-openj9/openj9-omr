@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,6 +52,9 @@
 #endif
 #ifndef OMR_OSX
 #  define OMR_OSX     205
+#endif
+#ifndef OMR_BSD
+#  define OMR_BSD     206
 #endif
 
 /* Architectures */
@@ -107,6 +110,8 @@
 #  define HOST_OS OMR_ZOS
 #elif defined(__APPLE__) && defined(__MACH__)
 #  define HOST_OS OMR_OSX
+#elif defined(OMR_OS_BSD)
+#  define HOST_OS OMR_BSD
 #else
 #  error "defines.h: unknown OS"
 #endif

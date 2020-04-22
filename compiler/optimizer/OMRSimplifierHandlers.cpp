@@ -2001,25 +2001,21 @@ static bool evaluateIntComparison(TR_ComparisonTypes compareType, bool isUnsigne
       {
       case TR_cmpEQ:
          return left == right;
-         break;
       case TR_cmpNE:
          return left != right;
-         break;
       case TR_cmpLT:
          return isUnsignedCompare ? (uint64_t)left < (uint64_t)right : left < right;
-         break;
       case TR_cmpLE:
          return isUnsignedCompare ? (uint64_t)left <= (uint64_t)right : left <= right;
-         break;
       case TR_cmpGT:
          return isUnsignedCompare ? (uint64_t)left > (uint64_t)right : left > right;
-         break;
       case TR_cmpGE:
          return isUnsignedCompare ? (uint64_t)left >= (uint64_t)right : left >= right;
-         break;
       default:
-         TR_ASSERT(false, "unhandled TR_ComparisonTypes enum value in simplifier");
+         TR_ASSERT_FATAL(false, "unhandled TR_ComparisonTypes enum value in simplifier");
+         break;
       }
+   return false;
    }
 
 /**
@@ -2578,7 +2574,7 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
          {
          if (firstOp == TR::su2l)
             {
-            if ( secondOp == TR::sconst || 
+            if ( secondOp == TR::sconst ||
                  secondOp == TR::su2l ||
                   (secondOp == TR::lconst &&
                   secondChild->getLongInt() >= 0 &&

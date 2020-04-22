@@ -187,6 +187,8 @@ macro(omr_detect_system_information)
 	else()
 		if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 			set(_OMR_TOOLCONFIG "gnu")
+			# This should go away shortly - see https://github.com/eclipse/omr/issues/5107.
+			set(OMR_ENV_GCC ON CACHE INTERNAL "")
 		elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
 			set(_OMR_TOOLCONFIG "msvc")
 		elseif(CMAKE_C_COMPILER_ID MATCHES "^(Apple)?Clang$")

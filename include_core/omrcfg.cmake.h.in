@@ -145,9 +145,7 @@
  */
 #cmakedefine OMR_ARCH_RISCV
 
-
 #cmakedefine OMR_ENV_DATA64
-#cmakedefine OMR_ENV_GCC
 #cmakedefine OMR_ENV_LITTLE_ENDIAN
 #cmakedefine OMR_GC_COMPRESSED_POINTERS
 #cmakedefine OMR_GC_FULL_POINTERS
@@ -155,7 +153,6 @@
 #cmakedefine OMR_GC_REALTIME
 #cmakedefine OMR_GC_TLH_PREFETCH_FTA
 #cmakedefine OMR_GC_VLHGC
-
 
 /**
  * Add support for CUDA
@@ -220,8 +217,8 @@
 #cmakedefine OMR_NOTIFY_POLICY_CONTROL
 
 /**
- * This flag enables new synchronization prototypes which  
- * -- prevent large number of threads to spin at a time on a monitor 
+ * This flag enables new synchronization prototypes which
+ * -- prevent large number of threads to spin at a time on a monitor
  * -- avoid the thundering herd problem on wake up
  *
  * The prototypes provide the following features

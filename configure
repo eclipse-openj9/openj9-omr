@@ -672,7 +672,6 @@ OMR_PORT_ZOS_CEEHDLRSUPPORT
 OMR_PORT_ALLOCATE_TOP_DOWN
 OMR_OPT_CUDA
 OMR_PORT_NUMA_SUPPORT
-OMR_ENV_GCC
 OMR_GC_TLH_PREFETCH_FTA
 OMR_ENV_LITTLE_ENDIAN
 OMR_GC_OBJECT_MAP
@@ -883,7 +882,6 @@ enable_OMR_THR_YIELD_ALG
 enable_OMR_GC_OBJECT_MAP
 enable_OMR_ENV_LITTLE_ENDIAN
 enable_OMR_GC_TLH_PREFETCH_FTA
-enable_OMR_ENV_GCC
 enable_OMR_PORT_NUMA_SUPPORT
 enable_OMR_OPT_CUDA
 enable_OMR_PORT_ALLOCATE_TOP_DOWN
@@ -1667,7 +1665,6 @@ Optional Features:
 
   --enable-OMR_GC_TLH_PREFETCH_FTA
 
-  --enable-OMR_ENV_GCC
   --enable-OMR_PORT_NUMA_SUPPORT
 
   --enable-OMR_OPT_CUDA
@@ -6265,26 +6262,6 @@ else
 
 
 fi
-
-fi
-
-
-
-# Check whether --enable-OMR_ENV_GCC was given.
-if test "${enable_OMR_ENV_GCC+set}" = set; then :
-  enableval=$enable_OMR_ENV_GCC; if test "x${enableval}" = xyes; then :
-  OMR_ENV_GCC=1
-
-   $as_echo "#define OMR_ENV_GCC 1" >>confdefs.h
-
-else
-  OMR_ENV_GCC=0
-
-
-fi
-else
-  OMR_ENV_GCC=0
-
 
 fi
 

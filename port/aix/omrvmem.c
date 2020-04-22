@@ -88,8 +88,9 @@ typedef struct loadavg_info {
 	int cpu_count;
 } loadavg_info_t;
 
-#ifndef _AIX61
+#if !defined(_AIX61) || defined(J9OS_I5_V6R1)
 /* create rsid_t_MODIFIED since rsid_t is already defined in 5.3 but is missing the at_sradid field */
+/* at_sradid field missed in IBM i 7.1 */
 typedef union {
 	pid_t at_pid;           /* Process id (for R_PROCESS and R_PROCMEM */
 	tid_t at_tid;           /* Kernel thread id (for R_THREAD) */
@@ -105,7 +106,7 @@ typedef union {
 #endif
 extern sradid_t rs_get_homesrad(void);
 extern int rs_info(void *out, int command, long arg1, long arg2);
-#ifndef _AIX61
+#if !defined(_AIX61) || defined(J9OS_I5_V6R1)
 extern int ra_attach(rstype_t, rsid_t, rstype_t, rsid_t_MODIFIED, uint_t);
 #else
 extern int ra_attach(rstype_t, rsid_t, rstype_t, rsid_t, uint_t);
@@ -1371,7 +1372,7 @@ omrvmem_numa_set_affinity(struct OMRPortLibrary *portLibrary, uintptr_t numaNode
 	 * See CMVC 178983 for more detail regarding this limitation.
 	 */
 	if (OMR_ARE_NO_BITS_SET(identifier->mode, OMRPORT_VMEM_NO_AFFINITY)) {
-#ifndef _AIX61
+#if !defined(_AIX61) || defined(J9OS_I5_V6R1)
 		int (*PTR_ra_attach)(rstype_t, rsid_t, rstype_t, rsid_t_MODIFIED, uint_t) = (int (*)(rstype_t, rsid_t, rstype_t, rsid_t_MODIFIED, uint_t))dlsym(RTLD_DEFAULT, "ra_attach");
 		rsid_t_MODIFIED targetSRADResourceID;
 #else

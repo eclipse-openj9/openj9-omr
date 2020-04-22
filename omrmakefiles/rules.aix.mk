@@ -63,6 +63,16 @@ else
   endif
 endif
 
+ifdef I5_VERSION
+  I5_FLAGS+=-g -qtbtable=full -qlist -qsource
+  I5_DEFINES+=-DJ9OS_I5 -DJ9OS_$(I5_VERSION) -I$(top_srcdir)/../iseries -I$(top_srcdir)/../oti
+
+  #Add IBM i specific compile options $(VMDEBUG)
+  GLOBAL_CFLAGS+=$(I5_FLAGS) $(I5_DEFINES) $(VMDEBUG)
+  GLOBAL_CXXFLAGS+=$(I5_FLAGS) $(I5_DEFINES) $(VMDEBUG)
+  GLOBAL_CPPFLAGS+=$(I5_DEFINES) $(VMDEBUG)
+endif
+
 ###
 ### Optimization
 ###

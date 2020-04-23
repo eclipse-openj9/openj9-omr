@@ -1,5 +1,5 @@
 /*******************************************************************************
- * (c) Copyright 1991, 2018 IBM Corp. and others
+ * (c) Copyright 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -60,6 +60,7 @@ protected:
 	bool _gcCompleted;
 	bool _isRecursiveGC;
 	bool _disableGC;
+	bool _stwCollectionInProgress;  /**< if set, the whole or partial STW phase is in progress (mutators not running) */
 
 	uintptr_t _collectorExpandedSize;
 	uintptr_t _cycleType;
@@ -90,6 +91,15 @@ public:
 	 * @return boolean indicating if the last GC completed successfully.
 	 */
 	bool gcCompleted() { return _gcCompleted; }
+	
+	/*
+	 * Return value of _stwCollectionInProgress flag
+	 */
+	bool isStwCollectionInProgress()
+	{
+		return _stwCollectionInProgress;
+	}
+	
 
 private:
 	void setThreadFailAllocFlag(MM_EnvironmentBase *env, bool flag);
@@ -305,6 +315,7 @@ public:
 		, _gcCompleted(false)
 		, _isRecursiveGC(false)
 		, _disableGC(false)
+		, _stwCollectionInProgress(false)
 		, _collectorExpandedSize(0)
 		, _cycleType(OMR_GC_CYCLE_TYPE_DEFAULT)
 		, _masterThreadCpuTimeStart(0)

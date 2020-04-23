@@ -145,6 +145,10 @@ class ARM64SystemLinkage : public TR::Linkage
     */
    virtual intptr_t entryPointFromInterpretedMethod();
 
+   private:
+
+   // Tactical GRA
+   static uint32_t _globalRegisterNumberToRealRegisterMap[];
    };
 
 }

@@ -59,11 +59,11 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
 
    // Tactical GRA settings
    //
-   self()->setGlobalRegisterTable(TR::Machine::getGlobalRegisterTable());
+   self()->setGlobalRegisterTable(_linkageProperties->getRegisterAllocationOrder());
    _numGPR = _linkageProperties->getNumAllocatableIntegerRegisters();
    _numFPR = _linkageProperties->getNumAllocatableFloatRegisters();
-   self()->setLastGlobalGPR(TR::Machine::getLastGlobalGPRRegisterNumber());
-   self()->setLastGlobalFPR(TR::Machine::getLastGlobalFPRRegisterNumber());
+   self()->setLastGlobalGPR(_numGPR - 1);
+   self()->setLastGlobalFPR(_numGPR + _numFPR - 1);
 
    self()->getLinkage()->initARM64RealRegisterLinkage();
 

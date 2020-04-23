@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -92,6 +92,7 @@ struct ARM64LinkageProperties
    TR::RealRegister::RegNum _returnRegisters[TR::RealRegister::NumRegisters];
    uint8_t _numAllocatableIntegerRegisters;
    uint8_t _numAllocatableFloatRegisters;
+   uint32_t _allocationOrder[TR::RealRegister::NumRegisters];
    uint32_t _preservedRegisterMapForGC;
    TR::RealRegister::RegNum _methodMetaDataRegister;
    TR::RealRegister::RegNum _stackPointerRegister;
@@ -221,6 +222,11 @@ struct ARM64LinkageProperties
    int32_t getNumAllocatableFloatRegisters() const
       {
       return _numAllocatableFloatRegisters;
+      }
+
+   uint32_t *getRegisterAllocationOrder() const
+      {
+      return (uint32_t *) _allocationOrder;
       }
 
    uint32_t getPreservedRegisterMapForGC() const

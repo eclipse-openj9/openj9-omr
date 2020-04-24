@@ -1086,6 +1086,10 @@
    cnttzdm,          // Count Trailing Zeros Doubleword under Mask
    dcffixqq,         // DFP Convert from Fixed Quadword Quad
    dctfixqq,         // DFP Convert to Fixed Quadword Quad
+   iseleq,           // Integer Select if Equal
+   iselgt,           // Integer Select if Greater Than
+   isellt,           // Integer Select if Less Than
+   iselun,           // Integer Select if Unordered
    lxvkq,            // Load VSX Vector Special Value Quadword
    lxvl,             // Load VSX Vector with Length
    lxvp,             // Load VSX Vector Paired

@@ -12112,6 +12112,54 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::iseleq,
+   /* .name        = */ "iseleq",
+   /* .description =    "Integer Select if Equal", */
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_UNKNOWN,
+   // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
+   //       problems prior to Power 10. As a result, it should not be used until Power 10.
+   /* .minimumALS  = */ TR_Processor::TR_PPCp10,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::iselgt,
+   /* .name        = */ "iselgt",
+   /* .description =    "Integer Select if Greater Than", */
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_UNKNOWN,
+   // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
+   //       problems prior to Power 10. As a result, it should not be used until Power 10.
+   /* .minimumALS  = */ TR_Processor::TR_PPCp10,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::isellt,
+   /* .name        = */ "isellt",
+   /* .description =    "Integer Select if Less Than", */
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_UNKNOWN,
+   // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
+   //       problems prior to Power 10. As a result, it should not be used until Power 10.
+   /* .minimumALS  = */ TR_Processor::TR_PPCp10,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::iselun,
+   /* .name        = */ "iselun",
+   /* .description =    "Integer Select if Unordered", */
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_UNKNOWN,
+   // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
+   //       problems prior to Power 10. As a result, it should not be used until Power 10.
+   /* .minimumALS  = */ TR_Processor::TR_PPCp10,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::lxvkq,
    /* .name        = */ "lxvkq",
    /* .description =    "Load VSX Vector Special Value Quadword", */

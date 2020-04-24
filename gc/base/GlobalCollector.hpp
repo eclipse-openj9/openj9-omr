@@ -65,6 +65,11 @@ public:
 	}
 
 	virtual void yield(MM_EnvironmentBase *env) {};
+	
+	virtual bool isStwCollectionInProgress()
+	{
+		return false;
+	}
 
 	/**
  	 * Perform any collector-specific initialization.

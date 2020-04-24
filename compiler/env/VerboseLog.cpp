@@ -70,10 +70,10 @@ void TR_VerboseLog::writeLine(TR_VlogTag tag, const char *format, ...)
    TR_ASSERT(tag != TR_Vlog_null, "TR_Vlog_null is not a valid Vlog tag");
    va_list args;
    va_start(args, format);
-   write("\n");
    writeTimeStamp();
    write(_vlogTable[tag]);
    vwrite(format,args);
+   write("\n");
    va_end(args);
    }
 
@@ -83,10 +83,10 @@ void TR_VerboseLog::writeLineLocked(TR_VlogTag tag, const char *format, ...)
    vlogAcquire();
    va_list args;
    va_start(args, format);
-   write("\n");
    writeTimeStamp();
    write(_vlogTable[tag]);
    vwrite(format,args);
+   write("\n");
    va_end(args);
    vlogRelease();
    }

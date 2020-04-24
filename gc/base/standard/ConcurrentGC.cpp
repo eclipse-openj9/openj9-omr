@@ -1294,7 +1294,7 @@ MM_ConcurrentGC::tuneToHeap(MM_EnvironmentBase *env)
 	 */
 	if(0 == heapSize) {
 		Trc_MM_ConcurrentGC_tuneToHeap_Exit1(env->getLanguageVMThread());
-		Assert_MM_true(!_stwCollectionInProgress);
+		assume0(!_stwCollectionInProgress);
 		return;
 	}
 
@@ -2922,7 +2922,11 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 
 	/* Ensure caller acquired exclusive VM access before calling */
 	Assert_MM_mustHaveExclusiveVMAccess(env->getOmrVMThread());
-	Assert_MM_true(_stwCollectionInProgress);
+
+	/* Set flag to show STW collector is active; some operations need to know if they
+	 * are called during a global collect or not, eg heapAddRange
+	 */
+	_stwCollectionInProgress = true;
 
 	/* Assume for now we will need to initialize the mark map. If we subsequenly find
 	 * we got far enough through the concurrent mark cycle then we will reset this flag
@@ -3151,6 +3155,7 @@ MM_ConcurrentGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace 
 	}
 
 	/* Collection is complete so reset flags */
+	_stwCollectionInProgress = false;
 	_forcedKickoff  = false;
 	_stats.clearKickoffReason();
 

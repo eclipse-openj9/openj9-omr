@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2016 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -477,7 +477,6 @@ void*
 MM_Collector::garbageCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* callingSubSpace, MM_AllocateDescription* allocateDescription, uint32_t gcCode, MM_ObjectAllocationInterface* objectAllocationInterface, MM_MemorySubSpace* baseSubSpace, MM_AllocationContext* context)
 {
 	Assert_MM_mustHaveExclusiveVMAccess(env->getOmrVMThread());
-	_stwCollectionInProgress = true;
 
 	Assert_MM_true(NULL == env->_cycleState);
 	preCollect(env, callingSubSpace, allocateDescription, gcCode);
@@ -516,9 +515,6 @@ MM_Collector::garbageCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* calling
 	postCollect(env, callingSubSpace);
 	Assert_MM_true(NULL != env->_cycleState);
 	env->_cycleState = NULL;
-
-	Assert_MM_true(_stwCollectionInProgress);
-	_stwCollectionInProgress = false;
 
 	return postCollectAllocationResult;
 }

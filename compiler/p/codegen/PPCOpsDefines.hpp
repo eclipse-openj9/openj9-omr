@@ -726,7 +726,16 @@ FORMAT_VRS_RA_RB_MEM,
 // |      | XS       | RA       | RB       |                 | XS |
 // | 0    | 6        | 11       | 16       | 21              | 31 |
 // +------+----------+----------+----------+-----------------+----+
-FORMAT_XS_RA_RB_MEM
+FORMAT_XS_RA_RB_MEM,
+
+// Format for instructions with an RT field encoding the target register, RA and RB fields encoding
+// source registers, and a BFC field encoding an additional source condition register:
+//
+// +------+--------+--------+--------+-----+----------------------+
+// |      | RT     | RA     | RB     | BFC |                      |
+// | 0    | 6      | 11     | 16     | 21  | 28                   |
+// +------+--------+--------+--------+-----+----------------------+
+FORMAT_RT_RA_RB_BFC
 
 };
 

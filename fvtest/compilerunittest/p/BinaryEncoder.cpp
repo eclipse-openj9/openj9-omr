@@ -1471,6 +1471,25 @@ INSTANTIATE_TEST_CASE_P(ConditionLogic, PPCTrg1ImmEncodingTest, ::testing::Value
     std::make_tuple(TR::InstOpCode::mfocrf, TR::RealRegister::gr31, 0x80u, 0x7ff80026u)
 ));
 
+INSTANTIATE_TEST_CASE_P(ConditionLogic, PPCTrg1Src3EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::iseleq, TR::RealRegister::gr31, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::cr0, 0x7fe0009eu),
+    std::make_tuple(TR::InstOpCode::iseleq, TR::RealRegister::gr0,  TR::RealRegister::gr31, TR::RealRegister::gr0,  TR::RealRegister::cr0, 0x7c1f009eu),
+    std::make_tuple(TR::InstOpCode::iseleq, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::gr31, TR::RealRegister::cr0, 0x7c00f89eu),
+    std::make_tuple(TR::InstOpCode::iseleq, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::cr7, 0x7c00079eu),
+    std::make_tuple(TR::InstOpCode::iselgt, TR::RealRegister::gr31, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::cr0, 0x7fe0005eu),
+    std::make_tuple(TR::InstOpCode::iselgt, TR::RealRegister::gr0,  TR::RealRegister::gr31, TR::RealRegister::gr0,  TR::RealRegister::cr0, 0x7c1f005eu),
+    std::make_tuple(TR::InstOpCode::iselgt, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::gr31, TR::RealRegister::cr0, 0x7c00f85eu),
+    std::make_tuple(TR::InstOpCode::iselgt, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::cr7, 0x7c00075eu),
+    std::make_tuple(TR::InstOpCode::isellt, TR::RealRegister::gr31, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::cr0, 0x7fe0001eu),
+    std::make_tuple(TR::InstOpCode::isellt, TR::RealRegister::gr0,  TR::RealRegister::gr31, TR::RealRegister::gr0,  TR::RealRegister::cr0, 0x7c1f001eu),
+    std::make_tuple(TR::InstOpCode::isellt, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::gr31, TR::RealRegister::cr0, 0x7c00f81eu),
+    std::make_tuple(TR::InstOpCode::isellt, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::cr7, 0x7c00071eu),
+    std::make_tuple(TR::InstOpCode::iselun, TR::RealRegister::gr31, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::cr0, 0x7fe000deu),
+    std::make_tuple(TR::InstOpCode::iselun, TR::RealRegister::gr0,  TR::RealRegister::gr31, TR::RealRegister::gr0,  TR::RealRegister::cr0, 0x7c1f00deu),
+    std::make_tuple(TR::InstOpCode::iselun, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::gr31, TR::RealRegister::cr0, 0x7c00f8deu),
+    std::make_tuple(TR::InstOpCode::iselun, TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::gr0,  TR::RealRegister::cr7, 0x7c0007deu)
+));
+
 #define CR_RT(cond) (TR::RealRegister::CRCC_ ## cond << TR::RealRegister::pos_RT)
 #define CR_RA(cond) (TR::RealRegister::CRCC_ ## cond << TR::RealRegister::pos_RA)
 #define CR_RB(cond) (TR::RealRegister::CRCC_ ## cond << TR::RealRegister::pos_RB)

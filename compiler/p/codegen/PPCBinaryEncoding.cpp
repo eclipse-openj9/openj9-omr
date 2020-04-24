@@ -481,6 +481,24 @@ static void fillFieldBFB(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    }
 
 /**
+ * Fills in the BFC field of a binary-encoded instruction with the provided condition register:
+ *
+ * +---------------------------------+-----+----------------------+
+ * |                                 | BFC |                      |
+ * | 0                               | 21  | 28                   |
+ * +---------------------------------+-----+----------------------+
+ *
+ * This can also be used to fill in the condition register part of the BB field, with the part
+ * determining which bit should being filled in by other means.
+ */
+static void fillFieldBFC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BFC field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_CCR, "Attempt to fill BFC field with %s, which is not a CCR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRC(cursor);
+   }
+
+/**
  * Fills in the U field of a binary-encoded instruction with the provided immediate value:
  *
  * +-----------------------+-----+--------------------------------+
@@ -1820,6 +1838,13 @@ void TR::PPCTrg1Src3Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldXA(self(), cursor, src1);
          fillFieldXB(self(), cursor, src2);
          fillFieldXC(self(), cursor, src3);
+         break;
+
+      case FORMAT_RT_RA_RB_BFC:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         fillFieldBFC(self(), cursor, src3);
          break;
 
       default:

@@ -37,7 +37,7 @@ GCC_TOOLS:=\
 'CCLINKSHARED=$$(CC)' \
 'CXXLINKEXE=$$(CXX)' \
 'CXXLINKSHARED=$$(CC)'
-# CPP is unused: 'CPP=cpp' 
+# CPP is unused: 'CPP=cpp'
 
 XLC_TOOLS:=\
 'OMR_TOOLCHAIN=xlc' \
@@ -48,7 +48,7 @@ XLC_TOOLS:=\
 'CCLINKSHARED=xlc_r' \
 'CXXLINKEXE=$$(CC)' \
 'CXXLINKSHARED=xlc_r'
-# CPP is unused: 'CPP=cpp' 
+# CPP is unused: 'CPP=cpp'
 
 # All buildspecs named "_gcc" use the same gcc tools
 ifneq (,$(findstring _gcc,$(SPEC)))
@@ -66,7 +66,6 @@ ifeq (linux_ppc-64_cmprssptrs_gcc, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_ENV_GCC \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
     --enable-OMR_THR_FORK_SUPPORT \
     OMR_GC_POINTER_MODE=compressed
@@ -77,7 +76,6 @@ ifeq (linux_ppc-64_cmprssptrs_le_gcc_cuda, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_JITBUILDER \
     --enable-OMR_OPT_CUDA \
@@ -92,7 +90,6 @@ ifeq (linux_ppc-64_cmprssptrs_le_gcc, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_JITBUILDER \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
@@ -131,7 +128,6 @@ ifeq (linux_ppc-64_le_gcc_cuda, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_JITBUILDER \
     --enable-OMR_OPT_CUDA \
@@ -145,7 +141,6 @@ ifeq (linux_ppc-64_le_gcc, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_JITBUILDER \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
@@ -158,7 +153,6 @@ ifeq (linux_ppc-64, $(SPEC))
     --enable-OMRTHREAD_LIB_UNIX \
     --enable-OMR_ARCH_POWER \
     --enable-OMR_ENV_DATA64 \
-    --enable-OMR_ENV_GCC \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
     --enable-OMR_THR_FORK_SUPPORT
 

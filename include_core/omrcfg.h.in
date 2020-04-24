@@ -20,7 +20,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-/* ATTENTION: when updating this file, be sure to also update omrcfg.CMakeTemplate.h */
+/* ATTENTION: when updating this file, be sure to also update omrcfg.cmake.h.in */
 /**
  * The OMR build configuration. A public header. Controls the APIs of all other headers.
  * Include at the top of every OMR source and header.
@@ -139,7 +139,6 @@
 #undef OMR_ARCH_S390
 
 #undef OMR_ENV_DATA64
-#undef OMR_ENV_GCC
 #undef OMR_ENV_LITTLE_ENDIAN
 #undef OMR_GC_COMPRESSED_POINTERS
 #undef OMR_GC_FULL_POINTERS
@@ -211,8 +210,8 @@
 #undef OMR_NOTIFY_POLICY_CONTROL
 
 /**
- * This flag enables new synchronization prototypes which  
- * -- prevent large number of threads to spin at a time on a monitor 
+ * This flag enables new synchronization prototypes which
+ * -- prevent large number of threads to spin at a time on a monitor
  * -- avoid the thundering herd problem on wake up
  *
  * The prototypes provide the following features

@@ -72,7 +72,6 @@ function(omr_add_library name)
 	if(opt_SHARED)
 		# split debug info if applicable. Note: omr_split_debug is responsible for checking OMR_SEPARATE_DEBUG_INFO
 		omr_process_split_debug(${name})
-		omr_process_exports(${name})
 	endif()
 endfunction()
 

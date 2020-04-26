@@ -69,6 +69,8 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
 
    self()->setSupportsVirtualGuardNOPing();
 
+   self()->setSupportsSelect();
+
    _numberBytesReadInaccessible = 0;
    _numberBytesWriteInaccessible = 0;
 

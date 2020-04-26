@@ -741,6 +741,30 @@ OMR::ARM64::TreeEvaluator::lminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return commonMinMaxEvaluator(node, true, TR::CC_LT, cg);
    }
 
+// also handles lselect, bselect, sselect, aselect
+TR::Register *
+OMR::ARM64::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *condNode = node->getChild(0);
+   TR::Node *trueNode = node->getChild(1);
+   TR::Node *falseNode = node->getChild(2);
+
+   TR::Register *condReg = cg->evaluate(condNode);
+   TR::Register *trueReg = cg->evaluate(trueNode);
+   TR::Register *falseReg = cg->evaluate(falseNode);
+   TR::Register *resultReg = cg->canClobberNodesRegister(condNode) ? condReg : cg->allocateRegister();
+
+   generateCompareImmInstruction(cg, node, condReg, 0, true); // 64-bit compare
+   generateCondTrg1Src2Instruction(cg, TR::InstOpCode::cselx, node, resultReg, trueReg, falseReg, TR::CC_NE);
+
+   node->setRegister(resultReg);
+   cg->decReferenceCount(condNode);
+   cg->decReferenceCount(trueNode);
+   cg->decReferenceCount(falseNode);
+
+   return resultReg;
+   }
+
 static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
    {
 #ifdef J9_PROJECT_SPECIFIC

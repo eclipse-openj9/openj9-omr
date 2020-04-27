@@ -1197,3 +1197,232 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleIfCompare, ::testing::Combine(
         std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpge", ifdcmpge),
         std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpgt", ifdcmpgt)
     )));
+
+int32_t fcmpequ(float l, float r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l == r) ? 1 : 0;
+}
+
+int32_t fcmpneu(float l, float r) {
+   if (std::isnan(l)) return 1;
+   if (std::isnan(r)) return 1;
+   return (l != r) ? 1 : 0;
+}
+
+int32_t fcmpgtu(float l, float r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l > r) ? 1 : 0;
+}
+
+int32_t fcmpgeu(float l, float r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l >= r) ? 1 : 0;
+}
+
+int32_t fcmpltu(float l, float r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l < r) ? 1 : 0;
+}
+
+int32_t fcmpleu(float l, float r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l <= r) ? 1 : 0;
+}
+
+class FloatCompareOrUnordered : public TRTest::OpCodeTest<int32_t, float, float> {};
+
+TEST_P(FloatCompareOrUnordered, UsingConst) {
+    SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
+    SKIP_ON_AARCH64(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, 1024,
+       "(method return=Int32 "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(fconst %f) "
+               "(fconst %f)))))",
+       param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(FloatCompareOrUnordered, UsingLoadParam) {
+    SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
+    SKIP_ON_AARCH64(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160,
+       "(method return=Int32 args=[Float, Float] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(fload parm=0) "
+               "(fload parm=1)))))",
+       param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(float, float)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, FloatCompareOrUnordered, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
+    ::testing::Values(
+        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpequ", fcmpequ),
+        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpneu", fcmpneu),
+        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpgtu", fcmpgtu),
+        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpgeu", fcmpgeu),
+        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpltu", fcmpltu),
+        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpleu", fcmpleu)
+    )));
+
+int32_t dcmpequ(double l, double r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l == r) ? 1 : 0;
+}
+
+int32_t dcmpneu(double l, double r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l != r) ? 1 : 0;
+}
+
+int32_t dcmpgtu(double l, double r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l > r) ? 1 : 0;
+}
+
+int32_t dcmpgeu(double l, double r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l >= r) ? 1 : 0;
+}
+
+int32_t dcmpltu(double l, double r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l < r) ? 1 : 0;
+}
+
+int32_t dcmpleu(double l, double r) {
+    if (std::isnan(l)) return 1;
+    if (std::isnan(r)) return 1;
+    return (l <= r) ? 1 : 0;
+}
+
+class DoubleCompareOrUnordered : public TRTest::OpCodeTest<int32_t, double, double> {};
+
+TEST_P(DoubleCompareOrUnordered, UsingConst) {
+    SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
+    SKIP_ON_AARCH64(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, 1024,
+       "(method return=Int32 "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(dconst %f) "
+               "(dconst %f)))))",
+       param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(DoubleCompareOrUnordered, UsingLoadParam) {
+    SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
+    SKIP_ON_AARCH64(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160,
+       "(method return=Int32 args=[Double, Double] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(dload parm=0) "
+               "(dload parm=1)))))",
+       param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(double, double)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, DoubleCompareOrUnordered, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
+    ::testing::Values(
+        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpequ", dcmpequ),
+        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpneu", dcmpneu),
+        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpgtu", dcmpgtu),
+        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpgeu", dcmpgeu),
+        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpltu", dcmpltu),
+        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpleu", dcmpleu)
+
+    )));

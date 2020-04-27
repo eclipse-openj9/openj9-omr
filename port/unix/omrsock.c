@@ -550,7 +550,18 @@ omrsock_accept(struct OMRPortLibrary *portLibrary, omrsock_socket_t serverSock, 
 int32_t
 omrsock_send(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	int32_t bytesSent = 0;
+
+	if (NULL == sock || 0 >= nbyte) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	bytesSent = send(sock->data, buf, nbyte, flags);
+
+	if (-1 == bytesSent) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_SEND_FAILED);
+	}
+	return bytesSent;
 }
 
 int32_t
@@ -562,7 +573,18 @@ omrsock_sendto(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_
 int32_t
 omrsock_recv(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	int32_t bytesRecv = 0;
+
+	if (NULL == sock || 0 >= nbyte) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	bytesRecv = recv(sock->data, buf, nbyte, flags);
+
+	if (-1 == bytesRecv) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_RECV_FAILED);
+	}
+	return bytesRecv;
 }
 
 int32_t

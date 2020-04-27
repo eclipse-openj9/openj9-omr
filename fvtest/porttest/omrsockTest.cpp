@@ -513,6 +513,30 @@ TEST(PortSockTest, two_socket_stream_communication)
 	omrsock_socket_t connectedClientStreamSocket = NULL;
 	EXPECT_EQ(OMRPORTLIB->sock_accept(OMRPORTLIB, serverStreamSocket, &connectedClientStreamSockAddr, &connectedClientStreamSocket), 0);
 
+	const char *msg = "This is an omrsock test for 2 socket stream communications.";
+	int32_t bytesLeft = strlen(msg) + 1;
+	uint8_t *cursor = (uint8_t *)msg;
+	int32_t bytesSent = 0;
+	while (0 != bytesLeft) {
+		bytesSent = OMRPORTLIB->sock_send(OMRPORTLIB, connectedClientStreamSocket, cursor, bytesLeft, 0);
+		ASSERT_GE(bytesSent, 0);
+		bytesLeft -= bytesSent;
+		cursor += bytesSent;
+	}
+
+	char buf[100] = {0};
+	bytesLeft = strlen(msg) + 1;
+	cursor = (uint8_t *)buf;
+	int32_t bytesRecv = 0;
+	while (0 != bytesLeft) {
+		bytesRecv = OMRPORTLIB->sock_recv(OMRPORTLIB, clientStreamSocket, cursor, bytesLeft, 0);
+		ASSERT_GE(bytesRecv, 0);
+		bytesLeft -= bytesRecv;
+		cursor += bytesRecv;
+	}
+	
+	EXPECT_STREQ(msg, buf);
+
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedClientStreamSocket), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientStreamSocket), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverStreamSocket), 0);

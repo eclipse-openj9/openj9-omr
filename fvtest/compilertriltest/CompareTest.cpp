@@ -731,26 +731,38 @@ bool smallFp_filter(std::tuple<T, T> a)
    }
 
 int32_t fcmpeq(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l == r) ? 1 : 0;
 }
 
 int32_t fcmpne(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l != r) ? 1 : 0;
 }
 
 int32_t fcmpgt(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l > r) ? 1 : 0;
 }
 
 int32_t fcmpge(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l >= r) ? 1 : 0;
 }
 
 int32_t fcmplt(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l < r) ? 1 : 0;
 }
 
 int32_t fcmple(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l <= r) ? 1 : 0;
 }
 
@@ -821,26 +833,38 @@ INSTANTIATE_TEST_CASE_P(CompareTest, FloatCompare, ::testing::Combine(
     )));
 
 int32_t dcmpeq(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l == r) ? 1 : 0;
 }
 
 int32_t dcmpne(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l != r) ? 1 : 0;
 }
 
 int32_t dcmpgt(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l > r) ? 1 : 0;
 }
 
 int32_t dcmpge(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l >= r) ? 1 : 0;
 }
 
 int32_t dcmplt(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l < r) ? 1 : 0;
 }
 
 int32_t dcmple(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l <= r) ? 1 : 0;
 }
 
@@ -911,26 +935,38 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleCompare, ::testing::Combine(
     )));
 
 int32_t iffcmpeq(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t iffcmpne(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t iffcmplt(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t iffcmple(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l <= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t iffcmpge(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l >= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t iffcmpgt(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l > r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
@@ -1009,26 +1045,38 @@ INSTANTIATE_TEST_CASE_P(CompareTest, FloatIfCompare, ::testing::Combine(
     )));
 
 int32_t ifdcmpeq(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t ifdcmpne(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t ifdcmplt(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t ifdcmple(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l <= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t ifdcmpge(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l >= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t ifdcmpgt(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l > r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 

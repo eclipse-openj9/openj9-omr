@@ -954,18 +954,22 @@ bool fp_filter(F a)
    }
 
 int32_t f2i(float x) {
+    if (std::isnan(x)) return 0;
     return static_cast<int32_t>(x);
 }
 
 int64_t f2l(float x) {
+    if (std::isnan(x)) return 0;
     return static_cast<int64_t>(x);
 }
 
 int32_t d2i(double x) {
+    if (std::isnan(x)) return 0;
     return static_cast<int32_t>(x);
 }
 
 int64_t d2l(double x) {
+    if (std::isnan(x)) return 0;
     return static_cast<int64_t>(x);
 }
 

@@ -40,18 +40,26 @@ int64_t lmin(int64_t l, int64_t r) {
 }
 
 float f_max(float l, float r) {
+  if (std::isnan(l)) return std::numeric_limits<float>::quiet_NaN();
+  if (std::isnan(r)) return std::numeric_limits<float>::quiet_NaN();
   return std::max(l,r);
 }
 
 float f_min(float l, float r) {
+  if (std::isnan(l)) return std::numeric_limits<float>::quiet_NaN();
+  if (std::isnan(r)) return std::numeric_limits<float>::quiet_NaN();
   return std::min(l,r);
 }
 
 double dmax(double l, double r) {
+  if (std::isnan(l)) return std::numeric_limits<double>::quiet_NaN();
+  if (std::isnan(r)) return std::numeric_limits<double>::quiet_NaN();
   return std::max(l,r);
 }
 
 double dmin(double l, double r) {
+  if (std::isnan(l)) return std::numeric_limits<double>::quiet_NaN();
+  if (std::isnan(r)) return std::numeric_limits<double>::quiet_NaN();
   return std::min(l,r);
 }
 

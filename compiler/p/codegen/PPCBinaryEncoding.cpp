@@ -1909,10 +1909,6 @@ void TR::PPCMemSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldRB(self(), cursor, index);
          break;
 
-      case FORMAT_UNKNOWN:
-         *cursor = 0xdeadc0de;
-         break;
-
       default:
          TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCMemSrc1Instruction", getOpCode().getFormat());
       }

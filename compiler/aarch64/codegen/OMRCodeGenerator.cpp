@@ -66,6 +66,7 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
    self()->setLastGlobalFPR(_numGPR + _numFPR - 1);
 
    self()->getLinkage()->initARM64RealRegisterLinkage();
+   self()->setSupportsGlRegDeps();
 
    self()->setSupportsVirtualGuardNOPing();
 

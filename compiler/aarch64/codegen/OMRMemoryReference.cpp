@@ -326,23 +326,20 @@ void OMR::ARM64::MemoryReference::addToOffset(TR::Node *node, intptr_t amount, T
 
       if (_baseRegister != NULL)
          {
-         if (node->getOpCode().isLoadConst() && node->getRegister())
+         if (constantIsUnsignedImm12(displacement))
+            {
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, newBase, _baseRegister, displacement);
+            }
+         else if (node->getOpCode().isLoadConst() && node->getRegister() && (node->getLongInt() == displacement))
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, newBase, _baseRegister, node->getRegister());
             }
          else
             {
-            if (constantIsUnsignedImm12(displacement))
-               {
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, newBase, _baseRegister, displacement);
-               }
-            else
-               {
-               TR::Register *tempReg = cg->allocateRegister();
-               loadConstant64(cg, node, displacement, tempReg);
-               generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, newBase, _baseRegister, tempReg);
-               cg->stopUsingRegister(tempReg);
-               }
+            TR::Register *tempReg = cg->allocateRegister();
+            loadConstant64(cg, node, displacement, tempReg);
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, newBase, _baseRegister, tempReg);
+            cg->stopUsingRegister(tempReg);
             }
          }
       else

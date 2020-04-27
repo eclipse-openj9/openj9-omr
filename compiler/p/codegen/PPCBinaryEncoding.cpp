@@ -1648,7 +1648,6 @@ void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldFRB(self(), cursor, src2);
          break;
 
-      case FORMAT_FRT_RA_RB:
       case FORMAT_FRT_RA_RB_MEM:
          fillFieldFRT(self(), cursor, trg);
          fillFieldRA(self(), cursor, src1);
@@ -1661,7 +1660,6 @@ void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldFRB(self(), cursor, src2);
          break;
 
-      case FORMAT_VRT_RA_RB:
       case FORMAT_VRT_RA_RB_MEM:
          fillFieldVRT(self(), cursor, trg);
          fillFieldRA(self(), cursor, src1);
@@ -1674,7 +1672,6 @@ void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldVRB(self(), cursor, src2);
          break;
 
-      case FORMAT_XT_RA_RB:
       case FORMAT_XT_RA_RB_MEM:
          fillFieldXT(self(), cursor, trg);
          fillFieldRA(self(), cursor, src1);

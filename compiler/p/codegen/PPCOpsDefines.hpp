@@ -268,7 +268,6 @@ FORMAT_BF_FRA_FRB,
 // |      | FRT      | RA       | RB       |                      |
 // | 0    | 6        | 11       | 16       | 21                   |
 // +------+----------+----------+----------+----------------------+
-FORMAT_FRT_RA_RB,
 FORMAT_FRT_RA_RB_MEM,
 
 // Format for instructions with an FRT field encoding the target FP register and FRA and FRB fields
@@ -287,7 +286,6 @@ FORMAT_FRT_FRA_FRB,
 // |      | VRT      | RA       | RB       |                      |
 // | 0    | 6        | 11       | 16       | 21                   |
 // +------+----------+----------+----------+----------------------+
-FORMAT_VRT_RA_RB,
 FORMAT_VRT_RA_RB_MEM,
 
 // Format for instructions with a VRT field encoding the target vector register and VRA and VRB
@@ -306,7 +304,6 @@ FORMAT_VRT_VRA_VRB,
 // |      | XT       | RA       | RB       |                 | XT |
 // | 0    | 6        | 11       | 16       | 21              | 31 |
 // +------+----------+----------+----------+-----------------+----+
-FORMAT_XT_RA_RB,
 FORMAT_XT_RA_RB_MEM,
 
 // Format for instructions with an XT field encoding the target VSX register and XA and XB fields

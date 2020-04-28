@@ -719,11 +719,7 @@ TEST_P(FloatArithmetic, UsingConst) {
     auto entry_point = compiler.getEntryPoint<float (*)(void)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point();
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(FloatArithmetic, UsingLoadParam) {
@@ -750,11 +746,7 @@ TEST_P(FloatArithmetic, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<float (*)(float, float)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point(param.lhs, param.rhs);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(FloatArithmetic, UsingLoadParamAndLoadConst) {
@@ -782,11 +774,7 @@ TEST_P(FloatArithmetic, UsingLoadParamAndLoadConst) {
     auto entry_point = compiler.getEntryPoint<float (*)(float)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point(param.lhs);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatArithmetic, ::testing::Combine(
@@ -828,11 +816,7 @@ TEST_P(DoubleArithmetic, UsingConst) {
     auto entry_point = compiler.getEntryPoint<double (*)(void)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point();
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(DoubleArithmetic, UsingLoadParam) {
@@ -859,11 +843,7 @@ TEST_P(DoubleArithmetic, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<double (*)(double, double)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point(param.lhs, param.rhs);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(DoubleArithmetic, UsingLoadParamAndLoadConst) {
@@ -891,11 +871,7 @@ TEST_P(DoubleArithmetic, UsingLoadParamAndLoadConst) {
     auto entry_point = compiler.getEntryPoint<double (*)(double)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point(param.lhs);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, DoubleArithmetic, ::testing::Combine(
@@ -945,11 +921,7 @@ TEST_P(FloatUnaryArithmetic, UsingConst) {
     auto entry_point = compiler.getEntryPoint<float (*)(void)>();
     volatile auto exp = param.oracle(param.value);
     volatile auto act = entry_point();
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(FloatUnaryArithmetic, UsingLoadParam) {
@@ -975,11 +947,7 @@ TEST_P(FloatUnaryArithmetic, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<float (*)(float)>();
     volatile auto exp = param.oracle(param.value);
     volatile auto act = entry_point(param.value);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatUnaryArithmetic, ::testing::Combine(
@@ -1020,11 +988,7 @@ TEST_P(DoubleUnaryArithmetic, UsingConst) {
     auto entry_point = compiler.getEntryPoint<double (*)(void)>();
     volatile auto exp = param.oracle(param.value);
     volatile auto act = entry_point();
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(DoubleUnaryArithmetic, UsingLoadParam) {
@@ -1050,11 +1014,7 @@ TEST_P(DoubleUnaryArithmetic, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<double (*)(double)>();
     volatile auto exp = param.oracle(param.value);
     volatile auto act = entry_point(param.value);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, DoubleUnaryArithmetic, ::testing::Combine(

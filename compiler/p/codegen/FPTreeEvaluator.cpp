@@ -135,9 +135,9 @@ TR::Register *OMR::Power::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Co
       nanNormalizeStartLabel->setStartInternalControlFlow();
       nanNormalizeEndLabel->setEndInternalControlFlow();
 
-      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
-      TR::addDependency(deps, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
-      TR::addDependency(deps, target, TR::RealRegister::NoReg, TR_GPR, cg);
+      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+      deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+      deps->addPostCondition(target, TR::RealRegister::NoReg);
 
       generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, floatReg, floatReg);
       generateLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeStartLabel);

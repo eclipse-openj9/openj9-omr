@@ -336,7 +336,7 @@ enum TR_CompilationOptions
    TR_OldJVMPI                            = 0x00000080 + 8,
    TR_EmitExecutableELFFile               = 0x00000100 + 8,
    TR_JITServerFollowRemoteCompileWithLocalCompile = 0x00000200 + 8,
-   // Available                           = 0x00000800 + 8,
+   TR_EnableClassChainValidationCaching   = 0x00000800 + 8,
    TR_DisableLinkageRegisterAllocation    = 0x00001000 + 8,
    // Available                           = 0x00002000 + 8,
    TR_DisableZ15                          = 0x00004000 + 8,

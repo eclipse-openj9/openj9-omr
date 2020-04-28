@@ -21,12 +21,12 @@
 
 #ifndef JITTEST_HPP
 #define JITTEST_HPP
-
 #include <gtest/gtest.h>
 #include <vector>
 #include <stdexcept>
 #include <iostream>
 #include <cstring>
+#include <cmath>
 #include "control/Options.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "ilgen/MethodBuilder.hpp"
@@ -37,6 +37,7 @@
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(NULL != (pointer))
 #define EXPECT_NULL(pointer) EXPECT_EQ(NULL, (pointer))
 #define EXPECT_NOTNULL(pointer) EXPECT_TRUE(NULL != (pointer))
+
 
 #define TRIL(code) #code
 
@@ -598,6 +599,53 @@ class SkipHelper
 
    SkipReason reason_;
    };
+
+/*
+ * A workaround for XLC which does not have std::isnan()
+ */
+#if defined(J9ZOS390) || defined(AIXPPC)
+namespace std
+{
+   using ::isnan;
+}
+#endif
+
+/*
+ * To allow testing against NaNs in floating-point tests using standard
+ * ASSERT_EQ() and EXPECT_EQ(), we provide specialized comparator for
+ * float and double types that makes NaN equal to NaN (for testing
+ * purposes)
+ */
+namespace testing {
+namespace internal {
+
+template<>
+AssertionResult CmpHelperEQ<float, float>(const char* lhs_expression,
+                            const char* rhs_expression,
+                            const float& lhs,
+                            const float& rhs);
+template<>
+AssertionResult CmpHelperEQ<volatile float, volatile float>(const char* lhs_expression,
+                            const char* rhs_expression,
+                            const volatile float& lhs,
+                            const volatile float& rhs);
+
+template<>
+AssertionResult CmpHelperEQ<double, double>(const char* lhs_expression,
+                            const char* rhs_expression,
+                            const double& lhs,
+                            const double& rhs);
+
+template<>
+AssertionResult CmpHelperEQ<volatile double, volatile double>(const char* lhs_expression,
+                            const char* rhs_expression,
+                            const volatile double& lhs,
+                            const volatile double& rhs);
+
+
+} // namespace internal
+} // namespace testing
+
 
 /**
  * @brief A macro to allow a test to be conditionally skipped

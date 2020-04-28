@@ -30,6 +30,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 omr_add_executable(comptest
 	main.cpp
+	JitTest.cpp
 	JitTestUtilitiesTest.cpp
 	ILValidatorTest.cpp
 	ArithmeticTest.cpp

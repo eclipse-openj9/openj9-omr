@@ -23,15 +23,6 @@
 #include "default_compiler.hpp"
 #include "omrformatconsts.h"
 
-#include <cmath>
-
-#if defined(J9ZOS390) || defined(AIXPPC)
-namespace std
-{
-   using ::isnan;
-}
-#endif
-
 template <typename T>
 T add(T l, T r) {
     return l + r;

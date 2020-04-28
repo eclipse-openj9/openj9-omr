@@ -71,6 +71,7 @@ enum TR_VlogTag
    TR_Vlog_PROFILING,
    TR_Vlog_JITServer,
    TR_Vlog_AOTCOMPRESSION,
+   TR_Vlog_FSD,
    TR_Vlog_numTags
    };
 
@@ -84,7 +85,9 @@ class TR_VerboseLog
    //writeLine and write provide multi line write capabilities, and are to be used with vlogAcquire() and vlogRelease(),
    //this ensures nice formatted verbose logs
    static void write(const char *format, ...);
+   static void write(TR_VlogTag tag, const char *format, ...);
    static void writeLine(TR_VlogTag tag, const char *format, ...);
+   static void writeLine(const char *format, ...);
    //writeLineLocked is a single line print function, it provides the locks for you
    static void writeLineLocked(TR_VlogTag tag, const char *format, ...);
    static void vlogAcquire(); //defined in each front end

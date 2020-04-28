@@ -99,14 +99,14 @@ public:
          if (TR::Options::getVerboseOption(TR_VerbosePerformance))
             {
             TR_VerboseLog::vlogAcquire();
-            TR_VerboseLog::write("\nProfiling %s compile time with:", comp->signature());
+            TR_VerboseLog::write("Profiling %s compile time with:", comp->signature());
             char **iter = options;
             while (*iter)
                {
                TR_VerboseLog::write(" %s", *iter);
                iter++;
                }
-            TR_VerboseLog::write("\n");
+            TR_VerboseLog::writeLine("");
             TR_VerboseLog::vlogRelease();
             }
 

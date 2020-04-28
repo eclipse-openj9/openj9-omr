@@ -73,6 +73,44 @@ TR::ARM64ImmInstruction *generateImmInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates relocatable imm instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] imm : immediate value
+ * @param[in] relocationKind : relocation kind
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateRelocatableImmInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   uintptr_t imm,
+                   TR_ExternalRelocationTargetKind relocationKind,
+                   TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates relocatable imm instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] imm : immediate value
+ * @param[in] relocationKind : relocation kind
+ * @param[in] sr : symbol reference
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateRelocatableImmInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   uintptr_t imm,
+                   TR_ExternalRelocationTargetKind relocationKind,
+                   TR::SymbolReference *sr,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates imm sym instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode

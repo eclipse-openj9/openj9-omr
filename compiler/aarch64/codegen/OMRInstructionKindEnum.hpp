@@ -28,6 +28,7 @@
    IsImm,
       IsSynchronization,
       IsException,
+   IsRelocatableImm,
    IsImmSym,
    IsLabel,
       IsConditionalBranch,

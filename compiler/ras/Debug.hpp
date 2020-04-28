@@ -333,6 +333,7 @@ namespace TR { class J9S390InterfaceCallDataSnippet; }
 #endif
 
 namespace TR { class ARM64ImmInstruction; }
+namespace TR { class ARM64RelocatableImmInstruction; }
 namespace TR { class ARM64ImmSymInstruction; }
 namespace TR { class ARM64LabelInstruction; }
 namespace TR { class ARM64ConditionalBranchInstruction; }
@@ -1103,6 +1104,7 @@ public:
    void printPrefix(TR::FILE *, TR::Instruction *);
 
    void print(TR::FILE *, TR::ARM64ImmInstruction *);
+   void print(TR::FILE *, TR::ARM64RelocatableImmInstruction *);
    void print(TR::FILE *, TR::ARM64ImmSymInstruction *);
    void print(TR::FILE *, TR::ARM64LabelInstruction *);
    void print(TR::FILE *, TR::ARM64ConditionalBranchInstruction *);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,6 +33,24 @@
 #if defined(OMR_OS_WINDOWS) || defined(J9X86) || defined(J9HAMMER)
 extern intptr_t
 omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
+
+extern void
+omrsysinfo_get_x86_cpuid(uint32_t leaf, uint32_t *cpuInfo);
+
+extern void
+omrsysinfo_get_x86_cpuid_ext(uint32_t leaf, uint32_t subleaf, uint32_t *cpuInfo);
+
+extern uint32_t
+omrsysinfo_get_cpu_family(uint32_t processorSignature);
+
+extern uint32_t
+omrsysinfo_get_cpu_extended_family(uint32_t processorSignature);
+
+extern uint32_t
+omrsysinfo_get_cpu_model(uint32_t processorSignature);
+
+extern uint32_t
+omrsysinfo_get_cpu_extended_model(uint32_t processorSignature);
 #endif /* defined(OMR_OS_WINDOWS) || defined(J9X86) || defined(J9HAMMER) */
 
 #endif /* SYSINFOHELPERS_H_ */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,19 +36,6 @@
 #if defined(OMR_OS_WINDOWS) || defined(J9X86) || defined(J9HAMMER)
 #if defined(OMR_OS_WINDOWS)
 #include <intrin.h>
-#define cpuid(CPUInfo, EAXValue)             __cpuid(CPUInfo, EAXValue)
-#define cpuidex(CPUInfo, EAXValue, ECXValue) __cpuidex(CPUInfo, EAXValue, ECXValue)
-#else
-#include <cpuid.h>
-#include <emmintrin.h>
-#define cpuid(CPUInfo, EAXValue)             __cpuid(EAXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3])
-#define cpuidex(CPUInfo, EAXValue, ECXValue) __cpuid_count(EAXValue, ECXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3])
-inline unsigned long long _xgetbv(unsigned int ecx)
-{
-	unsigned int eax, edx;
-	__asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(ecx));
-	return ((unsigned long long)edx << 32) | eax;
-}
 #endif /* defined(OMR_OS_WINDOWS) */
 
 /* defines for the CPUID instruction */
@@ -59,6 +46,7 @@ inline unsigned long long _xgetbv(unsigned int ecx)
 
 #define CPUID_VENDOR_INFO                                 0
 #define CPUID_FAMILY_INFO                                 1
+#define CPUID_STRUCTURED_EXTENDED_FEATURE_INFO            7
 
 #define CPUID_VENDOR_INTEL                                "GenuineIntel"
 #define CPUID_VENDOR_AMD                                  "AuthenticAMD"
@@ -123,13 +111,13 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 	desc->processor = OMR_PROCESSOR_X86_UNKNOWN;
 
 	/* vendor */
-	cpuid(CPUInfo, CPUID_VENDOR_INFO);
+	omrsysinfo_get_x86_cpuid(CPUID_VENDOR_INFO, CPUInfo);
 	memcpy(vendor + 0, &CPUInfo[CPUID_EBX], sizeof(uint32_t));
 	memcpy(vendor + 4, &CPUInfo[CPUID_EDX], sizeof(uint32_t));
 	memcpy(vendor + 8, &CPUInfo[CPUID_ECX], sizeof(uint32_t));
 
 	/* family and model */
-	cpuid(CPUInfo, CPUID_FAMILY_INFO);
+	omrsysinfo_get_x86_cpuid(CPUID_FAMILY_INFO, CPUInfo);
 	processorSignature = CPUInfo[CPUID_EAX];
 	familyCode = (processorSignature & CPUID_SIGNATURE_FAMILY) >> CPUID_SIGNATURE_FAMILY_SHIFT;
 	if (0 == strncmp(vendor, CPUID_VENDOR_INTEL, CPUID_VENDOR_LENGTH)) {
@@ -139,8 +127,8 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 			break;
 		case CPUID_FAMILYCODE_INTELCORE:
 		{
-			uint32_t modelCode  = (processorSignature & CPUID_SIGNATURE_MODEL) >> CPUID_SIGNATURE_MODEL_SHIFT;
-			uint32_t extendedModelCode = (processorSignature & CPUID_SIGNATURE_EXTENDEDMODEL) >> CPUID_SIGNATURE_EXTENDEDMODEL_SHIFT;
+			uint32_t modelCode  = omrsysinfo_get_cpu_model(processorSignature);
+			uint32_t extendedModelCode = omrsysinfo_get_cpu_extended_model(processorSignature);
 			uint32_t totalModelCode = modelCode + (extendedModelCode << 4);
 
 			switch (totalModelCode) {
@@ -187,7 +175,7 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 		switch (familyCode) {
 		case CPUID_FAMILYCODE_AMDKSERIES:
 		{
-			uint32_t modelCode  = (processorSignature & CPUID_SIGNATURE_FAMILY) >> CPUID_SIGNATURE_MODEL_SHIFT;
+			uint32_t modelCode  = omrsysinfo_get_cpu_model(processorSignature);
 			if (modelCode < CPUID_MODELCODE_AMDK5) {
 				desc->processor = OMR_PROCESSOR_X86_AMDK5;
 			}
@@ -201,7 +189,7 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 			break;
 		case CPUID_FAMILYCODE_AMDOPTERON:
 		{
-			uint32_t extendedFamilyCode  = (processorSignature & CPUID_SIGNATURE_EXTENDEDFAMILY) >> CPUID_SIGNATURE_EXTENDEDFAMILY_SHIFT;
+			uint32_t extendedFamilyCode  = omrsysinfo_get_cpu_extended_family(processorSignature);
 			if (extendedFamilyCode < CUPID_EXTENDEDFAMILYCODE_AMDOPTERON) {
 				desc->processor = OMR_PROCESSOR_X86_AMDOPTERON;
 			}
@@ -218,10 +206,136 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 	/* features */
 	desc->features[0] = CPUInfo[CPUID_EDX];
 	desc->features[1] = CPUInfo[CPUID_ECX];
+	desc->features[2] = 0; /* reserved for future expansion */
+	/* extended features */
+	omrsysinfo_get_x86_cpuid_ext(CPUID_STRUCTURED_EXTENDED_FEATURE_INFO, 0, CPUInfo); /* 0x0 is the only valid subleaf value for this leaf */
+	desc->features[3] = CPUInfo[CPUID_EBX]; /* Structured Extended Feature Flags in EBX */
 
-	cpuidex(CPUInfo, 7, 0);
-	desc->features[2] = CPUInfo[CPUID_EBX];
-
+	desc->features[4] = 0; /* reserved for future expansion */
 	return 0;
 }
+
+/**
+ * Assembly code to get the register data from CPUID instruction
+ * This function executes the CPUID instruction based on which we can detect
+ * if the environment is virtualized or not, and also get the Hypervisor Vendor
+ * Name based on the same instruction. The leaf value specifies what information
+ * to return.
+ *
+ * @param[in]   leaf        The leaf value to the CPUID instruction and the value
+ *                          in EAX when CPUID is called. A value of 0x1 returns basic
+ *                          information including feature support.
+ * @param[out]  cpuInfo     Reference to the an integer array which holds the data
+ *                          of EAX,EBX,ECX and EDX registers.
+ *              cpuInfo[0]  To hold the EAX register data, value in this register at
+ *                          the time of CPUID tells what information to return
+ *                          EAX=0x1,returns the processor Info and feature bits
+ *                          in EBX,ECX,EDX registers.
+ *                          EAX=0x40000000 returns the Hypervisor Vendor Names
+ *                          in the EBX,ECX,EDX registers.
+ *              cpuInfo[1]  For EAX = 0x40000000 hold first 4 characters of the
+ *                          Hypervisor Vendor String
+ *              cpuInfo[2]  For EAX = 0x1, the 31st bit of ECX tells if its
+ *                          running on Hypervisor or not,For EAX = 0x40000000 holds the second
+ *                          4 characters of the the Hypervisor Vendor String
+ *              cpuInfo[3]  For EAX = 0x40000000 hold the last 4 characters of the
+ *                          Hypervisor Vendor String
+ *
+ */
+void
+omrsysinfo_get_x86_cpuid(uint32_t leaf, uint32_t *cpuInfo)
+{
+	cpuInfo[0] = leaf;
+
+#if defined(OMR_OS_WINDOWS)
+	/* Specific CPUID instruction available in Windows */
+	__cpuid(cpuInfo, cpuInfo[0]);
+
+#elif defined(LINUX) || defined(OSX)
+#if defined(J9X86)
+	__asm volatile(
+		"mov %%ebx, %%edi;"
+		"cpuid;"
+		"mov %%ebx, %%esi;"
+		"mov %%edi, %%ebx;"
+		:"+a" (cpuInfo[0]), "=S" (cpuInfo[1]), "=c" (cpuInfo[2]), "=d" (cpuInfo[3])
+		: /* None */
+		:"edi");
+
+#elif defined(J9HAMMER)
+	__asm volatile(
+		"cpuid;"
+		:"+a" (cpuInfo[0]), "=b" (cpuInfo[1]), "=c" (cpuInfo[2]), "=d" (cpuInfo[3])
+		);
+#endif /* defined(LINUX) || defined(OSX) */
+#endif /* defined(OMR_OS_WINDOWS) */
+}
+
+/**
+ * Similar to omrsysinfo_get_x86_cpuid() above, but with a second subleaf parameter for the
+ * leaves returned by the 'cpuid' instruction which are further divided into
+ * subleaves.
+ * 
+ * @param[in]   leaf        Value in EAX when cpuid is called to determine what info
+ *                          is returned.
+ *              subleaf     Value in ECX when cpuid is called which is needed by some
+ *                          leafs returned in order to further specify what is returned
+ * @param[out]  cpuInfo     Reference to the an integer array which holds the data
+ *                          of EAX,EBX,ECX and EDX registers returned by cpuid.
+ *                          cpuInfo[0] holds EAX and cpuInfo[4] holds EDX.
+ */
+void
+omrsysinfo_get_x86_cpuid_ext(uint32_t leaf, uint32_t subleaf, uint32_t *cpuInfo)
+{
+	cpuInfo[0] = leaf;
+	cpuInfo[2] = subleaf;
+
+#if defined(OMR_OS_WINDOWS)
+	/* Specific CPUID instruction available in Windows */
+	__cpuidex(cpuInfo, cpuInfo[0], cpuInfo[2]);
+
+#elif defined(LINUX) || defined(OSX)
+#if defined(J9X86)
+	__asm volatile(
+		"mov %%ebx, %%edi;"
+		"cpuid;"
+		"mov %%ebx, %%esi;"
+		"mov %%edi, %%ebx;"
+		:"+a" (cpuInfo[0]), "=S" (cpuInfo[1]), "+c" (cpuInfo[2]), "=d" (cpuInfo[3])
+		: /* None */
+		:"edi");
+
+#elif defined(J9HAMMER)
+	__asm volatile(
+		"cpuid;"
+		:"+a" (cpuInfo[0]), "=b" (cpuInfo[1]), "+c" (cpuInfo[2]), "=d" (cpuInfo[3])
+		);
+#endif /* defined(LINUX) || defined(OSX) */
+#endif /* defined(OMR_OS_WINDOWS) */
+}
+
+uint32_t
+omrsysinfo_get_cpu_family(uint32_t processorSignature)
+{
+	return (processorSignature & CPUID_SIGNATURE_FAMILY) >> CPUID_SIGNATURE_FAMILY_SHIFT;
+}
+
+uint32_t
+omrsysinfo_get_cpu_extended_family(uint32_t processorSignature)
+{
+	return (processorSignature & CPUID_SIGNATURE_EXTENDEDFAMILY) >> CPUID_SIGNATURE_EXTENDEDFAMILY_SHIFT;
+}
+
+uint32_t
+omrsysinfo_get_cpu_model(uint32_t processorSignature)
+{
+	return (processorSignature & CPUID_SIGNATURE_MODEL) >> CPUID_SIGNATURE_MODEL_SHIFT;
+}
+
+uint32_t
+omrsysinfo_get_cpu_extended_model(uint32_t processorSignature)
+{
+	return (processorSignature & CPUID_SIGNATURE_EXTENDEDMODEL) >> CPUID_SIGNATURE_EXTENDEDMODEL_SHIFT;
+}
+
 #endif /* defined(OMR_OS_WINDOWS) || defined(J9X86) || defined(J9HAMMER) */

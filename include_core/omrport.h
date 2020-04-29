@@ -1540,43 +1540,41 @@ typedef struct OMRProcessorDesc {
 #define OMR_FEATURE_X86_RDRAND       32 + 30 /* Processor supports RDRAND instruction. */
 #define OMR_FEATURE_X86_1_31         32 + 31 /* Not used */
 
-
-/* INTEL INSTRUCTION SET REFERENCE, A-M
- * Vol. 2A 3-194 Table 3-8. Feature Information Returned in the EBX Register
+/* INTEL INSTRUCTION SET REFERENCE, A-L May 2019
+ * Vol. 2 3-197 Table 3-8. Structured Feature Information Returned in the EBX Register by CPUID instruction
  */
-#define OMR_FEATURE_X86_FSGSBASE              64 + 0 /* RDFSBASE/RDGSBASE/WRFSBASE/WRGSBASE */
-#define OMR_FEATURE_X86_IA32_TSC_ADJUST       64 + 1 /* MSR is supported if 1 */
-#define OMR_FEATURE_X86_SGX                   64 + 2 /* Software Guard Extensions */
-#define OMR_FEATURE_X86_BMI1                  64 + 3 /* BMI1 */
-#define OMR_FEATURE_X86_HLE                   64 + 4 /* HLE */
-#define OMR_FEATURE_X86_AVX2                  64 + 5 /* AVX2 */
-#define OMR_FEATURE_X86_FDP_EXCPTN_ONLY       64 + 6 /* x87 FPU Data Pointer updated only on x87 exceptions if 1 */
-#define OMR_FEATURE_X86_SMEP                  64 + 7 /* Supervisor-Mode Execution Prevention */ 
-#define OMR_FEATURE_X86_BMI2                  64 + 8 /* BMI2 */
-#define OMR_FEATURE_X86_ERMSB                 64 + 9 /* Enhanced REP MOVSB/STOSB */
-#define OMR_FEATURE_X86_INVPCID               64 + 10 /* Processor supports INVPCID instruction for system software that manages process-context
-identifiers */
-#define OMR_FEATURE_X86_RTM                   64 + 11 /* RTM */
-#define OMR_FEATURE_X86_RDT_M                 64 + 12 /* Processor supports Intel Resource Director Technology Monitoring */ 
-#define OMR_FEATURE_X86_DEPRECATES_FPUCSDS    64 + 13 /* Deprecates FPU CS and FPU DS values */ 
-#define OMR_FEATURE_X86_MPX                   64 + 14 /* Processor supports Intel Memory Protection Extensions */
-#define OMR_FEATURE_X86_RDT_A                 64 + 15 /* Processor supports Intel Resource Director Technology Allocation capability */
-#define OMR_FEATURE_X86_2_16                  64 + 16 /* Reserved */          
-#define OMR_FEATURE_X86_2_17                  64 + 17 /* Reserved */
-#define OMR_FEATURE_X86_RDSEED                64 + 18 /* RDSEED */
-#define OMR_FEATURE_X86_ADX                   64 + 19 /* ADX */
-#define OMR_FEATURE_X86_SMAP                  64 + 20 /* Processor supports Supervisor-Mode Access Prevention */
-#define OMR_FEATURE_X86_2_21                  64 + 21 /* Reserved */
-#define OMR_FEATURE_X86_2_22                  64 + 22 /* Reserved */
-#define OMR_FEATURE_X86_CLFLUSHOPT            64 + 23 /* CLFLUSHOPT */
-#define OMR_FEATURE_X86_CLWB                  64 + 24 /* CLWB */
-#define OMR_FEATURE_INTEL_PROCESSOR_TRACE     64 + 25 /* Intel Processor Trace */
-#define OMR_FEATURE_X86_2_26                  64 + 26 /* Reserved */
-#define OMR_FEATURE_X86_2_27                  64 + 27 /* Reserved */
-#define OMR_FEATURE_X86_2_28                  64 + 28 /* Reserved */
-#define OMR_FEATURE_X86_SHA                   64 + 29 /* Processor supports Intel Secure Hash Algorithm extensions */
-#define OMR_FEATURE_X86_2_30                  64 + 30 /* Reserved */
-#define OMR_FEATURE_X86_2_31                  64 + 31 /* Reserved */
+#define OMR_FEATURE_X86_FSGSBASE            96 + 0 /* fsgsbase instructions support */
+#define OMR_FEATURE_X86_IA32_TSC_ADJUST     96 + 1 /* IA32_TSC_ADJUST MSR support */
+#define OMR_FEATURE_X86_SGX                 96 + 2 /* Intel Software Guard Extensions */
+#define OMR_FEATURE_X86_BMI1                96 + 3 /* Bit Manipulation Instructions 1 */
+#define OMR_FEATURE_X86_HLE                 96 + 4 /* Hardware Lock Elison */
+#define OMR_FEATURE_X86_AVX2                96 + 5 /* AVX2 support */
+#define OMR_FEATURE_X86_FDP_EXCPTN_ONLY     96 + 6 /* x87 FPU data pointer updated only on exceptions */
+#define OMR_FEATURE_X86_SMEP                96 + 7 /* Supervsior-Mode Execution Prevention */
+#define OMR_FEATURE_X86_BMI2                96 + 8 /* Bit Manipulation Instructions 2 */
+#define OMR_FEATURE_X86_ERMSB               96 + 9 /* Enhanced REP MOVSB/STOSB */
+#define OMR_FEATURE_X86_INVPCID             96 + 10 /* Invalidate Process-Context Identifier instruction */
+#define OMR_FEATURE_X86_RTM                 96 + 11 /* Restricted Transactional Memory */
+#define OMR_FEATURE_X86_RDT_M               96 + 12 /* Intel RDT Monitoring */
+#define OMR_FEATURE_X86_DEPRECATE_FPUCS     96 + 13 /* Deprecates FPU CS and FPU DS when set */
+#define OMR_FEATURE_X86_MPX                 96 + 14 /* Intel Memory Protextion Extensions */
+#define OMR_FEATURE_X86_RDT_A               96 + 15 /* Intel RDT Allocation */
+#define OMR_FEATURE_X86_AVX512F             96 + 16 /* AVX512 Foundation */
+#define OMR_FEATURE_X86_AVX512DQ            96 + 17 /* AVX512 Doubleword & Quadword */
+#define OMR_FEATURE_X86_RDSEED              96 + 18 /* RDSEED instruction support */
+#define OMR_FEATURE_X86_ADX                 96 + 19 /* Intel ADX (multi-precision arithmetic) */
+#define OMR_FEATURE_X86_SMAP                96 + 20 /* Supervisor-Mode Access Prevention */
+#define OMR_FEATURE_X86_AVX512_IFMA         96 + 21 /* AVX512 Integer Fused Multiply Add */
+#define OMR_FEATURE_X86_3_22                96 + 22 /* reserved */
+#define OMR_FEATURE_X86_CLFLUSHOPT          96 + 23 /* cache flush optimized */
+#define OMR_FEATURE_X86_CLWB                96 + 24 /* cache line write back */
+#define OMR_FEATURE_X86_IPT                 96 + 25 /* Intel Processor Trace */
+#define OMR_FEATURE_X86_AVX512PF            96 + 26 /* AVX512 Prefetch */
+#define OMR_FEATURE_X86_AVX512ER            96 + 27 /* AVX512 Exponential and Reciprocal */
+#define OMR_FEATURE_X86_AVX512CD            96 + 28 /* AVX512 Conflict Detection */
+#define OMR_FEATURE_X86_SHA                 96 + 29 /* Intel SHA Extensions */
+#define OMR_FEATURE_X86_AVX512BW            96 + 30 /* AVX512 Byte and Word */
+#define OMR_FEATURE_X86_AVX512VL            96 + 31 /* AVX512 Vector Length */
 
 struct OMRPortLibrary;
 typedef struct J9Heap J9Heap;

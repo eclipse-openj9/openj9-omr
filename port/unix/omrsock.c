@@ -679,7 +679,7 @@ omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint
 	}
 	if (-1 == bytesRecv) {
 		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_RECVFROM_FAILED);
-		return OMRPORT_ERROR_SOCK_RECVFROM_FAILED;
+		return errno;
 	}
 	
 	return bytesRecv;

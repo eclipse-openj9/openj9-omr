@@ -31,6 +31,7 @@
 #include "omrsock.h"
 
 #include <arpa/inet.h>
+#include <errno.h>
 #include <netdb.h>
 #include <string.h> 
 #include <unistd.h>
@@ -459,13 +460,31 @@ omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32
 int32_t
 omrsock_bind(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_sockaddr_t addr)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	socklen_t addrlength;
+
+	if (OS_SOCK_AF_INET == (addr->data).ss_family) {
+		addrlength = sizeof(omr_os_sockaddr_in);
+	}
+	else {
+		addrlength = sizeof(omr_os_sockaddr_in6);
+	}
+
+	if (bind(sock->data, (struct sockaddr *)&addr->data, addrlength) < 0) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_BIND_FAILED);
+		return OMRPORT_ERROR_SOCK_BIND_FAILED;
+	}
+
+	return 0;
 }
 
 int32_t
 omrsock_listen(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t backlog)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+ 	if (listen(sock->data, backlog) < 0) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_LISTEN_FAILED);
+		return OMRPORT_ERROR_SOCK_LISTEN_FAILED;
+	}
+	return 0;
 }
 
 int32_t

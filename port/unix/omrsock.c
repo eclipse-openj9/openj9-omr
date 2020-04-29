@@ -624,7 +624,23 @@ omrsock_send(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t 
 int32_t
 omrsock_sendto(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags, omrsock_sockaddr_t addrHandle)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+
+	int32_t bytesSent = 0;
+	int32_t err;
+
+	if (NULL == sock || 0 >= nbyte || NULL == addrHandle) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	bytesSent = sendto(sock->data, buf, nbyte, flags, (omr_os_sockaddr *)&addrHandle->data, sizeof(omr_os_sockaddr_storage));
+
+	if (-1 == bytesSent) {
+		err = errno;
+		portLibrary->error_set_last_error(portLibrary, err, OMRPORT_ERROR_SOCK_SENDTO_FAILED);
+		return OMRPORT_ERROR_SOCK_SENDTO_FAILED;
+	}
+
+	return bytesSent;
 }
 
 int32_t
@@ -647,7 +663,26 @@ omrsock_recv(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t 
 int32_t
 omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags, omrsock_sockaddr_t addrHandle)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	int32_t bytesRecv = 0;
+	socklen_t addrLength = 0;
+	
+	if (NULL == sock || 0 >= nbyte) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	if (NULL == addrHandle) {
+		/* If addrHandle is NULL, the source address will not be filled in by recvfrom call. */
+		bytesRecv = recvfrom(sock->data, buf, nbyte, flags, NULL, NULL);
+	} else {
+		addrLength = sizeof(omr_os_sockaddr_storage);
+		bytesRecv = recvfrom(sock->data, buf, nbyte, flags, (struct sockaddr*)&addrHandle->data, &addrLength);
+	}
+	if (-1 == bytesRecv) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_RECVFROM_FAILED);
+		return OMRPORT_ERROR_SOCK_RECVFROM_FAILED;
+	}
+	
+	return bytesRecv;
 }
 
 int32_t

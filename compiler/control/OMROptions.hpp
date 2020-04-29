@@ -641,7 +641,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x00800000 + 18,
    // Available                                       = 0x01000000 + 18,
    TR_TraceOpts                                       = 0x02000000 + 18, // list optimization group in its dynamic order
-   TR_DisableDecimalFormatPeephole                    = 0x04000000 + 18, //optimize DecimalFormat.format(BigDecimal.doubleValue())
+   // Available                                       = 0x04000000 + 18,
    // Available                                       = 0x08000000 + 18,
    // Available                                       = 0x10000000 + 18,
    // Available                                       = 0x20000000 + 18,

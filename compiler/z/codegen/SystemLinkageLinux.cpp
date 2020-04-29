@@ -320,7 +320,7 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
 void
 TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method)
    {
-   self()->setParameterLinkageRegisterIndex(method, method->getParameterList());
+   setParameterLinkageRegisterIndex(method, method->getParameterList());
    }
 
 void
@@ -330,9 +330,9 @@ TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethod
    int32_t numFPRArgs = 0;
    int32_t numVRFArgs = 0;
 
-   int32_t maxGPRArgs = self()->getNumIntegerArgumentRegisters();
-   int32_t maxFPRArgs = self()->getNumFloatArgumentRegisters();
-   int32_t maxVRFArgs = self()->getNumVectorArgumentRegisters();
+   int32_t maxGPRArgs = getNumIntegerArgumentRegisters();
+   int32_t maxFPRArgs = getNumFloatArgumentRegisters();
+   int32_t maxVRFArgs = getNumVectorArgumentRegisters();
 
    ListIterator<TR::ParameterSymbol> paramIterator(&parmList);
    for (TR::ParameterSymbol* paramCursor = paramIterator.getFirst(); paramCursor != NULL; paramCursor = paramIterator.getNext())
@@ -359,7 +359,7 @@ TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethod
          case TR::Float:
          case TR::Double:
             {
-            if (numFPRArgs < self()->getNumFloatArgumentRegisters())
+            if (numFPRArgs < getNumFloatArgumentRegisters())
                {
                lri = numFPRArgs;
                }
@@ -380,7 +380,7 @@ TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethod
          case TR::VectorInt64:
          case TR::VectorDouble:
             {
-            if (numVRFArgs < self()->getNumVectorArgumentRegisters())
+            if (numVRFArgs < getNumVectorArgumentRegisters())
                {
                lri = numVRFArgs;
                }

@@ -1081,7 +1081,7 @@ OMR::SymbolReferenceTable::createTempSymRefWithKnownObject(TR::Symbol *symbol, m
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateMonitorExitSymbolRef(TR::ResolvedMethodSymbol *)
    {
-   return findOrCreateRuntimeHelper(TR_monitorExit, true, false, true);
+   return findOrCreateRuntimeHelper(TR_monitorExit, true /* canGCandReturn */, true /* canGCandExcept */, true /* preservesAllRegisters */);
    }
 
 

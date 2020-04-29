@@ -311,7 +311,10 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsock_addrinfo_family, /* sock_addrinfo_family */
 	omrsock_addrinfo_socktype, /* sock_addrinfo_socktype */
 	omrsock_addrinfo_protocol, /* sock_addrinfo_protocol */
+	omrsock_addrinfo_address, /* sock_addrinfo_address */
 	omrsock_freeaddrinfo, /* sock_freeaddrinfo */
+	omrsock_sockaddr_init, /* sock_sockaddr_init */
+	omrsock_sockaddr_init6, /* omrsock_sockaddr_init6 */
 	omrsock_socket, /* sock_socket */
 	omrsock_bind, /* sock_bind */
 	omrsock_listen, /* sock_listen */
@@ -323,6 +326,9 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsock_recvfrom, /* sock_recvfrom */
 	omrsock_close, /* sock_close */
 	omrsock_shutdown, /* sock_shutdown */
+	omrsock_htons, /* sock_htons */
+	omrsock_htonl, /* sock_htonl */
+	omrsock_inet_pton, /* sock_inet_pton */
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 #if defined(OMR_OPT_CUDA)
 	NULL, /* cuda_configData */

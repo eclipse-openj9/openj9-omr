@@ -229,6 +229,7 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
 	OMRAddrInfoNode result;
+	OMRSockAddrStorage sockAddr;
 	omrsock_addrinfo_t hints = NULL;
 	omrsock_socket_t socket = NULL;
 	int32_t rc = 0;
@@ -292,16 +293,118 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 
 		rc = OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, family, sockType, protocol);
 		if(0 == rc) {
+			ASSERT_NE(socket, (void *)NULL);
+			ASSERT_EQ(OMRPORTLIB->sock_addrinfo_address(OMRPORTLIB, &result, i, &sockAddr), 0);
 			break;
 		}
 	}
-	ASSERT_NE(socket, (void *)NULL);
 
 	rc = OMRPORTLIB->sock_close(OMRPORTLIB, &socket);
 	EXPECT_EQ(rc, 0);
 
 	rc = OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, &result);
 	EXPECT_EQ(rc, 0);
+}
+
+/**
+ * Test functions involving IPv4 and IPv6 socket addresses:
+ * To Create a Socket Address with INADDR_ANY IPv4 address
+ *
+ * After creating the address, their ability to bind and listen will be tested.
+ * 
+ * Address families tested is IPv4.
+ */
+TEST(PortSockTest, create_addressany_IPv4_socket_address)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	OMRSockAddrStorage sockAddr;
+	uint16_t port = 4930;
+	uint8_t addr[4];
+
+	uint32_t inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
+	memcpy(addr, &inaddrAny, 4);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET, addr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+}
+
+/**
+ * Test functions involving IPv4 and IPv6 socket addresses:
+ * To Create a Socket Address with dotted-decimal IPv4 address.
+ *
+ * After creating the address, their ability to bind and listen will be tested.
+ * 
+ * Address families tested is IPv4.
+ */
+TEST(PortSockTest, create_dotted_decimal_IPv4_socket_address)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	OMRSockAddrStorage sockAddr;
+	uint16_t port = 4930;
+	uint8_t addr[4];
+
+	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET, "127.0.0.1", addr), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET, addr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+}
+
+/**
+ * Test functions involving IPv4 and IPv6 socket addresses:
+ * To Create a Socket Address with the loopback IPv6 address.
+ *
+ * After creating the address, their ability to bind and listen will be tested.
+ * 
+ * Address families tested include IPv4 and IPv6.
+ */
+TEST(PortSockTest, create_IPv6_socket_address)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	OMRSockAddrStorage sockAddr;
+	uint16_t port = 4930;
+	uint8_t addr6[16];
+
+	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET6, "::1", addr6), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB,  &sockAddr, OMRSOCK_AF_INET6, addr6, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
+}
+
+/**
+ * Test functions involving IPv4 and IPv6 socket addresses:
+ * To Create a Socket Address with the in6addr_any IPv6 address.
+ *
+ * After creating the address, their ability to bind and listen will be tested.
+ * 
+ * Address families tested include IPv4 and IPv6.
+ */
+TEST(PortSockTest, create_in6addrany_IPv6_socket_address)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	OMRSockAddrStorage sockAddr;
+	uint16_t port = 4930;
+	uint8_t addr6[16];
+
+	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET6, "::0", addr6), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET6, addr6, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
+}
+
+/**
+ * Test functions involving IPv4 and IPv6 socket addresses:
+ * To Create a Socket Address with IPv4-mapped IPv6 address.
+ *
+ * After creating the address, their ability to bind and listen will be tested.
+ * 
+ * Address families tested include IPv4 and IPv6.
+ */
+TEST(PortSockTest, create_IPv4_mapped_IPv6_Socket_Address)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	OMRSockAddrStorage sockAddr;
+	uint16_t port = 4930;
+	uint8_t addr[4];
+
+	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET, "127.0.0.1", addr), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET, addr, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
 }
 
 /**

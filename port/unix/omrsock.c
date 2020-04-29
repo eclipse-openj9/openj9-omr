@@ -30,6 +30,7 @@
 #if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrsock.h"
 
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <string.h> 
 #include <unistd.h>
@@ -338,6 +339,29 @@ omrsock_addrinfo_protocol(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t
 }
 
 int32_t
+omrsock_addrinfo_address(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle, uint32_t index, omrsock_sockaddr_t result)
+{
+	omr_os_addrinfo *info = NULL;
+	uint32_t i = 0;
+
+	if ((NULL == handle) || (NULL == handle->addrInfo) || (index >= handle->length)) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	info = (omr_os_addrinfo *)handle->addrInfo;
+
+	for (i = 0; i < index; i++) {
+		info = info->ai_next;
+		if (NULL == info) {
+			return OMRPORT_ERROR_INVALID_ARGUMENTS;
+		}
+	}
+	memcpy(&result->data, info->ai_addr, info->ai_addrlen);
+
+	return 0;
+}
+
+int32_t
 omrsock_freeaddrinfo(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t handle)
 {
 	if (NULL == handle) {
@@ -349,6 +373,48 @@ omrsock_freeaddrinfo(struct OMRPortLibrary *portLibrary, omrsock_addrinfo_t hand
 	handle->addrInfo = NULL;
 	handle->length = 0;
 
+	return 0;
+}
+
+int32_t
+omrsock_sockaddr_init(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t handle, int32_t family, uint8_t *addrNetworkOrder, uint16_t portNetworkOrder)
+{
+	omr_os_sockaddr_in *sockAddr = (omr_os_sockaddr_in *)&handle->data;
+	memset(handle, 0, sizeof(struct OMRSockAddrStorage));
+	sockAddr->sin_family = get_os_family(family);
+	sockAddr->sin_port = portNetworkOrder;
+	memcpy(&(sockAddr->sin_addr.s_addr), addrNetworkOrder, 4);
+
+	return 0;
+}
+
+int32_t
+omrsock_sockaddr_init6(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t handle, int32_t family, uint8_t *addrNetworkOrder, uint16_t portNetworkOrder, uint32_t flowinfo, uint32_t scope_id)
+{
+	omr_os_sockaddr_in6 *sockAddr6 = (omr_os_sockaddr_in6*)&handle->data;
+	memset(handle, 0, sizeof (struct OMRSockAddrStorage));
+
+	if (OS_SOCK_AF_INET == get_os_family(family)) {
+		/* To talk IPv4 on an IPv6 socket, we need to map the IPv4 address to an IPv6 format. */
+		sockAddr6 = (omr_os_sockaddr_in6 *)&handle->data;
+		memset(sockAddr6->sin6_addr.s6_addr, 0, 16);
+		memcpy(&(sockAddr6->sin6_addr.s6_addr[12]), addrNetworkOrder, 4);
+		/**
+		 * Check if it is the INADDR_ANY address. We know the top 4 bytes of sockaddr_6->sin6_addr.s6_addr
+		 * are 0's as we just cleared them, so we use them to do the check. If it isn't, set 16 bits of "1"s
+		 * in front of the IPv4 address.
+		 */
+		if (0 != memcmp(sockAddr6->sin6_addr.s6_addr, addrNetworkOrder, 4)) {
+			sockAddr6->sin6_addr.s6_addr[10] = 0xFF;
+			sockAddr6->sin6_addr.s6_addr[11] = 0xFF;
+		}
+	} else {
+		memcpy(&sockAddr6->sin6_addr.s6_addr, addrNetworkOrder, 16);
+	}
+	sockAddr6->sin6_port = portNetworkOrder;
+	sockAddr6->sin6_family = OS_SOCK_AF_INET6;
+	sockAddr6->sin6_scope_id = scope_id;
+	sockAddr6->sin6_flowinfo = htonl(flowinfo);
 	return 0;
 }
 
@@ -458,6 +524,32 @@ int32_t
 omrsock_shutdown(struct OMRPortLibrary *portLibrary)
 {
 	return omrsock_ptb_shutdown(portLibrary);
+}
+
+uint16_t
+omrsock_htons(struct OMRPortLibrary *portLibrary, uint16_t val)
+{
+	return htons(val);
+}
+
+uint32_t
+omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val)
+{
+	return htonl(val);
+}
+
+int32_t
+omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder)
+{
+	if (NULL == addrNetworkOrder) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	if (1 != inet_pton(get_os_family(addrFamily), addr, addrNetworkOrder)) {
+		return OMRPORT_ERROR_SOCK_INET_PTON_FAILED;
+	}
+
+	return 0;
 }
 
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

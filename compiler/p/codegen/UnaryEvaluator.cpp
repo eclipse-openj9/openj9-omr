@@ -289,7 +289,7 @@ TR::Register *OMR::Power::TreeEvaluator::s2iEvaluator(TR::Node *node, TR::CodeGe
          {
          trgReg = cg->allocateRegister();
          TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
-#ifdef J9_ProjectSpecific
+#ifdef J9_PROJECT_SPECIFIC
          if (node->getFirstChild()->getOpCodeValue() == TR::irsload)
             {
             tempMR->forceIndexedForm(node->getFirstChild(), cg);

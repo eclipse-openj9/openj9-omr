@@ -352,7 +352,7 @@ function(create_omr_compiler_library)
 
 	omr_inject_object_modification_targets(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
 
-	add_library(${COMPILER_NAME} ${LIB_TYPE}
+	omr_add_library(${COMPILER_NAME} ${LIB_TYPE}
 		${BUILD_NAME_FILE}
 		${COMPILER_OBJECTS}
 	)

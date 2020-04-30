@@ -444,6 +444,48 @@ TR::ARM64SystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t &sta
    p->setOffset(stackIndex -= roundedSize);
    }
 
+void
+TR::ARM64SystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method)
+   {
+   ListIterator<TR::ParameterSymbol> paramIterator(&(method->getParameterList()));
+   TR::ParameterSymbol *paramCursor = paramIterator.getFirst();
+   int32_t numIntArgs = 0, numFloatArgs = 0;
+   const TR::ARM64LinkageProperties& properties = getProperties();
+
+   while ( (paramCursor!=NULL) &&
+           ( (numIntArgs < properties.getNumIntArgRegs()) ||
+             (numFloatArgs < properties.getNumFloatArgRegs()) ) )
+      {
+      int32_t index = -1;
+
+      switch (paramCursor->getDataType())
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Int64:
+         case TR::Address:
+            if (numIntArgs < properties.getNumIntArgRegs())
+               {
+               index = numIntArgs;
+               }
+            numIntArgs++;
+            break;
+
+         case TR::Float:
+         case TR::Double:
+            if (numFloatArgs < properties.getNumFloatArgRegs())
+               {
+               index = numFloatArgs;
+               }
+            numFloatArgs++;
+            break;
+         }
+
+      paramCursor->setLinkageRegisterIndex(index);
+      paramCursor = paramIterator.getNext();
+      }
+   }
 
 void
 TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor)
@@ -480,56 +522,6 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
       cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::strimmx, firstNode, stackSlot, machine->getRealRegister(TR::RealRegister::x30), cursor);
       }
 
-   // spill argument registers
-   int32_t nextIntArgReg = 0;
-   int32_t nextFltArgReg = 0;
-   ListIterator<TR::ParameterSymbol> parameterIterator(&parmList);
-   for (TR::ParameterSymbol *parameter = parameterIterator.getFirst();
-        parameter != NULL && (nextIntArgReg < getProperties().getNumIntArgRegs() || nextFltArgReg < getProperties().getNumFloatArgRegs());
-        parameter = parameterIterator.getNext())
-      {
-      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, parameter->getParameterOffset(), codeGen);
-      TR::InstOpCode::Mnemonic op;
-
-      switch (parameter->getDataType())
-         {
-         case TR::Int8:
-         case TR::Int16:
-         case TR::Int32:
-         case TR::Int64:
-         case TR::Address:
-            if (nextIntArgReg < getProperties().getNumIntArgRegs())
-               {
-               op = (parameter->getSize() == 8) ? TR::InstOpCode::strimmx : TR::InstOpCode::strimmw;
-               cursor = generateMemSrc1Instruction(cg(), op, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::x0 + nextIntArgReg)), cursor);
-               nextIntArgReg++;
-               }
-            else
-               {
-               nextIntArgReg = getProperties().getNumIntArgRegs() + 1;
-               }
-            break;
-         case TR::Float:
-         case TR::Double:
-            if (nextFltArgReg < getProperties().getNumFloatArgRegs())
-               {
-               op = (parameter->getSize() == 8) ? TR::InstOpCode::vstrimmd : TR::InstOpCode::vstrimms;
-               cursor = generateMemSrc1Instruction(cg(), op, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::v0 + nextFltArgReg)), cursor);
-               nextFltArgReg++;
-               }
-            else
-               {
-               nextFltArgReg = getProperties().getNumFloatArgRegs() + 1;
-               }
-            break;
-         case TR::Aggregate:
-            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on AArch64.");
-            break;
-         default:
-            TR_ASSERT(false, "Unknown parameter type.");
-         }
-      }
-
    // save callee-saved registers
    uint32_t offset = bodySymbol->getLocalMappingCursor();
    for (int r = TR::RealRegister::x19; r <= TR::RealRegister::x28; r++)
@@ -552,6 +544,7 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
          offset += 8;
          }
       }
+   cursor = copyParametersToHomeLocation(cursor);
    }
 
 

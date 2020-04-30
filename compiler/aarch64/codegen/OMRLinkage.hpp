@@ -399,6 +399,16 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
     */
    virtual TR::Register *buildIndirectDispatch(TR::Node *callNode) = 0;
 
+   /**
+    * @brief Stores parameters passed in linkage registers to the stack where the
+    *        method body expects to find them.
+    *
+    * @param[in] cursor : the instruction cursor to begin inserting copy instructions
+    * @param[in] parmsHaveBeenStored : true if the parameters have been stored to the stack
+    *
+    * @return The instruction cursor after copies inserted.
+    */
+   TR::Instruction *copyParametersToHomeLocation(TR::Instruction *cursor, bool parmsHaveBeenStored = false);
    };
 } // ARM64
 } // TR

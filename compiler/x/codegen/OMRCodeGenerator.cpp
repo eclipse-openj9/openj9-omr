@@ -111,6 +111,8 @@ TR_X86ProcessorInfo OMR::X86::CodeGenerator::_targetProcessorInfo;
 
 void TR_X86ProcessorInfo::initialize(TR::CodeGenerator *cg)
    {
+   if (_featureFlags.testAny(TR_X86ProcessorInfoInitialized))
+      return;
    // For now, we only convert the feature bits into a flags32_t, for easier querying.
    // To retrieve other information, the VM functions can be called directly.
    //

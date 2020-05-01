@@ -475,6 +475,45 @@ compareHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, bool reverse, TR::Cod
    return trgReg;
 }
 
+static TR::Register *
+compareNotEqualHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+
+   TR::Register *tmpReg = cg->allocateRegister();
+   TR::Register *trgReg = cg->allocateRegister();
+
+   /*
+    * fcmpne / dcmpne should return 0 if either operand is
+    * NaN. Since feq.s / feq.d returns 0 in that case, simply
+    * comparing for equality (using feq.s / feq.d) and negating
+    * the result is not enough.
+    *
+    * We have to explicitly check for both operands to be non-NaN
+    * before negating result of feq.s / feq.d. To check whether a value
+    * is NaN, we again use feq.s / feq.d on the same value, this returns
+    * 0 only when the value is NaN. The result of fcmpne / dcmpne is then
+    * logical and of all three comparisons. This way, we avoid branching.
+    */
+
+   generateRTYPE(op,                    node, trgReg, src1Reg, src1Reg, cg);
+   generateRTYPE(op,                    node, tmpReg, src2Reg, src2Reg, cg);
+   generateRTYPE(TR::InstOpCode::_and,  node, trgReg, trgReg,  tmpReg,  cg);
+
+   generateRTYPE(op,                    node, tmpReg, src1Reg, src2Reg, cg);
+   generateITYPE(TR::InstOpCode::_xori, node, tmpReg, tmpReg,  1,       cg);
+   generateRTYPE(TR::InstOpCode::_and,  node, trgReg, trgReg,  tmpReg,  cg);
+
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   cg->stopUsingRegister(tmpReg);
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
 TR::Register *
 OMR::RV::TreeEvaluator::fcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -484,9 +523,7 @@ OMR::RV::TreeEvaluator::fcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::RV::TreeEvaluator::fcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *trgReg = compareHelper(node, TR::InstOpCode::_feq_s, false, cg);
-   generateITYPE(TR::InstOpCode::_xori, node, trgReg, trgReg, 1, cg);
-   return trgReg;
+   return compareNotEqualHelper(node, TR::InstOpCode::_feq_s, cg);
    }
 
 TR::Register *
@@ -521,11 +558,9 @@ OMR::RV::TreeEvaluator::dcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-   TR::Register *trgReg = compareHelper(node, TR::InstOpCode::_feq_d, false, cg);
-	generateITYPE(TR::InstOpCode::_xori, node, trgReg, trgReg, 1, cg);
-   return trgReg;
-	}
+   {
+   return compareNotEqualHelper(node, TR::InstOpCode::_feq_d, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)

@@ -67,6 +67,7 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
 
    self()->getLinkage()->initARM64RealRegisterLinkage();
    self()->setSupportsGlRegDeps();
+   self()->setSupportsGlRegDepOnFirstBlock();
 
    self()->setSupportsVirtualGuardNOPing();
 

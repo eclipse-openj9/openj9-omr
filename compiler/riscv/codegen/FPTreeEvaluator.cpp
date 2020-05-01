@@ -470,6 +470,7 @@ compareHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, bool reverse, TR::Cod
       generateRTYPE(op, node, trgReg, src1Reg, src2Reg, cg);
 
    cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
    node->setRegister(trgReg);
    return trgReg;
 }

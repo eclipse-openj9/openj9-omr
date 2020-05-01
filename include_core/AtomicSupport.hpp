@@ -207,7 +207,9 @@ public:
 		__sync_synchronize();
 #elif defined(OMR_ARCH_AARCH64) /* defined(ARM) */
 		__asm __volatile ("dmb ish":::"memory");
-#elif defined(S390) /* defined(OMR_ARCH_AARCH64) */
+#elif defined(RISCV64) /* defined(OMR_ARCH_AARCH64) */
+		asm volatile ("fence rw,rw":::"memory");
+#elif defined(S390) /* defined(RISCV64) */
 		asm volatile("bcr 15,0":::"memory");
 #else /* defined(S390) */
 		asm volatile("":::"memory");
@@ -242,7 +244,9 @@ public:
 		__sync_synchronize();
 #elif defined(OMR_ARCH_AARCH64) /* defined(ARM) */
 		__asm __volatile ("dmb ishst":::"memory");
-#else /* defined(OMR_ARCH_AARCH64) */
+#elif defined(RISCV64) /* defined(OMR_ARCH_AARCH64) */
+		asm volatile ("fence w,w":::"memory");
+#else /* defined(RISCV64) */
 		asm volatile("":::"memory");
 #endif /* defined(ARM) */
 #elif defined(J9ZOS390)
@@ -272,7 +276,9 @@ public:
 		__sync_synchronize();
 #elif defined(OMR_ARCH_AARCH64) /* defined(ARM) */
 		__asm __volatile ("dmb ishld":::"memory");
-#else /* defined(OMR_ARCH_AARCH64) */
+#elif defined(RISCV64) /* defined(OMR_ARCH_AARCH64) */
+		asm volatile ("fence r,r":::"memory");
+#else /* defined(RISCV64) */
 		asm volatile("":::"memory");
 #endif /* defined(ARM) */
 #elif defined(J9ZOS390)
@@ -336,8 +342,17 @@ public:
 		__compare_and_swap((volatile int*)address, (int*)&oldValue, (int)newValue);
 		return oldValue;
 #elif defined(__GNUC__)  /* defined(__xlC__) */
+#if defined(__riscv)
+		/* To keep the LR/SC(load/store) code sequentially consistent in memory operations
+		 * so as to prevent reordering of code sequence on RISC-V, directly insert the assembly
+		 * with the RL(release) bit set on the SC(store) instruction which is missing
+		 * in the built-in function __sync_val_compare_and_swap() against the RISC-V Spec.
+		 */
+		return RiscvCAS32Helper(address, oldValue, newValue);
+#else /* defined(__riscv) */
 		/* Assume GCC >= 4.2 */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
+#endif /* defined(__riscv) */
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
 		return (uint32_t)_InterlockedCompareExchange((volatile long *)address, (long)newValue, (long)oldValue);
 #elif defined(J9ZOS390) /* defined(_MSC_VER) */
@@ -393,8 +408,17 @@ public:
 		__compare_and_swaplp((volatile long*)address, (long*)&oldValue, (long)newValue);
 		return oldValue;
 #elif defined(__GNUC__) /* defined(__xlC__) */
+#if defined(__riscv)
+		/* To keep the LR/SC(load/store) code sequentially consistent in memory operations
+		 * so as to prevent reordering of code sequence on RISC-V, directly insert the assembly
+		 * with the RL(release) bit set on the SC(store) instruction which is missing
+		 * in the built-in function __sync_val_compare_and_swap() against the RISC-V Spec.
+		 */
+		return RiscvCAS64Helper(address, oldValue, newValue);
+#else /* defined(__riscv) */
 		/* Assume GCC >= 4.2 */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
+#endif /* defined(__riscv) */
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
 		return (uint64_t)_InterlockedCompareExchange64((volatile __int64 *)address, (__int64)newValue, (__int64)oldValue);
 #elif defined(J9ZOS390) /* defined(_MSC_VER) */

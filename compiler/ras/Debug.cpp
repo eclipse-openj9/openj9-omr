@@ -2616,49 +2616,6 @@ TR_Debug::dumpMethodInstrs(TR::FILE *pOutFile, const char *title, bool dumpTrees
 
    }
 
-// Prints info on Register killed (called just before register is to be killed)
-//
-void
-TR_Debug::printRegisterKilled(TR::Register *reg)
-   {
-   TR::FILE *pOutFile = _comp->getOutFile();
-   TR::Node *node;
-   // many nodes can reference one register, so it is misleading to report just the last one set
-   // better to report none.
-   // node = reg->isLive() ? reg->getLiveRegisterInfo()->getNode() : NULL;
-   node = NULL;
-
-   if (node)
-      {
-      trfprintf(pOutFile, " [%s] (%3d)%*s%s   ",
-         getName(node), node->getReferenceCount(),
-         _comp->cg()->_indentation, " ",
-         getName(node->getOpCode()));
-      }
-   else
-      {
-      trfprintf(pOutFile, "  %*s       %*s", addressWidth, " ", _comp->cg()->_indentation, " ");
-      }
-   trfprintf(pOutFile, "%s%s\n",
-      reg->getRegisterName(_comp),
-      reg->isLive() ? " (killed)" : " (killed, already dead)");
-   }
-
-// Prints info on node and register under evaluation
-//
-void
-TR_Debug::printNodeEvaluation(TR::Node *node, const char *relationship, TR::Register *reg, bool printOpCode)
-   {
-   if (!node) return;
-   TR::FILE *pOutFile = _comp->getOutFile();
-   trfprintf(pOutFile, " [%s] (%3d)%*s%s%s%s%s\n",
-      getName(node), node->getReferenceCount(), _comp->cg()->_indentation, " ",
-      (printOpCode) ? getName(node->getOpCode()) : "",
-      relationship,
-      (reg) ? reg->getRegisterName(_comp) : "",
-      (reg) ? (reg->isLive() ? " (live)" : " (dead)") : "");
-   }
-
 void
 TR_Debug::dumpMixedModeDisassembly()
    {

@@ -997,22 +997,6 @@ enum TR_CompilationOptions
    // Debug Enable flags
    TR_EnableUnneededNarrowIntConversion = 0x00000001,
 
-    // Code generation phase trace word
-   //
-   // Available                       = 0x00000001,
-   // Available                       = 0x00000002,
-   // Available                       = 0x00000004,
-   // Available                       = 0x00000008,
-   // Available                       = 0x00000010,
-   // Available                       = 0x00000020,
-   // Available                       = 0x00000040,
-   // Available                       = 0x00000080,
-   // Available                       = 0x00000100,
-   TR_TraceCGEvaluation               = 0x00000200,
-   // Available                       = 0x00000400,
-   // Available                       = 0x00000800,
-   // Available                       = 0x00001000,
-
    // Trace file addresses enumeration option word
    //
    TR_EnumerateBlock                   = 0x00000001,

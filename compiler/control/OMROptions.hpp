@@ -1061,10 +1061,6 @@ enum TR_CompilationOptions
    //
    TR_TraceSpillCostsBasic              = TR_TraceGRABasic,
 
-   // Instruction Level Dead Code tracing options
-   //
-   TR_TraceILDeadCodeBasic              = TR_TraceGRABasic,
-
    // GPU options
    //
    TR_EnableGPU                         = 0x00000001,
@@ -1532,7 +1528,6 @@ public:
    bool      getTraceSpillCosts(uint32_t mask) { return (_traceSpillCosts & mask) != 0; }
    bool      getTraceSimplifier(uint32_t mask) { return (_traceSimplifier & mask) != 0; }
    bool      getDebugEnableFlag(uint32_t mask) { return (_debugEnableFlags & mask) != 0; }
-   bool      getTraceILDeadCode(uint32_t mask) { return (_traceILDeadCode & mask) != 0; }
    bool      getEnableGPU(uint32_t mask) { return (_enableGPU & mask) != 0; }
 
    // If we running at a fixed opt level (non-recomp) then this routine
@@ -2327,7 +2322,6 @@ protected:
    int32_t                     _addressToEnumerate;   // Addresses enumeration option flags
    int32_t                     _raTrace;              // Register assigner trace flags
    int32_t                     _traceLRA;             // Live Register Analysis trace flags
-   int32_t                     _traceILDeadCode;      // Instruction Level Dead Code trace flags
    int32_t                     _traceSpillCosts;      // Register Spill Costs trace flags
    int32_t                     _traceSimplifier;      // Simplifier trace flags
    int32_t                     _debugEnableFlags;     // For miscellaneeous flags used to enable things

@@ -1136,10 +1136,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 #ifdef J9_PROJECT_SPECIFIC
    {"traceIdiomRecognition",            "L\ttrace idiom recognition",                       TR::Options::traceOptimization, idiomRecognition, 0, "P"},
 #endif
-   {"traceILDeadCode",                  "L\ttrace Instruction Level Dead Code (basic)",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceILDeadCode), TR_TraceILDeadCodeBasic, "F"},
-   {"traceILDeadCode=",                 "L{regex}\tlist of additional traces to enable: basic, listing, details, live, progress",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceILDeadCode), 0, "P"},
    {"traceILGen",                       "L\ttrace IL generator",                           SET_OPTION_BIT(TR_TraceILGen), "F"},
    {"traceILValidator",                 "L\ttrace validation over intermediate language constructs",SET_OPTION_BIT(TR_TraceILValidator), "F" },
    {"traceILWalk",                      "L\tsynonym for traceILWalks",                              SET_OPTION_BIT(TR_TraceILWalks), "P" },
@@ -4623,9 +4619,6 @@ OMR::Options::TR_OptionStringToBit OMR::Options::_optionStringToBitMapping[] = {
 
 // Register Spill Costs named trace Options
 { "basic", TR_TraceSpillCostsBasic},
-
-// Instruction Level Dead Code named trace Options
-{ "basic", TR_TraceILDeadCodeBasic},
 
 // GPU Options
 { "default", TR_EnableGPU},

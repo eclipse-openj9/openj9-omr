@@ -1616,7 +1616,6 @@ public:
    TR::SimpleRegex * getDebugOnCreate()                {return _debugOnCreate;}
    TR::SimpleRegex * getBreakOnThrow()                 {return _breakOnThrow;}
    TR::SimpleRegex * getBreakOnPrint()                 {return _breakOnPrint;}
-   TR::SimpleRegex * getTraceForCodeMining()           {return _traceForCodeMining;}
    TR::SimpleRegex * getVerboseOptTransformationsRegex(){return _verboseOptTransformationsRegex;}
    TR::SimpleRegex * getPackedTestRegex()              {return _packedTest;}
    TR::SimpleRegex * getClassesWithFoldableFinalFields(){return _classesWithFolableFinalFields;}
@@ -2206,7 +2205,6 @@ protected:
    int32_t                    *_customStrategy;     // Actually array of TR_OptimizerImpl::Optimizations numbers read from optFileName
    int32_t                     _customStrategySize; // In elements, including endOpts terminator
 
-   TR::SimpleRegex *           _traceForCodeMining;
    // Optimization levels
    //
    int32_t                     _optLevel;

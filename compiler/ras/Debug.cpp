@@ -407,10 +407,6 @@ TR_Debug::addInstructionComment(TR::Instruction *instr, char * comment, ...)
    if (comment == NULL || _comp->getOutFile() == NULL )
       return;
 
-   TR::SimpleRegex * regex = _comp->getOptions()->getTraceForCodeMining();
-   if (regex && !TR::SimpleRegex::match(regex, comment))
-      return;
-
    CS2::HashIndex hashIndex;
    if (_comp->getToCommentMap().Locate(instr, hashIndex))
       {
@@ -2679,52 +2675,7 @@ TR_Debug::dumpInstructionComments(TR::FILE *pOutFile, TR::Instruction *instr, bo
       for(data=itr.getFirst(); data!=NULL; data= itr.getNext()) trfprintf(pOutFile, " %s", data);
 
       }
-
-   // Print common data mining annotations for all platforms
-   printCommonDataMiningAnnotations(pOutFile, instr, needsStartComment);
-
    }
-
-void
-TR_Debug::printCommonDataMiningAnnotations(TR::FILE *pOutFile, TR::Instruction * inst, bool needsStartComment)
-  {
-  if (inst!=NULL && inst->getNode())
-    {
-    const static char IL_KEY[]  = "IL";
-    const static char FRQ_KEY[] = "FRQ";
-    const static char CLD_KEY[] = "CLD";
-    TR::SimpleRegex * regex = _comp->getOptions()->getTraceForCodeMining();
-    if (regex &&
-        (TR::SimpleRegex::match(regex, "ALL") || TR::SimpleRegex::match(regex, IL_KEY) || TR::SimpleRegex::match(regex, FRQ_KEY)|| TR::SimpleRegex::match(regex, CLD_KEY)))
-       {
-       if (needsStartComment)
-          {
-          trfprintf(pOutFile, " ;");
-          needsStartComment = false;
-          }
-
-       TR::ILOpCode& opcode = inst->getNode()->getOpCode();
-       if (TR::SimpleRegex::match(regex, IL_KEY))
-          {
-          trfprintf(pOutFile, " IL=%s", opcode.getName());
-          }
-       if (inst->getNode()->getOpCodeValue() == TR::BBStart)
-          {
-          _lastFrequency = inst->getNode()->getBlock()->getFrequency();
-          _isCold = inst->getNode()->getBlock()->isCold();
-          }
-       if (TR::SimpleRegex::match(regex, FRQ_KEY))
-          {
-          trfprintf(pOutFile, " FRQ=%d", _lastFrequency);
-          }
-       if (TR::SimpleRegex::match(regex, CLD_KEY))
-          {
-          trfprintf(pOutFile, " CLD=%d", _isCold);
-          }
-       }
-    }
-  }
-
 
 #if !defined(TR_TARGET_POWER) && !defined(TR_TARGET_ARM) && !defined(TR_TARGET_ARM64) && !defined(TR_TARGET_RISCV)
 void

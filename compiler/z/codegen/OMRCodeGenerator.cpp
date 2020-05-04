@@ -2514,39 +2514,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          }
       }
 
-   // Do a pass to tag the basic blocks for Code Mining
-   TR_Debug * debugObj = self()->getDebug();
-   if (debugObj)
-      {
-      TR::SimpleRegex * regex =  self()->comp()->getOptions()->getTraceForCodeMining();
-      if (regex && TR::SimpleRegex::match(regex, "BBN"))
-         {
-         data.cursorInstruction = self()->getFirstInstruction();
-         int32_t currentBlock = -1;
-         int32_t currentBlockFreq = 0;
-         while (data.cursorInstruction)
-            {
-            // Add basic block comment to the current instruction
-            // String will be BBN=###, 11 digits should be enough
-            char *BB_STRING = (char *)self()->trMemory()->allocateHeapMemory(sizeof(char) * 21);
-            TR::Node *node = data.cursorInstruction->getNode();
-
-            if(node && node->getOpCodeValue() == TR::BBStart)
-               {
-               currentBlock = node->getBlock()->getNumber();
-               currentBlockFreq = node->getBlock()->getFrequency();
-               }
-
-            // Add it as a comment
-            sprintf(BB_STRING, "BBN=%d freq=%d", currentBlock, currentBlockFreq);
-            debugObj->addInstructionComment(data.cursorInstruction, BB_STRING);
-            data.cursorInstruction = data.cursorInstruction->getNext();
-            }
-         }
-      }
-
    self()->getLinkage()->performPostBinaryEncoding();
-
    }
 
 /**

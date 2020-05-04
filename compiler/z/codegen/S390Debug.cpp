@@ -1983,15 +1983,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, TR::Instruction * 
          trfprintf(pOutFile,")");
          }
       }
-   if (strlen(comments) > 0)
-     {
-     TR::SimpleRegex * regex = _comp->getOptions()->getTraceForCodeMining();
-     if (regex && TR::SimpleRegex::match(regex, comments))
-        {
-        trfprintf(pOutFile, "\t ; %s", comments);
-        firstPrint = false;
-        }
-     }
 
    printInstructionComment(pOutFile, 0, instr, firstPrint );
    trfflush(pOutFile);

@@ -539,7 +539,6 @@ public:
    virtual void         dumpMethodInstrs(TR::FILE *, const char *, bool, bool header = false);
    virtual void         dumpMixedModeDisassembly();
    virtual void         dumpInstructionComments(TR::FILE *, TR::Instruction *, bool needsStartComment = true );
-   virtual void         printCommonDataMiningAnnotations(TR::FILE *pOutFile, TR::Instruction * inst, bool needsStartComment = true);
    virtual void         print(TR::FILE *, TR::Instruction *);
    virtual void         print(TR::FILE *, TR::Instruction *, const char *);
    virtual void         print(TR::FILE *, List<TR::Snippet> &, bool isWarm = false);

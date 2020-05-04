@@ -855,3 +855,38 @@ OMR::ARM64::TreeEvaluator::dcmpgEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	// TODO:ARM64: Enable TR::TreeEvaluator::dcmpgEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
+
+// also handles dselect
+TR::Register *
+OMR::ARM64::TreeEvaluator::fselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *condNode = node->getChild(0);
+   TR::Node *trueNode = node->getChild(1);
+   TR::Node *falseNode = node->getChild(2);
+
+   TR::Register *condReg = cg->evaluate(condNode);
+   TR::Register *trueReg = cg->evaluate(trueNode);
+   TR::Register *falseReg = cg->evaluate(falseNode);
+   TR::Register *resultReg = trueReg;
+
+   bool isDouble = trueNode->getDataType().isDouble();
+   TR::InstOpCode::Mnemonic movOp = isDouble ? TR::InstOpCode::fmovd : TR::InstOpCode::fmovs;
+
+   if (!cg->canClobberNodesRegister(trueNode))
+      {
+      resultReg = isDouble ? cg->allocateRegister(TR_FPR) : cg->allocateSinglePrecisionRegister();
+      generateTrg1Src1Instruction(cg, movOp, node, resultReg, trueReg);
+      }
+
+   TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
+   generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, condReg, doneLabel);
+   generateTrg1Src1Instruction(cg, movOp, node, resultReg, falseReg);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel);
+
+   node->setRegister(resultReg);
+   cg->decReferenceCount(condNode);
+   cg->decReferenceCount(trueNode);
+   cg->decReferenceCount(falseNode);
+
+   return resultReg;
+   }

@@ -245,7 +245,6 @@ INSTANTIATE_TEST_CASE_P(SelectTest, Int64SelectInt64CompareTest,
             ::testing::ValuesIn(resultInputs<int64_t>()),
             ::testing::Values(xselectOracle<int64_t, int64_t>)));
 
-
 class Int64SelectDoubleCompareTest : public SelectTest<double, int64_t> {};
 
 TEST_P(Int64SelectDoubleCompareTest, UsingLoadParam) {
@@ -315,6 +314,8 @@ INSTANTIATE_TEST_CASE_P(SelectTest, Int64SelectDoubleCompareTest,
 class Int32SelectDoubleCompareTest : public SelectTest<double, int32_t> {};
 
 TEST_P(Int32SelectDoubleCompareTest, UsingLoadParam) {
+    SKIP_ON_AARCH64(MissingImplementation);
+
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -343,6 +344,8 @@ TEST_P(Int32SelectDoubleCompareTest, UsingLoadParam) {
 }
 
 TEST_P(Int32SelectDoubleCompareTest, UsingConst) {
+    SKIP_ON_AARCH64(MissingImplementation);
+
     auto param = to_struct(GetParam());
 
     char inputTrees[512] = {0};
@@ -453,7 +456,6 @@ TEST_P(FloatSelectInt32CompareTest, UsingLoadParam) {
     SKIP_ON_X86(MissingImplementation);
     SKIP_ON_HAMMER(MissingImplementation);
     SKIP_ON_ARM(MissingImplementation);
-    SKIP_ON_AARCH64(MissingImplementation);
 
     auto param = to_struct(GetParam());
 
@@ -526,7 +528,6 @@ TEST_P(DoubleSelectInt32CompareTest, UsingLoadParam) {
     SKIP_ON_X86(MissingImplementation);
     SKIP_ON_HAMMER(MissingImplementation);
     SKIP_ON_ARM(MissingImplementation);
-    SKIP_ON_AARCH64(MissingImplementation);
 
     auto param = to_struct(GetParam());
 

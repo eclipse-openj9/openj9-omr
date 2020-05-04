@@ -1207,9 +1207,6 @@ OMR::CodeGenerator::opCodeIsNoOp(TR::ILOpCode &opCode)
    return self()->opCodeIsNoOpOnThisPlatform(opCode);
    }
 
-
-bool OMR::CodeGenerator::getTraceRAOption(uint32_t mask){ return self()->comp()->getOptions()->getTraceRAOption(mask); }
-
 void OMR::CodeGenerator::traceRAInstruction(TR::Instruction *instr)
    {
    const static char * traceEveryInstruction = feGetEnv("TR_traceEveryInstructionDuringRA");

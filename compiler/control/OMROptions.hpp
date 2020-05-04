@@ -872,7 +872,7 @@ enum TR_CompilationOptions
 
    // Option word 27
    TR_ForceIEEEDivideByZeroException                  = 0x00000020 + 27,
-   // Available                                       = 0x00000040 + 27,
+   TR_TraceRA                                         = 0x00000040 + 27,
    TR_DisableDirectStaticAccessOnZ                    = 0x00000080 + 27,
    // Available                                       = 0x00000100 + 27,
    TR_EnableRIEMIT                                    = 0x00000200 + 27,
@@ -1005,40 +1005,6 @@ enum TR_CompilationOptions
    TR_EnumerateRegister                = 0x00000008,
    TR_EnumerateSymbol                  = 0x00000010,
    TR_EnumerateStructure               = 0x00000020,
-   // Available                        = 0x80000000,
-
-   // Register assignment tracing option word
-   //
-   TR_TraceRABasic                      = 0x00000001,
-   TR_TraceRADependencies               = 0x00000002,
-   TR_TraceRADetails                    = 0x00000004,
-   TR_TraceRAPreAssignmentInstruction   = 0x00000008,
-   TR_TraceRARegisterStates             = 0x00000010,
-   TR_TraceRASpillTemps                 = 0x00000020,
-   // Available                         = 0x00000040,
-   // Available                         = 0x00000200,
-
-   // Instruction Level GRA tracing option word
-   //
-   TR_TraceGRABasic                     = 0x00000001,
-   // Available                         = 0x00000400,
-   // Available                         = 0x00000800,
-   // Available                         = 0x00001000,
-   // Available                         = 0x00002000,
-   // Available                         = 0x00004000,
-   // Available                         = 0x00008000,
-
-   // Live Register Analysis tracing option word
-   //
-   TR_TraceLRAResults                   = 0x00000800,
-   // Available                         = 0x00001000,
-
-   // Register ITF tracing option word
-
-   // Available                         = 0x00008000,
-   // Available                         = 0x00010000,
-   // Available                         = 0x00020000,
-   // Available                         = 0x00040000,
 
    // GPU options
    //
@@ -1049,11 +1015,6 @@ enum TR_CompilationOptions
    TR_EnableSafeMT                      = 0x00000010,
    TR_EnableGPUEnableMath               = 0x00000020,
    TR_EnableGPUDisableTransferHoist     = 0x00000040,
-
-   // Instruction Level Dead Code tracing options
-   //
-   TR_TraceILRematBasic                 = TR_TraceGRABasic,
-
    };
 
 enum TR_VerboseFlags
@@ -1498,9 +1459,6 @@ public:
 
    bool      getAddressEnumerationOption(uint32_t mask)   {return (_addressToEnumerate & mask) != 0;}
 
-   bool      getRegisterAssignmentTraceOption(uint32_t mask) {return (_raTrace & mask) != 0;}
-   bool      getTraceRAOption(uint32_t mask);
-   bool      getTraceLRA(uint32_t mask) { return (_traceLRA & mask) != 0; }
    bool      getTraceSimplifier(uint32_t mask) { return (_traceSimplifier & mask) != 0; }
    bool      getDebugEnableFlag(uint32_t mask) { return (_debugEnableFlags & mask) != 0; }
    bool      getEnableGPU(uint32_t mask) { return (_enableGPU & mask) != 0; }
@@ -2292,8 +2250,6 @@ protected:
    int32_t                     _test390StackBuffer;   // Buffer to force a large stack on 390
    int32_t                     _test390LitPoolBuffer; // Buffer to force a large lit pool on 390
    int32_t                     _addressToEnumerate;   // Addresses enumeration option flags
-   int32_t                     _raTrace;              // Register assigner trace flags
-   int32_t                     _traceLRA;             // Live Register Analysis trace flags
    int32_t                     _traceSimplifier;      // Simplifier trace flags
    int32_t                     _debugEnableFlags;     // For miscellaneeous flags used to enable things
    bool                        _optLevelDowngraded;   // this is a flag rather than an option

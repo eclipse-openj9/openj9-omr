@@ -1045,7 +1045,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
    // Register assignment tracing
    //
-   bool getTraceRAOption(uint32_t mask);
    void traceRAInstruction(TR::Instruction *instr);
    void tracePreRAInstruction(TR::Instruction *instr);
    void tracePostRAInstruction(TR::Instruction *instr);

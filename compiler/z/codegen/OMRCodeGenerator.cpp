@@ -597,7 +597,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    _nextAvailableBlockIndex = -1;
    _currentBlockIndex = -1;
 
-   if (comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+   if (comp->getOption(TR_TraceRA))
       {
       self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
       self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));

@@ -619,7 +619,7 @@ TR::S390LabelInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindTo
    if (getLabelSymbol()->isEndOfColdInstructionStream())
       {
       TR::Machine *machine = cg()->machine();
-      if (comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+      if (comp->getOption(TR_TraceRA))
          traceMsg (comp,"\nOOL: taking register state snap shot\n");
       cg()->setIsOutOfLineHotPath(true);
       machine->takeRegisterStateSnapShot();
@@ -694,13 +694,13 @@ TR::S390BranchInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindT
          TR_ASSERT(cg()->getAppendInstruction() == this, "OOL section must have only one branch to the merge point\n");
          // Start RA for OOL cold path, restore register state from snap shot
          TR::Machine *machine = cg()->machine();
-         if (comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+         if (comp->getOption(TR_TraceRA))
             traceMsg (comp, "\nOOL: Restoring Register state from snap shot\n");
          cg()->setIsOutOfLineHotPath(false);
          machine->restoreRegisterStateFromSnapShot();
          }
       // Reusing the OOL Section merge label for other branches might be unsafe.
-      else if(comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+      else if(comp->getOption(TR_TraceRA))
          traceMsg (comp, "\nOOL: Reusing the OOL Section merge label for other branches might be unsafe.\n");
       }
    }

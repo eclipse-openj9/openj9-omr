@@ -481,7 +481,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    if (comp->target().cpu.isI386())
       self()->setGenerateMasmListingSyntax();
 
-   if (comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+   if (comp->getOption(TR_TraceRA))
       {
       self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
       self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstXMMR, TR::RealRegister::LastXMMR));

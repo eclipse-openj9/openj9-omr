@@ -1186,10 +1186,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 #ifdef J9_PROJECT_SPECIFIC
    {"traceProfileGenerator",            "L\ttrace profile generator",                      TR::Options::traceOptimization, profileGenerator, 0, "P"},
 #endif
-   {"traceRA",                          "L\ttrace register assignment (basic)",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _raTrace), TR_TraceRABasic, "F"},
-   {"traceRA=",                         "L{regex}\tlist of additional register assignment traces to enable: deps, details, preRA, states",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _raTrace), 0, "F"},
+   {"traceRA",                          "L\ttrace register assignment",                    SET_OPTION_BIT(TR_TraceRA), "P" },
    {"traceReachability",                "L\ttrace all analyses based on the reachability engine",     SET_OPTION_BIT(TR_TraceReachability), "P"},
    {"traceRecognizedCallTransformer",   "L\ttrace recognized call transformer",            TR::Options::traceOptimization, recognizedCallTransformer, 0, "P"},
    {"traceRedundantAsyncCheckRemoval",  "L\ttrace redundant async check removal",          TR::Options::traceOptimization, redundantAsyncCheckRemoval, 0, "P"},
@@ -2482,7 +2479,6 @@ OMR::Options::jitPreProcess()
    _firstOptTransformationIndex = self()->getMinFirstOptTransformationIndex();
    _lastOptTransformationIndex = self()->getMaxLastOptTransformationIndex();
 
-   _raTrace = 0;
    _storeSinkingLastOpt = -1;
 #ifdef J9_PROJECT_SPECIFIC
    _profilingCount = DEFAULT_PROFILING_COUNT;
@@ -3716,9 +3712,6 @@ OMR::Options::requiresLogFile()
    if (self()->tracingOptimization())
       return true;
 
-   if (self()->getRegisterAssignmentTraceOption(0xffffffff))
-      return true;
-
    return false;
    }
 
@@ -4580,20 +4573,6 @@ OMR::Options::TR_OptionStringToBit OMR::Options::_optionStringToBitMapping[] = {
 
 // Debug Enable flags
 { "enableUnneededNarrowIntConversion", TR_EnableUnneededNarrowIntConversion },
-
-// Local RA named trace options
-{ "deps", TR_TraceRADependencies },
-{ "details", TR_TraceRADetails },
-{ "preRA", TR_TraceRAPreAssignmentInstruction },
-{ "spillTemps", TR_TraceRASpillTemps },
-{ "states", TR_TraceRARegisterStates },
-
-
-// Instruction Level GRA named trace Options
-{ "basic", TR_TraceGRABasic},
-
-// Live Register Analysis named trace Options
-{ "results", TR_TraceLRAResults },
 
 // GPU Options
 { "default", TR_EnableGPU},

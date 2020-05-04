@@ -4560,7 +4560,7 @@ TR_Debug::startTracingRegisterAssignment(const char *direction, TR_RegisterKinds
    {
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    trfprintf(_file, "\n\n<regassign direction=\"%s\" method=\"%s\">\n", direction, jitdCurrentMethodSignature(_comp));
    trfprintf(_file, "<legend>\n"
@@ -4603,7 +4603,7 @@ TR_Debug::stopTracingRegisterAssignment()
    {
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    if (_registerAssignmentTraceCursor)
       trfprintf(_file, "\n");
@@ -4617,7 +4617,7 @@ TR_Debug::traceRegisterAssignment(const char *format, va_list args)
    {
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADetails))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    if (_registerAssignmentTraceCursor)
       {
@@ -4684,14 +4684,12 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
    TR_ASSERT( instr, "cannot trace assignment of NULL instructions\n");
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    if (insertedByRA)
       _registerAssignmentTraceFlags |=  TRACERA_INSTRUCTION_INSERTED;
    else if (postRA)
       _registerAssignmentTraceFlags &= ~TRACERA_INSTRUCTION_INSERTED;
-   else if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRAPreAssignmentInstruction))
-      return;
    print(_file, instr);
    if (_registerAssignmentTraceCursor)
       {
@@ -4699,7 +4697,7 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
       _registerAssignmentTraceCursor = 0;
       if (postRA)
          {
-         if (_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+         if (_comp->getOption(TR_TraceRA))
             {
             trfprintf(_file, "<regstates>\n");
 #if 0
@@ -4761,10 +4759,7 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
                }
             trfprintf(_file, "</regstates>\n");
             }
-         if (_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRAPreAssignmentInstruction))
-            {
-            trfprintf(_file, "\n");
-            }
+         trfprintf(_file, "\n");
          }
       }
    }
@@ -4776,11 +4771,11 @@ TR_Debug::traceRegisterAssigned(TR_RegisterAssignmentFlags flags, TR::Register *
    TR_ASSERT(virtReg, "Cannot trace assignment of NULL Virtual Register\n");
 
    if (_file == NULL ||
-       !_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic))
+       !_comp->getOption(TR_TraceRA))
       return;
    // Avoid superfluous traces, unless the user asks for them.
    if (virtReg->isPlaceholderReg() &&
-       !_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADependencies))
+       !_comp->getOption(TR_TraceRA))
       return;
    char buf[30];
    const char *preCoercionSymbol = flags.testAny(TR_PreDependencyCoercion) ? "!" : "";
@@ -4821,11 +4816,11 @@ TR_Debug::traceRegisterFreed(TR::Register *virtReg, TR::Register *realReg)
    TR_ASSERT(virtReg, "Cannot trace assignment of NULL Virtual Register\n");
 
    if (_file == NULL ||
-       !_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic))
+       !_comp->getOption(TR_TraceRA))
       return;
    // Avoid superfluous traces, unless the user asks for them.
    if (virtReg->isPlaceholderReg() &&
-       !_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADependencies))
+       !_comp->getOption(TR_TraceRA))
       return;
    char buf[30];
    sprintf(buf, "%s(%d/%d)~%s ",
@@ -4851,7 +4846,7 @@ TR_Debug::traceRegisterInterference(TR::Register *virtReg, TR::Register *interfe
    TR_ASSERT( virtReg && interferingVirtual, "cannot trace assignment of NULL registers\n");
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADetails))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    char buf[40];
    sprintf(buf, "%s{%d,%d}? ", getName(interferingVirtual), interferingVirtual->getAssociation(), distance);
@@ -4873,7 +4868,7 @@ TR_Debug::traceRegisterWeight(TR::Register *realReg, uint32_t weight)
    TR_ASSERT( realReg, "cannot trace weight of NULL register\n");
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADetails))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    char buf[30];
    sprintf(buf, "%s[0x%x]? ", getName(realReg), weight);

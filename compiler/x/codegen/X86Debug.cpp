@@ -356,7 +356,7 @@ TR_Debug::dumpDependencies(TR::FILE *pOutFile, TR::Instruction  * instr)
    if (pOutFile == NULL || // no dump file
        (_cg->getStackAtlas() // not in instruction selection
         && !(_registerAssignmentTraceFlags & TRACERA_IN_PROGRESS && // not in register assignment...
-          _comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADependencies)) // or dependencies are not traced
+          _comp->getOption(TR_TraceRA)) // or dependencies are not traced
        ))
       return;
 

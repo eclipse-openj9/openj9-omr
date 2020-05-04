@@ -356,7 +356,7 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
          // if (instr->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) break;
 
          if ((instr->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) && /*(debug("traceMsg90RA"))*/
-             (_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic)))
+             (_comp->getOption(TR_TraceRA)))
             {
             if (_comp->cg()->getCodeGeneratorPhase() < TR::CodeGenPhase::BinaryEncodingPhase)
                printAssocRegDirective(pOutFile, instr);

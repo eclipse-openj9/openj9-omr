@@ -218,7 +218,7 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
          {
          int32_t newOffset = stackIndex + pointerSize*(localCursor->getGCMapIndex()-firstLocalGCIndex);
 
-         if (self()->cg()->getTraceRAOption(TR_TraceRASpillTemps))
+         if (self()->cg()->comp()->getOption(TR_TraceRA))
             traceMsg(self()->comp(), "\nmapCompactedStack: changing %s (GC index %d) offset from %d to %d",
                self()->comp()->getDebug()->getName(localCursor), localCursor->getGCMapIndex(), localCursor->getOffset(), newOffset);
 
@@ -524,7 +524,7 @@ void OMR::X86::Linkage::mapSingleAutomatic(TR::AutomaticSymbol *p,
    p->setOffset(stackIndex);
 
 
-   if (self()->cg()->getTraceRAOption(TR_TraceRASpillTemps))
+   if (self()->cg()->comp()->getOption(TR_TraceRA))
       traceMsg(self()->cg()->comp(), "\nmapSingleAutomatic(%s, %d) = %d", self()->cg()->getDebug()->getName(p), size, stackIndex);
    }
 

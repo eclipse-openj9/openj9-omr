@@ -382,7 +382,7 @@ OMR::CodeGenPhase::performRegisterAssigningPhase(TR::CodeGenerator * cg, TR::Cod
          }
       }
 
-   if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostRegisterAssignment))
+   if (comp->getOption(TR_TraceCG))
       comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Register Assignment Instructions", false, true);
    }
 

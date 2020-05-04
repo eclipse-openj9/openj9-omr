@@ -1001,7 +1001,7 @@ enum TR_CompilationOptions
    //
    TR_TraceCGPreInstructionSelection  = 0x00000001,
    // Available                       = 0x00000002,
-   TR_TraceCGPostRegisterAssignment   = 0x00000004,
+   // Available                       = 0x00000004,
    // Available                       = 0x00000008,
    TR_TraceCGPostBinaryEncoding       = 0x00000010,
    TR_TraceCGMixedModeDisassembly     = 0x00000020,

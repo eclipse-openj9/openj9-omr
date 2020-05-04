@@ -411,7 +411,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
 
    cg->doInstructionSelection();
 
-   if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostInstructionSelection))
+   if (comp->getOption(TR_TraceCG))
       comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Instruction Selection Instructions", false, true);
 
    // check reference counts

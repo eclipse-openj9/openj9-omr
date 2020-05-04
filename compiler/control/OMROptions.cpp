@@ -1188,7 +1188,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceOSRLiveRangeAnalysis",        "L\ttrace OSR live range analysis",                TR::Options::traceOptimization, osrLiveRangeAnalysis, 0, "P"},
    {"tracePartialInlining",             "L\ttrace partial inlining heuristics",            SET_OPTION_BIT(TR_TracePartialInlining), "P" },
    {"tracePostBinaryEncoding",          "L\tdump instructions (code cache addresses, real registers) after binary encoding", SET_TRACECG_BIT(TR_TraceCGPostBinaryEncoding), "P"},
-   {"tracePostInstructionSelection",    "L\tdump instructions (virtual registers) after instruction selection", SET_TRACECG_BIT(TR_TraceCGPostInstructionSelection), "P"},
    {"tracePostRegisterAssignment",      "L\tdump instructions (real registers) after register assignment", SET_TRACECG_BIT(TR_TraceCGPostRegisterAssignment), "P"},
    {"tracePRE",                         "L\ttrace partial redundancy elimination",        TR::Options::traceOptimization, partialRedundancyElimination, 0, "P"},
    {"tracePrefetchInsertion",           "L\ttrace prefetch insertion",                     TR::Options::traceOptimization, prefetchInsertion, 0, "P"},

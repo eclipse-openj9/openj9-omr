@@ -79,6 +79,30 @@ genericBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstO
          {
          generateTrg1Src1ImmInstruction(cg, regOpImm, node, trgReg, src1Reg, value);
          }
+      else if (constantIsUnsignedImm12(-value) &&
+               (regOpImm == TR::InstOpCode::addimmw || regOpImm == TR::InstOpCode::addimmx ||
+                regOpImm == TR::InstOpCode::subimmw || regOpImm == TR::InstOpCode::subimmx))
+         {
+         TR::InstOpCode::Mnemonic negatedOp;
+         switch (regOpImm)
+            {
+            case TR::InstOpCode::addimmw:
+               negatedOp = TR::InstOpCode::subimmw;
+               break;
+            case TR::InstOpCode::addimmx:
+               negatedOp = TR::InstOpCode::subimmx;
+               break;
+            case TR::InstOpCode::subimmw:
+               negatedOp = TR::InstOpCode::addimmw;
+               break;
+            case TR::InstOpCode::subimmx:
+               negatedOp = TR::InstOpCode::addimmx;
+               break;
+            default:
+               TR_ASSERT(false, "Unsupported op");
+            }
+         generateTrg1Src1ImmInstruction(cg, negatedOp, node, trgReg, src1Reg, -value);
+         }
       else
          {
          src2Reg = cg->allocateRegister();

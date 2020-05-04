@@ -969,7 +969,7 @@ OMR::CodeGenerator::toggleIsInOOLSection()
 
 bool OMR::CodeGenerator::traceBCDCodeGen()
    {
-   return self()->comp()->getOptions()->getTraceCGOption(TR_TraceCGBinaryCodedDecimal);
+   return self()->comp()->getOption(TR_TraceCG);
    }
 
 void OMR::CodeGenerator::traceBCDEntry(char *str, TR::Node *node)

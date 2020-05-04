@@ -1007,7 +1007,7 @@ enum TR_CompilationOptions
    // Available                       = 0x00000020,
    // Available                       = 0x00000040,
    // Available                       = 0x00000080,
-   TR_TraceCGBinaryCodedDecimal       = 0x00000100,
+   // Available                       = 0x00000100,
    TR_TraceCGEvaluation               = 0x00000200,
    // Available                       = 0x00000400,
    // Available                       = 0x00000800,

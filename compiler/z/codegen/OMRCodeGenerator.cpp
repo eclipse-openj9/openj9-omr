@@ -5678,7 +5678,7 @@ OMR::Z::CodeGenerator::loadOrStoreAddressesMatch(TR::Node *node1, TR::Node *node
 
    if (node1->getSize() != node2->getSize())
       {
-      if (self()->comp()->getOption(TR_TraceVIP))
+      if (self()->comp()->getOption(TR_TraceCG))
          traceMsg(self()->comp(),"\t\tloadOrStoreAddressesMatch = false (sizes differ) : node1 %s (%p) size = %d and node2 %s (%p) size = %d\n",
                node1->getOpCode().getName(),node1,node1->getSize(),node2->getOpCode().getName(),node2,node2->getSize());
       return false;
@@ -5701,7 +5701,7 @@ OMR::Z::CodeGenerator::loadOrStoreAddressesMatch(TR::Node *node1, TR::Node *node
          foundMatch = true;
          }
       }
-   if (self()->comp()->getOption(TR_TraceVIP))
+   if (self()->comp()->getOption(TR_TraceCG))
       traceMsg(self()->comp(),"\t\tloadOrStoreAddressesMatch = %s : node1 %s (%p) and node2 %s (%p)\n",
          foundMatch?"true":"false",node1->getOpCode().getName(),node1,node2->getOpCode().getName(),node2);
    return foundMatch;

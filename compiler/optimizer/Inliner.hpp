@@ -683,8 +683,6 @@ class TR_TransformInlinedFunction
 
       TR_ParameterToArgumentMapper &getParameterMapper(){ return _parameterMapper; }
 
-      bool traceVIP() { return _traceVIP; }
-
 #define MAX_FIND_SIMPLE_CALL_REFERENCE_DEPTH 12
       void setFindCallNodeRecursionDepthToMax() { findCallNodeRecursionDepth = MAX_FIND_SIMPLE_CALL_REFERENCE_DEPTH; }
       void setMultiRefNodeIsCallRecursionDepthToMax() { onlyMultiRefNodeIsCallNodeRecursionDepth = MAX_FIND_SIMPLE_CALL_REFERENCE_DEPTH; }
@@ -729,7 +727,6 @@ class TR_TransformInlinedFunction
       bool                           _processingExceptionHandlers;
       bool                           _favourVftCompare;
       bool                           _determineIfReturnCanBeReplacedWithCallNodeReference;
-      bool                           _traceVIP; // traceValueInitPropagation
       bool                           _crossedBasicBlock;
 
       int32_t findCallNodeRecursionDepth;

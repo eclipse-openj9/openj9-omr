@@ -599,7 +599,7 @@ enum TR_CompilationOptions
    TR_DisableThunkTupleJ2I                            = 0x00000100 + 17,
    // Available                                       = 0x00000200 + 17,
    // Available                                       = 0x00000400 + 17,
-   TR_TraceVIP                                        = 0x00000800 + 17,
+   // Available                                       = 0x00000800 + 17,
    // Available                                       = 0x00001000 + 17,
    // Available                                       = 0x00002000 + 17,
    // Available                                       = 0x00004000 + 17,

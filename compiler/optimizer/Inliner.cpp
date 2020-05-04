@@ -2653,7 +2653,6 @@ TR_TransformInlinedFunction::TR_TransformInlinedFunction(
      _processingExceptionHandlers(false),
      _treeTopsToRemove(c->trMemory()),
      _blocksWithEdgesToTheEnd(c->trMemory()),
-     _traceVIP(c->getOption(TR_TraceVIP)),
      _favourVftCompare(false),
      findCallNodeRecursionDepth(0),
      onlyMultiRefNodeIsCallNodeRecursionDepth(0)

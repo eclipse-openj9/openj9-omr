@@ -338,7 +338,7 @@ enum TR_CompilationOptions
    TR_JITServerFollowRemoteCompileWithLocalCompile = 0x00000200 + 8,
    TR_EnableClassChainValidationCaching   = 0x00000800 + 8,
    TR_DisableLinkageRegisterAllocation    = 0x00001000 + 8,
-   // Available                           = 0x00002000 + 8,
+   TR_EnableClassChainSharing             = 0x00002000 + 8,
    TR_DisableZ15                          = 0x00004000 + 8,
    TR_DisableCompilationAfterDLT          = 0x00008000 + 8,
    TR_DLTMostOnce                         = 0x00010000 + 8,

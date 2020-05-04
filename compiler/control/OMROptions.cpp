@@ -1171,7 +1171,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceLoopVersioner",               "L\ttrace loop versioner",                          TR::Options::traceOptimization, loopVersioner, 0, "P"},
    {"traceMarkingOfHotFields",          "M\ttrace marking of Hot Fields",                 SET_OPTION_BIT(TR_TraceMarkingOfHotFields), "F"},
    {"traceMethodIndex",                 "L\treport every method symbol that gets created and consumes a methodIndex", SET_OPTION_BIT(TR_TraceMethodIndex), "F"},
-   {"traceMixedModeDisassembly",        "L\tdump generated assembly with bytecodes",       SET_TRACECG_BIT(TR_TraceCGMixedModeDisassembly), "P"},
    {"traceNewBlockOrdering",            "L\ttrace new block ordering",                     TR::Options::traceOptimization, basicBlockOrdering, 0, "P"},
    {"traceNodeFlags",                   "L\ttrace setting/resetting of node flags",        SET_OPTION_BIT(TR_TraceNodeFlags), "F"},
    {"traceNonLinearRA",                 "L\ttrace non-linear RA",                          SET_OPTION_BIT(TR_TraceNonLinearRegisterAssigner), "F"},

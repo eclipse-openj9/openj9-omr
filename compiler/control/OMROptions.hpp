@@ -1004,7 +1004,7 @@ enum TR_CompilationOptions
    // Available                       = 0x00000004,
    // Available                       = 0x00000008,
    // Available                       = 0x00000010,
-   TR_TraceCGMixedModeDisassembly     = 0x00000020,
+   // Available                       = 0x00000020,
    // Available                       = 0x00000040,
    // Available                       = 0x00000080,
    TR_TraceCGBinaryCodedDecimal       = 0x00000100,

@@ -4587,12 +4587,10 @@ OMR::Options::TR_OptionStringToBit OMR::Options::_optionStringToBitMapping[] = {
 { "preRA", TR_TraceRAPreAssignmentInstruction },
 { "spillTemps", TR_TraceRASpillTemps },
 { "states", TR_TraceRARegisterStates },
-{ "listing", TR_TraceRAListing},
 
 
 // Instruction Level GRA named trace Options
 { "basic", TR_TraceGRABasic},
-{ "listing", TR_TraceGRAListing},
 
 // Live Register Analysis named trace Options
 { "results", TR_TraceLRAResults },

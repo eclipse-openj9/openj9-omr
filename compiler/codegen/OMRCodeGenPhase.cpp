@@ -360,21 +360,14 @@ OMR::CodeGenPhase::performRegisterAssigningPhase(TR::CodeGenerator * cg, TR::Cod
    if (cg->getDebug())
       cg->getDebug()->roundAddressEnumerationCounters();
 
-     {
+      {
       TR::LexicalMemProfiler mp("RA", comp->phaseMemProfiler());
       LexicalTimer pt("RA", comp->phaseTimer());
 
-      TR_RegisterKinds colourableKindsToAssign;
-      TR_RegisterKinds nonColourableKindsToAssign = cg->prepareRegistersForAssignment();
+      TR_RegisterKinds kindsToAssign = cg->prepareRegistersForAssignment();
 
       cg->jettisonAllSpills(); // Spill temps used before now may lead to conflicts if also used by register assignment
-
-      // Do local register assignment for non-colourable registers.
-      //
-      if(cg->getTraceRAOption(TR_TraceRAListing))
-         if(cg->getDebug()) cg->getDebug()->dumpMethodInstrs(comp->getOutFile(),"Before Local RA",false);
-
-      cg->doRegisterAssignment(nonColourableKindsToAssign);
+      cg->doRegisterAssignment(kindsToAssign);
 
       if (comp->compilationShouldBeInterrupted(AFTER_REGISTER_ASSIGNMENT_CONTEXT))
          {

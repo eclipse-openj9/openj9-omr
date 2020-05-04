@@ -1016,12 +1016,11 @@ enum TR_CompilationOptions
    TR_TraceRARegisterStates             = 0x00000010,
    TR_TraceRASpillTemps                 = 0x00000020,
    // Available                         = 0x00000040,
-   TR_TraceRAListing                    = 0x00000200,
+   // Available                         = 0x00000200,
 
    // Instruction Level GRA tracing option word
    //
    TR_TraceGRABasic                     = 0x00000001,
-   TR_TraceGRAListing                   = TR_TraceRAListing,
    // Available                         = 0x00000400,
    // Available                         = 0x00000800,
    // Available                         = 0x00001000,

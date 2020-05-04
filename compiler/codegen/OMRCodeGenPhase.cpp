@@ -343,7 +343,7 @@ OMR::CodeGenPhase::performMapStackPhase(TR::CodeGenerator * cg, TR::CodeGenPhase
 
      cg->getLinkage()->mapStack(comp->getJittedMethodSymbol());
 
-     if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceEarlyStackMap))
+     if (comp->getOption(TR_TraceCG))
         comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Stack Map", false);
      }
    cg->setMappingAutomatics();

@@ -1115,7 +1115,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceCompactNullChecks",           "L\ttrace compact null checks",                    TR::Options::traceOptimization, compactNullChecks, 0, "P"},
    {"traceDeadTreeElimination",         "L\ttrace dead tree elimination",                  TR::Options::traceOptimization, deadTreesElimination, 0, "P"},
    {"traceDominators",                  "L\ttrace dominators and post-dominators",         SET_OPTION_BIT(TR_TraceDominators), "P" },
-   {"traceEarlyStackMap",               "L\ttrace early stack map",                        SET_TRACECG_BIT(TR_TraceEarlyStackMap), "P"},
    {"traceEscapeAnalysis",              "L\ttrace escape analysis",                        TR::Options::traceOptimization, escapeAnalysis, 0, "P"},
    {"traceEvaluation",                  "L\tdump output of tree evaluation passes",        SET_TRACECG_BIT(TR_TraceCGEvaluation), "P" },
    {"traceExitExtraction",              "L\ttrace extraction of structure nodes that unconditionally exit to outer regions", SET_OPTION_BIT(TR_TraceExitExtraction), "F"},

@@ -1011,7 +1011,7 @@ enum TR_CompilationOptions
    TR_TraceCGEvaluation               = 0x00000200,
    // Available                       = 0x00000400,
    // Available                       = 0x00000800,
-   TR_TraceEarlyStackMap              = 0x00001000,
+   // Available                       = 0x00001000,
 
    // Trace file addresses enumeration option word
    //

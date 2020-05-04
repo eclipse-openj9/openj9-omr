@@ -1199,7 +1199,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceRedundantMonitorElimination", "L\ttrace redundant monitor elimination",          TR::Options::traceOptimization, redundantMonitorElimination, 0, "P"},
    {"traceRegDepCopyRemoval",           "L\ttrace register dependency copy removal", TR::Options::traceOptimization, regDepCopyRemoval, 0, "P"},
    {"traceRegisterPressureDetails",     "L\tinclude extra register pressure annotations in register pressure simulation and tree evaluation traces", SET_OPTION_BIT(TR_TraceRegisterPressureDetails), "P" },
-   {"traceRegisterState",               "L\ttrace bit vector denoting assigned registers after register allocation", SET_OPTION_BIT(TR_TraceRegisterState), "P"},
    {"traceRelocatableDataCG",           "L\ttrace relocation data when generating relocatable code", SET_OPTION_BIT(TR_TraceRelocatableDataCG), "P"},
    {"traceRelocatableDataDetailsCG",    "L\ttrace relocation data details when generating relocatable code", SET_OPTION_BIT(TR_TraceRelocatableDataDetailsCG), "P"},
    {"traceRelocatableDataDetailsRT",    "L\ttrace relocation data details when relocating relocatable code", SET_OPTION_BIT(TR_TraceRelocatableDataDetailsRT), "P"},

@@ -416,7 +416,7 @@ enum TR_CompilationOptions
    // Available                           = 0x08000000 + 10,
    // Available                           = 0x10000000 + 10,
    // Available                           = 0x20000000 + 10,
-   TR_TraceRegisterState                  = 0x40000000 + 10,
+   // Available                           = 0x40000000 + 10,
    TR_DisableDirectToJNIInline            = 0x80000000 + 10,
 
    // Option word 11

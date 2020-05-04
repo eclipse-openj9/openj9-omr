@@ -218,7 +218,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
          }
       }
 
-   if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
+   if (comp->getOption(TR_TraceCG))
       {
       const char * title = "Post Relocation Instructions";
       comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), title, false, true);
@@ -255,7 +255,7 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
       comp->getOSRCompilationData()->compressInstruction2SharedSlotMap();
       }
 
-   if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
+   if (comp->getOption(TR_TraceCG))
       {
       diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedCodeLength());
       diagnostic("\n");

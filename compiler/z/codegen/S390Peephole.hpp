@@ -38,7 +38,7 @@ protected:
       {
       if (_outFile)
          {
-         if ( !( !comp()->getOption(TR_TraceCG) && comp()->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding) && comp()->getOptions()->getTraceCGOption(TR_TraceCGMixedModeDisassembly) )  )
+         if ( !( !comp()->getOption(TR_TraceCG) && comp()->getOptions()->getTraceCGOption(TR_TraceCGMixedModeDisassembly) )  )
             {
             trfprintf(_outFile, info);
             }
@@ -49,7 +49,7 @@ protected:
       {
       if (_outFile)
          {
-         if ( !( !comp()->getOption(TR_TraceCG) && comp()->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding) && comp()->getOptions()->getTraceCGOption(TR_TraceCGMixedModeDisassembly) )  )
+         if ( !( !comp()->getOption(TR_TraceCG) && comp()->getOptions()->getTraceCGOption(TR_TraceCGMixedModeDisassembly) )  )
             {
             comp()->getDebug()->print(_outFile, _cursor);
             }

@@ -1102,7 +1102,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceBBVA",                        "L\ttrace backward bit vector analysis",           SET_OPTION_BIT(TR_TraceBBVA), "P" },
    {"traceBC",                          "L\tdump bytecodes",                               SET_OPTION_BIT(TR_TraceBC), "P" },
    {"traceBCDCodeGen",                  "L\ttrace binary coded decimal code generations",  SET_TRACECG_BIT(TR_TraceCGBinaryCodedDecimal), "P"},
-   {"traceBin",                         "L\tdump binary instructions",                     SET_TRACECG_BIT(TR_TraceCGPostBinaryEncoding|TR_TraceCGMixedModeDisassembly), "P" },
    {"traceBlockFrequencyGeneration",    "L\ttrace block frequency generation",             SET_OPTION_BIT(TR_TraceBFGeneration), "P"},
    {"traceBlockShuffling",              "L\ttrace random rearrangement of blocks",         TR::Options::traceOptimization, blockShuffling, 0, "P"},
    {"traceBlockSplitter",               "L\ttrace block splitter",                         TR::Options::traceOptimization, blockSplitter, 0, "P"},
@@ -1187,7 +1186,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 #endif
    {"traceOSRLiveRangeAnalysis",        "L\ttrace OSR live range analysis",                TR::Options::traceOptimization, osrLiveRangeAnalysis, 0, "P"},
    {"tracePartialInlining",             "L\ttrace partial inlining heuristics",            SET_OPTION_BIT(TR_TracePartialInlining), "P" },
-   {"tracePostBinaryEncoding",          "L\tdump instructions (code cache addresses, real registers) after binary encoding", SET_TRACECG_BIT(TR_TraceCGPostBinaryEncoding), "P"},
    {"tracePRE",                         "L\ttrace partial redundancy elimination",        TR::Options::traceOptimization, partialRedundancyElimination, 0, "P"},
    {"tracePrefetchInsertion",           "L\ttrace prefetch insertion",                     TR::Options::traceOptimization, prefetchInsertion, 0, "P"},
    {"tracePREForSubNodeReplacement",    "L\ttrace partial redundancy elimination focussed on optimal subnode replacement", SET_OPTION_BIT(TR_TracePREForOptimalSubNodeReplacement), "P" },

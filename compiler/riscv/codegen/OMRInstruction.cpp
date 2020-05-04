@@ -25,6 +25,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/RegisterDependency.hpp"
+#include "codegen/RVInstruction.hpp"
 
 #define RISCV_INSTRUCTION_LENGTH 4
 
@@ -133,4 +134,9 @@ int32_t OMR::RV::Instruction::estimateBinaryLength(int32_t currentEstimate)
    {
    setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH);
    return currentEstimate + self()->getEstimatedBinaryLength();
+   }
+
+TR::BtypeInstruction *OMR::RV::Instruction::getBtypeInstruction()
+   {
+   return NULL;
    }

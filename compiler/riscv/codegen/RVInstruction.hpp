@@ -647,6 +647,7 @@ class StoreInstruction : public TR::Instruction
 class BtypeInstruction : public StypeInstruction
    {
    TR::LabelSymbol *_symbol;
+   int32_t _estimatedBinaryLocation;
 
    public:
      BtypeInstruction(
@@ -658,7 +659,8 @@ class BtypeInstruction : public StypeInstruction
        TR::CodeGenerator        *cg
        )
      : StypeInstruction(op, n, s1reg, s2reg, 0, cg),
-       _symbol(sym)
+       _symbol(sym),
+       _estimatedBinaryLocation(0)
      {
      }
 
@@ -672,7 +674,8 @@ class BtypeInstruction : public StypeInstruction
        TR::CodeGenerator        *cg
        )
      : StypeInstruction(op, n, s1reg, s2reg, 0, cg),
-       _symbol(sym)
+       _symbol(sym),
+       _estimatedBinaryLocation(0)
      {
      }
 
@@ -704,10 +707,41 @@ class BtypeInstruction : public StypeInstruction
       }
 
    /**
+    * @brief Gets estimated binary location
+    * @return estimated binary location
+    */
+   int32_t getEstimatedBinaryLocation() {return _estimatedBinaryLocation;}
+
+   /**
+    * @brief Sets estimated binary location
+    * @param[in] l : estimated binary location
+    * @return estimated binary location
+    */
+   int32_t setEstimatedBinaryLocation(int32_t l) {return (_estimatedBinaryLocation = l);}
+
+
+   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */
    virtual uint8_t *generateBinaryEncoding();
+
+   /**
+    * @brief Estimates binary length
+    * @param[in] currentEstimate : current estimated length
+    * @return estimated binary length
+    */
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+
+   virtual TR::BtypeInstruction *getBtypeInstruction();
+
+   /**
+    * @brief Expands conditional branch to 'far' branch.
+    *
+    * This is called after binary encoding length estimation for branches whose
+    * target is outside of B-type instruction immediate.
+    */
+   void expandIntoFarBranch();
    };
 
 class UtypeInstruction : public TR::Instruction

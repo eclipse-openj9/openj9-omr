@@ -1057,10 +1057,6 @@ enum TR_CompilationOptions
    // Available                         = 0x00020000,
    // Available                         = 0x00040000,
 
-   // Register Spill Costs Analysis tracing option word
-   //
-   TR_TraceSpillCostsBasic              = TR_TraceGRABasic,
-
    // GPU options
    //
    TR_EnableGPU                         = 0x00000001,
@@ -1525,7 +1521,6 @@ public:
    bool      getRegisterAssignmentTraceOption(uint32_t mask) {return (_raTrace & mask) != 0;}
    bool      getTraceRAOption(uint32_t mask);
    bool      getTraceLRA(uint32_t mask) { return (_traceLRA & mask) != 0; }
-   bool      getTraceSpillCosts(uint32_t mask) { return (_traceSpillCosts & mask) != 0; }
    bool      getTraceSimplifier(uint32_t mask) { return (_traceSimplifier & mask) != 0; }
    bool      getDebugEnableFlag(uint32_t mask) { return (_debugEnableFlags & mask) != 0; }
    bool      getEnableGPU(uint32_t mask) { return (_enableGPU & mask) != 0; }
@@ -2322,7 +2317,6 @@ protected:
    int32_t                     _addressToEnumerate;   // Addresses enumeration option flags
    int32_t                     _raTrace;              // Register assigner trace flags
    int32_t                     _traceLRA;             // Live Register Analysis trace flags
-   int32_t                     _traceSpillCosts;      // Register Spill Costs trace flags
    int32_t                     _traceSimplifier;      // Simplifier trace flags
    int32_t                     _debugEnableFlags;     // For miscellaneeous flags used to enable things
    bool                        _optLevelDowngraded;   // this is a flag rather than an option

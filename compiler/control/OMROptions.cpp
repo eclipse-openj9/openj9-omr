@@ -1221,10 +1221,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceScalarizeSSOps",              "L\ttrace scalarization of array/SS ops", SET_OPTION_BIT(TR_TraceScalarizeSSOps), "P"},
    {"traceSEL",                         "L\ttrace sign extension load", SET_OPTION_BIT(TR_TraceSEL), "P"},
    {"traceSequenceSimplification",      "L\ttrace arithmetic sequence simplification",     TR::Options::traceOptimization, expressionsSimplification, 0, "P"},
-   {"traceSpillCosts",                 "L\ttrace spill costs (basic) only show its activation",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceSpillCosts), TR_TraceSpillCostsBasic, "F"},
-   {"traceSpillCosts=",                "L{regex}\tlist of additional spill costs options: basic, results, build, details",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceSpillCosts), 0, "P"},
    {"traceStaticFinalFieldFolding",     "L\ttrace generic static final field folding",             TR::Options::traceOptimization, staticFinalFieldFolding, 0, "P"},
    {"traceStringBuilderTransformer",    "L\ttrace StringBuilder tranfsofermer optimization", TR::Options::traceOptimization, stringBuilderTransformer, 0, "P"},
    {"traceStringPeepholes",             "L\ttrace string peepholes",                       TR::Options::traceOptimization, stringPeepholes, 0, "P"},
@@ -4615,10 +4611,6 @@ OMR::Options::TR_OptionStringToBit OMR::Options::_optionStringToBitMapping[] = {
 
 // Live Register Analysis named trace Options
 { "results", TR_TraceLRAResults },
-
-
-// Register Spill Costs named trace Options
-{ "basic", TR_TraceSpillCostsBasic},
 
 // GPU Options
 { "default", TR_EnableGPU},

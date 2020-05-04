@@ -201,6 +201,11 @@ TEST_P(FloatMaxMin, UsingConst) {
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
 
     auto param = TRTest::to_struct(GetParam());
+
+    if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
+       SKIP_ON_POWER(KnownBug) << "fmin / fmax returns wrong value for NaN on POWER (see issue #5156)";
+    }
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Float"
@@ -230,6 +235,10 @@ TEST_P(FloatMaxMin, UsingLoadParam) {
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
 
     auto param = TRTest::to_struct(GetParam());
+
+    if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
+       SKIP_ON_POWER(KnownBug) << "fmin / fmax returns wrong value for NaN on POWER (see issue #5156)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -269,6 +278,10 @@ TEST_P(DoubleMaxMin, UsingConst) {
 
     auto param = TRTest::to_struct(GetParam());
 
+    if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
+       SKIP_ON_POWER(KnownBug) << "dmin / dmax returns wrong value for NaN on POWER (see issue #5156)";
+    }
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Double"
@@ -298,6 +311,10 @@ TEST_P(DoubleMaxMin, UsingLoadParam) {
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
 
     auto param = TRTest::to_struct(GetParam());
+
+    if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
+       SKIP_ON_POWER(KnownBug) << "dmin / dmax returns wrong value for NaN on POWER (see issue #5156)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),

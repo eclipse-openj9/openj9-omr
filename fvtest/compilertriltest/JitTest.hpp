@@ -737,6 +737,20 @@ AssertionResult CmpHelperEQ<volatile double, volatile double>(const char* lhs_ex
    SKIP_ON(OMRPORT_ARCH_PPC64LE, reason)
 
 /*
+ * @brief A macro to allow a test to be conditionally skipped all supported POWER
+ * architectures (PPC, PPC64, PPC64le)
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_POWER(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_POWER(reason) \
+    SKIP_IF(   !strcmp(OMRPORT_ARCH_PPC,     omrsysinfo_get_CPU_architecture()) \
+            || !strcmp(OMRPORT_ARCH_PPC64,   omrsysinfo_get_CPU_architecture()) \
+            || !strcmp(OMRPORT_ARCH_PPC64LE, omrsysinfo_get_CPU_architecture()), reason)
+
+/*
  * @brief A macro to allow a test to be conditionally skipped on S390
  *
  * The basic syntax for using this macro is:

@@ -999,7 +999,7 @@ enum TR_CompilationOptions
 
     // Code generation phase trace word
    //
-   TR_TraceCGPreInstructionSelection  = 0x00000001,
+   // Available                       = 0x00000001,
    // Available                       = 0x00000002,
    // Available                       = 0x00000004,
    // Available                       = 0x00000008,

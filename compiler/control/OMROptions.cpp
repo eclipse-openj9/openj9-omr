@@ -1231,7 +1231,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceUseDefs",                     "L\ttrace use def info",                           SET_OPTION_BIT(TR_TraceUseDefs), "F"},
    {"traceValueNumbers",                "L\ttrace value number info",                      SET_OPTION_BIT(TR_TraceValueNumbers), "F"},
    {"traceVarHandleTransformer",        "L\ttrace VarHandle transformer",                  TR::Options::traceOptimization, varHandleTransformer, 0, "P"},  // Java specific option
-   {"traceVFPSubstitution",             "L\ttrace replacement of virtual frame pointer with actual register in memrefs", SET_OPTION_BIT(TR_TraceVFPSubstitution), "F"},
    {"traceVirtualGuardHeadMerger",      "L\ttrace virtual head merger",                    TR::Options::traceOptimization, virtualGuardHeadMerger, 0, "P"},
    {"traceVirtualGuardTailSplitter",    "L\ttrace virtual guard tail splitter",            TR::Options::traceOptimization, virtualGuardTailSplitter, 0, "P"},
    {"traceVPConstraints",               "L\ttrace the execution of value propagation merging and intersecting", SET_OPTION_BIT(TR_TraceVPConstraints), "F"},

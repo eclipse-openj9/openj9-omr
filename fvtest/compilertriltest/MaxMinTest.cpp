@@ -204,6 +204,8 @@ TEST_P(FloatMaxMin, UsingConst) {
 
     if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
        SKIP_ON_POWER(KnownBug) << "fmin / fmax returns wrong value for NaN on POWER (see issue #5156)";
+       SKIP_ON_S390(KnownBug) << "fmin / fmax returns wrong value for NaN on Z (see issue #5157)";
+       SKIP_ON_S390X(KnownBug) << "fmin / fmax returns wrong value for NaN on Z (see issue #5157)";
     }
 
     char inputTrees[1024] = {0};
@@ -238,6 +240,8 @@ TEST_P(FloatMaxMin, UsingLoadParam) {
 
     if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
        SKIP_ON_POWER(KnownBug) << "fmin / fmax returns wrong value for NaN on POWER (see issue #5156)";
+       SKIP_ON_S390(KnownBug) << "fmin / fmax returns wrong value for NaN on Z (see issue #5157)";
+       SKIP_ON_S390X(KnownBug) << "fmin / fmax returns wrong value for NaN on Z (see issue #5157)";
     }
 
     char inputTrees[1024] = {0};
@@ -273,13 +277,15 @@ INSTANTIATE_TEST_CASE_P(MaxMin, FloatMaxMin, ::testing::Combine(
 class DoubleMaxMin : public TRTest::BinaryOpTest<double> {};
 
 TEST_P(DoubleMaxMin, UsingConst) {
-    SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
-    SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support dmax/dmin (see issue #4276)";
+    SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support dmax/dmin (see issue #4276)";
 
     auto param = TRTest::to_struct(GetParam());
 
     if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
        SKIP_ON_POWER(KnownBug) << "dmin / dmax returns wrong value for NaN on POWER (see issue #5156)";
+       SKIP_ON_S390(KnownBug) << "dmin / dmax returns wrong value for NaN on Z (see issue #5157)";
+       SKIP_ON_S390X(KnownBug) << "dmin / dmax returns wrong value for NaN on Z (see issue #5157)";
     }
 
     char inputTrees[1024] = {0};
@@ -307,13 +313,16 @@ TEST_P(DoubleMaxMin, UsingConst) {
 }
 
 TEST_P(DoubleMaxMin, UsingLoadParam) {
-    SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
-    SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
+    SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support dmax/dmin (see issue #4276)";
+    SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support dmax/dmin (see issue #4276)";
 
     auto param = TRTest::to_struct(GetParam());
 
     if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
        SKIP_ON_POWER(KnownBug) << "dmin / dmax returns wrong value for NaN on POWER (see issue #5156)";
+       SKIP_ON_S390(KnownBug) << "dmin / dmax returns wrong value for NaN on Z (see issue #5157)";
+       SKIP_ON_S390X(KnownBug) << "dmin / dmax returns wrong value for NaN on Z (see issue #5157)";
+
     }
 
     char inputTrees[1024] = {0};

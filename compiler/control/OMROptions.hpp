@@ -1497,9 +1497,6 @@ public:
    static bool  isAnyVerboseOptionSet(TR_VerboseFlags op1, TR_VerboseFlags op2, TR_VerboseFlags op3, TR_VerboseFlags op4, TR_VerboseFlags op5, TR_VerboseFlags op6);
    bool isVerboseFileSet();
 
-   bool      getTraceCGOption(uint32_t mask)   {return (_cgTrace & mask) != 0;}
-   bool      getAnyTraceCGOption()             {return (_cgTrace != 0);}
-
    bool      getAddressEnumerationOption(uint32_t mask)   {return (_addressToEnumerate & mask) != 0;}
 
    bool      getRegisterAssignmentTraceOption(uint32_t mask) {return (_raTrace & mask) != 0;}
@@ -2297,7 +2294,6 @@ protected:
    int32_t                     _storeSinkingLastOpt;
    int32_t                     _test390StackBuffer;   // Buffer to force a large stack on 390
    int32_t                     _test390LitPoolBuffer; // Buffer to force a large lit pool on 390
-   int32_t                     _cgTrace;              // Code generator trace flags
    int32_t                     _addressToEnumerate;   // Addresses enumeration option flags
    int32_t                     _raTrace;              // Register assigner trace flags
    int32_t                     _traceLRA;             // Live Register Analysis trace flags

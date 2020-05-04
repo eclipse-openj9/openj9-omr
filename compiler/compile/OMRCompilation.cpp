@@ -997,7 +997,7 @@ int32_t OMR::Compilation::compile()
       }
 #endif /* defined(AIXPPC) */
 
-   if (self()->getOutFile() != NULL && (self()->getOption(TR_TraceAll) || debug("traceStartCompile") || self()->getOptions()->getAnyTraceCGOption() || self()->getOption(TR_Timing)))
+   if (self()->getOutFile() != NULL && (self()->getOption(TR_TraceAll) || debug("traceStartCompile") || self()->getOption(TR_Timing)))
       {
       self()->getDebug()->printHeader();
       static char *randomExercisePeriodStr = feGetEnv("TR_randomExercisePeriod");

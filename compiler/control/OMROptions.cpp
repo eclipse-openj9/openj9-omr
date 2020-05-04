@@ -60,7 +60,6 @@ using namespace OMR;
 
 #define SET_OPTION_BIT(x)   TR::Options::setBit,   offsetof(OMR::Options,_options[(x)&TR_OWM]), (static_cast<uintptr_t>((x)&~TR_OWM))
 #define RESET_OPTION_BIT(x) TR::Options::resetBit, offsetof(OMR::Options,_options[(x)&TR_OWM]), (static_cast<uintptr_t>((x)&~TR_OWM))
-#define SET_TRACECG_BIT(x)  TR::Options::setBit,   offsetof(OMR::Options, _cgTrace), (static_cast<uintptr_t>(x))
 
 #define NoOptString                     "noOpt"
 #define DisableAllocationInliningString "disableAllocationInlining"
@@ -2488,7 +2487,6 @@ OMR::Options::jitPreProcess()
    _firstOptTransformationIndex = self()->getMinFirstOptTransformationIndex();
    _lastOptTransformationIndex = self()->getMaxLastOptTransformationIndex();
 
-   _cgTrace = 0;
    _raTrace = 0;
    _storeSinkingLastOpt = -1;
 #ifdef J9_PROJECT_SPECIFIC
@@ -3711,6 +3709,7 @@ OMR::Options::requiresLogFile()
    if (self()->getAnyOption(TR_TraceAll) ||
        self()->getAnyOption(TR_TraceBBVA) ||
        self()->getAnyOption(TR_TraceBVA) ||
+       self()->getAnyOption(TR_TraceCG) ||
        self()->getAnyOption(TR_TraceUseDefs) ||
        self()->getAnyOption(TR_TraceNodeFlags) ||
        self()->getAnyOption(TR_TraceValueNumbers) ||
@@ -3719,7 +3718,7 @@ OMR::Options::requiresLogFile()
        self()->getAnyOption(TR_TraceILValidator))
       return true;
 
-   if (self()->tracingOptimization() || self()->getAnyTraceCGOption())
+   if (self()->tracingOptimization())
       return true;
 
    if (self()->getRegisterAssignmentTraceOption(0xffffffff))

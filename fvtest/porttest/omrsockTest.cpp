@@ -358,7 +358,6 @@ TEST(PortSockTest, create_dotted_decimal_IPv4_socket_address)
 	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
-
 }
 
 /**

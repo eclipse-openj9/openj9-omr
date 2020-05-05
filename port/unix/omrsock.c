@@ -41,6 +41,10 @@
 #include "omrporterror.h"
 #include "omrsockptb.h"
 
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+#include "atoe.h"
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
+
 /* Internal: OMRSOCK user interface constants TO OS dependent constants mapping. */
 
 /**
@@ -560,14 +564,30 @@ omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val)
 int32_t
 omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder)
 {
+	int32_t rc;
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+	char *addrA2e;
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
+
 	if (NULL == addrNetworkOrder) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 
-	if (1 != inet_pton(get_os_family(addrFamily), addr, addrNetworkOrder)) {
-		return OMRPORT_ERROR_SOCK_INET_PTON_FAILED;
-	}
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+	addrA2e = a2e(addr, strlen(addr));
+	rc = inet_pton(get_os_family(addrFamily), addrA2e, (void *)addrNetworkOrder);
+	free(addrA2e);
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
+	rc = inet_pton(get_os_family(addrFamily), addr, (void *)addrNetworkOrder);
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
+	if (rc == 0) {
+		portLibrary->error_set_last_error(portLibrary, 0, OMRPORT_ERROR_SOCK_INVALID_ADDRESS);
+		return OMRPORT_ERROR_SOCK_INVALID_ADDRESS;
+	} else if (rc == -1) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_UNSUPPORTED_AF);
+		return OMRPORT_ERROR_SOCK_UNSUPPORTED_AF;
+	}
 	return 0;
 }
 

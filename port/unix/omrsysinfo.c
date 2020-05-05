@@ -668,7 +668,7 @@ omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 	intptr_t rc = -1;
 	Trc_PRT_sysinfo_processor_set_feature_Entered(desc, feature, enable);
 
-	if ((NULL != desc) && (feature < (OMRPORT_SYSINFO_OS_FEATURES_SIZE * 32))) {
+	if ((NULL != desc) && (feature < (OMRPORT_SYSINFO_FEATURES_SIZE * 32))) {
 		uint32_t featureIndex = feature / 32;
 		uint32_t featureShift = feature % 32;
 

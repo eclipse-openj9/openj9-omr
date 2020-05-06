@@ -3001,7 +3001,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
          TR_PPCTableOfConstants::setTOCSlot(offset, address);
          if (offset<LOWER_IMMED||offset>UPPER_IMMED)
             {
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, addrRegister, cg->getTOCBaseRegister(), cg->hiValue(offset));
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, addrRegister, cg->getTOCBaseRegister(), (int16_t)cg->hiValue(offset));
             generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, LO_VALUE(offset), 8, cg));
             }
          else
@@ -3056,7 +3056,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
       }  // ...if 64BitTarget
    else  // if 32bit mode
       {
-      rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, addrRegister, cg->hiValue(address));
+      rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, addrRegister, (int16_t)cg->hiValue(address));
 
       if (isInt64)
          {
@@ -3303,7 +3303,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
          TR_PPCTableOfConstants::setTOCSlot(offset, address);
          if (offset<LOWER_IMMED||offset>UPPER_IMMED)
             {
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, pivotRegister, cg->getTOCBaseRegister(), cg->hiValue(offset));
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, pivotRegister, cg->getTOCBaseRegister(), (int16_t)cg->hiValue(offset));
             generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(pivotRegister, LO_VALUE(offset), 8, cg));
             }
          else
@@ -3318,7 +3318,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
       }
    else
       {
-      rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, pivotRegister, cg->hiValue(address));
+      rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, pivotRegister, (int16_t)cg->hiValue(address));
       rel2 = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, addrRegister,
                            pivotRegister, LO_VALUE(address));
 
@@ -3496,7 +3496,7 @@ TR::Register *OMR::Power::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
             cg->itemTracking(offset, table);
             if (offset<LOWER_IMMED||offset>UPPER_IMMED)
                {
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, reg1, cg->getTOCBaseRegister(), cg->hiValue(offset));
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, reg1, cg->getTOCBaseRegister(), (int16_t)cg->hiValue(offset));
                generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, reg1, new (cg->trHeapMemory()) TR::MemoryReference(reg1, LO_VALUE(offset), 8, cg));
                }
             else

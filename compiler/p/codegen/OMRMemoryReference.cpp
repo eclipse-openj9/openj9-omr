@@ -319,10 +319,9 @@ void OMR::Power::MemoryReference::addToOffset(TR::Node * node, intptr_t amount, 
       intptr_t     upper, lower;
 
       self()->setOffset(0);
-      lower = (intptr_t)(int16_t)displacement;
-      upper = displacement >> 16;
-      if (lower < 0)
-         upper++;
+      lower = (intptr_t)LO_VALUE(displacement);
+      upper = HI_VALUE(displacement);
+
       if (_baseRegister!=NULL && self()->isBaseModifiable())
          newBase = _baseRegister;
       else
@@ -355,7 +354,8 @@ void OMR::Power::MemoryReference::addToOffset(TR::Node * node, intptr_t amount, 
                cg->stopUsingRegister(tempReg);
                }
             else
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, newBase, _baseRegister, upper);
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, newBase, _baseRegister, (int16_t)upper);
+
             if (lower != 0)
                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, newBase, newBase, lower);
             }
@@ -1624,7 +1624,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          }
 
       self()->setBaseModifiable();
-      rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, reg, cg->hiValue(addr));
+      rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, reg, (int16_t)cg->hiValue(addr));
       self()->addToOffset(node, LO_VALUE(addr), cg);
 
       if (cg->needClassAndMethodPointerRelocations())

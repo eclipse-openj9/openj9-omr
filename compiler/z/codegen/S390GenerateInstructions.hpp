@@ -1511,15 +1511,76 @@ TR::Instruction *
 generateReplicateNodeInVectorReg(TR::Node * node, TR::CodeGenerator *cg, TR::Register * targetVRF, TR::Node * srcElementNode,
                                  int elementSize, TR::Register *zeroReg=NULL, TR::Instruction * preced=NULL);
 
-void generateShiftAndKeepSelected64Bit(
+/**
+ * \param node
+ *    The node being evaluated.
+ *
+ * \param cg
+ *    The code generator used to generate the instructions.
+ * 
+ * \param targetRegister
+ *    The register where the specific shifted bits from sourceRegister will be placed to the corresponding 
+ *    location. The remaining bits will be zeroed out.
+ * 
+ * \param sourceRegister
+ *    The register which will be shifted. The selected shifted bits in sourceRegister will be placed to 
+ *    targetRegister, and the sourceRegister itself will stay unchanged. 
+ * 
+ * \param fromBit
+ *    Indicates the starting bit position of the selected range of bits in targetRegister and in sourceRegister after shifting. 
+ * 
+ * \param toBit
+ *    Indicates the ending bit position of the selected range of bits in targetRegister and in sourceRegister after shifting. 
+ * 
+ * \param shiftAmount
+ *    Indicates the amount of bits that sourceRegister is shifted to the left. 
+ * 
+ * \example
+ *    fromBit = 10;   toBit = 20;   shiftAmount = 15;
+ * 
+ *                              Bit 10    Bit 20
+ *    Before:                     |          |
+ *                     0          V          V                                               63
+ *                    +--------+--------+--------+--------+--------+--------+--------+--------+     
+ *    sourceRegister: |10010000 00100011 01001000 11000100 00011010 00111000 00101011 00010000|
+ *                    +--------+--------+--------+--------+--------+--------+--------+--------+
+ *      
+ *                     0                                                                     63
+ *                    +--------+--------+--------+--------+--------+--------+--------+--------+     
+ *    targetRegister: |10000110 01101010 00111000 11011110 11000011 01111000 00100011 00000000|
+ *                    +--------+--------+--------+--------+--------+--------+--------+--------+
+ *    
+ *    The function first makes a copy of sourceRegister into the targetRegister and then shifts the targetRegister left
+ *    by the shiftAmount (15 bits):
+ * 
+ *                              Bit 10    Bit 20
+ *                                |          |
+ *                     0          V          V                                               63
+ *                    +--------+--------+--------+--------+--------+--------+--------+--------+     
+ *    targetRegister: |10100100 01100010 00001101 00011100 00010101 10001000 00000000 00000000|
+ *                    +--------+--------+--------+--------+--------+--------+--------+--------+
+ * 
+ *    The function then selects the bits in rage [fromBit, toBit] inclusive of the shifted value and all other non-
+ *    selected bits are zeroed out:
+ * 
+ *                              Bit 10    Bit 20
+ *    After:                      |          |
+ *                     0          V          V                                               63
+ *                    +--------+--------+--------+--------+--------+--------+--------+--------+     
+ *    targetRegister: |00000000 00100010 00001000 00000000 00000000 00000000 00000000 00000000|
+ *                    +--------+--------+--------+--------+--------+--------+--------+--------+
+ *
+ *    Note the value of sourceRegister will remain unchanged.
+*/
+void generateShiftThenKeepSelected64Bit(
       TR::Node * node, TR::CodeGenerator *cg,
-      TR::Register * aFirstRegister, TR::Register * aSecondRegister, int aFromBit,
-      int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode);
+      TR::Register * targetRegister, TR::Register * sourceRegister, int fromBit,
+      int toBit, int shiftAmount);
 
-void generateShiftAndKeepSelected31Bit(
+void generateShiftThenKeepSelected31Bit(
       TR::Node * node, TR::CodeGenerator *cg,
-      TR::Register * aFirstRegister, TR::Register * aSecondRegister, int aFromBit,
-      int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode);
+      TR::Register * targetRegister, TR::Register * sourceRegister, int fromBit,
+      int toBit, int shiftAmount);
 
 TR::Instruction *generateZeroVector(TR::Node *node, TR::CodeGenerator *cg, TR::Register *vecZeroReg);
 

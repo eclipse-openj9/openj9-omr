@@ -3070,10 +3070,10 @@ OMR::Power::CodeGenerator::loadAddressConstantFixed(
    else
       {
       // lis tempReg, bits[0-15]
-      cursor = firstInstruction = generateTrg1ImmInstruction(self(), TR::InstOpCode::lis, node, tempReg, canEmitData ? value>>48 : 0, cursor);
+      cursor = firstInstruction = generateTrg1ImmInstruction(self(), TR::InstOpCode::lis, node, tempReg, canEmitData ? (value>>48) : 0, cursor);
 
       // lis trgReg, bits[32-47]
-      cursor = generateTrg1ImmInstruction(self(), TR::InstOpCode::lis, node, trgReg, canEmitData ? ((value>>16) & 0x0000ffff) : 0, cursor);
+      cursor = generateTrg1ImmInstruction(self(), TR::InstOpCode::lis, node, trgReg, canEmitData ? ((int16_t)(value>>16)) : 0, cursor);
       // ori tempReg, tempReg, bits[16-31]
       cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::ori, node, tempReg, tempReg, canEmitData ? ((value>>32) & 0x0000ffff) : 0, cursor);
       // ori trgReg, trgReg, bits[48-63]
@@ -3241,7 +3241,7 @@ OMR::Power::CodeGenerator::fixedLoadLabelAddressIntoReg(
          self()->itemTracking(offset, label);
          if (offset<LOWER_IMMED||offset>UPPER_IMMED)
             {
-            generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, self()->getTOCBaseRegister(), self()->hiValue(offset));
+            generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, self()->getTOCBaseRegister(), (int16_t)self()->hiValue(offset));
             generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, self()));
             }
          else
@@ -3544,7 +3544,7 @@ TR::Register *addConstantToLong(TR::Node *node, TR::Register *srcReg,
       {
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, srcReg, value >> 16);
       if (value & 0x7fff)
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, trgReg, value & 0x7fff);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, trgReg, LO_VALUE(value));
       }
    else
       {
@@ -3596,26 +3596,17 @@ TR::Register *addConstantToLong(TR::Node * node, TR::Register *srcHighReg, TR::R
 
 TR::Register *addConstantToInteger(TR::Node * node, TR::Register *trgReg, TR::Register *srcReg, int32_t value, TR::CodeGenerator *cg)
    {
-   intParts localVal(value);
-
-   if (localVal.getValue() >= LOWER_IMMED && localVal.getValue() <= UPPER_IMMED)
+   if (value >= LOWER_IMMED && value <= UPPER_IMMED)
       {
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, srcReg, localVal.getValue());
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, srcReg, value);
       }
    else
       {
-      int32_t upperLit = localVal.getHighBitsSigned();
-      int32_t lowerLit = localVal.getLowBitsSigned();
-      if (lowerLit < 0)
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, srcReg, (int16_t)HI_VALUE(value));
+
+      if (value & 0xFFFF)
          {
-         upperLit++;
-         if (upperLit == 0x8000)
-            upperLit = -upperLit;
-         }
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, srcReg, upperLit);
-      if (lowerLit != 0)
-         {
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, trgReg, lowerLit);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, trgReg, trgReg, LO_VALUE(value));
          }
       }
    return trgReg;

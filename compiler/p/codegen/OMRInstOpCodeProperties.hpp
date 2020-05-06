@@ -196,7 +196,7 @@
    /* .name        = */ "addic",
    /* .description =    "Add immediate carrying", */
    /* .opcode      = */ 0x30000000,
-   /* .format      = */ FORMAT_RT_D16_RA,
+   /* .format      = */ FORMAT_RT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
@@ -230,7 +230,11 @@
    /* .name        = */ "addic.",
    /* .description =    "Add imm (carry bit set only if record form) Rc=1", */
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].opcode + 0x04000000,
-   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].format,
+   // Note: Normally, addic is not meant to be used as a memory instruction, since its RA field is
+   //       not subject to the normal rule about gr0. However, it can be used under safely under
+   //       certain controlled conditions that ensure that no code expected the gr0 = 0 behaviour
+   //       will be triggered.
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].minimumALS,
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },

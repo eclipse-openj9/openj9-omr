@@ -2902,12 +2902,12 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorCompareAllOrAnyOp(TR::Node 
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
 
-   TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
+   TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
    TR::Register *resReg = cg->allocateRegister(TR_GPR);
    TR::Register *cndReg = cg->allocateRegister(TR_CCR);
    TR::Register *vecTmpReg = cg->allocateRegister(TR_VRF);
-   TR::addDependency(conditions, cndReg, TR::RealRegister::cr6, TR_CCR, cg);
-   TR::addDependency(conditions, vecTmpReg, TR::RealRegister::NoReg, TR_VRF, cg);
+   conditions->addPostCondition(cndReg, TR::RealRegister::cr6);
+   conditions->addPostCondition(vecTmpReg, TR::RealRegister::NoReg);
 
    TR::Register *lhsReg = cg->evaluate(firstChild);
    TR::Register *rhsReg = cg->evaluate(secondChild);
@@ -4259,17 +4259,17 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
 
    int32_t numRegs = 10;
 
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numRegs, numRegs, cg->trMemory());
-   TR::addDependency(dependencies, src1Reg, TR::RealRegister::NoReg, TR_GPR, cg);
-   TR::addDependency(dependencies, src2Reg, TR::RealRegister::NoReg, TR_GPR, cg);
-   TR::addDependency(dependencies, src1AddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   TR::addDependency(dependencies, src2AddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   TR::addDependency(dependencies, byteLenRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-   TR::addDependency(dependencies, byteLenRemainingRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-   TR::addDependency(dependencies, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   TR::addDependency(dependencies, ccReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   TR::addDependency(dependencies, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
-   TR::addDependency(dependencies, condReg2, TR::RealRegister::NoReg, TR_CCR, cg);
+   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numRegs, cg->trMemory());
+   dependencies->addPostCondition(src1Reg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(src2Reg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(src1AddrReg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(src2AddrReg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(byteLenRegister, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(byteLenRemainingRegister, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(tempReg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(ccReg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(condReg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(condReg2, TR::RealRegister::NoReg);
 
    generateDepLabelInstruction(cg, TR::InstOpCode::label, node, residueEndLabel, dependencies);
    residueEndLabel->setEndInternalControlFlow();
@@ -5267,24 +5267,23 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
    TR::RegisterDependencyConditions *conditions;
 
    //Set the conditions and dependencies
-   conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions((uint16_t) numDeps, (uint16_t) numDeps, cg->trMemory());
+   conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, (uint16_t) numDeps, cg->trMemory());
 
-   TR::addDependency(conditions, valueAddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   TR::addDependency(conditions, oldValueReg, TR::RealRegister::NoReg, TR_GPR, cg);
-   conditions->getPreConditions()->getRegisterDependency(1)->setExcludeGPR0();
+   conditions->addPostCondition(valueAddrReg, TR::RealRegister::NoReg);
+   conditions->addPostCondition(oldValueReg, TR::RealRegister::NoReg);
    conditions->getPostConditions()->getRegisterDependency(1)->setExcludeGPR0();
-   TR::addDependency(conditions, cndReg, TR::RealRegister::cr0, TR_CCR, cg);
+   conditions->addPostCondition(cndReg, TR::RealRegister::cr0);
    numDeps = numDeps - 3;
 
    if (newValueReg)
       {
-      TR::addDependency(conditions, newValueReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      conditions->addPostCondition(newValueReg, TR::RealRegister::NoReg);
       numDeps--;
       }
 
    if (deltaReg)
       {
-      TR::addDependency(conditions, deltaReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      conditions->addPostCondition(deltaReg, TR::RealRegister::NoReg);
       numDeps--;
       }
 
@@ -5887,7 +5886,7 @@ TR::Register *OMR::Power::TreeEvaluator::cmpsetEvaluator(
    TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
    TR::LabelSymbol *endLabel   = generateLabelSymbol(cg);
    startLabel->setStartInternalControlFlow();
-   endLabel  ->setEndInternalControlFlow();
+   endLabel->setEndInternalControlFlow();
    TR::RegisterDependencyConditions *deps
       = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 7, cg->trMemory());
    deps->addPostCondition(result, TR::RealRegister::NoReg);

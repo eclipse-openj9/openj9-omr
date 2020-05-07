@@ -2551,6 +2551,13 @@ OMR::Block::isSuperCold()
    return _flags.testAny(_isSuperCold);
    }
 
+void
+OMR::Block::setIsSyntheticHandler()
+   {
+   TR_ASSERT_FATAL(_catchBlockExtension, "can't call setIsSyntheticHandler without _catchBlockExtension");
+   _catchBlockExtension->_isSyntheticHandler = true;
+   }
+
 /**
  * Flag functions end
  */

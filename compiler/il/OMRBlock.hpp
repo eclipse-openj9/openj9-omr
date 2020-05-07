@@ -315,13 +315,13 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
 
       TR_CatchBlockExtension()
          : _exceptionClass(NULL), _exceptionClassNameChars(NULL), _exceptionClassNameLength(0),
-           _catchType(0), _exceptionsCaught(0), _handlerIndex(0), _inlineDepth(0), _owningMethod(NULL) {}
+           _catchType(0), _exceptionsCaught(0), _handlerIndex(0), _inlineDepth(0), _owningMethod(NULL), _isSyntheticHandler(false) {}
 
       TR_CatchBlockExtension(TR_CatchBlockExtension &other)
          : _exceptionClass(other._exceptionClass), _exceptionClassNameChars(other._exceptionClassNameChars),
            _exceptionClassNameLength(other._exceptionClassNameLength), _catchType(other._catchType),
            _exceptionsCaught(other._exceptionsCaught), _handlerIndex(other._handlerIndex),
-           _inlineDepth(other._inlineDepth), _owningMethod(other._owningMethod), _byteCodeInfo(other._byteCodeInfo) {}
+           _inlineDepth(other._inlineDepth), _owningMethod(other._owningMethod), _byteCodeInfo(other._byteCodeInfo), _isSyntheticHandler(other._isSyntheticHandler){}
 
       TR_OpaqueClassBlock *                 _exceptionClass;
       char                *                 _exceptionClassNameChars;
@@ -332,6 +332,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       TR_ByteCodeInfo                       _byteCodeInfo;
       uint16_t                              _handlerIndex;
       uint8_t                               _inlineDepth;
+      bool                                  _isSyntheticHandler; // indicate whether the exception handler is inserted by the compiler rather than existing in the source code
       };
 
    TR_CatchBlockExtension* getCatchBlockExtension()               { return _catchBlockExtension; }
@@ -448,6 +449,10 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
 
    bool wasHeaderOfCanonicalizedLoop()                { return _flags.testAny(_wasHeaderOfCanonicalizedLoop); }
    void setWasHeaderOfCanonicalizedLoop(bool b)       { _flags.set(_wasHeaderOfCanonicalizedLoop, b); }
+
+
+   bool isSyntheticHandler()                          { return  _catchBlockExtension && _catchBlockExtension->_isSyntheticHandler; }
+   void setIsSyntheticHandler();
 
    enum partialFlags // Stored in lowest 8 bits of _moreflags
       {

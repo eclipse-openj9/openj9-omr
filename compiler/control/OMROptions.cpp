@@ -3057,7 +3057,7 @@ void OMR::Options::setOptionInAllOptionSets(uint32_t mask, bool b)
 char *
 OMR::Options::getDefaultOptions()
    {
-   if (TR::Compiler->target.cpu.isX86() || TR::Compiler->target.cpu.isPower() || TR::Compiler->target.cpu.isARM())
+   if (TR::Compiler->target.cpu.isX86() || TR::Compiler->target.cpu.isPower() || TR::Compiler->target.cpu.isARM() || TR::Compiler->target.cpu.isARM64())
       return (char *) ("samplingFrequency=2");
 
    if (TR::Compiler->target.cpu.isZ())

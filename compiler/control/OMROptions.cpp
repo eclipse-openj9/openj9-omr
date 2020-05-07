@@ -1224,7 +1224,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceTreeSimplification=",         "L{regex}\tlist of additional options: mulDecompose",
          TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceSimplifier), 0, "P"},
    {"traceTrivialBlockExtension",       "L\ttrace trivial block extension",                TR::Options::traceOptimization, trivialBlockExtension, 0, "P"},
-   {"traceTrivialDeadTreeRemoval",      "L\ttrace trivial dead tree removal", SET_OPTION_BIT(TR_TraceTrivialDeadTreeRemoval), "P"},
+   {"traceTrivialDeadTreeRemoval",      "L\ttrace trivial dead tree removal",              TR::Options::traceOptimization, trivialDeadTreeRemoval, 0, "P"},
    {"traceUnsafeFastPath",              "L\ttrace unsafe fast path",                       TR::Options::traceOptimization, unsafeFastPath, 0, "P"},  // Java specific option
    {"traceUnsafeInlining",              "L\ttrace unsafe inlining",                        SET_OPTION_BIT(TR_TraceUnsafeInlining), "F"},
    {"traceUseDefs",                     "L\ttrace use def info",                           SET_OPTION_BIT(TR_TraceUseDefs), "F"},

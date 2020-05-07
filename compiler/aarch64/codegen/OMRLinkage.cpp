@@ -23,11 +23,14 @@
 #include <stdint.h>
 
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
+#include "compile/Compilation.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "il/ParameterSymbol.hpp"
 
 void OMR::ARM64::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
@@ -152,4 +155,48 @@ OMR::ARM64::Linkage::numArgumentRegisters(TR_RegisterKinds kind)
       default:
          return 0;
       }
+   }
+
+TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instruction *cursor, bool parmsHaveBeenStored)
+   {
+   TR::Machine *machine = cg()->machine();
+   const TR::ARM64LinkageProperties& properties = getProperties();
+   TR::RealRegister *stackPtr = machine->getRealRegister(properties.getStackPointerRegister());
+
+   TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
+   ListIterator<TR::ParameterSymbol> parmIterator(&(bodySymbol->getParameterList()));
+   TR::ParameterSymbol *parmCursor;
+
+   // Store to stack all parameters passed in linkage registers
+   //
+   for (parmCursor = parmIterator.getFirst();
+        parmCursor != NULL;
+        parmCursor = parmIterator.getNext())
+      {
+      if (parmCursor->isParmPassedInRegister())
+         {
+         if (!parmsHaveBeenStored)
+            {
+            int8_t lri = parmCursor->getLinkageRegisterIndex();
+            TR::RealRegister *linkageReg;
+            TR::InstOpCode::Mnemonic op;
+
+            if (parmCursor->getDataType() == TR::Double || parmCursor->getDataType() == TR::Float)
+               {
+               linkageReg = machine->getRealRegister(properties.getFloatArgumentRegister(lri));
+               op = (parmCursor->getDataType() == TR::Double) ? TR::InstOpCode::vstrimmd : TR::InstOpCode::vstrimms;
+               }
+            else
+               {
+               linkageReg = machine->getRealRegister(properties.getIntegerArgumentRegister(lri));
+               op = (parmCursor->getSize() == 8) ? TR::InstOpCode::strimmx : TR::InstOpCode::strimmw;
+               }
+
+            TR::MemoryReference *stackMR = new (cg()->trHeapMemory()) TR::MemoryReference(stackPtr, parmCursor->getParameterOffset(), cg());
+            cursor = generateMemSrc1Instruction(cg(), op, NULL, stackMR, linkageReg, cursor);
+            }
+         }
+      }
+
+   return cursor;
    }

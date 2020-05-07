@@ -145,6 +145,12 @@ class ARM64SystemLinkage : public TR::Linkage
     */
    virtual intptr_t entryPointFromInterpretedMethod();
 
+   /**
+    * @brief Sets parameter linkage register index
+    * @param[in] method : method symbol
+    */
+   virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method);
+
    private:
 
    // Tactical GRA

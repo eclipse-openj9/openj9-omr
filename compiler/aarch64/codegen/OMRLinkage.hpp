@@ -288,12 +288,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    Linkage (TR::CodeGenerator *cg) : OMR::Linkage(cg) {}
 
    /**
-    * @brief Parameter has to be on stack or not
-    * @param[in] parm : parameter symbol
-    * @return true if the parameter has to be on stack, false otherwise
-    */
-   virtual bool hasToBeOnStack(TR::ParameterSymbol *parm);
-   /**
     * @brief Maps symbols to locations on stack
     * @param[in] method : method for which symbols are mapped on stack
     */

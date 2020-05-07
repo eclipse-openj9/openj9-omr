@@ -105,7 +105,7 @@ enum TR_CompilationOptions
    TR_TraceTrees                 = 0x00040000,
    TR_TraceCG                    = 0x00080000,
    TR_TraceAliases               = 0x00100000,
-   TR_TraceOptTrees              = 0x00200000,
+   // Available                  = 0x00200000,
    TR_TraceOptDetails            = 0x00400000,
    TR_TraceAll                   = 0x006F0000,
 

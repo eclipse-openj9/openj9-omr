@@ -666,7 +666,7 @@ TR::Optimizer *OMR::Optimizer::createOptimizer(TR::Compilation *comp, TR::Resolv
 
    if (comp->getOptions()->getCustomStrategy())
       {
-      if (comp->getOption(TR_TraceOptDetails) || comp->getOption(TR_TraceOptTrees))
+      if (comp->getOption(TR_TraceOptDetails))
          traceMsg(comp, "Using custom optimization strategy\n");
 
       // Reformat custom strategy as array of Optimization rather than array of int32_t
@@ -1049,7 +1049,7 @@ void OMR::Optimizer::optimize()
    _stackedOptimizer  =  (self() != stackedOptimizer);
    comp()->setOptimizer(self());
 
-   if (comp()->getOption(TR_TraceOptDetails) || comp()->getOption(TR_TraceOptTrees))
+   if (comp()->getOption(TR_TraceOptDetails))
       {
       if (comp()->isOutermostMethod())
         {
@@ -1079,7 +1079,7 @@ void OMR::Optimizer::optimize()
    _firstDumpOptPhaseTrees = INT_MAX;
    _lastDumpOptPhaseTrees  = INT_MAX;
 
-   if (comp()->getOption(TR_TraceOptTrees))
+   if (comp()->getOption(TR_TraceOptDetails))
       _firstDumpOptPhaseTrees = 0;
 
 #ifdef DEBUG
@@ -1168,7 +1168,7 @@ void OMR::Optimizer::optimize()
          traceMsg(comp(), "</strategy>\n");
       }
 
-   if (comp()->getOption(TR_TraceOptDetails) || comp()->getOption(TR_TraceOptTrees))
+   if (comp()->getOption(TR_TraceOptDetails))
       {
       if (comp()->isOutermostMethod())
          traceMsg(comp(), "</optimize>\n");
@@ -1577,7 +1577,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
    //
    if (optNum > OMR::numOpts && doThisOptimization)
       {
-      if (comp()->getOption(TR_TraceOptDetails) || comp()->getOption(TR_TraceOptTrees) || comp()->getOption(TR_TraceOpts))
+      if (comp()->getOption(TR_TraceOptDetails) || comp()->getOption(TR_TraceOpts))
           {
           if (comp()->isOutermostMethod())
              traceMsg(comp(), "%*s<optgroup name=%s>\n", optDepth*3," ", manager->name());
@@ -1641,7 +1641,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 
       optDepth --;
 
-      if (comp()->getOption(TR_TraceOptDetails) || comp()->getOption(TR_TraceOptTrees) || comp()->getOption(TR_TraceOpts))
+      if (comp()->getOption(TR_TraceOptDetails) || comp()->getOption(TR_TraceOpts))
           {
           if (comp()->isOutermostMethod())
              traceMsg(comp(), "%*s</optgroup>\n", optDepth*3," ");
@@ -1699,7 +1699,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          return 0;
          }
 
-      if (comp()->getOption(TR_TraceOptDetails) || comp()->getOption(TR_TraceOptTrees))
+      if (comp()->getOption(TR_TraceOptDetails))
          {
          if (comp()->isOutermostMethod())
             getDebug()->printOptimizationHeader(comp()->signature(), manager->name(), optIndex, optimization->_options == MustBeDone);
@@ -2209,7 +2209,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          traceMsg(comp(), "\nNumber of temps seen = %d\n", tempCount);
          }
 
-      if (comp()->getOption(TR_TraceOptDetails) || comp()->getOption(TR_TraceOptTrees))
+      if (comp()->getOption(TR_TraceOptDetails))
           {
           if (comp()->isOutermostMethod())
              traceMsg(comp(), "</optimization>\n\n");

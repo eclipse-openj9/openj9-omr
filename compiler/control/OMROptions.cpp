@@ -1174,7 +1174,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceNonLinearRA",                 "L\ttrace non-linear RA",                          SET_OPTION_BIT(TR_TraceNonLinearRegisterAssigner), "F"},
    {"traceOpts",                        "L\tdump each optimization name",                 SET_OPTION_BIT(TR_TraceOpts), "P" },
    {"traceOpts=",                       "L{regex}\tlist of optimizations to trace", TR::Options::setRegex, offsetof(OMR::Options, _optsToTrace), 0, "P"},
-   {"traceOptTrees",                    "L\tdump trees after each optimization",           SET_OPTION_BIT(TR_TraceOptTrees), "P" },
    {"traceOSR",                         "L\ttrace OSR",                                    SET_OPTION_BIT(TR_TraceOSR), "P"},
    {"traceOSRDefAnalysis",              "L\ttrace OSR reaching defintions analysis",       TR::Options::traceOptimization, osrDefAnalysis, 0, "P"},
 #ifdef J9_PROJECT_SPECIFIC

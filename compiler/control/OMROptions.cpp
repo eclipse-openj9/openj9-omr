@@ -1226,7 +1226,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceTrivialBlockExtension",       "L\ttrace trivial block extension",                TR::Options::traceOptimization, trivialBlockExtension, 0, "P"},
    {"traceTrivialDeadTreeRemoval",      "L\ttrace trivial dead tree removal",              TR::Options::traceOptimization, trivialDeadTreeRemoval, 0, "P"},
    {"traceUnsafeFastPath",              "L\ttrace unsafe fast path",                       TR::Options::traceOptimization, unsafeFastPath, 0, "P"},  // Java specific option
-   {"traceUnsafeInlining",              "L\ttrace unsafe inlining",                        SET_OPTION_BIT(TR_TraceUnsafeInlining), "F"},
    {"traceUseDefs",                     "L\ttrace use def info",                           SET_OPTION_BIT(TR_TraceUseDefs), "F"},
    {"traceValueNumbers",                "L\ttrace value number info",                      SET_OPTION_BIT(TR_TraceValueNumbers), "F"},
    {"traceVarHandleTransformer",        "L\ttrace VarHandle transformer",                  TR::Options::traceOptimization, varHandleTransformer, 0, "P"},  // Java specific option

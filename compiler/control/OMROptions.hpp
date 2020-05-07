@@ -781,7 +781,7 @@ enum TR_CompilationOptions
    TR_DisableOSR                                      = 0x08000000 + 23,
    TR_DisableDualTLH                                  = 0x10000000 + 23,
    // Available                                       = 0x10000000 + 23,
-   TR_TraceUnsafeInlining                             = 0x20000000 + 23,
+   // Available                                       = 0x20000000 + 23,
    TR_DisableArrayStoreCheckOpts                      = 0x40000000 + 23,
    TR_DisableFastAssumptionReclamation                = 0x80000000 + 23,
 

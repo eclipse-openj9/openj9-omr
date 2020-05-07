@@ -991,9 +991,6 @@ enum TR_CompilationOptions
     * "AVAILABLE FOR USE"
     */
 
-   // Simplification option word
-   TR_TraceMulDecomposition            = 0x00000001,
-
    // Debug Enable flags
    TR_EnableUnneededNarrowIntConversion = 0x00000001,
 
@@ -1459,7 +1456,6 @@ public:
 
    bool      getAddressEnumerationOption(uint32_t mask)   {return (_addressToEnumerate & mask) != 0;}
 
-   bool      getTraceSimplifier(uint32_t mask) { return (_traceSimplifier & mask) != 0; }
    bool      getDebugEnableFlag(uint32_t mask) { return (_debugEnableFlags & mask) != 0; }
    bool      getEnableGPU(uint32_t mask) { return (_enableGPU & mask) != 0; }
 
@@ -2250,7 +2246,6 @@ protected:
    int32_t                     _test390StackBuffer;   // Buffer to force a large stack on 390
    int32_t                     _test390LitPoolBuffer; // Buffer to force a large lit pool on 390
    int32_t                     _addressToEnumerate;   // Addresses enumeration option flags
-   int32_t                     _traceSimplifier;      // Simplifier trace flags
    int32_t                     _debugEnableFlags;     // For miscellaneeous flags used to enable things
    bool                        _optLevelDowngraded;   // this is a flag rather than an option
                                                       // set in the constructor if we downgraded

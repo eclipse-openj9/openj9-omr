@@ -1221,8 +1221,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceTreePatternMatching",         "L\ttrace the functioning of the TR_Pattern framework", SET_OPTION_BIT(TR_TraceTreePatternMatching), "F"},
    {"traceTrees",                       "L\tdump trees after each compilation phase", SET_OPTION_BIT(TR_TraceTrees), "P" },
    {"traceTreeSimplification",          "L\ttrace tree simplification",                    TR::Options::traceOptimization, treeSimplification, 0, "P"},
-   {"traceTreeSimplification=",         "L{regex}\tlist of additional options: mulDecompose",
-         TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceSimplifier), 0, "P"},
    {"traceTrivialBlockExtension",       "L\ttrace trivial block extension",                TR::Options::traceOptimization, trivialBlockExtension, 0, "P"},
    {"traceTrivialDeadTreeRemoval",      "L\ttrace trivial dead tree removal",              TR::Options::traceOptimization, trivialDeadTreeRemoval, 0, "P"},
    {"traceUnsafeFastPath",              "L\ttrace unsafe fast path",                       TR::Options::traceOptimization, unsafeFastPath, 0, "P"},  // Java specific option
@@ -4570,10 +4568,7 @@ OMR::Options::setAddressEnumerationBits(char *option, void *base, TR::OptionTabl
 OMR::Options::TR_OptionStringToBit OMR::Options::_optionStringToBitMapping[] = {
 // Names cannot be reused otherwise all matching bits will be set
 // bit 0x00000001 is set if any option is present
-
-// Simplifier trace options
-{ "mulDecompose", TR_TraceMulDecomposition},
-
+   
 // Debug Enable flags
 { "enableUnneededNarrowIntConversion", TR_EnableUnneededNarrowIntConversion },
 

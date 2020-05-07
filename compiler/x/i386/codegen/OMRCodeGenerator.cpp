@@ -389,7 +389,7 @@ OMR::X86::I386::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node 
 bool
 OMR::X86::I386::CodeGenerator::codegenMulDecomposition(int64_t multiplier)
    {
-   bool iMulDecomposeReport = self()->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
+   bool iMulDecomposeReport = self()->comp()->getOptions()->trace(OMR::treeSimplification);
    bool answer = false;
    if (iMulDecomposeReport)
       diagnostic("\nCodegen was queried for the value of %d, ", (int32_t)multiplier);

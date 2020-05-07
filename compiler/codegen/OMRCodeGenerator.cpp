@@ -1027,7 +1027,7 @@ TR::Linkage *OMR::CodeGenerator::createLinkage(TR_LinkageConventions lc)
 bool
 OMR::CodeGenerator::mulDecompositionCostIsJustified(int numOfOperations, char bitPosition[], char operationType[], int64_t value)
    {
-   if (self()->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition))
+   if (self()->comp()->getOptions()->trace(OMR::treeSimplification))
       {
       if (numOfOperations <= 3)
          traceMsg(self()->comp(), "MulDecomp cost is justified\n");

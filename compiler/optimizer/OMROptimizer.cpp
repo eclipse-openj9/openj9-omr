@@ -2177,12 +2177,14 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 
       manager->performChecks();
 
-      if (comp()->getOption(TR_TraceTempUsage) || comp()->getOption(TR_TraceTempUsageMore))
+      static const bool enableCountTemps = feGetEnv("TR_EnableCountTemps") != NULL;
+      if (enableCountTemps)
          {
-          TR::TreeTop * tt = 0;
          int32_t tempCount = 0;
 
-         for (tt = getMethodSymbol()->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
+         traceMsg(comp(), "Temps seen (if any): ");
+
+         for (TR::TreeTop *tt = getMethodSymbol()->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
             {
             TR::Node * ttNode = tt->getNode();
 
@@ -2198,41 +2200,13 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
                if ((symRef->getSymbol()->getKind() == TR::Symbol::IsAutomatic) &&
                    symRef->isTemporary(comp()))
                   {
-                  tempCount += 1;
+                  ++tempCount;
+                  traceMsg(comp(), "%s ", comp()->getDebug()->getName(ttNode->getSymbolReference()));
                   }
                }
             }
 
-         comp()->getDebug()->trace("Number of temps seen = %d", tempCount);
-
-         if (comp()->getOption(TR_TraceTempUsageMore) &&
-             (tempCount > 0))
-            {
-            comp()->getDebug()->trace(": ");
-
-            for (tt = getMethodSymbol()->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
-               {
-               TR::Node * ttNode = tt->getNode();
-
-               if (ttNode->getOpCodeValue() == TR::treetop)
-                  {
-                  ttNode = ttNode->getFirstChild();
-                  }
-
-               if (ttNode->getOpCode().isStore() && ttNode->getOpCode().hasSymbolReference())
-                  {
-                  TR::SymbolReference * symRef = ttNode->getSymbolReference();
-
-                  if ((symRef->getSymbol()->getKind() == TR::Symbol::IsAutomatic) &&
-                      symRef->isTemporary(comp()))
-                     {
-                     comp()->getDebug()->trace("%s ", comp()->getDebug()->getName(ttNode->getSymbolReference()));
-                     }
-                  }
-               }
-            }
-
-         comp()->getDebug()->trace("\n");
+         traceMsg(comp(), "\nNumber of temps seen = %d\n", tempCount);
          }
 
       if (comp()->getOption(TR_TraceOptDetails) || comp()->getOption(TR_TraceOptTrees))

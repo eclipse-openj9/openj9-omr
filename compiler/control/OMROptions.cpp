@@ -1215,8 +1215,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceStripMining",                 "L\ttrace strip mining",                           TR::Options::traceOptimization, stripMining, 0, "P"},
    {"traceStructuralAnalysis",          "L\ttrace structural analysis", SET_OPTION_BIT(TR_TraceSA), "P"},
    {"traceSwitchAnalyzer",              "L\ttrace switch analyzer",                        TR::Options::traceOptimization, switchAnalyzer, 0, "P"},
-   {"traceTempUsage",                   "L\ttrace number of temps used",                   SET_OPTION_BIT(TR_TraceTempUsage), "P"},
-   {"traceTempUsageMore",               "L\ttrace usage of temps, showing each temp used", SET_OPTION_BIT(TR_TraceTempUsageMore), "P"},
    {"traceTreeCleansing",               "L\ttrace tree cleansing",                         TR::Options::traceOptimization, treesCleansing, 0, "P"},
    {"traceTreePatternMatching",         "L\ttrace the functioning of the TR_Pattern framework", SET_OPTION_BIT(TR_TraceTreePatternMatching), "F"},
    {"traceTrees",                       "L\tdump trees after each compilation phase", SET_OPTION_BIT(TR_TraceTrees), "P" },

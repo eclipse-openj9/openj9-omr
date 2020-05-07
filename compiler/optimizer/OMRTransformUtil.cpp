@@ -149,18 +149,7 @@ OMR::TransformUtil::scalarizeArrayCopy(
 
    targetRef = comp->getSymRefTab()->findOrCreateGenericIntShadowSymbolReference(0);
    sourceRef = targetRef;
-
-   bool trace = comp->getOption(TR_TraceScalarizeSSOps);
-   if (trace)
-      traceMsg(comp,"scalarizeArrayCopy: node %p got targetRef (#%d) and sourceRef (#%d)\n",
-         node,targetRef?targetRef->getReferenceNumber():-1,sourceRef?sourceRef->getReferenceNumber():-1);
-
-   if (targetRef == NULL || sourceRef == NULL)
-      {
-      if (trace)
-         traceMsg(comp,"do not scalarizeArrayCopy node %p : targetRef is NULL (%s) or sourceRef is NULL (%s)\n",node,targetRef?"no":"yes",sourceRef?"no":"yes");
-      return node;
-      }
+   
 #ifdef J9_PROJECT_SPECIFIC
    if (targetRef->getSymbol()->getDataType().isBCD() ||
        sourceRef->getSymbol()->getDataType().isBCD())
@@ -248,9 +237,6 @@ OMR::TransformUtil::scalarizeAddressParameter(
             address->getSymbolReference() == ref &&
             ref->getSymbol()->getDataType() == dataType)
       {
-      if (comp->getOption(TR_TraceScalarizeSSOps))
-         traceMsg(comp,"\n\tscalarizeAddressParameter auto direct case: address %p, dt %s\n",address,dataType.toString());
-
       TR::ILOpCodes opcode = store ? comp->il.opCodeForDirectStore(dataType)
                                   : comp->il.opCodeForDirectLoad(dataType);
 

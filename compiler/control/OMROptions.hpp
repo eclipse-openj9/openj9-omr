@@ -622,7 +622,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x80000000 + 17,
 
    // Option word 18
-   TR_TraceScalarizeSSOps                             = 0x00000020 + 18,
+   // Available                                       = 0x00000020 + 18,
    // Available                                       = 0x00000040 + 18,
    // Available                                       = 0x00000080 + 18,
    // Available                                       = 0x00000100 + 18,

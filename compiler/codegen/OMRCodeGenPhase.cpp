@@ -396,7 +396,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
    TR::Compilation* comp = cg->comp();
    phase->reportPhase(InstructionSelectionPhase);
 
-   if (comp->getOption(TR_TraceCG) || comp->getOption(TR_TraceTrees))
+   if (comp->getOption(TR_TraceCG))
       comp->dumpMethodTrees("Pre Instruction Selection Trees");
 
    TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
@@ -492,7 +492,7 @@ OMR::CodeGenPhase::performUncommonCallConstNodesPhase(TR::CodeGenerator * cg, TR
 
    phase->reportPhase(UncommonCallConstNodesPhase);
 
-   if (comp->getOption(TR_TraceCG) || comp->getOption(TR_TraceTrees))
+   if (comp->getOption(TR_TraceCG))
       comp->dumpMethodTrees("Pre Uncommon Call Constant Node Trees");
 
    TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
@@ -500,7 +500,7 @@ OMR::CodeGenPhase::performUncommonCallConstNodesPhase(TR::CodeGenerator * cg, TR
 
    cg->uncommonCallConstNodes();
 
-   if (comp->getOption(TR_TraceCG) || comp->getOption(TR_TraceTrees))
+   if (comp->getOption(TR_TraceCG))
       comp->dumpMethodTrees("Post Uncommon Call Constant Node Trees");
   }
 

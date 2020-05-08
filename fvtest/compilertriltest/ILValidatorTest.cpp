@@ -22,7 +22,6 @@
 #include "JitTest.hpp"
 #include "default_compiler.hpp"
 #include "compile/OMRCompilation.hpp"
-
 #include <string>
 
 class IllformedTrees : public TRTest::JitTest, public ::testing::WithParamInterface<std::string> {};
@@ -39,6 +38,7 @@ TEST_P(IllformedTrees, FailCompilation) {
             << "Compilation did not fail due to ill-formed input trees";
 }
 
+#ifdef OMR_ENV_DATA64
 INSTANTIATE_TEST_CASE_P(ILValidatorTest, IllformedTrees, ::testing::Values(
     "(method return=Int32 (block (ireturn (iadd (iconst 1) (sconst 3)))))",
     "(method return=Int32 (block (ireturn (sadd (iconst 1) (iconst 3)))))",
@@ -46,6 +46,7 @@ INSTANTIATE_TEST_CASE_P(ILValidatorTest, IllformedTrees, ::testing::Values(
     "(method return=Address (block (areturn (aladd (aconst 4) (iconst 1)))))",
     "(method return=Address (block (areturn (aiadd (iconst 1) (aconst 4)))))",
     "(method return=Address (block (areturn (aladd (lconst 1) (aconst 4)))))",
+    "(method return=Address (block (areturn (aiadd (aconst 1) (iconst 4)))))",
     "(method return=Int32 (block (ireturn (acmpeq (iconst 4) (aconst 4)))))",
     "(method return=Int32 (block (ireturn (acmpge (lconst 4) (aconst 4)))))",
     "(method return=NoType (block (return (GlRegDeps))))",
@@ -56,6 +57,28 @@ INSTANTIATE_TEST_CASE_P(ILValidatorTest, IllformedTrees, ::testing::Values(
     "(method return=Int64 (block (lreturn (sshl (sconst 1) (iconst 1)))))", // lreturn incorrect type. 
     "(method return=Int64 (block (lreturn (sconst 1) )))"                   // lreturn incorrect type. 
     ));
+#endif
+
+#ifdef OMR_ENV_DATA32
+INSTANTIATE_TEST_CASE_P(ILValidatorTest, IllformedTrees, ::testing::Values(
+    "(method return=Int32 (block (ireturn (iadd (iconst 1) (sconst 3)))))",
+    "(method return=Int32 (block (ireturn (sadd (iconst 1) (iconst 3)))))",
+    "(method return=Address (block (areturn (aiadd (aconst 4) (lconst 1)))))",
+    "(method return=Address (block (areturn (aladd (aconst 4) (iconst 1)))))",
+    "(method return=Address (block (areturn (aiadd (iconst 1) (aconst 4)))))",
+    "(method return=Address (block (areturn (aladd (lconst 1) (aconst 4)))))",
+    "(method return=Address (block (areturn (aladd (aconst 1) (lconst 4)))))",
+    "(method return=Int32 (block (ireturn (acmpeq (iconst 4) (aconst 4)))))",
+    "(method return=Int32 (block (ireturn (acmpge (lconst 4) (aconst 4)))))",
+    "(method return=NoType (block (return (GlRegDeps))))",
+    "(method return=Int32 (block (ireturn (GlRegDeps) (iconst 3))))",
+    "(method return=Int32 (block (ireturn (GlRegDeps) (iadd (iconst 1) (iconst 3)))))",
+    "(method return=Int32 (block (ireturn (iconst 3 (GlRegDeps)))))",
+    "(method return=Int32 (block (ireturn (iadd (GlRegDeps) (iconst 1) (iconst 3)))))"
+    "(method return=Int64 (block (lreturn (sshl (sconst 1) (iconst 1)))))", // lreturn incorrect type. 
+    "(method return=Int64 (block (lreturn (sconst 1) )))"                   // lreturn incorrect type. 
+    ));
+#endif
 
 class WellformedTrees : public TRTest::JitTest, public ::testing::WithParamInterface<std::string> {};
 

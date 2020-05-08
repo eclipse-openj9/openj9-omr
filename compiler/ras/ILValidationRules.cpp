@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -494,5 +494,26 @@ void TR::Validate_ireturnReturnType::validate(TR::Node *node)
                               comp(),"ireturn has an invalid child type %s (expected Int{8,16,32})",
                               childTypeName);
          }
+      }
+   }
+
+/**
+ * Validate_axaddEnvironment (a TR::NodeValidationRule):
+ */
+TR::Validate_axaddEnvironment::Validate_axaddEnvironment(TR::Compilation *comp)
+   : TR::NodeValidationRule(comp, OMR::validate_axaddEnvironment)
+   {
+   }
+
+void TR::Validate_axaddEnvironment::validate(TR::Node *node)
+   {
+   const auto opcode = node->getOpCode().getOpCodeValue();
+   if (opcode == TR::aiadd)
+      {
+      TR::checkILCondition(node, comp()->target().is32Bit(), comp(), "aiadd should not be seen on 64-bit");
+      }
+   if (opcode == TR::aladd)
+      {
+      TR::checkILCondition(node, comp()->target().is64Bit(), comp(), "aladd should not be seen on 32-bit");
       }
    }

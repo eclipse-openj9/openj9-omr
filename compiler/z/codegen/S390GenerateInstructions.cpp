@@ -3041,48 +3041,72 @@ generateReplicateNodeInVectorReg(TR::Node * node, TR::CodeGenerator *cg, TR::Reg
    }
 
 /**
- * Rotate the second register and put its selected bits into the first register
- * with an option to clear the rest of first register's bits.
- */
-void generateShiftAndKeepSelected64Bit(TR::Node * node, TR::CodeGenerator *cg,
-                                       TR::Register * aFirstRegister, TR::Register * aSecondRegister,
-                                       int aFromBit, int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode)
+ * \brief
+ *    Shift the source register to the left and put its selected bits into the target register
+ *    and clear the rest of target register's bits.
+ * 
+ * \note
+ *    In this API, we try to follow the restrictions which can be applied to all paths. The restrictions include:
+ *    1. If targetRegister and sourceRegister designate the same reg, it will first shift and then the selected bits of the shifted value are inserted
+ *       into the corresponding bits of the unshifted register contents.
+ *    2. The shift direction of sourceRegister cannot be negative(right) direction. So shiftAmount cannot be negative.
+ *    3. toBit must be larger or equal to fromBit in the API. 
+ *    4. Considering restrictions above, we can conclude the following value restrictions for the parameters:
+ *       1) fromBit <= toBit    2) 0 <= fromBit <= 0b00111111 = 63     3) 0 <= toBit <= 0b00111111 = 63      4) shiftAmount >= 0
+*/
+void generateShiftThenKeepSelected64Bit(TR::Node * node, TR::CodeGenerator *cg,
+                                       TR::Register * targetRegister, TR::Register * sourceRegister,
+                                       int fromBit, int toBit, int shiftAmount)
    {
-   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12) && !aSetConditionCode)
+   TR_ASSERT_FATAL((0 <= fromBit) && (fromBit <= 63), "fromBit(%d) incorrectly out of the range 0 to 63(0b00111111) inclusive", fromBit);
+   TR_ASSERT_FATAL((0 <= toBit) && (toBit <= 63), "toBit(%d) incorrectly out of the range 0 to 63(0b00111111) inclusive", toBit);
+   TR_ASSERT_FATAL(fromBit <= toBit, "fromBit(%d) incorrectly larger than toBit(%d)", fromBit, toBit);
+   TR_ASSERT_FATAL(shiftAmount >= 0, "shiftAmount(%d) incorrectly less than 0", shiftAmount);
+   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12))
       {
-      generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node, aFirstRegister, aSecondRegister, aFromBit, aToBit|(aClearOtherBits ? 0x80 : 0x00), aShiftAmount);
+      generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node, targetRegister, sourceRegister, fromBit, toBit|0x80, shiftAmount);
       }
    else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       {
-      generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, aFirstRegister, aSecondRegister, aFromBit, aToBit|(aClearOtherBits ? 0x80 : 0x00), aShiftAmount);
+      generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetRegister, sourceRegister, fromBit, toBit|0x80, shiftAmount);
       }
    else
       {
-      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, aFirstRegister, aSecondRegister, (63 - aToBit) - aShiftAmount);
-      generateRSInstruction(cg, TR::InstOpCode::SLLG, node, aFirstRegister, aFirstRegister, (63 - aToBit) + aFromBit);
-      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, aFirstRegister, aFirstRegister, aFromBit);
+      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, targetRegister, sourceRegister, (63 - toBit) - shiftAmount);
+      generateRSInstruction(cg, TR::InstOpCode::SLLG, node, targetRegister, targetRegister, (63 - toBit) + fromBit);
+      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, targetRegister, targetRegister, fromBit);
       }
    }
 
 /**
- * Rotate the second register and put its selected bits into the first register
- * with an option to clear the rest of first register's bits.
- */
+ * \brief
+ *    Shift the source register to the left and put its selected bits into the target register
+ *    and clear the rest of target register's bits.
+ * 
+ * \note
+ *    The usage of this API will be the same as the 64-bit version. 
+ *    The API's corresponding value restrictions are:
+ *       1) fromBit <= toBit    2) 0 <= fromBit <= 0b00011110 = 31     3) 0 <= toBit <= 0b00011111 = 31      4) shiftAmount >= 0
+*/
 void
-generateShiftAndKeepSelected31Bit(TR::Node * node, TR::CodeGenerator *cg,
-                                  TR::Register * aFirstRegister, TR::Register * aSecondRegister,
-                                  int aFromBit, int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode)
+generateShiftThenKeepSelected31Bit(TR::Node * node, TR::CodeGenerator *cg,
+                                  TR::Register * targetRegister, TR::Register * sourceRegister,
+                                  int fromBit, int toBit, int shiftAmount)
    {
+   TR_ASSERT_FATAL((0 <= fromBit) && (fromBit <= 31), "fromBit(%d) incorrectly out of the range 0 to 30(0b00011111) inclusive", fromBit);
+   TR_ASSERT_FATAL((0 <= toBit) && (toBit <= 31), "toBit(%d) incorrectly out of the range 0 to 31(0b00011111) inclusive", toBit);
+   TR_ASSERT_FATAL(fromBit <= toBit, "fromBit(%d) incorrectly larger than toBit(%d)", fromBit, toBit);
+   TR_ASSERT_FATAL(shiftAmount >= 0, "shiftAmount(%d) incorrectly less than 0", shiftAmount);
    if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
-      generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, aFirstRegister, aSecondRegister, aFromBit, aToBit|(aClearOtherBits ? 0x80 : 0x00), aShiftAmount);
+      generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetRegister, sourceRegister, fromBit, toBit|0x80, shiftAmount);
       }
    else
       {
-      generateRRInstruction(cg, TR::InstOpCode::LR, node, aFirstRegister, aSecondRegister);
-      generateRSInstruction(cg, TR::InstOpCode::SRL, node, aFirstRegister, (31 - aToBit) - aShiftAmount);
-      generateRSInstruction(cg, TR::InstOpCode::SLL, node, aFirstRegister, (31 - aToBit) + aFromBit);
-      generateRSInstruction(cg, TR::InstOpCode::SRL, node, aFirstRegister, aFromBit);
+      generateRRInstruction(cg, TR::InstOpCode::LR, node, targetRegister, sourceRegister);
+      generateRSInstruction(cg, TR::InstOpCode::SRL, node, targetRegister, (31 - toBit) - shiftAmount);
+      generateRSInstruction(cg, TR::InstOpCode::SLL, node, targetRegister, (31 - toBit) + fromBit);
+      generateRSInstruction(cg, TR::InstOpCode::SRL, node, targetRegister, fromBit);
       }
    }
 

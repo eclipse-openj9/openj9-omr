@@ -1019,9 +1019,9 @@ MemToMemVarLenMacroOp::generateRemainder()
       {
       TR::LabelSymbol *remainderDoneLabel = generateLabelSymbol(_cg);
       if (_cg->comp()->target().is64Bit())
-         generateShiftAndKeepSelected64Bit(_rootNode, _cg, _regLen, _regLen, 52, 59, 4, true, false);
+         generateShiftThenKeepSelected64Bit(_rootNode, _cg, _regLen, _regLen, 52, 59, 4);
       else
-         generateShiftAndKeepSelected31Bit(_rootNode, _cg, _regLen, _regLen, 20, 27, 4, true, false);
+         generateShiftThenKeepSelected31Bit(_rootNode, _cg, _regLen, _regLen, 20, 27, 4);
 
       TR::MemoryReference * targetMR = new (_cg->trHeapMemory()) TR::MemoryReference(_raReg, _regLen, 0, _cg);
       generateRXInstruction(_cg, TR::InstOpCode::BAS, _rootNode, _raReg, targetMR);

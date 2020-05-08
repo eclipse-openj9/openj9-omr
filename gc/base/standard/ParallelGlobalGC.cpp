@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -562,6 +562,7 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 bool
 MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uintptr_t activeSubspaceMaxExpansionInSpace, MM_GCCode gcCode) 
 {
+	MM_Heap *heap = _extensions->heap;
 	MM_AllocationStats *allocStats = &_extensions->allocationStats;
 	CompactReason compactReason = COMPACT_NONE;
 	CompactPreventedReason compactPreventedReason = COMPACT_PREVENTED_NONE;
@@ -699,8 +700,8 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	 * compact to get as much free memory as possible.
 	 */
 	if ( activeSubspaceMaxExpansionInSpace == 0) { 
-		uintptr_t oldFree = _extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
-		uintptr_t oldSize = _extensions->heap->getActiveMemorySize(MEMORY_TYPE_OLD);
+		uintptr_t oldFree = heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
+		uintptr_t oldSize = heap->getActiveMemorySize(MEMORY_TYPE_OLD);
 		uintptr_t desperateFree = (oldSize  / OLDFREE_DESPERATE_RATIO_DIVISOR) * OLDFREE_DESPERATE_RATIO_MULTIPLIER;
 			
 		/* Is heap space getting tight? */
@@ -717,7 +718,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 
 	{
 		/* Tenure space dark matter trigger */
-		MM_MemorySubSpace *memorySubSpace = _extensions->heap->getDefaultMemorySpace()->getTenureMemorySubSpace();
+		MM_MemorySubSpace *memorySubSpace = heap->getDefaultMemorySpace()->getTenureMemorySubSpace();
 		uintptr_t totalSize = memorySubSpace->getActiveMemorySize();
 		MM_MemoryPool *memoryPool= memorySubSpace->getMemoryPool();
 		uintptr_t darkMatterBytes = 0;
@@ -725,11 +726,14 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 			darkMatterBytes = memoryPool->getDarkMatterBytes();
 		}
 		uintptr_t freeMemorySize = memoryPool->getActualFreeMemorySize();
-		float darkMatterRatio = ((float)darkMatterBytes)/((float)freeMemorySize + (float)totalSize / 2);
+		/* Consider the trigger only if heap fully expanded */
+		if (heap->getMemorySize() == heap->getMaximumMemorySize()) {
+			float darkMatterRatio = ((float)darkMatterBytes)/((float)freeMemorySize + (float)totalSize / 2);
 
-		if (darkMatterRatio > _extensions->getDarkMatterCompactThreshold()) {
-			compactReason = COMPACT_MICRO_FRAG;
-			goto compactionReqd;
+			if (darkMatterRatio > _extensions->getDarkMatterCompactThreshold()) {
+				compactReason = COMPACT_MICRO_FRAG;
+				goto compactionReqd;
+			}
 		}
 
 #if defined(OMR_GC_IDLE_HEAP_MANAGER) 
@@ -737,7 +741,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 
 			MM_LargeObjectAllocateStats *stats = memoryPool->getLargeObjectAllocateStats();
 
-			uintptr_t pageSize = env->getExtensions()->heap->getPageSize();
+			uintptr_t pageSize = heap->getPageSize();
 			uintptr_t reusableFreeMemory = stats->getPageAlignedFreeMemory(pageSize);
 
 			uintptr_t memoryFragmentationDiff = freeMemorySize - reusableFreeMemory;

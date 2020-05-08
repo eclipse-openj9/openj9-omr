@@ -1228,18 +1228,14 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
 
          if (comp->isRecursiveMethodTarget(sym))
             {
-            // Compute method's jit entry point
-            //
-            uint8_t *start = cg()->getCodeStart();
+            targetAddress = cg()->getLinkage()->entryPointFromCompiledMethod();
+
             if (comp->target().is64Bit())
                {
-               start += TR_LinkageInfo::get(start)->getReservedWord();
-               TR_ASSERT_FATAL(comp->target().cpu.isTargetWithinRIPRange((intptr_t)start, nextInstructionAddress),
+               TR_ASSERT_FATAL(comp->target().cpu.isTargetWithinRIPRange(targetAddress, nextInstructionAddress),
                                "Method start must be within RIP range");
                cg()->fe()->reserveTrampolineIfNecessary(comp, getSymbolReference(), true);
                }
-
-            targetAddress = (intptr_t)start;
             }
          else
             {

@@ -57,6 +57,7 @@
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
 #ifdef J9_PROJECT_SPECIFIC
+#include "codegen/PrivateLinkage.hpp"
 #include "control/RecompilationInfo.hpp"
 #endif
 #include "env/CompilerEnv.hpp"
@@ -1791,7 +1792,7 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
 #ifdef J9_PROJECT_SPECIFIC
          if (data.recomp!=NULL && data.recomp->couldBeCompiledAgain())
             {
-            TR_LinkageInfo *lkInfo = TR_LinkageInfo::get(self()->getCodeStart());
+            J9::PrivateLinkage::LinkageInfo *lkInfo = J9::PrivateLinkage::LinkageInfo::get(self()->getCodeStart());
             if (data.recomp->useSampling())
                lkInfo->setSamplingMethodBody();
             else

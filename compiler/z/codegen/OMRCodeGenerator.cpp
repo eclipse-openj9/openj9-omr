@@ -71,6 +71,7 @@
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
 #ifdef J9_PROJECT_SPECIFIC
+#include "codegen/PrivateLinkage.hpp"
 #include "control/RecompilationInfo.hpp"
 #endif
 #include "cs2/hashtab.h"
@@ -2466,7 +2467,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 #ifdef J9_PROJECT_SPECIFIC
          if (recomp != NULL && recomp->couldBeCompiledAgain())
             {
-            TR_LinkageInfo * linkageInfo = TR_LinkageInfo::get(self()->getCodeStart());
+            J9::PrivateLinkage::LinkageInfo * linkageInfo = J9::PrivateLinkage::LinkageInfo::get(self()->getCodeStart());
             if (recomp->useSampling())
                {
                recompFlag = METHOD_SAMPLING_RECOMPILATION;

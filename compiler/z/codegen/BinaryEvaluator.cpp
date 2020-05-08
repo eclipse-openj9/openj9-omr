@@ -857,7 +857,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
                }
             else
                {
-               generateShiftAndKeepSelected64Bit(node, cg, firstRegister, firstRegister, 64-shiftAmnt, 63, 0, true, false);
+               generateShiftThenKeepSelected64Bit(node, cg, firstRegister, firstRegister, 64-shiftAmnt, 63, 0);
                }
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, done, deps);
             }
@@ -2966,7 +2966,7 @@ OMR::Z::TreeEvaluator::iremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             }
          else
             {
-            generateShiftAndKeepSelected31Bit(node, cg, targetRegister, targetRegister, 0x3f & (32 - shftAmnt), 31, 0, true, false);
+            generateShiftThenKeepSelected31Bit(node, cg, targetRegister, targetRegister, 0x3f & (32 - shftAmnt), 31, 0);
             }
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, done, deps);
          }

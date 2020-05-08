@@ -10292,9 +10292,9 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
          // Index into helper table - Each entry in table is 16 bytes.
          //   Actual index to helper table is the remaining length (8-byte) * 16.
          if (cg->comp()->target().is64Bit())
-            generateShiftAndKeepSelected64Bit(node, cg, tmpReg, tmpReg, 52, 59, 4, true, false);
+            generateShiftThenKeepSelected64Bit(node, cg, tmpReg, tmpReg, 52, 59, 4);
          else
-            generateShiftAndKeepSelected31Bit(node, cg, tmpReg, tmpReg, 20, 27, 4, true, false);
+            generateShiftThenKeepSelected31Bit(node, cg, tmpReg, tmpReg, 20, 27, 4);
 
          // Helper table address is stored in raReg.  Branch to helper to execute TRT and return.
          TR::MemoryReference * targetMR = new (cg->trHeapMemory()) TR::MemoryReference(raReg, tmpReg, 0, cg);
@@ -11218,7 +11218,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
             case 3:
                {
                TR::Register *tmpByteConstReg = cg->allocateRegister();
-               generateShiftAndKeepSelected31Bit(node, cg, tmpByteConstReg, tmpConstExprRegister, 24, 31, -8, true, false);
+               generateShiftThenKeepSelected31Bit(node, cg, tmpByteConstReg, tmpConstExprRegister, 24, 31, -8);
                generateRSInstruction(cg, TR::InstOpCode::SRL, node, tmpConstExprRegister, 16); //0x0000aabb
                generateRXInstruction(cg, TR::InstOpCode::STH, node, tmpConstExprRegister, new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
                offset += 2;
@@ -12185,12 +12185,12 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
             // This will generate a RISBG instruction (if it's supported, otherwise two shift instructions).
             // A RISBG instruction is equivalent to doing a `(tmpReg & 0x1) << x`. But for a 64-bit value we would have to use
             // two AND immediate instructions and a shift instruction to do this. So instead we use a single RISBG instruction.
-            generateShiftAndKeepSelected64Bit(node, cg, tmpReg, tmpReg, 63 - x, 63 - x, x, true, false);
+            generateShiftThenKeepSelected64Bit(node, cg, tmpReg, tmpReg, 63 - x, 63 - x, x);
             }
          else
             {
             // Same as above, but generate a RISBLG instead of RISBG for 32, 16, and 8-bit integers
-            generateShiftAndKeepSelected31Bit(node, cg, tmpReg, tmpReg, 31 - x, 31 - x, x, true, false);
+            generateShiftThenKeepSelected31Bit(node, cg, tmpReg, tmpReg, 31 - x, 31 - x, x);
             }
 
          // Now OR the result into the resultReg
@@ -12297,7 +12297,7 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
          // This will generate a RISBG instruction (if supported).
          // This is equivalent to doing a `tmpReg & 0x1`. But on 64-bit we would have to use
          // two AND immediate instructions. So instead we use a single RISBG instruction.
-         generateShiftAndKeepSelected64Bit(node, cg, tmpReg, tmpReg, 63, 63, 0, true, false);
+         generateShiftThenKeepSelected64Bit(node, cg, tmpReg, tmpReg, 63, 63, 0);
          }
       else
          {

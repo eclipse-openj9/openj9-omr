@@ -604,7 +604,7 @@ OMR::RV::TreeEvaluator::fRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 static TR::Register *
-commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, bool reverse, bool isDouble, TR::CodeGenerator *cg)
+commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic cmpOp, bool reverse, bool isDouble, TR::CodeGenerator *cg)
    {
    TR_ASSERT(node->getNumChildren() == 2, "The number of children for fmax/fmin/dmax/dmin must be 2.");
 
@@ -616,6 +616,8 @@ commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, bool revers
    TR::Register *cmpReg = cg->allocateRegister();
    TR::RealRegister *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
    TR::Register *trgReg;
+
+   TR::InstOpCode::Mnemonic feqOp = isDouble ? TR::InstOpCode::_feq_d : TR::InstOpCode::_feq_s;
 
    if (cg->canClobberNodesRegister(firstChild))
       {
@@ -631,27 +633,55 @@ commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, bool revers
       }
 
    TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *moveSrc2RegToTrgReg = generateLabelSymbol(cg);
    TR::LabelSymbol *joinLabel = generateLabelSymbol(cg);
 
    startLabel->setStartInternalControlFlow();
    joinLabel->setEndInternalControlFlow();
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
    deps->addPostCondition(cmpReg, TR::RealRegister::NoReg);
    deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
    deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
 
-   if (reverse)
-      generateRTYPE(op, node, cmpReg, src2Reg, src1Reg, cg);
-   else
-      generateRTYPE(op, node, cmpReg, src1Reg, src2Reg, cg);
-
    generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
+
+   /*
+    * Check if src1Reg is NaN, if so then result is NaN.
+    *
+    * Note, that the value is already stored in trgReg, so we check
+    * src1Reg (using feq.s / feq.d) and if it's NaN, we just jump
+    * to the end (joinLabel)
+    */
+   generateRTYPE(feqOp, node, cmpReg, src1Reg, src1Reg, cg);
+   generateBTYPE(TR::InstOpCode::_beq, node, joinLabel, cmpReg, zero, cg);
+
+   /*
+    * Check if src2Reg is NaN, if so then result is NaN.
+    *
+    * If src2Reg is NaN, we have to move it to trgReg, just like
+    * later on when we compare and (eventually) move src2Reg into trgReg.
+    * So if src2Reg is NaN, just jump over comparison to that move.
+    */
+   generateRTYPE(feqOp, node, cmpReg, src2Reg, src2Reg, cg);
+   generateBTYPE(TR::InstOpCode::_beq, node, moveSrc2RegToTrgReg, cmpReg, zero, cg);
+
+   /*
+    * Finally, compare the two values.
+    */
+   if (reverse)
+      generateRTYPE(cmpOp, node, cmpReg, src2Reg, src1Reg, cg);
+   else
+      generateRTYPE(cmpOp, node, cmpReg, src1Reg, src2Reg, cg);
+
    generateBTYPE(TR::InstOpCode::_bne, node, joinLabel, cmpReg, zero, cg);
+   generateLABEL(cg, TR::InstOpCode::label, node, moveSrc2RegToTrgReg);
    if (isDouble)
       generateRTYPE(TR::InstOpCode::_fsgnj_d, node, trgReg, src2Reg, src2Reg, cg);
    else
       generateRTYPE(TR::InstOpCode::_fsgnj_s, node, trgReg, src2Reg, src2Reg, cg);
+
    generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
 
    cg->stopUsingRegister(cmpReg);

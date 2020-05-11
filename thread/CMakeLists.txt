@@ -126,14 +126,6 @@ target_compile_definitions(j9thr_obj
 		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
 )
 
-if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(j9thr_obj PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-endif()
-
-if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(j9thr_obj PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-endif()
-
 target_enable_ddr(j9thr_obj)
 ddr_add_headers(j9thr_obj
 	${omr_SOURCE_DIR}/include_core/omrthread.h

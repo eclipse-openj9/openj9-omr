@@ -184,16 +184,6 @@ omr_add_exports(omrutil ${util_exports})
 # Add in the interface include dirs from omrutil_obj to omrutil
 target_include_directories(omrutil PUBLIC $<TARGET_PROPERTY:omrutil_obj,INTERFACE_INCLUDE_DIRECTORIES>)
 
-if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(omrutil PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-	target_compile_options(omrutil_obj PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-endif()
-
-if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(omrutil PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-	target_compile_options(omrutil_obj PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-endif()
-
 target_link_libraries(omrutil
 	PUBLIC
 		omr_base

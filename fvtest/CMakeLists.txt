@@ -23,6 +23,12 @@ include(OmrAssert)
 
 omr_assert(TEST OMR_FVTEST)
 
+# We currently have a number of sign-comparison warnings that need to be fixed
+if(OMR_TOOLCONFIG STREQUAL "gnu")
+	omr_append_flags(CMAKE_C_FLAGS "-Wno-error=sign-compare")
+	omr_append_flags(CMAKE_CXX_FLAGS "-Wno-error=sign-compare")
+endif()
+
 add_subdirectory(util)
 
 add_subdirectory(omrGtestGlue)

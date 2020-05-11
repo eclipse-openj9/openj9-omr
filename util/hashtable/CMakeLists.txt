@@ -36,14 +36,6 @@ omr_add_library(j9hashtable STATIC
 	${CMAKE_CURRENT_BINARY_DIR}/ut_hashtable.c
 )
 
-if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(j9hashtable PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-endif()
-
-if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(j9hashtable PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-endif()
-
 target_include_directories(j9hashtable
 	PUBLIC
 		.

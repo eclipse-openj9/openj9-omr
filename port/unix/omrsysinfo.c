@@ -233,6 +233,11 @@ static intptr_t omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLi
 #define __power_9() (_system_configuration.implementation == POWER_9)
 #endif /* !defined(__power_9) */
 
+#if !defined(__power_10)
+#define POWER_10 0x40000 /* Power 10 class CPU */
+#define __power_10() (_system_configuration.implementation == POWER_10)
+#endif /* !defined(__power_10) */
+
 #if defined(J9OS_I5_V6R1) /* vmx_version id only available since TL4 */
 #define __power_vsx() (_system_configuration.vmx_version > 1)
 #endif
@@ -807,6 +812,8 @@ omrsysinfo_map_ppc_processor(const char *processorName)
 		rc = OMR_PROCESSOR_PPC_P8;
 	} else if (0 == strncasecmp(processorName, "power9", 6)) {
 		rc = OMR_PROCESSOR_PPC_P9;
+	} else if (0 == strncasecmp(processorName, "power10", 7)) {
+		rc = OMR_PROCESSOR_PPC_P10;
 	}
 
 	return rc;
@@ -858,6 +865,8 @@ omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLibrary, OMRProces
 		desc->processor = OMR_PROCESSOR_PPC_P8;
 	} else if (__power_9()) {
 		desc->processor = OMR_PROCESSOR_PPC_P9;
+	} else if (__power_10()) {
+		desc->processor = OMR_PROCESSOR_PPC_P10;
 	} else {
 		desc->processor = OMR_PROCESSOR_PPC_UNKNOWN;
 	}
@@ -1380,7 +1389,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 
 		desc->processor = OMR_PROCESSOR_S390_GP12;
 	}
-	
+
     /* z15 facility and processor detection */
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_3)) {
@@ -3663,7 +3672,7 @@ omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 
 #if (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX)
 	intptr_t portLibraryStatus = omrsysinfo_get_CPU_utilization(portLibrary, &currentCPUTime);
-	
+
 	if (portLibraryStatus < 0) {
 		return portLibraryStatus;
 	}
@@ -3686,7 +3695,7 @@ omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 			*latestCPUTime = currentCPUTime;
 		}
 	}
-	
+
 	if (((currentCPUTime.timestamp - oldestCPUTime->timestamp) >= 10000000) && (currentCPUTime.numberOfCpus != 0)) {
 		*cpuLoad = OMR_MIN((currentCPUTime.cpuTime - oldestCPUTime->cpuTime) / ((double)currentCPUTime.numberOfCpus * (currentCPUTime.timestamp - oldestCPUTime->timestamp)), 1.0);
 		if (*cpuLoad >= 0.0) {

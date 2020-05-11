@@ -6063,17 +6063,25 @@ TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR:
    else
       {
       TR::Register *srcRegister = cg->evaluate(firstChild);
-      TR::Register *tmp1Register = cg->allocateRegister();
 
-      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcRegister, 8, 0x00000000ff);
-      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 8, 0x0000ff0000);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
-      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, 0x000000ff00);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
-      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, 0x00ff000000);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
+      if (cg->comp()->target().cpu.id() >= TR_PPCp10)
+         {
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::brw, node, tgtRegister, srcRegister);
+         }
+      else
+         {
+         TR::Register *tmp1Register = cg->allocateRegister();
 
-      cg->stopUsingRegister(tmp1Register);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcRegister, 8, 0x00000000ff);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 8, 0x0000ff0000);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, 0x000000ff00);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, 0x00ff000000);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
+
+         cg->stopUsingRegister(tmp1Register);
+         }
       cg->decReferenceCount(firstChild);
       }
 

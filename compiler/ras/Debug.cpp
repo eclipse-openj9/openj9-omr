@@ -407,10 +407,6 @@ TR_Debug::addInstructionComment(TR::Instruction *instr, char * comment, ...)
    if (comment == NULL || _comp->getOutFile() == NULL )
       return;
 
-   TR::SimpleRegex * regex = _comp->getOptions()->getTraceForCodeMining();
-   if (regex && !TR::SimpleRegex::match(regex, comment))
-      return;
-
    CS2::HashIndex hashIndex;
    if (_comp->getToCommentMap().Locate(instr, hashIndex))
       {
@@ -2616,49 +2612,6 @@ TR_Debug::dumpMethodInstrs(TR::FILE *pOutFile, const char *title, bool dumpTrees
 
    }
 
-// Prints info on Register killed (called just before register is to be killed)
-//
-void
-TR_Debug::printRegisterKilled(TR::Register *reg)
-   {
-   TR::FILE *pOutFile = _comp->getOutFile();
-   TR::Node *node;
-   // many nodes can reference one register, so it is misleading to report just the last one set
-   // better to report none.
-   // node = reg->isLive() ? reg->getLiveRegisterInfo()->getNode() : NULL;
-   node = NULL;
-
-   if (node)
-      {
-      trfprintf(pOutFile, " [%s] (%3d)%*s%s   ",
-         getName(node), node->getReferenceCount(),
-         _comp->cg()->_indentation, " ",
-         getName(node->getOpCode()));
-      }
-   else
-      {
-      trfprintf(pOutFile, "  %*s       %*s", addressWidth, " ", _comp->cg()->_indentation, " ");
-      }
-   trfprintf(pOutFile, "%s%s\n",
-      reg->getRegisterName(_comp),
-      reg->isLive() ? " (killed)" : " (killed, already dead)");
-   }
-
-// Prints info on node and register under evaluation
-//
-void
-TR_Debug::printNodeEvaluation(TR::Node *node, const char *relationship, TR::Register *reg, bool printOpCode)
-   {
-   if (!node) return;
-   TR::FILE *pOutFile = _comp->getOutFile();
-   trfprintf(pOutFile, " [%s] (%3d)%*s%s%s%s%s\n",
-      getName(node), node->getReferenceCount(), _comp->cg()->_indentation, " ",
-      (printOpCode) ? getName(node->getOpCode()) : "",
-      relationship,
-      (reg) ? reg->getRegisterName(_comp) : "",
-      (reg) ? (reg->isLive() ? " (live)" : " (dead)") : "");
-   }
-
 void
 TR_Debug::dumpMixedModeDisassembly()
    {
@@ -2722,52 +2675,7 @@ TR_Debug::dumpInstructionComments(TR::FILE *pOutFile, TR::Instruction *instr, bo
       for(data=itr.getFirst(); data!=NULL; data= itr.getNext()) trfprintf(pOutFile, " %s", data);
 
       }
-
-   // Print common data mining annotations for all platforms
-   printCommonDataMiningAnnotations(pOutFile, instr, needsStartComment);
-
    }
-
-void
-TR_Debug::printCommonDataMiningAnnotations(TR::FILE *pOutFile, TR::Instruction * inst, bool needsStartComment)
-  {
-  if (inst!=NULL && inst->getNode())
-    {
-    const static char IL_KEY[]  = "IL";
-    const static char FRQ_KEY[] = "FRQ";
-    const static char CLD_KEY[] = "CLD";
-    TR::SimpleRegex * regex = _comp->getOptions()->getTraceForCodeMining();
-    if (regex &&
-        (TR::SimpleRegex::match(regex, "ALL") || TR::SimpleRegex::match(regex, IL_KEY) || TR::SimpleRegex::match(regex, FRQ_KEY)|| TR::SimpleRegex::match(regex, CLD_KEY)))
-       {
-       if (needsStartComment)
-          {
-          trfprintf(pOutFile, " ;");
-          needsStartComment = false;
-          }
-
-       TR::ILOpCode& opcode = inst->getNode()->getOpCode();
-       if (TR::SimpleRegex::match(regex, IL_KEY))
-          {
-          trfprintf(pOutFile, " IL=%s", opcode.getName());
-          }
-       if (inst->getNode()->getOpCodeValue() == TR::BBStart)
-          {
-          _lastFrequency = inst->getNode()->getBlock()->getFrequency();
-          _isCold = inst->getNode()->getBlock()->isCold();
-          }
-       if (TR::SimpleRegex::match(regex, FRQ_KEY))
-          {
-          trfprintf(pOutFile, " FRQ=%d", _lastFrequency);
-          }
-       if (TR::SimpleRegex::match(regex, CLD_KEY))
-          {
-          trfprintf(pOutFile, " CLD=%d", _isCold);
-          }
-       }
-    }
-  }
-
 
 #if !defined(TR_TARGET_POWER) && !defined(TR_TARGET_ARM) && !defined(TR_TARGET_ARM64) && !defined(TR_TARGET_RISCV)
 void
@@ -4652,7 +4560,7 @@ TR_Debug::startTracingRegisterAssignment(const char *direction, TR_RegisterKinds
    {
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    trfprintf(_file, "\n\n<regassign direction=\"%s\" method=\"%s\">\n", direction, jitdCurrentMethodSignature(_comp));
    trfprintf(_file, "<legend>\n"
@@ -4695,7 +4603,7 @@ TR_Debug::stopTracingRegisterAssignment()
    {
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    if (_registerAssignmentTraceCursor)
       trfprintf(_file, "\n");
@@ -4709,7 +4617,7 @@ TR_Debug::traceRegisterAssignment(const char *format, va_list args)
    {
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADetails))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    if (_registerAssignmentTraceCursor)
       {
@@ -4776,14 +4684,12 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
    TR_ASSERT( instr, "cannot trace assignment of NULL instructions\n");
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    if (insertedByRA)
       _registerAssignmentTraceFlags |=  TRACERA_INSTRUCTION_INSERTED;
    else if (postRA)
       _registerAssignmentTraceFlags &= ~TRACERA_INSTRUCTION_INSERTED;
-   else if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRAPreAssignmentInstruction))
-      return;
    print(_file, instr);
    if (_registerAssignmentTraceCursor)
       {
@@ -4791,7 +4697,7 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
       _registerAssignmentTraceCursor = 0;
       if (postRA)
          {
-         if (_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+         if (_comp->getOption(TR_TraceRA))
             {
             trfprintf(_file, "<regstates>\n");
 #if 0
@@ -4853,10 +4759,7 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
                }
             trfprintf(_file, "</regstates>\n");
             }
-         if (_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRAPreAssignmentInstruction))
-            {
-            trfprintf(_file, "\n");
-            }
+         trfprintf(_file, "\n");
          }
       }
    }
@@ -4868,11 +4771,11 @@ TR_Debug::traceRegisterAssigned(TR_RegisterAssignmentFlags flags, TR::Register *
    TR_ASSERT(virtReg, "Cannot trace assignment of NULL Virtual Register\n");
 
    if (_file == NULL ||
-       !_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic))
+       !_comp->getOption(TR_TraceRA))
       return;
    // Avoid superfluous traces, unless the user asks for them.
    if (virtReg->isPlaceholderReg() &&
-       !_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADependencies))
+       !_comp->getOption(TR_TraceRA))
       return;
    char buf[30];
    const char *preCoercionSymbol = flags.testAny(TR_PreDependencyCoercion) ? "!" : "";
@@ -4913,11 +4816,11 @@ TR_Debug::traceRegisterFreed(TR::Register *virtReg, TR::Register *realReg)
    TR_ASSERT(virtReg, "Cannot trace assignment of NULL Virtual Register\n");
 
    if (_file == NULL ||
-       !_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic))
+       !_comp->getOption(TR_TraceRA))
       return;
    // Avoid superfluous traces, unless the user asks for them.
    if (virtReg->isPlaceholderReg() &&
-       !_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADependencies))
+       !_comp->getOption(TR_TraceRA))
       return;
    char buf[30];
    sprintf(buf, "%s(%d/%d)~%s ",
@@ -4943,7 +4846,7 @@ TR_Debug::traceRegisterInterference(TR::Register *virtReg, TR::Register *interfe
    TR_ASSERT( virtReg && interferingVirtual, "cannot trace assignment of NULL registers\n");
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADetails))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    char buf[40];
    sprintf(buf, "%s{%d,%d}? ", getName(interferingVirtual), interferingVirtual->getAssociation(), distance);
@@ -4965,7 +4868,7 @@ TR_Debug::traceRegisterWeight(TR::Register *realReg, uint32_t weight)
    TR_ASSERT( realReg, "cannot trace weight of NULL register\n");
    if (_file == NULL)
       return;
-   if (!_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADetails))
+   if (!_comp->getOption(TR_TraceRA))
       return;
    char buf[30];
    sprintf(buf, "%s[0x%x]? ", getName(realReg), weight);

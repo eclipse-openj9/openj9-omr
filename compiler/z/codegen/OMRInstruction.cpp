@@ -764,34 +764,6 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       //If the value is set here, the snippet can be handled in an identical fashion to a normal constantdataSnippet
       }
 
-   // trace assigned registers bit vector
-   TR_Debug * debugObj = self()->cg()->getDebug();
-   if (debugObj && comp->getOption(TR_TraceRegisterState))
-      {
-      // determine which GPRs are assigned and the total number of available GPRs
-      uint32_t freeRegs = self()->getBinLocalFreeRegs();
-      uint32_t numRegs  =  TR::RealRegister::LastAssignableGPR - TR::RealRegister::FirstGPR + 1;
-
-      // print freeRegs as a binary number
-      char * strFreeRegs = (char *)self()->cg()->trMemory()->allocateHeapMemory(numRegs+1);
-      for(uint32_t i = 0; i < numRegs; i++)
-         {
-         strFreeRegs[numRegs - i - 1] = (freeRegs & 0x1) ? '1' : '0';
-         freeRegs >>= 1;
-         }
-      strFreeRegs[numRegs] = '\0';
-
-      // format the comment nicely and append it as a comment to the instruction
-      char *commentTemplate = "RegState=[%s]";
-      char *comment = (char *)self()->cg()->trMemory()->allocateHeapMemory(strlen(commentTemplate)+strlen(strFreeRegs)-1);
-      if (comment != NULL)
-         {
-         sprintf(comment, commentTemplate, strFreeRegs);
-         debugObj->addInstructionComment(self(),comment);
-         }
-      }
-
-
    // Modify TBEGIN/TBEGINC's General Register Save Mask (GRSM) to only include
    // live registers.
    if (self()->getOpCodeValue() == TR::InstOpCode::TBEGIN || self()->getOpCodeValue() == TR::InstOpCode::TBEGINC)

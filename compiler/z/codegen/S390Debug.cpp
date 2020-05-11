@@ -356,7 +356,7 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
          // if (instr->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) break;
 
          if ((instr->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) && /*(debug("traceMsg90RA"))*/
-             (_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRABasic)))
+             (_comp->getOption(TR_TraceRA)))
             {
             if (_comp->cg()->getCodeGeneratorPhase() < TR::CodeGenPhase::BinaryEncodingPhase)
                printAssocRegDirective(pOutFile, instr);
@@ -1983,15 +1983,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, TR::Instruction * 
          trfprintf(pOutFile,")");
          }
       }
-   if (strlen(comments) > 0)
-     {
-     TR::SimpleRegex * regex = _comp->getOptions()->getTraceForCodeMining();
-     if (regex && TR::SimpleRegex::match(regex, comments))
-        {
-        trfprintf(pOutFile, "\t ; %s", comments);
-        firstPrint = false;
-        }
-     }
 
    printInstructionComment(pOutFile, 0, instr, firstPrint );
    trfflush(pOutFile);

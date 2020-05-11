@@ -218,7 +218,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
          }
       }
 
-   if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
+   if (comp->getOption(TR_TraceCG))
       {
       const char * title = "Post Relocation Instructions";
       comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), title, false, true);
@@ -255,7 +255,7 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
       comp->getOSRCompilationData()->compressInstruction2SharedSlotMap();
       }
 
-   if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
+   if (comp->getOption(TR_TraceCG))
       {
       diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedCodeLength());
       diagnostic("\n");
@@ -343,7 +343,7 @@ OMR::CodeGenPhase::performMapStackPhase(TR::CodeGenerator * cg, TR::CodeGenPhase
 
      cg->getLinkage()->mapStack(comp->getJittedMethodSymbol());
 
-     if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceEarlyStackMap))
+     if (comp->getOption(TR_TraceCG))
         comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Stack Map", false);
      }
    cg->setMappingAutomatics();
@@ -360,21 +360,14 @@ OMR::CodeGenPhase::performRegisterAssigningPhase(TR::CodeGenerator * cg, TR::Cod
    if (cg->getDebug())
       cg->getDebug()->roundAddressEnumerationCounters();
 
-     {
+      {
       TR::LexicalMemProfiler mp("RA", comp->phaseMemProfiler());
       LexicalTimer pt("RA", comp->phaseTimer());
 
-      TR_RegisterKinds colourableKindsToAssign;
-      TR_RegisterKinds nonColourableKindsToAssign = cg->prepareRegistersForAssignment();
+      TR_RegisterKinds kindsToAssign = cg->prepareRegistersForAssignment();
 
       cg->jettisonAllSpills(); // Spill temps used before now may lead to conflicts if also used by register assignment
-
-      // Do local register assignment for non-colourable registers.
-      //
-      if(cg->getTraceRAOption(TR_TraceRAListing))
-         if(cg->getDebug()) cg->getDebug()->dumpMethodInstrs(comp->getOutFile(),"Before Local RA",false);
-
-      cg->doRegisterAssignment(nonColourableKindsToAssign);
+      cg->doRegisterAssignment(kindsToAssign);
 
       if (comp->compilationShouldBeInterrupted(AFTER_REGISTER_ASSIGNMENT_CONTEXT))
          {
@@ -382,7 +375,7 @@ OMR::CodeGenPhase::performRegisterAssigningPhase(TR::CodeGenerator * cg, TR::Cod
          }
       }
 
-   if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostRegisterAssignment))
+   if (comp->getOption(TR_TraceCG))
       comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Register Assignment Instructions", false, true);
    }
 
@@ -403,7 +396,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
    TR::Compilation* comp = cg->comp();
    phase->reportPhase(InstructionSelectionPhase);
 
-   if (comp->getOption(TR_TraceCG) || comp->getOption(TR_TraceTrees) || comp->getOptions()->getTraceCGOption(TR_TraceCGPreInstructionSelection))
+   if (comp->getOption(TR_TraceCG) || comp->getOption(TR_TraceTrees))
       comp->dumpMethodTrees("Pre Instruction Selection Trees");
 
    TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
@@ -411,7 +404,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
 
    cg->doInstructionSelection();
 
-   if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostInstructionSelection))
+   if (comp->getOption(TR_TraceCG))
       comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Instruction Selection Instructions", false, true);
 
    // check reference counts

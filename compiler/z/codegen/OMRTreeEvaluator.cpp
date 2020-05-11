@@ -16572,8 +16572,6 @@ OMR::Z::TreeEvaluator::vconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    generateLoadLiteralPoolAddress(cg, node, litReg);
    size_t offset = node->getLiteralPoolOffset();
    TR::Compilation *comp = cg->comp();
-   if(comp->getOption(TR_TraceCGEvaluation))
-      traceMsg(comp, "vconst codegen, offset=%i\n", offset);
    TR::Register *vecReg = cg->allocateRegister(TR_VRF);
    generateVRXInstruction(cg, TR::InstOpCode::VL, node, vecReg, generateS390MemoryReference(litReg, offset, cg), 0);
    cg->stopUsingRegister(litReg);

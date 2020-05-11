@@ -307,7 +307,7 @@ enum TR_CompilationOptions
    TR_DisableDelayRelocationForAOTCompilations   = 0x00000200 + 7,
    TR_DisableRecompDueToInlinedMethodRedefinition = 0x00000400 + 7,
    TR_DisableLoopReplicatorColdSideEntryCheck = 0x00000800 + 7,
-   TR_TraceVFPSubstitution                = 0x00001000 + 7,
+   // Available                           = 0x00001000 + 7,
    TR_DontDowgradeToColdDuringGracePeriod = 0x00002000 + 7,
    TR_EnableRecompilationPushing          = 0x00004000 + 7,
    TR_EnableJCLInline                     = 0x00008000 + 7, // enable JCL Integer and Long methods inline
@@ -416,7 +416,7 @@ enum TR_CompilationOptions
    // Available                           = 0x08000000 + 10,
    // Available                           = 0x10000000 + 10,
    // Available                           = 0x20000000 + 10,
-   TR_TraceRegisterState                  = 0x40000000 + 10,
+   // Available                           = 0x40000000 + 10,
    TR_DisableDirectToJNIInline            = 0x80000000 + 10,
 
    // Option word 11
@@ -599,7 +599,7 @@ enum TR_CompilationOptions
    TR_DisableThunkTupleJ2I                            = 0x00000100 + 17,
    // Available                                       = 0x00000200 + 17,
    // Available                                       = 0x00000400 + 17,
-   TR_TraceVIP                                        = 0x00000800 + 17,
+   // Available                                       = 0x00000800 + 17,
    // Available                                       = 0x00001000 + 17,
    // Available                                       = 0x00002000 + 17,
    // Available                                       = 0x00004000 + 17,
@@ -872,7 +872,7 @@ enum TR_CompilationOptions
 
    // Option word 27
    TR_ForceIEEEDivideByZeroException                  = 0x00000020 + 27,
-   // Available                                       = 0x00000040 + 27,
+   TR_TraceRA                                         = 0x00000040 + 27,
    TR_DisableDirectStaticAccessOnZ                    = 0x00000080 + 27,
    // Available                                       = 0x00000100 + 27,
    TR_EnableRIEMIT                                    = 0x00000200 + 27,
@@ -997,22 +997,6 @@ enum TR_CompilationOptions
    // Debug Enable flags
    TR_EnableUnneededNarrowIntConversion = 0x00000001,
 
-    // Code generation phase trace word
-   //
-   TR_TraceCGPreInstructionSelection  = 0x00000001,
-   TR_TraceCGPostInstructionSelection = 0x00000002,
-   TR_TraceCGPostRegisterAssignment   = 0x00000004,
-   // Available                       = 0x00000008,
-   TR_TraceCGPostBinaryEncoding       = 0x00000010,
-   TR_TraceCGMixedModeDisassembly     = 0x00000020,
-   // Available                       = 0x00000040,
-   // Available                       = 0x00000080,
-   TR_TraceCGBinaryCodedDecimal       = 0x00000100,
-   TR_TraceCGEvaluation               = 0x00000200,
-   // Available                       = 0x00000400,
-   // Available                       = 0x00000800,
-   TR_TraceEarlyStackMap              = 0x00001000,
-
    // Trace file addresses enumeration option word
    //
    TR_EnumerateBlock                   = 0x00000001,
@@ -1021,49 +1005,6 @@ enum TR_CompilationOptions
    TR_EnumerateRegister                = 0x00000008,
    TR_EnumerateSymbol                  = 0x00000010,
    TR_EnumerateStructure               = 0x00000020,
-   // Available                        = 0x80000000,
-
-   // Register assignment tracing option word
-   //
-   TR_TraceRABasic                      = 0x00000001,
-   TR_TraceRADependencies               = 0x00000002,
-   TR_TraceRADetails                    = 0x00000004,
-   TR_TraceRAPreAssignmentInstruction   = 0x00000008,
-   TR_TraceRARegisterStates             = 0x00000010,
-   TR_TraceRASpillTemps                 = 0x00000020,
-   // Available                         = 0x00000040,
-   TR_TraceRAListing                    = 0x00000200,
-
-   // Instruction Level GRA tracing option word
-   //
-   TR_TraceGRABasic                     = 0x00000001,
-   TR_TraceGRAListing                   = TR_TraceRAListing,
-   // Available                         = 0x00000400,
-   // Available                         = 0x00000800,
-   // Available                         = 0x00001000,
-   // Available                         = 0x00002000,
-   // Available                         = 0x00004000,
-   // Available                         = 0x00008000,
-
-   // Live Register Analysis tracing option word
-   //
-   TR_TraceLRAResults                   = 0x00000800,
-   // Available                         = 0x00001000,
-
-   // Register ITF tracing option word
-
-   // Available                         = 0x00008000,
-   // Available                         = 0x00010000,
-   // Available                         = 0x00020000,
-   // Available                         = 0x00040000,
-
-   // Register Spill Costs Analysis tracing option word
-   //
-   TR_TraceSpillCostsBasic              = TR_TraceGRABasic,
-
-   // Instruction Level Dead Code tracing options
-   //
-   TR_TraceILDeadCodeBasic              = TR_TraceGRABasic,
 
    // GPU options
    //
@@ -1074,11 +1015,6 @@ enum TR_CompilationOptions
    TR_EnableSafeMT                      = 0x00000010,
    TR_EnableGPUEnableMath               = 0x00000020,
    TR_EnableGPUDisableTransferHoist     = 0x00000040,
-
-   // Instruction Level Dead Code tracing options
-   //
-   TR_TraceILRematBasic                 = TR_TraceGRABasic,
-
    };
 
 enum TR_VerboseFlags
@@ -1521,18 +1457,10 @@ public:
    static bool  isAnyVerboseOptionSet(TR_VerboseFlags op1, TR_VerboseFlags op2, TR_VerboseFlags op3, TR_VerboseFlags op4, TR_VerboseFlags op5, TR_VerboseFlags op6);
    bool isVerboseFileSet();
 
-   bool      getTraceCGOption(uint32_t mask)   {return (_cgTrace & mask) != 0;}
-   bool      getAnyTraceCGOption()             {return (_cgTrace != 0);}
-
    bool      getAddressEnumerationOption(uint32_t mask)   {return (_addressToEnumerate & mask) != 0;}
 
-   bool      getRegisterAssignmentTraceOption(uint32_t mask) {return (_raTrace & mask) != 0;}
-   bool      getTraceRAOption(uint32_t mask);
-   bool      getTraceLRA(uint32_t mask) { return (_traceLRA & mask) != 0; }
-   bool      getTraceSpillCosts(uint32_t mask) { return (_traceSpillCosts & mask) != 0; }
    bool      getTraceSimplifier(uint32_t mask) { return (_traceSimplifier & mask) != 0; }
    bool      getDebugEnableFlag(uint32_t mask) { return (_debugEnableFlags & mask) != 0; }
-   bool      getTraceILDeadCode(uint32_t mask) { return (_traceILDeadCode & mask) != 0; }
    bool      getEnableGPU(uint32_t mask) { return (_enableGPU & mask) != 0; }
 
    // If we running at a fixed opt level (non-recomp) then this routine
@@ -1645,7 +1573,6 @@ public:
    TR::SimpleRegex * getDebugOnCreate()                {return _debugOnCreate;}
    TR::SimpleRegex * getBreakOnThrow()                 {return _breakOnThrow;}
    TR::SimpleRegex * getBreakOnPrint()                 {return _breakOnPrint;}
-   TR::SimpleRegex * getTraceForCodeMining()           {return _traceForCodeMining;}
    TR::SimpleRegex * getVerboseOptTransformationsRegex(){return _verboseOptTransformationsRegex;}
    TR::SimpleRegex * getPackedTestRegex()              {return _packedTest;}
    TR::SimpleRegex * getClassesWithFoldableFinalFields(){return _classesWithFolableFinalFields;}
@@ -2235,7 +2162,6 @@ protected:
    int32_t                    *_customStrategy;     // Actually array of TR_OptimizerImpl::Optimizations numbers read from optFileName
    int32_t                     _customStrategySize; // In elements, including endOpts terminator
 
-   TR::SimpleRegex *           _traceForCodeMining;
    // Optimization levels
    //
    int32_t                     _optLevel;
@@ -2323,12 +2249,7 @@ protected:
    int32_t                     _storeSinkingLastOpt;
    int32_t                     _test390StackBuffer;   // Buffer to force a large stack on 390
    int32_t                     _test390LitPoolBuffer; // Buffer to force a large lit pool on 390
-   int32_t                     _cgTrace;              // Code generator trace flags
    int32_t                     _addressToEnumerate;   // Addresses enumeration option flags
-   int32_t                     _raTrace;              // Register assigner trace flags
-   int32_t                     _traceLRA;             // Live Register Analysis trace flags
-   int32_t                     _traceILDeadCode;      // Instruction Level Dead Code trace flags
-   int32_t                     _traceSpillCosts;      // Register Spill Costs trace flags
    int32_t                     _traceSimplifier;      // Simplifier trace flags
    int32_t                     _debugEnableFlags;     // For miscellaneeous flags used to enable things
    bool                        _optLevelDowngraded;   // this is a flag rather than an option

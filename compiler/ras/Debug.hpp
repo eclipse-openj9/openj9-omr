@@ -537,11 +537,8 @@ public:
    virtual void         setupToDumpTreesAndInstructions(const char *);
    virtual void         dumpSingleTreeWithInstrs(TR::TreeTop *, TR::Instruction *, bool, bool, bool, bool);
    virtual void         dumpMethodInstrs(TR::FILE *, const char *, bool, bool header = false);
-   virtual void         printRegisterKilled(TR::Register *reg);
-   virtual void         printNodeEvaluation(TR::Node *node, const char *relationship = "", TR::Register *reg = NULL, bool printOpCode = true);
    virtual void         dumpMixedModeDisassembly();
    virtual void         dumpInstructionComments(TR::FILE *, TR::Instruction *, bool needsStartComment = true );
-   virtual void         printCommonDataMiningAnnotations(TR::FILE *pOutFile, TR::Instruction * inst, bool needsStartComment = true);
    virtual void         print(TR::FILE *, TR::Instruction *);
    virtual void         print(TR::FILE *, TR::Instruction *, const char *);
    virtual void         print(TR::FILE *, List<TR::Snippet> &, bool isWarm = false);

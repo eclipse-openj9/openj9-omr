@@ -219,7 +219,7 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    for (i=0; i < linkageProperties.getNumFloatArgRegs(); i++)
      _fprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getFloatArgumentRegister(i)];
 
-   if (self()->comp()->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+   if (self()->comp()->getOption(TR_TraceRA))
       {
       self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
       self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));

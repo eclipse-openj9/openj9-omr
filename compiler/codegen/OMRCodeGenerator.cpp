@@ -969,7 +969,7 @@ OMR::CodeGenerator::toggleIsInOOLSection()
 
 bool OMR::CodeGenerator::traceBCDCodeGen()
    {
-   return self()->comp()->getOptions()->getTraceCGOption(TR_TraceCGBinaryCodedDecimal);
+   return self()->comp()->getOption(TR_TraceCG);
    }
 
 void OMR::CodeGenerator::traceBCDEntry(char *str, TR::Node *node)
@@ -1206,9 +1206,6 @@ OMR::CodeGenerator::opCodeIsNoOp(TR::ILOpCode &opCode)
 
    return self()->opCodeIsNoOpOnThisPlatform(opCode);
    }
-
-
-bool OMR::CodeGenerator::getTraceRAOption(uint32_t mask){ return self()->comp()->getOptions()->getTraceRAOption(mask); }
 
 void OMR::CodeGenerator::traceRAInstruction(TR::Instruction *instr)
    {

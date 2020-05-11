@@ -36,23 +36,17 @@ public:
 protected:
    void printInfo(const char* info)
       {
-      if (_outFile)
+      if (_outFile && comp()->getOption(TR_TraceCG))
          {
-         if ( !( !comp()->getOption(TR_TraceCG) && comp()->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding) && comp()->getOptions()->getTraceCGOption(TR_TraceCGMixedModeDisassembly) )  )
-            {
-            trfprintf(_outFile, info);
-            }
+         trfprintf(_outFile, info);
          }
       }
 
    void printInst()
       {
-      if (_outFile)
+      if (_outFile && comp()->getOption(TR_TraceCG))
          {
-         if ( !( !comp()->getOption(TR_TraceCG) && comp()->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding) && comp()->getOptions()->getTraceCGOption(TR_TraceCGMixedModeDisassembly) )  )
-            {
-            comp()->getDebug()->print(_outFile, _cursor);
-            }
+         comp()->getDebug()->print(_outFile, _cursor);
          }
       }
 

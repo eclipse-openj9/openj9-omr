@@ -119,10 +119,6 @@ public:
 
    void setNode(TR::Node *n)
       {
-      if (comp()->getOptions()->getTraceCGOption(TR_TraceCGEvaluation))
-         {
-         getDebug()->printNodeEvaluation(n, "<- ", _register);
-         }
       _node = n;
       }
 

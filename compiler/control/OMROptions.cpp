@@ -60,7 +60,6 @@ using namespace OMR;
 
 #define SET_OPTION_BIT(x)   TR::Options::setBit,   offsetof(OMR::Options,_options[(x)&TR_OWM]), (static_cast<uintptr_t>((x)&~TR_OWM))
 #define RESET_OPTION_BIT(x) TR::Options::resetBit, offsetof(OMR::Options,_options[(x)&TR_OWM]), (static_cast<uintptr_t>((x)&~TR_OWM))
-#define SET_TRACECG_BIT(x)  TR::Options::setBit,   offsetof(OMR::Options, _cgTrace), (static_cast<uintptr_t>(x))
 
 #define NoOptString                     "noOpt"
 #define DisableAllocationInliningString "disableAllocationInlining"
@@ -1105,8 +1104,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceBasicBlockPeepHole",          "L\ttrace basic blocks peepHole",                  TR::Options::traceOptimization, basicBlockPeepHole, 0, "P"},
    {"traceBBVA",                        "L\ttrace backward bit vector analysis",           SET_OPTION_BIT(TR_TraceBBVA), "P" },
    {"traceBC",                          "L\tdump bytecodes",                               SET_OPTION_BIT(TR_TraceBC), "P" },
-   {"traceBCDCodeGen",                  "L\ttrace binary coded decimal code generations",  SET_TRACECG_BIT(TR_TraceCGBinaryCodedDecimal), "P"},
-   {"traceBin",                         "L\tdump binary instructions",                     SET_TRACECG_BIT(TR_TraceCGPostBinaryEncoding|TR_TraceCGMixedModeDisassembly), "P" },
    {"traceBlockFrequencyGeneration",    "L\ttrace block frequency generation",             SET_OPTION_BIT(TR_TraceBFGeneration), "P"},
    {"traceBlockShuffling",              "L\ttrace random rearrangement of blocks",         TR::Options::traceOptimization, blockShuffling, 0, "P"},
    {"traceBlockSplitter",               "L\ttrace block splitter",                         TR::Options::traceOptimization, blockSplitter, 0, "P"},
@@ -1121,14 +1118,10 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceCompactNullChecks",           "L\ttrace compact null checks",                    TR::Options::traceOptimization, compactNullChecks, 0, "P"},
    {"traceDeadTreeElimination",         "L\ttrace dead tree elimination",                  TR::Options::traceOptimization, deadTreesElimination, 0, "P"},
    {"traceDominators",                  "L\ttrace dominators and post-dominators",         SET_OPTION_BIT(TR_TraceDominators), "P" },
-   {"traceEarlyStackMap",               "L\ttrace early stack map",                        SET_TRACECG_BIT(TR_TraceEarlyStackMap), "P"},
    {"traceEscapeAnalysis",              "L\ttrace escape analysis",                        TR::Options::traceOptimization, escapeAnalysis, 0, "P"},
-   {"traceEvaluation",                  "L\tdump output of tree evaluation passes",        SET_TRACECG_BIT(TR_TraceCGEvaluation), "P" },
    {"traceExitExtraction",              "L\ttrace extraction of structure nodes that unconditionally exit to outer regions", SET_OPTION_BIT(TR_TraceExitExtraction), "F"},
    {"traceExplicitNewInitialization",   "L\ttrace explicit new initialization",            TR::Options::traceOptimization, explicitNewInitialization, 0, "P"},
    {"traceFieldPrivatization",          "L\ttrace field privatization",                    TR::Options::traceOptimization, fieldPrivatization, 0, "P"},
-   {"traceForCodeMining=",              "L{regex}\tadd instruction annotations for code mining",
-                                         TR::Options::setRegex, offsetof(OMR::Options, _traceForCodeMining), 0, "P"},
    {"traceFull",                        "L\tturn on all trace options",                    SET_OPTION_BIT(TR_TraceAll), "P"},
    {"traceGeneralStoreSinking",         "L\ttrace general store sinking",                  TR::Options::traceOptimization, generalStoreSinking, 0, "P"},
    {"traceGlobalCopyPropagation",       "L\ttrace global copy propagation",                TR::Options::traceOptimization, globalCopyPropagation, 0, "P"},
@@ -1140,10 +1133,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 #ifdef J9_PROJECT_SPECIFIC
    {"traceIdiomRecognition",            "L\ttrace idiom recognition",                       TR::Options::traceOptimization, idiomRecognition, 0, "P"},
 #endif
-   {"traceILDeadCode",                  "L\ttrace Instruction Level Dead Code (basic)",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceILDeadCode), TR_TraceILDeadCodeBasic, "F"},
-   {"traceILDeadCode=",                 "L{regex}\tlist of additional traces to enable: basic, listing, details, live, progress",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceILDeadCode), 0, "P"},
    {"traceILGen",                       "L\ttrace IL generator",                           SET_OPTION_BIT(TR_TraceILGen), "F"},
    {"traceILValidator",                 "L\ttrace validation over intermediate language constructs",SET_OPTION_BIT(TR_TraceILValidator), "F" },
    {"traceILWalk",                      "L\tsynonym for traceILWalks",                              SET_OPTION_BIT(TR_TraceILWalks), "P" },
@@ -1180,7 +1169,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceLoopVersioner",               "L\ttrace loop versioner",                          TR::Options::traceOptimization, loopVersioner, 0, "P"},
    {"traceMarkingOfHotFields",          "M\ttrace marking of Hot Fields",                 SET_OPTION_BIT(TR_TraceMarkingOfHotFields), "F"},
    {"traceMethodIndex",                 "L\treport every method symbol that gets created and consumes a methodIndex", SET_OPTION_BIT(TR_TraceMethodIndex), "F"},
-   {"traceMixedModeDisassembly",        "L\tdump generated assembly with bytecodes",       SET_TRACECG_BIT(TR_TraceCGMixedModeDisassembly), "P"},
    {"traceNewBlockOrdering",            "L\ttrace new block ordering",                     TR::Options::traceOptimization, basicBlockOrdering, 0, "P"},
    {"traceNodeFlags",                   "L\ttrace setting/resetting of node flags",        SET_OPTION_BIT(TR_TraceNodeFlags), "F"},
    {"traceNonLinearRA",                 "L\ttrace non-linear RA",                          SET_OPTION_BIT(TR_TraceNonLinearRegisterAssigner), "F"},
@@ -1195,21 +1183,14 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 #endif
    {"traceOSRLiveRangeAnalysis",        "L\ttrace OSR live range analysis",                TR::Options::traceOptimization, osrLiveRangeAnalysis, 0, "P"},
    {"tracePartialInlining",             "L\ttrace partial inlining heuristics",            SET_OPTION_BIT(TR_TracePartialInlining), "P" },
-   {"tracePostBinaryEncoding",          "L\tdump instructions (code cache addresses, real registers) after binary encoding", SET_TRACECG_BIT(TR_TraceCGPostBinaryEncoding), "P"},
-   {"tracePostInstructionSelection",    "L\tdump instructions (virtual registers) after instruction selection", SET_TRACECG_BIT(TR_TraceCGPostInstructionSelection), "P"},
-   {"tracePostRegisterAssignment",      "L\tdump instructions (real registers) after register assignment", SET_TRACECG_BIT(TR_TraceCGPostRegisterAssignment), "P"},
    {"tracePRE",                         "L\ttrace partial redundancy elimination",        TR::Options::traceOptimization, partialRedundancyElimination, 0, "P"},
    {"tracePrefetchInsertion",           "L\ttrace prefetch insertion",                     TR::Options::traceOptimization, prefetchInsertion, 0, "P"},
    {"tracePREForSubNodeReplacement",    "L\ttrace partial redundancy elimination focussed on optimal subnode replacement", SET_OPTION_BIT(TR_TracePREForOptimalSubNodeReplacement), "P" },
-   {"tracePreInstructionSelection",     "L\tdump trees prior to instruction selection",    SET_TRACECG_BIT(TR_TraceCGPreInstructionSelection), "P"},
    {"traceProfiledNodeVersioning",      "L\ttrace profiled node versioning",               TR::Options::traceOptimization, profiledNodeVersioning, 0, "P"},
 #ifdef J9_PROJECT_SPECIFIC
    {"traceProfileGenerator",            "L\ttrace profile generator",                      TR::Options::traceOptimization, profileGenerator, 0, "P"},
 #endif
-   {"traceRA",                          "L\ttrace register assignment (basic)",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _raTrace), TR_TraceRABasic, "F"},
-   {"traceRA=",                         "L{regex}\tlist of additional register assignment traces to enable: deps, details, preRA, states",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _raTrace), 0, "F"},
+   {"traceRA",                          "L\ttrace register assignment",                    SET_OPTION_BIT(TR_TraceRA), "P" },
    {"traceReachability",                "L\ttrace all analyses based on the reachability engine",     SET_OPTION_BIT(TR_TraceReachability), "P"},
    {"traceRecognizedCallTransformer",   "L\ttrace recognized call transformer",            TR::Options::traceOptimization, recognizedCallTransformer, 0, "P"},
    {"traceRedundantAsyncCheckRemoval",  "L\ttrace redundant async check removal",          TR::Options::traceOptimization, redundantAsyncCheckRemoval, 0, "P"},
@@ -1217,7 +1198,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceRedundantMonitorElimination", "L\ttrace redundant monitor elimination",          TR::Options::traceOptimization, redundantMonitorElimination, 0, "P"},
    {"traceRegDepCopyRemoval",           "L\ttrace register dependency copy removal", TR::Options::traceOptimization, regDepCopyRemoval, 0, "P"},
    {"traceRegisterPressureDetails",     "L\tinclude extra register pressure annotations in register pressure simulation and tree evaluation traces", SET_OPTION_BIT(TR_TraceRegisterPressureDetails), "P" },
-   {"traceRegisterState",               "L\ttrace bit vector denoting assigned registers after register allocation", SET_OPTION_BIT(TR_TraceRegisterState), "P"},
    {"traceRelocatableDataCG",           "L\ttrace relocation data when generating relocatable code", SET_OPTION_BIT(TR_TraceRelocatableDataCG), "P"},
    {"traceRelocatableDataDetailsCG",    "L\ttrace relocation data details when generating relocatable code", SET_OPTION_BIT(TR_TraceRelocatableDataDetailsCG), "P"},
    {"traceRelocatableDataDetailsRT",    "L\ttrace relocation data details when relocating relocatable code", SET_OPTION_BIT(TR_TraceRelocatableDataDetailsRT), "P"},
@@ -1229,10 +1209,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceScalarizeSSOps",              "L\ttrace scalarization of array/SS ops", SET_OPTION_BIT(TR_TraceScalarizeSSOps), "P"},
    {"traceSEL",                         "L\ttrace sign extension load", SET_OPTION_BIT(TR_TraceSEL), "P"},
    {"traceSequenceSimplification",      "L\ttrace arithmetic sequence simplification",     TR::Options::traceOptimization, expressionsSimplification, 0, "P"},
-   {"traceSpillCosts",                 "L\ttrace spill costs (basic) only show its activation",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceSpillCosts), TR_TraceSpillCostsBasic, "F"},
-   {"traceSpillCosts=",                "L{regex}\tlist of additional spill costs options: basic, results, build, details",
-        TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceSpillCosts), 0, "P"},
    {"traceStaticFinalFieldFolding",     "L\ttrace generic static final field folding",             TR::Options::traceOptimization, staticFinalFieldFolding, 0, "P"},
    {"traceStringBuilderTransformer",    "L\ttrace StringBuilder tranfsofermer optimization", TR::Options::traceOptimization, stringBuilderTransformer, 0, "P"},
    {"traceStringPeepholes",             "L\ttrace string peepholes",                       TR::Options::traceOptimization, stringPeepholes, 0, "P"},
@@ -1254,8 +1230,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceUseDefs",                     "L\ttrace use def info",                           SET_OPTION_BIT(TR_TraceUseDefs), "F"},
    {"traceValueNumbers",                "L\ttrace value number info",                      SET_OPTION_BIT(TR_TraceValueNumbers), "F"},
    {"traceVarHandleTransformer",        "L\ttrace VarHandle transformer",                  TR::Options::traceOptimization, varHandleTransformer, 0, "P"},  // Java specific option
-   {"traceVFPSubstitution",             "L\ttrace replacement of virtual frame pointer with actual register in memrefs", SET_OPTION_BIT(TR_TraceVFPSubstitution), "F"},
-   {"traceVIP",                         "L\ttrace variable initializer propagation (constant propagation of read-only variables)", SET_OPTION_BIT(TR_TraceVIP), "P" },
    {"traceVirtualGuardHeadMerger",      "L\ttrace virtual head merger",                    TR::Options::traceOptimization, virtualGuardHeadMerger, 0, "P"},
    {"traceVirtualGuardTailSplitter",    "L\ttrace virtual guard tail splitter",            TR::Options::traceOptimization, virtualGuardTailSplitter, 0, "P"},
    {"traceVPConstraints",               "L\ttrace the execution of value propagation merging and intersecting", SET_OPTION_BIT(TR_TraceVPConstraints), "F"},
@@ -2509,8 +2483,6 @@ OMR::Options::jitPreProcess()
    _firstOptTransformationIndex = self()->getMinFirstOptTransformationIndex();
    _lastOptTransformationIndex = self()->getMaxLastOptTransformationIndex();
 
-   _cgTrace = 0;
-   _raTrace = 0;
    _storeSinkingLastOpt = -1;
 #ifdef J9_PROJECT_SPECIFIC
    _profilingCount = DEFAULT_PROFILING_COUNT;
@@ -3732,6 +3704,7 @@ OMR::Options::requiresLogFile()
    if (self()->getAnyOption(TR_TraceAll) ||
        self()->getAnyOption(TR_TraceBBVA) ||
        self()->getAnyOption(TR_TraceBVA) ||
+       self()->getAnyOption(TR_TraceCG) ||
        self()->getAnyOption(TR_TraceUseDefs) ||
        self()->getAnyOption(TR_TraceNodeFlags) ||
        self()->getAnyOption(TR_TraceValueNumbers) ||
@@ -3740,10 +3713,7 @@ OMR::Options::requiresLogFile()
        self()->getAnyOption(TR_TraceILValidator))
       return true;
 
-   if (self()->tracingOptimization() || self()->getAnyTraceCGOption())
-      return true;
-
-   if (self()->getRegisterAssignmentTraceOption(0xffffffff))
+   if (self()->tracingOptimization())
       return true;
 
    return false;
@@ -4607,29 +4577,6 @@ OMR::Options::TR_OptionStringToBit OMR::Options::_optionStringToBitMapping[] = {
 
 // Debug Enable flags
 { "enableUnneededNarrowIntConversion", TR_EnableUnneededNarrowIntConversion },
-
-// Local RA named trace options
-{ "deps", TR_TraceRADependencies },
-{ "details", TR_TraceRADetails },
-{ "preRA", TR_TraceRAPreAssignmentInstruction },
-{ "spillTemps", TR_TraceRASpillTemps },
-{ "states", TR_TraceRARegisterStates },
-{ "listing", TR_TraceRAListing},
-
-
-// Instruction Level GRA named trace Options
-{ "basic", TR_TraceGRABasic},
-{ "listing", TR_TraceGRAListing},
-
-// Live Register Analysis named trace Options
-{ "results", TR_TraceLRAResults },
-
-
-// Register Spill Costs named trace Options
-{ "basic", TR_TraceSpillCostsBasic},
-
-// Instruction Level Dead Code named trace Options
-{ "basic", TR_TraceILDeadCodeBasic},
 
 // GPU Options
 { "default", TR_EnableGPU},

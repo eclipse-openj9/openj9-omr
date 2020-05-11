@@ -1998,7 +1998,7 @@ OMR::Power::Machine::decFutureUseCountAndUnlatch(TR::Register *virtualRegister)
    {
    TR::CodeGenerator *cg = self()->cg();
    TR::Compilation   *comp = cg->comp();
-   bool               trace = comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates);
+   bool               trace = comp->getOption(TR_TraceRA);
 
    virtualRegister->decFutureUseCount();
    if (self()->cg()->isOutOfLineColdPath())
@@ -2066,7 +2066,7 @@ OMR::Power::Machine::disassociateUnspilledBackingStorage()
    {
    TR::CodeGenerator *cg = self()->cg();
    TR::Compilation   *comp = cg->comp();
-   bool               trace = comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates);
+   bool               trace = comp->getOption(TR_TraceRA);
 
    TR_ASSERT(!cg->isOutOfLineHotPath() && !cg->isOutOfLineColdPath(), "Should only be called once register assigner is out of OOL control flow region");
    TR_ASSERT(!cg->isFreeSpillListLocked(), "Should only be called once the free spill list is unlocked");

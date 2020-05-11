@@ -456,7 +456,7 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
    TR_ASSERT_FATAL(dataSize <= 16, "assertion failure");
    TR_ASSERT_FATAL(!containsCollectedReference || (dataSize == TR::Compiler->om.sizeofReferenceAddress()), "assertion failure");
 
-   if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+   if (self()->comp()->getOption(TR_TraceRA))
       traceMsg(self()->comp(), "\nallocateSpill(%d, %s, %s)", dataSize, containsCollectedReference? "collected":"uncollected", offset? "offset":"NULL");
 
    if (offset && self()->comp()->getOption(TR_DisableHalfSlotSpills))
@@ -495,7 +495,7 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
        self()->getSpill16FreeList().pop_front();
      }
      if (
-         (spill && self()->getTraceRAOption(TR_TraceRASpillTemps) && !performTransformation(self()->comp(), "O^O SPILL TEMPS: Reuse spill temp %s\n", self()->getDebug()->getName(spill->getSymbolReference()))))
+         (spill && self()->comp()->getOption(TR_TraceRA) && !performTransformation(self()->comp(), "O^O SPILL TEMPS: Reuse spill temp %s\n", self()->getDebug()->getName(spill->getSymbolReference()))))
        {
        // Discard the spill temp we popped and never use it again; allocate a
        // new one instead, and later, where we would have returned this spill
@@ -560,13 +560,13 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
       {
       spillSymbol->setGCMapIndex(self()->getStackAtlas()->assignGCIndex());
       _collectedSpillList.push_front(spill);
-      if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+      if (self()->comp()->getOption(TR_TraceRA))
          traceMsg(self()->comp(), "\n -> added to collectedSpillList");
       }
    spill->setContainsCollectedReference(containsCollectedReference);
 
    TR_ASSERT(spill->isOccupied(), "assertion failure");
-   if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+   if (self()->comp()->getOption(TR_TraceRA))
      traceMsg(self()->comp(), "\nallocateSpill returning (%s(%d%d), %d) ", self()->getDebug()->getName(spill->getSymbolReference()->getSymbol()), spill->firstHalfIsOccupied()?1:0, spill->secondHalfIsOccupied()?1:0, offset? *offset : 0);
    return spill;
    }
@@ -578,7 +578,7 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
    TR_ASSERT(offset == 0 || offset == 4, "assertion failure");
    TR_ASSERT(dataSize + offset <= 16, "assertion failure");
 
-   if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+   if (self()->comp()->getOption(TR_TraceRA))
       {
       traceMsg(self()->comp(), "\nfreeSpill(%s(%d%d), %d, %d, isLocked=%d)",
                self()->getDebug()->getName(spill->getSymbolReference()->getSymbol()),
@@ -602,7 +602,7 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
       if (updateFreeList)
          {
          _internalPointerSpillFreeList.push_front(spill);
-         if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+         if (self()->comp()->getOption(TR_TraceRA))
             traceMsg(self()->comp(), "\n -> Added to internalPointerSpillFreeList");
          }
       }
@@ -611,14 +611,14 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
       if (offset == 0)
          {
          spill->setFirstHalfIsEmpty();
-         if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+         if (self()->comp()->getOption(TR_TraceRA))
             traceMsg(self()->comp(), "\n -> setFirstHalfIsEmpty");
          }
       else
          {
          TR_ASSERT(offset == 4, "assertion failure");
          spill->setSecondHalfIsEmpty();
-         if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+         if (self()->comp()->getOption(TR_TraceRA))
             traceMsg(self()->comp(), "\n -> setSecondHalfIsEmpty");
          }
 
@@ -630,14 +630,14 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
             {
             _spill4FreeList.remove(spill); // It may have been half-full before
             _spill8FreeList.push_front(spill);
-            if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+            if (self()->comp()->getOption(TR_TraceRA))
                traceMsg(self()->comp(), "\n -> moved to spill8FreeList");
             }
          }
       else if (spill->firstHalfIsOccupied())
          {
          // TODO: Once every caller can cope with nonzero offsets, we should add first-half-occupied symbols into _spill4FreeList.
-         if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+         if (self()->comp()->getOption(TR_TraceRA))
             traceMsg(self()->comp(), "\n -> first half is still occupied; conservatively keeping out of spill4FreeList");
          }
       else
@@ -648,7 +648,7 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
             {
             // Half-free
             _spill4FreeList.push_front(spill);
-            if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+            if (self()->comp()->getOption(TR_TraceRA))
                traceMsg(self()->comp(), "\n -> moved to spill4FreeList");
             }
          }
@@ -662,19 +662,19 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
          if (spill->getSymbolReference()->getSymbol()->getSize() <= 4)
             {
             _spill4FreeList.push_front(spill);
-            if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+            if (self()->comp()->getOption(TR_TraceRA))
                traceMsg(self()->comp(), "\n -> added to spill4FreeList");
             }
          else if (spill->getSymbolReference()->getSymbol()->getSize() == 8)
             {
             _spill8FreeList.push_front(spill);
-            if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+            if (self()->comp()->getOption(TR_TraceRA))
                traceMsg(self()->comp(), "\n -> added to spill8FreeList");
             }
          else if (spill->getSymbolReference()->getSymbol()->getSize() == 16)
             {
             _spill16FreeList.push_front(spill);
-            if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+            if (self()->comp()->getOption(TR_TraceRA))
                traceMsg(self()->comp(), "\n -> added to spill16FreeList");
             }
          }
@@ -684,7 +684,7 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
 void
 OMR::CodeGenerator::jettisonAllSpills()
    {
-   if (self()->getTraceRAOption(TR_TraceRASpillTemps))
+   if (self()->comp()->getOption(TR_TraceRA))
       traceMsg(self()->comp(), "jettisonAllSpills: Clearing spill-temp freelists\n");
    _spill4FreeList.clear();
    _spill8FreeList.clear();

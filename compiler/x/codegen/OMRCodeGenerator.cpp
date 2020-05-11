@@ -481,7 +481,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    if (comp->target().cpu.isI386())
       self()->setGenerateMasmListingSyntax();
 
-   if (comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+   if (comp->getOption(TR_TraceRA))
       {
       self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
       self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstXMMR, TR::RealRegister::LastXMMR));
@@ -1744,7 +1744,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       estimate += (self()->getJitMethodEntryAlignmentBoundary() - 1);
       }
 
-   if (self()->comp()->getOption(TR_TraceVFPSubstitution))
+   if (self()->comp()->getOption(TR_TraceCG))
       traceMsg(self()->comp(), "\n<instructions\n"
                                 "\ttitle=\"VFP Substitution\">");
 
@@ -1835,7 +1835,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       TR_VFPState prevState = _vfpState;
       estimateCursor->adjustVFPState(&_vfpState, self());
 
-      if (self()->comp()->getOption(TR_TraceVFPSubstitution))
+      if (self()->comp()->getOption(TR_TraceCG))
          self()->getDebug()->dumpInstructionWithVFPState(estimateCursor, &prevState);
 
       if (estimateCursor == _vfpResetInstruction)
@@ -1844,7 +1844,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       estimateCursor = estimateCursor->getNext();
       }
 
-   if (self()->comp()->getOption(TR_TraceVFPSubstitution))
+   if (self()->comp()->getOption(TR_TraceCG))
       traceMsg(self()->comp(), "\n</instructions>\n");
 
    estimate = self()->setEstimatedLocationsForSnippetLabels(estimate);

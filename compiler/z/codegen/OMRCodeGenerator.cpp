@@ -598,7 +598,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    _nextAvailableBlockIndex = -1;
    _currentBlockIndex = -1;
 
-   if (comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+   if (comp->getOption(TR_TraceRA))
       {
       self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
       self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
@@ -2515,39 +2515,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          }
       }
 
-   // Do a pass to tag the basic blocks for Code Mining
-   TR_Debug * debugObj = self()->getDebug();
-   if (debugObj)
-      {
-      TR::SimpleRegex * regex =  self()->comp()->getOptions()->getTraceForCodeMining();
-      if (regex && TR::SimpleRegex::match(regex, "BBN"))
-         {
-         data.cursorInstruction = self()->getFirstInstruction();
-         int32_t currentBlock = -1;
-         int32_t currentBlockFreq = 0;
-         while (data.cursorInstruction)
-            {
-            // Add basic block comment to the current instruction
-            // String will be BBN=###, 11 digits should be enough
-            char *BB_STRING = (char *)self()->trMemory()->allocateHeapMemory(sizeof(char) * 21);
-            TR::Node *node = data.cursorInstruction->getNode();
-
-            if(node && node->getOpCodeValue() == TR::BBStart)
-               {
-               currentBlock = node->getBlock()->getNumber();
-               currentBlockFreq = node->getBlock()->getFrequency();
-               }
-
-            // Add it as a comment
-            sprintf(BB_STRING, "BBN=%d freq=%d", currentBlock, currentBlockFreq);
-            debugObj->addInstructionComment(data.cursorInstruction, BB_STRING);
-            data.cursorInstruction = data.cursorInstruction->getNext();
-            }
-         }
-      }
-
    self()->getLinkage()->performPostBinaryEncoding();
-
    }
 
 /**
@@ -5679,7 +5647,7 @@ OMR::Z::CodeGenerator::loadOrStoreAddressesMatch(TR::Node *node1, TR::Node *node
 
    if (node1->getSize() != node2->getSize())
       {
-      if (self()->comp()->getOption(TR_TraceVIP))
+      if (self()->comp()->getOption(TR_TraceCG))
          traceMsg(self()->comp(),"\t\tloadOrStoreAddressesMatch = false (sizes differ) : node1 %s (%p) size = %d and node2 %s (%p) size = %d\n",
                node1->getOpCode().getName(),node1,node1->getSize(),node2->getOpCode().getName(),node2,node2->getSize());
       return false;
@@ -5702,7 +5670,7 @@ OMR::Z::CodeGenerator::loadOrStoreAddressesMatch(TR::Node *node1, TR::Node *node
          foundMatch = true;
          }
       }
-   if (self()->comp()->getOption(TR_TraceVIP))
+   if (self()->comp()->getOption(TR_TraceCG))
       traceMsg(self()->comp(),"\t\tloadOrStoreAddressesMatch = %s : node1 %s (%p) and node2 %s (%p)\n",
          foundMatch?"true":"false",node1->getOpCode().getName(),node1,node2->getOpCode().getName(),node2);
    return foundMatch;

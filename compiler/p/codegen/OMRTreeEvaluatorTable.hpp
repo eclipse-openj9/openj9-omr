@@ -396,8 +396,8 @@
    TR::TreeEvaluator::iselectEvaluator,                 // TR::bselect
    TR::TreeEvaluator::iselectEvaluator,                 // TR::sselect
    TR::TreeEvaluator::iselectEvaluator,                 // TR::aselect
-   TR::TreeEvaluator::iselectEvaluator,                 // TR::fselect
-   TR::TreeEvaluator::iselectEvaluator,                 // TR::dselect
+   TR::TreeEvaluator::fselectEvaluator,                 // TR::fselect
+   TR::TreeEvaluator::fselectEvaluator,                 // TR::dselect
    TR::TreeEvaluator::treetopEvaluator,                 // TR::treetop
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::MethodEnterHook (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::MethodExitHook (J9)

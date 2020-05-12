@@ -1466,6 +1466,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
                                 cg);
 
       generateLabelInstruction(JMP4, node, endLabel, cg);
+      og.endOutlinedInstructionSequence();
       }
 
       generateLabelInstruction(LABEL, node, endLabel, deps, cg);
@@ -1793,6 +1794,7 @@ TR::Register *OMR::X86::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
          TR_OutlinedInstructionsGenerator og(slowPathLabel, node, cg);
          generateRegImmInstruction( MOV4RegImm4, node, treg, FLOAT_NAN, cg);
          generateLabelInstruction(  JMP4,        node, endLabel,        cg);
+         og.endOutlinedInstructionSequence();
          }
 
          // Merge point

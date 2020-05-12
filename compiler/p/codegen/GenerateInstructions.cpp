@@ -55,7 +55,6 @@ namespace TR { class LabelSymbol; }
 namespace TR { class RegisterDependencyConditions; }
 namespace TR { class SymbolReference; }
 
-TR::InstOpCode::Mnemonic flipBranch(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
 int estimateLikeliness(TR::CodeGenerator *cg, TR::Node *n);
 
 TR::Instruction *generateMvFprGprInstructions(TR::CodeGenerator *cg, TR::Node *node, MvFprGprMode mode, bool nonops, TR::Register *reg0, TR::Register *reg1, TR::Register *reg2, TR::Register * reg3, TR::Instruction *cursor)
@@ -318,9 +317,6 @@ TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR:
    if (!cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_GP))
       return generateConditionalBranchInstruction(cg, op, n, sym, cr, preced);
 
-   if (cr->isFlippedCCR())
-      op = flipBranch(cg, op);
-
    if (preced)
       return new (cg->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, preced, cg, likeliness);
    return new (cg->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, cg, likeliness);
@@ -332,9 +328,6 @@ TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, 
    // if processor does not support branch hints
    if (!cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_GP))  
       return generateDepConditionalBranchInstruction(cg, op, n, sym, cr, cond, preced);
-   
-   if (cr->isFlippedCCR())
-      op = flipBranch(cg, op);
 
    if (preced)
       return new (cg->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, preced, cg, likeliness);
@@ -344,9 +337,6 @@ TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, 
 TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::LabelSymbol *sym, TR::Register *cr, TR::Instruction *preced)
    {
-   if (cr->isFlippedCCR())
-      op = flipBranch(cg, op);
-
    int prediction = estimateLikeliness(cg, n);
    bool likeliness;
    if(prediction < 0)
@@ -368,9 +358,6 @@ TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR:
 TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::LabelSymbol *sym, TR::Register *cr, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
    {
-   if (cr->isFlippedCCR())
-      op = flipBranch(cg, op);
-
    int prediction = estimateLikeliness(cg, n);
    bool likeliness;
    if(prediction < 0)
@@ -393,8 +380,6 @@ TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, 
 TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *treg, TR::Register *s1reg, intptr_t imm, TR::Instruction *preced)
    {
-   if (cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6) && TR::InstOpCode(op).isCompare())
-      treg->resetFlippedCCR();
    if (preced)
       return new (cg->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n, treg, s1reg, imm, preced, cg);
    return new (cg->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n,treg, s1reg, imm, cg);
@@ -403,8 +388,6 @@ TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, TR::InstO
 TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *treg, TR::Register *s1reg, TR::Register *cr0reg, int32_t imm, TR::Instruction *preced)
    {
-   if (cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6))
-      cr0reg->resetFlippedCCR();
    if (preced)
       return new (cg->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n,treg, s1reg, cr0reg, imm, preced, cg);
    return new (cg->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n,treg, s1reg, cr0reg, imm, cg);
@@ -442,48 +425,9 @@ TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg, TR::InstOpCo
    return new (cg->trHeapMemory()) TR::PPCTrg1Src1Instruction(op, n, treg, s1reg, cg);
    }
 
-static bool registerRecentlyWritten(TR::Register *reg, TR::Instruction *cursor)
-   {
-   const uint32_t windowSize = 4;
-   uint32_t       window = 0;
-
-   while (cursor && window <= windowSize)
-      {
-      // Walk past pseudo instructions (which have binary encoding == 0)
-      if (cursor->getOpCode().getOpCodeBinaryEncoding())
-         {
-         if (cursor->getTargetRegister(0) == reg)
-            return true;
-         ++window;
-         }
-      cursor = cursor->getPrev();
-      }
-   return false;
-   }
-
 TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
    {
-   TR::Compilation * comp = cg->comp();
-   static bool disableFlipCompare = feGetEnv("TR_DisableFlipCompare") != NULL;
-   if (!disableFlipCompare && cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6) &&
-       TR::InstOpCode(op).isCompare() &&
-       n->getOpCode().isBranch() && n->getOpCode().isBooleanCompare())
-      {
-      treg->resetFlippedCCR();
-      if (s1reg->containsInternalPointer() ||
-          (!TR::InstOpCode(op).isFloat() && registerRecentlyWritten(s1reg, preced ? preced : cg->getAppendInstruction())))
-         {
-         //Swap registers to avoid p6 fxu reject.
-         TR::Register *temp = s1reg;
-         s1reg = s2reg;
-         s2reg = temp;
-         treg->setFlippedCCR();
-         if (cg->getDebug())
-            traceMsg(comp, "Flipping CCR operands for compare generated for node [%p]\n", n);
-         }
-      }
-
    if (preced)
       return new (cg->trHeapMemory()) TR::PPCTrg1Src2Instruction(op, n, treg, s1reg, s2reg, preced, cg);
    return new (cg->trHeapMemory()) TR::PPCTrg1Src2Instruction(op, n, treg, s1reg, s2reg, cg);
@@ -492,8 +436,6 @@ TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg, TR::InstOpCo
 TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::Register *cr0Reg, TR::Instruction *preced)
    {
-   if (cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6))
-      cr0Reg->resetFlippedCCR();
    return new (cg->trHeapMemory()) TR::PPCTrg1Src2Instruction(op, n, treg, s1reg, s2reg, cr0Reg, preced, cg);
    }
 
@@ -524,8 +466,6 @@ TR::Instruction *generateTrg1Src1Imm2Instruction(TR::CodeGenerator *cg, TR::Inst
 TR::Instruction *generateTrg1Src1Imm2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *trgReg, TR::Register *srcReg, TR::Register *cr0reg, int32_t imm1, int64_t imm2, TR::Instruction *preced)
    {
-   if (cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6))
-      cr0reg->resetFlippedCCR();
    if (preced)
       return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(op, n, trgReg, srcReg, cr0reg, imm1, imm2, preced, cg);
    return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(op, n, trgReg, srcReg, cr0reg, imm1, imm2, cg);
@@ -614,39 +554,6 @@ TR::Instruction *generateTrg1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::
    if (preced)
       return new (cg->trHeapMemory()) TR::PPCTrg1Instruction(op, n, trg, preced, cg);
    return new (cg->trHeapMemory()) TR::PPCTrg1Instruction(op, n, trg, cg);
-   }
-
-TR::InstOpCode::Mnemonic flipBranch(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
-   {
-   switch(op)
-      {
-      case TR::InstOpCode::bge:
-         return TR::InstOpCode::ble;
-      case TR::InstOpCode::bgel:
-         return TR::InstOpCode::blel;
-      case TR::InstOpCode::bgt:
-         return TR::InstOpCode::blt;
-      case TR::InstOpCode::bgtl:
-         return TR::InstOpCode::bltl;
-      case TR::InstOpCode::ble:
-         return TR::InstOpCode::bge;
-      case TR::InstOpCode::blel:
-         return TR::InstOpCode::bgel;
-      case TR::InstOpCode::blt:
-         return TR::InstOpCode::bgt;
-      case TR::InstOpCode::bltl:
-         return TR::InstOpCode::bgtl;
-      case TR::InstOpCode::beq:
-      case TR::InstOpCode::beql:
-      case TR::InstOpCode::bne:
-      case TR::InstOpCode::bnel:
-      case TR::InstOpCode::bdz:
-      case TR::InstOpCode::bdnz:
-         return op;
-      default:
-         TR_ASSERT(0, "Cannot use this branch opcode to branch off the comparison of an internal pointer : %d\n", (int32_t)op);
-         return TR::InstOpCode::bad;
-      }
    }
 
 /*

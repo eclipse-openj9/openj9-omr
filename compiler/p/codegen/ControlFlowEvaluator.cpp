@@ -167,6 +167,36 @@ CompareCondition reverseCondition(CompareCondition cond)
 
 /**
  * \brief
+ *    Returns a condition that should be used if the order of operands to the compare instruction
+ *    is flipped.
+ *
+ * \param cond
+ *    The original condition.
+ *
+ * \return
+ *    The condition that should be used if the compare operands are flipped.
+ */
+CompareCondition flipConditionOrder(CompareCondition cond)
+   {
+   switch (cond)
+      {
+      case CompareCondition::eq:
+         return CompareCondition::eq;
+      case CompareCondition::ne:
+         return CompareCondition::ne;
+      case CompareCondition::lt:
+         return CompareCondition::gt;
+      case CompareCondition::ge:
+         return CompareCondition::le;
+      case CompareCondition::gt:
+         return CompareCondition::lt;
+      case CompareCondition::le:
+         return CompareCondition::ge;
+      }
+   }
+
+/**
+ * \brief
  *    Gets the opcode of a conditional branch instruction that branches when the provided condition
  *    is true.
  *
@@ -546,9 +576,32 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
    return CompareCondition::eq;
    }
 
+static bool registerRecentlyWritten(TR::Register *reg, uint32_t windowSize, TR::CodeGenerator *cg)
+   {
+   uint32_t i = 0;
+   TR::Instruction *cursor = cg->getAppendInstruction();
+
+   while (cursor && i < windowSize)
+      {
+      if (cursor->getOpCode().getMaxBinaryLength() != 0)
+         {
+         if (cursor->getTargetRegister(0) == reg)
+            return true;
+         i++;
+         }
+
+      cursor = cursor->getPrev();
+      }
+
+   return false;
+   }
+
 /**
  * \brief
  *    Evaluates an integral comparison to all bits of a CR field using a cmp or cmpi instruction.
+ *
+ *    Under certain conditions, this function may actually evaluate the comparison by reversing its
+ *    operands, in which case this routine will return true to indicate that this has been done.
  *
  *    This function is not capable of handling 64-bit integral comparisons on 32-bit machines, as
  *    such comparisons cannot be performed in a single instruction and would require many extra CR
@@ -572,8 +625,11 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
  *
  * \param cg
  *    The code generator.
+ *
+ * \return
+ *    true if the order of operands to the compare instruction was reversed; false otherwise.
  */
-void evaluateThreeWayIntCompareToConditionRegister(
+bool evaluateThreeWayIntCompareToConditionRegister(
       TR::Register *condReg,
       TR::Node *node,
       TR::Node *firstChild,
@@ -638,9 +694,30 @@ void evaluateThreeWayIntCompareToConditionRegister(
          ? is16BitUnsignedImmediate(secondChild->get64bitIntegralValueAsUnsigned())
          : is16BitSignedImmediate(secondChild->get64bitIntegralValue()));
 
+   static bool disableFlipCompare = feGetEnv("TR_DisableFlipCompare") != NULL;
+   CompareCondition cond = compareInfo.cond;
+   bool wasFlipped = false;
+
    if (canUseCmpi)
       {
       generateTrg1Src1ImmInstruction(cg, cmpiOp, node, condReg, firstReg, secondChild->get64bitIntegralValue());
+      }
+   else if (
+      (firstReg->containsInternalPointer() || registerRecentlyWritten(firstReg, 4, cg)) &&
+      performTransformation(
+         cg->comp(),
+         "O^O evaluateIntCompareToConditionRegister: flipping order of compare operands (n%dn, n%dn) while evaluating n%dn to avoid P6 FXU reject",
+         firstChild->getGlobalIndex(),
+         secondChild->getGlobalIndex(),
+         node->getGlobalIndex()
+      )
+   )
+      {
+      TR::Register *secondReg = evaluateAndExtend(secondChild, compareInfo.isUnsigned, false, cg);
+      generateTrg1Src2Instruction(cg, cmpOp, node, condReg, secondReg, firstReg);
+      stopUsingExtendedRegister(secondReg, secondChild, cg);
+
+      wasFlipped = true;
       }
    else
       {
@@ -650,6 +727,7 @@ void evaluateThreeWayIntCompareToConditionRegister(
       }
 
    stopUsingExtendedRegister(firstReg, firstChild, cg);
+   return wasFlipped;
    }
 
 /**
@@ -690,8 +768,10 @@ CompareCondition evaluateIntCompareToConditionRegister(
    if (compareInfo.type == TR::Int64 && !cg->comp()->target().is64Bit())
       return evaluateDualIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
 
-   evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
-   return compareInfo.cond;
+   if (evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg))
+      return flipConditionOrder(compareInfo.cond);
+   else
+      return compareInfo.cond;
    }
 
 /**
@@ -2846,10 +2926,13 @@ TR::Register *intOrderEvaluator(TR::Node *node, const CompareInfo& compareInfo, 
       }
    else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
       {
-      CRCompareCondition crCond = compareConditionInCR(compareInfo.cond);
+      CompareCondition cond = compareInfo.cond;
       TR::Register *condReg = cg->allocateRegister(TR_CCR);
 
-      evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
+      if (evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg))
+         cond = flipConditionOrder(compareInfo.cond);
+
+      CRCompareCondition crCond = compareConditionInCR(cond);
 
       if (crCond.crcc == TR::RealRegister::CRCC_LT)
          {

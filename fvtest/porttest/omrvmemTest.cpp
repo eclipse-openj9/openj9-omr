@@ -2841,12 +2841,12 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 	BOOLEAN sixteenMBPageSize = FALSE;
 	BOOLEAN sixtyFourKBPageSize = FALSE;
 
-	void *address = NULL;
 	uintptr_t dataSegmentPageSize = 0;
 
 	intptr_t caseIndex = 1;
 	intptr_t i = 0;
 	intptr_t rc = 0;
+	(void) rc;
 
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
@@ -3024,7 +3024,7 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 #if defined(AIXPPC)
 #define SAMPLE_BLOCK_SIZE 4
 	/* Allocate a memory block using omrmem_allocate_memory, and use the address to get the page size of data segment */
-	address = omrmem_allocate_memory(SAMPLE_BLOCK_SIZE, OMRMEM_CATEGORY_PORT_LIBRARY);
+	void *address = omrmem_allocate_memory(SAMPLE_BLOCK_SIZE, OMRMEM_CATEGORY_PORT_LIBRARY);
 	if (NULL == address) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to allocate block of memory to determine page size of data segment");
 		goto _exit;

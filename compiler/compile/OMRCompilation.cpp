@@ -297,7 +297,6 @@ OMR::Compilation::Compilation(
    _target(TR::Compiler->target),
    _tlsManager(*self())
    {
-
    //Avoid expensive initialization and uneeded option checking if we are doing AOT Loads
    if (_optimizationPlan && _optimizationPlan->getIsAotLoad())
       {

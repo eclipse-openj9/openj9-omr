@@ -1040,11 +1040,15 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
    startLabel->setStartInternalControlFlow();
    reStartLabel->setEndInternalControlFlow();
 
+
+   TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) == cg->getX86ProcessorInfo().supportsSSE(), "supportsSSE() failed\n");
+   TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == cg->getX86ProcessorInfo().supportsSSE2(), "supportsSSE2() failed\n");
+   
    bool optimizeF2IWithSSE = ( node->getOpCodeValue() == TR::f2i &&
-                               cg->getX86ProcessorInfo().supportsSSE() );
+                               cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) );
 
    bool optimizeD2IWithSSE2 = ( node->getOpCodeValue() == TR::d2i &&
-                                cg->getX86ProcessorInfo().supportsSSE2() );
+                                cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) );
 
    if (!optimizeF2IWithSSE && !optimizeD2IWithSSE2)
       {
@@ -2205,7 +2209,9 @@ bool OMR::X86::TreeEvaluator::canUseFCOMIInstructions(TR::Node *node, TR::CodeGe
    {
    TR::ILOpCodes cmpOp = node->getOpCodeValue();
 
-   return (!cg->getX86ProcessorInfo().supportsFCOMIInstructions() ||
+   TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFCOMIInstructions() == cg->getX86ProcessorInfo().supportsFCOMIInstructions(), "supportsFCOMIInstuctions() failed\n");
+
+   return (!cg->comp()->target().cpu.supportsFCOMIInstructions() ||
            cmpOp == TR::iffcmpneu ||
            cmpOp == TR::iffcmpeq  ||
            cmpOp == TR::ifdcmpneu ||

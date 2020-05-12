@@ -1460,6 +1460,8 @@ void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, in
       TR_X86OpCode fenceOp;
       bool is5ByteFence = false;
 
+      TR_ASSERT_FATAL(cg->comp()->target().cpu.requiresLFence() == cg->getX86ProcessorInfo().requiresLFENCE(), "requiresLFence() failed\n");
+
       if (barrier & LockOR)
          {
          fenceOp.setOpCodeValue(LOR4MemImms);
@@ -1467,7 +1469,7 @@ void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, in
          }
       else if ((barrier & kMemoryFence) == kMemoryFence)
          fenceOp.setOpCodeValue(MFENCE);
-      else if ((barrier & kLoadFence) && cg->getX86ProcessorInfo().requiresLFENCE())
+      else if ((barrier & kLoadFence) && cg->comp()->target().cpu.requiresLFence())
          fenceOp.setOpCodeValue(LFENCE);
       else if (barrier & kStoreFence)
          fenceOp.setOpCodeValue(SFENCE);

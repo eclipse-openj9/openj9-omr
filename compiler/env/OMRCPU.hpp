@@ -88,22 +88,13 @@ protected:
    /** 
     * @brief Default constructor that defaults down to OMR minimum supported CPU and features
     */
-   CPU() :
-         _processor(TR_NullProcessor),
-         _endianness(TR::endian_unknown),
-         _majorArch(TR::arch_unknown),
-         _minorArch(TR::m_arch_none)
-      {
-      _processorDescription.processor = OMR_PROCESSOR_UNDEFINED;
-      _processorDescription.physicalProcessor = OMR_PROCESSOR_UNDEFINED;
-      memset(_processorDescription.features, 0, OMRPORT_SYSINFO_FEATURES_SIZE*sizeof(uint32_t));
-      }
+   CPU();
 
    /** 
     * @brief Constructor that initializes the cpu from processor description provided by user
     * @param[in] OMRProcessorDesc : the input processor description
     */
-   CPU(const OMRProcessorDesc& processorDescription) : _processorDescription(processorDescription) {}
+   CPU(const OMRProcessorDesc& processorDescription);
 
 public:
 
@@ -116,21 +107,11 @@ public:
     */
    static TR::CPU detect(OMRPortLibrary * const omrPortLib);
 
-   // Initialize CPU info by querying the host processor at compile-time
-   //
-   void initializeByHostQuery();
-
    TR_Processor setProcessor(TR_Processor p) { return(_processor = p); }
 
    // Processor identity and generation comparisons
    //
    TR_Processor id() { return _processor; }
-   bool is(TR_Processor p) { return _processor == p; }
-   bool isNot(TR_Processor p) { return _processor != p; }
-   bool isAtLeast(TR_Processor p) { return _processor >= p; }
-   bool isLaterThan(TR_Processor p) { return _processor > p; }
-   bool isEarlierThan(TR_Processor p) { return _processor < p; }
-   bool isAtMost(TR_Processor p) { return _processor <= p; }
 
    bool getSupportsHardwareSQRT() { return false; }
    bool getSupportsHardwareRound() { return false; }
@@ -169,7 +150,7 @@ public:
     * @param[in] p : the input processor type
     * @return true when current processor is the same as the input processor type
     */
-   bool is(OMRProcessorArchitecture p) const { return _processorDescription.processor == p; }
+   bool is(OMRProcessorArchitecture p);
 
    /**
     * @brief Determines whether current processor is equal or newer than the input processor type

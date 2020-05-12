@@ -726,8 +726,7 @@ TEST_P(PPCTrg1MemEncodingTest, encode) {
     );
 }
 
-// TODO: This is temporarily disabled since it only works for a handful of instructions right now
-TEST_P(PPCTrg1MemEncodingTest, DISABLED_encodeFlat) {
+TEST_P(PPCTrg1MemEncodingTest, encodeFlat) {
     TR::Instruction* instr;
     const MemoryReference& mr = std::get<2>(GetParam());
 

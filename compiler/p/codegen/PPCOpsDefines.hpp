@@ -49,6 +49,11 @@ FORMAT_DD,
 // CCR should be used. These bits are often part of the instruction itself, since we generally use
 // the extended mnemonics.
 
+// A number of formats here also have MEM variations. This is used to denote instructions where the
+// RA field is treated as the base register of a memory access, i.e. a field value of 0 denotes the
+// constant value 0 instead of the value of gr0. Instructions with the MEM formats are permitted to
+// be used with a MemoryReference whereas those using the normal format are not.
+
 // Format for I-Form instructions (see Power ISA):
 //
 // +------+-------------------------------------------------+-----+
@@ -227,6 +232,7 @@ FORMAT_XT_XB,
 // | 0    | 6        | 11       | 16       | 21                   |
 // +------+----------+----------+----------+----------------------+
 FORMAT_RT_RA_RB,
+FORMAT_RT_RA_RB_MEM,
 
 // Format for instructions with an RA field encoding the target register and RS and RB fields
 // encoding the source registers:
@@ -255,6 +261,15 @@ FORMAT_BF_RA_RB,
 // +------+-----+----+----------+----------+----------------------+
 FORMAT_BF_FRA_FRB,
 
+// Format for instructions with an FRT field encoding the target FP register and RA and RB fields
+// encoding the source registers:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | FRT      | RA       | RB       |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_FRT_RA_RB_MEM,
+
 // Format for instructions with an FRT field encoding the target FP register and FRA and FRB fields
 // encoding the source registers:
 //
@@ -271,7 +286,7 @@ FORMAT_FRT_FRA_FRB,
 // |      | VRT      | RA       | RB       |                      |
 // | 0    | 6        | 11       | 16       | 21                   |
 // +------+----------+----------+----------+----------------------+
-FORMAT_VRT_RA_RB,
+FORMAT_VRT_RA_RB_MEM,
 
 // Format for instructions with a VRT field encoding the target vector register and VRA and VRB
 // fields encoding the source registers:
@@ -281,6 +296,15 @@ FORMAT_VRT_RA_RB,
 // | 0    | 6        | 11       | 16       | 21                   |
 // +------+----------+----------+----------+----------------------+
 FORMAT_VRT_VRA_VRB,
+
+// Format for instructions with an XT field encoding the target VSX register and RA and RB fields
+// encoding the two source registers:
+//
+// +------+----------+----------+----------+-----------------+----+
+// |      | XT       | RA       | RB       |                 | XT |
+// | 0    | 6        | 11       | 16       | 21              | 31 |
+// +------+----------+----------+----------+-----------------+----+
+FORMAT_XT_RA_RB_MEM,
 
 // Format for instructions with an XT field encoding the target VSX register and XA and XB fields
 // encoding the two source VSX registers:
@@ -604,7 +628,105 @@ FORMAT_XT_XA_XB_XC,
 // |                 | RA       | RB       |                      |
 // | 0               | 11       | 16       | 21                   |
 // +-----------------+----------+----------+----------------------+
-FORMAT_RA_RB
+FORMAT_RA_RB,
+FORMAT_RA_RB_MEM,
+
+// Format for instructions with an RT field encoding the target register, and RA and D fields
+// encoding an offset-based memory reference:
+//
+// +------+----------+----------+---------------------------------+
+// |      | RT       | RA       | D                               |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+//
+// Note: This format is also used for addi-like instructions, even though the ISA specifies that
+//       they use an SI field instead of a D field. The reason for this is that these instructions
+//       act more like the memory instructions than other SI instructions: an RA field value of 0
+//       uses the constant 0 instead of the value of gr0. Additionally, these instructions are
+//       commonly used to calculate the effective address that a load/store would have accessed.
+//       This is safe since the 16-bit SI and D fields are encoded in exactly the same way.
+FORMAT_RT_D16_RA,
+
+// Format for instructions with an FRT field encoding the target FP register, and RA and D fields
+// encoding an offset-based memory reference:
+//
+// +------+----------+----------+---------------------------------+
+// |      | FRT      | RA       | D                               |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_FRT_D16_RA,
+
+// Format for instructions with an RT field encoding the target register, and RA and DS fields
+// encoding an offset-based memory reference:
+//
+// +------+----------+----------+---------------------------+-----+
+// |      | RT       | RA       | DS                        |     |
+// | 0    | 6        | 11       | 16                        | 30  |
+// +------+----------+----------+---------------------------+-----+
+FORMAT_RT_DS_RA,
+
+// Format for instructions with an RS field encoding the source register, and RA and D fields
+// encoding an offset-based memory reference:
+//
+// +------+----------+----------+---------------------------------+
+// |      | RS       | RA       | D                               |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RS_D16_RA,
+
+// Format for instructions with an FRS field encoding the source FP register, and RA and D fields
+// encoding an offset-based memory reference:
+//
+// +------+----------+----------+---------------------------------+
+// |      | FRS      | RA       | D                               |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_FRS_D16_RA,
+
+// Format for instructions with an RS field encoding the source register, and RA and DS fields
+// encoding an offset-based memory reference:
+//
+// +------+----------+----------+---------------------------+-----+
+// |      | RS       | RA       | DS                        |     |
+// | 0    | 6        | 11       | 16                        | 30  |
+// +------+----------+----------+---------------------------+-----+
+FORMAT_RS_DS_RA,
+
+// Format for instructions with an RS field encoding the source register, and RA and RB fields
+// encoding an indexed memory reference:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | RS       | RA       | RB       |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_RS_RA_RB_MEM,
+
+// Format for instructions with an FRS field encoding the source FP register, and RA and RB fields
+// encoding an indexed memory reference:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | FRS      | RA       | RB       |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_FRS_RA_RB_MEM,
+
+// Format for instructions with a VRS field encoding the source vector register, and RA and RB
+// fields encoding an indexed memory reference:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | VRS      | RA       | RB       |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_VRS_RA_RB_MEM,
+
+// Format for instructions with an XS field encoding the source VSX register, and RA and RB fields
+// encoding an indexed memory reference:
+//
+// +------+----------+----------+----------+-----------------+----+
+// |      | XS       | RA       | RB       |                 | XS |
+// | 0    | 6        | 11       | 16       | 21              | 31 |
+// +------+----------+----------+----------+-----------------+----+
+FORMAT_XS_RA_RB_MEM
 
 };
 

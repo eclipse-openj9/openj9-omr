@@ -296,8 +296,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    void adjustForResolution(TR::CodeGenerator *cg);
 
-   uint32_t estimateBinaryLength(TR::CodeGenerator&);
-
    void decNodeReferenceCounts(TR::CodeGenerator *cg);
 
    void bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg);
@@ -310,7 +308,8 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    void mapOpCode(TR::Instruction *currentInstruction);
 
-   uint8_t *generateBinaryEncoding(TR::Instruction *ci, uint8_t *modRM, TR::CodeGenerator *cg);
+   TR::Instruction *expandInstruction(TR::Instruction *currentInstruction, TR::CodeGenerator *cg);
+   TR::Instruction *expandForUnresolvedSnippet(TR::Instruction *currentInstruction, TR::CodeGenerator *cg);
 
    };
 }

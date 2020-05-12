@@ -26,6 +26,8 @@
 #include "env/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -153,6 +155,37 @@ static void fillFieldRS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RS field with null register");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RS field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRS(cursor);
+   }
+
+/**
+ * Fills in the FRS field of a binary-encoded instruction with the provided floating-point
+ * register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | FRS      |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
+static void fillFieldFRS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill FRS field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_FPR, "Attempt to fill FRS field with %s, which is not an FPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRS(cursor);
+   }
+
+/**
+ * Fills in the VRS field of a binary-encoded instruction with the provided vector register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | VRS      |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
+static void fillFieldVRS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill VRS field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_VRF, "Attempt to fill VRS field with %s, which is not a VR", reg->getRegisterName(instr->cg()->comp()));
    reg->setRegisterFieldRS(cursor);
    }
 
@@ -572,6 +605,38 @@ static void fillFieldSIM(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0x1fu), "0x%x is out-of-range for SIM field", val);
    *cursor |= (val & 0x1f) << 16;
+   }
+
+/**
+ * Fills in the 16-bit D field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+---------------------------------+
+ * |                            | D                               |
+ * | 0                          | 16                              |
+ * +----------------------------+---------------------------------+
+ */
+static void fillFieldD16(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffu), "0x%x is out-of-range for D(16) field", val);
+   *cursor |= val & 0xffff;
+   }
+
+/**
+ * Fills in the 16-bit DS field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+---------------------------+-----+
+ * |                            | DS                        |     |
+ * | 0                          | 16                        | 30  |
+ * +----------------------------+---------------------------+-----+
+ *
+ * Note that the provided immediate value is expected to be a 4 byte aligned offset and only the
+ * upper 14 bits are used to fill in the DS field.
+ */
+static void fillFieldDS(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffu), "0x%x is out-of-range for DS field", val);
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3u) == 0, "0x%x is misaligned for DS field", val);
+   *cursor |= val & 0xfffcu;
    }
 
 /**
@@ -1024,6 +1089,30 @@ int32_t TR::PPCConditionalBranchInstruction::estimateBinaryLength(int32_t curren
    return currentEstimate + getEstimatedBinaryLength();
    }
 
+TR::Instruction *TR::PPCAdminInstruction::expandInstruction()
+   {
+   if (getOpCodeValue() == TR::InstOpCode::ret)
+      {
+      cg()->getLinkage()->createEpilogue(self());
+      }
+
+   return self();
+   }
+
+int32_t TR::PPCAdminInstruction::estimateBinaryLength(int32_t currentEstimate)
+   {
+   if (getOpCodeValue() == TR::InstOpCode::proc && cg()->supportsJitMethodEntryAlignment())
+      {
+      cg()->setPreJitMethodEntrySize(currentEstimate);
+      self()->setEstimatedBinaryLength(cg()->getJitMethodEntryAlignmentBoundary() - 1);
+      return currentEstimate + cg()->getJitMethodEntryAlignmentBoundary() - 1;
+      }
+   else
+      {
+      return self()->TR::Instruction::estimateBinaryLength(currentEstimate);
+      }
+   }
+
 void TR::PPCAdminInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), getOpCode().getFormat() == FORMAT_NONE, "Format %d cannot be binary encoded by PPCAdminInstruction", getOpCode().getFormat());
@@ -1336,6 +1425,18 @@ void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldSI16(self(), cursor, imm);
          break;
 
+      case FORMAT_RT_D16_RA:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         fillFieldD16(self(), cursor, imm);
+         break;
+
+      case FORMAT_RT_DS_RA:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         fillFieldDS(self(), cursor, imm);
+         break;
+
       case FORMAT_RA_RS_UI16:
          fillFieldRA(self(), cursor, trg);
          fillFieldRS(self(), cursor, src);
@@ -1370,6 +1471,12 @@ void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldRA(self(), cursor, trg);
          fillFieldRS(self(), cursor, src);
          fillFieldSH6(self(), cursor, imm);
+         break;
+
+      case FORMAT_FRT_D16_RA:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldD16(self(), cursor, imm);
+         fillFieldRA(self(), cursor, src);
          break;
 
       case FORMAT_VRT_VRB_UIM4:
@@ -1517,6 +1624,7 @@ void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    switch (getOpCode().getFormat())
       {
       case FORMAT_RT_RA_RB:
+      case FORMAT_RT_RA_RB_MEM:
          fillFieldRT(self(), cursor, trg);
          fillFieldRA(self(), cursor, src1);
          fillFieldRB(self(), cursor, src2);
@@ -1540,13 +1648,19 @@ void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldFRB(self(), cursor, src2);
          break;
 
+      case FORMAT_FRT_RA_RB_MEM:
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
+         break;
+
       case FORMAT_FRT_FRA_FRB:
          fillFieldFRT(self(), cursor, trg);
          fillFieldFRA(self(), cursor, src1);
          fillFieldFRB(self(), cursor, src2);
          break;
 
-      case FORMAT_VRT_RA_RB:
+      case FORMAT_VRT_RA_RB_MEM:
          fillFieldVRT(self(), cursor, trg);
          fillFieldRA(self(), cursor, src1);
          fillFieldRB(self(), cursor, src2);
@@ -1556,6 +1670,12 @@ void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldVRT(self(), cursor, trg);
          fillFieldVRA(self(), cursor, src1);
          fillFieldVRB(self(), cursor, src2);
+         break;
+
+      case FORMAT_XT_RA_RB_MEM:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src1);
+         fillFieldRB(self(), cursor, src2);
          break;
 
       case FORMAT_XT_XA_XB:
@@ -1715,6 +1835,7 @@ void TR::PPCSrc2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    switch (getOpCode().getFormat())
       {
       case FORMAT_RA_RB:
+      case FORMAT_RA_RB_MEM:
          fillFieldRA(self(), cursor, src1);
          fillFieldRB(self(), cursor, src2);
          break;
@@ -1724,69 +1845,177 @@ void TR::PPCSrc2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
       }
    }
 
-uint8_t *TR::PPCMemSrc1Instruction::generateBinaryEncoding()
+void TR::PPCMemSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
+   TR::RealRegister *src = toRealRegister(getSourceRegister());
+   TR::MemoryReference *memRef = getMemoryReference();
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), memRef != NULL, "Cannot encode instruction with null memory reference");
 
-   getMemoryReference()->mapOpCode(this);
+   TR::RealRegister *base = toRealRegister(memRef->getBaseRegister());
+   TR::RealRegister *index = toRealRegister(memRef->getIndexRegister());
+   int32_t disp = memRef->getOffset();
 
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+   if (base == NULL)
+      base = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
 
-   insertSourceRegister(toPPCCursor(cursor));
-   cursor = getMemoryReference()->generateBinaryEncoding(this, cursor, cg());
-   setBinaryLength(cursor-instructionStart);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RS_D16_RA:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
+         fillFieldRS(self(), cursor, src);
+         fillFieldD16(self(), cursor, disp);
+         fillFieldRA(self(), cursor, base);
+         break;
+
+      case FORMAT_RS_DS_RA:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
+         fillFieldRS(self(), cursor, src);
+         fillFieldDS(self(), cursor, disp);
+         fillFieldRA(self(), cursor, base);
+         break;
+
+      case FORMAT_FRS_D16_RA:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
+         fillFieldFRS(self(), cursor, src);
+         fillFieldD16(self(), cursor, disp);
+         fillFieldRA(self(), cursor, base);
+         break;
+
+      case FORMAT_RS_RA_RB_MEM:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
+         fillFieldRS(self(), cursor, src);
+         fillFieldRA(self(), cursor, base);
+         fillFieldRB(self(), cursor, index);
+         break;
+
+      case FORMAT_FRS_RA_RB_MEM:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
+         fillFieldFRS(self(), cursor, src);
+         fillFieldRA(self(), cursor, base);
+         fillFieldRB(self(), cursor, index);
+         break;
+
+      case FORMAT_VRS_RA_RB_MEM:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
+         fillFieldVRS(self(), cursor, src);
+         fillFieldRA(self(), cursor, base);
+         fillFieldRB(self(), cursor, index);
+         break;
+
+      case FORMAT_XS_RA_RB_MEM:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
+         fillFieldXS(self(), cursor, src);
+         fillFieldRA(self(), cursor, base);
+         fillFieldRB(self(), cursor, index);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCMemSrc1Instruction", getOpCode().getFormat());
+      }
    }
 
-uint8_t *TR::PPCMemInstruction::generateBinaryEncoding()
+void TR::PPCMemInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-   getMemoryReference()->mapOpCode(this);
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   cursor = getMemoryReference()->generateBinaryEncoding(this, cursor, cg());
-   setBinaryLength(cursor-instructionStart);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
-   }
-int32_t TR::PPCMemSrc1Instruction::estimateBinaryLength(int32_t currentEstimate)
-   {
-   setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength(*cg()));
-   return(currentEstimate + getEstimatedBinaryLength());
-   }
+   TR::MemoryReference *memRef = getMemoryReference();
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), memRef != NULL, "Cannot encode instruction with null memory reference");
 
-uint8_t *TR::PPCTrg1MemInstruction::generateBinaryEncoding()
-   {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
+   TR::RealRegister *base = toRealRegister(memRef->getBaseRegister());
+   TR::RealRegister *index = toRealRegister(memRef->getIndexRegister());
+   int32_t disp = memRef->getOffset();
 
-   getMemoryReference()->mapOpCode(this);
+   if (base == NULL)
+      base = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
 
-   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RA_RB_MEM:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
+         fillFieldRA(self(), cursor, base);
+         fillFieldRB(self(), cursor, index);
+         break;
 
-   insertTargetRegister(toPPCCursor(cursor));
-   // Set hint bit if there is any
-   // The control for the different values is done through asserts in the constructor
-   if (haveHint())
-   {
-      *(int32_t *)instructionStart |=  getHint();
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCMemInstruction", getOpCode().getFormat());
+      }
    }
 
-   cursor = getMemoryReference()->generateBinaryEncoding(this, cursor, cg());
-   setBinaryLength(cursor-instructionStart);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
+TR::Instruction *TR::PPCMemInstruction::expandInstruction()
+   {
+   return getMemoryReference()->expandInstruction(self(), cg());
    }
 
-int32_t TR::PPCTrg1MemInstruction::estimateBinaryLength(int32_t currentEstimate)
+void TR::PPCTrg1MemInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
-   setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength(*cg()));
-   return currentEstimate + getEstimatedBinaryLength();
+   TR::RealRegister *trg = toRealRegister(getTargetRegister());
+   TR::MemoryReference *memRef = getMemoryReference();
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), memRef != NULL, "Cannot encode instruction with null memory reference");
+
+   TR::RealRegister *base = toRealRegister(memRef->getBaseRegister());
+   TR::RealRegister *index = toRealRegister(memRef->getIndexRegister());
+   int32_t disp = memRef->getOffset();
+
+   if (base == NULL)
+      base = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
+
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RT_D16_RA:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
+         fillFieldRT(self(), cursor, trg);
+         fillFieldD16(self(), cursor, disp);
+         fillFieldRA(self(), cursor, base);
+         break;
+
+      case FORMAT_RT_DS_RA:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
+         fillFieldRT(self(), cursor, trg);
+         fillFieldDS(self(), cursor, disp);
+         fillFieldRA(self(), cursor, base);
+         break;
+
+      case FORMAT_FRT_D16_RA:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldD16(self(), cursor, disp);
+         fillFieldRA(self(), cursor, base);
+         break;
+
+      case FORMAT_RT_RA_RB_MEM:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
+         fillFieldRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, base);
+         fillFieldRB(self(), cursor, index);
+         break;
+
+      case FORMAT_FRT_RA_RB_MEM:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
+         fillFieldFRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, base);
+         fillFieldRB(self(), cursor, index);
+         break;
+
+      case FORMAT_VRT_RA_RB_MEM:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
+         fillFieldVRT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, base);
+         fillFieldRB(self(), cursor, index);
+         break;
+
+      case FORMAT_XT_RA_RB_MEM:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
+         fillFieldXT(self(), cursor, trg);
+         fillFieldRA(self(), cursor, base);
+         fillFieldRB(self(), cursor, index);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1MemInstruction", getOpCode().getFormat());
+      }
+   }
+
+TR::Instruction *TR::PPCTrg1MemInstruction::expandInstruction()
+   {
+   return getMemoryReference()->expandInstruction(self(), cg());
    }
 
 uint8_t *TR::PPCControlFlowInstruction::generateBinaryEncoding()

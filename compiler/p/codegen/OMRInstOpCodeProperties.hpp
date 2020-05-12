@@ -186,7 +186,7 @@
    /* .name        = */ "addi",
    /* .description =    "Add immediate", */
    /* .opcode      = */ 0x38000000,
-   /* .format      = */ FORMAT_RT_RA_SI16,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -218,7 +218,7 @@
    /* .name        = */ "addi",
    /* .description =    "Add imm (carry bit set only if record form)", */
    /* .opcode      = */ 0x38000000,
-   /* .format      = */ FORMAT_RT_RA_SI16,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
@@ -230,7 +230,11 @@
    /* .name        = */ "addic.",
    /* .description =    "Add imm (carry bit set only if record form) Rc=1", */
    /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].opcode + 0x04000000,
-   /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].format,
+   // Note: Normally, addic is not meant to be used as a memory instruction, since its RA field is
+   //       not subject to the normal rule about gr0. However, it can be used under safely under
+   //       certain controlled conditions that ensure that no code expected the gr0 = 0 behaviour
+   //       will be triggered.
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].minimumALS,
    /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::addic].properties & ~PPCOpProp_HasRecordForm | PPCOpProp_IsRecordForm,
    },
@@ -1108,7 +1112,7 @@
    /* .name        = */ "dcbt",
    /* .description =    "Data cache block touch", */
    /* .opcode      = */ 0x7C00022C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -1119,7 +1123,7 @@
    /* .name        = */ "dcbtst",
    /* .description =    "Data cache block touch for store", */
    /* .opcode      = */ 0x7C0001EC,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -1130,7 +1134,7 @@
    /* .name        = */ "dcbtstt",
    /* .description =    "Data cache block touch for store - transient", */
    /* .opcode      = */ 0x7E0001EC,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -1141,7 +1145,7 @@
    /* .name        = */ "dcbtt",
    /* .description =    "Data cache block touch - transient", */
    /* .opcode      = */ 0x7E00022C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2301,7 +2305,7 @@
    /* .name        = */ "lbz",
    /* .description =    "Load byte and zero extend", */
    /* .opcode      = */ 0x88000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad,
    },
@@ -2311,7 +2315,7 @@
    /* .name        = */ "lbzu",
    /* .description =    "Load byte and zero extend with update", */
    /* .opcode      = */ 0x8C000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad,
@@ -2322,7 +2326,7 @@
    /* .name        = */ "lbzux",
    /* .description =    "Load byte and zero extend with update indexed", */
    /* .opcode      = */ 0x7C0000EE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
@@ -2334,7 +2338,7 @@
    /* .name        = */ "lbzx",
    /* .description =    "Load byte and zero extend indexed", */
    /* .opcode      = */ 0x7C0000AE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2345,7 +2349,7 @@
    /* .name        = */ "ld",
    /* .description =    "Load dword", */
    /* .opcode      = */ 0xE8000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_DS_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_OffsetRequiresWordAlignment,
@@ -2356,7 +2360,7 @@
    /* .name        = */ "ldarx",
    /* .description =    "Load dword and reserve indexed", */
    /* .opcode      = */ 0x7C0000A8,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2367,7 +2371,7 @@
    /* .name        = */ "ldu",
    /* .description =    "Load dword with update", */
    /* .opcode      = */ 0xE8000001,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_DS_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
@@ -2379,7 +2383,7 @@
    /* .name        = */ "ldux",
    /* .description =    "Load dword with update indexed", */
    /* .opcode      = */ 0x7C00006A,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
@@ -2391,7 +2395,7 @@
    /* .name        = */ "ldx",
    /* .description =    "Load dword indexed", */
    /* .opcode      = */ 0x7C00002A,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2402,7 +2406,7 @@
    /* .name        = */ "lfd",
    /* .description =    "Load floating point double", */
    /* .opcode      = */ 0xC8000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad,
@@ -2424,7 +2428,7 @@
    /* .name        = */ "lfdu",
    /* .description =    "Load floating point double with update", */
    /* .opcode      = */ 0xCC000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_UpdateForm |
@@ -2436,7 +2440,7 @@
    /* .name        = */ "lfdux",
    /* .description =    "Load floating point double with update indexed", */
    /* .opcode      = */ 0x7C0004EE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_UpdateForm |
@@ -2449,7 +2453,7 @@
    /* .name        = */ "lfdx",
    /* .description =    "Load floating point double indexed", */
    /* .opcode      = */ 0x7C0004AE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad |
@@ -2473,7 +2477,7 @@
    /* .name        = */ "lfiwax",
    /* .description =    "Load floating point as integer word algebraic", */
    /* .opcode      = */ 0x7C0006AE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad |
@@ -2485,7 +2489,7 @@
    /* .name        = */ "lfiwzx",
    /* .description =    "Load floating point as integer word and zero indexed", */
    /* .opcode      = */ 0x7C0006EE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad |
@@ -2497,7 +2501,7 @@
    /* .name        = */ "lfs",
    /* .description =    "Load floating short", */
    /* .opcode      = */ 0xC0000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_IsLoad,
@@ -2508,7 +2512,7 @@
    /* .name        = */ "lfsu",
    /* .description =    "Load floating short with update", */
    /* .opcode      = */ 0xC4000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_UpdateForm |
@@ -2520,7 +2524,7 @@
    /* .name        = */ "lfsux",
    /* .description =    "Load floating short with update indexed", */
    /* .opcode      = */ 0x7C00046E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_UpdateForm |
@@ -2533,7 +2537,7 @@
    /* .name        = */ "lfsx",
    /* .description =    "Load floating short indexed", */
    /* .opcode      = */ 0x7C00042E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_IsLoad |
@@ -2545,7 +2549,7 @@
    /* .name        = */ "lha",
    /* .description =    "Load half word algebraic", */
    /* .opcode      = */ 0xA8000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad,
    },
@@ -2555,7 +2559,7 @@
    /* .name        = */ "lhau",
    /* .description =    "Load half word algebraic", */
    /* .opcode      = */ 0xAC000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad,
@@ -2566,7 +2570,7 @@
    /* .name        = */ "lhaux",
    /* .description =    "Load half word algebraic", */
    /* .opcode      = */ 0x7C0002EE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
@@ -2578,7 +2582,7 @@
    /* .name        = */ "lhax",
    /* .description =    "Load half word algebraic", */
    /* .opcode      = */ 0x7C0002AE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2589,7 +2593,7 @@
    /* .name        = */ "lhbrx",
    /* .description =    "Load half word byte reversed indexed", */
    /* .opcode      = */ 0x7C00062C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2600,7 +2604,7 @@
    /* .name        = */ "lhz",
    /* .description =    "Load half word and zero extend", */
    /* .opcode      = */ 0xA0000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad,
    },
@@ -2610,7 +2614,7 @@
    /* .name        = */ "lhzu",
    /* .description =    "Load half word and zero extend with update", */
    /* .opcode      = */ 0xA4000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad,
@@ -2621,7 +2625,7 @@
    /* .name        = */ "lhzux",
    /* .description =    "Load half word and zero extend with update indexed", */
    /* .opcode      = */ 0x7C00026E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
@@ -2633,7 +2637,7 @@
    /* .name        = */ "lhzx",
    /* .description =    "Load half word and zero extend indexed", */
    /* .opcode      = */ 0x7C00022E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2664,7 +2668,7 @@
    /* .name        = */ "lmw",
    /* .description =    "Load multiple word", */
    /* .opcode      = */ 0xB8000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad,
    },
@@ -2695,7 +2699,7 @@
    /* .name        = */ "lwa",
    /* .description =    "Load word algebraic", */
    /* .opcode      = */ 0xE8000002,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_DS_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_OffsetRequiresWordAlignment,
@@ -2706,7 +2710,7 @@
    /* .name        = */ "lwarx",
    /* .description =    "Load word and reserve indexed", */
    /* .opcode      = */ 0x7C000028,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2717,7 +2721,7 @@
    /* .name        = */ "lwaux",
    /* .description =    "Load word algebraic with update indexed", */
    /* .opcode      = */ 0x7C0002EA,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
@@ -2729,7 +2733,7 @@
    /* .name        = */ "lwax",
    /* .description =    "Load word algebraic indexed", */
    /* .opcode      = */ 0x7C0002AA,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2740,7 +2744,7 @@
    /* .name        = */ "lwbrx",
    /* .description =    "Load word byte reverse indexed", */
    /* .opcode      = */ 0x7C00042C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2751,7 +2755,7 @@
    /* .name        = */ "ldbrx",
    /* .description =    "Load doubleword byte reverse indexed", */
    /* .opcode      = */ 0x7C000428,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -2772,7 +2776,7 @@
    /* .name        = */ "lwz",
    /* .description =    "Load word and zero extend", */
    /* .opcode      = */ 0x80000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad,
    },
@@ -2782,7 +2786,7 @@
    /* .name        = */ "lwzu",
    /* .description =    "Load word and zero extend with update", */
    /* .opcode      = */ 0x84000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad,
@@ -2793,7 +2797,7 @@
    /* .name        = */ "lwzux",
    /* .description =    "Load word and zero with update indexed", */
    /* .opcode      = */ 0x7C00006E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
@@ -2805,7 +2809,7 @@
    /* .name        = */ "lwzx",
    /* .description =    "Load word and zero extend indexed", */
    /* .opcode      = */ 0x7C00002E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_AltFormat,
@@ -4128,7 +4132,7 @@
    /* .name        = */ "stb",
    /* .description =    "Store byte", */
    /* .opcode      = */ 0x98000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore,
    },
@@ -4138,7 +4142,7 @@
    /* .name        = */ "stbu",
    /* .description =    "Store byte with update", */
    /* .opcode      = */ 0x9C000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore,
@@ -4149,7 +4153,7 @@
    /* .name        = */ "stbux",
    /* .description =    "Store byte with update indexed", */
    /* .opcode      = */ 0x7C0001EE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
@@ -4161,7 +4165,7 @@
    /* .name        = */ "stbx",
    /* .description =    "Store byte indexed", */
    /* .opcode      = */ 0x7C0001AE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_AltFormat,
@@ -4172,7 +4176,7 @@
    /* .name        = */ "std",
    /* .description =    "Store dword", */
    /* .opcode      = */ 0xF8000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_DS_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_OffsetRequiresWordAlignment,
@@ -4183,7 +4187,7 @@
    /* .name        = */ "stdcx.",
    /* .description =    "Store word conditional indexed", */
    /* .opcode      = */ 0x7C0001AD,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsRecordForm |
@@ -4195,7 +4199,7 @@
    /* .name        = */ "stdu",
    /* .description =    "Store dword with update", */
    /* .opcode      = */ 0xF8000001,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_DS_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
@@ -4207,7 +4211,7 @@
    /* .name        = */ "stdux",
    /* .description =    "Store dword with update indexed", */
    /* .opcode      = */ 0x7C00016A,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
@@ -4219,7 +4223,7 @@
    /* .name        = */ "stdx",
    /* .description =    "Store dword indexed", */
    /* .opcode      = */ 0x7C00012A,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_AltFormat,
@@ -4230,7 +4234,7 @@
    /* .name        = */ "stfd",
    /* .description =    "Store float double", */
    /* .opcode      = */ 0xD8000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsStore,
@@ -4252,7 +4256,7 @@
    /* .name        = */ "stfdu",
    /* .description =    "Store float double with update", */
    /* .opcode      = */ 0xDC000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_DoubleFP |
@@ -4264,7 +4268,7 @@
    /* .name        = */ "stfdux",
    /* .description =    "Store float double with update indexed", */
    /* .opcode      = */ 0x7C0005EE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_DoubleFP |
@@ -4277,7 +4281,7 @@
    /* .name        = */ "stfdx",
    /* .description =    "Store float double indexed", */
    /* .opcode      = */ 0x7C0005AE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsStore |
@@ -4301,7 +4305,7 @@
    /* .name        = */ "stfiwx",
    /* .description =    "Store float as integer word indexed", */
    /* .opcode      = */ 0x7C0007AE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_AltFormat,
@@ -4312,7 +4316,7 @@
    /* .name        = */ "stfs",
    /* .description =    "Store float single", */
    /* .opcode      = */ 0xD0000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_IsStore,
@@ -4323,7 +4327,7 @@
    /* .name        = */ "stfsu",
    /* .description =    "Store float single with update", */
    /* .opcode      = */ 0xD4000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_SingleFP |
@@ -4335,7 +4339,7 @@
    /* .name        = */ "stfsux",
    /* .description =    "Store float single with update indexed", */
    /* .opcode      = */ 0x7C00056E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_SingleFP |
@@ -4348,7 +4352,7 @@
    /* .name        = */ "stfsx",
    /* .description =    "Store float single indexed", */
    /* .opcode      = */ 0x7C00052E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_FRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_IsStore |
@@ -4360,7 +4364,7 @@
    /* .name        = */ "sth",
    /* .description =    "Store half word", */
    /* .opcode      = */ 0xB0000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore,
    },
@@ -4370,7 +4374,7 @@
    /* .name        = */ "sthbrx",
    /* .description =    "Store half word byte reversed indexed", */
    /* .opcode      = */ 0x7C00072C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_AltFormat,
@@ -4381,7 +4385,7 @@
    /* .name        = */ "sthu",
    /* .description =    "Store half word with update", */
    /* .opcode      = */ 0xB4000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore,
@@ -4392,7 +4396,7 @@
    /* .name        = */ "sthux",
    /* .description =    "Store half word with update indexed", */
    /* .opcode      = */ 0x7C00036E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
@@ -4404,7 +4408,7 @@
    /* .name        = */ "sthx",
    /* .description =    "Store half word indexed", */
    /* .opcode      = */ 0x7C00032E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_AltFormat,
@@ -4415,7 +4419,7 @@
    /* .name        = */ "stmw",
    /* .description =    "Store multiple word", */
    /* .opcode      = */ 0xBC000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore,
    },
@@ -4456,7 +4460,7 @@
    /* .name        = */ "stw",
    /* .description =    "Store word", */
    /* .opcode      = */ 0x90000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore,
    },
@@ -4466,7 +4470,7 @@
    /* .name        = */ "stwbrx",
    /* .description =    "Store word byte reverse indexed", */
    /* .opcode      = */ 0x7C00052C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_AltFormat,
@@ -4488,7 +4492,7 @@
    /* .name        = */ "stwcx.",
    /* .description =    "Store word conditional indexed", */
    /* .opcode      = */ 0x7C00012D,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsRecordForm |
@@ -4500,7 +4504,7 @@
    /* .name        = */ "stwu",
    /* .description =    "Store word with update", */
    /* .opcode      = */ 0x94000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore,
@@ -4511,7 +4515,7 @@
    /* .name        = */ "stwux",
    /* .description =    "Store word with update indexed", */
    /* .opcode      = */ 0x7C00016E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
@@ -4523,7 +4527,7 @@
    /* .name        = */ "stwx",
    /* .description =    "Store word indexed", */
    /* .opcode      = */ 0x7C00012E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_AltFormat,
@@ -6182,7 +6186,7 @@
    /* .name        = */ "lvsl",
    /* .description =    "Load vector for shift left", */
    /* .opcode      = */ 0x7C00000C,
-   /* .format      = */ FORMAT_VRT_RA_RB,
+   /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVMX,
@@ -6193,7 +6197,7 @@
    /* .name        = */ "lvsr",
    /* .description =    "Load vector for shift right", */
    /* .opcode      = */ 0x7C00004C,
-   /* .format      = */ FORMAT_VRT_RA_RB,
+   /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVMX,
@@ -6204,7 +6208,7 @@
    /* .name        = */ "lvx",
    /* .description =    "Load vector indexed", */
    /* .opcode      = */ 0x7C0000CE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVMX,
@@ -6215,7 +6219,7 @@
    /* .name        = */ "lvebx",
    /* .description =    "Load vector element byte indexed", */
    /* .opcode      = */ 0x7C00000E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVMX,
@@ -6226,7 +6230,7 @@
    /* .name        = */ "lvehx",
    /* .description =    "Load vector element halfword indexed", */
    /* .opcode      = */ 0x7C00004E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVMX,
@@ -6237,7 +6241,7 @@
    /* .name        = */ "lvewx",
    /* .description =    "Load vector element word indexed", */
    /* .opcode      = */ 0x7C00008E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVMX,
@@ -6271,7 +6275,7 @@
    /* .name        = */ "stvx",
    /* .description =    "store vector indexed", */
    /* .opcode      = */ 0x7C0001CE,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVMX,
@@ -6282,7 +6286,7 @@
    /* .name        = */ "stvebx",
    /* .description =    "store vector element byte indexed", */
    /* .opcode      = */ 0x7C00010E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVMX,
@@ -6293,7 +6297,7 @@
    /* .name        = */ "stvehx",
    /* .description =    "store vector element halfword indexed", */
    /* .opcode      = */ 0x7C00014E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVMX,
@@ -6304,7 +6308,7 @@
    /* .name        = */ "stvewx",
    /* .description =    "store vector element word indexed", */
    /* .opcode      = */ 0x7C00018E,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVMX,
@@ -9021,7 +9025,7 @@
    /* .name        = */ "lxsdx",
    /* .description =    "Load VSX Scalar Doubleword Indexed", */
    /* .opcode      = */ 0x7C000498,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad |
@@ -9163,7 +9167,7 @@
    /* .name        = */ "stxsdx",
    /* .description =    "Store VSX Scalar Doubleword Indexed", */
    /* .opcode      = */ 0x7C000598,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsStore |
@@ -9176,7 +9180,7 @@
    /* .name        = */ "lxvd2x",
    /* .description =    "Load VSX Vector Doubleword*2 Indexed", */
    /* .opcode      = */ 0x7C000698,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
@@ -9188,7 +9192,7 @@
    /* .name        = */ "lxvdsx",
    /* .description =    "Load VSX Vector Doubleword & Splat Indexed", */
    /* .opcode      = */ 0x7C000298,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
@@ -9200,7 +9204,7 @@
    /* .name        = */ "lxvw4x",
    /* .description =    "Load VSX Vector Word*4 Indexed", */
    /* .opcode      = */ 0x7C000618,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_IsVSX |
@@ -9212,7 +9216,7 @@
    /* .name        = */ "stxvd2x",
    /* .description =    "store VSX Vector Doubleword*2 Indexed", */
    /* .opcode      = */ 0x7C000798,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVSX |
@@ -9224,7 +9228,7 @@
    /* .name        = */ "stxvw4x",
    /* .description =    "store VSX Vector Word*4 Indexed", */
    /* .opcode      = */ 0x7C000718,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_IsVSX |
@@ -10800,7 +10804,7 @@
    /* .name        = */ "lxsiwax",
    /* .description =    "VSX Scalar as Integer Word Algebraic Indexed", */
    /* .opcode      = */ 0x7C000098,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_IsLoad,
@@ -10811,7 +10815,7 @@
    /* .name        = */ "lxsiwzx",
    /* .description =    "VSX Scalar as Integer Word and Zero Indexed", */
    /* .opcode      = */ 0x7C000018,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_IsLoad,
@@ -10822,7 +10826,7 @@
    /* .name        = */ "lxsspx",
    /* .description =    "VSX Scalar Single-Precision Indexed", */
    /* .opcode      = */ 0x7C000418,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_IsLoad,
@@ -10833,7 +10837,7 @@
    /* .name        = */ "stxsiwx",
    /* .description =    "VSX Scalar as Integer Word Indexed", */
    /* .opcode      = */ 0x7C000118,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_IsStore,
@@ -10844,7 +10848,7 @@
    /* .name        = */ "stxsspx",
    /* .description =    "VSR Scalar Word Indexed", */
    /* .opcode      = */ 0x7C000518,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_IsStore,

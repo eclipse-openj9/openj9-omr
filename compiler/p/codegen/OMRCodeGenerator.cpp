@@ -1666,6 +1666,9 @@ OMR::Power::CodeGenerator::createLinkage(TR_LinkageConventions lc)
 void
 OMR::Power::CodeGenerator::expandInstructions()
    {
+   _binaryEncodingData.estimate = 0;
+   self()->generateBinaryEncodingPrologue(&_binaryEncodingData);
+
    for (TR::Instruction *instr = self()->getFirstInstruction(); instr; instr = instr->getNext())
       {
       instr = instr->expandInstruction();
@@ -1720,29 +1723,13 @@ static void expandFarConditionalBranches(TR::CodeGenerator *cg)
 
 void OMR::Power::CodeGenerator::doBinaryEncoding()
    {
-   TR_PPCBinaryEncodingData data;
+   TR_PPCBinaryEncodingData& data = _binaryEncodingData;
+
+   data.cursorInstruction = self()->getFirstInstruction();
    data.estimate = 0;
 
-   self()->generateBinaryEncodingPrologue(&data);
-
-   bool skipOneReturn = false;
    while (data.cursorInstruction)
       {
-      if (data.cursorInstruction->getOpCodeValue() == TR::InstOpCode::ret)
-         {
-         if (skipOneReturn == false)
-            {
-            TR::Instruction *temp = data.cursorInstruction->getPrev();
-            self()->getLinkage()->createEpilogue(temp);
-            if (temp->getNext() != data.cursorInstruction)
-               skipOneReturn = true;
-            data.cursorInstruction = temp->getNext();
-            }
-         else
-            {
-            skipOneReturn = false;
-            }
-         }
       data.estimate          = data.cursorInstruction->estimateBinaryLength(data.estimate);
       data.cursorInstruction = data.cursorInstruction->getNext();
       }

@@ -25,9 +25,9 @@
 #include "codegen/PPCInstruction.hpp"
 #include "codegen/PPCTableOfConstants.hpp"
 
-class DISABLED_PPCMemInstructionExpansionTest : public TRTest::CodeGenTest {};
+class PPCMemInstructionExpansionTest : public TRTest::CodeGenTest {};
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, zeroDisp) {
+TEST_F(PPCMemInstructionExpansionTest, zeroDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, 0, 4, cg());
@@ -56,7 +56,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, zeroDisp) {
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, smallPositiveDisp) {
+TEST_F(PPCMemInstructionExpansionTest, smallPositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, 0x7fff, 4, cg());
@@ -85,7 +85,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, smallPositiveDisp) {
     ASSERT_EQ(0x7fff, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, smallNegativeDisp) {
+TEST_F(PPCMemInstructionExpansionTest, smallNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, -0x8000, 4, cg());
@@ -114,7 +114,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, smallNegativeDisp) {
     ASSERT_EQ(-0x8000, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, largePositiveDisp) {
+TEST_F(PPCMemInstructionExpansionTest, largePositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, 0x8000, 4, cg());
@@ -188,7 +188,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, largePositiveDisp) {
     ASSERT_EQ(lastInstr, ldTempInstr);
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, largeNegativeDisp) {
+TEST_F(PPCMemInstructionExpansionTest, largeNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, -0x8001, 4, cg());
@@ -262,7 +262,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, largeNegativeDisp) {
     ASSERT_EQ(lastInstr, ldTempInstr);
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, modBaseLargePositiveDisp) {
+TEST_F(PPCMemInstructionExpansionTest, modBaseLargePositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, 0x8000, 4, cg());
@@ -303,7 +303,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, modBaseLargePositiveDisp) {
     ASSERT_EQ(-0x8000, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, modBaseLargeNegativeDisp) {
+TEST_F(PPCMemInstructionExpansionTest, modBaseLargeNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, -0x8001, 4, cg());
@@ -344,7 +344,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, modBaseLargeNegativeDisp) {
     ASSERT_EQ(0x7fff, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, simpleIndex) {
+TEST_F(PPCMemInstructionExpansionTest, simpleIndex) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
@@ -374,7 +374,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, simpleIndex) {
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexZeroDisp) {
+TEST_F(PPCMemInstructionExpansionTest, delayedIndexZeroDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
@@ -407,7 +407,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexZeroDisp) {
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexSmallPositiveDisp) {
+TEST_F(PPCMemInstructionExpansionTest, delayedIndexSmallPositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
@@ -449,7 +449,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexSmallPositiveDisp) {
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexSmallNegativeDisp) {
+TEST_F(PPCMemInstructionExpansionTest, delayedIndexSmallNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
@@ -491,7 +491,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexSmallNegativeDisp) {
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexLargePositiveDisp) {
+TEST_F(PPCMemInstructionExpansionTest, delayedIndexLargePositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
@@ -542,7 +542,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexLargePositiveDisp) {
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexLargeNegativeDisp) {
+TEST_F(PPCMemInstructionExpansionTest, delayedIndexLargeNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
@@ -593,7 +593,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexLargeNegativeDisp) {
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseZeroDisp) {
+TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseZeroDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, 0, 4, cg());
@@ -625,7 +625,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseZeroDisp) {
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseSmallPositiveDisp) {
+TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseSmallPositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, 0x7fff, 4, cg());
@@ -667,7 +667,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseSmallPositive
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseSmallNegativeDisp) {
+TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseSmallNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, -0x8000, 4, cg());
@@ -709,7 +709,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseSmallNegative
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseLargePositiveDisp) {
+TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseLargePositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, 0x8000, 4, cg());
@@ -760,7 +760,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseLargePositive
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseLargeNegativeDisp) {
+TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseLargeNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, -0x8001, 4, cg());
@@ -811,7 +811,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedIndexModBaseLargeNegative
     ASSERT_EQ(0, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocSmallPositiveDisp) {
+TEST_F(PPCMemInstructionExpansionTest, tocSmallPositiveDisp) {
     if (!cg()->comp()->target().is64Bit())
         return;
 
@@ -858,7 +858,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocSmallPositiveDisp) {
     ASSERT_EQ(0x7ff8, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocSmallNegativeDisp) {
+TEST_F(PPCMemInstructionExpansionTest, tocSmallNegativeDisp) {
     if (!cg()->comp()->target().is64Bit())
         return;
 
@@ -905,7 +905,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocSmallNegativeDisp) {
     ASSERT_EQ(-0x8000, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocLargePositiveDisp) {
+TEST_F(PPCMemInstructionExpansionTest, tocLargePositiveDisp) {
     if (!cg()->comp()->target().is64Bit())
         return;
 
@@ -962,7 +962,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocLargePositiveDisp) {
     ASSERT_EQ(-0x8000, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocLargeNegativeDisp) {
+TEST_F(PPCMemInstructionExpansionTest, tocLargeNegativeDisp) {
     if (!cg()->comp()->target().is64Bit())
         return;
 
@@ -1019,7 +1019,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocLargeNegativeDisp) {
     ASSERT_EQ(0x7ff8, mr->getOffset());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocFull) {
+TEST_F(PPCMemInstructionExpansionTest, tocFull) {
     if (!cg()->comp()->target().is64Bit())
         return;
 
@@ -1106,7 +1106,7 @@ TEST_F(DISABLED_PPCMemInstructionExpansionTest, tocFull) {
     ASSERT_FALSE(oriInstr2->getNext());
 }
 
-TEST_F(DISABLED_PPCMemInstructionExpansionTest, delayedOffset) {
+TEST_F(PPCMemInstructionExpansionTest, delayedOffset) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
 
     TR::AutomaticSymbol* sym = TR::AutomaticSymbol::create(cg()->trHeapMemory());

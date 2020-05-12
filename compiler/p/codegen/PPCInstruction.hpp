@@ -630,6 +630,9 @@ class PPCAdminInstruction : public TR::Instruction
 
    virtual Kind getKind() { return IsAdmin; }
 
+   virtual TR::Instruction *expandInstruction();
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+
    bool isDebugFence()      {return (_fenceNode!=NULL && _fenceNode->getOpCodeValue() == TR::dbgFence); }
 
    TR::Node * getFenceNode() { return _fenceNode; }
@@ -1287,7 +1290,8 @@ class PPCMemInstruction : public TR::Instruction
    virtual TR::Register *getMemoryIndex()   {return getMemoryReference()->getIndexRegister();}
    virtual int32_t      getOffset()        {return getMemoryReference()->getOffset(*TR::comp());}
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
+   virtual TR::Instruction *expandInstruction();
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
@@ -1376,9 +1380,7 @@ class PPCMemSrc1Instruction : public PPCMemInstruction
 
    virtual TR::Register *getMemoryDataRegister();
 
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
-
-   virtual uint8_t *generateBinaryEncoding();
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
@@ -1513,9 +1515,8 @@ class PPCTrg1MemInstruction : public PPCTrg1Instruction
 
    virtual TR::Register *getMemoryDataRegister();
 
-   virtual uint8_t *generateBinaryEncoding();
-
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
+   virtual TR::Instruction *expandInstruction();
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 

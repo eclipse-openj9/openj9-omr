@@ -185,6 +185,7 @@ class TR_OutlinedInstructionsGenerator
 
    private:
    TR_OutlinedInstructions* _oi;
+   bool _hasEnded;
    };
 
 #endif

@@ -157,14 +157,14 @@ public:
     * @param[in] p : the input processor type
     * @return true when current processor is equal or newer than the input processor type
     */
-   bool isAtLeast(OMRProcessorArchitecture p) const { return _processorDescription.processor >= p; }
+   bool isAtLeast(OMRProcessorArchitecture p) { return _processorDescription.processor >= p; }
 
    /** 
     * @brief Determines whether current processor is equal or older than the input processor type
     * @param[in] p : the input processor type
     * @return true when current processor is equal or newer than the input processor type
     */
-   bool isAtMost(OMRProcessorArchitecture p) const { return _processorDescription.processor <= p; }
+   bool isAtMost(OMRProcessorArchitecture p) { return _processorDescription.processor <= p; }
 
    /** 
     * @brief Retrieves current processor's processor description

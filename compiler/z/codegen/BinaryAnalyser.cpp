@@ -172,7 +172,7 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
 
       bool done = false;
 
-      if (cg()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+      if (cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
          {
          if (getBinaryReg3Reg2() || secondRegister != NULL)
             {
@@ -311,7 +311,7 @@ TR_S390BinaryAnalyser::longSubtractAnalyser(TR::Node * root)
    /**  Attempt to use SGH to subtract halfword (64 <- 16).
     * The second child is a halfword from memory */
    bool is16BitMemory2Operand = false;
-   if (cg()->comp()->target().cpu.getSupportsArch(TR::CPU::z14) &&
+   if (cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14) &&
        secondChild->getOpCodeValue() == TR::s2l &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
        secondChild->isSingleRefUnevaluated() &&

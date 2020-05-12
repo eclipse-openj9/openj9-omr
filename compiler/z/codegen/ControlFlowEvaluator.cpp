@@ -362,7 +362,7 @@ xmaxxminHelper(TR::Node* node, TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic c
 static TR::Register*
 imaximinHelper(TR::Node* node, TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic compareRROp, TR::InstOpCode::S390BranchCondition branchCond, TR::InstOpCode::Mnemonic moveRROp)
    {
-   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z15))
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z15))
       {
       TR::Node* lhsNode = node->getChild(0);
       TR::Node* rhsNode = node->getChild(1);
@@ -381,7 +381,7 @@ imaximinHelper(TR::Node* node, TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic c
 
       return resultReg;
       }
-   else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+   else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
       {
       TR::Node* lhsNode = node->getChild(0);
       TR::Node* rhsNode = node->getChild(1);
@@ -408,7 +408,7 @@ imaximinHelper(TR::Node* node, TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic c
 static TR::Register*
 lmaxlminHelper(TR::Node* node, TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic compareRROp, TR::InstOpCode::S390BranchCondition branchCond, TR::InstOpCode::Mnemonic moveRROp)
    {
-   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z15))
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z15))
       {
       TR::Node* lhsNode = node->getChild(0);
       TR::Node* rhsNode = node->getChild(1);
@@ -427,7 +427,7 @@ lmaxlminHelper(TR::Node* node, TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic c
 
       return resultReg;
       }
-   else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+   else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
       {
       TR::Node* lhsNode = node->getChild(0);
       TR::Node* rhsNode = node->getChild(1);
@@ -1331,7 +1331,7 @@ OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          node->getOpCodeValue() == TR::acmpeq)
       {
       // RXSBG only supported on z10+
-      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
+      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
          {
          TR::Node* firstChild = node->getFirstChild();
          TR::Node* secondChild = node->getSecondChild();
@@ -2597,14 +2597,14 @@ OMR::Z::TreeEvaluator::selectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       auto bc = TR::TreeEvaluator::getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
 
-      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z15))
+      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z15))
          {
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, trueReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)));
          }
-      else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+      else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
          {
          generateRRInstruction(cg, compareOp, node, firstReg, secondReg);
 
@@ -2665,12 +2665,12 @@ OMR::Z::TreeEvaluator::selectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
       TR::Instruction *compareInst = generateRILInstruction(cg,condition->getOpCode().isLongCompare() ? TR::InstOpCode::CGFI : TR::InstOpCode::CFI,condition,condition->getRegister(), 0);
 
-      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z15))
+      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z15))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::SELGR : TR::InstOpCode::SELR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, trueReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER));
          }
-      else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+      else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
          {
          auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
          generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
@@ -2729,7 +2729,7 @@ OMR::Z::TreeEvaluator::dselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *resultReg = cg->gprClobberEvaluate(trueValueNode);
    TR::Register *conditionReg = cg->evaluate(conditionNode);
    TR::Register *falseValReg = cg->evaluate(falseValueNode);
-   if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z13) && node->getOpCode().isDouble())
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13) && node->getOpCode().isDouble())
       {
       TR::Register *vectorSelReg = cg->allocateRegister(TR_VRF);
       TR::Register *tempReg = cg->allocateRegister(TR_FPR);

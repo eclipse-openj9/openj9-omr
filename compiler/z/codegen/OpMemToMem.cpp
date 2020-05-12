@@ -144,7 +144,7 @@ MemToMemVarLenMacroOp::generateLoop()
       }
    else
       {
-      if (_cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+      if (_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
          {
          generateRSInstruction(_cg, TR::InstOpCode::SRAK, _rootNode, _itersReg, _regLen, 8);
          }
@@ -168,7 +168,7 @@ MemToMemVarLenMacroOp::generateLoop()
 
    generateS390BranchInstruction(_cg, TR::InstOpCode::BRCT, _rootNode, _itersReg, topOfLoop);
 
-   if (_cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && !comp->getOption(TR_DisableInlineEXTarget))
+   if (_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && !comp->getOption(TR_DisableInlineEXTarget))
       {
       if (useEXForRemainder())
          {
@@ -971,7 +971,7 @@ MemToMemVarLenMacroOp::generateRemainder()
 
       TR::Instruction* cursor = NULL;
 
-      if (!_cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) || comp->getOption(TR_DisableInlineEXTarget))
+      if (!_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) || comp->getOption(TR_DisableInlineEXTarget))
          {
          cursor = generateInstruction(0, 1);
          }
@@ -991,7 +991,7 @@ MemToMemVarLenMacroOp::generateRemainder()
         }
 
 
-      if (_cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && !comp->getOption(TR_DisableInlineEXTarget))
+      if (_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && !comp->getOption(TR_DisableInlineEXTarget))
          {
          TR_ASSERT(_EXTargetLabel != NULL, "Assert: EXTarget label must not be NULL");
 
@@ -1243,7 +1243,7 @@ MemClearConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR:
       // For lengths of 1, 2, 4 and 8, the XC sequence is suboptimal, as they require
       // 2 cycles to execute.  If MVI / MVHHI / MVHI / MVGHI are supported, we should
       // generate those instead.
-      if (_cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && length <= 8 && TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(length))
+      if (_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && length <= 8 && TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(length))
          {
          switch(length)
             {
@@ -2377,7 +2377,7 @@ MemCpyAtomicMacroOp::generateLoop()
       if (_trace)
          traceMsg(comp, "MemCpyAtomicMacroOp: unknown type routine\n");
 
-      if (comp->target().cpu.getSupportsArch(TR::CPU::z196))
+      if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
          {
          auto mnemonic = comp->target().is64Bit() ? TR::InstOpCode::OGRK : TR::InstOpCode::ORK;
 
@@ -2448,7 +2448,7 @@ MemCpyAtomicMacroOp::generateLoop()
          traceMsg(comp, "MemCpyAtomicMacroOp: aligned loop\n");
       if (_destType == TR::Int16)
          {
-         if (comp->target().cpu.getSupportsArch(TR::CPU::z196))
+         if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
             {
             auto mnemonic = comp->target().is64Bit() ? TR::InstOpCode::NGRK : TR::InstOpCode::NRK;
 
@@ -2473,7 +2473,7 @@ MemCpyAtomicMacroOp::generateLoop()
          cursor = generateS390BranchInstruction(_cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, _srcNode, remainderLabel);
          }
 
-      if (_cg->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+      if (_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
          {
          auto mnemonic = _cg->comp()->target().is64Bit() ? TR::InstOpCode::AGRK : TR::InstOpCode::ARK;
 

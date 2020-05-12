@@ -297,7 +297,7 @@ public:
 
    bool supportsLengthMinusOneForMemoryOpts() {return true;}
 
-   bool codegenSupportsLoadlessBNDCheck() {return OMR::Z::CodeGenerator::comp()->target().cpu.getSupportsArch(TR::CPU::zEC12);}
+   bool codegenSupportsLoadlessBNDCheck() {return OMR::Z::CodeGenerator::comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12);}
    TR::Register *evaluateLengthMinusOneForMemoryOps(TR::Node *,  bool , bool &lenMinusOne);
 
    virtual TR_GlobalRegisterNumber getGlobalRegisterNumber(uint32_t realRegNum);

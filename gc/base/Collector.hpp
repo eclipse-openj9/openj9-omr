@@ -68,12 +68,6 @@ protected:
 	uint64_t _masterThreadCpuTimeStart; /**< slot to store the master CPU time at the beginning of the collection */
 
 public:
-	/*
-	 * Determine if a collector (some parent, typically the global collector) wishes to usurp any minor collection.
-	 * @return boolean indicating if the parent collector should be invoked in place of a child.
-	 */
-	virtual bool isTimeForGlobalGCKickoff();
-
 	/**
  	 * Perform any collector-specific initialization.
  	 * @return TRUE if startup completes OK, FALSE otherwise

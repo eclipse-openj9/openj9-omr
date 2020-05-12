@@ -538,13 +538,6 @@ MM_Collector::setThreadFailAllocFlag(MM_EnvironmentBase* env, bool flag)
 	}
 }
 
-bool
-MM_Collector::isTimeForGlobalGCKickoff()
-{
-	Assert_MM_unreachable();
-	return false;
-}
-
 /**
  * Abort any currently active garbage collection activity.
  * The abort consists of halting any activity related to garbage collection, and resetting/releasing said

@@ -806,6 +806,144 @@ CompareCondition evaluateCompareToConditionRegister(
       }
    }
 
+CompareInfo getCompareInfo(TR::ILOpCode op)
+   {
+   TR::DataTypes type = op.expectedChildType(0);
+
+   switch (op.getOpCodeValue())
+      {
+      case TR::bcmpeq:
+      case TR::scmpeq:
+      case TR::icmpeq:
+      case TR::lcmpeq:
+      case TR::acmpeq:
+      case TR::fcmpeq:
+      case TR::dcmpeq:
+         return CompareInfo(CompareCondition::eq, type, false, false);
+
+      case TR::fcmpequ:
+      case TR::dcmpequ:
+         return CompareInfo(CompareCondition::eq, type, false, true);
+
+      case TR::bcmpne:
+      case TR::scmpne:
+      case TR::icmpne:
+      case TR::lcmpne:
+      case TR::acmpne:
+      case TR::fcmpne:
+      case TR::dcmpne:
+         return CompareInfo(CompareCondition::ne, type, false, false);
+
+      case TR::fcmpneu:
+      case TR::dcmpneu:
+         return CompareInfo(CompareCondition::ne, type, false, true);
+
+      case TR::bcmplt:
+      case TR::scmplt:
+      case TR::icmplt:
+      case TR::lcmplt:
+      case TR::fcmplt:
+      case TR::dcmplt:
+         return CompareInfo(CompareCondition::lt, type, false, false);
+
+      case TR::bucmplt:
+      case TR::sucmplt:
+      case TR::iucmplt:
+      case TR::lucmplt:
+      case TR::acmplt:
+         return CompareInfo(CompareCondition::lt, type, true, false);
+
+      case TR::fcmpltu:
+      case TR::dcmpltu:
+         return CompareInfo(CompareCondition::lt, type, false, true);
+
+      case TR::bcmpge:
+      case TR::scmpge:
+      case TR::icmpge:
+      case TR::lcmpge:
+      case TR::fcmpge:
+      case TR::dcmpge:
+         return CompareInfo(CompareCondition::ge, type, false, false);
+
+      case TR::bucmpge:
+      case TR::sucmpge:
+      case TR::iucmpge:
+      case TR::lucmpge:
+      case TR::acmpge:
+         return CompareInfo(CompareCondition::ge, type, true, false);
+
+      case TR::fcmpgeu:
+      case TR::dcmpgeu:
+         return CompareInfo(CompareCondition::ge, type, false, true);
+
+      case TR::bcmpgt:
+      case TR::scmpgt:
+      case TR::icmpgt:
+      case TR::lcmpgt:
+      case TR::fcmpgt:
+      case TR::dcmpgt:
+         return CompareInfo(CompareCondition::gt, type, false, false);
+
+      case TR::bucmpgt:
+      case TR::sucmpgt:
+      case TR::iucmpgt:
+      case TR::lucmpgt:
+      case TR::acmpgt:
+         return CompareInfo(CompareCondition::gt, type, true, false);
+
+      case TR::fcmpgtu:
+      case TR::dcmpgtu:
+         return CompareInfo(CompareCondition::gt, type, false, true);
+
+      case TR::bcmple:
+      case TR::scmple:
+      case TR::icmple:
+      case TR::lcmple:
+      case TR::fcmple:
+      case TR::dcmple:
+         return CompareInfo(CompareCondition::le, type, false, false);
+
+      case TR::bucmple:
+      case TR::sucmple:
+      case TR::iucmple:
+      case TR::lucmple:
+      case TR::acmple:
+         return CompareInfo(CompareCondition::le, type, true, false);
+
+      case TR::fcmpleu:
+      case TR::dcmpleu:
+         return CompareInfo(CompareCondition::le, type, false, true);
+
+      default:
+         return CompareInfo(CompareCondition::eq, TR::DataTypes::NoType, false, false);
+      }
+   }
+
+CompareCondition evaluateToConditionRegister(TR::Register *condReg, TR::Node *node, TR::Node *condNode, TR::CodeGenerator *cg)
+   {
+   static bool disableCondRegEval = feGetEnv("TR_DisableCondRegEval") != NULL;
+
+   if (!disableCondRegEval && !condNode->getRegister() && condNode->getReferenceCount() == 1)
+      {
+      auto compareInfo = getCompareInfo(condNode->getOpCode());
+
+      if (compareInfo.type != TR::DataTypes::NoType &&
+          performTransformation(cg->comp(), "O^O evaluateToConditionRegister: evaluating n%dn directly to a condition register\n", condNode->getGlobalIndex()))
+         {
+         auto cond = evaluateCompareToConditionRegister(condReg, condNode, condNode->getFirstChild(), condNode->getSecondChild(), compareInfo, cg);
+
+         cg->decReferenceCount(condNode->getFirstChild());
+         cg->decReferenceCount(condNode->getSecondChild());
+         return cond;
+         }
+      }
+
+   TR::Register *condIntReg = cg->evaluate(condNode);
+
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, condIntReg, 0);
+   return CompareCondition::ne;
+   }
+
 TR::Register *OMR::Power::TreeEvaluator::ifacmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (cg->comp()->target().is64Bit())

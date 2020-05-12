@@ -4613,67 +4613,14 @@ TR::Register *OMR::Power::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::Co
 
    // Inline instructions for the check
    //
-   TR::Node *valueToCheck = node->getFirstChild();
+   TR::Register *condReg = cg->allocateRegister(TR_CCR);
+   CompareCondition cond = evaluateToConditionRegister(condReg, node, node->getFirstChild(), cg);
 
-   if (valueToCheck->getOpCode().isBooleanCompare() &&
-       valueToCheck->getChild(0)->getOpCode().isIntegerOrAddress() &&
-       valueToCheck->getChild(1)->getOpCode().isIntegerOrAddress() &&
-       performTransformation(cg->comp(), "O^O CODEGEN Optimizing ZEROCHK+%s %s\n", valueToCheck->getOpCode().getName(), valueToCheck->getName(cg->getDebug())))
-      {
-      if (valueToCheck->getOpCode().isCompareForOrder())
-         {
-         if (valueToCheck->getChild(0)->getOpCode().is8Byte() ||
-             valueToCheck->getChild(1)->getOpCode().is8Byte())
-            {
-            // switch branches since we want to go to OOL on node evaluating to 0
-            // which corresponds to an ifcmp fall-through
-            TR::InstOpCode::Mnemonic branchOp = cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg);
-            TR::InstOpCode::Mnemonic reverseBranchOp = cmp2branch(valueToCheck->getOpCodeValue(), cg);
-            TR::TreeEvaluator::compareLongsForOrder(branchOp, reverseBranchOp, slowPathLabel, valueToCheck, cg,
-                                 valueToCheck->getOpCode().isUnsignedCompare(), true, PPCOpProp_BranchUnlikely);
-            }
-         else
-            {
-            // switch branches since we want to go to OOL on node evaluating to 0
-            // which corresponds to an ifcmp fall-through
-            TR::TreeEvaluator::compareIntsForOrder(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
-                                slowPathLabel, valueToCheck, cg, valueToCheck->getOpCode().isUnsignedCompare(),
-                                true, PPCOpProp_BranchUnlikely);
-            }
-         }
-      else
-         {
-         TR_ASSERT(valueToCheck->getOpCode().isCompareForEquality(), "Compare opcode must either be compare for order or for equality");
-         if (valueToCheck->getChild(0)->getOpCode().is8Byte() ||
-             valueToCheck->getChild(1)->getOpCode().is8Byte())
-            {
-            // switch branches since we want to go to OOL on node evaluating to 0
-            // which corresponds to an ifcmp fall-through
-            TR::TreeEvaluator::compareLongsForEquality(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
-                                    slowPathLabel, valueToCheck, cg, true, PPCOpProp_BranchUnlikely);
-            }
-         else
-            {
-            TR::TreeEvaluator::compareIntsForEquality(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
-                                   slowPathLabel, valueToCheck, cg, true, PPCOpProp_BranchUnlikely);
-            }
-         }
-      }
-   else
-      {
-      TR::Register *value = cg->evaluate(node->getFirstChild());
-      TR::Register *condReg = cg->allocateRegister(TR_CCR);
-      if (cg->comp()->target().is64Bit())
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi8, node, condReg, value, 0);
-      else
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, value, 0);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchUnlikely, node, slowPathLabel, condReg);
-
-      cg->decReferenceCount(node->getFirstChild());
-      cg->stopUsingRegister(condReg);
-      }
+   generateConditionalBranchInstruction(cg, compareConditionToBranch(reverseCondition(cond)), PPCOpProp_BranchUnlikely, node, slowPathLabel, condReg);
    generateLabelInstruction(cg, TR::InstOpCode::label, node, restartLabel);
 
+   cg->stopUsingRegister(condReg);
+   cg->decReferenceCount(node->getFirstChild());
    return NULL;
    }
 

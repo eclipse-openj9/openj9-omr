@@ -244,9 +244,9 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    TR::CodeGenerator* cg = self()->cg();
 
-   _xplinkFunctionDescriptorSnippet = new (self()->trHeapMemory()) XPLINKFunctionDescriptorSnippet(cg);
-   _ppa1Snippet = new (self()->trHeapMemory()) TR::PPA1Snippet(cg, this);
-   _ppa2Snippet = new (self()->trHeapMemory()) TR::PPA2Snippet(cg, this);
+   _xplinkFunctionDescriptorSnippet = new (trHeapMemory()) XPLINKFunctionDescriptorSnippet(cg);
+   _ppa1Snippet = new (trHeapMemory()) TR::PPA1Snippet(cg, this);
+   _ppa2Snippet = new (trHeapMemory()) TR::PPA2Snippet(cg, this);
 
    cg->addSnippet(_xplinkFunctionDescriptorSnippet);
    cg->addSnippet(_ppa1Snippet);
@@ -286,7 +286,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
 void
 TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method)
    {
-   self()->setParameterLinkageRegisterIndex(method, method->getParameterList());
+   setParameterLinkageRegisterIndex(method, method->getParameterList());
    }
 
 void
@@ -296,9 +296,9 @@ TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSym
    int32_t numFPRArgs = 0;
    int32_t numVRFArgs = 0;
 
-   int32_t maxGPRArgs = self()->getNumIntegerArgumentRegisters();
-   int32_t maxFPRArgs = self()->getNumFloatArgumentRegisters();
-   int32_t maxVRFArgs = self()->getNumVectorArgumentRegisters();
+   int32_t maxGPRArgs = getNumIntegerArgumentRegisters();
+   int32_t maxFPRArgs = getNumFloatArgumentRegisters();
+   int32_t maxVRFArgs = getNumVectorArgumentRegisters();
 
    ListIterator<TR::ParameterSymbol> paramIterator(&parmList);
    for (TR::ParameterSymbol* paramCursor = paramIterator.getFirst(); paramCursor != NULL; paramCursor = paramIterator.getNext())
@@ -325,7 +325,7 @@ TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSym
          case TR::Float:
          case TR::Double:
             {
-            if (numFPRArgs < self()->getNumFloatArgumentRegisters())
+            if (numFPRArgs < getNumFloatArgumentRegisters())
                {
                lri = numFPRArgs;
                }
@@ -348,7 +348,7 @@ TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSym
          case TR::VectorInt64:
          case TR::VectorDouble:
             {
-            if (numVRFArgs < self()->getNumVectorArgumentRegisters())
+            if (numVRFArgs < getNumVectorArgumentRegisters())
                {
                lri = numVRFArgs;
                }
@@ -836,7 +836,7 @@ TR::S390zOSSystemLinkage::generateCallDescriptorValue(TR::Node* callNode)
 
             floatParmNum++;
 
-            if (floatParmNum >= self()->getNumFloatArgumentRegisters())
+            if (floatParmNum >= getNumFloatArgumentRegisters())
                {
                done = true;
                }

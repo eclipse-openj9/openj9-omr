@@ -121,6 +121,9 @@ if(OMR_HOST_OS STREQUAL "aix")
 	)
 	
 	set_target_properties(aixbaddep PROPERTIES LINK_FLAGS "-bI:${CMAKE_CURRENT_SOURCE_DIR}/aixbaddep/dummy.imp" FOLDER fvtest)
+	omr_add_exports(aixbaddep
+		sl_AixDLLMissingDependency_function
+	)
 endif()
 
 set_target_properties(omrporttest sltestlib PROPERTIES FOLDER fvtest)

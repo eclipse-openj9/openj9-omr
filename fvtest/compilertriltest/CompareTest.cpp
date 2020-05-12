@@ -774,6 +774,9 @@ TEST_P(FloatCompare, UsingConst) {
     if ( param.opcode == "fcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
         SKIP_ON_POWER(KnownBug) << "fcmpne returns wrong value on POWER (see #5152)";
     }
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, 1024,
@@ -883,6 +886,9 @@ TEST_P(DoubleCompare, UsingConst) {
 
     if ( param.opcode == "dcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
         SKIP_ON_POWER(KnownBug) << "dcmpne returns wrong value on POWER (see #5152)";
+    }
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
     }
 
     char inputTrees[1024] = {0};
@@ -995,6 +1001,9 @@ TEST_P(FloatIfCompare, UsingConst) {
 
     if ( param.opcode == "iffcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
         SKIP_ON_POWER(KnownBug) << "iffcmpne returns wrong value on POWER (see #5152)";
+    }
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
     }
 
     char inputTrees[256] = {0};
@@ -1113,6 +1122,9 @@ TEST_P(DoubleIfCompare, UsingConst) {
 
     if ( param.opcode == "ifdcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
         SKIP_ON_POWER(KnownBug) << "ifdcmpne returns wrong value on POWER (see #5152)";
+    }
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
     }
 
     char inputTrees[1024] = {0};

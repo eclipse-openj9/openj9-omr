@@ -696,6 +696,10 @@ class FloatArithmetic : public TRTest::BinaryOpTest<float> {};
 TEST_P(FloatArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
       "(method return=Float"
@@ -752,6 +756,10 @@ TEST_P(FloatArithmetic, UsingLoadParam) {
 TEST_P(FloatArithmetic, UsingLoadParamAndLoadConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
       "(method return=Float args=[Float]"
@@ -792,6 +800,10 @@ class DoubleArithmetic : public TRTest::BinaryOpTest<double> {};
 
 TEST_P(DoubleArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -849,6 +861,10 @@ TEST_P(DoubleArithmetic, UsingLoadParam) {
 TEST_P(DoubleArithmetic, UsingLoadParamAndLoadConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
       "(method return=Double args=[Double]"
@@ -899,6 +915,10 @@ class FloatUnaryArithmetic : public TRTest::UnaryOpTest<float> {};
 
 TEST_P(FloatUnaryArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.value) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -966,6 +986,10 @@ class DoubleUnaryArithmetic : public TRTest::UnaryOpTest<double> {};
 
 TEST_P(DoubleUnaryArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.value) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),

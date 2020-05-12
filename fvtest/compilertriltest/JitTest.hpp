@@ -801,6 +801,19 @@ AssertionResult CmpHelperEQ<volatile double, volatile double>(const char* lhs_ex
       SKIP_ON(OMRPORT_ARCH_S390X, reason)
 
 /*
+ * @brief A macro to allow a test to be conditionally skipped on z/OS.
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_ZOS(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_ZOS(reason) \
+    SKIP_IF(    (!strcmp(OMRPORT_ARCH_S390, omrsysinfo_get_CPU_architecture()) || !strcmp(OMRPORT_ARCH_S390X, omrsysinfo_get_CPU_architecture())) \
+            &&  strcmp("Linux", omrsysinfo_get_OS_type()), reason)
+
+
+/*
  * @brief A macro to allow a test to be conditionally skipped on AMD64
  *
  * The basic syntax for using this macro is:

@@ -23,15 +23,6 @@
 #include "default_compiler.hpp"
 #include "omrformatconsts.h"
 
-#include <cmath>
-
-#if defined(J9ZOS390) || defined(AIXPPC)
-namespace std
-{
-   using ::isnan;
-}
-#endif
-
 template <typename T>
 T add(T l, T r) {
     return l + r;
@@ -713,6 +704,10 @@ class FloatArithmetic : public TRTest::BinaryOpTest<float> {};
 TEST_P(FloatArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
       "(method return=Float"
@@ -736,11 +731,7 @@ TEST_P(FloatArithmetic, UsingConst) {
     auto entry_point = compiler.getEntryPoint<float (*)(void)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point();
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(FloatArithmetic, UsingLoadParam) {
@@ -767,15 +758,15 @@ TEST_P(FloatArithmetic, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<float (*)(float, float)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point(param.lhs, param.rhs);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(FloatArithmetic, UsingLoadParamAndLoadConst) {
     auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -799,11 +790,7 @@ TEST_P(FloatArithmetic, UsingLoadParamAndLoadConst) {
     auto entry_point = compiler.getEntryPoint<float (*)(float)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point(param.lhs);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatArithmetic, ::testing::Combine(
@@ -1051,6 +1038,10 @@ class DoubleArithmetic : public TRTest::BinaryOpTest<double> {};
 TEST_P(DoubleArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
       "(method return=Double"
@@ -1074,11 +1065,7 @@ TEST_P(DoubleArithmetic, UsingConst) {
     auto entry_point = compiler.getEntryPoint<double (*)(void)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point();
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(DoubleArithmetic, UsingLoadParam) {
@@ -1105,15 +1092,15 @@ TEST_P(DoubleArithmetic, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<double (*)(double, double)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point(param.lhs, param.rhs);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(DoubleArithmetic, UsingLoadParamAndLoadConst) {
     auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -1137,11 +1124,7 @@ TEST_P(DoubleArithmetic, UsingLoadParamAndLoadConst) {
     auto entry_point = compiler.getEntryPoint<double (*)(double)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point(param.lhs);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, DoubleArithmetic, ::testing::Combine(
@@ -1170,6 +1153,10 @@ class FloatUnaryArithmetic : public TRTest::UnaryOpTest<float> {};
 TEST_P(FloatUnaryArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    if ( std::isnan(param.value) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
       "(method return=Float"
@@ -1191,11 +1178,7 @@ TEST_P(FloatUnaryArithmetic, UsingConst) {
     auto entry_point = compiler.getEntryPoint<float (*)(void)>();
     volatile auto exp = param.oracle(param.value);
     volatile auto act = entry_point();
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(FloatUnaryArithmetic, UsingLoadParam) {
@@ -1221,11 +1204,7 @@ TEST_P(FloatUnaryArithmetic, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<float (*)(float)>();
     volatile auto exp = param.oracle(param.value);
     volatile auto act = entry_point(param.value);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatUnaryArithmetic, ::testing::Combine(
@@ -1244,6 +1223,10 @@ class DoubleUnaryArithmetic : public TRTest::UnaryOpTest<double> {};
 
 TEST_P(DoubleUnaryArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.value) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -1266,11 +1249,7 @@ TEST_P(DoubleUnaryArithmetic, UsingConst) {
     auto entry_point = compiler.getEntryPoint<double (*)(void)>();
     volatile auto exp = param.oracle(param.value);
     volatile auto act = entry_point();
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 TEST_P(DoubleUnaryArithmetic, UsingLoadParam) {
@@ -1296,11 +1275,7 @@ TEST_P(DoubleUnaryArithmetic, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<double (*)(double)>();
     volatile auto exp = param.oracle(param.value);
     volatile auto act = entry_point(param.value);
-    if (std::isnan(exp)) {
-        ASSERT_EQ(std::isnan(exp), std::isnan(act));
-    } else {
-        ASSERT_EQ(exp, act);
-    }
+    ASSERT_EQ(exp, act);
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, DoubleUnaryArithmetic, ::testing::Combine(

@@ -21,12 +21,12 @@
 
 #ifndef JITTEST_HPP
 #define JITTEST_HPP
-
 #include <gtest/gtest.h>
 #include <vector>
 #include <stdexcept>
 #include <iostream>
 #include <cstring>
+#include <cmath>
 #include "control/Options.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "ilgen/MethodBuilder.hpp"
@@ -37,6 +37,7 @@
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(NULL != (pointer))
 #define EXPECT_NULL(pointer) EXPECT_EQ(NULL, (pointer))
 #define EXPECT_NOTNULL(pointer) EXPECT_TRUE(NULL != (pointer))
+
 
 #define TRIL(code) #code
 
@@ -465,6 +466,10 @@ inline std::vector<float> const_values<float>()
       std::numeric_limits<float>::max(),
       static_cast<float>(std::numeric_limits<float>::min() + 1),
       static_cast<float>(std::numeric_limits<float>::max() - 1),
+      std::numeric_limits<float>::infinity(),
+      -std::numeric_limits<float>::infinity(),
+      std::numeric_limits<float>::quiet_NaN(),
+      -std::numeric_limits<float>::quiet_NaN(),
       0x0000005F,
       0x00000088,
       static_cast<float>(0x80FF0FF0),
@@ -494,6 +499,10 @@ inline std::vector<double> const_values<double>()
       std::numeric_limits<double>::max(),
       static_cast<double>(std::numeric_limits<double>::min() + 1),
       static_cast<double>(std::numeric_limits<double>::max() - 1),
+      std::numeric_limits<double>::infinity(),
+      -std::numeric_limits<double>::infinity(),
+      std::numeric_limits<double>::quiet_NaN(),
+      -std::numeric_limits<double>::quiet_NaN(),
       0x0000005F,
       0x00000088,
       static_cast<double>(0x80FF0FF0),
@@ -599,6 +608,53 @@ class SkipHelper
    SkipReason reason_;
    };
 
+/*
+ * A workaround for XLC which does not have std::isnan()
+ */
+#if defined(J9ZOS390) || defined(AIXPPC)
+namespace std
+{
+   using ::isnan;
+}
+#endif
+
+/*
+ * To allow testing against NaNs in floating-point tests using standard
+ * ASSERT_EQ() and EXPECT_EQ(), we provide specialized comparator for
+ * float and double types that makes NaN equal to NaN (for testing
+ * purposes)
+ */
+namespace testing {
+namespace internal {
+
+template<>
+AssertionResult CmpHelperEQ<float, float>(const char* lhs_expression,
+                            const char* rhs_expression,
+                            const float& lhs,
+                            const float& rhs);
+template<>
+AssertionResult CmpHelperEQ<volatile float, volatile float>(const char* lhs_expression,
+                            const char* rhs_expression,
+                            const volatile float& lhs,
+                            const volatile float& rhs);
+
+template<>
+AssertionResult CmpHelperEQ<double, double>(const char* lhs_expression,
+                            const char* rhs_expression,
+                            const double& lhs,
+                            const double& rhs);
+
+template<>
+AssertionResult CmpHelperEQ<volatile double, volatile double>(const char* lhs_expression,
+                            const char* rhs_expression,
+                            const volatile double& lhs,
+                            const volatile double& rhs);
+
+
+} // namespace internal
+} // namespace testing
+
+
 /**
  * @brief A macro to allow a test to be conditionally skipped
  *
@@ -681,6 +737,20 @@ class SkipHelper
    SKIP_ON(OMRPORT_ARCH_PPC64LE, reason)
 
 /*
+ * @brief A macro to allow a test to be conditionally skipped all supported POWER
+ * architectures (PPC, PPC64, PPC64le)
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_POWER(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_POWER(reason) \
+    SKIP_IF(   !strcmp(OMRPORT_ARCH_PPC,     omrsysinfo_get_CPU_architecture()) \
+            || !strcmp(OMRPORT_ARCH_PPC64,   omrsysinfo_get_CPU_architecture()) \
+            || !strcmp(OMRPORT_ARCH_PPC64LE, omrsysinfo_get_CPU_architecture()), reason)
+
+/*
  * @brief A macro to allow a test to be conditionally skipped on S390
  *
  * The basic syntax for using this macro is:
@@ -729,6 +799,19 @@ class SkipHelper
    if (strcmp("Linux", omrsysinfo_get_OS_type()) != 0) { /* allow test to proceed normally */ } \
    else \
       SKIP_ON(OMRPORT_ARCH_S390X, reason)
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped on z/OS.
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_ZOS(<reason>) << <message>;
+ *
+ */
+#define SKIP_ON_ZOS(reason) \
+    SKIP_IF(    (!strcmp(OMRPORT_ARCH_S390, omrsysinfo_get_CPU_architecture()) || !strcmp(OMRPORT_ARCH_S390X, omrsysinfo_get_CPU_architecture())) \
+            &&  strcmp("Linux", omrsysinfo_get_OS_type()), reason)
+
 
 /*
  * @brief A macro to allow a test to be conditionally skipped on AMD64

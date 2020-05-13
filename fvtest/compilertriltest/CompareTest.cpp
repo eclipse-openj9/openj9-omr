@@ -731,26 +731,38 @@ bool smallFp_filter(std::tuple<T, T> a)
    }
 
 int32_t fcmpeq(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l == r) ? 1 : 0;
 }
 
 int32_t fcmpne(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l != r) ? 1 : 0;
 }
 
 int32_t fcmpgt(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l > r) ? 1 : 0;
 }
 
 int32_t fcmpge(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l >= r) ? 1 : 0;
 }
 
 int32_t fcmplt(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l < r) ? 1 : 0;
 }
 
 int32_t fcmple(float l, float r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l <= r) ? 1 : 0;
 }
 
@@ -758,6 +770,13 @@ class FloatCompare : public TRTest::OpCodeTest<int32_t, float, float> {};
 
 TEST_P(FloatCompare, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
+
+    if ( param.opcode == "fcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
+        SKIP_ON_POWER(KnownBug) << "fcmpne returns wrong value on POWER (see #5152)";
+    }
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, 1024,
@@ -784,6 +803,10 @@ TEST_P(FloatCompare, UsingConst) {
 
 TEST_P(FloatCompare, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+
+    if ( param.opcode == "fcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
+        SKIP_ON_POWER(KnownBug) << "fcmpne returns wrong value on POWER (see #5152)";
+    }
 
     char inputTrees[160] = {0};
     std::snprintf(inputTrees, 160,
@@ -821,26 +844,38 @@ INSTANTIATE_TEST_CASE_P(CompareTest, FloatCompare, ::testing::Combine(
     )));
 
 int32_t dcmpeq(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l == r) ? 1 : 0;
 }
 
 int32_t dcmpne(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l != r) ? 1 : 0;
 }
 
 int32_t dcmpgt(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l > r) ? 1 : 0;
 }
 
 int32_t dcmpge(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l >= r) ? 1 : 0;
 }
 
 int32_t dcmplt(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l < r) ? 1 : 0;
 }
 
 int32_t dcmple(double l, double r) {
+    if (std::isnan(l)) return 0;
+    if (std::isnan(r)) return 0;
     return (l <= r) ? 1 : 0;
 }
 
@@ -848,6 +883,13 @@ class DoubleCompare : public TRTest::OpCodeTest<int32_t, double, double> {};
 
 TEST_P(DoubleCompare, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
+
+    if ( param.opcode == "dcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
+        SKIP_ON_POWER(KnownBug) << "dcmpne returns wrong value on POWER (see #5152)";
+    }
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, 1024,
@@ -874,6 +916,10 @@ TEST_P(DoubleCompare, UsingConst) {
 
 TEST_P(DoubleCompare, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+
+    if ( param.opcode == "dcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
+        SKIP_ON_POWER(KnownBug) << "dcmpne returns wrong value on POWER (see #5152)";
+    }
 
     char inputTrees[160] = {0};
     std::snprintf(inputTrees, 160,
@@ -911,26 +957,38 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleCompare, ::testing::Combine(
     )));
 
 int32_t iffcmpeq(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t iffcmpne(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t iffcmplt(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t iffcmple(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l <= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t iffcmpge(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l >= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t iffcmpgt(float l, float r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l > r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
@@ -940,6 +998,13 @@ TEST_P(FloatIfCompare, UsingConst) {
     SKIP_ON_RISCV(MissingImplementation);
 
     auto param = TRTest::to_struct(GetParam());
+
+    if ( param.opcode == "iffcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
+        SKIP_ON_POWER(KnownBug) << "iffcmpne returns wrong value on POWER (see #5152)";
+    }
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[256] = {0};
     std::snprintf(inputTrees, 256,
@@ -970,6 +1035,10 @@ TEST_P(FloatIfCompare, UsingLoadParam) {
     SKIP_ON_RISCV(MissingImplementation);
 
     auto param = TRTest::to_struct(GetParam());
+
+    if ( param.opcode == "iffcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
+        SKIP_ON_POWER(KnownBug) << "iffcmpne returns wrong value on POWER (see #5152)";
+    }
 
     char inputTrees[256] = {0};
     std::snprintf(inputTrees, 256,
@@ -1009,26 +1078,38 @@ INSTANTIATE_TEST_CASE_P(CompareTest, FloatIfCompare, ::testing::Combine(
     )));
 
 int32_t ifdcmpeq(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t ifdcmpne(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t ifdcmplt(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t ifdcmple(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l <= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t ifdcmpge(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l >= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
 int32_t ifdcmpgt(double l, double r) {
+    if (std::isnan(l)) return IFCMP_FALSE_NUM;
+    if (std::isnan(r)) return IFCMP_FALSE_NUM;
     return (l > r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
 }
 
@@ -1038,6 +1119,13 @@ TEST_P(DoubleIfCompare, UsingConst) {
     SKIP_ON_RISCV(MissingImplementation);
 
     auto param = TRTest::to_struct(GetParam());
+
+    if ( param.opcode == "ifdcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
+        SKIP_ON_POWER(KnownBug) << "ifdcmpne returns wrong value on POWER (see #5152)";
+    }
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, 1024,
@@ -1068,6 +1156,10 @@ TEST_P(DoubleIfCompare, UsingLoadParam) {
     SKIP_ON_RISCV(MissingImplementation);
 
     auto param = TRTest::to_struct(GetParam());
+
+    if ( param.opcode == "ifdcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
+        SKIP_ON_POWER(KnownBug) << "ifdcmpne returns wrong value on POWER (see #5152)";
+    }
 
     char inputTrees[256] = {0};
     std::snprintf(inputTrees, 256,

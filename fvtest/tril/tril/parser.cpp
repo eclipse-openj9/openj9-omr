@@ -29,6 +29,7 @@
 #include <iterator>
 #include <sstream>
 #include <algorithm>
+#include <limits>
 #include <stdlib.h>
 
 class Token {
@@ -236,6 +237,7 @@ class ASTstates {
             stateTransition(ID, isdigit, ID);
             stateTransition(MINUS, "0", ZERO);
             stateTransition(MINUS, isNonZeroDigit, INT);
+            stateTransition(MINUS, isalpha, ID);
             stateTransition(ZERO, isdigit, INT);
             stateTransition(ZERO, "x", HEXINT);
             stateTransition(HEXINT, isxdigit, HEXINT);
@@ -362,7 +364,7 @@ class TokenIter {
  * INTEGER: [-]?[0-9]+ | [-]?0x[0-9a-fA-F]+
  * DOUBLE: [-]?[0-9]+[.][0-9]+
  * STRING: \"[^"]*\"
- * IDENTIFIER: @?[a-zA-Z][a-zA-Z0-9]*
+ * IDENTIFIER: [@-]?[a-zA-Z][a-zA-Z0-9]*
  */
 
 
@@ -391,8 +393,32 @@ ASTValue* buildNodeValue(Token token) {
     }
     char * cstr = new char[tokenValue.size() + 1];
     strcpy(cstr, tokenValue.c_str());
-    if (tokenType == Token::STRING_ || tokenType == Token::ID) {
-        return createStrValue(cstr);
+    if (tokenType == Token::STRING_) {
+       return createStrValue(cstr);
+    } else if (tokenType == Token::ID) {
+        if        (tokenValue ==  "inf") {
+           return createFloatingPointValue( std::numeric_limits<double>::infinity());
+        } else if (tokenValue == "-inf") {
+           return createFloatingPointValue(-std::numeric_limits<double>::infinity());
+        } else if (tokenValue ==  "nan") {
+           return createFloatingPointValue( std::numeric_limits<double>::quiet_NaN());
+        } else if (tokenValue == "-nan") {
+           return createFloatingPointValue(-std::numeric_limits<double>::quiet_NaN());
+        } else if (tokenValue ==  "INF") {
+           return createFloatingPointValue( std::numeric_limits<double>::infinity());
+        } else if (tokenValue == "-INF") {
+           return createFloatingPointValue(-std::numeric_limits<double>::infinity());
+        } else if (tokenValue ==  "NAN") {
+           return createFloatingPointValue( std::numeric_limits<double>::quiet_NaN());
+        } else if (tokenValue == "-NAN") {
+           return createFloatingPointValue(-std::numeric_limits<double>::quiet_NaN());
+        } else if (tokenValue ==  "NaNQ") {
+           return createFloatingPointValue( std::numeric_limits<double>::quiet_NaN());
+        } else if (tokenValue == "-NaNQ") {
+           return createFloatingPointValue(-std::numeric_limits<double>::quiet_NaN());
+        } else {
+           return createStrValue(cstr);
+        }
     } else if (tokenType == Token::DOUBLE_) {
         double tmpdouble = std::atof(cstr);
         return createFloatingPointValue(tmpdouble);

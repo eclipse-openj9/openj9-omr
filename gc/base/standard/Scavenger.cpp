@@ -4504,6 +4504,8 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 
 	bool shouldPercolate = _delegate.internalGarbageCollect_shouldPercolateGarbageCollect(env, & percolateReason, & gcCode);
 	if (shouldPercolate) {
+		Trc_MM_Scavenger_percolate_delegate(env->getLanguageVMThread());
+
 		bool didPercolate = percolateGarbageCollect(env, subSpace, NULL, percolateReason, gcCode);
 		/* Percolation must occur if required by the cli. */
 		if (didPercolate) {
@@ -4564,13 +4566,6 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 bool
 MM_Scavenger::percolateGarbageCollect(MM_EnvironmentBase *env,  MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, PercolateReason percolateReason, uint32_t gcCode)
 {
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	/* before doing percolate global, we have to complete potentially ongoing concurrent Scavenge cycle */
-	if (_extensions->concurrentScavenger && isConcurrentCycleInProgress()) {
-		triggerConcurrentScavengerTransition(env, allocDescription);
-	}
-#endif
-
 	/* save the cycle state since we are about to call back into the collector to start a new global cycle */
 	MM_CycleState *scavengeCycleState = env->_cycleState;
 	Assert_MM_true(NULL != scavengeCycleState);
@@ -4638,6 +4633,8 @@ MM_Scavenger::reportGCCycleStart(MM_EnvironmentStandard *env)
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_CommonGCData commonData;
 
+	Trc_MM_CycleStart(env->getLanguageVMThread(), env->_cycleState->_type, _extensions->getHeap()->getActualFreeMemorySize());
+
 	TRIGGER_J9HOOK_MM_OMR_GC_CYCLE_START(
 		_extensions->omrHookInterface,
 		env->getOmrVMThread(),
@@ -4653,6 +4650,8 @@ MM_Scavenger::reportGCCycleEnd(MM_EnvironmentStandard *env)
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 	MM_CommonGCData commonData;
+
+	Trc_MM_CycleEnd(env->getLanguageVMThread(), env->_cycleState->_type, _extensions->getHeap()->getActualFreeMemorySize());
 
 	TRIGGER_J9HOOK_MM_PRIVATE_GC_POST_CYCLE_END(
 		extensions->privateHookInterface,

@@ -314,6 +314,10 @@ TR::Instruction *generateDepLabelInstruction(TR::CodeGenerator *cg, TR::InstOpCo
 TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, bool likeliness, TR::Node * n,
    TR::LabelSymbol *sym, TR::Register *cr, TR::Instruction *preced)
    {
+   // if processor does not support branch hints
+   if (cg->comp()->target().cpu.id() < TR_PPCgp)   
+      return generateConditionalBranchInstruction(cg, op, n, sym, cr, preced);
+
    if (cr->isFlippedCCR())
       op = flipBranch(cg, op);
 
@@ -325,6 +329,10 @@ TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR:
 TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,  bool likeliness, TR::Node * n,
    TR::LabelSymbol *sym, TR::Register *cr, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
    {
+   // if processor does not support branch hints
+   if (cg->comp()->target().cpu.id() < TR_PPCgp)   
+      return generateDepConditionalBranchInstruction(cg, op, n, sym, cr, cond, preced);
+   
    if (cr->isFlippedCCR())
       op = flipBranch(cg, op);
 

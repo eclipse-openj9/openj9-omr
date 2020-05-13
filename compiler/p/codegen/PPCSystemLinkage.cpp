@@ -680,7 +680,7 @@ TR::PPCSystemLinkage::createPrologue(
 
    if (savedFirst <= TR::RealRegister::LastGPR)
       {
-      if (cg()->comp()->target().cpu.id() == TR_PPCgp || cg()->comp()->target().is64Bit() ||
+      if (cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_GP) || cg()->comp()->target().is64Bit() ||
           (!comp()->getOption(TR_OptimizeForSpace) &&
            TR::RealRegister::LastGPR - savedFirst <= 3))
          for (regIndex=TR::RealRegister::LastGPR; regIndex>=savedFirst; regIndex=(TR::RealRegister::RegNum)((uint32_t)regIndex-1))
@@ -783,7 +783,7 @@ TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
 
    if (savedFirst <= TR::RealRegister::LastGPR)
       {
-      if (cg()->comp()->target().cpu.id() == TR_PPCgp || cg()->comp()->target().is64Bit() ||
+      if (cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_GP) || cg()->comp()->target().is64Bit() ||
           (!comp()->getOption(TR_OptimizeForSpace) &&
            TR::RealRegister::LastGPR - savedFirst <= 3))
          for (regIndex=TR::RealRegister::LastGPR; regIndex>=savedFirst; regIndex=(TR::RealRegister::RegNum)((uint32_t)regIndex-1))

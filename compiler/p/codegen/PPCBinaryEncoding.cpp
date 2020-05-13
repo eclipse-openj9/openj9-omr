@@ -862,7 +862,7 @@ OMR::Power::Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          // TODO: Split genop into two instructions depending on version of Power in use
          if (self()->getOpCodeValue() == TR::InstOpCode::genop)
             {
-            TR::RealRegister *r = self()->cg()->machine()->getRealRegister(TR::Compiler->target.cpu.id() > TR_PPCp6 ? TR::RealRegister::gr2 : TR::RealRegister::gr1);
+            TR::RealRegister *r = self()->cg()->machine()->getRealRegister(TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) ? TR::RealRegister::gr2 : TR::RealRegister::gr1);
             fillFieldRA(self(), cursor, r);
             fillFieldRS(self(), cursor, r);
             }

@@ -520,7 +520,7 @@ TR::Register *OMR::Power::TreeEvaluator::i2sEvaluator(TR::Node *node, TR::CodeGe
    TR::Node *child  = node->getFirstChild();
    TR::Register *trgReg = cg->allocateRegister();
 
-   if (cg->comp()->target().cpu.id() != TR_PPCp6 &&  // avoid algebraic loads on P6
+   if (!cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6) &&  // avoid algebraic loads on P6
        child->getReferenceCount() == 1 &&
        child->getOpCode().isMemoryReference() &&
        child->getRegister() == NULL)
@@ -663,7 +663,7 @@ TR::Register *OMR::Power::TreeEvaluator::l2sEvaluator(TR::Node *node, TR::CodeGe
       {
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
       tempMR->addToOffset(node, cg->comp()->target().cpu.isBigEndian()?6:0, cg);
-      if (cg->comp()->target().cpu.id() == TR_PPCp6)  // avoid algebraic loads on P6
+      if (cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6))  // avoid algebraic loads on P6
          {
          generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, trgReg, tempMR);
          generateTrg1Src1Instruction(cg, TR::InstOpCode::extsh, node, trgReg, trgReg);

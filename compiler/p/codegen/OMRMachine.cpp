@@ -201,7 +201,7 @@ void OMR::Power::Machine::initREGAssociations()
    // Power8/SAR:  confine to the smallest set of registers we can get away, because map cache
    // Others:      neutral --- take Power6 way for now
 
-   int rollingAllocator = !(self()->cg()->comp()->target().cpu.id() == TR_PPCp8);
+   int rollingAllocator = !(self()->cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P8));
 
 
    _inUseFPREnd = rollingAllocator?lastFPRv:0;
@@ -279,7 +279,7 @@ TR::RealRegister *OMR::Power::Machine::findBestFreeRegister(TR::Instruction *cur
    // For FPR/VSR/VRF
    if (rk == TR_FPR || rk == TR_VSX_SCALAR || rk == TR_VSX_VECTOR || rk == TR_VRF)
       {
-      int rollingAllocator = !(self()->cg()->comp()->target().cpu.id() == TR_PPCp8);
+      int rollingAllocator = !(self()->cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P8));
 
       // Find the best in the used FPR set so far
       int i, idx;
@@ -395,7 +395,7 @@ TR::RealRegister *OMR::Power::Machine::findBestFreeRegister(TR::Instruction *cur
          iNew = interference & currentReg;
 
          //Inject interference for last four assignments to prevent write-after-write dependancy in same p6 dispatch group.
-         if(rk == TR_GPR && (self()->cg()->comp()->target().cpu.id() == TR_PPCp6))
+         if(rk == TR_GPR && (self()->cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6)))
             {
             if (_lastGPRAssigned != -1)
                iNew |= currentReg & _lastGPRAssigned;
@@ -421,7 +421,7 @@ TR::RealRegister *OMR::Power::Machine::findBestFreeRegister(TR::Instruction *cur
             }
          }
       //Track the last four registers used for use in above interference injection.
-      if ((rk == TR_GPR) && (freeRegister != NULL) && (self()->cg()->comp()->target().cpu.id() == TR_PPCp6))
+      if ((rk == TR_GPR) && (freeRegister != NULL) && (self()->cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6)))
          {
          _4thLastGPRAssigned = _3rdLastGPRAssigned;
          _3rdLastGPRAssigned = _2ndLastGPRAssigned;
@@ -837,7 +837,7 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction     *cur
          // Until stack frame is 16-byte aligned, we cannot use VMX load/store here
          // So, we use VSX load/store instead as a work-around
 
-         TR_ASSERT(self()->cg()->comp()->target().cpu.getPPCSupportsVSX(), "VSX support not enabled");
+         TR_ASSERT(self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX), "VSX support not enabled");
 
          tempIndexRegister = self()->findBestFreeRegister(currentInstruction, TR_GPR);
          if (tempIndexRegister  == NULL)
@@ -1081,7 +1081,7 @@ TR::RealRegister *OMR::Power::Machine::reverseSpillState(TR::Instruction      *c
          // Until stack frame is 16-byte aligned, we cannot use VMX load/store here
          // So, we use VSX load/store instead as a work-around
 
-         TR_ASSERT(self()->cg()->comp()->target().cpu.getPPCSupportsVSX(), "VSX support not enabled");
+         TR_ASSERT(self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX), "VSX support not enabled");
 
          tempIndexRegister  = self()->findBestFreeRegister(currentInstruction, TR_GPR);
          if (tempIndexRegister  == NULL)
@@ -1192,7 +1192,7 @@ void OMR::Power::Machine::coerceRegisterAssignment(TR::Instruction              
 				   (currentAssignedRegister!=NULL && currentAssignedRegister->getKind()==ctv_rk);
 
       // RegisterExchange: GPR/VRF have xor op always, and only CCR has no xor after P6
-      bool needTemp = !((ctv_rk == TR_GPR) || (ctv_rk == TR_VRF) || (self()->cg()->comp()->target().cpu.getPPCSupportsVSX() && ctv_rk!=TR_CCR));
+      bool needTemp = !((ctv_rk == TR_GPR) || (ctv_rk == TR_VRF) || (self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX) && ctv_rk!=TR_CCR));
 
       if (targetRegister->getState() == TR::RealRegister::Blocked)
          {
@@ -1778,7 +1778,7 @@ static void registerCopy(TR::Instruction     *precedingInstruction,
    TR::Instruction *instr = NULL;
 
    // Go for performance, disregarding the dirty SP de-normal condition
-   bool useVSXLogical = cg->comp()->target().cpu.getPPCSupportsVSX();
+   bool useVSXLogical = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX);
    switch (rk)
       {
       case TR_GPR:

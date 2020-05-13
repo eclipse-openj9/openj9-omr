@@ -87,7 +87,11 @@ OMR::CPU::CPU() :
 #endif
    }
 
-OMR::CPU::CPU(const OMRProcessorDesc& processorDescription) : 
+OMR::CPU::CPU(const OMRProcessorDesc& processorDescription) :
+   _processor(TR_NullProcessor),
+   _endianness(TR::endian_unknown),
+   _majorArch(TR::arch_unknown),
+   _minorArch(TR::m_arch_none),
    _processorDescription(processorDescription)
    {
 #ifdef OMR_ENV_LITTLE_ENDIAN
@@ -137,7 +141,6 @@ OMR::CPU::CPU(const OMRProcessorDesc& processorDescription) :
 #endif
    }
 
-
 TR::CPU *
 OMR::CPU::self()
    {
@@ -154,13 +157,6 @@ OMR::CPU::detect(OMRPortLibrary * const omrPortLib)
    OMRProcessorDesc processorDescription;
    omrsysinfo_get_processor_description(&processorDescription);
    return TR::CPU(processorDescription);
-   }
-
-bool
-OMR::CPU::is(OMRProcessorArchitecture p)
-   {
-   TR_ASSERT_FATAL(TR::Compiler->omrPortLib != NULL, "Should not be calling this OMR level API without a valid port library pointer. Perhaps we did not initialize the port library properly?\n");
-   return _processorDescription.processor == p;
    }
 
 bool

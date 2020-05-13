@@ -173,7 +173,7 @@ add_subdirectory(thread)
 add_subdirectory(port)
 add_subdirectory(util)
 add_subdirectory(omr)
-add_subdirectory(third_party)
+add_subdirectory(third_party EXCLUDE_FROM_ALL)
 add_subdirectory(omrsigcompat)
 
 if(OMR_RAS_TDF_TRACE)

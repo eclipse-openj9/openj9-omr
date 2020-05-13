@@ -318,3 +318,41 @@ OMR::DataType::getPrefix(TR::DataType dt)
    TR_ASSERT(dt < TR::NumOMRTypes, "Prefix requested for unknown datatype");
    return OMRDataTypePrefixes[dt];
    }
+
+void FloatingPointLimits::setMaxFloat()
+   {
+   int32_t f = FLOAT_POS_INFINITY;
+   _maxFloat = 0.0f;
+   memcpy(&_maxFloat, &f, sizeof(f));
+   }
+
+void  FloatingPointLimits::setMinFloat()
+   {
+   int32_t f = FLOAT_NEG_INFINITY;
+   _minFloat = 0.0f;
+   memcpy(&_minFloat, &f, sizeof(f));
+   }
+void  FloatingPointLimits::setMaxDouble()
+   {
+   uint64_t d = DOUBLE_POS_INFINITY;
+   _maxDouble = 0.0;
+   memcpy(&_maxDouble, &d, sizeof(d));
+   }
+
+void  FloatingPointLimits::setMinDouble()
+   {
+   int64_t d = DOUBLE_NEG_INFINITY;
+   _minDouble = 0.0;
+   memcpy(&_minDouble, &d, sizeof(d));
+   }
+
+namespace TR{
+   static FloatingPointLimits fpLimits;
+
+   float getMaxFloat() { return fpLimits.getMaxFloat(); }
+   float getMinFloat() { return fpLimits.getMinFloat(); }
+   double getMaxDouble() { return fpLimits.getMaxDouble(); }
+   double getMinDouble() { return fpLimits.getMinDouble(); }
+}
+
+

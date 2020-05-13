@@ -253,6 +253,33 @@ enum DataTypes
  * @{
  */
 
+class FloatingPointLimits
+   {
+   float _maxFloat;
+   float _minFloat;
+   double _maxDouble;
+   double _minDouble;
+
+   void setMaxFloat();
+   void setMinFloat();
+   void setMaxDouble();
+   void setMinDouble();
+
+public:
+   FloatingPointLimits()
+      {
+      setMinFloat();
+      setMaxFloat();
+      setMinDouble();
+      setMaxDouble();
+      }
+
+   float getMaxFloat() { return _maxFloat; }
+   float getMinFloat() { return _minFloat; }
+   double getMaxDouble() { return _maxDouble; }
+   double getMinDouble() { return _minDouble; }
+   };
+
 namespace TR
 {
 
@@ -292,6 +319,13 @@ namespace TR
    template <> inline int32_t getMaxUnsignedPrecision<TR::Int16>() { return 5; }
    template <> inline int32_t getMaxUnsignedPrecision<TR::Int32>() { return 10; }
    template <> inline int32_t getMaxUnsignedPrecision<TR::Int64>() { return 20; }
+
+   // The constructor of the FloatLimits class is run only once
+   // The query functions below just return the cached copies of the float limits.
+   float getMaxFloat();
+   float getMinFloat();
+   double getMaxDouble();
+   double getMinDouble();
 
 } // namespace TR
 

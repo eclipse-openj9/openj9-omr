@@ -358,9 +358,9 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
          case TR::Float:
             return Float4;
          case TR::Int64:
-            return TR_MovDataTypes::Int8;
+            return Int8;
          case TR::Address:
-            return OMR::X86::Linkage::getTargetFromComp().is64Bit() ? TR_MovDataTypes::Int8 : TR_MovDataTypes::Int4;
+            return OMR::X86::Linkage::getTargetFromComp().is64Bit() ? Int8 : Int4;
          default:
             return Int4;
          }
@@ -373,18 +373,18 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
       switch(reg->getKind())
          {
          case TR_GPR:
-            return OMR::X86::Linkage::getTargetFromComp().is64Bit() ? TR_MovDataTypes::Int8 : TR_MovDataTypes::Int4;
+            return OMR::X86::Linkage::getTargetFromComp().is64Bit() ? Int8 : Int4;
          case TR_FPR:
             return Float8;
          default:
             TR_ASSERT(0, "unsupported register kind");
-            return TR_MovDataTypes::Int8;
+            return Int8;
          }
       }
 
    static inline TR_X86OpCodes movOpcodes(TR_MovOperandTypes operandType, TR_MovDataTypes dataType)
       {
-      TR_ASSERT(OMR::X86::Linkage::getTargetFromComp().is64Bit() || dataType != TR_MovDataTypes::Int8, "MOV Int8 should not occur on X86-32");
+      TR_ASSERT(OMR::X86::Linkage::getTargetFromComp().is64Bit() || dataType != Int8, "MOV Int8 should not occur on X86-32");
       return _movOpcodes[operandType][dataType];
       }
 

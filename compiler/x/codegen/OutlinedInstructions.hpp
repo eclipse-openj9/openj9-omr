@@ -177,12 +177,6 @@ class TR_OutlinedInstructionsGenerator
     */
    void endOutlinedInstructionSequence();
 
-   /**
-      @brief Obtain the underlying TR_OutlinedInstructions.
-   */
-   inline TR_OutlinedInstructions* obtain()     { return _oi; }
-   inline TR_OutlinedInstructions* operator->() { return obtain(); }
-
    private:
    TR_OutlinedInstructions* _oi;
    bool _hasEnded;

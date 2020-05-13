@@ -139,7 +139,7 @@ MM_MemoryPoolSegregated::allocateChunkedArray(MM_EnvironmentBase *env, MM_Alloca
 		fomrobject_t *arrayoidPtr = _extensions->indexableObjectModel.getArrayoidPointer(spine);
 		Assert_MM_true(totalBytes >= spineBytes);
 		uintptr_t bytesRemaining = totalBytes - spineBytes;
-		bool const compressed = compressObjectReferences();
+		GC_SlotObject arrayletSlotObject(env->getOmrVM(), arrayoidPtr);
 		for (uintptr_t i=0; i<numberArraylets; i++) {
 			uintptr_t* arraylet = NULL;
 			if (0 < bytesRemaining) {
@@ -148,9 +148,9 @@ MM_MemoryPoolSegregated::allocateChunkedArray(MM_EnvironmentBase *env, MM_Alloca
 					/* allocation failed; release all storage include spine. */
 					env->getAllocationContext()->flush(env);
 	
+					GC_SlotObject backoutSlotObject(env->getOmrVM(), arrayoidPtr);
 					for (uintptr_t j=0; j<i; j++) {
-						GC_SlotObject slotObject(env->getOmrVM(), GC_SlotObject::addToSlotAddress(arrayoidPtr, j, compressed));
-						arraylet = (uintptr_t*)slotObject.readReferenceFromSlot();
+						arraylet = (uintptr_t*)backoutSlotObject.readReferenceFromSlot();
 						
 						MM_HeapRegionDescriptorSegregated *region = (MM_HeapRegionDescriptorSegregated *)regionManager->tableDescriptorForAddress(arraylet);
 						region->clearArraylet(region->whichArraylet(arraylet, arrayletLeafLogSize));
@@ -158,6 +158,7 @@ MM_MemoryPoolSegregated::allocateChunkedArray(MM_EnvironmentBase *env, MM_Alloca
 						 * their un-allocation
 						 */
 						region->addBytesFreedToArrayletBackout(env);
+						backoutSlotObject.addToSlotAddress(1);
 					}
 					MM_HeapRegionDescriptorSegregated *region = (MM_HeapRegionDescriptorSegregated *)regionManager->tableDescriptorForAddress((uintptr_t *)spine);
 					if (region->isSmall()) {
@@ -181,8 +182,8 @@ MM_MemoryPoolSegregated::allocateChunkedArray(MM_EnvironmentBase *env, MM_Alloca
 				 */
 				Assert_MM_true(i == numberArraylets - 1);
 			}
-			GC_SlotObject slotObject(env->getOmrVM(), GC_SlotObject::addToSlotAddress(arrayoidPtr, i, compressed));
-			slotObject.writeReferenceToSlot((omrobjectptr_t)arraylet);
+			arrayletSlotObject.writeReferenceToSlot((omrobjectptr_t)arraylet);
+			arrayletSlotObject.addToSlotAddress(1);
 			bytesRemaining = MM_Math::saturatingSubtract(bytesRemaining, arrayletLeafSize);
 		}
 	}

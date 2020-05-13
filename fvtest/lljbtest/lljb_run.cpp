@@ -30,16 +30,22 @@
 #include "llvm/Support/SourceMgr.h"
 
 #include <iostream>
-#include <cassert>
 
 int main(int argc, char * argv[])
    {
+   if (argc != 2)
+      {
+      std::cerr << "Usage: " << argv[0] << " <module.ll>" << std::endl;
+      exit(EXIT_FAILURE);
+      }
 
-   bool jitInitialized = initializeJit();
-   assert(jitInitialized && "Jit Failed to initialize");
+   if (!initializeJit())
+      {
+      std::cerr << "Failed to initialize JIT" << std::endl;
+      exit(EXIT_FAILURE);
+      }
 
    const char * filename = argv[1];
-
    llvm::LLVMContext context;
    llvm::SMDiagnostic SMDiags;
    lljb::Module module(filename, SMDiags, context);

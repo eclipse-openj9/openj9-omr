@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2019, 2019 IBM Corp. and others
+# Copyright (c) 2020, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,36 +20,35 @@
 #############################################################################
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(ENV{PATH} "/usr/local/opt/llvm\@8/bin/:${PATH}")
+	find_package(LLVM 8 REQUIRED CONFIG
+		PATHS "/usr/local/opt/llvm\@8/bin/:${PATH}"
+	)
+else()
+	find_package(LLVM 8 REQUIRED CONFIG)
 endif()
 
-find_package(LLVM 8 REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-#include_directories(${LLVM_INCLUDE_DIRS})
 
 add_library(lljb SHARED
-    src/Compiler.cpp
-    src/MethodBuilder.cpp
-    src/Module.cpp
-    src/IRVisitor.cpp
-)
-
-get_property(JITBUILDER_INCLUDE TARGET jitbuilder PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-
-target_include_directories(lljb
-    PUBLIC
-        include/
-        ${JITBUILDER_INCLUDE}
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../compiler
-        ${CMAKE_CURRENT_SOURCE_DIR}/../..
-        ${LLVM_INCLUDE_DIRS}
+	src/Compiler.cpp
+	src/MethodBuilder.cpp
+	src/Module.cpp
+	src/IRVisitor.cpp
 )
 
 target_link_libraries(lljb
-    PUBLIC
-        jitbuilder
-        LLVMIRReader
-        LLVMCore
-        LLVMSupport
+	PUBLIC
+		jitbuilder
+		LLVMIRReader
+		LLVMCore
+		LLVMSupport
+)
+
+target_include_directories(lljb
+	PUBLIC
+		include/
+		${omr_SOURCE_DIR}/compiler
+		${omr_SOURCE_DIR}
+		${LLVM_INCLUDE_DIRS}
 )

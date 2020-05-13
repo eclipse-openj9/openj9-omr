@@ -70,7 +70,7 @@ if(OMR_LLJB)
 	if(NOT OMR_JITBUILDER)
 		message(FATAL_ERROR "OMR_LLJB is enabled but OMR_JITBUILDER is not enabled")
 	endif()
-	set (OMR_LLJB_TEST ON CACHE BOOL "Enable lljb tests")
+	set(OMR_LLJB_TEST ON CACHE BOOL "Enable lljb tests")
 endif()
 
 ## Enable OMR_JITBUILDER_TEST if OMR_JITBUILDER is enabled.

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1907,7 +1907,11 @@ OMR::Block::StandardException OMR::Block::_standardExceptions[] =
    {19, "ArithmeticException", CanCatchDivCheck },
    {19, "ArrayStoreException", CanCatchArrayStoreCheck },
    {19, "VirtualMachineError", CanCatchNew | CanCatchArrayNew },
+#if defined(J9VM_OPT_VALHALLA_VALUE_TYPES)
+   {20, "NullPointerException", CanCatchNullCheck | CanCatchArrayStoreCheck },
+#else // !defined(J9VM_OPT_VALHALLA_VALUE_TYPES)
    {20, "NullPointerException", CanCatchNullCheck },
+#endif // defined(J9VM_OPT_VALHALLA_VALUE_TYPES)
    {25, "IndexOutOfBoundsException", CanCatchBoundCheck },
    {26, "NegativeArraySizeException", CanCatchArrayNew },
    {28, "IllegalMonitorStateException", CanCatchMonitorExit },

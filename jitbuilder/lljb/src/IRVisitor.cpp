@@ -120,14 +120,9 @@ IRVisitor::visitLoadInst(llvm::LoadInst &I)
    TR::IlValue * loadedVal = nullptr;
    if (_methodBuilder->isIndirectLoadOrStore(source))
       {
-      TR::IlValue * ilSrc = getIlValue(source);
       loadedVal = _builder->LoadAt(
                               _td->PointerTo(_methodBuilder->getIlType(_td,I.getType())),
-                              _builder->
-                              IndexAt(
-                                 _td->PointerTo(_methodBuilder->getIlType(_td,I.getType())),
-                                 ilSrc,
-                                 _builder->ConstInt32(0)));
+                              getIlValue(source));
       }
    else
       {
@@ -141,19 +136,15 @@ IRVisitor::visitStoreInst(llvm::StoreInst &I)
    {
    llvm::Value * dest = I.getPointerOperand();
    llvm::Value * value = I.getOperand(0);
-   TR::IlValue * ilValue = getIlValue(value);
    if (_methodBuilder->isIndirectLoadOrStore(dest))
       {
       _builder->StoreAt(
-               _builder->IndexAt(
-                  _td->PointerTo(_methodBuilder->getIlType(_td,value->getType())),
-                  _methodBuilder->getIlValue(dest),
-                  _builder->ConstInt32(0)),
-               ilValue);
+               getIlValue(dest),
+               getIlValue(value));
       }
    else
       {
-      _builder->Store(_methodBuilder->getLocalNameFromValue(dest), ilValue);
+      _builder->Store(_methodBuilder->getLocalNameFromValue(dest), getIlValue(value));
       }
    }
 
@@ -226,12 +217,10 @@ IRVisitor::visitCmpInst(llvm::CmpInst &I)
       {
       case llvm::CmpInst::Predicate::ICMP_EQ:
       case llvm::CmpInst::Predicate::FCMP_OEQ:
-      case llvm::CmpInst::Predicate::FCMP_UEQ:
          result = _builder->EqualTo(lhs, rhs);
          break;
       case llvm::CmpInst::Predicate::ICMP_NE:
       case llvm::CmpInst::Predicate::FCMP_ONE:
-      case llvm::CmpInst::Predicate::FCMP_UNE:
          result = _builder->NotEqualTo(lhs, rhs);
          break;
       case llvm::CmpInst::Predicate::ICMP_UGT:
@@ -248,23 +237,27 @@ IRVisitor::visitCmpInst(llvm::CmpInst &I)
          break;
       case llvm::CmpInst::Predicate::ICMP_SGT:
       case llvm::CmpInst::Predicate::FCMP_OGT:
-      case llvm::CmpInst::Predicate::FCMP_UGT:
          result = _builder->GreaterThan(lhs, rhs);
          break;
       case llvm::CmpInst::Predicate::ICMP_SGE:
       case llvm::CmpInst::Predicate::FCMP_OGE:
-      case llvm::CmpInst::Predicate::FCMP_UGE:
          result = _builder->GreaterOrEqualTo(lhs, rhs);
          break;
       case llvm::CmpInst::Predicate::ICMP_SLT:
       case llvm::CmpInst::Predicate::FCMP_OLT:
-      case llvm::CmpInst::Predicate::FCMP_ULT:
          result = _builder->LessThan(lhs, rhs);
          break;
       case llvm::CmpInst::Predicate::ICMP_SLE:
       case llvm::CmpInst::Predicate::FCMP_OLE:
-      case llvm::CmpInst::Predicate::FCMP_ULE:
          result = _builder->LessOrEqualTo(lhs, rhs);
+         break;
+      case llvm::CmpInst::Predicate::FCMP_ULE:
+      case llvm::CmpInst::Predicate::FCMP_ULT:
+      case llvm::CmpInst::Predicate::FCMP_UGE:
+      case llvm::CmpInst::Predicate::FCMP_UNE:
+      case llvm::CmpInst::Predicate::FCMP_UEQ:
+      case llvm::CmpInst::Predicate::FCMP_UGT:
+         assert(0 && "Unordered float comparisions are not supported yet");
          break;
       default:
          assert(0 && "Unknown CmpInst predicate");
@@ -280,16 +273,17 @@ IRVisitor::visitBranchInst(llvm::BranchInst &I)
       {
       llvm::Value * dest = I.getSuccessor(0);
       TR::BytecodeBuilder * destBuilder = _methodBuilder->getByteCodeBuilder(dest);
-      assert(destBuilder && "failed to find builder for target basic block");
+      assert(destBuilder && "failed to find builder for target basic block in unconditional branch");
       _builder->Goto(destBuilder);
       }
    else
       {
       TR::IlValue * condition = getIlValue(I.getCondition());
-      TR::IlBuilder * ifTrue = _methodBuilder->getByteCodeBuilder(I.getSuccessor(0));
-      TR::IlBuilder * ifFalse = _methodBuilder->getByteCodeBuilder(I.getSuccessor(1));
-      assert(ifTrue && ifFalse && condition && "Failed to find destination blocks for ifThenElse");
-      _builder->IfThenElse(&ifTrue, &ifFalse, condition);
+      TR::BytecodeBuilder * ifTrue = _methodBuilder->getByteCodeBuilder(I.getSuccessor(0));
+      TR::BytecodeBuilder * ifFalse = _methodBuilder->getByteCodeBuilder(I.getSuccessor(1));
+      assert(ifTrue && ifFalse && condition && "Failed to find destination blocks for conditional branch");
+      _builder->IfCmpNotEqualZero(&ifTrue, condition);
+      _builder->Goto(&ifFalse);
       }
    }
 
@@ -334,21 +328,27 @@ IRVisitor::visitZExtInst(llvm::ZExtInst &I)
 void
 IRVisitor::visitGetElementPtrInst(llvm::GetElementPtrInst &I)
    {
+   // GetElementPtrInst is used for address computions - such as obtaining addresses of array elements,
+   // struct members, and for pointer arithmetic
    TR::IlValue * ilValue = nullptr;
    if (I.getSourceElementType()->isStructTy())
       {
       llvm::ConstantInt * indextConstantInt = llvm::dyn_cast<llvm::ConstantInt>(I.getOperand(2));
       unsigned elementIndex = indextConstantInt->getZExtValue();
+      // JitBuilder requires the name of members to obtain their addresses, whereas LLVM struct members are
+      // indexed by the order of the member declarations. MethodBuilder::getMemberNameFromIndex translates the
+      // field index we obtain from llvm::GetElementPtrInst to member names used when defining the struct. For
+      // example, struct field at index 0 would translate to "m0".
       ilValue = _builder->StructFieldInstanceAddress(I.getSourceElementType()->getStructName().data(),
                                                                _methodBuilder->getMemberNameFromIndex(elementIndex),
                                                                getIlValue(I.getOperand(0)));
       }
    else if (I.getSourceElementType()->isArrayTy())
       {
-      if (I.getSourceElementType()->getArrayElementType()->isArrayTy())
+      if (I.getSourceElementType()->getArrayElementType()->isArrayTy()) // handle 2 dimensional arrays
          {
-         llvm::ConstantInt * indextConstantInt = llvm::dyn_cast<llvm::ConstantInt>(I.getOperand(2));
-         int64_t elementIndex = indextConstantInt->getSExtValue();
+         llvm::ConstantInt * indexConstantInt = llvm::dyn_cast<llvm::ConstantInt>(I.getOperand(2));
+         int64_t elementIndex = indexConstantInt->getSExtValue();
          elementIndex *= I.getSourceElementType()->getArrayNumElements();
          ilValue =
                _builder->IndexAt(
@@ -357,7 +357,7 @@ IRVisitor::visitGetElementPtrInst(llvm::GetElementPtrInst &I)
                   getIlValue(I.getOperand(0)),
                   _builder->ConstInt32(elementIndex));
          }
-      else
+      else // handle 1-dimensional arrays
          {
          TR::IlValue * elementIndex = getIlValue(I.getOperand(2));
          ilValue =
@@ -368,7 +368,7 @@ IRVisitor::visitGetElementPtrInst(llvm::GetElementPtrInst &I)
                   elementIndex);
          }
       }
-   else
+   else // handle general pointer arithmetic
       {
       assert((I.getNumOperands() == 2) && "unhandled getElementPtr case");
       ilValue = _builder->IndexAt(
@@ -383,27 +383,97 @@ IRVisitor::visitGetElementPtrInst(llvm::GetElementPtrInst &I)
 void
 IRVisitor::visitPHINode(llvm::PHINode &I)
    {
-   unsigned incomingEdgeCount = I.getNumIncomingValues();
+
+   // This initial implementation of PHINode visitor is capable of handling a
+   // limited set of phi node variants, such as the phi nodes in the following
+   // textual representation LLVM IR snippet:
+   // ------------------
+   // ; <label>:5:                                      ; preds = %19, %0
+   // %6 = load i32, i32* %4, align 4
+   // %7 = icmp slt i32 %6, 10
+   // br i1 %7, label %8, label %17
+   //
+   // ; <label>:8:                                      ; preds = %5
+   // %9 = load i32, i32* %2, align 4
+   // %10 = load i32, i32* %3, align 4
+   // %11 = icmp sge i32 %9, %10
+   // br i1 %11, label %15, label %12
+   //
+   // ; <label>:12:                                     ; preds = %8
+   // %13 = load i32, i32* %3, align 4
+   // %14 = icmp sge i32 %13, 0
+   // br label %15
+
+   // ; <label>:15:                                     ; preds = %12, %8
+   // %16 = phi i1 [ true, %8 ], [ %14, %12 ]           ; <----------------- phi node 1
+   // br label %17
+   //
+   // ; <label>:17:                                     ; preds = %15, %5
+   // %18 = phi i1 [ false, %5 ], [ %16, %15 ]          ; <----------------- phi node 2
+   // br i1 %18, label %19, label %24
+   // ------------------
+   //
+   // The IR above was generated from the following C snippet:
+   // ------------------
+   // while (i < 10 && (x >= y || y >= 0)){
+   // ------------------
+   //
+   // In the example above, the phi node instructions are the first instructions
+   // in their basic blocks, serving as merge points for 2 or more incoming
+   // basic blocks. We can arrive at phi node 1 from either basic block
+   // represented by %12, or basic block represented by %8. In the textual
+   // representation of the IR instruction for phi node, %16 is set based on
+   // whether we arrived from %8 or from %12. The textual representation of the
+   // phi node instruction can have 2 or more operands enclosed in square brackets,
+   // representing the "incoming values" (the first element) and  their
+   // corresponding "incoming edges" (the second element). %16 is assigned the
+   // incoming values true (const 1) or %14, based on whether we arrive from %8
+   // or %12, respectively.
+   //
+   // Notice how the first incoming values are different for phi node 1 and phi
+   // node 2. For phi nodes generated as a result of an "or" operation, the first
+   // incoming value is "true" (1). If the phi node is generated from the result
+   // of an "and" operation, the first incoming value is "false" (0). Note that the
+   // "and" and "or" operators being discussed are logical "and" and "or" operators,
+   // and not bitwise operators.
+   //
+   //
+   // Unfortunately, there is no straightforward way to translate such semantics to
+   // JitBuilder API calls. This initial implementation involves a few "hacks"
+   // explained in the in-line comments.
+   //
+   //
+   //
+
+   unsigned incomingEdgeCount = I.getNumIncomingValues(); // every incoming edge will have an incoming value
+
+   // To determine the path taken to the phi node, we need to map the incoming LLVM basic
+   // blocks to the incoming IL values (obtained from mapped llvm::Value's to TR::IlValue's).
+   // If the incoming value corresponding to an incoming edge is a constant integer (i.e,
+   // "true" or "false"),  we need to step back into the incoming edge to map the basic block
+   // to the corresponding IlValue.
    llvm::DenseMap<llvm::BasicBlock *, TR::IlValue *> valueMap;
-   TR::IlValue * ilValue = nullptr;
+   TR::IlValue * ilValue = nullptr; // the resulting evaluated phi node value
    llvm::ConstantInt * firstCondition = llvm::dyn_cast<llvm::ConstantInt>(I.getIncomingValue(0));
-   unsigned isOr = firstCondition->getZExtValue();
+   unsigned isOr = firstCondition->getZExtValue(); // need to know whether we are dealing with phi nodes handling "or" operation
 
    for (unsigned i = 0; i < incomingEdgeCount; i++)
       {
-      llvm::BasicBlock * basicBlock = I.getIncomingBlock(i);
-      llvm::Value * value = I.getIncomingValue(i);
-      if (value->getValueID() == llvm::Value::ValueTy::ConstantIntVal)
-         {
-         llvm::BranchInst * branchInst = llvm::dyn_cast<llvm::BranchInst>(basicBlock->getTerminator());
-         value = branchInst->getCondition();
+      llvm::BasicBlock * basicBlock = I.getIncomingBlock(i); // we need to revisit each of the incoming basic blocks
+      llvm::Value * value = I.getIncomingValue(i);           // get their corresponding incoming values
+      if (value->getValueID() == llvm::Value::ValueTy::ConstantIntVal) // this evaluates to true if the incoming values are "true" or "false", i.e, 0 or 1
+         {                                                             // going back to the terminating instruction is necessary if the incoming value is a constant and not the actual value that determine the control flow
+         llvm::BranchInst * branchInst = llvm::dyn_cast<llvm::BranchInst>(basicBlock->getTerminator()); // the terminating instruction in incoming basic blocks are always branch instructions
+         value = branchInst->getCondition();                                                            // re-assign the 0/1 available to us to the actual condition that determine the control flow
          }
-      valueMap[basicBlock] = getIlValue(value);
+      valueMap[basicBlock] = getIlValue(value);                                                         // finally, create the llvm basic block to IlValue mapping
       }
+
+   // All the IlValues we have obtained are constants of value 0 or 1. Hence, we can use the "Or" and "And" JitBuilder services to evaluate the value that the phi node results in.
    if (isOr) ilValue = _builder->Or(valueMap[I.getIncomingBlock(0)],valueMap[I.getIncomingBlock(1)]);
    else      ilValue = _builder->And(valueMap[I.getIncomingBlock(0)],valueMap[I.getIncomingBlock(1)]);
 
-   if (incomingEdgeCount > 2)
+   if (incomingEdgeCount > 2) // handle further cases of incoming edges
       {
       unsigned currentCaseIndex = 2;
       while (currentCaseIndex < incomingEdgeCount)
@@ -535,7 +605,6 @@ IRVisitor::getIlValue(llvm::Value * value)
 
       /* Constant aggregate value types */
       case llvm::Value::ValueTy::ConstantStructVal:
-         //break; //todo uncomment when done implementing
       case llvm::Value::ValueTy::ConstantArrayVal:
       case llvm::Value::ValueTy::ConstantVectorVal:
          assert(0 && "Unsupported constant aggregate value type");

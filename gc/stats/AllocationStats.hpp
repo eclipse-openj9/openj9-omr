@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,12 +34,13 @@ private:
 public:
 
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
-	uintptr_t _tlhRefreshCountFresh; /**< Number of refreshes where fresh memory was allocated. */
-	uintptr_t _tlhRefreshCountReused; /**< Number of refreshes where TLHs were reused. */
-	uintptr_t _tlhAllocatedFresh; /**< The amount of memory allocated fresh out of the heap. */
-	uintptr_t _tlhAllocatedReused; /**< The amount of memory allocated form reused TLHs. */
-	uintptr_t _tlhRequestedBytes; /**< The amount of memory requested for refreshes. */
-	uintptr_t _tlhDiscardedBytes; /**< The amount of memory from discarded TLHs. */
+	uintptr_t _tlhRefreshCountFresh; 	/**< Number of refreshes where fresh memory was allocated. */
+	uintptr_t _tlhRefreshCountReused; 	/**< Number of refreshes where TLHs were reused. */
+	uintptr_t _tlhAllocatedFresh; 		/**< The amount of memory allocated fresh out of the heap. */
+	uintptr_t _tlhAllocatedUsed; 		/**< The amount of used memory of already flushed TLHs */
+	uintptr_t _tlhAllocatedReused; 		/**< The amount of memory allocated form reused TLHs. */
+	uintptr_t _tlhRequestedBytes; 		/**< The amount of memory requested for refreshes. */
+	uintptr_t _tlhDiscardedBytes; 		/**< The amount of memory from discarded TLHs. */
 	uintptr_t _tlhMaxAbandonedListSize; /**< The maximum size of the abandoned list. */
 #endif /* defined (OMR_GC_THREAD_LOCAL_HEAP) */
 
@@ -59,14 +60,22 @@ public:
 
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
 	uintptr_t tlhBytesAllocated() { return _tlhAllocatedFresh - _tlhDiscardedBytes; }
+	uintptr_t tlhBytesAllocatedUsed() { return _tlhAllocatedUsed; }
 	uintptr_t nontlhBytesAllocated() { return _allocationBytes; }
 #endif
 
-	uintptr_t bytesAllocated(){
+	/* return bytesAllocated includes new refreshed TLH, if includeJustRefreshedTLH == true(default)
+	 * return bytesAllocated (but does not include new refreshed TLH), if includeJustRefreshedTLH == false.
+	 */
+	uintptr_t bytesAllocated(bool includeJustRefreshedTLH = true) {
 		uintptr_t totalBytesAllocated = 0;
 
-#if defined(OMR_GC_THREAD_LOCAL_HEAP)	
-		totalBytesAllocated += tlhBytesAllocated();
+#if defined(OMR_GC_THREAD_LOCAL_HEAP)
+		if (includeJustRefreshedTLH) {
+			totalBytesAllocated += tlhBytesAllocated();
+		} else {
+			totalBytesAllocated += tlhBytesAllocatedUsed();
+		}
 		totalBytesAllocated += nontlhBytesAllocated();
 #else
 		totalBytesAllocated += _allocationBytes;
@@ -80,6 +89,7 @@ public:
 		_tlhRefreshCountFresh(0),
 		_tlhRefreshCountReused(0),
 		_tlhAllocatedFresh(0),
+		_tlhAllocatedUsed(0),
 		_tlhAllocatedReused(0),
 		_tlhRequestedBytes(0),
 		_tlhDiscardedBytes(0),

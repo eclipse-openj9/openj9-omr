@@ -292,7 +292,9 @@ public:
 
 	bool doOutOfLineAllocationTrace;
 	bool doFrequentObjectAllocationSampling; /**< Whether to track object allocations*/
-	uintptr_t oolObjectSamplingBytesGranularity; /**< How often (in bytes) we do an ool allocation trace */
+	uintptr_t oolObjectSamplingBytesGranularity; /**< How often (in bytes) we do allocation sampling as tracked by per thread's local _oolTraceAllocationBytes. */
+	uintptr_t objectSamplingBytesGranularity; /**< How often (in bytes) we do allocation sampling as tracked by per thread's local _traceAllocationBytes. */
+
 	uintptr_t frequentObjectAllocationSamplingRate; /**< # bytes to sample / # bytes allocated */
 	MM_FrequentObjectsStats* frequentObjectsStats;
 	uint32_t frequentObjectAllocationSamplingDepth; /**< # of frequent objects we'd like to report */
@@ -1307,6 +1309,13 @@ public:
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	}
 
+	/**
+	 * Check if we need to disable inline allocation
+	 */
+	MMINLINE bool
+	needDisableInlineAllocation() {
+		return (fvtest_disableInlineAllocation || instrumentableAllocateHookEnabled || disableInlineCacheForAllocationThreshold);
+	}
 
 	MM_GCExtensionsBase()
 		: MM_BaseVirtual()
@@ -1388,6 +1397,7 @@ public:
 		, doOutOfLineAllocationTrace(true) /* Tracing after ever x bytes allocated per thread. Enabled by default. */
 		, doFrequentObjectAllocationSampling(false) /* Finds most frequently allocated classes. Disabled by default. */
 		, oolObjectSamplingBytesGranularity(16*1024*1024) /* Default granularity set to 16M (shows <1% perf loss). */
+		, objectSamplingBytesGranularity(UDATA_MAX) /* default UDATA_MAX (disabled) */
 		, frequentObjectAllocationSamplingRate(100)
 		, frequentObjectsStats(NULL)
 		, frequentObjectAllocationSamplingDepth(0)

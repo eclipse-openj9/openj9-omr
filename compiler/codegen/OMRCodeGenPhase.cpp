@@ -38,10 +38,10 @@
 #include "codegen/CodeGenPhase.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
-#include "env/FrontEnd.hpp"
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
+#include "codegen/Peephole.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/Snippet.hpp"
 #include "compile/Compilation.hpp"
@@ -49,8 +49,10 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
+#include "env/FrontEnd.hpp"
 #include "env/IO.hpp"
 #include "env/PersistentInfo.hpp"
+#include "env/RegionProfiler.hpp"
 #include "env/TRMemory.hpp"
 #include "il/Block.hpp"
 #include "il/Node.hpp"
@@ -72,7 +74,6 @@
 #include "optimizer/StructuralAnalysis.hpp"
 #include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
-#include "env/RegionProfiler.hpp"
 
 #include <map>
 #include <utility>
@@ -322,6 +323,8 @@ OMR::CodeGenPhase::performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase
    TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
    LexicalTimer pt(phase->getName(), comp->phaseTimer());
 
+   TR::Peephole peephole(comp);
+   peephole.perform();
    cg->doPeephole();
 
    if (comp->getOption(TR_TraceCG))

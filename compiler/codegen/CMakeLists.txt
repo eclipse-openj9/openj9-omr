@@ -37,6 +37,7 @@ compiler_library(codegen
 	${CMAKE_CURRENT_LIST_DIR}/OMRTreeEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/PreInstructionSelection.cpp
 	${CMAKE_CURRENT_LIST_DIR}/NodeEvaluation.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRPeephole.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRUnresolvedDataSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRSnippetGCMap.cpp

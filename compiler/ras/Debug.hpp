@@ -201,7 +201,6 @@ namespace TR { class PPCHelperCallSnippet; }
 namespace TR { class PPCMonitorEnterSnippet; }
 namespace TR { class PPCMonitorExitSnippet; }
 namespace TR { class PPCReadMonitorSnippet; }
-namespace TR { class PPCHeapAllocSnippet; }
 
 namespace TR { class PPCAllocPrefetchSnippet; }
 
@@ -927,7 +926,6 @@ public:
    void print(TR::FILE *, TR::PPCMonitorEnterSnippet *);
    void print(TR::FILE *, TR::PPCMonitorExitSnippet *);
    void print(TR::FILE *, TR::PPCReadMonitorSnippet *);
-   void print(TR::FILE *, TR::PPCHeapAllocSnippet *);
    void print(TR::FILE *, TR::PPCAllocPrefetchSnippet *);
 
 

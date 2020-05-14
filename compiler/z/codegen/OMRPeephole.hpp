@@ -53,6 +53,26 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    Peephole(TR::Compilation* comp);
 
    virtual bool performOnInstruction(TR::Instruction* cursor);
+
+   private:
+
+   /** \brief
+    *     Attempts to reduce L[' '|FH|G] R,MR1  ST[' '|FH|G] R,MR2 sequences to MVC MR2, MR1
+    *     to save a register and instruction.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \param storeOpCode
+    *     The store op code that matches the load.
+    *
+    *  \param size
+    *     The number of bits being moved.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
    };
 
 }

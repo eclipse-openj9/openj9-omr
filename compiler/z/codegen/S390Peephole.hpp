@@ -36,21 +36,6 @@ public:
    void perform();
 
 private:
-   
-   /** \brief
-    *     Attempts to reduce L[' '|FH|G] R,MR1  ST[' '|FH|G] R,MR2 sequences to MVC MR2, MR1
-    *     to save a register and instruction.
-    *
-    *  \param storeOpCode
-    *     The store op code that matches the load.
-    *
-    *  \param size
-    *     The number of bits being moved.
-    *
-    *  \return
-    *     true if the reduction was successful; false otherwise.
-    */
-   bool attemptLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
 
    bool LLCReduction();
    bool LGFRReduction();

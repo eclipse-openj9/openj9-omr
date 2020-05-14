@@ -466,46 +466,6 @@ TR_S390Peephole::LAReduction()
    }
 
 bool
-TR_S390Peephole::duplicateNILHReduction()
-   {
-   if (_cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILH)
-      {
-      TR::Instruction * na = _cursor;
-      TR::Instruction * nb = _cursor->getNext();
-
-      // want to delete nb if na == nb - use deleteInst
-
-      if ((na->getKind() == TR::Instruction::IsRI) &&
-          (nb->getKind() == TR::Instruction::IsRI))
-         {
-         // NILH == generateRIInstruction
-         TR::S390RIInstruction * cast_na = (TR::S390RIInstruction *)na;
-         TR::S390RIInstruction * cast_nb = (TR::S390RIInstruction *)nb;
-
-         if (cast_na->isImm() == cast_nb->isImm())
-            {
-            if (cast_na->isImm())
-               {
-               if (cast_na->getSourceImmediate() == cast_nb->getSourceImmediate())
-                  {
-                  if (cast_na->matchesTargetRegister(cast_nb->getRegisterOperand(1)) &&
-                      cast_nb->matchesTargetRegister(cast_na->getRegisterOperand(1)))
-                     {
-                     if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting duplicate NILH from pair %p %p*\n", _cursor, _cursor->getNext()))
-                        {
-                        _cg->deleteInst(_cursor->getNext());
-                        return true;
-                        }
-                     }
-                  }
-               }
-            }
-         }
-      }
-   return false;
-   }
-
-bool
 TR_S390Peephole::clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *targetReg)
    {
    if (inst->defsRegister(targetReg))
@@ -537,24 +497,6 @@ TR_S390Peephole::clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register
          }
       }
    return false;
-   }
-
-bool
-TR_S390Peephole::unnecessaryNILHReduction()
-   {
-   return false;
-   }
-
-bool
-TR_S390Peephole::NILHReduction()
-   {
-   bool transformed = false;
-
-   transformed |= duplicateNILHReduction();
-   TR_ASSERT(_cursor->getOpCodeValue() == TR::InstOpCode::NILH, "Expecting duplicateNILHReduction to leave a NILH as current instruction\n");
-   transformed |= unnecessaryNILHReduction();
-
-   return transformed;
    }
 
 static TR::Instruction *
@@ -2829,14 +2771,6 @@ TR_S390Peephole::perform()
                revertTo32BitShift();
                if (comp()->getOption(TR_TraceCG))
                   printInst();
-               break;
-
-            case TR::InstOpCode::NILH:
-               if (!NILHReduction())
-                  {
-                  if (comp()->getOption(TR_TraceCG))
-                     printInst();
-                  }
                break;
 
             case TR::InstOpCode::NILF:

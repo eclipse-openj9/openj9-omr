@@ -73,6 +73,17 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
+
+   /** \brief
+    *     Attempts to remove duplicate NILH instructions which target the same register and use the same immediate.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToRemoveDuplicateNILH(TR::Instruction* cursor);
    };
 
 }

@@ -41,7 +41,20 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
    {
    bool performed = false;
 
-   if (!cg()->afterRA())
+   if (cg()->afterRA())
+      {
+      switch(cursor->getOpCodeValue())
+         {
+         case TR::InstOpCode::NILH:
+            {
+            performed |= attemptToRemoveDuplicateNILH(cursor);
+            break;
+            }
+         default:
+            break;
+         }
+      }
+   else
       {
       switch(cursor->getOpCodeValue())
          {
@@ -166,5 +179,37 @@ OMR::Z::Peephole::attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpC
          return true;
          }
       }
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToRemoveDuplicateNILH(TR::Instruction* cursor)
+   {
+   if (cursor->getNext()->getKind() == TR::Instruction::IsRI)
+      {
+      TR::S390RIInstruction* currInst = static_cast<TR::S390RIInstruction*>(cursor);
+      TR::S390RIInstruction* nextInst = static_cast<TR::S390RIInstruction*>(cursor->getNext());
+
+      if (currInst->isImm() == nextInst->isImm())
+         {
+         if (currInst->isImm())
+            {
+            if (currInst->getSourceImmediate() == nextInst->getSourceImmediate())
+               {
+               if (currInst->matchesTargetRegister(nextInst->getRegisterOperand(1)) &&
+                   nextInst->matchesTargetRegister(currInst->getRegisterOperand(1)))
+                  {
+                  if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting duplicate NILH from pair %p %p*\n", currInst, nextInst))
+                     {
+                     cg()->deleteInst(nextInst);
+
+                     return true;
+                     }
+                  }
+               }
+            }
+         }
+      }
+
    return false;
    }

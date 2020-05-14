@@ -42,9 +42,6 @@ private:
    bool AGIReduction();
    bool ICMReduction();
    bool LAReduction();
-   bool NILHReduction();
-   bool duplicateNILHReduction();
-   bool unnecessaryNILHReduction();
    bool clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *reg);
    bool branchReduction();
    bool forwardBranchTarget();

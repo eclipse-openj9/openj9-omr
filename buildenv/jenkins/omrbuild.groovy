@@ -11,6 +11,7 @@ def setBuildStatus(String message, String state, String sha) {
 }
 
 def defaultCompile = 'make -j4'
+def defaultReference = '${HOME}/gitcache'
 def autoconfBuildDir = '.'
 def cmakeBuildDir = 'build'
 def workspaceName = 'Build'
@@ -18,6 +19,7 @@ def workspaceName = 'Build'
 def SPECS = [
     'aix_ppc-64' : [
         'label' : 'aix && ppc',
+        'reference' : defaultReference,
         'environment' : [
             'PATH+TOOLS=/home/u0020236/tools',
             'LIBPATH=.',
@@ -39,6 +41,7 @@ def SPECS = [
     ],
     'linux_390-64' : [
         'label': 'Linux && 390',
+        'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
             'GTEST_COLOR=0'
@@ -58,6 +61,7 @@ def SPECS = [
     ],
     'linux_aarch64' : [
         'label' : 'Linux && x86 && compile:aarch64',
+        'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/:/home/jenkins/aarch64/toolchain/bin',
             'PLATFORM=aarch64-linux-gcc',
@@ -76,6 +80,7 @@ def SPECS = [
     ],
     'linux_arm' : [
         'label' : 'Linux && x86 && compile:arm',
+        'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/:/home/jenkins/arm/toolchain/bin',
             'PLATFORM=arm-linux-gcc',
@@ -94,6 +99,7 @@ def SPECS = [
     ],
     'linux_ppc-64_le_gcc' : [
         'label' : 'Linux && PPCLE',
+        'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
             'GTEST_COLOR=0'
@@ -113,6 +119,7 @@ def SPECS = [
     ],
     'linux_riscv64' : [
         'label' : 'Linux && riscv64',
+        'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/'
         ],
@@ -131,6 +138,7 @@ def SPECS = [
     ],
     'linux_riscv64_cross' : [
         'label' : 'Linux && x86 && compile:riscv64',
+        'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/'
         ],
@@ -152,6 +160,7 @@ def SPECS = [
     ],
     'linux_x86' : [
         'label' : 'Linux && x86',
+        'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
             'GTEST_COLOR=0'
@@ -171,6 +180,7 @@ def SPECS = [
     ],
     'linux_x86-64' : [
         'label' : 'Linux && x86',
+        'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
             'GTEST_COLOR=0'
@@ -190,6 +200,7 @@ def SPECS = [
     ],
     'linux_x86-64_cmprssptrs' : [
         'label' : 'Linux && x86',
+        'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
             'EXTRA_CONFIGURE_ARGS=--enable-DDR'
@@ -209,6 +220,7 @@ def SPECS = [
     ],
     'osx_x86-64' : [
         'label' : 'OSX && x86',
+        'reference' : defaultReference,
         'environment' : [
             'GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended:*DeathTest*',
             'PATH+CCACHE=/usr/local/opt/ccache/libexec',
@@ -229,6 +241,7 @@ def SPECS = [
     ],
     'win_x86-64' : [
         'label' : 'Windows && x86',
+        'reference' : defaultReference,
         'environment' : [
             'GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended:PortSysinfoTest.sysinfo_test_get_tmp3:ThreadExtendedTest.TestOtherThreadCputime',
             'GTEST_COLOR=0'
@@ -248,6 +261,7 @@ def SPECS = [
     ],
     'zos_390-64' : [
         'label' : 'zOS && 390',
+        'reference' : '',
         'environment' : [
             "LIBPATH+EXTRA=/openzdk/jenkins/workspace/${workspaceName}/build"
         ],
@@ -292,7 +306,7 @@ timestamps {
                                         checkout poll: false,
                                             scm: [$class: 'GitSCM',
                                             branches: [[name: '${sha1}']],
-                                            extensions: [[$class: 'CloneOption', honorRefspec: true]],
+                                            extensions: [[$class: 'CloneOption', honorRefspec: true, timeout: 30, reference: SPECS[params.BUILDSPEC].reference]],
                                             userRemoteConfigs: [[name: 'origin',
                                                 refspec: "+refs/pull/${params.ghprbPullId}/merge:refs/remotes/origin/pr/${params.ghprbPullId}/merge",
                                                 url: "${gitConfig.getUrl()}"]

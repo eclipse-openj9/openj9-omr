@@ -1020,6 +1020,9 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
       if (dep->getOpCodeValue() == TR::PassThrough)
          {
          TR::Node *value = dep->getFirstChild();
+         TR::Node *originalNode = value;
+         while (originalNode->getOpCodeValue() == TR::PassThrough)
+            originalNode = originalNode->getFirstChild();
          auto nodeInfoEntry = nodeInfo->find(value);
          // If a node referenced under the PassThrough node post split point requires uncommoning
          // We need to check if the we can use the information to allocate the register for the node or not.
@@ -1045,7 +1048,7 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                   if (checkIfRegisterIsAvailable(comp, storeNode, unavailableRegisters))
                      {
                      // Whether the PassThrough uses same register or not, use the last recorded regStore to assign register to the node.
-                     TR::Node *regLoad = TR::Node::create(value, comp->il.opCodeForRegisterLoad(value->getDataType()));
+                     TR::Node *regLoad = TR::Node::create(value, comp->il.opCodeForRegisterLoad(originalNode->getDataType()));
                      regLoad->setRegLoadStoreSymbolReference(storeNode->getRegLoadStoreSymbolReference());
                      regLoad->setGlobalRegisterNumber(storeNode->getGlobalRegisterNumber());
                      unavailableRegisters.set(storeNode->getGlobalRegisterNumber());
@@ -1068,7 +1071,8 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                dep->getLowGlobalRegisterNumber() == nodeInfoEntry->second.second->getLowGlobalRegisterNumber() && 
                dep->getHighGlobalRegisterNumber() == nodeInfoEntry->second.second->getHighGlobalRegisterNumber())
                {
-               // Passthrough uses same register as the replacement, do not need to do anything
+               regDeps->setAndIncChild(i, nodeInfoEntry->second.second);
+               dep->recursivelyDecReferenceCount();
                }
             else if (needToCreateRegStore && (!needToCheckStoreRegPostSplitPoint || !checkStoreRegNodeListForNode(dep, storeRegNodePostSplitPoint)))
                {
@@ -1076,7 +1080,7 @@ static void gatherUnavailableRegisters(TR::Compilation *comp, TR::Node *regDeps,
                // In these cases we need to create a regStore for the PassThrough.
                // If we have replacement then need to store the replacement to register, else, value needs to be stored. 
                TR::Node *nodeToBeStored = nodeInfoEntry->second.second != NULL ? nodeInfoEntry->second.second : value;
-               TR::Node *regStore = TR::Node::create(value, comp->il.opCodeForRegisterStore(value->getDataType()), 1, nodeToBeStored);
+               TR::Node *regStore = TR::Node::create(value, comp->il.opCodeForRegisterStore(originalNode->getDataType()), 1, nodeToBeStored);
                currentTT->insertBefore(TR::TreeTop::create(comp, regStore));
                regStore->setGlobalRegisterNumber(dep->getGlobalRegisterNumber());
                if (nodeToBeStored->requiresRegisterPair(comp))

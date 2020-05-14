@@ -98,6 +98,14 @@ TR::RegDepCopyRemoval::perform()
                      processRegDeps(lastChild, tt);
                   }
                }
+            else if (node->getOpCode().isStoreReg() 
+                     && node->getHighGlobalRegisterNumber() == static_cast<TR_GlobalRegisterNumber>(-1)
+                     && (node->getType().isIntegral() || node->getType().isAddress()))
+               {
+               TR_GlobalRegisterNumber lowReg = node->getLowGlobalRegisterNumber();
+               NodeChoice &choice = getNodeChoice(lowReg);
+               choice.regStoreNode = node;
+               }
             break;
          }
       }
@@ -136,7 +144,7 @@ void
 TR::RegDepCopyRemoval::discardAllNodeChoices()
    {
    for (TR_GlobalRegisterNumber reg = _regBegin; reg < _regEnd; reg++)
-      discardNodeChoice(reg);
+      clearNodeChoice(reg);
    }
 
 void
@@ -145,6 +153,15 @@ TR::RegDepCopyRemoval::discardNodeChoice(TR_GlobalRegisterNumber reg)
    NodeChoice &choice = getNodeChoice(reg);
    choice.original = NULL;
    choice.selected = NULL;
+   }
+
+void
+TR::RegDepCopyRemoval::clearNodeChoice(TR_GlobalRegisterNumber reg)
+   {
+   NodeChoice &choice = getNodeChoice(reg);
+   choice.original = NULL;
+   choice.selected = NULL;
+   choice.regStoreNode = NULL;
    }
 
 void
@@ -218,15 +235,24 @@ TR::RegDepCopyRemoval::readRegDeps()
          continue;
          }
 
-      // Only process integral and address-type nodes; they'll go into GPRs
+
       TR_GlobalRegisterNumber reg = depNode->getGlobalRegisterNumber();
       TR::DataType depType = depValue->getType();
-      if (!depType.isIntegral() && !depType.isAddress())
+      // Only process integral and address-type nodes; they'll go into GPRs
+      if (!depType.isIntegral() && !depType.isAddress()) 
          {
          ignoreRegister(reg);
          continue;
          }
-
+      
+      NodeChoice &choice = getNodeChoice(reg);
+      // In a rare case, for the given register last regStore we have seen used different node then the node under PassThrough
+      // Skipping such cases. 
+      if (choice.regStoreNode != NULL && choice.regStoreNode->getFirstChild() != depValue)
+         {
+         ignoreRegister(reg);
+         continue;
+         }
       RegDepInfo &dep = getRegDepInfo(reg);
       TR_ASSERT(dep.state == REGDEP_ABSENT, "register %s is multiply-specified\n", registerName(reg));
       dep.node = depNode;
@@ -408,9 +434,21 @@ TR::RegDepCopyRemoval::makeFreshCopy(TR_GlobalRegisterNumber reg)
       copyNode = TR::Node::create(TR::PassThrough, 1, dep.value);
       copyNode->setCopyToNewVirtualRegister();
       }
-
-   TR::Node *copyTreetopNode = TR::Node::create(TR::treetop, 1, copyNode);
-   _treetop->insertBefore(TR::TreeTop::create(comp(), copyTreetopNode));
+   NodeChoice &choice = getNodeChoice(reg);
+   if (choice.regStoreNode == NULL)
+      {
+      // As we walk down in Extended Basic Block, for each register, if exists, we record a regStore node, if we do not have one found for given register, node should be regLoad. 
+      TR_ASSERT_FATAL(dep.node->getOpCode().isLoadReg(), "Only PassThrough (with a corresponding regStore appeared before) or regLoad is expected as children of GlRegDeps, Unexpected Node is n%dn OpCode %s",dep.node->getGlobalIndex(), dep.node->getOpCode().getName());
+      choice.regStoreNode = TR::Node::create(dep.node, comp()->il.opCodeForRegisterStore(dep.node->getDataType()), 1, copyNode);
+      _treetop->insertBefore(TR::TreeTop::create(comp(), choice.regStoreNode));
+      choice.regStoreNode->setGlobalRegisterNumber(dep.node->getGlobalRegisterNumber());
+      choice.regStoreNode->setRegLoadStoreSymbolReference(dep.node->getRegLoadStoreSymbolReference());
+      }
+   else
+      {
+      choice.regStoreNode->setAndIncChild(0, copyNode);
+      dep.value->recursivelyDecReferenceCount();
+      }
    if (trace())
       traceMsg(comp(), "\tcopy is n%un\n", copyNode->getGlobalIndex());
 

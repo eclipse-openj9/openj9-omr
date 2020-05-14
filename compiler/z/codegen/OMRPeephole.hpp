@@ -75,6 +75,18 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    bool attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
 
    /** \brief
+    *     Attempts to remove duplicate NILF instructions which target the same register and use the same immediate or
+    *     redundant NILF instructions where the second NILF operation would not change the value of the target register.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToRemoveDuplicateNILF(TR::Instruction* cursor);
+
+   /** \brief
     *     Attempts to remove duplicate NILH instructions which target the same register and use the same immediate.
     *
     *  \param cursor

@@ -45,6 +45,11 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
       {
       switch(cursor->getOpCodeValue())
          {
+         case TR::InstOpCode::NILF:
+            {
+            performed |= attemptToRemoveDuplicateNILF(cursor);
+            break;
+            }
          case TR::InstOpCode::NILH:
             {
             performed |= attemptToRemoveDuplicateNILH(cursor);
@@ -179,6 +184,67 @@ OMR::Z::Peephole::attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpC
          return true;
          }
       }
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToRemoveDuplicateNILF(TR::Instruction* cursor)
+   {
+   if (cursor->getNext()->getKind() == TR::Instruction::IsRIL)
+      {
+      TR::S390RILInstruction* currInst = static_cast<TR::S390RILInstruction*>(cursor);
+      TR::S390RILInstruction* nextInst = static_cast<TR::S390RILInstruction*>(cursor->getNext());
+
+      bool instructionsMatch =
+         (currInst->getTargetPtr() == nextInst->getTargetPtr()) &&
+         (currInst->getTargetSnippet() == nextInst->getTargetSnippet()) &&
+         (currInst->getTargetSymbol() == nextInst->getTargetSymbol()) &&
+         (currInst->getTargetLabel() == nextInst->getTargetLabel()) &&
+         (currInst->getMask() == nextInst->getMask()) &&
+         (currInst->getSymbolReference() == nextInst->getSymbolReference());
+
+      if (instructionsMatch)
+         {
+         if (currInst->matchesTargetRegister(nextInst->getRegisterOperand(1)) &&
+            nextInst->matchesTargetRegister(currInst->getRegisterOperand(1)))
+            {
+            if (currInst->getSourceImmediate() == nextInst->getSourceImmediate())
+               {
+               if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting duplicate NILF from pair %p %p*\n", currInst, nextInst))
+                  {
+                  cg()->deleteInst(nextInst);
+
+                  return true;
+                  }
+               }
+            // To perform
+            //
+            // NILF     @05,X'000000C0'
+            // NILF     @05,X'000000FF'
+            //
+            // ->
+            //
+            // NILF     @05,X'000000C0'
+            //
+            // test if
+            // ((C0 & FF) == C0) && ((FF & C0) != FF)
+            //
+            // want to remove the second unnecessary instruction
+            //
+            else if (((currInst->getSourceImmediate() & nextInst->getSourceImmediate()) == currInst->getSourceImmediate()) &&
+               ((nextInst->getSourceImmediate() & currInst->getSourceImmediate()) != nextInst->getSourceImmediate()))
+               {
+               if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting unnecessary NILF from pair %p %p*\n", currInst, nextInst))
+                  {
+                  cg()->deleteInst(nextInst);
+
+                  return true;
+                  }
+               }
+            }
+         }
+      }
+
    return false;
    }
 

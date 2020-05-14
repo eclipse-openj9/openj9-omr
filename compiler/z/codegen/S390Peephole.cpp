@@ -60,69 +60,8 @@ TR_S390Peephole::TR_S390Peephole(TR::Compilation* comp)
    {
    }
 
-TR_S390PreRAPeephole::TR_S390PreRAPeephole(TR::Compilation* comp)
-   : TR_S390Peephole(comp)
-   {
-   }
-
-void
-TR_S390PreRAPeephole::perform()
-   {
-   TR::Delimiter d(comp(), comp()->getOption(TR_TraceCG), "preRAPeephole");
-
-   if (comp()->getOption(TR_TraceCG))
-      printInfo("\nPost PreRegister Assignment Peephole Optimization Instructions:\n");
-
-   while (_cursor != NULL)
-      {
-      switch(_cursor->getOpCodeValue())
-         {
-         case TR::InstOpCode::L:
-            {
-            attemptLoadStoreReduction(TR::InstOpCode::ST, 4);
-            if (comp()->getOption(TR_TraceCG))
-               {
-               printInst();
-               }
-            break;
-            }
-         case TR::InstOpCode::LFH:
-            {
-            attemptLoadStoreReduction(TR::InstOpCode::STFH, 4);
-            if (comp()->getOption(TR_TraceCG))
-               {
-               printInst();
-               }
-            break;
-            }
-         case TR::InstOpCode::LG:
-            {
-            attemptLoadStoreReduction(TR::InstOpCode::STG, 8);
-            if (comp()->getOption(TR_TraceCG))
-               {
-               printInst();
-               }
-            break;
-            }
-         default:
-            {
-            if (comp()->getOption(TR_TraceCG))
-               {
-               printInst();
-               }
-            break;
-            }
-         }
-
-      _cursor = _cursor->getNext();
-      }
-
-   if (comp()->getOption(TR_TraceCG))
-      printInfo("\n\n");
-   }
-
 bool
-TR_S390PreRAPeephole::attemptLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size)
+TR_S390Peephole::attemptLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size)
    {
    if (_cursor->getNext()->getOpCodeValue() == storeOpCode)
       {
@@ -259,15 +198,8 @@ TR::Instruction* realInstructionWithLabelsAndRET(TR::Instruction* inst, bool for
    return inst;
    }
 
-///////////////////////////////////////////////////////////////////////////////
-
-TR_S390PostRAPeephole::TR_S390PostRAPeephole(TR::Compilation* comp)
-   : TR_S390Peephole(comp)
-   {
-   }
-
 bool
-TR_S390PostRAPeephole::isBarrierToPeepHoleLookback(TR::Instruction *current)
+TR_S390Peephole::isBarrierToPeepHoleLookback(TR::Instruction *current)
    {
    if (NULL == current) return true;
 
@@ -282,7 +214,7 @@ TR_S390PostRAPeephole::isBarrierToPeepHoleLookback(TR::Instruction *current)
    }
 
 bool
-TR_S390PostRAPeephole::AGIReduction()
+TR_S390Peephole::AGIReduction()
    {
    if (comp()->getOption(TR_Randomize))
       {
@@ -486,7 +418,7 @@ TR_S390PostRAPeephole::AGIReduction()
 
 ///////////////////////////////////////////////////////////////////////////////
 bool
-TR_S390PostRAPeephole::ICMReduction()
+TR_S390Peephole::ICMReduction()
    {
    if (comp()->getOption(TR_Randomize))
       {
@@ -594,7 +526,7 @@ TR_S390PostRAPeephole::ICMReduction()
    }
 
 bool
-TR_S390PostRAPeephole::LAReduction()
+TR_S390Peephole::LAReduction()
    {
    TR::Instruction *s390Instr = _cursor;
    bool performed = false;
@@ -636,7 +568,7 @@ TR_S390PostRAPeephole::LAReduction()
    }
 
 bool
-TR_S390PostRAPeephole::duplicateNILHReduction()
+TR_S390Peephole::duplicateNILHReduction()
    {
    if (_cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILH)
       {
@@ -676,7 +608,7 @@ TR_S390PostRAPeephole::duplicateNILHReduction()
    }
 
 bool
-TR_S390PostRAPeephole::clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *targetReg)
+TR_S390Peephole::clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *targetReg)
    {
    if (inst->defsRegister(targetReg))
       {
@@ -710,13 +642,13 @@ TR_S390PostRAPeephole::clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Re
    }
 
 bool
-TR_S390PostRAPeephole::unnecessaryNILHReduction()
+TR_S390Peephole::unnecessaryNILHReduction()
    {
    return false;
    }
 
 bool
-TR_S390PostRAPeephole::NILHReduction()
+TR_S390Peephole::NILHReduction()
    {
    bool transformed = false;
 
@@ -746,7 +678,7 @@ findActiveCCInst(TR::Instruction *curr, TR::InstOpCode::Mnemonic op, TR::Registe
    }
 
 bool
-TR_S390PostRAPeephole::branchReduction()
+TR_S390Peephole::branchReduction()
    {
    return false;
    }
@@ -756,7 +688,7 @@ TR_S390PostRAPeephole::branchReduction()
  * in a memref
  */
 bool
-TR_S390PostRAPeephole::seekRegInFutureMemRef(int32_t maxWindowSize, TR::Register *targetReg)
+TR_S390Peephole::seekRegInFutureMemRef(int32_t maxWindowSize, TR::Register *targetReg)
    {
    TR::Instruction * current = _cursor->getNext();
    int32_t windowSize=0;
@@ -788,7 +720,7 @@ TR_S390PostRAPeephole::seekRegInFutureMemRef(int32_t maxWindowSize, TR::Register
  * in SignalHandler.c
  */
 bool
-TR_S390PostRAPeephole::removeMergedNullCHK()
+TR_S390Peephole::removeMergedNullCHK()
    {
       if (comp()->target().isZOS())
         {
@@ -897,7 +829,7 @@ TR_S390PostRAPeephole::removeMergedNullCHK()
  *       LTR GPRx, GPRy
  */
 bool
-TR_S390PostRAPeephole::LRReduction()
+TR_S390Peephole::LRReduction()
    {
    if (comp()->getOption(TR_Randomize))
       {
@@ -1147,7 +1079,7 @@ TR_S390PostRAPeephole::LRReduction()
  *    LLGC  Rs, Mem
  */
 bool
-TR_S390PostRAPeephole::LLCReduction()
+TR_S390Peephole::LLCReduction()
    {
    if (comp()->getOption(TR_Randomize))
       {
@@ -1208,7 +1140,7 @@ TR_S390PostRAPeephole::LLCReduction()
  *    LGFR  Rt, Rs
  */
 bool
-TR_S390PostRAPeephole::LGFRReduction()
+TR_S390Peephole::LGFRReduction()
    {
    if (comp()->getOption(TR_Randomize))
       {
@@ -1280,7 +1212,7 @@ TR_S390PostRAPeephole::LGFRReduction()
  *    ...    ...
  */
 bool
-TR_S390PostRAPeephole::ConditionalBranchReduction(TR::InstOpCode::Mnemonic branchOPReplacement)
+TR_S390Peephole::ConditionalBranchReduction(TR::InstOpCode::Mnemonic branchOPReplacement)
    {
    // This optimization relies on hardware instructions introduced in z13
    if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
@@ -1350,7 +1282,7 @@ TR_S390PostRAPeephole::ConditionalBranchReduction(TR::InstOpCode::Mnemonic branc
  *    CLRJ R1, R2, Label, Mask
  */
 bool
-TR_S390PostRAPeephole::CompareAndBranchReduction()
+TR_S390Peephole::CompareAndBranchReduction()
    {
    if (!comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       return false;
@@ -1446,7 +1378,7 @@ TR_S390PostRAPeephole::CompareAndBranchReduction()
  *    LZOpCode  Rx, Mem
  */
 bool
-TR_S390PostRAPeephole::LoadAndMaskReduction(TR::InstOpCode::Mnemonic LZOpCode)
+TR_S390Peephole::LoadAndMaskReduction(TR::InstOpCode::Mnemonic LZOpCode)
    {
    // This optimization relies on hardware instructions introduced in z13
    if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
@@ -1563,7 +1495,7 @@ bool hasDefineToRegister(TR::Instruction * curr, TR::Register * reg)
  * in same grouping, causing pipeline flush + late load = perf hit.
  */
 bool
-TR_S390PostRAPeephole::trueCompEliminationForCompare()
+TR_S390Peephole::trueCompEliminationForCompare()
    {
    // z10 specific
    if (!comp()->target().cpu.getSupportsArch(TR::CPU::z10) || comp()->target().cpu.getSupportsArch(TR::CPU::z196))
@@ -1702,7 +1634,7 @@ TR_S390PostRAPeephole::trueCompEliminationForCompare()
  * in same grouping, causing pipeline flush + late load = perf hit.
  */
 bool
-TR_S390PostRAPeephole::trueCompEliminationForCompareAndBranch()
+TR_S390Peephole::trueCompEliminationForCompareAndBranch()
    {
    // z10 specific
    if (!comp()->target().cpu.getSupportsArch(TR::CPU::z10) || comp()->target().cpu.getSupportsArch(TR::CPU::z196))
@@ -1844,7 +1776,7 @@ TR_S390PostRAPeephole::trueCompEliminationForCompareAndBranch()
    }
 
 bool
-TR_S390PostRAPeephole::trueCompEliminationForLoadComp()
+TR_S390Peephole::trueCompEliminationForLoadComp()
    {
    if (!comp()->target().cpu.getSupportsArch(TR::CPU::z10) || comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
@@ -1938,7 +1870,7 @@ TR_S390PostRAPeephole::trueCompEliminationForLoadComp()
  * the 4-byte instruction.
  */
 bool
-TR_S390PostRAPeephole::DAARemoveOutlinedLabelNop(bool hasPadding)
+TR_S390Peephole::DAARemoveOutlinedLabelNop(bool hasPadding)
    {
    // Make sure the current instruction is a DAA intrinsic instruction
    if (_cursor->throwsImplicitException())
@@ -2000,7 +1932,7 @@ TR_S390PostRAPeephole::DAARemoveOutlinedLabelNop(bool hasPadding)
  * the 4-byte instruction.
  */
 bool
-TR_S390PostRAPeephole::DAAHandleMemoryReferenceSpill(bool hasPadding)
+TR_S390Peephole::DAAHandleMemoryReferenceSpill(bool hasPadding)
    {
    // Make sure the current instruction is a DAA intrinsic instruction
    if (_cursor->throwsImplicitException())
@@ -2090,7 +2022,7 @@ TR_S390PostRAPeephole::DAAHandleMemoryReferenceSpill(bool hasPadding)
  *         false otherwise
  */
 bool
-TR_S390PostRAPeephole::revertTo32BitShift()
+TR_S390Peephole::revertTo32BitShift()
    {
    if (comp()->getOption(TR_Randomize))
       {
@@ -2173,7 +2105,7 @@ TR_S390PostRAPeephole::revertTo32BitShift()
  * runtime performance.
  */
 bool
-TR_S390PostRAPeephole::inlineEXtargetHelper(TR::Instruction *inst, TR::Instruction * instrB4EX)
+TR_S390Peephole::inlineEXtargetHelper(TR::Instruction *inst, TR::Instruction * instrB4EX)
    {
    if (performTransformation(comp(), "O^O S390 PEEPHOLE: Converting LARL;EX into EXRL instr=[%p]\n", _cursor))
       {
@@ -2246,7 +2178,7 @@ TR_S390PostRAPeephole::inlineEXtargetHelper(TR::Instruction *inst, TR::Instructi
    }
 
 bool
-TR_S390PostRAPeephole::inlineEXtarget()
+TR_S390Peephole::inlineEXtarget()
    {
    // try to find a label followed an unconditional branch
    TR::Instruction * inst = _cursor;
@@ -2313,7 +2245,7 @@ TR_S390PostRAPeephole::inlineEXtarget()
  * AHIK    GPR6,GPR0, -1
  */
 bool
-TR_S390PostRAPeephole::attemptZ7distinctOperants()
+TR_S390Peephole::attemptZ7distinctOperants()
    {
    if (comp()->getOption(TR_Randomize))
       {
@@ -2575,7 +2507,7 @@ TR_S390PostRAPeephole::attemptZ7distinctOperants()
    }
 
 void
-TR_S390PostRAPeephole::markBlockThatModifiesRegister(TR::Instruction * cursor,
+TR_S390Peephole::markBlockThatModifiesRegister(TR::Instruction * cursor,
                                                TR::Register * targetReg)
    {
    // some stores use targetReg as part of source
@@ -2609,7 +2541,7 @@ TR_S390PostRAPeephole::markBlockThatModifiesRegister(TR::Instruction * cursor,
    }
 
 void
-TR_S390PostRAPeephole::reloadLiteralPoolRegisterForCatchBlock()
+TR_S390Peephole::reloadLiteralPoolRegisterForCatchBlock()
    {
    // When dynamic lit pool reg is disabled, we lock R6 as dedicated lit pool reg.
    // This causes a failure when we come back to a catch block because the register context will not be preserved.
@@ -2632,13 +2564,13 @@ TR_S390PostRAPeephole::reloadLiteralPoolRegisterForCatchBlock()
    }
 
 bool
-TR_S390PostRAPeephole::DeadStoreToSpillReduction()
+TR_S390Peephole::DeadStoreToSpillReduction()
   {
   return false;
   }
 
 bool
-TR_S390PostRAPeephole::tryMoveImmediate()
+TR_S390Peephole::tryMoveImmediate()
   {
   return false;
   }
@@ -2652,7 +2584,7 @@ TR_S390PostRAPeephole::tryMoveImmediate()
  *     That is, we are trying to find instruction that comes after the LHI in the execution order that will clobber
  *     the condition code before any instruction that consumes a condition code.
  */
-bool TR_S390PostRAPeephole::ReduceLHIToXR()
+bool TR_S390Peephole::ReduceLHIToXR()
   {
   TR::S390RIInstruction* lhiInstruction = static_cast<TR::S390RIInstruction*>(_cursor);
 
@@ -2683,453 +2615,502 @@ bool TR_S390PostRAPeephole::ReduceLHIToXR()
   }
 
 void
-TR_S390PostRAPeephole::perform()
+TR_S390Peephole::perform()
    {
-   TR::Delimiter d(comp(), comp()->getOption(TR_TraceCG), "postRAPeephole");
+   TR::Delimiter d(comp(), comp()->getOption(TR_TraceCG), "Peephole");
 
    if (comp()->getOption(TR_TraceCG))
-      printInfo("\nPost PostRegister Assignment Peephole Optimization Instructions:\n");
+      printInfo("\nPeephole Optimization Instructions:\n");
 
    bool moveInstr;
 
-   while (_cursor != NULL)
+   if (!_cg->afterRA())
       {
-      if (_cursor->getNode()!= NULL && _cursor->getNode()->getOpCodeValue() == TR::BBStart)
+      while (_cursor != NULL)
          {
-         comp()->setCurrentBlock(_cursor->getNode()->getBlock());
-         // reload literal pool for catch blocks that need it
-         TR::Block * blk = _cursor->getNode()->getBlock();
-         if ( blk->isCatchBlock() && (blk->getFirstInstruction() == _cursor) )
-            reloadLiteralPoolRegisterForCatchBlock();
-         }
-
-      if (_cursor->getOpCodeValue() != TR::InstOpCode::FENCE &&
-          _cursor->getOpCodeValue() != TR::InstOpCode::ASSOCREGS &&
-          _cursor->getOpCodeValue() != TR::InstOpCode::DEPEND)
-         {
-         TR::RegisterDependencyConditions * deps =  _cursor->getDependencyConditions();
-         bool depCase = (_cursor->isBranchOp() || _cursor->isLabel()) && deps;
-         if (depCase)
+         switch(_cursor->getOpCodeValue())
             {
-            _cg->getS390Linkage()->markPreservedRegsInDep(deps);
-            }
-
-         //handle all other regs
-         TR::Register *reg = _cursor->getRegisterOperand(1);
-         markBlockThatModifiesRegister(_cursor, reg);
-         }
-
-      // this code is used to handle all compare instruction which sets the compare flag
-      // we can eventually extend this to include other instruction which sets the
-      // condition code and and uses a complemented register
-      if (_cursor->getOpCode().setsCompareFlag() &&
-          _cursor->getOpCodeValue() != TR::InstOpCode::CHLR &&
-          _cursor->getOpCodeValue() != TR::InstOpCode::CLHLR)
-         {
-         trueCompEliminationForCompare();
-         if (comp()->getOption(TR_TraceCG))
-            printInst();
-         }
-
-      if (_cursor->isBranchOp())
-         forwardBranchTarget();
-
-      moveInstr = true;
-      switch (_cursor->getOpCodeValue())
-         {
-         case TR::InstOpCode::AP:
-         case TR::InstOpCode::SP:
-         case TR::InstOpCode::MP:
-         case TR::InstOpCode::DP:
-         case TR::InstOpCode::CP:
-         case TR::InstOpCode::SRP:
-         case TR::InstOpCode::CVBG:
-         case TR::InstOpCode::CVBY:
-         case TR::InstOpCode::ZAP:
-            if (!DAAHandleMemoryReferenceSpill(false))
-               DAARemoveOutlinedLabelNop(false);
-            break;
-
-         case TR::InstOpCode::CVB:
-            if (!DAAHandleMemoryReferenceSpill(true))
-               DAARemoveOutlinedLabelNop(true);
-            break;
-
-         case TR::InstOpCode::CPYA:
-            {
-            LRReduction();
-            break;
-            }
-         case TR::InstOpCode::IPM:
-            {
-            if (!branchReduction())
+            case TR::InstOpCode::L:
                {
+               attemptLoadStoreReduction(TR::InstOpCode::ST, 4);
                if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               }
-            break;
-            }
-        case TR::InstOpCode::ST:
-            {
-            if(DeadStoreToSpillReduction())
-              break;
-            if(tryMoveImmediate())
-              break;
-            if (comp()->getOption(TR_TraceCG))
-               printInst();
-            break;
-            }
-        case TR::InstOpCode::STY:
-            {
-            if(DeadStoreToSpillReduction())
-              break;
-            if (comp()->getOption(TR_TraceCG))
-               printInst();
-            break;
-            }
-        case TR::InstOpCode::STG:
-          if(DeadStoreToSpillReduction())
-            break;
-          if(tryMoveImmediate())
-            break;
-          if(comp()->getOption(TR_TraceCG))
-            printInst();
-          break;
-        case TR::InstOpCode::STE:
-        case TR::InstOpCode::STEY:
-        case TR::InstOpCode::STD:
-        case TR::InstOpCode::STDY:
-           if (DeadStoreToSpillReduction())
-              break;
-           if (comp()->getOption(TR_TraceCG))
-              printInst();
-          break;
-         case TR::InstOpCode::LDR:
-            {
-            LRReduction();
-            break;
-            }
-         case TR::InstOpCode::L:
-            {
-            if (!ICMReduction())
-               {
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               }
-            LoadAndMaskReduction(TR::InstOpCode::LZRF);
-            break;
-            }
-         case TR::InstOpCode::LA:
-            {
-            if (!LAReduction())
-               {
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               }
-            break;
-            }
-
-         case TR::InstOpCode::LHI:
-            {
-            // This optimization is disabled by default because there exist cases in which we cannot determine whether this transformation
-            // is functionally valid or not. The issue resides in the various runtime patching sequences using the LHI instruction as a
-            // runtime patch point for an offset. One concrete example can be found in the virtual dispatch sequence for unresolved calls
-            // on 31-bit platforms where an LHI instruction is used and is patched at runtime.
-            //
-            // TODO (Issue #255): To enable this optimization we need to implement an API which marks instructions that will be patched at
-            // runtime and prevent ourselves from modifying such instructions in any way.
-            //
-            // ReduceLHIToXR();
-            }
-            break;
-
-         case TR::InstOpCode::EX:
-            {
-            static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
-
-            if (_cursor->isOutOfLineEX() && !comp()->getCurrentBlock()->isCold() && !(bool)disableEXRLDispatch && comp()->target().cpu.getSupportsArch(TR::CPU::z10))
-               inlineEXtarget();
-            break;
-            }
-         case TR::InstOpCode::LHR:
-            {
-            break;
-            }
-         case TR::InstOpCode::LR:
-         case TR::InstOpCode::LTR:
-            {
-            LRReduction();
-            AGIReduction();
-            if (comp()->getOption(TR_TraceCG))
-               {
-               printInst();
-               }
-
-            if (attemptZ7distinctOperants())
-               {
-               moveInstr = false;
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               }
-
-            break;
-            }
-         case TR::InstOpCode::LLC:
-            {
-            LLCReduction();
-            if (comp()->getOption(TR_TraceCG))
-               {
-               printInst();
-               }
-            break;
-            }
-         case TR::InstOpCode::LLGF:
-            {
-            LoadAndMaskReduction(TR::InstOpCode::LLZRGF);
-            break;
-            }
-         case TR::InstOpCode::LG:
-            {
-            LoadAndMaskReduction(TR::InstOpCode::LZRG);
-            if (comp()->getOption(TR_TraceCG))
-               printInst();
-            break;
-            }
-         case TR::InstOpCode::LGR:
-         case TR::InstOpCode::LTGR:
-            {
-            LRReduction();
-            LGFRReduction();
-            AGIReduction();
-            if (comp()->getOption(TR_TraceCG))
-               {
-               printInst();
-               }
-
-            if (attemptZ7distinctOperants())
-               {
-               moveInstr = false;
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               }
-
-            break;
-            }
-         case TR::InstOpCode::CGIT:
-            {
-            if (comp()->target().is64Bit() && !removeMergedNullCHK())
-               {
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               }
-            break;
-            }
-         case TR::InstOpCode::CRJ:
-            {
-            ConditionalBranchReduction(TR::InstOpCode::CR);
-
-            trueCompEliminationForCompareAndBranch();
-
-            if (comp()->getOption(TR_TraceCG))
-               printInst();
-
-            break;
-            }
-
-         case TR::InstOpCode::CGRJ:
-            {
-            ConditionalBranchReduction(TR::InstOpCode::CGR);
-
-            trueCompEliminationForCompareAndBranch();
-
-            if (comp()->getOption(TR_TraceCG))
-               printInst();
-
-            break;
-            }
-
-         case TR::InstOpCode::CRB:
-         case TR::InstOpCode::CRT:
-         case TR::InstOpCode::CGFR:
-         case TR::InstOpCode::CGRT:
-         case TR::InstOpCode::CLR:
-            {
-            CompareAndBranchReduction();
-            trueCompEliminationForCompareAndBranch();
-
-            if (comp()->getOption(TR_TraceCG))
-               printInst();
-
-            break;
-            }
-         case TR::InstOpCode::CLRB:
-         case TR::InstOpCode::CLRJ:
-         case TR::InstOpCode::CLRT:
-         case TR::InstOpCode::CLGRB:
-         case TR::InstOpCode::CLGFR:
-         case TR::InstOpCode::CLGRT:
-            {
-            trueCompEliminationForCompareAndBranch();
-
-            if (comp()->getOption(TR_TraceCG))
-               printInst();
-
-            break;
-            }
-
-         case TR::InstOpCode::LCGFR:
-         case TR::InstOpCode::LCGR:
-         case TR::InstOpCode::LCR:
-            {
-            trueCompEliminationForLoadComp();
-
-            if (comp()->getOption(TR_TraceCG))
-               printInst();
-
-            break;
-            }
-
-         case TR::InstOpCode::SLLG:
-         case TR::InstOpCode::SLAG:
-         case TR::InstOpCode::SLLK:
-         case TR::InstOpCode::SRLK:
-         case TR::InstOpCode::SLAK:
-         case TR::InstOpCode::SRAK:
-            revertTo32BitShift();
-            if (comp()->getOption(TR_TraceCG))
-               printInst();
-            break;
-
-         case TR::InstOpCode::NILH:
-            if (!NILHReduction())
-               {
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               }
-            break;
-
-         case TR::InstOpCode::NILF:
-            if (_cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILF)
-               {
-               TR::Instruction * na = _cursor;
-               TR::Instruction * nb = _cursor->getNext();
-
-               // want to delete nb if na == nb - use deleteInst
-
-               if ((na->getKind() == TR::Instruction::IsRIL) &&
-                   (nb->getKind() == TR::Instruction::IsRIL))
                   {
-                  // NILF == generateRILInstruction
-                  TR::S390RILInstruction * cast_na = (TR::S390RILInstruction *)na;
-                  TR::S390RILInstruction * cast_nb = (TR::S390RILInstruction *)nb;
+                  printInst();
+                  }
+               break;
+               }
+            case TR::InstOpCode::LFH:
+               {
+               attemptLoadStoreReduction(TR::InstOpCode::STFH, 4);
+               if (comp()->getOption(TR_TraceCG))
+                  {
+                  printInst();
+                  }
+               break;
+               }
+            case TR::InstOpCode::LG:
+               {
+               attemptLoadStoreReduction(TR::InstOpCode::STG, 8);
+               if (comp()->getOption(TR_TraceCG))
+                  {
+                  printInst();
+                  }
+               break;
+               }
+            default:
+               {
+               if (comp()->getOption(TR_TraceCG))
+                  {
+                  printInst();
+                  }
+               break;
+               }
+            }
 
-                  bool instructionsMatch =
-                     (cast_na->getTargetPtr() == cast_nb->getTargetPtr()) &&
-                     (cast_na->getTargetSnippet() == cast_nb->getTargetSnippet()) &&
-                     (cast_na->getTargetSymbol() == cast_nb->getTargetSymbol()) &&
-                     (cast_na->getTargetLabel() == cast_nb->getTargetLabel()) &&
-                     (cast_na->getMask() == cast_nb->getMask()) &&
-                     (cast_na->getSymbolReference() == cast_nb->getSymbolReference());
+         _cursor = _cursor->getNext();
+         }
+      }
+   else
+      {
+      while (_cursor != NULL)
+         {
+         if (_cursor->getNode() != NULL && _cursor->getNode()->getOpCodeValue() == TR::BBStart)
+            {
+            comp()->setCurrentBlock(_cursor->getNode()->getBlock());
+            // reload literal pool for catch blocks that need it
+            TR::Block * blk = _cursor->getNode()->getBlock();
+            if (blk->isCatchBlock() && (blk->getFirstInstruction() == _cursor))
+               reloadLiteralPoolRegisterForCatchBlock();
+            }
 
-                  if (instructionsMatch)
+         if (_cursor->getOpCodeValue() != TR::InstOpCode::FENCE &&
+            _cursor->getOpCodeValue() != TR::InstOpCode::ASSOCREGS &&
+            _cursor->getOpCodeValue() != TR::InstOpCode::DEPEND)
+            {
+            TR::RegisterDependencyConditions * deps = _cursor->getDependencyConditions();
+            bool depCase = (_cursor->isBranchOp() || _cursor->isLabel()) && deps;
+            if (depCase)
+               {
+               _cg->getS390Linkage()->markPreservedRegsInDep(deps);
+               }
+
+            //handle all other regs
+            TR::Register *reg = _cursor->getRegisterOperand(1);
+            markBlockThatModifiesRegister(_cursor, reg);
+            }
+
+         // this code is used to handle all compare instruction which sets the compare flag
+         // we can eventually extend this to include other instruction which sets the
+         // condition code and and uses a complemented register
+         if (_cursor->getOpCode().setsCompareFlag() &&
+            _cursor->getOpCodeValue() != TR::InstOpCode::CHLR &&
+            _cursor->getOpCodeValue() != TR::InstOpCode::CLHLR)
+            {
+            trueCompEliminationForCompare();
+            if (comp()->getOption(TR_TraceCG))
+               printInst();
+            }
+
+         if (_cursor->isBranchOp())
+            forwardBranchTarget();
+
+         moveInstr = true;
+         switch (_cursor->getOpCodeValue())
+            {
+            case TR::InstOpCode::AP:
+            case TR::InstOpCode::SP:
+            case TR::InstOpCode::MP:
+            case TR::InstOpCode::DP:
+            case TR::InstOpCode::CP:
+            case TR::InstOpCode::SRP:
+            case TR::InstOpCode::CVBG:
+            case TR::InstOpCode::CVBY:
+            case TR::InstOpCode::ZAP:
+               if (!DAAHandleMemoryReferenceSpill(false))
+                  DAARemoveOutlinedLabelNop(false);
+               break;
+
+            case TR::InstOpCode::CVB:
+               if (!DAAHandleMemoryReferenceSpill(true))
+                  DAARemoveOutlinedLabelNop(true);
+               break;
+
+            case TR::InstOpCode::CPYA:
+               {
+               LRReduction();
+               break;
+               }
+            case TR::InstOpCode::IPM:
+               {
+               if (!branchReduction())
+                  {
+                  if (comp()->getOption(TR_TraceCG))
+                     printInst();
+                  }
+               break;
+               }
+            case TR::InstOpCode::ST:
+               {
+               if (DeadStoreToSpillReduction())
+                  break;
+               if (tryMoveImmediate())
+                  break;
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+               break;
+               }
+            case TR::InstOpCode::STY:
+               {
+               if (DeadStoreToSpillReduction())
+                  break;
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+               break;
+               }
+            case TR::InstOpCode::STG:
+               if (DeadStoreToSpillReduction())
+                  break;
+               if (tryMoveImmediate())
+                  break;
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+               break;
+            case TR::InstOpCode::STE:
+            case TR::InstOpCode::STEY:
+            case TR::InstOpCode::STD:
+            case TR::InstOpCode::STDY:
+               if (DeadStoreToSpillReduction())
+                  break;
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+               break;
+            case TR::InstOpCode::LDR:
+               {
+               LRReduction();
+               break;
+               }
+            case TR::InstOpCode::L:
+               {
+               if (!ICMReduction())
+                  {
+                  if (comp()->getOption(TR_TraceCG))
+                     printInst();
+                  }
+               LoadAndMaskReduction(TR::InstOpCode::LZRF);
+               break;
+               }
+            case TR::InstOpCode::LA:
+               {
+               if (!LAReduction())
+                  {
+                  if (comp()->getOption(TR_TraceCG))
+                     printInst();
+                  }
+               break;
+               }
+
+            case TR::InstOpCode::LHI:
+               {
+               // This optimization is disabled by default because there exist cases in which we cannot determine whether this transformation
+               // is functionally valid or not. The issue resides in the various runtime patching sequences using the LHI instruction as a
+               // runtime patch point for an offset. One concrete example can be found in the virtual dispatch sequence for unresolved calls
+               // on 31-bit platforms where an LHI instruction is used and is patched at runtime.
+               //
+               // TODO (Issue #255): To enable this optimization we need to implement an API which marks instructions that will be patched at
+               // runtime and prevent ourselves from modifying such instructions in any way.
+               //
+               // ReduceLHIToXR();
+               }
+               break;
+
+            case TR::InstOpCode::EX:
+               {
+               static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
+
+               if (_cursor->isOutOfLineEX() && !comp()->getCurrentBlock()->isCold() && !(bool)disableEXRLDispatch && comp()->target().cpu.getSupportsArch(TR::CPU::z10))
+                  inlineEXtarget();
+               break;
+               }
+            case TR::InstOpCode::LHR:
+               {
+               break;
+               }
+            case TR::InstOpCode::LR:
+            case TR::InstOpCode::LTR:
+               {
+               LRReduction();
+               AGIReduction();
+               if (comp()->getOption(TR_TraceCG))
+                  {
+                  printInst();
+                  }
+
+               if (attemptZ7distinctOperants())
+                  {
+                  moveInstr = false;
+                  if (comp()->getOption(TR_TraceCG))
+                     printInst();
+                  }
+
+               break;
+               }
+            case TR::InstOpCode::LLC:
+               {
+               LLCReduction();
+               if (comp()->getOption(TR_TraceCG))
+                  {
+                  printInst();
+                  }
+               break;
+               }
+            case TR::InstOpCode::LLGF:
+               {
+               LoadAndMaskReduction(TR::InstOpCode::LLZRGF);
+               break;
+               }
+            case TR::InstOpCode::LG:
+               {
+               LoadAndMaskReduction(TR::InstOpCode::LZRG);
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+               break;
+               }
+            case TR::InstOpCode::LGR:
+            case TR::InstOpCode::LTGR:
+               {
+               LRReduction();
+               LGFRReduction();
+               AGIReduction();
+               if (comp()->getOption(TR_TraceCG))
+                  {
+                  printInst();
+                  }
+
+               if (attemptZ7distinctOperants())
+                  {
+                  moveInstr = false;
+                  if (comp()->getOption(TR_TraceCG))
+                     printInst();
+                  }
+
+               break;
+               }
+            case TR::InstOpCode::CGIT:
+               {
+               if (comp()->target().is64Bit() && !removeMergedNullCHK())
+                  {
+                  if (comp()->getOption(TR_TraceCG))
+                     printInst();
+                  }
+               break;
+               }
+            case TR::InstOpCode::CRJ:
+               {
+               ConditionalBranchReduction(TR::InstOpCode::CR);
+
+               trueCompEliminationForCompareAndBranch();
+
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+
+               break;
+               }
+
+            case TR::InstOpCode::CGRJ:
+               {
+               ConditionalBranchReduction(TR::InstOpCode::CGR);
+
+               trueCompEliminationForCompareAndBranch();
+
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+
+               break;
+               }
+
+            case TR::InstOpCode::CRB:
+            case TR::InstOpCode::CRT:
+            case TR::InstOpCode::CGFR:
+            case TR::InstOpCode::CGRT:
+            case TR::InstOpCode::CLR:
+               {
+               CompareAndBranchReduction();
+               trueCompEliminationForCompareAndBranch();
+
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+
+               break;
+               }
+            case TR::InstOpCode::CLRB:
+            case TR::InstOpCode::CLRJ:
+            case TR::InstOpCode::CLRT:
+            case TR::InstOpCode::CLGRB:
+            case TR::InstOpCode::CLGFR:
+            case TR::InstOpCode::CLGRT:
+               {
+               trueCompEliminationForCompareAndBranch();
+
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+
+               break;
+               }
+
+            case TR::InstOpCode::LCGFR:
+            case TR::InstOpCode::LCGR:
+            case TR::InstOpCode::LCR:
+               {
+               trueCompEliminationForLoadComp();
+
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+
+               break;
+               }
+
+            case TR::InstOpCode::SLLG:
+            case TR::InstOpCode::SLAG:
+            case TR::InstOpCode::SLLK:
+            case TR::InstOpCode::SRLK:
+            case TR::InstOpCode::SLAK:
+            case TR::InstOpCode::SRAK:
+               revertTo32BitShift();
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+               break;
+
+            case TR::InstOpCode::NILH:
+               if (!NILHReduction())
+                  {
+                  if (comp()->getOption(TR_TraceCG))
+                     printInst();
+                  }
+               break;
+
+            case TR::InstOpCode::NILF:
+               if (_cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILF)
+                  {
+                  TR::Instruction * na = _cursor;
+                  TR::Instruction * nb = _cursor->getNext();
+
+                  // want to delete nb if na == nb - use deleteInst
+
+                  if ((na->getKind() == TR::Instruction::IsRIL) &&
+                     (nb->getKind() == TR::Instruction::IsRIL))
                      {
-                     if (cast_na->matchesTargetRegister(cast_nb->getRegisterOperand(1)) &&
-                         cast_nb->matchesTargetRegister(cast_na->getRegisterOperand(1)))
+                     // NILF == generateRILInstruction
+                     TR::S390RILInstruction * cast_na = (TR::S390RILInstruction *)na;
+                     TR::S390RILInstruction * cast_nb = (TR::S390RILInstruction *)nb;
+
+                     bool instructionsMatch =
+                        (cast_na->getTargetPtr() == cast_nb->getTargetPtr()) &&
+                        (cast_na->getTargetSnippet() == cast_nb->getTargetSnippet()) &&
+                        (cast_na->getTargetSymbol() == cast_nb->getTargetSymbol()) &&
+                        (cast_na->getTargetLabel() == cast_nb->getTargetLabel()) &&
+                        (cast_na->getMask() == cast_nb->getMask()) &&
+                        (cast_na->getSymbolReference() == cast_nb->getSymbolReference());
+
+                     if (instructionsMatch)
                         {
-                        if (cast_na->getSourceImmediate() == cast_nb->getSourceImmediate())
+                        if (cast_na->matchesTargetRegister(cast_nb->getRegisterOperand(1)) &&
+                           cast_nb->matchesTargetRegister(cast_na->getRegisterOperand(1)))
                            {
-                           if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting duplicate NILF from pair %p %p*\n", _cursor, _cursor->getNext()))
+                           if (cast_na->getSourceImmediate() == cast_nb->getSourceImmediate())
                               {
-                              _cg->deleteInst(_cursor->getNext());
+                              if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting duplicate NILF from pair %p %p*\n", _cursor, _cursor->getNext()))
+                                 {
+                                 _cg->deleteInst(_cursor->getNext());
+                                 }
                               }
-                           }
-                        // To perform
-                        //
-                        // NILF     @05,X'000000C0'
-                        // NILF     @05,X'000000FF'
-                        //
-                        // ->
-                        //
-                        // NILF     @05,X'000000C0'
-                        //
-                        // test if
-                        // ((C0 & FF) == C0) && ((FF & C0) != FF)
-                        //
-                        // want to remove the second unnecessary instruction
-                        //
-                        else if (((cast_na->getSourceImmediate() & cast_nb->getSourceImmediate()) == cast_na->getSourceImmediate()) &&
-                                 ((cast_nb->getSourceImmediate() & cast_na->getSourceImmediate()) != cast_nb->getSourceImmediate()))
-                           {
-                           if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting unnecessary NILF from pair %p %p*\n", _cursor, _cursor->getNext()))
+                           // To perform
+                           //
+                           // NILF     @05,X'000000C0'
+                           // NILF     @05,X'000000FF'
+                           //
+                           // ->
+                           //
+                           // NILF     @05,X'000000C0'
+                           //
+                           // test if
+                           // ((C0 & FF) == C0) && ((FF & C0) != FF)
+                           //
+                           // want to remove the second unnecessary instruction
+                           //
+                           else if (((cast_na->getSourceImmediate() & cast_nb->getSourceImmediate()) == cast_na->getSourceImmediate()) &&
+                              ((cast_nb->getSourceImmediate() & cast_na->getSourceImmediate()) != cast_nb->getSourceImmediate()))
                               {
-                              _cg->deleteInst(_cursor->getNext());
+                              if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting unnecessary NILF from pair %p %p*\n", _cursor, _cursor->getNext()))
+                                 {
+                                 _cg->deleteInst(_cursor->getNext());
+                                 }
                               }
                            }
                         }
                      }
                   }
-               }
-            break;
+               break;
 
-         case TR::InstOpCode::SRL:
-         case TR::InstOpCode::SLL:
-            {
-            // Turn
-            //     SRL      @00_@GN11888_VSWKSKEY,24
-            //     SRL      @00_@GN11888_VSWKSKEY,4
-            // into
-            //     SRL      @00_@GN11888_VSWKSKEY,28
-            if (_cursor->getNext()->getOpCodeValue() ==
-                _cursor->getOpCodeValue())
+            case TR::InstOpCode::SRL:
+            case TR::InstOpCode::SLL:
                {
-               TR::Instruction * na = _cursor;
-               TR::Instruction * nb = _cursor->getNext();
-
-               if ((na->getKind() == TR::Instruction::IsRS) &&
-                   (nb->getKind() == TR::Instruction::IsRS))
+               // Turn
+               //     SRL      @00_@GN11888_VSWKSKEY,24
+               //     SRL      @00_@GN11888_VSWKSKEY,4
+               // into
+               //     SRL      @00_@GN11888_VSWKSKEY,28
+               if (_cursor->getNext()->getOpCodeValue() ==
+                  _cursor->getOpCodeValue())
                   {
-                  // SRL == SLL == generateRSInstruction
-                  TR::S390RSInstruction * cast_na = (TR::S390RSInstruction *)na;
-                  TR::S390RSInstruction * cast_nb = (TR::S390RSInstruction *)nb;
+                  TR::Instruction * na = _cursor;
+                  TR::Instruction * nb = _cursor->getNext();
 
-                  bool instrMatch =
+                  if ((na->getKind() == TR::Instruction::IsRS) &&
+                     (nb->getKind() == TR::Instruction::IsRS))
+                     {
+                     // SRL == SLL == generateRSInstruction
+                     TR::S390RSInstruction * cast_na = (TR::S390RSInstruction *)na;
+                     TR::S390RSInstruction * cast_nb = (TR::S390RSInstruction *)nb;
+
+                     bool instrMatch =
                         (cast_na->getFirstRegister() == cast_nb->getFirstRegister()) &&
                         (!cast_na->hasMaskImmediate()) && (!cast_nb->hasMaskImmediate()) &&
                         (cast_na->getMemoryReference() == NULL) && (cast_nb->getMemoryReference() == NULL);
 
-                  if (instrMatch)
-                     {
-                     if (((cast_na->getSourceImmediate() + cast_nb->getSourceImmediate()) < 64) &&
-                         performTransformation(comp(), "O^O S390 PEEPHOLE: merging SRL/SLL pair %p %p\n", _cursor, _cursor->getNext()))
+                     if (instrMatch)
                         {
-                        // Delete the second instruction
-                        uint32_t deletedImmediate = cast_nb->getSourceImmediate();
-                        _cg->deleteInst(_cursor->getNext());
-                        cast_na->setSourceImmediate(cast_na->getSourceImmediate() + deletedImmediate);
+                        if (((cast_na->getSourceImmediate() + cast_nb->getSourceImmediate()) < 64) &&
+                           performTransformation(comp(), "O^O S390 PEEPHOLE: merging SRL/SLL pair %p %p\n", _cursor, _cursor->getNext()))
+                           {
+                           // Delete the second instruction
+                           uint32_t deletedImmediate = cast_nb->getSourceImmediate();
+                           _cg->deleteInst(_cursor->getNext());
+                           cast_na->setSourceImmediate(cast_na->getSourceImmediate() + deletedImmediate);
+                           }
                         }
                      }
                   }
                }
-            }
-            break;
+               break;
 
-         default:
-            {
-            if (comp()->getOption(TR_TraceCG))
-               printInst();
-            break;
+            default:
+               {
+               if (comp()->getOption(TR_TraceCG))
+                  printInst();
+               break;
+               }
             }
+
+         if (moveInstr == true)
+            _cursor = _cursor->getNext();
          }
-
-      if(moveInstr == true)
-         _cursor = _cursor->getNext();
       }
 
    if (comp()->getOption(TR_TraceCG))
       printInfo("\n\n");
    }
 
-bool TR_S390PostRAPeephole::forwardBranchTarget()
+bool TR_S390Peephole::forwardBranchTarget()
    {
    TR::LabelSymbol *targetLabelSym = NULL;
    switch(_cursor->getOpCodeValue())

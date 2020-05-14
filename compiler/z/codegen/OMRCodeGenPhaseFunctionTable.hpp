@@ -30,4 +30,3 @@
 
 TR::CodeGenPhase::performMarkLoadAsZeroOrSignExtensionPhase,                              //markLoadAsZeroOrSignExtension
 TR::CodeGenPhase::performSetBranchOnCountFlagPhase,                                       //SetBranchOnCountFlagPhase
-TR::CodeGenPhase::performPreRAPeepholePhase,                                              //PreRAPeepholePhase

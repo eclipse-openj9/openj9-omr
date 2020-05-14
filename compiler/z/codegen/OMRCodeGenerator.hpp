@@ -276,8 +276,6 @@ public:
    void recordRegisterAssignment(TR::Register *assignedReg, TR::Register *virtualReg);
 
    void doBinaryEncoding();
-   void doPreRAPeephole();
-   void doPostRAPeephole();
 
    void AddFoldedMemRefToStack(TR::MemoryReference * mr);
    void RemoveMemRefFromStack(TR::MemoryReference * mr);

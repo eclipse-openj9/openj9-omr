@@ -31,12 +31,13 @@
 
 #include "codegen/CodeGenPhase.hpp"
 
-#include "infra/Assert.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/S390Peephole.hpp"
 #include "compile/Compilation.hpp"
 #include "optimizer/LoadExtensions.hpp"
 #include "optimizer/OptimizationManager.hpp"
 #include "il/TreeTop.hpp"
+#include "infra/Assert.hpp"
 
 void
 OMR::Z::CodeGenPhase::performMarkLoadAsZeroOrSignExtensionPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
@@ -68,21 +69,6 @@ OMR::Z::CodeGenPhase::performSetBranchOnCountFlagPhase(TR::CodeGenerator * cg, T
    }
 
 void
-OMR::Z::CodeGenPhase::performPreRAPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
-    {
-   TR::Compilation * comp = cg->comp();
-   phase->reportPhase(PreRAPeepholePhase);
-
-   TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
-   LexicalTimer pt(phase->getName(), comp->phaseTimer());
-
-   cg->doPreRAPeephole();
-
-   if (comp->getOption(TR_TraceCG))
-      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Pre Register Assignment Peephole Instructions", false);
-    }
-
-void
 OMR::Z::CodeGenPhase::performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
    TR::Compilation * comp = cg->comp();
@@ -91,10 +77,11 @@ OMR::Z::CodeGenPhase::performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPh
    TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
    LexicalTimer pt(phase->getName(), comp->phaseTimer());
 
-   cg->doPostRAPeephole();
+   TR_S390Peephole ph(comp);
+   ph.perform();
 
    if (comp->getOption(TR_TraceCG))
-      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Register Assignment Peephole Instructions", false);
+      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Peephole Instructions", false);
    }
 
 int
@@ -118,10 +105,8 @@ OMR::Z::CodeGenPhase::getName(PhaseValue phase)
          return "markLoadAsZeroOrSignExtension";
       case SetBranchOnCountFlagPhase:
          return "SetBranchOnCountFlagPhase";
-      case PreRAPeepholePhase:
-         return "PreRegisterAllocationPeepholePhase";
       case PeepholePhase:
-         return "PostRegisterAllocationPeepholePhase";
+         return "PeepholePhase";
       default:
          // call parent class for common phases
          return OMR::CodeGenPhase::getName(phase);

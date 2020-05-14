@@ -2012,20 +2012,6 @@ OMR::Z::CodeGenerator::deleteInst(TR::Instruction* old)
    }
 
 void
-OMR::Z::CodeGenerator::doPreRAPeephole()
-   {
-   TR_S390PreRAPeephole ph(self()->comp());
-   ph.perform();
-   }
-
-void
-OMR::Z::CodeGenerator::doPostRAPeephole()
-   {
-   TR_S390PostRAPeephole ph(self()->comp());
-   ph.perform();
-   }
-
-void
 OMR::Z::CodeGenerator::AddFoldedMemRefToStack(TR::MemoryReference * mr)
    {
    if (_stackOfMemoryReferencesCreatedDuringEvaluation.contains(mr))

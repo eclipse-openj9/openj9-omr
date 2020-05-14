@@ -29,6 +29,7 @@
     SetupForInstructionSelectionPhase,
     InstructionSelectionPhase,
     CreateStackAtlasPhase,
+    PeepholePhase,
     RegisterAssigningPhase,
     MapStackPhase,
     PeepholePhase,

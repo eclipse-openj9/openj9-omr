@@ -30,5 +30,4 @@
 
 markLoadAsZeroOrSignExtension,
 SetBranchOnCountFlagPhase,
-PreRAPeepholePhase,
-LastOMRZPhase = PreRAPeepholePhase,
+LastOMRZPhase = SetBranchOnCountFlagPhase,

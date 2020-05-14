@@ -23,50 +23,20 @@
 #define OMR_Z_PEEPHOLE
 
 #include "codegen/CodeGenerator.hpp"
-#include "compile/Compilation.hpp"
-#include "env/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
+#include "compile/Compilation.hpp"
 #include "env/FilePointerDecl.hpp"
+#include "env/FrontEnd.hpp"
 
 class TR_S390Peephole
    {
 public:
    TR_S390Peephole(TR::Compilation* comp);
 
-protected:
-   void printInfo(const char* info)
-      {
-      if (_outFile && comp()->getOption(TR_TraceCG))
-         {
-         trfprintf(_outFile, info);
-         }
-      }
-
-   void printInst()
-      {
-      if (_outFile && comp()->getOption(TR_TraceCG))
-         {
-         comp()->getDebug()->print(_outFile, _cursor);
-         }
-      }
-
-   TR::Compilation * comp() { return TR::comp(); }
-
-protected:
-   TR_FrontEnd * _fe;
-   TR::FILE *_outFile;
-   TR::Instruction *_cursor;
-   TR::CodeGenerator *_cg;
-   };
-
-class TR_S390PreRAPeephole : private TR_S390Peephole
-   {
-public:
-   TR_S390PreRAPeephole(TR::Compilation* comp);
-
    void perform();
 
 private:
+   
    /** \brief
     *     Attempts to reduce L[' '|FH|G] R,MR1  ST[' '|FH|G] R,MR2 sequences to MVC MR2, MR1
     *     to save a register and instruction.
@@ -81,16 +51,7 @@ private:
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
-   };
 
-class TR_S390PostRAPeephole : private TR_S390Peephole
-   {
-public:
-   TR_S390PostRAPeephole(TR::Compilation* comp);
-
-   void perform();
-
-private:
    bool LLCReduction();
    bool LGFRReduction();
    bool AGIReduction();
@@ -125,7 +86,7 @@ private:
    bool ReduceLHIToXR();
 
    // DAA related Peephole optimizations
-   bool DAARemoveOutlinedLabelNop   (bool hasPadding);
+   bool DAARemoveOutlinedLabelNop(bool hasPadding);
    bool DAARemoveOutlinedLabelNopCVB(bool hasPadding);
 
    bool DAAHandleMemoryReferenceSpill(bool hasPadding);
@@ -135,6 +96,30 @@ private:
    bool inlineEXtarget();
    void markBlockThatModifiesRegister(TR::Instruction *, TR::Register *);
    void reloadLiteralPoolRegisterForCatchBlock();
+
+   void printInfo(const char* info)
+      {
+      if (_outFile && comp()->getOption(TR_TraceCG))
+         {
+         trfprintf(_outFile, info);
+         }
+      }
+
+   void printInst()
+      {
+      if (_outFile && comp()->getOption(TR_TraceCG))
+         {
+         comp()->getDebug()->print(_outFile, _cursor);
+         }
+      }
+
+   TR::Compilation * comp() { return TR::comp(); }
+
+private:
+
+   TR_FrontEnd * _fe;
+   TR::FILE *_outFile;
+   TR::Instruction *_cursor;
+   TR::CodeGenerator *_cg;
    };
 #endif
-

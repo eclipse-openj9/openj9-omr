@@ -73,7 +73,6 @@ private:
 
    bool DAAHandleMemoryReferenceSpill(bool hasPadding);
 
-   bool revertTo32BitShift();
    bool inlineEXtargetHelper(TR::Instruction *, TR::Instruction *);
    bool inlineEXtarget();
    void markBlockThatModifiesRegister(TR::Instruction *, TR::Register *);

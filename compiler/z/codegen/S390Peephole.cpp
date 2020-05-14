@@ -1850,96 +1850,6 @@ TR_S390Peephole::DAAHandleMemoryReferenceSpill(bool hasPadding)
    }
 
 /**
- * Catch pattern where Input and Output registers in an int shift are the same
- *    SLLG    GPR6,GPR6,1
- *    SLAK    GPR15,GPR15,#474 0(GPR3)
- *  replace with shorter version
- *    SLL     GPR6,1
- *    SLA     GPR15,#474 0(GPR3)
- *
- * Applies to SLLK, SRLK, SLAK, SRAK, SLLG, SLAG
- * @return true if replacement ocurred
- *         false otherwise
- */
-bool
-TR_S390Peephole::revertTo32BitShift()
-   {
-   if (comp()->getOption(TR_Randomize))
-      {
-      if (_cg->randomizer.randomBoolean() && performTransformation(comp(),"O^O Random Codegen  - Disable revertTo32BitShift on 0x%p.\n",_cursor))
-         return false;
-      }
-
-   TR::S390RSInstruction * instr = (TR::S390RSInstruction *) _cursor;
-
-   // The shift is supposed to be an integer shift when reducing 64bit shifts.
-   // Note the NOT in front of second boolean expr. pair
-   TR::InstOpCode::Mnemonic oldOpCode = instr->getOpCodeValue();
-   if ((oldOpCode == TR::InstOpCode::SLLG || oldOpCode == TR::InstOpCode::SLAG)
-         && instr->getNode()->getOpCodeValue() != TR::ishl)
-      {
-      return false;
-      }
-
-   TR::Register* sourceReg = (instr->getSecondRegister())?(instr->getSecondRegister()->getRealRegister()):NULL;
-   TR::Register* targetReg = (instr->getRegisterOperand(1))?(instr->getRegisterOperand(1)->getRealRegister()):NULL;
-
-   // Source and target registers must be the same
-   if (sourceReg != targetReg)
-      {
-      return false;
-      }
-
-   bool reverted = false;
-   if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
-   if (performTransformation(comp(), "O^O S390 PEEPHOLE: Reverting int shift at %p from SLLG/SLAG/S[LR][LA]K to SLL/SLA/SRL/SRA.\n", instr))
-      {
-      reverted = true;
-      TR::InstOpCode::Mnemonic newOpCode = TR::InstOpCode::BAD;
-      switch (oldOpCode)
-         {
-         case TR::InstOpCode::SLLG:
-         case TR::InstOpCode::SLLK:
-            newOpCode = TR::InstOpCode::SLL; break;
-         case TR::InstOpCode::SLAG:
-         case TR::InstOpCode::SLAK:
-            newOpCode = TR::InstOpCode::SLA; break;
-         case TR::InstOpCode::SRLK:
-            newOpCode = TR::InstOpCode::SRL; break;
-         case TR::InstOpCode::SRAK:
-            newOpCode = TR::InstOpCode::SRA; break;
-         default: //PANIC!!!
-            TR_ASSERT( 0,"Unexpected OpCode for revertTo32BitShift\n");
-            break;
-         }
-
-      TR::S390RSInstruction* newInstr = NULL;
-
-      if (instr->getSourceImmediate())
-         {
-         newInstr = new (_cg->trHeapMemory()) TR::S390RSInstruction(newOpCode, instr->getNode(), instr->getRegisterOperand(1), instr->getSourceImmediate(), instr->getPrev(), _cg);
-         }
-      else if (instr->getMemoryReference())
-         {
-         TR::MemoryReference* memRef = instr->getMemoryReference();
-         memRef->resetMemRefUsedBefore();
-         newInstr = new (_cg->trHeapMemory()) TR::S390RSInstruction(newOpCode, instr->getNode(), instr->getRegisterOperand(1), memRef, instr->getPrev(), _cg);
-         }
-      else
-         {
-         TR_ASSERT( 0,"Unexpected RSY format\n");
-         }
-
-      _cursor = newInstr;
-      _cg->replaceInst(instr, newInstr);
-
-      if (comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "\nTransforming int shift from SLLG/SLAG/S[LR][LA]K (%p) to SLL/SLA/SRL/SRA %p.\n", instr, newInstr);
-      }
-   return reverted;
-   }
-
-/**
  * Try to inline EX dispatched constant instruction snippet
  * into the code section to eliminate i-cache misses and improve
  * runtime performance.
@@ -2761,17 +2671,6 @@ TR_S390Peephole::perform()
 
                break;
                }
-
-            case TR::InstOpCode::SLLG:
-            case TR::InstOpCode::SLAG:
-            case TR::InstOpCode::SLLK:
-            case TR::InstOpCode::SRLK:
-            case TR::InstOpCode::SLAK:
-            case TR::InstOpCode::SRAK:
-               revertTo32BitShift();
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               break;
 
             case TR::InstOpCode::SRL:
             case TR::InstOpCode::SLL:

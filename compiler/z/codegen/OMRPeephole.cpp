@@ -55,6 +55,16 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             performed |= attemptToRemoveDuplicateNILH(cursor);
             break;
             }
+         case TR::InstOpCode::SLLG:
+         case TR::InstOpCode::SLAG:
+         case TR::InstOpCode::SLLK:
+         case TR::InstOpCode::SRLK:
+         case TR::InstOpCode::SLAK:
+         case TR::InstOpCode::SRAK:
+            {
+            performed |= attemptToReduce64BitShiftTo32BitShift(cursor);
+            break;
+            }
          default:
             break;
          }
@@ -184,6 +194,74 @@ OMR::Z::Peephole::attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpC
          return true;
          }
       }
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToReduce64BitShiftTo32BitShift(TR::Instruction* cursor)
+   {
+   TR::S390RSInstruction* shiftInst = static_cast<TR::S390RSInstruction*>(cursor);
+
+   // The shift is supposed to be an integer shift when reducing 64bit shifts.
+   // Note the NOT in front of second boolean expr. pair
+   TR::InstOpCode::Mnemonic oldOpCode = shiftInst->getOpCodeValue();
+   if ((oldOpCode == TR::InstOpCode::SLLG || oldOpCode == TR::InstOpCode::SLAG)
+         && shiftInst->getNode()->getOpCodeValue() != TR::ishl)
+      {
+      return false;
+      }
+
+   TR::Register* sourceReg = (shiftInst->getSecondRegister())?(shiftInst->getSecondRegister()->getRealRegister()):NULL;
+   TR::Register* targetReg = (shiftInst->getRegisterOperand(1))?(shiftInst->getRegisterOperand(1)->getRealRegister()):NULL;
+
+   // Source and target registers must be the same
+   if (sourceReg != targetReg)
+      {
+      return false;
+      }
+
+   if (performTransformation(comp(), "O^O S390 PEEPHOLE: Reverting int shift at %p from SLLG/SLAG/S[LR][LA]K to SLL/SLA/SRL/SRA.\n", shiftInst))
+      {
+      TR::InstOpCode::Mnemonic newOpCode = TR::InstOpCode::BAD;
+      switch (oldOpCode)
+         {
+         case TR::InstOpCode::SLLG:
+         case TR::InstOpCode::SLLK:
+            newOpCode = TR::InstOpCode::SLL; break;
+         case TR::InstOpCode::SLAG:
+         case TR::InstOpCode::SLAK:
+            newOpCode = TR::InstOpCode::SLA; break;
+         case TR::InstOpCode::SRLK:
+            newOpCode = TR::InstOpCode::SRL; break;
+         case TR::InstOpCode::SRAK:
+            newOpCode = TR::InstOpCode::SRA; break;
+         default:
+            TR_ASSERT_FATAL(false, "Unexpected OpCode for revertTo32BitShift\n");
+            break;
+         }
+
+      TR::S390RSInstruction* newInstr = NULL;
+
+      if (shiftInst->getSourceImmediate())
+         {
+         newInstr = new (cg()->trHeapMemory()) TR::S390RSInstruction(newOpCode, shiftInst->getNode(), shiftInst->getRegisterOperand(1), shiftInst->getSourceImmediate(), shiftInst->getPrev(), cg());
+         }
+      else if (shiftInst->getMemoryReference())
+         {
+         TR::MemoryReference* memRef = shiftInst->getMemoryReference();
+         memRef->resetMemRefUsedBefore();
+         newInstr = new (cg()->trHeapMemory()) TR::S390RSInstruction(newOpCode, shiftInst->getNode(), shiftInst->getRegisterOperand(1), memRef, shiftInst->getPrev(), cg());
+         }
+      else
+         {
+         TR_ASSERT_FATAL(false, "Unexpected RSY format\n");
+         }
+
+      cg()->replaceInst(shiftInst, newInstr);
+
+      return true;
+      }
+
    return false;
    }
 

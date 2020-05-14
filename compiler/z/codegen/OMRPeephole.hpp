@@ -75,6 +75,29 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    bool attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
 
    /** \brief
+    *     Attempts to reduce a 64-bit shift instruction to a 32-bit shift instruction based on the IL node associated
+    *     with the 64-bit shift. For example if the node which generated the 64-bit shift operation is a \c TR::ishl
+    *     then the 64-bit shfit:
+    *
+    *     <code>
+    *     SLAK GPR15,GPR15,0(GPR3)
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     SLA GPR15,0(GPR3)
+    *     </code>
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToReduce64BitShiftTo32BitShift(TR::Instruction* cursor);
+
+   /** \brief
     *     Attempts to remove duplicate NILF instructions which target the same register and use the same immediate or
     *     redundant NILF instructions where the second NILF operation would not change the value of the target register.
     *

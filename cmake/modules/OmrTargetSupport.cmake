@@ -29,11 +29,12 @@ include(OmrUtility)
 
 # omr_add_library(name <sources> ...)
 #   STATIC | SHARED | OBJECT  - same meanings as for standard add_library
+#   OUTPUT_NAME <name>  - Set the OUTPUT_NAME property of the target to <name>
 # At present, a thin wrapper around add_library, but it ensures that exports
 # and split debug info are handled
 function(omr_add_library name)
 	set(options SHARED STATIC OBJECT INTERFACE)
-	set(oneValueArgs)
+	set(oneValueArgs OUTPUT_NAME)
 	set(multiValueArgs)
 
 	foreach(var IN LISTS options oneValueArgs multiValueArgs)
@@ -68,6 +69,9 @@ function(omr_add_library name)
 
 	add_library(${name} ${lib_type} ${opt_UNPARSED_ARGUMENTS})
 
+	if(opt_OUTPUT_NAME)
+		set_target_properties(${name} PROPERTIES OUTPUT_NAME "${opt_OUTPUT_NAME}")
+	endif()
 	if(opt_SHARED)
 		# split debug info if applicable. Note: omr_split_debug is responsible for checking OMR_SEPARATE_DEBUG_INFO
 		omr_process_split_debug(${name})
@@ -75,9 +79,22 @@ function(omr_add_library name)
 endfunction()
 
 # omr_add_executable(name <sources> ...)
+#   OUTPUT_NAME <name>  - Set the OUTPUT_NAME property of the target to <name>
 # At present, a thin wrapper around add_executable, but it ensures that
 # split debug info is handled
 function(omr_add_executable name)
-	add_executable(${name} ${ARGN})
+	set(options)
+	set(oneValueArgs OUTPUT_NAME)
+	set(multiValueArgs)
+
+	foreach(var IN LISTS options oneValueArgs multiValueArgs)
+		set(opt_${var} "")
+	endforeach()
+	cmake_parse_arguments(opt "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+	add_executable(${name} ${opt_UNPARSED_ARGUMENTS})
+	if(opt_OUTPUT_NAME)
+		set_target_properties(${name} PROPERTIES OUTPUT_NAME "${opt_OUTPUT_NAME}")
+	endif()
 	omr_process_split_debug(${name})
 endfunction()

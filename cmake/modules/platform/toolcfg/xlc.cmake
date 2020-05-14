@@ -189,9 +189,9 @@ if(OMR_OS_ZOS)
 		endif()
 		add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
 			COMMAND "${CMAKE_COMMAND}"
-			"-DLIBRARY_FILE_NAME=$<TARGET_FILE_NAME:${TARGET_NAME}>"
-			"-DLIBRARY_FOLDER=$<TARGET_FILE_DIR:${TARGET_NAME}>"
-			-P "${omr_SOURCE_DIR}/cmake/modules/platform/toolcfg/zos_rename_exports.cmake"
+				"-DLIBRARY_FILE_NAME=$<TARGET_FILE_NAME:${TARGET_NAME}>"
+				"-DLIBRARY_FOLDER=$<TARGET_FILE_DIR:${TARGET_NAME}>"
+				-P "${omr_SOURCE_DIR}/cmake/modules/platform/toolcfg/zos_rename_exports.cmake"
 		)
 	endfunction()
 else()
@@ -212,7 +212,8 @@ else()
 
 	function(_omr_toolchain_separate_debug_symbols tgt)
 		set(exe_file "$<TARGET_FILE:${tgt}>")
-		set(dbg_file "$<TARGET_FILE:${tgt}>.dbg")
+		omr_get_target_path(target_path ${tgt})
+		omr_replace_suffix(dbg_file "${target_path}" ".debuginfo")
 		add_custom_command(
 			TARGET "${tgt}"
 			POST_BUILD

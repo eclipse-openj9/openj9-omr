@@ -33,14 +33,13 @@ include(OmrUtility)
 # and split debug info are handled
 function(omr_add_library name)
 	set(options SHARED STATIC OBJECT INTERFACE)
-	set(oneValueArgs )
-	set(multiValueArgs )
+	set(oneValueArgs)
+	set(multiValueArgs)
 
 	foreach(var IN LISTS options oneValueArgs multiValueArgs)
 		set(opt_${var} "")
 	endforeach()
 	cmake_parse_arguments(opt "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
 
 	omr_count_true(num_types VARIABLES opt_SHARED opt_STATIC opt_OBJECT opt_INTERFACE)
 	omr_assert(TEST num_types LESS 2 MESSAGE "Only one of STATIC | SHARED | OBJECT | INTERFACE may be given")
@@ -74,7 +73,6 @@ function(omr_add_library name)
 		omr_process_split_debug(${name})
 	endif()
 endfunction()
-
 
 # omr_add_executable(name <sources> ...)
 # At present, a thin wrapper around add_executable, but it ensures that

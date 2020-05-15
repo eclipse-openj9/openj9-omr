@@ -135,6 +135,11 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             performed |= attemptToReduceLToLZRF(cursor, TR::InstOpCode::LZRG);
             break;
             }
+         case TR::InstOpCode::LHI:
+            {
+            performed |= attemptToReduceLHIToXR(cursor);
+            break;
+            }
          case TR::InstOpCode::LLC:
             {
             performed |= attemptToReduceLLCToLLGC(cursor);
@@ -837,6 +842,52 @@ OMR::Z::Peephole::attemptToReduceLGRToLGFR(TR::Instruction* cursor)
 
    return false;
    }
+
+/** \details
+ *     This transformation may not always be possible because the LHI instruction does not modify the condition
+ *     code while the XR instruction does. We must be pessimistic in our algorithm and carry out the transformation
+ *     if and only if there exists an instruction B that sets the condition code between the LHI instruction A and
+ *     some instruction C that reads the condition code.
+ *
+ *     That is, we are trying to find instruction that comes after the LHI in the execution order that will clobber
+ *     the condition code before any instruction that consumes a condition code.
+ */
+bool
+OMR::Z::Peephole::attemptToReduceLHIToXR(TR::Instruction* cursor)
+  {
+  // This optimization is disabled by default because there exist cases in which we cannot determine whether this
+  // transformation is functionally valid or not. The issue resides in the various runtime patching sequences using the
+  // LHI instruction as a runtime patch point for an offset. One concrete example can be found in the virtual dispatch
+  // sequence for unresolved calls on 31-bit platforms where an LHI instruction is used and is patched at runtime.
+  //
+  // TODO (#255): To enable this optimization we need to implement an API which marks instructions that will be patched
+  // at runtime and prevent ourselves from modifying such instructions in any way.
+  return false;
+
+  TR::S390RIInstruction* lhiInstruction = static_cast<TR::S390RIInstruction*>(cursor);
+
+  if (lhiInstruction->getSourceImmediate() == 0)
+     {
+     TR::Instruction* nextInstruction = lhiInstruction->getNext();
+
+     while (nextInstruction != NULL && !nextInstruction->getOpCode().readsCC())
+        {
+        if (nextInstruction->getOpCode().setsCC() || nextInstruction->getNode()->getOpCodeValue() == TR::BBEnd)
+           {
+           TR::DebugCounter::incStaticDebugCounter(comp(), "z/peephole/LHI/XR");
+
+           TR::Instruction* xrInstruction = generateRRInstruction(cg(), TR::InstOpCode::XR, lhiInstruction->getNode(), lhiInstruction->getRegisterOperand(1), lhiInstruction->getRegisterOperand(1));
+           cg()->replaceInst(lhiInstruction, xrInstruction);
+
+           return true;
+           }
+
+        nextInstruction = nextInstruction->getNext();
+        }
+     }
+
+  return false;
+  }
 
 bool
 OMR::Z::Peephole::attemptToReduceLLCToLLGC(TR::Instruction* cursor)

@@ -252,6 +252,28 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToReduceLGRToLGFR(TR::Instruction* cursor);
+
+   /** \brief
+    *     Attempts to reduce a load halfword immedaite instruction (\c LHI) to an XOR \c XR.
+    *     For example:
+    *
+    *     <code>
+    *     LHI GPR2,0
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     XR GPR2,GPR2
+    *     </code>
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToReduceLHIToXR(TR::Instruction* cursor);
    
    /** \brief
     *     Attempts to reduce a load logical character instruction (\c LLC) followed by a zero extension to \c LLGC.

@@ -46,15 +46,6 @@ private:
    bool trueCompEliminationForLoadComp();
    bool attemptZ7distinctOperants();
    bool isBarrierToPeepHoleLookback(TR::Instruction *current);
-
-   /** \brief
-    *     Attempts to reduce LHI R,0 instructions to XR R,R instruction to save 2 bytes of icache.
-    *
-    *  \return
-    *     true if the reduction was successful; false otherwise.
-    */
-   bool ReduceLHIToXR();
-
    void markBlockThatModifiesRegister(TR::Instruction *, TR::Register *);
    void reloadLiteralPoolRegisterForCatchBlock();
 

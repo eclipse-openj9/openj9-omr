@@ -1225,45 +1225,6 @@ TR_S390Peephole::reloadLiteralPoolRegisterForCatchBlock()
       }
    }
 
-/** \details
- *     This transformation may not always be possible because the LHI instruction does not modify the condition
- *     code while the XR instruction does. We must be pessimistic in our algorithm and carry out the transformation
- *     if and only if there exists an instruction B that sets the condition code between the LHI instruction A and
- *     some instruction C that reads the condition code.
- *
- *     That is, we are trying to find instruction that comes after the LHI in the execution order that will clobber
- *     the condition code before any instruction that consumes a condition code.
- */
-bool TR_S390Peephole::ReduceLHIToXR()
-  {
-  TR::S390RIInstruction* lhiInstruction = static_cast<TR::S390RIInstruction*>(_cursor);
-
-  if (lhiInstruction->getSourceImmediate() == 0)
-     {
-     TR::Instruction* nextInstruction = lhiInstruction->getNext();
-
-     while (nextInstruction != NULL && !nextInstruction->getOpCode().readsCC())
-        {
-        if (nextInstruction->getOpCode().setsCC() || nextInstruction->getNode()->getOpCodeValue() == TR::BBEnd)
-           {
-           TR::DebugCounter::incStaticDebugCounter(_cg->comp(), "z/peephole/LHI/XR");
-
-           TR::Instruction* xrInstruction = generateRRInstruction(_cg, TR::InstOpCode::XR, lhiInstruction->getNode(), lhiInstruction->getRegisterOperand(1), lhiInstruction->getRegisterOperand(1));
-
-           _cg->replaceInst(lhiInstruction, xrInstruction);
-
-           _cursor = xrInstruction;
-
-           return true;
-           }
-
-        nextInstruction = nextInstruction->getNext();
-        }
-     }
-
-  return false;
-  }
-
 void
 TR_S390Peephole::perform()
    {
@@ -1331,19 +1292,6 @@ TR_S390Peephole::perform()
                break;
                }
 
-            case TR::InstOpCode::LHI:
-               {
-               // This optimization is disabled by default because there exist cases in which we cannot determine whether this transformation
-               // is functionally valid or not. The issue resides in the various runtime patching sequences using the LHI instruction as a
-               // runtime patch point for an offset. One concrete example can be found in the virtual dispatch sequence for unresolved calls
-               // on 31-bit platforms where an LHI instruction is used and is patched at runtime.
-               //
-               // TODO (Issue #255): To enable this optimization we need to implement an API which marks instructions that will be patched at
-               // runtime and prevent ourselves from modifying such instructions in any way.
-               //
-               // ReduceLHIToXR();
-               }
-               break;
             case TR::InstOpCode::LHR:
                {
                break;

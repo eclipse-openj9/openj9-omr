@@ -72,6 +72,11 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             performed |= attemptToReduceAGI(cursor);
             break;
             }
+         case TR::InstOpCode::L:
+            {
+            performed |= attemptToReduceLToICM(cursor);
+            break;
+            }
          case TR::InstOpCode::LR:
          case TR::InstOpCode::LTR:
             {
@@ -443,6 +448,92 @@ OMR::Z::Peephole::attemptToReduceAGI(TR::Instruction* cursor)
             performed = true;
             }
          }
+      }
+
+   return performed;
+   }
+
+bool
+OMR::Z::Peephole::attemptToReduceLToICM(TR::Instruction* cursor)
+   {
+   // Look for L/LTR instruction pair and reduce to LTR
+   TR::Instruction* prev = cursor->getPrev();
+   TR::Instruction* next = cursor->getNext();
+   if (next->getOpCodeValue() != TR::InstOpCode::LTR && next->getOpCodeValue() != TR::InstOpCode::CHI)
+      return false;
+
+   bool performed = false;
+   bool isICMOpportunity = false;
+
+   TR::S390RXInstruction* load= (TR::S390RXInstruction*) cursor;
+
+   TR::MemoryReference* mem = load->getMemoryReference();
+
+   if (mem == NULL) return false;
+   // We cannot reduce L to ICM if the L uses both index and base registers.
+   if (mem->getBaseRegister() != NULL && mem->getIndexRegister() != NULL) return false;
+
+   // L and LTR/CHI instructions must work on the same register.
+   if (load->getRegisterOperand(1) != next->getRegisterOperand(1)) return false;
+
+   if (next->getOpCodeValue() == TR::InstOpCode::LTR)
+      {
+      // We must check for sourceRegister on the LTR instruction, in case there was a dead load
+      //        L      GPRX, MEM       <-- this is a dead load, for whatever reason (e.g. GRA)
+      //        LTR    GPRX, GPRY
+      // it is wrong to transform the above sequence into
+      //        ICM    GPRX, MEM
+      if (next->getRegisterOperand(1) != ((TR::S390RRInstruction*)next)->getRegisterOperand(2)) return false;
+      isICMOpportunity = true;
+      }
+   else
+      {
+      // CHI Opportunty:
+      //      L  GPRX,..
+      //      CHI  GPRX, '0'
+      // reduce to:
+      //      ICM GPRX,...
+      TR::S390RIInstruction* chi = (TR::S390RIInstruction*) next;
+
+      // CHI must be comparing against '0' (i.e. NULLCHK) or else our
+      // condition codes will be wrong.
+      if (chi->getSourceImmediate() != 0) return false;
+
+      isICMOpportunity = true;
+      }
+
+   if (isICMOpportunity && performTransformation(comp(), "\nO^O S390 PEEPHOLE: Reducing L [%p] being reduced to ICM.\n", cursor))
+      {
+      // Prevent reuse of memory reference
+      TR::MemoryReference* memcp = generateS390MemoryReference(*load->getMemoryReference(), 0, cg());
+
+      if ((memcp->getBaseRegister() == NULL) &&
+          (memcp->getIndexRegister() != NULL))
+         {
+         memcp->setBaseRegister(memcp->getIndexRegister(), cg());
+         memcp->setIndexRegister(0);
+         }
+
+      // Do the reduction - create the icm instruction
+      TR::S390RSInstruction* icm = new (cg()->trHeapMemory()) TR::S390RSInstruction(TR::InstOpCode::ICM, load->getNode(), load->getRegisterOperand(1), 0xF, memcp, prev, cg());
+
+      // Check if the load has an implicit NULLCHK.  If so, we need to ensure a GCmap is copied.
+      if (load->throwsImplicitNullPointerException())
+         {
+         icm->setNeedsGCMap(0x0000FFFF);
+         icm->setThrowsImplicitNullPointerException();
+         icm->setGCMap(load->getGCMap());
+
+         TR_Debug * debugObj = cg()->getDebug();
+         if (debugObj)
+            debugObj->addInstructionComment(icm, "Throws Implicit Null Pointer Exception");
+         }
+
+      cg()->replaceInst(load, icm);
+      cg()->deleteInst(next);
+
+      memcp->stopUsingMemRefRegister(cg());
+      performed = true;
       }
 
    return performed;

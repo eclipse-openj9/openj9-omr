@@ -111,115 +111,6 @@ TR_S390Peephole::isBarrierToPeepHoleLookback(TR::Instruction *current)
    return false;
    }
 
-///////////////////////////////////////////////////////////////////////////////
-bool
-TR_S390Peephole::ICMReduction()
-   {
-   if (comp()->getOption(TR_Randomize))
-      {
-      if (_cg->randomizer.randomBoolean() && performTransformation(comp(),"O^O Random Codegen  - Disable ICMReduction on 0x%p.\n",_cursor))
-         return false;
-      }
-
-   // Look for L/LTR instruction pair and reduce to LTR
-   TR::Instruction* prev = _cursor->getPrev();
-   TR::Instruction* next = _cursor->getNext();
-   if (next->getOpCodeValue() != TR::InstOpCode::LTR && next->getOpCodeValue() != TR::InstOpCode::CHI)
-      return false;
-
-   bool performed = false;
-   bool isICMOpportunity = false;
-
-   TR::S390RXInstruction* load= (TR::S390RXInstruction*) _cursor;
-
-   TR::MemoryReference* mem = load->getMemoryReference();
-
-   if (mem == NULL) return false;
-   // We cannot reduce L to ICM if the L uses both index and base registers.
-   if (mem->getBaseRegister() != NULL && mem->getIndexRegister() != NULL) return false;
-
-   // L and LTR/CHI instructions must work on the same register.
-   if (load->getRegisterOperand(1) != next->getRegisterOperand(1)) return false;
-
-   if (next->getOpCodeValue() == TR::InstOpCode::LTR)
-      {
-      // We must check for sourceRegister on the LTR instruction, in case there was a dead load
-      //        L      GPRX, MEM       <-- this is a dead load, for whatever reason (e.g. GRA)
-      //        LTR    GPRX, GPRY
-      // it is wrong to transform the above sequence into
-      //        ICM    GPRX, MEM
-      if (next->getRegisterOperand(1) != ((TR::S390RRInstruction*)next)->getRegisterOperand(2)) return false;
-      isICMOpportunity = true;
-      }
-   else
-      {
-      // CHI Opportunty:
-      //      L  GPRX,..
-      //      CHI  GPRX, '0'
-      // reduce to:
-      //      ICM GPRX,...
-      TR::S390RIInstruction* chi = (TR::S390RIInstruction*) next;
-
-      // CHI must be comparing against '0' (i.e. NULLCHK) or else our
-      // condition codes will be wrong.
-      if (chi->getSourceImmediate() != 0) return false;
-
-      isICMOpportunity = true;
-      }
-
-   if (isICMOpportunity && performTransformation(comp(), "\nO^O S390 PEEPHOLE: L being reduced to ICM at [%s].\n", _cursor->getName(comp()->getDebug())))
-         {
-         if (comp()->getOption(TR_TraceCG))
-            {
-            printInfo("\n\n *** L reduced to ICM.\n\n Old Instructions:");
-            printInst();
-            _cursor = _cursor->getNext();
-            printInst();
-            }
-
-      // Prevent reuse of memory reference
-      TR::MemoryReference* memcp = generateS390MemoryReference(*load->getMemoryReference(), 0, _cg);
-
-      if ((memcp->getBaseRegister() == NULL) &&
-          (memcp->getIndexRegister() != NULL))
-         {
-         memcp->setBaseRegister(memcp->getIndexRegister(), _cg);
-         memcp->setIndexRegister(0);
-         }
-
-      // Do the reduction - create the icm instruction
-      TR::S390RSInstruction* icm = new (_cg->trHeapMemory()) TR::S390RSInstruction(TR::InstOpCode::ICM, load->getNode(), load->getRegisterOperand(1), 0xF, memcp, prev, _cg);
-      _cursor = icm;
-
-      // Check if the load has an implicit NULLCHK.  If so, we need to ensure a GCmap is copied.
-      if (load->throwsImplicitNullPointerException())
-         {
-         icm->setNeedsGCMap(0x0000FFFF);
-         icm->setThrowsImplicitNullPointerException();
-         icm->setGCMap(load->getGCMap());
-
-         TR_Debug * debugObj = _cg->getDebug();
-         if (debugObj)
-            debugObj->addInstructionComment(icm, "Throws Implicit Null Pointer Exception");
-         }
-
-      _cg->replaceInst(load, icm);
-      _cg->deleteInst(next);
-
-      if (comp()->getOption(TR_TraceCG))
-         {
-         printInfo("\n\n New Instruction:");
-         printInst();
-         printInfo("\n ***\n");
-         }
-
-      memcp->stopUsingMemRefRegister(_cg);
-      performed = true;
-      }
-
-   return performed;
-   }
-
 bool
 TR_S390Peephole::LAReduction()
    {
@@ -2244,11 +2135,6 @@ TR_S390Peephole::perform()
                }
             case TR::InstOpCode::L:
                {
-               if (!ICMReduction())
-                  {
-                  if (comp()->getOption(TR_TraceCG))
-                     printInst();
-                  }
                LoadAndMaskReduction(TR::InstOpCode::LZRF);
                break;
                }

@@ -126,6 +126,29 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToReduceAGI(TR::Instruction* cursor);
+   
+   /** \brief
+    *     Attempts to reduce a load instruction (\c L) to an insert character under mask (\c ICM) instruction. This can
+    *     be done if following the load we have a load and test or a compare against certain immediates. For example:
+    *
+    *     <code>
+    *     L GPR2,8(GPR5)
+    *     LTR GPR2,GPR2
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     ICM GPR2,8(GPR5),B'1111'
+    *     </code>
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToReduceLToICM(TR::Instruction* cursor);
 
    /** \brief
     *     Attempts to remove duplicate NILF instructions which target the same register and use the same immediate or

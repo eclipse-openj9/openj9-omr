@@ -39,7 +39,6 @@ private:
 
    bool LLCReduction();
    bool LGFRReduction();
-   bool ICMReduction();
    bool LAReduction();
    bool clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *reg);
    bool branchReduction();

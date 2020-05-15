@@ -114,12 +114,30 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             }
          case TR::InstOpCode::L:
             {
-            performed |= attemptToReduceLToICM(cursor);
+            bool performedCurrentPeephole = false;
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceLToICM(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceLToLZRF(cursor, TR::InstOpCode::LZRF);
+
+            performed |= performedCurrentPeephole;
+            break;
+            }
+         case TR::InstOpCode::LG:
+            {
+            performed |= attemptToReduceLToLZRF(cursor, TR::InstOpCode::LZRG);
             break;
             }
          case TR::InstOpCode::LLC:
             {
             performed |= attemptToReduceLLCToLLGC(cursor);
+            break;
+            }
+         case TR::InstOpCode::LLGF:
+            {
+            performed |= attemptToReduceLToLZRF(cursor, TR::InstOpCode::LLZRGF);
             break;
             }
          case TR::InstOpCode::LR:
@@ -735,6 +753,45 @@ OMR::Z::Peephole::attemptToReduceLToICM(TR::Instruction* cursor)
       }
 
    return performed;
+   }
+
+bool
+OMR::Z::Peephole::attemptToReduceLToLZRF(TR::Instruction* cursor, TR::InstOpCode::Mnemonic loadAndZeroRightMostByteMnemonic)
+   {
+   // This optimization relies on hardware instructions introduced in z13
+   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
+      return false;
+
+   if (cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILL)
+      {
+      TR::S390RXInstruction* loadInst = static_cast<TR::S390RXInstruction*>(cursor);
+      TR::S390RIInstruction* nillInst = static_cast<TR::S390RIInstruction*>(cursor->getNext());
+
+      if (!nillInst->isImm() || nillInst->getSourceImmediate() != 0xFF00)
+         return false;
+
+      TR::Register* loadTargetReg = loadInst->getRegisterOperand(1);
+      TR::Register* nillTargetReg = nillInst->getRegisterOperand(1);
+
+      if (loadTargetReg != nillTargetReg)
+         return false;
+
+      if (performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming load-and-mask sequence at [%p].\n", nillInst))
+         {
+         // Remove the NILL instruction
+         cg()->deleteInst(nillInst);
+
+         loadInst->getMemoryReference()->resetMemRefUsedBefore();
+
+         auto lzrbInst = generateRXInstruction(cg(), loadAndZeroRightMostByteMnemonic, comp()->getStartTree()->getNode(), loadTargetReg, loadInst->getMemoryReference(), cursor->getPrev());
+
+         // Replace the load instruction with load-and-mask instruction
+         cg()->replaceInst(loadInst, lzrbInst);
+
+         return true;
+         }
+      }
+   return false;
    }
 
 bool

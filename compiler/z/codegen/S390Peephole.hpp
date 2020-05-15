@@ -42,7 +42,6 @@ private:
    bool forwardBranchTarget();
    bool seekRegInFutureMemRef(int32_t ,TR::Register *);
    bool LRReduction();
-   bool LoadAndMaskReduction(TR::InstOpCode::Mnemonic LZOpCode);
    bool trueCompEliminationForCompareAndBranch();
    bool trueCompEliminationForCompare();
    bool trueCompEliminationForLoadComp();

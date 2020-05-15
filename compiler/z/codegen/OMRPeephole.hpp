@@ -203,6 +203,32 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToReduceLToICM(TR::Instruction* cursor);
+
+   /** \brief
+    *     Attempts to reduce a load instruction (\c L, \c LG, \c LLGF) followed by an \c NILL to its equivalent load
+    *     and zero rightmost byte equivalent instruction. For example:
+    *
+    *     <code>
+    *     LG GPR2,8(GPR5)
+    *     NILL GPR2,0xFF00
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     LZRG GPR2,8(GPR5)
+    *     </code>
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \param loadAndZeroRightMostByteMnemonic
+    *     The load and zero rightmost byte mnemonic to replace the original load with.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToReduceLToLZRF(TR::Instruction* cursor, TR::InstOpCode::Mnemonic loadAndZeroRightMostByteMnemonic);
    
    /** \brief
     *     Attempts to reduce a load register instruction (\c LGR or \c LTGR) followed by a sign extension to \c LGFR.

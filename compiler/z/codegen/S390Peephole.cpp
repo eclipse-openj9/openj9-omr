@@ -497,54 +497,6 @@ TR_S390Peephole::LRReduction()
    return performed;
    }
 
-
-/**
- * Catch the pattern where a LOAD/NILL load-and-mask sequence
- *
- *    LOAD  Rx, Mem             where LOAD = L     => LZOpCode = LZRF
- *    NILL  Rx, 0xFF00 (-256)         LOAD = LG    => LZOpCode = LZRG
- *                                    LOAD = LLGF  => LZOpCode = LLZRGF
- *  can be replaced by
- *
- *    LZOpCode  Rx, Mem
- */
-bool
-TR_S390Peephole::LoadAndMaskReduction(TR::InstOpCode::Mnemonic LZOpCode)
-   {
-   // This optimization relies on hardware instructions introduced in z13
-   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
-      return false;
-
-   if (_cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILL)
-      {
-      TR::S390RXInstruction* loadInst = static_cast<TR::S390RXInstruction*> (_cursor);
-      TR::S390RIInstruction* nillInst = static_cast<TR::S390RIInstruction*> (_cursor->getNext());
-
-      if (!nillInst->isImm() || nillInst->getSourceImmediate() != 0xFF00)
-         return false;
-
-      TR::Register* loadTargetReg = loadInst->getRegisterOperand(1);
-      TR::Register* nillTargetReg = nillInst->getRegisterOperand(1);
-
-      if (loadTargetReg != nillTargetReg)
-         return false;
-
-      if (performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming load-and-mask sequence at %p.\n", nillInst))
-         {
-         // Remove the NILL instruction
-         _cg->deleteInst(nillInst);
-
-         loadInst->getMemoryReference()->resetMemRefUsedBefore();
-
-         // Replace the load instruction with load-and-mask instruction
-         _cg->replaceInst(loadInst, _cursor = generateRXInstruction(_cg, LZOpCode, comp()->getStartTree()->getNode(), loadTargetReg, loadInst->getMemoryReference(), _cursor->getPrev()));
-
-         return true;
-         }
-      }
-   return false;
-   }
-
 bool swapOperands(TR::Register * trueReg, TR::Register * compReg, TR::Instruction * curr)
    {
    TR::InstOpCode::S390BranchCondition branchCond;
@@ -1727,11 +1679,6 @@ TR_S390Peephole::perform()
                LRReduction();
                break;
                }
-            case TR::InstOpCode::L:
-               {
-               LoadAndMaskReduction(TR::InstOpCode::LZRF);
-               break;
-               }
             case TR::InstOpCode::LA:
                {
                if (!LAReduction())
@@ -1784,18 +1731,6 @@ TR_S390Peephole::perform()
                      printInst();
                   }
 
-               break;
-               }
-            case TR::InstOpCode::LLGF:
-               {
-               LoadAndMaskReduction(TR::InstOpCode::LLZRGF);
-               break;
-               }
-            case TR::InstOpCode::LG:
-               {
-               LoadAndMaskReduction(TR::InstOpCode::LZRG);
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
                break;
                }
             case TR::InstOpCode::LGR:

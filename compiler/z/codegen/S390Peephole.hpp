@@ -55,14 +55,6 @@ private:
     */
    bool ReduceLHIToXR();
 
-   // DAA related Peephole optimizations
-   bool DAARemoveOutlinedLabelNop(bool hasPadding);
-   bool DAARemoveOutlinedLabelNopCVB(bool hasPadding);
-
-   bool DAAHandleMemoryReferenceSpill(bool hasPadding);
-
-   bool inlineEXtargetHelper(TR::Instruction *, TR::Instruction *);
-   bool inlineEXtarget();
    void markBlockThatModifiesRegister(TR::Instruction *, TR::Register *);
    void reloadLiteralPoolRegisterForCatchBlock();
 

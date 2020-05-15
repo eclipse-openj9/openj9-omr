@@ -163,6 +163,28 @@ class TR_BitVector
    TR_BitVector() : _numChunks(0), _chunks(NULL), _firstChunkWithNonZero(0), _lastChunkWithNonZero(-1), _growable(growable), _region(0) { }
    TR_BitVector(TR::Region &region) : _numChunks(0), _chunks(NULL), _firstChunkWithNonZero(0), _lastChunkWithNonZero(-1), _growable(growable), _region(&region) { }
 
+   /**
+    * @brief Constructor to create a new BitVector by reading serialized data from the memory buffer
+    * @param [in] buffer Memory buffer containing serialized BitVector
+    */
+   TR_BitVector(uint8_t * &buffer)
+      {
+      _firstChunkWithNonZero = *(int32_t *)buffer;
+      buffer += sizeof(_firstChunkWithNonZero);
+      _lastChunkWithNonZero = *(int32_t *)buffer;
+      buffer += sizeof(_lastChunkWithNonZero);
+      _numChunks = *(int32_t *)buffer;
+      _chunks = NULL;
+      if (_numChunks > 0)
+         {
+         _chunks = (chunk_t*) TR_Memory::jitPersistentAlloc(_numChunks * sizeof(*_chunks), TR_Memory::BitVector);
+         memcpy(_chunks, buffer, _numChunks * sizeof(_chunks[0]));
+         buffer += (_numChunks * sizeof(_chunks[0]));
+         }
+      _region = NULL;
+      }
+
+
    // Construct a bit vector with a certain number of bits pre-allocated.
    // All bits are initially off.
    //
@@ -837,6 +859,42 @@ class TR_BitVector
       return _memoryUsed;
       }
    #endif
+
+   /**
+    * @brief Computes number of bytes required for serializing this object
+    *
+    * @return Number of bytes required for serializing this object
+    */
+   uint32_t getSizeForSerialization() const
+      {
+      uint32_t size = 0;
+      size += sizeof(_firstChunkWithNonZero) + sizeof(_lastChunkWithNonZero) + sizeof(_numChunks);
+      if (_numChunks > 0)
+         {
+         size += (_numChunks * sizeof(_chunks[0]));
+         }
+      return size;
+      }
+
+   /**
+    * @brief Serialize this object
+    * @param [in] serializer used for serializing this object
+    * @return void
+    */
+   void serialize(uint8_t * &buffer) const
+      {
+      *(int32_t *)buffer = _firstChunkWithNonZero;
+      buffer += sizeof(_firstChunkWithNonZero);
+      *(int32_t *)buffer = _lastChunkWithNonZero;
+      buffer += sizeof(_lastChunkWithNonZero);
+      *(int32_t *)buffer = _numChunks;
+      buffer += sizeof(_numChunks);
+      if (_numChunks > 0)
+         {
+         memcpy(buffer, _chunks, _numChunks * sizeof(_chunks[0]));
+         buffer += (_numChunks * sizeof(_chunks[0]));
+         }
+      }
 
    private:
 

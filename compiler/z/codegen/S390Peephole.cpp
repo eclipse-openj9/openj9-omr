@@ -2314,12 +2314,6 @@ TR_S390Peephole::reloadLiteralPoolRegisterForCatchBlock()
    }
 
 bool
-TR_S390Peephole::DeadStoreToSpillReduction()
-  {
-  return false;
-  }
-
-bool
 TR_S390Peephole::tryMoveImmediate()
   {
   return false;
@@ -2454,35 +2448,14 @@ TR_S390Peephole::perform()
                }
             case TR::InstOpCode::ST:
                {
-               if (DeadStoreToSpillReduction())
-                  break;
                if (tryMoveImmediate())
-                  break;
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               break;
-               }
-            case TR::InstOpCode::STY:
-               {
-               if (DeadStoreToSpillReduction())
                   break;
                if (comp()->getOption(TR_TraceCG))
                   printInst();
                break;
                }
             case TR::InstOpCode::STG:
-               if (DeadStoreToSpillReduction())
-                  break;
                if (tryMoveImmediate())
-                  break;
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               break;
-            case TR::InstOpCode::STE:
-            case TR::InstOpCode::STEY:
-            case TR::InstOpCode::STD:
-            case TR::InstOpCode::STDY:
-               if (DeadStoreToSpillReduction())
                   break;
                if (comp()->getOption(TR_TraceCG))
                   printInst();

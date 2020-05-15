@@ -55,7 +55,6 @@ private:
    bool trueCompEliminationForCompare();
    bool trueCompEliminationForLoadComp();
    bool attemptZ7distinctOperants();
-   bool DeadStoreToSpillReduction();
    bool tryMoveImmediate();
    bool isBarrierToPeepHoleLookback(TR::Instruction *current);
 

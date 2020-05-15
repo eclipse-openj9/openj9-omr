@@ -218,3 +218,12 @@ set(OMR_SANITIZE OFF CACHE STRING "Sanitizer selection. Only has an effect on GN
 if(OMR_HOST_OS STREQUAL "win")
 	set(OMR_WINDOWS_NOMINMAX ON CACHE BOOL "Define NOMINMAX in every compilation unit; prevents Windows headers from polluting the global namespace with 'min' and 'max' macros.")
 endif()
+
+set(OMR_SEPARATE_DEBUG_INFO OFF CACHE BOOL "Maintain debug info in a separate file")
+set(OMR_FLATTEN_DEBUG_INFO OFF CACHE BOOL "Enable generation of flattened debug info on osx")
+if(OMR_OS_OSX)
+	set(default_debug_ext ".dSYM")
+else()
+	set(default_debug_ext ".debuginfo")
+endif()
+set(OMR_DEBUG_INFO_OUTPUT_EXTENSION "${default_debug_ext}" CACHE STRING "Extension to use for separate debug info")

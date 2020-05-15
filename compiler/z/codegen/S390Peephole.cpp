@@ -2313,12 +2313,6 @@ TR_S390Peephole::reloadLiteralPoolRegisterForCatchBlock()
       }
    }
 
-bool
-TR_S390Peephole::tryMoveImmediate()
-  {
-  return false;
-  }
-
 /** \details
  *     This transformation may not always be possible because the LHI instruction does not modify the condition
  *     code while the XR instruction does. We must be pessimistic in our algorithm and carry out the transformation
@@ -2446,20 +2440,6 @@ TR_S390Peephole::perform()
                   }
                break;
                }
-            case TR::InstOpCode::ST:
-               {
-               if (tryMoveImmediate())
-                  break;
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               break;
-               }
-            case TR::InstOpCode::STG:
-               if (tryMoveImmediate())
-                  break;
-               if (comp()->getOption(TR_TraceCG))
-                  printInst();
-               break;
             case TR::InstOpCode::LDR:
                {
                LRReduction();

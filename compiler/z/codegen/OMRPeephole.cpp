@@ -171,6 +171,12 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             performed |= attemptToReduce64BitShiftTo32BitShift(cursor);
             break;
             }
+         case TR::InstOpCode::SRL:
+         case TR::InstOpCode::SLL:
+            {
+            performed |= attemptToRemoveRedundantShift(cursor);
+            break;
+            }
          default:
             break;
          }
@@ -1053,6 +1059,44 @@ OMR::Z::Peephole::attemptToRemoveRedundantLA(TR::Instruction* cursor)
          cg()->deleteInst(cursor);
          
          return true;
+         }
+      }
+
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToRemoveRedundantShift(TR::Instruction* cursor)
+   {
+   TR::Instruction* currInst = cursor;
+   TR::Instruction* nextInst = cursor->getNext();
+
+   if (currInst->getOpCodeValue() == nextInst->getOpCodeValue())
+      {
+      if ((currInst->getKind() == TR::Instruction::IsRS) && (nextInst->getKind() == TR::Instruction::IsRS))
+         {
+         TR::S390RSInstruction* currRSInst = static_cast<TR::S390RSInstruction*>(currInst);
+         TR::S390RSInstruction* nextRSInst = static_cast<TR::S390RSInstruction*>(nextInst);
+
+         bool instrMatch =
+            (currRSInst->getFirstRegister() == nextRSInst->getFirstRegister()) &&
+            (!currRSInst->hasMaskImmediate()) && (!nextRSInst->hasMaskImmediate()) &&
+            (currRSInst->getMemoryReference() == NULL) && (nextRSInst->getMemoryReference() == NULL);
+
+         if (instrMatch)
+            {
+            uint32_t newShift = currRSInst->getSourceImmediate() + nextRSInst->getSourceImmediate();
+            if (newShift < 64)
+               {
+               if (performTransformation(comp(), "O^O S390 PEEPHOLE: merging SRL/SLL pair [%p] [%p]\n", cursor, cursor->getNext()))
+                  {
+                  currRSInst->setSourceImmediate(newShift);
+                  cg()->deleteInst(nextInst);
+
+                  return true;
+                  }
+               }
+            }
          }
       }
 

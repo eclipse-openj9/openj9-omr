@@ -1444,48 +1444,6 @@ TR_S390Peephole::perform()
                break;
                }
 
-            case TR::InstOpCode::SRL:
-            case TR::InstOpCode::SLL:
-               {
-               // Turn
-               //     SRL      @00_@GN11888_VSWKSKEY,24
-               //     SRL      @00_@GN11888_VSWKSKEY,4
-               // into
-               //     SRL      @00_@GN11888_VSWKSKEY,28
-               if (_cursor->getNext()->getOpCodeValue() ==
-                  _cursor->getOpCodeValue())
-                  {
-                  TR::Instruction * na = _cursor;
-                  TR::Instruction * nb = _cursor->getNext();
-
-                  if ((na->getKind() == TR::Instruction::IsRS) &&
-                     (nb->getKind() == TR::Instruction::IsRS))
-                     {
-                     // SRL == SLL == generateRSInstruction
-                     TR::S390RSInstruction * cast_na = (TR::S390RSInstruction *)na;
-                     TR::S390RSInstruction * cast_nb = (TR::S390RSInstruction *)nb;
-
-                     bool instrMatch =
-                        (cast_na->getFirstRegister() == cast_nb->getFirstRegister()) &&
-                        (!cast_na->hasMaskImmediate()) && (!cast_nb->hasMaskImmediate()) &&
-                        (cast_na->getMemoryReference() == NULL) && (cast_nb->getMemoryReference() == NULL);
-
-                     if (instrMatch)
-                        {
-                        if (((cast_na->getSourceImmediate() + cast_nb->getSourceImmediate()) < 64) &&
-                           performTransformation(comp(), "O^O S390 PEEPHOLE: merging SRL/SLL pair %p %p\n", _cursor, _cursor->getNext()))
-                           {
-                           // Delete the second instruction
-                           uint32_t deletedImmediate = cast_nb->getSourceImmediate();
-                           _cg->deleteInst(_cursor->getNext());
-                           cast_na->setSourceImmediate(cast_na->getSourceImmediate() + deletedImmediate);
-                           }
-                        }
-                     }
-                  }
-               }
-               break;
-
             default:
                {
                if (comp()->getOption(TR_TraceCG))

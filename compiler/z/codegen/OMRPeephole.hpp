@@ -321,6 +321,28 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToRemoveRedundantLA(TR::Instruction* cursor);
+
+   /** \brief
+    *     Attempts to remove redundant shift instructions which can be fused into a single shift. For example:
+    *
+    *     <code>
+    *     SRL GPR2,8(GPR2)
+    *     SRL GPR2,4(GPR2)
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     SRL GPR2,12(GPR2)
+    *     </code>
+
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToRemoveRedundantShift(TR::Instruction* cursor);
    };
 
 }

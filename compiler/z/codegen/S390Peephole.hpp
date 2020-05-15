@@ -41,7 +41,6 @@ private:
    bool LGFRReduction();
    bool LAReduction();
    bool clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *reg);
-   bool branchReduction();
    bool forwardBranchTarget();
    bool seekRegInFutureMemRef(int32_t ,TR::Register *);
    bool LRReduction();

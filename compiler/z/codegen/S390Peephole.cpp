@@ -205,12 +205,6 @@ findActiveCCInst(TR::Instruction *curr, TR::InstOpCode::Mnemonic op, TR::Registe
    return NULL;
    }
 
-bool
-TR_S390Peephole::branchReduction()
-   {
-   return false;
-   }
-
 /**
  * Peek ahead in instruction stream to see if we find register being used
  * in a memref
@@ -2117,15 +2111,6 @@ TR_S390Peephole::perform()
             case TR::InstOpCode::CPYA:
                {
                LRReduction();
-               break;
-               }
-            case TR::InstOpCode::IPM:
-               {
-               if (!branchReduction())
-                  {
-                  if (comp()->getOption(TR_TraceCG))
-                     printInst();
-                  }
                break;
                }
             case TR::InstOpCode::LDR:

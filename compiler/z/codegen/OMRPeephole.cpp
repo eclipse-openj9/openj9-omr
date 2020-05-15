@@ -88,6 +88,11 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             performed |= attemptToReduceCRJLHIToLOCHI(cursor, TR::InstOpCode::CGR);
             break;
             }
+         case TR::InstOpCode::CLR:
+            {
+            performed |= attemptToReduceCLRToCLRJ(cursor);
+            break;
+            }
          case TR::InstOpCode::CRJ:
             {
             performed |= attemptToReduceCRJLHIToLOCHI(cursor, TR::InstOpCode::CR);
@@ -491,6 +496,92 @@ OMR::Z::Peephole::attemptToReduceAGI(TR::Instruction* cursor)
       }
 
    return performed;
+   }
+
+bool
+OMR::Z::Peephole::attemptToReduceCLRToCLRJ(TR::Instruction* cursor)
+   {
+   if (!comp()->target().cpu.getSupportsArch(TR::CPU::z10))
+      return false;
+
+   bool branchTakenPerformReduction = false;
+   bool fallThroughPerformReduction = false;
+
+   if (cursor->getNext()->getOpCodeValue() == TR::InstOpCode::BRC)
+      {
+      TR::Instruction *clrInstruction = cursor;
+      TR::Instruction *brcInstruction = cursor->getNext();
+      TR::LabelSymbol *labelSymbol = brcInstruction->getLabelSymbol();
+
+      /* Conditions for reduction
+       * - Branch target is a snippet
+       *    - we only need to check if CC is consumed in fall through case
+       * - Else: branch target is not a snippet
+       *    - we need to check if CC is consumed in both branch taken
+       *      and fall through case
+       */
+      if (labelSymbol->getSnippet())
+         {
+         branchTakenPerformReduction = true;
+         }
+      else
+         {
+         // check branch taken case for condition code usage
+         TR::Instruction* branchInstruction = labelSymbol->getInstruction();
+         for (auto branchTakenInstIndex = 0; branchTakenInstIndex < 5 && NULL != branchInstruction; ++branchTakenInstIndex)
+            {
+            if (branchInstruction->getOpCode().readsCC())
+               {
+               break;
+               }
+            // CC is set before it is read (ordering of the if checks matter)
+            if (branchInstruction->getOpCode().setsCC() || TR::BBEnd == branchInstruction->getNode()->getOpCodeValue())
+               {
+               branchTakenPerformReduction = true;
+               break;
+               }
+            branchInstruction = branchInstruction->getNext();
+            }
+         }
+      // check fall through case for condition code usage
+      TR::Instruction* fallThroughInstruction = brcInstruction->getNext();
+      for (auto fallThroughInstIndex = 0; fallThroughInstIndex < 5 && NULL != fallThroughInstruction; ++fallThroughInstIndex)
+         {
+         if (fallThroughInstruction->getOpCode().readsCC())
+            {
+            break;
+            }
+         // CC is set before it is read (ordering of the if checks matter)
+         if (fallThroughInstruction->getOpCode().setsCC() || TR::BBEnd == fallThroughInstruction->getNode()->getOpCodeValue())
+            {
+            fallThroughPerformReduction = true;
+            break;
+            }
+         fallThroughInstruction = fallThroughInstruction->getNext();
+         }
+
+      if (fallThroughPerformReduction
+         && branchTakenPerformReduction
+         && performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming CLR [%p] and BRC [%p] to CLRJ\n", clrInstruction, brcInstruction))
+         {
+         TR_ASSERT_FATAL(clrInstruction->getNumRegisterOperands() == 2, "Number of register operands was not 2: %d\n", clrInstruction->getNumRegisterOperands());
+
+         TR::Instruction *clrjInstruction = generateRIEInstruction(
+            cg(),
+            TR::InstOpCode::CLRJ,
+            clrInstruction->getNode(),
+            clrInstruction->getRegisterOperand(1),
+            clrInstruction->getRegisterOperand(2),
+            labelSymbol,
+            static_cast<TR::S390BranchInstruction*>(brcInstruction)->getBranchCondition(),
+            clrInstruction->getPrev()
+         );
+         cg()->replaceInst(clrInstruction, clrjInstruction);
+         cg()->deleteInst(brcInstruction);
+         }
+      }
+
+   return fallThroughPerformReduction && branchTakenPerformReduction;
    }
 
 bool

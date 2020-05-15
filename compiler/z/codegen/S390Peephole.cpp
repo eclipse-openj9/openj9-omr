@@ -499,99 +499,6 @@ TR_S390Peephole::LRReduction()
 
 
 /**
- * Catch the pattern where an CLR/BRC can be converted
- *    CLR R1, R2
- *    BRC Mask, Label
- * Can be replaced with
- *    CLRJ R1, R2, Label, Mask
- */
-bool
-TR_S390Peephole::CompareAndBranchReduction()
-   {
-   if (!comp()->target().cpu.getSupportsArch(TR::CPU::z10))
-      return false;
-
-   bool branchTakenPerformReduction = false;
-   bool fallThroughPerformReduction = false;
-
-   if (_cursor->getOpCodeValue() == TR::InstOpCode::CLR
-       && _cursor->getNext()->getOpCodeValue() == TR::InstOpCode::BRC)
-      {
-      TR::Instruction *clrInstruction = _cursor;
-      TR::Instruction *brcInstruction = _cursor->getNext();
-      TR::LabelSymbol *labelSymbol = brcInstruction->getLabelSymbol();
-
-      /* Conditions for reduction
-       * - Branch target is a snippet
-       *    - we only need to check if CC is consumed in fall through case
-       * - Else: branch target is not a snippet
-       *    - we need to check if CC is consumed in both branch taken
-       *      and fall through case
-       */
-      if (labelSymbol->getSnippet())
-         {
-         branchTakenPerformReduction = true;
-         }
-      else
-         {
-         // check branch taken case for condition code usage
-         TR::Instruction* branchInstruction = labelSymbol->getInstruction();
-         for (auto branchTakenInstIndex = 0; branchTakenInstIndex < 5 && NULL != branchInstruction; ++branchTakenInstIndex)
-            {
-            if (branchInstruction->getOpCode().readsCC())
-               {
-               break;
-               }
-            // CC is set before it is read (ordering of the if checks matter)
-            if (branchInstruction->getOpCode().setsCC() || TR::BBEnd == branchInstruction->getNode()->getOpCodeValue())
-               {
-               branchTakenPerformReduction = true;
-               break;
-               }
-            branchInstruction = branchInstruction->getNext();
-            }
-         }
-      // check fall through case for condition code usage
-      TR::Instruction* fallThroughInstruction = brcInstruction->getNext();
-      for (auto fallThroughInstIndex = 0; fallThroughInstIndex < 5 && NULL != fallThroughInstruction; ++fallThroughInstIndex)
-         {
-         if (fallThroughInstruction->getOpCode().readsCC())
-            {
-            break;
-            }
-         // CC is set before it is read (ordering of the if checks matter)
-         if (fallThroughInstruction->getOpCode().setsCC() || TR::BBEnd == fallThroughInstruction->getNode()->getOpCodeValue())
-            {
-            fallThroughPerformReduction = true;
-            break;
-            }
-         fallThroughInstruction = fallThroughInstruction->getNext();
-         }
-
-      if (fallThroughPerformReduction
-         && branchTakenPerformReduction
-         && performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming CLR [%p] and BRC [%p] to CLRJ\n", clrInstruction, brcInstruction))
-         {
-         TR_ASSERT_FATAL(clrInstruction->getNumRegisterOperands() == 2, "Number of register operands was not 2: %d\n", clrInstruction->getNumRegisterOperands());
-
-         TR::Instruction *clrjInstruction = generateRIEInstruction(
-            _cg,
-            TR::InstOpCode::CLRJ,
-            clrInstruction->getNode(),
-            clrInstruction->getRegisterOperand(1),
-            clrInstruction->getRegisterOperand(2),
-            labelSymbol,
-            static_cast<TR::S390BranchInstruction*>(brcInstruction)->getBranchCondition(),
-            clrInstruction->getPrev()
-         );
-         _cg->replaceInst(clrInstruction, clrjInstruction);
-         _cg->deleteInst(brcInstruction);
-         }
-      }
-   return fallThroughPerformReduction && branchTakenPerformReduction;
-   }
-
-/**
  * Catch the pattern where a LOAD/NILL load-and-mask sequence
  *
  *    LOAD  Rx, Mem             where LOAD = L     => LZOpCode = LZRF
@@ -1935,7 +1842,6 @@ TR_S390Peephole::perform()
             case TR::InstOpCode::CGRT:
             case TR::InstOpCode::CLR:
                {
-               CompareAndBranchReduction();
                trueCompEliminationForCompareAndBranch();
 
                if (comp()->getOption(TR_TraceCG))

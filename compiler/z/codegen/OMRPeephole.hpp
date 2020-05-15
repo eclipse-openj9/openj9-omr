@@ -128,6 +128,29 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    bool attemptToReduceAGI(TR::Instruction* cursor);
    
    /** \brief
+    *     Attempts to reduce a compare logical (\c CLR) insturction followed by a branch to a compare and branch
+    *     instruction (\c CLRJ) For example:
+    *
+    *     <code>
+    *     CLR GPR1,GPR2
+    *     BRC B'1000',<LABEL>
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     CLRJ GPR1,GPR2,<LABEL>,B'1000'
+    *     </code>
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToReduceCLRToCLRJ(TR::Instruction* cursor);
+   
+   /** \brief
     *     Attempts to reduce a simple branch conditional load of an immediate to a load immediate on condition branch-
     *     less sequence. For example:
     *

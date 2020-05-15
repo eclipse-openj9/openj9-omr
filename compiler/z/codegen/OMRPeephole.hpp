@@ -98,6 +98,36 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    bool attemptToReduce64BitShiftTo32BitShift(TR::Instruction* cursor);
 
    /** \brief
+    *     Attempts to reduce AGIs (Address Generation Interlock) which occur when an instruction requires a register
+    *     its operand address calculation but the register is unavailable because it is written to by a preceeding
+    *     instruction which has not been completed yet. This causes a pipeline stall which we would like to avoid. In
+    *     some cases however the AGI can be avoided by register renaming. For example, the following:
+    *
+    *     <code>
+    *     LTGR GPR3,GPR8
+    *     AGRK GPR2,GPR11,GPR12
+    *     LOCGR GPR11,16(GPR3),B'1000'
+    *     </code>
+    *
+    *     can be register renamed to:
+    *
+    *     <code>
+    *     LTGR GPR3,GPR8
+    *     AGRK GPR2,GPR11,GPR12
+    *     LOCGR GPR11,16(GPR8),B'1000'
+    *     </code>
+    *
+    *     which avoids the AGI because \c GPR3 is no longer used within the memory reference.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToReduceAGI(TR::Instruction* cursor);
+
+   /** \brief
     *     Attempts to remove duplicate NILF instructions which target the same register and use the same immediate or
     *     redundant NILF instructions where the second NILF operation would not change the value of the target register.
     *

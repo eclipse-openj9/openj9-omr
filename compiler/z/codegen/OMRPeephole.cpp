@@ -32,6 +32,27 @@
 
 namespace TR { class Node; }
 
+static bool
+isBarrierToPeepHoleLookback(TR::Instruction* cursor)
+   {
+   if (cursor == NULL)
+      return true;
+   
+   if (cursor->isLabel())
+      return true;
+
+   if (cursor->isCall())
+      return true;
+
+   if (cursor->isBranchOp())
+      return true;
+
+   if (cursor->getOpCodeValue() == TR::InstOpCode::DCB)
+      return true;
+
+   return false;
+   }
+
 OMR::Z::Peephole::Peephole(TR::Compilation* comp) :
    OMR::Peephole(comp)
    {}
@@ -45,6 +66,18 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
       {
       switch(cursor->getOpCodeValue())
          {
+         case TR::InstOpCode::LGR:
+         case TR::InstOpCode::LTGR:
+            {
+            performed |= attemptToReduceAGI(cursor);
+            break;
+            }
+         case TR::InstOpCode::LR:
+         case TR::InstOpCode::LTR:
+            {
+            performed |= attemptToReduceAGI(cursor);
+            break;
+            }
          case TR::InstOpCode::NILF:
             {
             performed |= attemptToRemoveDuplicateNILF(cursor);
@@ -263,6 +296,156 @@ OMR::Z::Peephole::attemptToReduce64BitShiftTo32BitShift(TR::Instruction* cursor)
       }
 
    return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToReduceAGI(TR::Instruction* cursor)
+   {
+   bool performed=false;
+   int32_t windowSize=0;
+   const int32_t MaxWindowSize=8; // Look down 8 instructions (4 cycles)
+   const int32_t MaxLAWindowSize=6; // Look up 6 instructions (3 cycles)
+
+   TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
+   TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
+
+   TR::RealRegister *gpr0 = cg()->machine()->getRealRegister(TR::RealRegister::GPR0);
+
+   // no renaming possible if both target and source are the same
+   // this can happend with LTR and LTGR
+   // or if source reg is gpr0
+   if  (toRealRegister(lgrSourceReg)==gpr0 || (lgrTargetReg==lgrSourceReg) ||
+        toRealRegister(lgrTargetReg)==cg()->getStackPointerRealRegister(NULL))
+      return performed;
+
+   TR::Instruction* current = cursor->getNext();
+
+   // if:
+   //  1) target register is invalidated, or
+   //  2) current instruction is a branch or call
+   // then cannot continue.
+   // if:
+   //  1) source register is invalidated, or
+   //  2) current instruction is a label
+   // then cannot rename registers, but might be able to replace
+   // _cursor instruction with LA
+
+   bool reachedLabel = false;
+   bool reachedBranch = false;
+   bool sourceRegInvalid = false;
+   bool attemptLA = false;
+
+   while ((current != NULL) &&
+         !current->matchesTargetRegister(lgrTargetReg) &&
+         !isBarrierToPeepHoleLookback(current) &&
+         windowSize<MaxWindowSize)
+      {
+      // do not look across Transactional Regions, the Register save mask is optimistic and does not allow renaming
+      if (current->getOpCodeValue() == TR::InstOpCode::TBEGIN ||
+          current->getOpCodeValue() == TR::InstOpCode::TBEGINC ||
+          current->getOpCodeValue() == TR::InstOpCode::TEND ||
+          current->getOpCodeValue() == TR::InstOpCode::TABORT)
+         {
+         return false;
+         }
+
+      // if we reach a label or the source reg becomes invalidated
+      // then we cannot rename regs in mem refs, but we could still try using LA
+      reachedLabel = reachedLabel || current->isLabel();
+      reachedBranch = reachedBranch || (current->isBranchOp() && !(current->isExceptBranchOp()));
+
+      // does instruction load or store? otherwise just ignore and move to next instruction
+      if (current->isLoad() || current->isStore())
+         {
+         TR::MemoryReference *mr = current->getMemoryReference();
+         while (mr)
+            {
+            if (mr && mr->getBaseRegister() == lgrTargetReg)
+               {
+               if (!reachedLabel && !reachedBranch && !sourceRegInvalid)
+                  {
+                  if (performTransformation(comp(), "O^O S390 PEEPHOLE: AGI register renaming on [%p] from source load [%p].\n", current, cursor))
+                     {
+                     mr->setBaseRegister(lgrSourceReg, cg());
+
+                     performed = true;
+                     }
+                  }
+               else
+                  {
+                  // We couldn't do register renaming, but perhapse can use an LA instruction
+                  attemptLA = true;
+                  }
+               }
+
+            if (mr && mr->getIndexRegister() == lgrTargetReg)
+               {
+               if (!reachedLabel && !reachedBranch && !sourceRegInvalid)
+                  {
+                  if (performTransformation(comp(), "O^O S390 PEEPHOLE: AGI register renaming on [%p] from source load [%p].\n", current, cursor))
+                     {
+                     mr->setIndexRegister(lgrSourceReg);
+
+                     performed = true;
+                     }
+                  }
+               else
+                  {
+                  // We couldn't do register renaming, but perhapse can use an LA instruction
+                  attemptLA = true;
+                  }
+               }
+
+            if (mr == current->getMemoryReference())
+               mr = current->getMemoryReference2();
+            else
+               mr = NULL;
+            }
+         }
+
+         // If the current instruction invalidates the source register, subsequent instructions' memref cannot be renamed
+         sourceRegInvalid = sourceRegInvalid || current->matchesTargetRegister(lgrSourceReg);
+
+         current = current->getNext();
+         windowSize++;
+      }
+
+   // We can replace the cursor with an LA instruction if:
+   //   1. The mnemonic is LGR
+   //   2. The target is 64-bit (because LA sets the upppermost bit to 0 on 31-bit)
+   attemptLA &= cursor->getOpCodeValue() == TR::InstOpCode::LGR && comp()->target().is64Bit();
+
+   if (attemptLA)
+      {
+      // We check to see that we are eliminating the AGI, not just propagating it up in the code. We check for labels,
+      // source register invalidation, and routine calls (basically the opposite of the above while loop condition).
+      current = cursor->getPrev();
+      windowSize = 0;
+      while ((current != NULL) &&
+         !isBarrierToPeepHoleLookback(current) &&
+         !current->matchesTargetRegister(lgrSourceReg) &&
+         windowSize < MaxLAWindowSize)
+         {
+         current = current->getPrev();
+         windowSize++;
+         }
+
+      // if we reached the end of the loop and didn't find a conflict, switch the instruction to LA
+      if (windowSize == MaxLAWindowSize)
+         {
+         if (performTransformation(comp(), "O^O S390 PEEPHOLE: AGI LA reduction on [%p] from source load [%p].\n", current, cursor))
+            {
+            auto laInst = generateRXInstruction(cg(), TR::InstOpCode::LA, comp()->getStartTree()->getNode(), lgrTargetReg, 
+               generateS390MemoryReference(lgrSourceReg, 0, cg()), cursor->getPrev());
+
+            cg()->replaceInst(cursor, laInst);
+
+            performed = true;
+            }
+         }
+      }
+
+   return performed;
    }
 
 bool

@@ -74,7 +74,15 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
          case TR::InstOpCode::LGR:
          case TR::InstOpCode::LTGR:
             {
-            performed |= attemptToReduceAGI(cursor);
+            bool performedCurrentPeephole = false;
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceAGI(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceLGRToLGFR(cursor);
+
+            performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::L:
@@ -547,6 +555,39 @@ OMR::Z::Peephole::attemptToReduceLToICM(TR::Instruction* cursor)
       }
 
    return performed;
+   }
+
+bool
+OMR::Z::Peephole::attemptToReduceLGRToLGFR(TR::Instruction* cursor)
+   {
+   TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
+   TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
+
+   // We cannot do anything if both target and source are the same, which can happen with LTR and LTGR
+   if (lgrTargetReg == lgrSourceReg)
+      return false;
+
+   TR::Instruction* current = cursor->getNext();
+
+   if (current->getOpCodeValue() == TR::InstOpCode::LGFR)
+      {
+      TR::Register *curSourceReg = current->getRegisterOperand(2);
+      TR::Register *curTargetReg = current->getRegisterOperand(1);
+
+      if (curSourceReg == lgrTargetReg && curTargetReg == lgrTargetReg)
+         {
+         if (performTransformation(comp(), "O^O S390 PEEPHOLE: Reducing %s [%p] to LGFR.\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
+            {
+            ((TR::S390RRInstruction*)current)->setRegisterOperand(2, lgrSourceReg);
+
+            cg()->deleteInst(cursor);
+
+            return true;
+            }
+         }
+      }
+
+   return false;
    }
 
 bool

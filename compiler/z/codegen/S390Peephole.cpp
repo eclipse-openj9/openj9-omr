@@ -509,72 +509,6 @@ TR_S390Peephole::LRReduction()
    }
 
 /**
- *  Catch the pattern where an LGR/LGFR are redundent
- *    LGR   Rt, Rs
- *    LGFR  Rt, Rt
- *  can be replaced by
- *    LGFR  Rt, Rs
- */
-bool
-TR_S390Peephole::LGFRReduction()
-   {
-   if (comp()->getOption(TR_Randomize))
-      {
-      if (_cg->randomizer.randomBoolean() && performTransformation(comp(),"O^O Random Codegen  - Disable LGFRReduction on 0x%p.\n",_cursor))
-         return false;
-      }
-
-   bool performed=false;
-   int32_t windowSize=0;
-   const int32_t maxWindowSize=2;
-   static char *disableLGFRRemoval = feGetEnv("TR_DisableLGFRRemoval");
-
-   if (disableLGFRRemoval != NULL) return false;
-
-   TR::Register *lgrSourceReg = ((TR::S390RRInstruction*)_cursor)->getRegisterOperand(2);
-   TR::Register *lgrTargetReg = ((TR::S390RRInstruction*)_cursor)->getRegisterOperand(1);
-
-   // We cannot do anything if both target and source are the same,
-   // which can happen with LTR and LTGR
-   if  (lgrTargetReg == lgrSourceReg) return performed;
-
-   TR::Instruction * current = _cursor->getNext();
-   TR::InstOpCode::Mnemonic curOpCode = current->getOpCodeValue();
-
-   if (curOpCode == TR::InstOpCode::LGFR)
-      {
-      TR::Register *curSourceReg=((TR::S390RRInstruction*)current)->getRegisterOperand(2);
-      TR::Register *curTargetReg=((TR::S390RRInstruction*)current)->getRegisterOperand(1);
-
-      if (curSourceReg == lgrTargetReg && curTargetReg == lgrTargetReg)
-         {
-         if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
-         if(performTransformation(comp(), "O^O S390 PEEPHOLE: Redundant LGR at %p.\n", current))
-            {
-            if (comp()->getOption(TR_TraceCG))
-               {
-               printInfo("\n\tRedundent LGR/LGFR:");
-               printInstr(comp(), current);
-               char tmp[50];
-               sprintf(tmp, "\t is removed as duplicate of %p.", _cursor);
-               printInfo(tmp);
-               }
-
-            ((TR::S390RRInstruction*)current)->setRegisterOperand(2,lgrSourceReg);
-
-            // Removing redundant LR.
-            _cg->deleteInst(_cursor);
-
-            performed = true;
-            _cursor = _cursor->getNext();
-            }
-         }
-      }
-
-   return performed;
-   }
-
-/**
  * Catch the pattern where a CRJ/LHI conditional load immediate sequence
  *
  *    CRJ  Rx, Ry, L, M
@@ -2047,7 +1981,6 @@ TR_S390Peephole::perform()
             case TR::InstOpCode::LTGR:
                {
                LRReduction();
-               LGFRReduction();
                if (comp()->getOption(TR_TraceCG))
                   {
                   printInst();

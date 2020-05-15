@@ -509,72 +509,6 @@ TR_S390Peephole::LRReduction()
    }
 
 /**
- * Catch the pattern where an LLC/LGFR can be converted
- *    LLC   Rs, Mem
- *    LGFR  Rs, Rs
- * Can be replaced with
- *    LLGC  Rs, Mem
- * Also applies to the pattern where an LLC/LLGTR can be converted
- *    LLC   Rs, Mem
- *    LLGTR  Rs, Rs
- * Can be replaced with
- *    LLGC  Rs, Mem
- */
-bool
-TR_S390Peephole::LLCReduction()
-   {
-   if (comp()->getOption(TR_Randomize))
-      {
-      if (_cg->randomizer.randomBoolean() && performTransformation(comp(),"O^O Random Codegen  - Disable LLCReduction on 0x%p.\n",_cursor))
-         return false;
-      }
-
-   bool performed = false;
-
-   TR::Instruction *current = _cursor->getNext();
-   TR::InstOpCode::Mnemonic curOpCode = current->getOpCodeValue();
-
-   if (curOpCode == TR::InstOpCode::LGFR || curOpCode == TR::InstOpCode::LLGTR)
-      {
-      TR::Register *llcTgtReg = ((TR::S390RRInstruction *) _cursor)->getRegisterOperand(1);
-
-      TR::Register *curSrcReg = ((TR::S390RRInstruction *) current)->getRegisterOperand(2);
-      TR::Register *curTgtReg = ((TR::S390RRInstruction *) current)->getRegisterOperand(1);
-
-      if (llcTgtReg == curSrcReg && llcTgtReg == curTgtReg)
-         {
-         if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
-         if (performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming LLC/%s to LLGC at %p.\n", (curOpCode == TR::InstOpCode::LGFR) ? "LGFR" : "LLGTR" ,current))
-            {
-            if (comp()->getOption(TR_TraceCG))
-               {
-               if (curOpCode == TR::InstOpCode::LGFR)
-                  printInfo("\nRemoving LGFR instruction:");
-               else
-                  printInfo("\nRemoving LLGTR instruction:");
-               printInstr(comp(), current);
-               char tmp[50];
-               sprintf(tmp,"\nReplacing LLC at %p with LLGC", _cursor);
-               printInfo(tmp);
-               }
-
-            // Remove the LGFR/LLGTR
-            _cg->deleteInst(current);
-            // Replace the LLC with LLGC
-            TR::Instruction *oldCursor = _cursor;
-            TR::MemoryReference* memRef = ((TR::S390RXInstruction *) oldCursor)->getMemoryReference();
-            memRef->resetMemRefUsedBefore();
-            _cursor = generateRXInstruction(_cg, TR::InstOpCode::LLGC, comp()->getStartTree()->getNode(), llcTgtReg, memRef, _cursor->getPrev());
-            _cg->replaceInst(oldCursor, _cursor);
-            performed = true;
-            }
-         }
-      }
-
-   return performed;
-   }
-
-/**
  *  Catch the pattern where an LGR/LGFR are redundent
  *    LGR   Rt, Rs
  *    LGFR  Rt, Rt
@@ -2095,15 +2029,6 @@ TR_S390Peephole::perform()
                      printInst();
                   }
 
-               break;
-               }
-            case TR::InstOpCode::LLC:
-               {
-               LLCReduction();
-               if (comp()->getOption(TR_TraceCG))
-                  {
-                  printInst();
-                  }
                break;
                }
             case TR::InstOpCode::LLGF:

@@ -149,6 +149,29 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToReduceLToICM(TR::Instruction* cursor);
+   
+   /** \brief
+    *     Attempts to reduce a load logical character instruction (\c LLC) followed by a zero extension to \c LLGC.
+    *     For example:
+    *
+    *     <code>
+    *     LLC GPR2,8(GPR3,GPR5)
+    *     LGFR GPR2,GPR2
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     LLGC GPR2,8(GPR3,GPR5)
+    *     </code>
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToReduceLLCToLLGC(TR::Instruction* cursor);
 
    /** \brief
     *     Attempts to remove duplicate NILF instructions which target the same register and use the same immediate or

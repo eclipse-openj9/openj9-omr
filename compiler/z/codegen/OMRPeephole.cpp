@@ -82,6 +82,11 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             performed |= attemptToReduceLToICM(cursor);
             break;
             }
+         case TR::InstOpCode::LLC:
+            {
+            performed |= attemptToReduceLLCToLLGC(cursor);
+            break;
+            }
          case TR::InstOpCode::LR:
          case TR::InstOpCode::LTR:
             {
@@ -542,6 +547,40 @@ OMR::Z::Peephole::attemptToReduceLToICM(TR::Instruction* cursor)
       }
 
    return performed;
+   }
+
+bool
+OMR::Z::Peephole::attemptToReduceLLCToLLGC(TR::Instruction* cursor)
+   {
+   TR::Instruction *current = cursor->getNext();
+   auto mnemonic = current->getOpCodeValue();
+
+   if (mnemonic == TR::InstOpCode::LGFR || mnemonic == TR::InstOpCode::LLGTR)
+      {
+      TR::Register *llcTgtReg = ((TR::S390RRInstruction *) cursor)->getRegisterOperand(1);
+
+      TR::Register *curSrcReg = ((TR::S390RRInstruction *) current)->getRegisterOperand(2);
+      TR::Register *curTgtReg = ((TR::S390RRInstruction *) current)->getRegisterOperand(1);
+
+      if (llcTgtReg == curSrcReg && llcTgtReg == curTgtReg)
+         {
+         if (performTransformation(comp(), "O^O S390 PEEPHOLE: Reducing LLC/%s [%p] to LLGC.\n", TR::InstOpCode::metadata[mnemonic].name, current))
+            {
+            // Remove the LGFR/LLGTR
+            cg()->deleteInst(current);
+
+            // Replace the LLC with LLGC
+            TR::MemoryReference* memRef = ((TR::S390RXInstruction *) cursor)->getMemoryReference();
+            memRef->resetMemRefUsedBefore();
+            auto llgcInst = generateRXInstruction(cg(), TR::InstOpCode::LLGC, comp()->getStartTree()->getNode(), llcTgtReg, memRef, cursor->getPrev());
+            cg()->replaceInst(cursor, llgcInst);
+            
+            return true;
+            }
+         }
+      }
+
+   return false;
    }
 
 bool

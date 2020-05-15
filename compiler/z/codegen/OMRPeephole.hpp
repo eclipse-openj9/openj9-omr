@@ -310,6 +310,17 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToRemoveRedundantCompareAndTrap(TR::Instruction* cursor);
+
+   /** \brief
+    *     Attempts to remove redundant \c LA instructions whose evaluation would result in a NOP.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToRemoveRedundantLA(TR::Instruction* cursor);
    };
 
 }

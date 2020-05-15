@@ -125,6 +125,11 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             performed |= performedCurrentPeephole;
             break;
             }
+         case TR::InstOpCode::LA:
+            {
+            performed |= attemptToRemoveRedundantLA(cursor);
+            break;
+            }
          case TR::InstOpCode::LG:
             {
             performed |= attemptToReduceLToLZRF(cursor, TR::InstOpCode::LZRG);
@@ -1015,6 +1020,40 @@ OMR::Z::Peephole::attemptToRemoveRedundantCompareAndTrap(TR::Instruction* cursor
 
       current = current->getNext() == NULL ? NULL : current->getNext();
       windowSize++;
+      }
+
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToRemoveRedundantLA(TR::Instruction* cursor)
+   {
+   TR::Register *laTargetReg = cursor->getRegisterOperand(1);
+   TR::MemoryReference *mr = cursor->getMemoryReference();
+   TR::Register *laBaseReg = NULL;
+   TR::Register *laIndexReg = NULL;
+   TR::SymbolReference *symRef = NULL;
+   if (mr)
+      {
+      laBaseReg = mr->getBaseRegister();
+      laIndexReg = mr->getIndexRegister();
+      symRef = mr->getSymbolReference();
+      }
+
+   if (mr &&
+         mr->getOffset() == 0 &&
+         laBaseReg && laTargetReg &&
+         laBaseReg == laTargetReg &&
+         laIndexReg == NULL &&
+         (symRef == NULL || symRef->getOffset() == 0) &&
+         (symRef == NULL || symRef->getSymbol() == NULL))
+      {
+      if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant LA [%p].\n", cursor))
+         {
+         cg()->deleteInst(cursor);
+         
+         return true;
+         }
       }
 
    return false;

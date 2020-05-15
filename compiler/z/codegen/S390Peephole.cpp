@@ -101,48 +101,6 @@ TR_S390Peephole::isBarrierToPeepHoleLookback(TR::Instruction *current)
    }
 
 bool
-TR_S390Peephole::LAReduction()
-   {
-   TR::Instruction *s390Instr = _cursor;
-   bool performed = false;
-   if (s390Instr->getKind() == TR::Instruction::IsRX)
-      {
-      TR::Register *laTargetReg = s390Instr->getRegisterOperand(1);
-      TR::MemoryReference *mr = s390Instr->getMemoryReference();
-      TR::Register *laBaseReg = NULL;
-      TR::Register *laIndexReg = NULL;
-      TR::SymbolReference *symRef = NULL;
-      if (mr)
-         {
-         laBaseReg = mr->getBaseRegister();
-         laIndexReg = mr->getIndexRegister();
-         symRef = mr->getSymbolReference();
-         }
-
-      if (mr &&
-          mr->getOffset() == 0 &&
-          laBaseReg && laTargetReg &&
-          laBaseReg == laTargetReg &&
-          laIndexReg == NULL &&
-          (symRef == NULL || symRef->getOffset() == 0) &&
-          (symRef == NULL || symRef->getSymbol() == NULL))
-         {
-         // remove LA Rx,0(Rx)
-         if (comp()->getOption(TR_TraceCG))
-            { printInfo("\n"); }
-         if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant LA (0x%p) with matching target and base registers (%s)\n", _cursor,comp()->getDebug()->getName(laTargetReg)))
-            {
-            if (comp()->getOption(TR_TraceCG))
-               printInstr(comp(), _cursor);
-            _cg->deleteInst(_cursor);
-            performed = true;
-            }
-         }
-      }
-   return performed;
-   }
-
-bool
 TR_S390Peephole::clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *targetReg)
    {
    if (inst->defsRegister(targetReg))
@@ -1677,15 +1635,6 @@ TR_S390Peephole::perform()
             case TR::InstOpCode::LDR:
                {
                LRReduction();
-               break;
-               }
-            case TR::InstOpCode::LA:
-               {
-               if (!LAReduction())
-                  {
-                  if (comp()->getOption(TR_TraceCG))
-                     printInst();
-                  }
                break;
                }
 

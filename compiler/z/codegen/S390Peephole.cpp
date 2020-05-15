@@ -85,17 +85,6 @@ TR::Instruction* realInstructionWithLabels(TR::Instruction* inst, bool forward)
    return inst;
    }
 
-TR::Instruction* realInstructionWithLabelsAndRET(TR::Instruction* inst, bool forward)
-   {
-   while (inst && (inst->getKind() == TR::Instruction::IsPseudo ||
-                   inst->getKind() == TR::Instruction::IsNotExtended) && !inst->isRet())
-      {
-      inst = forward ? inst->getNext() : inst->getPrev();
-      }
-
-   return inst;
-   }
-
 bool
 TR_S390Peephole::isBarrierToPeepHoleLookback(TR::Instruction *current)
    {
@@ -508,81 +497,6 @@ TR_S390Peephole::LRReduction()
    return performed;
    }
 
-/**
- * Catch the pattern where a CRJ/LHI conditional load immediate sequence
- *
- *    CRJ  Rx, Ry, L, M
- *    LHI  Rz, I
- * L: ...  ...
- *
- *  can be replaced by
- *
- *    CR     Rx, Ry
- *    LOCHI  Rz, I, M
- *    ...    ...
- */
-bool
-TR_S390Peephole::ConditionalBranchReduction(TR::InstOpCode::Mnemonic branchOPReplacement)
-   {
-   // This optimization relies on hardware instructions introduced in z13
-   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
-      return false;
-
-   TR::S390RIEInstruction* branchInst = static_cast<TR::S390RIEInstruction*> (_cursor);
-
-   TR::Instruction* currInst = _cursor;
-   TR::Instruction* nextInst = _cursor->getNext();
-
-   TR::Instruction* label = branchInst->getBranchDestinationLabel()->getInstruction();
-
-   // Check that the instructions within the fall-through block can be conditionalized
-   while (currInst = realInstructionWithLabelsAndRET(nextInst, true))
-      {
-      if (currInst->getKind() == TR::Instruction::IsLabel)
-         {
-         if (currInst == label)
-            break;
-         else
-            return false;
-         }
-
-      if (currInst->getOpCodeValue() != TR::InstOpCode::LHI && currInst->getOpCodeValue() != TR::InstOpCode::LGHI)
-         return false;
-
-      nextInst = currInst->getNext();
-      }
-
-   currInst = _cursor;
-   nextInst = _cursor->getNext();
-
-   TR::InstOpCode::S390BranchCondition cond = getBranchConditionForMask(0xF - (getMaskForBranchCondition(branchInst->getBranchCondition()) & 0xF));
-
-   if (performTransformation(comp(), "O^O S390 PEEPHOLE: Conditionalizing fall-through block following %p.\n", currInst))
-      {
-      // Conditionalize the fall-though block
-      while (currInst = realInstructionWithLabelsAndRET(nextInst, true))
-         {
-         if (currInst == label)
-            break;
-
-         // Because of the previous checks, LHI or LGHI instruction is guaranteed to be here
-         TR::S390RIInstruction* RIInst = static_cast<TR::S390RIInstruction*> (currInst);
-
-         // Conditionalize from "Load Immediate" to "Load Immediate on Condition"
-         _cg->replaceInst(RIInst, _cursor = generateRIEInstruction(_cg, RIInst->getOpCode().getOpCodeValue() == TR::InstOpCode::LHI ? TR::InstOpCode::LOCHI : TR::InstOpCode::LOCGHI, RIInst->getNode(), RIInst->getRegisterOperand(1), RIInst->getSourceImmediate(), cond, RIInst->getPrev()));
-
-         currInst = _cursor;
-         nextInst = _cursor->getNext();
-         }
-
-      // Conditionalize the branch instruction from "Compare and Branch" to "Compare"
-      _cg->replaceInst(branchInst, generateRRInstruction(_cg, branchOPReplacement, branchInst->getNode(), branchInst->getRegisterOperand(1), branchInst->getRegisterOperand(2), branchInst->getPrev()));
-
-      return true;
-      }
-
-   return false;
-   }
 
 /**
  * Catch the pattern where an CLR/BRC can be converted
@@ -1997,8 +1911,6 @@ TR_S390Peephole::perform()
                }
             case TR::InstOpCode::CRJ:
                {
-               ConditionalBranchReduction(TR::InstOpCode::CR);
-
                trueCompEliminationForCompareAndBranch();
 
                if (comp()->getOption(TR_TraceCG))
@@ -2009,8 +1921,6 @@ TR_S390Peephole::perform()
 
             case TR::InstOpCode::CGRJ:
                {
-               ConditionalBranchReduction(TR::InstOpCode::CGR);
-
                trueCompEliminationForCompareAndBranch();
 
                if (comp()->getOption(TR_TraceCG))

@@ -53,6 +53,18 @@ isBarrierToPeepHoleLookback(TR::Instruction* cursor)
    return false;
    }
 
+static TR::Instruction*
+realInstructionWithLabelsAndRET(TR::Instruction* inst)
+   {
+   while (inst && (inst->getKind() == TR::Instruction::IsPseudo ||
+                   inst->getKind() == TR::Instruction::IsNotExtended) && !inst->isRet())
+      {
+      inst = inst->getNext();
+      }
+
+   return inst;
+   }
+
 OMR::Z::Peephole::Peephole(TR::Compilation* comp) :
    OMR::Peephole(comp)
    {}
@@ -69,6 +81,16 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
          case TR::InstOpCode::CGIT:
             {
             performed |= attemptToRemoveRedundantCompareAndTrap(cursor);
+            break;
+            }
+         case TR::InstOpCode::CGRJ:
+            {
+            performed |= attemptToReduceCRJLHIToLOCHI(cursor, TR::InstOpCode::CGR);
+            break;
+            }
+         case TR::InstOpCode::CRJ:
+            {
+            performed |= attemptToReduceCRJLHIToLOCHI(cursor, TR::InstOpCode::CR);
             break;
             }
          case TR::InstOpCode::LGR:
@@ -469,6 +491,73 @@ OMR::Z::Peephole::attemptToReduceAGI(TR::Instruction* cursor)
       }
 
    return performed;
+   }
+
+bool
+OMR::Z::Peephole::attemptToReduceCRJLHIToLOCHI(TR::Instruction* cursor, TR::InstOpCode::Mnemonic compareMnemonic)
+   {
+   // This optimization relies on hardware instructions introduced in z13
+   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
+      return false;
+
+   TR::S390RIEInstruction* branchInst = static_cast<TR::S390RIEInstruction*>(cursor);
+
+   TR::Instruction* currInst = cursor;
+   TR::Instruction* nextInst = cursor->getNext();
+
+   TR::Instruction* label = branchInst->getBranchDestinationLabel()->getInstruction();
+
+   // Check that the instructions within the fall-through block can be conditionalized
+   while (currInst = realInstructionWithLabelsAndRET(nextInst))
+      {
+      if (currInst->getKind() == TR::Instruction::IsLabel)
+         {
+         if (currInst == label)
+            break;
+         else
+            return false;
+         }
+
+      if (currInst->getOpCodeValue() != TR::InstOpCode::LHI && currInst->getOpCodeValue() != TR::InstOpCode::LGHI)
+         return false;
+
+      nextInst = currInst->getNext();
+      }
+
+   currInst = cursor;
+   nextInst = cursor->getNext();
+
+   TR::InstOpCode::S390BranchCondition cond = getBranchConditionForMask(0xF - (getMaskForBranchCondition(branchInst->getBranchCondition()) & 0xF));
+
+   if (performTransformation(comp(), "O^O S390 PEEPHOLE: Conditionalizing fall-through block following [%p].\n", currInst))
+      {
+      // Conditionalize the fall-though block
+      while (currInst = realInstructionWithLabelsAndRET(nextInst))
+         {
+         if (currInst == label)
+            break;
+
+         // Because of the previous checks, LHI or LGHI instruction is guaranteed to be here
+         TR::S390RIInstruction* RIInst = static_cast<TR::S390RIInstruction*>(currInst);
+
+         auto lochiInst = generateRIEInstruction(cg(), RIInst->getOpCode().getOpCodeValue() == TR::InstOpCode::LHI ? TR::InstOpCode::LOCHI : TR::InstOpCode::LOCGHI, RIInst->getNode(), RIInst->getRegisterOperand(1), RIInst->getSourceImmediate(), cond, RIInst->getPrev());
+
+         // Conditionalize from "Load Immediate" to "Load Immediate on Condition"
+         cg()->replaceInst(RIInst, lochiInst);
+
+         currInst = lochiInst;
+         nextInst = lochiInst->getNext();
+         }
+
+      auto crInst = generateRRInstruction(cg(), compareMnemonic, branchInst->getNode(), branchInst->getRegisterOperand(1), branchInst->getRegisterOperand(2), branchInst->getPrev());
+
+      // Conditionalize the branch instruction from "Compare and Branch" to "Compare"
+      cg()->replaceInst(branchInst, crInst);
+
+      return true;
+      }
+
+   return false;
    }
 
 bool

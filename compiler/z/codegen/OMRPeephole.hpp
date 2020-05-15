@@ -128,6 +128,37 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    bool attemptToReduceAGI(TR::Instruction* cursor);
    
    /** \brief
+    *     Attempts to reduce a simple branch conditional load of an immediate to a load immediate on condition branch-
+    *     less sequence. For example:
+    *
+    *     <code>
+    *     CRJ GPR2,GPR3,B'1010',<LABEL>
+    *     LHI GPR4,55
+    *     LABEL:
+    *     ...
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     CR GPR2,GPR3
+    *     LOCHI GPR4,55,B'1010'
+    *     ...
+    *     </code>
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \param compareMnemonic
+    *     The compare mnemonic which will replace the compare and branch instruction and feed the condition code into
+    *     the conditional load.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToReduceCRJLHIToLOCHI(TR::Instruction* cursor, TR::InstOpCode::Mnemonic compareMnemonic);
+   
+   /** \brief
     *     Attempts to reduce a load instruction (\c L) to an insert character under mask (\c ICM) instruction. This can
     *     be done if following the load we have a load and test or a compare against certain immediates. For example:
     *

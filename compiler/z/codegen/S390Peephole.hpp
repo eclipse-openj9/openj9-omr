@@ -47,7 +47,6 @@ private:
    bool ConditionalBranchReduction(TR::InstOpCode::Mnemonic branchOPReplacement);
    bool CompareAndBranchReduction();
    bool LoadAndMaskReduction(TR::InstOpCode::Mnemonic LZOpCode);
-   bool removeMergedNullCHK();
    bool trueCompEliminationForCompareAndBranch();
    bool trueCompEliminationForCompare();
    bool trueCompEliminationForLoadComp();

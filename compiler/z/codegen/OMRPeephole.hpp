@@ -172,6 +172,18 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToRemoveDuplicateNILH(TR::Instruction* cursor);
+
+   /** \brief
+    *     Attempts to remove redundant compare and trap instructions which can never be executed because a previous
+    *     compare and trap instruction would have triggered a trap already.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToRemoveRedundantCompareAndTrap(TR::Instruction* cursor);
    };
 
 }

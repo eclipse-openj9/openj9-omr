@@ -238,86 +238,6 @@ TR_S390Peephole::seekRegInFutureMemRef(int32_t maxWindowSize, TR::Register *targ
    }
 
 /**
- * Removes CGIT/CIT nullchk when CLT can implicitly do nullchk
- * in SignalHandler.c
- */
-bool
-TR_S390Peephole::removeMergedNullCHK()
-   {
-      if (comp()->target().isZOS())
-        {
-        // CLT cannot do the job in zOS because in zOS it is legal to read low memory address (like 0x000000, literally NULL),
-        // and CLT will read the low memory address legally (in this case NULL) to compare it with the other operand.
-        // The result will not make sense since we should trap for NULLCHK first.
-        return false;
-        }
-
-   if (comp()->getOption(TR_Randomize))
-      {
-      if (_cg->randomizer.randomBoolean() && performTransformation(comp(),"O^O Random Codegen  - Disable removeMergedNullCHK on 0x%p.\n",_cursor))
-         return false;
-      }
-
-   int32_t windowSize=0;
-   const int32_t maxWindowSize=8;
-   static char *disableRemoveMergedNullCHK = feGetEnv("TR_DisableRemoveMergedNullCHK");
-
-   if (disableRemoveMergedNullCHK != NULL) return false;
-
-   TR::Instruction * cgitInst = _cursor;
-   TR::Instruction * current = cgitInst->getNext();
-
-   cgitInst->setUseDefRegisters(false);
-   TR::Register * cgitSource = cgitInst->getSourceRegister(0);
-
-   while ((current != NULL) &&
-         !isBarrierToPeepHoleLookback(current) &&
-         windowSize<maxWindowSize)
-      {
-      // do not look across Transactional Regions, the Register save mask is optimistic and does not allow renaming
-      if (current->getOpCodeValue() == TR::InstOpCode::TBEGIN ||
-          current->getOpCodeValue() == TR::InstOpCode::TBEGINC ||
-          current->getOpCodeValue() == TR::InstOpCode::TEND ||
-          current->getOpCodeValue() == TR::InstOpCode::TABORT)
-         {
-         return false;
-         }
-
-      if (current->getOpCodeValue() == TR::InstOpCode::CLT)
-          {
-          TR::Instruction * cltInst = current;
-          cltInst->setUseDefRegisters(false);
-          TR::Register * cltSource = cltInst->getSourceRegister(0);
-          TR::Register * cltSource2 = cltInst->getSourceRegister(1);
-          if (!cgitSource || !cltSource || !cltSource2)
-             return false;
-          if (toRealRegister(cltSource2)->getRegisterNumber() == toRealRegister(cgitSource)->getRegisterNumber())
-             {
-                if (performTransformation(comp(), "\nO^O S390 PEEPHOLE: removeMergedNullCHK on 0x%p.\n", cgitInst))
-                   {
-                   printInfo("\nremoving: ");
-                   printInstr(comp(), cgitInst);
-                   printInfo("\n");
-                   }
-
-                _cg->deleteInst(cgitInst);
-
-                return true;
-             }
-          }
-       else if (current->usesRegister(cgitSource))
-          {
-          return false;
-          }
-
-      current = current->getNext() == NULL ? NULL : current->getNext();
-      windowSize++;
-      }
-
-   return false;
-   }
-
-/**
  * LRReduction performs several LR reduction/removal transformations:
  *
  * (design 1980)
@@ -2215,15 +2135,6 @@ TR_S390Peephole::perform()
                      printInst();
                   }
 
-               break;
-               }
-            case TR::InstOpCode::CGIT:
-               {
-               if (comp()->target().is64Bit() && !removeMergedNullCHK())
-                  {
-                  if (comp()->getOption(TR_TraceCG))
-                     printInst();
-                  }
                break;
                }
             case TR::InstOpCode::CRJ:

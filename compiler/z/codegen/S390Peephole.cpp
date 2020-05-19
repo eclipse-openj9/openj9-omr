@@ -214,24 +214,6 @@ TR_S390Peephole::LRReduction()
       (lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTR || lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTGR))
       {
       TR::Instruction *prev = _cursor->getPrev();
-      if((prev->getOpCodeValue() == TR::InstOpCode::LR && lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTR) ||
-         (prev->getOpCodeValue() == TR::InstOpCode::LGR && lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTGR))
-        {
-        TR::Register *prevTargetReg = ((TR::S390RRInstruction*)prev)->getRegisterOperand(1);
-        TR::Register *prevSourceReg = ((TR::S390RRInstruction*)prev)->getRegisterOperand(2);
-        if((lgrTargetReg == prevTargetReg || lgrTargetReg == prevSourceReg) &&
-           performTransformation(comp(), "\nO^O S390 PEEPHOLE: Transforming load register into load and test register and removing current at %p\n", _cursor))
-          {
-          TR::Instruction *newInst = generateRRInstruction(_cg, lgrOpCode.is64bit() ? TR::InstOpCode::LTGR : TR::InstOpCode::LTR, prev->getNode(), prevTargetReg, prevSourceReg, prev->getPrev());
-          _cg->replaceInst(prev, newInst);
-          if (comp()->getOption(TR_TraceCG))
-            printInstr(comp(), _cursor);
-          _cg->deleteInst(prev);
-          _cg->deleteInst(_cursor);
-          _cursor = newInst;
-          return true;
-          }
-        }
       TR::Instruction *next = _cursor->getNext();
       //try to remove redundant LTR, LTGR when we can reuse the condition code of an arithmetic logical operation, ie. Add/Subtract Logical
       //this is also done by isActiveLogicalCC, and the end of generateS390CompareAndBranchOpsHelper when the virtual registers match

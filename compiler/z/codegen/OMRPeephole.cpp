@@ -172,6 +172,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             if (!performedCurrentPeephole)
                performedCurrentPeephole |= attemptToRemoveDuplicateLR(cursor);
 
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToRemoveRedundantLR(cursor);
+
             performed |= performedCurrentPeephole;
             break;
             }
@@ -199,6 +202,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
 
             if (!performedCurrentPeephole)
                performedCurrentPeephole |= attemptToRemoveDuplicateLR(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToRemoveRedundantLR(cursor);
 
             performed |= performedCurrentPeephole;
             break;
@@ -1262,6 +1268,40 @@ OMR::Z::Peephole::attemptToRemoveRedundantShift(TR::Instruction* cursor)
                   }
                }
             }
+         }
+      }
+
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToRemoveRedundantLR(TR::Instruction* cursor)
+   {
+   // The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg
+   cursor->setUseDefRegisters(false);
+
+   TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
+   TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
+
+   if (lgrTargetReg == lgrSourceReg)
+      {
+      TR::Instruction* nextInst = cursor->getNext();
+
+      if (nextInst->getOpCodeValue() == TR::InstOpCode::LTR ||
+          nextInst->getOpCodeValue() == TR::InstOpCode::LTGR)
+        {
+        TR::Register *ltgrTargetReg = nextInst->getRegisterOperand(1);
+        TR::Register *ltgrSourceReg = nextInst->getRegisterOperand(2);
+
+        if (lgrTargetReg == ltgrTargetReg || lgrTargetReg == ltgrSourceReg)
+           {
+           if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant %s [%p] which is followed by a load and test register.\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
+              {
+              cg()->deleteInst(cursor);
+
+              return true;
+              }
+           }
          }
       }
 

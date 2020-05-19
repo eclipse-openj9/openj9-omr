@@ -408,6 +408,18 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToRemoveRedundantShift(TR::Instruction* cursor);
+
+   /** \brief
+    *     Attempts to remove redundant \c LR or \c LGR instructions which are followed by a load and test instruction
+    *     acting on the same source and target registers.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToRemoveRedundantLR(TR::Instruction* cursor);
    };
 
 }

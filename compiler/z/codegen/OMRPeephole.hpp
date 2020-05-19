@@ -372,6 +372,18 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    bool attemptToRemoveDuplicateLR(TR::Instruction* cursor);
 
    /** \brief
+    *     Attempts to use a peephole window to look for and remove duplicate load [and test] register instructions
+    *     which when executed would result in a NOP.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToRemoveDuplicateLoadRegister(TR::Instruction* cursor);
+
+   /** \brief
     *     Attempts to remove duplicate NILF instructions which target the same register and use the same immediate or
     *     redundant NILF instructions where the second NILF operation would not change the value of the target register.
     *

@@ -145,13 +145,17 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             break;
             }
          case TR::InstOpCode::LER:
-            {
-            performed |= attemptToRemoveDuplicateLR(cursor);
-            break;
-            }
          case TR::InstOpCode::LDR:
             {
-            performed |= attemptToRemoveDuplicateLR(cursor);
+            bool performedCurrentPeephole = false;
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToRemoveDuplicateLR(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToRemoveDuplicateLoadRegister(cursor);
+
+            performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::LG:
@@ -177,6 +181,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
 
             if (!performedCurrentPeephole)
                performedCurrentPeephole |= attemptToReduceLRCHIToLTR(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToRemoveDuplicateLoadRegister(cursor);
 
             performed |= performedCurrentPeephole;
             break;
@@ -212,6 +219,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             if (!performedCurrentPeephole)
                performedCurrentPeephole |= attemptToReduceLRCHIToLTR(cursor);
 
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToRemoveDuplicateLoadRegister(cursor);
+
             performed |= performedCurrentPeephole;
             break;
             }
@@ -228,6 +238,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
 
             if (!performedCurrentPeephole)
                performedCurrentPeephole |= attemptToRemoveRedundantLTR(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToRemoveDuplicateLoadRegister(cursor);
             
             performed |= performedCurrentPeephole;
             break;
@@ -1121,6 +1134,94 @@ OMR::Z::Peephole::attemptToRemoveDuplicateLR(TR::Instruction* cursor)
        }
 
    return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToRemoveDuplicateLoadRegister(TR::Instruction* cursor)
+   {
+   bool performed = false;
+   int32_t windowSize = 0;
+   const int32_t maxWindowSize = 20;
+
+   //The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg.
+   cursor->setUseDefRegisters(false);
+
+   TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
+   TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
+   TR::InstOpCode lgrOpCode = cursor->getOpCode();
+
+   TR::Instruction * current = cursor->getNext();
+
+   // In order to remove LTR's, we need to ensure that there are no
+   // instructions that set CC or read CC.
+   bool lgrSetCC = lgrOpCode.setsCC();
+   bool setCC = false, useCC = false;
+
+   while ((current != NULL) &&
+           !isBarrierToPeepHoleLookback(current) &&
+           !(current->isBranchOp() && current->getKind() == TR::Instruction::IsRIL &&
+              ((TR::S390RILInstruction *)current)->getTargetSnippet()) &&
+           windowSize < maxWindowSize)
+      {
+
+      // do not look across Transactional Regions, the Register save mask is optimistic and does not allow renaming
+      if (current->getOpCodeValue() == TR::InstOpCode::TBEGIN ||
+          current->getOpCodeValue() == TR::InstOpCode::TBEGINC ||
+          current->getOpCodeValue() == TR::InstOpCode::TEND ||
+          current->getOpCodeValue() == TR::InstOpCode::TABORT)
+         {
+         break;
+         }
+
+      TR::InstOpCode curOpCode = current->getOpCode();
+      current->setUseDefRegisters(false);
+
+      if (curOpCode.getOpCodeValue() == lgrOpCode.getOpCodeValue() &&
+          current->getKind() == TR::Instruction::IsRR)
+         {
+         TR::Register *curSourceReg = ((TR::S390RRInstruction*)current)->getRegisterOperand(2);
+         TR::Register *curTargetReg = ((TR::S390RRInstruction*)current)->getRegisterOperand(1);
+
+         if ( ((curSourceReg == lgrTargetReg && curTargetReg == lgrSourceReg) ||
+              (curSourceReg == lgrSourceReg && curTargetReg == lgrTargetReg)))
+            {
+            // We are either replacing LR/LGR (lgrSetCC won't be set)
+            // or if we are modifying LTR/LGTR, then no instruction can
+            // set or read CC between our original and current instruction.
+
+            if ((!lgrSetCC || !(setCC || useCC)))
+               {
+               if (performTransformation(comp(), "O^O S390 PEEPHOLE: Duplicate LR/CPYA removal at %p\n", current))
+                  {
+                  cg()->deleteInst(current);
+
+                  performed = true;
+                  current = current->getNext();
+                  windowSize = 0;
+                  setCC = setCC || current->getOpCode().setsCC();
+                  useCC = useCC || current->getOpCode().readsCC();
+                  continue;
+                  }
+               }
+            }
+         }
+
+      // Flag if current instruction sets or reads CC -> used to determine
+      // whether LTR/LGTR transformation is valid.
+      setCC = setCC || curOpCode.setsCC();
+      useCC = useCC || curOpCode.readsCC();
+
+      // If instruction overwrites either of the original source and target registers,
+      // we cannot remove any duplicates, as register contents may have changed.
+      if (current->isDefRegister(lgrSourceReg) ||
+          current->isDefRegister(lgrTargetReg))
+         break;
+
+      current = current->getNext();
+      windowSize++;
+      }
+
+   return performed;
    }
 
 bool

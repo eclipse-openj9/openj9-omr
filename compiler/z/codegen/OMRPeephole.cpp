@@ -65,6 +65,34 @@ realInstructionWithLabelsAndRET(TR::Instruction* inst)
    return inst;
    }
 
+static bool
+seekRegInFutureMemRef(TR::Instruction* cursor, int32_t maxWindowSize, TR::Register *targetReg)
+   {
+   TR::Instruction * current = cursor->getNext();
+   int32_t windowSize=0;
+
+   while ((current != NULL) &&
+         !current->matchesTargetRegister(targetReg) &&
+         !isBarrierToPeepHoleLookback(current) &&
+         windowSize<maxWindowSize)
+      {
+      // does instruction load or store? otherwise just ignore and move to next instruction
+      if (current->isLoad() || current->isStore())
+         {
+         TR::MemoryReference *mr = current->getMemoryReference();
+
+         if (mr && (mr->getBaseRegister()==targetReg || mr->getIndexRegister()==targetReg))
+            {
+            return true;
+            }
+         }
+      current = current->getNext();
+      windowSize++;
+      }
+
+   return false;
+   }
+
 OMR::Z::Peephole::Peephole(TR::Compilation* comp) :
    OMR::Peephole(comp)
    {}
@@ -132,7 +160,6 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             break;
             }
          case TR::InstOpCode::LGR:
-         case TR::InstOpCode::LTGR:
             {
             bool performedCurrentPeephole = false;
 
@@ -177,8 +204,17 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             break;
             }
          case TR::InstOpCode::LTR:
+         case TR::InstOpCode::LTGR:
             {
-            performed |= attemptToReduceAGI(cursor);
+            bool performedCurrentPeephole = false;
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceAGI(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceLTRToCHI(cursor);
+
+            performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::NILF:
@@ -841,10 +877,6 @@ OMR::Z::Peephole::attemptToReduceLGRToLGFR(TR::Instruction* cursor)
    TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
    TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
 
-   // We cannot do anything if both target and source are the same, which can happen with LTR and LTGR
-   if (lgrTargetReg == lgrSourceReg)
-      return false;
-
    TR::Instruction* current = cursor->getNext();
 
    if (current->getOpCodeValue() == TR::InstOpCode::LGFR)
@@ -940,6 +972,36 @@ OMR::Z::Peephole::attemptToReduceLLCToLLGC(TR::Instruction* cursor)
             auto llgcInst = generateRXInstruction(cg(), TR::InstOpCode::LLGC, comp()->getStartTree()->getNode(), llcTgtReg, memRef, cursor->getPrev());
             cg()->replaceInst(cursor, llgcInst);
             
+            return true;
+            }
+         }
+      }
+
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToReduceLTRToCHI(TR::Instruction* cursor)
+   {
+   // The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg.
+   cursor->setUseDefRegisters(false);
+
+   TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
+   TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
+   TR::InstOpCode lgrOpCode = cursor->getOpCode();
+
+   if (lgrTargetReg == lgrSourceReg &&
+      (lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTR || 
+       lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTGR))
+      {
+      if (seekRegInFutureMemRef(cursor, 4, lgrTargetReg))
+         {
+         if (performTransformation(comp(), "\nO^O S390 PEEPHOLE: Eliminating AGI by transforming %s [%p] to a compare halfword immediate.\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
+            {
+            auto chiInst = generateRIInstruction(cg(), TR::InstOpCode::getCmpHalfWordImmOpCode(), cursor->getNode(), lgrTargetReg, 0, cursor->getPrev());
+
+            cg()->replaceInst(cursor, chiInst);
+
             return true;
             }
          }

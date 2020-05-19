@@ -39,7 +39,6 @@ private:
 
    bool clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *reg);
    bool forwardBranchTarget();
-   bool seekRegInFutureMemRef(int32_t ,TR::Register *);
    bool LRReduction();
    bool trueCompEliminationForCompareAndBranch();
    bool trueCompEliminationForCompare();

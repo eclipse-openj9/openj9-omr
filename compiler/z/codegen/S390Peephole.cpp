@@ -153,38 +153,6 @@ findActiveCCInst(TR::Instruction *curr, TR::InstOpCode::Mnemonic op, TR::Registe
    }
 
 /**
- * Peek ahead in instruction stream to see if we find register being used
- * in a memref
- */
-bool
-TR_S390Peephole::seekRegInFutureMemRef(int32_t maxWindowSize, TR::Register *targetReg)
-   {
-   TR::Instruction * current = _cursor->getNext();
-   int32_t windowSize=0;
-
-   while ((current != NULL) &&
-         !current->matchesTargetRegister(targetReg) &&
-         !isBarrierToPeepHoleLookback(current) &&
-         windowSize<maxWindowSize)
-      {
-      // does instruction load or store? otherwise just ignore and move to next instruction
-      if (current->isLoad() || current->isStore())
-         {
-         TR::MemoryReference *mr = current->getMemoryReference();
-
-         if (mr && (mr->getBaseRegister()==targetReg || mr->getIndexRegister()==targetReg))
-            {
-            return true;
-            }
-         }
-      current = current->getNext();
-      windowSize++;
-      }
-
-   return false;
-   }
-
-/**
  * LRReduction performs several LR reduction/removal transformations:
  *
  * (design 1980)
@@ -245,22 +213,6 @@ TR_S390Peephole::LRReduction()
    if  (lgrTargetReg == lgrSourceReg &&
       (lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTR || lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTGR))
       {
-      bool isAGI = seekRegInFutureMemRef(4, lgrTargetReg);
-
-      if (isAGI && performTransformation(comp(), "\nO^O S390 PEEPHOLE: Transforming load and test to compare halfword immediate at %p\n", _cursor))
-         {
-         // replace LTGR with CGHI, LTR with CHI
-         TR::Instruction* oldCursor = _cursor;
-         _cursor = generateRIInstruction(_cg, lgrOpCode.is64bit() ? TR::InstOpCode::CGHI : TR::InstOpCode::CHI, comp()->getStartTree()->getNode(), lgrTargetReg, 0, _cursor->getPrev());
-
-         _cg->replaceInst(oldCursor, _cursor);
-
-         performed = true;
-
-         // instruction is now a CHI, not a LTR, so we must return
-         return performed;
-         }
-
       TR::Instruction *prev = _cursor->getPrev();
       if((prev->getOpCodeValue() == TR::InstOpCode::LR && lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTR) ||
          (prev->getOpCodeValue() == TR::InstOpCode::LGR && lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTGR))

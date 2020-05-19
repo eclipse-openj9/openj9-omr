@@ -297,6 +297,37 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToReduceLLCToLLGC(TR::Instruction* cursor);
+   
+   /** \brief
+    *     Attempts to reduce a load and test register instruction (\c LTR or \c LTGR) to a compare halfword immediate if
+    *     the target register of the load is used in a future memory reference. This is an attempt to reduce the AGI
+    *     incurred by using the target register. For example:
+    *
+    *     <code>
+    *     LTR GPR2,GPR2
+    *     BRC B'1000',<LABEL>
+    *     AHI GPR3,6
+    *     L GPR4,8(GPR2,GPR3)
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     CHI GPR2,0
+    *     BRC B'1000',<LABEL>
+    *     AHI GPR3,6
+    *     L GPR4,8(GPR2,GPR3)
+    *     </code>
+    *
+    *     which will avoid the AGI incurred by the memory refrence on the \c L instruction.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToReduceLTRToCHI(TR::Instruction* cursor);
 
    /** \brief
     *     Attempts to remove duplicate (\c LR, \c LGR, \c LDR, \c LER) instructions which have the same source and

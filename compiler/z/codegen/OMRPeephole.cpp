@@ -98,20 +98,6 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             performed |= attemptToReduceCRJLHIToLOCHI(cursor, TR::InstOpCode::CR);
             break;
             }
-         case TR::InstOpCode::LGR:
-         case TR::InstOpCode::LTGR:
-            {
-            bool performedCurrentPeephole = false;
-
-            if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceAGI(cursor);
-
-            if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceLGRToLGFR(cursor);
-
-            performed |= performedCurrentPeephole;
-            break;
-            }
          case TR::InstOpCode::L:
             {
             bool performedCurrentPeephole = false;
@@ -130,9 +116,36 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             performed |= attemptToRemoveRedundantLA(cursor);
             break;
             }
+         case TR::InstOpCode::LER:
+            {
+            performed |= attemptToRemoveDuplicateLR(cursor);
+            break;
+            }
+         case TR::InstOpCode::LDR:
+            {
+            performed |= attemptToRemoveDuplicateLR(cursor);
+            break;
+            }
          case TR::InstOpCode::LG:
             {
             performed |= attemptToReduceLToLZRF(cursor, TR::InstOpCode::LZRG);
+            break;
+            }
+         case TR::InstOpCode::LGR:
+         case TR::InstOpCode::LTGR:
+            {
+            bool performedCurrentPeephole = false;
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceAGI(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceLGRToLGFR(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToRemoveDuplicateLR(cursor);
+
+            performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::LHI:
@@ -151,6 +164,18 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             break;
             }
          case TR::InstOpCode::LR:
+            {
+            bool performedCurrentPeephole = false;
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceAGI(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToRemoveDuplicateLR(cursor);
+
+            performed |= performedCurrentPeephole;
+            break;
+            }
          case TR::InstOpCode::LTR:
             {
             performed |= attemptToReduceAGI(cursor);
@@ -919,6 +944,33 @@ OMR::Z::Peephole::attemptToReduceLLCToLLGC(TR::Instruction* cursor)
             }
          }
       }
+
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToRemoveDuplicateLR(TR::Instruction* cursor)
+   {
+   // The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg
+   cursor->setUseDefRegisters(false);
+
+   TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
+   TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
+   TR::InstOpCode lgrOpCode = cursor->getOpCode();
+
+   if (lgrTargetReg == lgrSourceReg &&
+      (lgrOpCode.getOpCodeValue() == TR::InstOpCode::LR ||
+       lgrOpCode.getOpCodeValue() == TR::InstOpCode::LGR ||
+       lgrOpCode.getOpCodeValue() == TR::InstOpCode::LDR ||
+       lgrOpCode.getOpCodeValue() == TR::InstOpCode::LER))
+       {
+       if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant %s [%p]\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
+          {
+          cg()->deleteInst(cursor);
+
+          return true;
+          }
+       }
 
    return false;
    }

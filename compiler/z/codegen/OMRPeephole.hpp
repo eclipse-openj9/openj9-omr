@@ -299,6 +299,18 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    bool attemptToReduceLLCToLLGC(TR::Instruction* cursor);
 
    /** \brief
+    *     Attempts to remove duplicate (\c LR, \c LGR, \c LDR, \c LER) instructions which have the same source and
+    *     target registers.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToRemoveDuplicateLR(TR::Instruction* cursor);
+
+   /** \brief
     *     Attempts to remove duplicate NILF instructions which target the same register and use the same immediate or
     *     redundant NILF instructions where the second NILF operation would not change the value of the target register.
     *

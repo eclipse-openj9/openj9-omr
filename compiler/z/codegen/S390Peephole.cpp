@@ -240,21 +240,6 @@ TR_S390Peephole::LRReduction()
    TR::Register *lgrTargetReg = ((TR::S390RRInstruction*)_cursor)->getRegisterOperand(1);
    TR::InstOpCode lgrOpCode = _cursor->getOpCode();
 
-   if (lgrTargetReg == lgrSourceReg &&
-      (lgrOpCode.getOpCodeValue() == TR::InstOpCode::LR ||
-       lgrOpCode.getOpCodeValue() == TR::InstOpCode::LGR ||
-       lgrOpCode.getOpCodeValue() == TR::InstOpCode::LDR ||
-       lgrOpCode.getOpCodeValue() == TR::InstOpCode::CPYA))
-       {
-       if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant LR/LGR/LDR/CPYA at %p\n", _cursor))
-          {
-            // Removing redundant LR.
-          _cg->deleteInst(_cursor);
-          performed = true;
-          return performed;
-          }
-       }
-
    // If both target and source are the same, and we have a load and test,
    // convert it to a CHI
    if  (lgrTargetReg == lgrSourceReg &&

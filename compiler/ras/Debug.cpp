@@ -4218,7 +4218,11 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_ARM64interpreterSyncDoubleStaticGlue:             return "_interpreterSyncDoubleStaticGlue";
          case TR_ARM64nativeStaticHelper:                          return "_nativeStaticHelper";
          case TR_ARM64interfaceDispatch:                           return "_interfaceDispatch";
+         case TR_ARM64samplingRecompileMethod:                     return "_samplingRecompileMethod";
          case TR_ARM64countingRecompileMethod:                     return "_countingRecompileMethod";
+         case TR_ARM64samplingPatchCallSite:                       return "_samplingPatchCallSite";
+         case TR_ARM64countingPatchCallSite:                       return "_countingPatchCallSite";
+         case TR_ARM64induceRecompilation:                         return "_induceRecompilation";
          case TR_ARM64revertToInterpreterGlue:                     return "_revertToInterpreterGlue";
          case TR_ARM64doubleRemainder:                             return "doubleRemainder";
          case TR_ARM64floatRemainder:                              return "floatRemainder";

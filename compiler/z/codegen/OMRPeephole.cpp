@@ -175,6 +175,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             if (!performedCurrentPeephole)
                performedCurrentPeephole |= attemptToRemoveRedundantLR(cursor);
 
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceLRCHIToLTR(cursor);
+
             performed |= performedCurrentPeephole;
             break;
             }
@@ -205,6 +208,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
 
             if (!performedCurrentPeephole)
                performedCurrentPeephole |= attemptToRemoveRedundantLR(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToReduceLRCHIToLTR(cursor);
 
             performed |= performedCurrentPeephole;
             break;
@@ -984,6 +990,77 @@ OMR::Z::Peephole::attemptToReduceLLCToLLGC(TR::Instruction* cursor)
             return true;
             }
          }
+      }
+
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToReduceLRCHIToLTR(TR::Instruction* cursor)
+   {
+   int32_t windowSize = 0;
+   const int32_t maxWindowSize = 10;
+
+   // The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg
+   cursor->setUseDefRegisters(false);
+
+   TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
+   TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
+   TR::InstOpCode lgrOpCode = cursor->getOpCode();
+
+   TR::Instruction * current = cursor->getNext();
+
+   while ((current != NULL) &&
+           !isBarrierToPeepHoleLookback(current) &&
+           !(current->isBranchOp() && current->getKind() == TR::Instruction::IsRIL &&
+              ((TR::S390RILInstruction *)current)->getTargetSnippet()) &&
+           windowSize < maxWindowSize)
+      {
+      // Do not look across Transactional Regions, the register save mask is optimistic and does not allow renaming
+      if (current->getOpCodeValue() == TR::InstOpCode::TBEGIN ||
+          current->getOpCodeValue() == TR::InstOpCode::TBEGINC ||
+          current->getOpCodeValue() == TR::InstOpCode::TEND ||
+          current->getOpCodeValue() == TR::InstOpCode::TABORT)
+         {
+         break;
+         }
+
+      TR::InstOpCode curOpCode = current->getOpCode();
+      current->setUseDefRegisters(false);
+      // if we encounter the CHI GPRx, 0, attempt the transformation the LR->LTR
+      // and remove the CHI GPRx, 0
+      if ((curOpCode.getOpCodeValue() == TR::InstOpCode::CHI || curOpCode.getOpCodeValue() == TR::InstOpCode::CGHI) &&
+            ((curOpCode.is32bit() && lgrOpCode.is32bit()) ||
+             (curOpCode.is64bit() && lgrOpCode.is64bit())))
+         {
+         TR::Register *curTargetReg=((TR::S390RIInstruction*)current)->getRegisterOperand(1);
+         int32_t srcImm = ((TR::S390RIInstruction*)current)->getSourceImmediate();
+         if (curTargetReg == lgrTargetReg && srcImm == 0)
+            {
+            if (performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming LR/CHI to LTR at %p\n", cursor))
+               {
+               auto ltrInst = generateRRInstruction(cg(), lgrOpCode.is64bit() ? TR::InstOpCode::LTGR : TR::InstOpCode::LTR, cursor->getNode(), lgrTargetReg, lgrSourceReg, cursor->getPrev());
+
+               cg()->replaceInst(cursor, ltrInst);
+               cg()->deleteInst(current);
+
+               return true;
+               }
+            }
+         }
+
+      // Ensure we do not clobber the CC set by another instruction
+      if (curOpCode.setsCC() || curOpCode.readsCC())
+         break;
+
+      // Ensure the compare acts on the correct register values
+      if (current->isDefRegister(lgrSourceReg) ||
+          current->isDefRegister(lgrTargetReg))
+         break;
+
+      current = current->getNext();
+
+      windowSize++;
       }
 
    return false;

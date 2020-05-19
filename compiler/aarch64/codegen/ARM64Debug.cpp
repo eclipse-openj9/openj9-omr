@@ -1449,6 +1449,9 @@ TR_Debug::getNamea64(TR::Snippet * snippet)
       case TR::Snippet::IsMonitorExit:
          return "MonitorExit Dec Counter";
          break;
+      case TR::Snippet::IsHeapAlloc:
+         return "Heap Alloc Snippet";
+         break;
       default:
          return "<unknown snippet>";
       }
@@ -1496,6 +1499,7 @@ TR_Debug::printa64(TR::FILE *pOutFile, TR::Snippet * snippet)
 
       case TR::Snippet::IsMonitorExit:
       case TR::Snippet::IsMonitorEnter:
+      case TR::Snippet::IsHeapAlloc:
          snippet->print(pOutFile, this);
          break;
       default:

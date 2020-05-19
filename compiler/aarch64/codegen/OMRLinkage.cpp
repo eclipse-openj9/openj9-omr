@@ -64,19 +64,13 @@ TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register
    return result;
    }
 
-TR::Instruction *OMR::ARM64::Linkage::saveArguments(TR::Instruction *cursor)
+TR::Instruction *OMR::ARM64::Linkage::saveParametersToStack(TR::Instruction *cursor)
    {
    TR_UNIMPLEMENTED();
    return cursor;
    }
 
-TR::Instruction *OMR::ARM64::Linkage::loadUpArguments(TR::Instruction *cursor)
-   {
-   TR_UNIMPLEMENTED();
-   return cursor;
-   }
-
-TR::Instruction *OMR::ARM64::Linkage::flushArguments(TR::Instruction *cursor)
+TR::Instruction *OMR::ARM64::Linkage::loadStackParametersToLinkageRegisters(TR::Instruction *cursor)
    {
    TR_UNIMPLEMENTED();
    return cursor;

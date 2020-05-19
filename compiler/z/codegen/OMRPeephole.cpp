@@ -220,6 +220,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             if (!performedCurrentPeephole)
                performedCurrentPeephole |= attemptToReduceLTRToCHI(cursor);
 
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToRemoveRedundantLTR(cursor);
+            
             performed |= performedCurrentPeephole;
             break;
             }
@@ -1302,6 +1305,48 @@ OMR::Z::Peephole::attemptToRemoveRedundantLR(TR::Instruction* cursor)
               return true;
               }
            }
+         }
+      }
+
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToRemoveRedundantLTR(TR::Instruction* cursor)
+   {
+   // The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg
+   cursor->setUseDefRegisters(false);
+
+   TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
+   TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
+   
+   if (lgrTargetReg == lgrSourceReg)
+      {
+      TR::Instruction *prevInst = cursor->getPrev();
+      TR::Instruction *nextInst = cursor->getNext();
+
+      // Note that this is also done by isActiveLogicalCC, and the end of generateS390CompareAndBranchOpsHelper when
+      // the virtual registers match, but those cannot handle the case when the virtual registers are not the same but
+      // we do have the same restricted register, which is why we are handling it here when all the register assignment
+      // is done, and the redundant LR's from the clobber evaluate of the add/sub logical are cleaned up as well
+      if (prevInst->getOpCode().setsCC() && prevInst->getOpCode().setsCarryFlag() && prevInst->getRegisterOperand(1) == lgrTargetReg && nextInst->getOpCodeValue() == TR::InstOpCode::BRC)
+         {
+         TR::InstOpCode::S390BranchCondition branchCond = ((TR::S390BranchInstruction *) nextInst)->getBranchCondition();
+
+         if (branchCond == TR::InstOpCode::COND_BE || branchCond == TR::InstOpCode::COND_BNE)
+            {
+            if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant Load and Test instruction at %p, because CC can be reused from logical instruction %p\n", cursor, prevInst))
+               {
+               cg()->deleteInst(cursor);
+
+               if (branchCond == TR::InstOpCode::COND_BE)
+                  ((TR::S390BranchInstruction *) nextInst)->setBranchCondition(TR::InstOpCode::COND_MASK10);
+               else if (branchCond == TR::InstOpCode::COND_BNE)
+                  ((TR::S390BranchInstruction *) nextInst)->setBranchCondition(TR::InstOpCode::COND_MASK5);
+
+               return true;
+               }
+            }
          }
       }
 

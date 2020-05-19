@@ -420,6 +420,33 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToRemoveRedundantLR(TR::Instruction* cursor);
+
+   /** \brief
+    *     Attempts to remove redundant \c LTR or \c LTGR instructions if we can reuse the condition code from a
+    *     previous arithmetic operation. For example:
+    *
+    *     <code>
+    *     SLR GPR2,GPR3
+    *     LTR GPR2,GPR2
+    *     BRC B'1000',<LABEL>
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     SLR GPR2,GPR3
+    *     BRC B'1010',<LABEL>
+    *     </code>
+    *
+    *     Note the modified mask value of the \c BRC instruction.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToRemoveRedundantLTR(TR::Instruction* cursor);
    };
 
 }

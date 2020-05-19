@@ -208,46 +208,6 @@ TR_S390Peephole::LRReduction()
    TR::Register *lgrTargetReg = ((TR::S390RRInstruction*)_cursor)->getRegisterOperand(1);
    TR::InstOpCode lgrOpCode = _cursor->getOpCode();
 
-   // If both target and source are the same, and we have a load and test,
-   // convert it to a CHI
-   if  (lgrTargetReg == lgrSourceReg &&
-      (lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTR || lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTGR))
-      {
-      TR::Instruction *prev = _cursor->getPrev();
-      TR::Instruction *next = _cursor->getNext();
-      //try to remove redundant LTR, LTGR when we can reuse the condition code of an arithmetic logical operation, ie. Add/Subtract Logical
-      //this is also done by isActiveLogicalCC, and the end of generateS390CompareAndBranchOpsHelper when the virtual registers match
-      //but those cannot handle the case when the virtual registers are not the same but we do have the same restricted register
-      //which is why we are handling it here when all the register assignments are done, and the redundant LR's from the
-      //clobber evaluate of the add/sub logical are cleaned up as well.
-      // removes the redundant LTR/LTRG, and corrects the mask of the BRC
-      // from:
-      // SLR @01, @04
-      // LTR @01, @01
-      // BRC (MASK8, 0x8) Label
-      //
-      // to:
-      // SLR @01, @04
-      // BRC (0x10) Label
-      //checks that the prev instruction is an add/sub logical operation that sets the same target register as the LTR/LTGR insn, and that we branch immediately after
-      if (prev->getOpCode().setsCC() && prev->getOpCode().setsCarryFlag() && prev->getRegisterOperand(1) == lgrTargetReg && next->getOpCodeValue() == TR::InstOpCode::BRC)
-         {
-         TR::InstOpCode::S390BranchCondition branchCond = ((TR::S390BranchInstruction *) next)->getBranchCondition();
-
-         if ((branchCond == TR::InstOpCode::COND_BE || branchCond == TR::InstOpCode::COND_BNE) &&
-            performTransformation(comp(), "\nO^O S390 PEEPHOLE: Removing redundant Load and Test instruction at %p, because CC can be reused from logical instruction %p\n",_cursor, prev))
-            {
-            _cg->deleteInst(_cursor);
-            if (branchCond == TR::InstOpCode::COND_BE)
-               ((TR::S390BranchInstruction *) next)->setBranchCondition(TR::InstOpCode::COND_MASK10);
-            else if (branchCond == TR::InstOpCode::COND_BNE)
-               ((TR::S390BranchInstruction *) next)->setBranchCondition(TR::InstOpCode::COND_MASK5);
-            performed = true;
-            return performed;
-            }
-         }
-      }
-
    TR::Instruction * current = _cursor->getNext();
 
    // In order to remove LTR's, we need to ensure that there are no

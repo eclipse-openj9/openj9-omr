@@ -87,7 +87,7 @@ TR::NodePool::removeDeadNodes()
        return false;
       }
 
-   TR_ASSERT(false, "Node garbage colleciotn is not currently implemented");
+   TR_ASSERT(false, "Node garbage collection is not currently implemented");
 
    return false;
    }

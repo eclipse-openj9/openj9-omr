@@ -1910,68 +1910,73 @@ void TR::PPCSrc3Instruction::fillBinaryEncodingFields(uint32_t *cursor)
       }
    }
 
+TR::RealRegister *toRealBaseRegister(TR::Instruction *instr, TR::Register *r)
+   {
+   return r ? toRealRegister(r) : instr->cg()->machine()->getRealRegister(TR::RealRegister::gr0);
+   }
+
+void fillMemoryReferenceD16RA(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getIndexRegister(), "Cannot use index-form MemoryReference with non-index-form instruction");
+   fillFieldD16(instr, cursor, mr->getOffset());
+   fillFieldRA(instr, cursor, toRealBaseRegister(instr, mr->getBaseRegister()));
+   }
+
+void fillMemoryReferenceDSRA(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getIndexRegister(), "Cannot use index-form MemoryReference with non-index-form instruction");
+   fillFieldD16(instr, cursor, mr->getOffset());
+   fillFieldRA(instr, cursor, toRealBaseRegister(instr, mr->getBaseRegister()));
+   }
+
+void fillMemoryReferenceRARB(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mr->getOffset() == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
+   fillFieldRA(instr, cursor, toRealBaseRegister(instr, mr->getBaseRegister()));
+   fillFieldRB(instr, cursor, toRealRegister(mr->getIndexRegister()));
+   }
+
 void TR::PPCMemSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
    TR::RealRegister *src = toRealRegister(getSourceRegister());
    TR::MemoryReference *memRef = getMemoryReference();
    TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), memRef != NULL, "Cannot encode instruction with null memory reference");
 
-   TR::RealRegister *base = toRealRegister(memRef->getBaseRegister());
-   TR::RealRegister *index = toRealRegister(memRef->getIndexRegister());
-   int32_t disp = memRef->getOffset();
-
-   if (base == NULL)
-      base = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
-
    switch (getOpCode().getFormat())
       {
       case FORMAT_RS_D16_RA:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
          fillFieldRS(self(), cursor, src);
-         fillFieldD16(self(), cursor, disp);
-         fillFieldRA(self(), cursor, base);
+         fillMemoryReferenceD16RA(self(), cursor, memRef);
          break;
 
       case FORMAT_RS_DS_RA:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
          fillFieldRS(self(), cursor, src);
-         fillFieldDS(self(), cursor, disp);
-         fillFieldRA(self(), cursor, base);
+         fillMemoryReferenceDSRA(self(), cursor, memRef);
          break;
 
       case FORMAT_FRS_D16_RA:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
          fillFieldFRS(self(), cursor, src);
-         fillFieldD16(self(), cursor, disp);
-         fillFieldRA(self(), cursor, base);
+         fillMemoryReferenceD16RA(self(), cursor, memRef);
          break;
 
       case FORMAT_RS_RA_RB_MEM:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
          fillFieldRS(self(), cursor, src);
-         fillFieldRA(self(), cursor, base);
-         fillFieldRB(self(), cursor, index);
+         fillMemoryReferenceRARB(self(), cursor, memRef);
          break;
 
       case FORMAT_FRS_RA_RB_MEM:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
          fillFieldFRS(self(), cursor, src);
-         fillFieldRA(self(), cursor, base);
-         fillFieldRB(self(), cursor, index);
+         fillMemoryReferenceRARB(self(), cursor, memRef);
          break;
 
       case FORMAT_VRS_RA_RB_MEM:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
          fillFieldVRS(self(), cursor, src);
-         fillFieldRA(self(), cursor, base);
-         fillFieldRB(self(), cursor, index);
+         fillMemoryReferenceRARB(self(), cursor, memRef);
          break;
 
       case FORMAT_XS_RA_RB_MEM:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
          fillFieldXS(self(), cursor, src);
-         fillFieldRA(self(), cursor, base);
-         fillFieldRB(self(), cursor, index);
+         fillMemoryReferenceRARB(self(), cursor, memRef);
          break;
 
       default:
@@ -1984,19 +1989,10 @@ void TR::PPCMemInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    TR::MemoryReference *memRef = getMemoryReference();
    TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), memRef != NULL, "Cannot encode instruction with null memory reference");
 
-   TR::RealRegister *base = toRealRegister(memRef->getBaseRegister());
-   TR::RealRegister *index = toRealRegister(memRef->getIndexRegister());
-   int32_t disp = memRef->getOffset();
-
-   if (base == NULL)
-      base = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
-
    switch (getOpCode().getFormat())
       {
       case FORMAT_RA_RB_MEM:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
-         fillFieldRA(self(), cursor, base);
-         fillFieldRB(self(), cursor, index);
+         fillMemoryReferenceRARB(self(), cursor, memRef);
          break;
 
       default:
@@ -2015,62 +2011,41 @@ void TR::PPCTrg1MemInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    TR::MemoryReference *memRef = getMemoryReference();
    TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), memRef != NULL, "Cannot encode instruction with null memory reference");
 
-   TR::RealRegister *base = toRealRegister(memRef->getBaseRegister());
-   TR::RealRegister *index = toRealRegister(memRef->getIndexRegister());
-   int32_t disp = memRef->getOffset();
-
-   if (base == NULL)
-      base = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
-
    switch (getOpCode().getFormat())
       {
       case FORMAT_RT_D16_RA:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
          fillFieldRT(self(), cursor, trg);
-         fillFieldD16(self(), cursor, disp);
-         fillFieldRA(self(), cursor, base);
+         fillMemoryReferenceD16RA(self(), cursor, memRef);
          break;
 
       case FORMAT_RT_DS_RA:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
          fillFieldRT(self(), cursor, trg);
-         fillFieldDS(self(), cursor, disp);
-         fillFieldRA(self(), cursor, base);
+         fillMemoryReferenceDSRA(self(), cursor, memRef);
          break;
 
       case FORMAT_FRT_D16_RA:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), !index, "Cannot use index-form MemoryReference with non-index-form instruction");
          fillFieldFRT(self(), cursor, trg);
-         fillFieldD16(self(), cursor, disp);
-         fillFieldRA(self(), cursor, base);
+         fillMemoryReferenceD16RA(self(), cursor, memRef);
          break;
 
       case FORMAT_RT_RA_RB_MEM:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
          fillFieldRT(self(), cursor, trg);
-         fillFieldRA(self(), cursor, base);
-         fillFieldRB(self(), cursor, index);
+         fillMemoryReferenceRARB(self(), cursor, memRef);
          break;
 
       case FORMAT_FRT_RA_RB_MEM:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
          fillFieldFRT(self(), cursor, trg);
-         fillFieldRA(self(), cursor, base);
-         fillFieldRB(self(), cursor, index);
+         fillMemoryReferenceRARB(self(), cursor, memRef);
          break;
 
       case FORMAT_VRT_RA_RB_MEM:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
          fillFieldVRT(self(), cursor, trg);
-         fillFieldRA(self(), cursor, base);
-         fillFieldRB(self(), cursor, index);
+         fillMemoryReferenceRARB(self(), cursor, memRef);
          break;
 
       case FORMAT_XT_RA_RB_MEM:
-         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), disp == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
          fillFieldXT(self(), cursor, trg);
-         fillFieldRA(self(), cursor, base);
-         fillFieldRB(self(), cursor, index);
+         fillMemoryReferenceRARB(self(), cursor, memRef);
          break;
 
       default:

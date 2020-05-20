@@ -42,7 +42,6 @@ private:
    bool trueCompEliminationForCompareAndBranch();
    bool trueCompEliminationForCompare();
    bool trueCompEliminationForLoadComp();
-   bool attemptZ7distinctOperants();
    bool isBarrierToPeepHoleLookback(TR::Instruction *current);
    void markBlockThatModifiesRegister(TR::Instruction *, TR::Register *);
    void reloadLiteralPoolRegisterForCatchBlock();

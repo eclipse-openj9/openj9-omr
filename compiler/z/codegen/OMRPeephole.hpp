@@ -73,6 +73,31 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
+   
+   /** \brief
+    *     Attempts to fold a load register instruction (\c LR or \c LGR) into a subsequent three-operand instruction if
+    *     possible. For example:
+    *
+    *     <code>
+    *     LR GPR2,GPR3
+    *     LR GPR5,GPR6
+    *     AHI GPR2,5
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     LR GPR5,GPR6
+    *     AHIK GPR2,GPR3,5
+    *     </code>
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToFoldLoadRegisterIntoSubsequentInstruction(TR::Instruction* cursor);
 
    /** \brief
     *     Attempts to reduce a 64-bit shift instruction to a 32-bit shift instruction based on the IL node associated

@@ -185,6 +185,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             if (!performedCurrentPeephole)
                performedCurrentPeephole |= attemptToRemoveDuplicateLoadRegister(cursor);
 
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToFoldLoadRegisterIntoSubsequentInstruction(cursor);
+
             performed |= performedCurrentPeephole;
             break;
             }
@@ -221,6 +224,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
 
             if (!performedCurrentPeephole)
                performedCurrentPeephole |= attemptToRemoveDuplicateLoadRegister(cursor);
+
+            if (!performedCurrentPeephole)
+               performedCurrentPeephole |= attemptToFoldLoadRegisterIntoSubsequentInstruction(cursor);
 
             performed |= performedCurrentPeephole;
             break;
@@ -400,6 +406,252 @@ OMR::Z::Peephole::attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpC
          return true;
          }
       }
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToFoldLoadRegisterIntoSubsequentInstruction(TR::Instruction* cursor)
+   {
+   if (!comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+      {
+      return false;
+      }
+
+   int32_t windowSize = 0;
+   const int32_t maxWindowSize = 4;
+
+   TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
+   TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
+
+   TR::Instruction * current = cursor->getNext();
+
+   while ((current != NULL) &&
+      !current->isLabel() &&
+      !current->isCall() &&
+      !(current->isBranchOp() && !(current->isExceptBranchOp())) &&
+      windowSize < maxWindowSize)
+      {
+      // do not look across Transactional Regions, the Register save mask is optimistic and does not allow renaming
+      if (current->getOpCodeValue() == TR::InstOpCode::TBEGIN ||
+         current->getOpCodeValue() == TR::InstOpCode::TBEGINC ||
+         current->getOpCodeValue() == TR::InstOpCode::TEND ||
+         current->getOpCodeValue() == TR::InstOpCode::TABORT)
+         {
+         return false;
+         }
+
+      // If the source register is redefined we can no longer carry out out this optimization. For example:
+      //
+      //     LR GPR6,GPR0
+      //     SR GPR0,GPR11
+      //     AHI GPR6,-1
+      //
+      // Is not equivalent to:
+      //
+      //     SR GPR0,GPR11
+      //     AHIK GPR6,GPR0, -1
+      if (current->defsRegister(lgrSourceReg))
+         {
+         return false;
+         }
+
+      if (current->usesRegister(lgrTargetReg))
+         {
+         if (current->defsRegister(lgrTargetReg))
+            {
+            TR::InstOpCode::Mnemonic curOpCode = current->getOpCodeValue();
+            TR::Instruction * newInstr = NULL;
+            TR::Register * srcReg = NULL;
+
+            if (curOpCode != TR::InstOpCode::AHI && curOpCode != TR::InstOpCode::AGHI &&
+               curOpCode != TR::InstOpCode::SLL && curOpCode != TR::InstOpCode::SLA &&
+               curOpCode != TR::InstOpCode::SRA && curOpCode != TR::InstOpCode::SRLK)
+               {
+               srcReg = current->getRegisterOperand(2);
+
+               // ex:  LR R1, R2
+               //      XR R1, R1
+               // ==>
+               //      XRK R1, R2, R2
+               if (srcReg == lgrTargetReg)
+                  {
+                  srcReg = lgrSourceReg;
+                  }
+               }
+
+            if ((current->getOpCode().is32bit() && cursor->getOpCodeValue() == TR::InstOpCode::LGR) ||
+               (current->getOpCode().is64bit() && cursor->getOpCodeValue() == TR::InstOpCode::LR))
+               {
+
+               // Make sure we abort if the register copy and the subsequent operation
+               //             do not have the same word length (32-bit or 64-bit)
+               //
+               //  e.g:    LGR R1, R2
+               //          SLL R1, 1
+               //      ==>
+               //          SLLK R1, R2, 1
+               //
+               //      NOT valid as R1's high word will not be cleared
+
+               return false;
+               }
+
+            switch (curOpCode)
+               {
+               case TR::InstOpCode::AR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::ARK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::AGR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::AGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::ALR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::ALRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::ALGR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::ALGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::AHI:
+                  {
+                  int16_t imm = ((TR::S390RIInstruction*)current)->getSourceImmediate();
+                  newInstr = generateRIEInstruction(cg(), TR::InstOpCode::AHIK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::AGHI:
+                  {
+                  int16_t imm = ((TR::S390RIInstruction*)current)->getSourceImmediate();
+                  newInstr = generateRIEInstruction(cg(), TR::InstOpCode::AGHIK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::NR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::NRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::NGR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::NGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::XR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::XRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::XGR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::XGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::OR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::ORK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::OGR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::OGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::SLA:
+                  {
+                  int16_t imm = ((TR::S390RSInstruction*)current)->getSourceImmediate();
+                  TR::MemoryReference * mf = ((TR::S390RSInstruction*)current)->getMemoryReference();
+                  if (mf != NULL)
+                     {
+                     mf->resetMemRefUsedBefore();
+                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SLAK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
+                     }
+                  else
+                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SLAK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::SLL:
+                  {
+                  int16_t imm = ((TR::S390RSInstruction*)current)->getSourceImmediate();
+                  TR::MemoryReference * mf = ((TR::S390RSInstruction*)current)->getMemoryReference();
+                  if (mf != NULL)
+                     {
+                     mf->resetMemRefUsedBefore();
+                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SLLK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
+                     }
+                  else
+                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SLLK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                  break;
+                  }
+
+               case TR::InstOpCode::SRA:
+                  {
+                  int16_t imm = ((TR::S390RSInstruction*)current)->getSourceImmediate();
+                  TR::MemoryReference * mf = ((TR::S390RSInstruction *)current)->getMemoryReference();
+                  if (mf != NULL)
+                     {
+                     mf->resetMemRefUsedBefore();
+                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SRAK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
+                     }
+                  else
+                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SRAK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::SRL:
+                  {
+                  int16_t imm = ((TR::S390RSInstruction*)current)->getSourceImmediate();
+                  TR::MemoryReference * mf = ((TR::S390RSInstruction*)current)->getMemoryReference();
+                  if (mf != NULL)
+                     {
+                     mf->resetMemRefUsedBefore();
+                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SRLK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
+                     }
+                  else
+                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SRLK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::SR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::SRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::SGR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::SGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::SLR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::SLRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               case TR::InstOpCode::SLGR:
+                  {
+                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::SLGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  break;
+                  }
+               default:
+                  return false;
+               }
+
+            cg()->deleteInst(cursor);
+            cg()->replaceInst(current, newInstr);
+
+            return true;
+            }
+
+         // Target register is used, but not defined which means we cannot swing the def of the target past this use
+         // and we must abort our search at this point
+         return false;
+         }
+
+      windowSize++;
+      current = current->getNext();
+      }
+
    return false;
    }
 

@@ -310,7 +310,7 @@ endmacro(set_tr_compile_options)
 function(create_omr_compiler_library)
 	cmake_parse_arguments(COMPILER
 		"SHARED" # optional arguments
-		"NAME" # single-value arguments
+		"NAME;OUTPUT_NAME" # single-value arguments
 		"OBJECTS;DEFINES;FILTER;INCLUDES" # multi-value arguments
 		${ARGV}
 		)
@@ -352,7 +352,12 @@ function(create_omr_compiler_library)
 
 	omr_inject_object_modification_targets(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
 
+	set(output_name_args "")
+	if(COMPILER_OUTPUT_NAME)
+		set(output_name_args "OUTPUT_NAME" "${COMPILER_OUTPUT_NAME}")
+	endif()
 	omr_add_library(${COMPILER_NAME} ${LIB_TYPE}
+		${output_name_args}
 		${BUILD_NAME_FILE}
 		${COMPILER_OBJECTS}
 	)

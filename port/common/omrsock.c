@@ -515,3 +515,152 @@ omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const 
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
+
+/**
+ * Create a time structure, representing the timeout period defined in seconds & microSeconds. Timeval's could be 
+ * used as timeout arguments in the @ref omrsock_setsockopt function.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[out] handle Pointer pointer to the OMRTimeval to be allocated.
+ * @param[in] secTime The integer component of the timeout value (in seconds).
+ * @param[in] uSecTime The fractional component of the timeout value (in microseconds).
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_timeval_init(struct OMRPortLibrary *portLibrary, omrsock_timeval_t handle, uint32_t secTime, uint32_t uSecTime)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Initializes a new linger structure, enabled or disabled, with the timeout as specified. Linger defines the
+ * behavior when unsent messages exist for a socket that has been sent close.
+ *
+ * If linger is disabled, the default, close returns immediately and the stack attempts to deliver unsent messages.
+ * If linger is enabled:
+ * \arg if the timeout is 0, the close will block indefinitely until the messages are sent.
+ * \arg if the timeout is set, the close will return after the messages are sent or the timeout period expired.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] handle Pointer to the linger struct to be accessed.
+ * @param[in] enabled Aero to disable, a non-zero value to enable linger.
+ * @param[in] timeout A positive timeout value from 0 to linger indefinitely (in seconds).
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_linger_init(struct OMRPortLibrary *portLibrary, omrsock_linger_t handle, int32_t enabled, uint16_t timeout)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Set the integer value of the socket option.
+ * Refer to the private get_os_socket_level & get_os_socket_option functions for details of the options
+ * supported.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] handle Pointer to the socket to set the option in.
+ * @param[in] optlevel The level within the IP stack at which the option is defined.
+ * @param[in] optname The name of the option to set.
+ * @param[in] optval Pointer to the option value to update the socket option with.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_setsockopt_int(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, int32_t *optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Set the linger value on the socket. 
+ * See the @ref omrsock_linger_init for setting up the linger struct and details of the linger behavior.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] handle Pointer to the socket to set the option in.
+ * @param[in] optlevel The level within the IP stack at which the option is defined.
+ * @param[in] optname The name of the option to set.
+ * @param[in] optval Pointer to the option value to update the socket option with.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_setsockopt_linger(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_linger_t optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Set the timeval value on the socket. 
+ * See the @ref omrsock_timeval_init for setting up the timeval struct details of the timeval behavior.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] handle Pointer to the socket to set the option in.
+ * @param[in] optlevel The level within the IP stack at which the option is defined.
+ * @param[in] optname The name of the option to set.
+ * @param[in] optval Pointer to the option value to update the socket option with.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_setsockopt_timeval(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_timeval_t optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Answer the integer value of the socket option.
+ * Refer to the private get_os_socket_level & get_os_socket_option functions for details of the options
+ * supported.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] handle Pointer to the socket to query for the option value.
+ * @param[in] optlevel The level within the IP stack at which the option is defined.
+ * @param[in] optname The name of the option to retrieve.
+ * @param[out] optval Pointer to the pre-allocated space to update with the option value.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_getsockopt_int(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, int32_t *optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Answer the linger value on the socket. 
+ * See the @ref omrsock_linger_init for setting up the linger struct and details of the linger behavior.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] handle Pointer to the socket to query for the option value.
+ * @param[in] optlevel The level within the IP stack at which the option is defined.
+ * @param[in] optname The name of the option to retrieve.
+ * @param[out] optval Pointer to the pre-allocated space to update with the option value.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_getsockopt_linger(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_linger_t optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Answer the timeval value on the socket. 
+ * See the @ref omrsock_timeval_init for setting up the timeval struct details of the timeval behavior.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] handle Pointer to the socket to query for the option value.
+ * @param[in] optlevel The level within the IP stack at which the option is defined.
+ * @param[in] optname The name of the option to retrieve.
+ * @param[out] optval Pointer to the pre-allocated space to update with the option value.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_getsockopt_timeval(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_timeval_t optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}

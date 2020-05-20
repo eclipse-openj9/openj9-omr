@@ -180,3 +180,51 @@ omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const 
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
+
+int32_t
+omrsock_timeval_init(struct OMRPortLibrary *portLibrary, omrsock_timeval_t handle, uint32_t secTime, uint32_t uSecTime)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
+omrsock_linger_init(struct OMRPortLibrary *portLibrary, omrsock_linger_t handle, int32_t enabled, uint16_t timeout)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
+omrsock_setsockopt_int(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, int32_t *optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
+omrsock_setsockopt_linger(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_linger_t optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
+omrsock_setsockopt_timeval(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_timeval_t optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
+omrsock_getsockopt_int(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, int32_t *optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
+omrsock_getsockopt_linger(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_linger_t optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
+omrsock_getsockopt_timeval(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_timeval_t optval)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}

@@ -662,6 +662,22 @@ extern J9_CFUNC uint32_t
 omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val);
 extern J9_CFUNC int32_t
 omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result);
+extern J9_CFUNC int32_t
+omrsock_timeval_init(struct OMRPortLibrary *portLibrary, omrsock_timeval_t handle, uint32_t secTime, uint32_t uSecTime);
+extern J9_CFUNC int32_t
+omrsock_linger_init(struct OMRPortLibrary *portLibrary, omrsock_linger_t handle, int32_t enabled, uint16_t timeout);
+extern J9_CFUNC int32_t
+omrsock_setsockopt_int(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, int32_t *optval);
+extern J9_CFUNC int32_t
+omrsock_setsockopt_linger(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_linger_t optval);
+extern J9_CFUNC int32_t
+omrsock_setsockopt_timeval(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_timeval_t optval);
+extern J9_CFUNC int32_t
+omrsock_getsockopt_int(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, int32_t *optval);
+extern J9_CFUNC int32_t
+omrsock_getsockopt_linger(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_linger_t optval);
+extern J9_CFUNC int32_t
+omrsock_getsockopt_timeval(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_timeval_t optval);
 
 /* J9SourceJ9Str*/
 extern J9_CFUNC uintptr_t

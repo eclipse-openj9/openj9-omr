@@ -34,6 +34,12 @@ typedef struct OMRSockAddrStorage *omrsock_sockaddr_t;
 /* Pointer to OMRSocket, a struct that contains socket descriptor. */
 typedef struct OMRSocket *omrsock_socket_t;
 
+/* Pointer to OMRTimeval, a struct that contains struct timeval. */
+typedef struct OMRTimeval *omrsock_timeval_t;
+
+/* Pointer to OMRLinger, a struct that contains struct linger.*/
+typedef struct OMRLinger *omrsock_linger_t;
+
 /* Bind to all available interfaces */
 #define OMRSOCK_INADDR_ANY ((uint32_t)0)
 
@@ -47,9 +53,18 @@ typedef struct OMRSocket *omrsock_socket_t;
 #define OMRSOCK_STREAM 1
 #define OMRSOCK_DGRAM 2
 
-/* Protocol Family */
+/* Protocol Family and Socket Levels */
 #define OMRSOCK_IPPROTO_DEFAULT 0
-#define OMRSOCK_IPPROTO_TCP 1
-#define OMRSOCK_IPPROTO_UDP 2
+#define OMRSOCK_SOL_SOCKET 1
+#define OMRSOCK_IPPROTO_TCP 2
+#define OMRSOCK_IPPROTO_UDP 3
+
+/* Socket Options */
+#define OMRSOCK_SO_REUSEADDR 1
+#define OMRSOCK_SO_KEEPALIVE 2
+#define OMRSOCK_SO_LINGER 3
+#define OMRSOCK_SO_RCVTIMEO 4
+#define OMRSOCK_SO_SNDTIMEO 5
+#define OMRSOCK_TCP_NODELAY 6
 
 #endif /* !defined(OMRPORTSOCK_H_) */

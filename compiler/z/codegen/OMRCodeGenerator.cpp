@@ -3577,9 +3577,9 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
    }
 
 TR::S390ConstantInstructionSnippet *
-OMR::Z::CodeGenerator::createConstantInstruction(TR::CodeGenerator * cg, TR::Node *node, TR::Instruction * instr)
+OMR::Z::CodeGenerator::createConstantInstruction(TR::Node *node, TR::Instruction * instr)
    {
-   TR::S390ConstantInstructionSnippet * cis = new (cg->trHeapMemory()) TR::S390ConstantInstructionSnippet(cg,node,instr);
+   TR::S390ConstantInstructionSnippet * cis = new (self()->trHeapMemory()) TR::S390ConstantInstructionSnippet(self(),node,instr);
    _constantList.push_front(cis);
    return cis;
    }

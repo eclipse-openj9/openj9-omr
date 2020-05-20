@@ -2818,7 +2818,7 @@ generateEXDispatch(TR::Node * node, TR::CodeGenerator *cg, TR::Register * maskRe
          }
 
       //create a memory reference to that instruction
-      TR::S390ConstantInstructionSnippet * cis = cg->createConstantInstruction(cg, node, instr);
+      TR::S390ConstantInstructionSnippet * cis = cg->createConstantInstruction(node, instr);
       TR::MemoryReference * tempMR = generateS390MemoryReference(cis, cg, litPool, node);
 
       //the memory reference should create a constant data snippet

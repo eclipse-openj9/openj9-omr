@@ -12345,7 +12345,7 @@ TR::Node *constrainArrayStoreChk(OMR::ValuePropagation *vp, TR::Node *node)
                   // the array cannot have a value type as its component type
                   // or the value cannot be a null reference
                   //
-                  // VALHALLA_TODO:  For case where array component type is
+                  // VALUE_TYPES_TODO:  For case where array component type is
                   // definitely a value type and source might be null, can
                   // remove the ArrayStoreCHK and add a NullCHK of the source
                   // object.

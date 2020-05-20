@@ -1907,11 +1907,7 @@ OMR::Block::StandardException OMR::Block::_standardExceptions[] =
    {19, "ArithmeticException", CanCatchDivCheck },
    {19, "ArrayStoreException", CanCatchArrayStoreCheck },
    {19, "VirtualMachineError", CanCatchNew | CanCatchArrayNew },
-#if defined(J9VM_OPT_VALHALLA_VALUE_TYPES)
-   {20, "NullPointerException", CanCatchNullCheck | CanCatchArrayStoreCheck },
-#else // !defined(J9VM_OPT_VALHALLA_VALUE_TYPES)
    {20, "NullPointerException", CanCatchNullCheck },
-#endif // defined(J9VM_OPT_VALHALLA_VALUE_TYPES)
    {25, "IndexOutOfBoundsException", CanCatchBoundCheck },
    {26, "NegativeArraySizeException", CanCatchArrayNew },
    {28, "IllegalMonitorStateException", CanCatchMonitorExit },
@@ -1920,6 +1916,13 @@ OMR::Block::StandardException OMR::Block::_standardExceptions[] =
 #define MAX_EXCEPTION_NAME_SIZE 30
    {99, "", 0 }
    };
+
+OMR::Block::StandardException OMR::Block::_valueTypesExceptions[] =
+   {
+   {20, "NullPointerException", CanCatchArrayStoreCheck },
+   {99, "", 0 }
+   };
+
 
 static TR::Node *
 findFirstReference(TR::Node * n, TR::Symbol * sym, vcount_t visitCount)
@@ -2434,6 +2437,24 @@ OMR::Block::setExceptionClassName(char *name, int32_t length, TR::Compilation *c
          {
          _catchBlockExtension->_exceptionsCaught |= excp.exceptions;
          break;
+         }
+      }
+
+   // For value types support, certain kinds of catch blocks are able to catch
+   // additional exceptions that might be thrown by check operations
+   //
+   if (TR::Compiler->om.areValueTypesEnabled())
+      {
+      for (int32_t i = 0; ; ++i)
+         {
+         StandardException &excp = _valueTypesExceptions[i];
+         if (excp.length > length)
+            break;
+         if (excp.length == length && !strncmp(name, excp.name, length))
+            {
+            _catchBlockExtension->_exceptionsCaught |= excp.exceptions;
+            break;
+            }
          }
       }
    }

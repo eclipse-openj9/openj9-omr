@@ -5173,8 +5173,8 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
           && !deltaChild->getRegister()
           && (deltaChild->getDataType() == TR::Int32
                  || (deltaChild->getDataType() == TR::Int64
-                        && deltaChild->getLongInt() <= UPPER_IMMED
-                        && deltaChild->getLongInt() >= LOWER_IMMED)))
+                        && deltaChild->getLongInt() <= INT32_MAX
+                        && deltaChild->getLongInt() >= INT32_MIN)))
       {
       const int64_t deltaLong = (deltaChild->getDataType() == TR::Int64)
                                    ? deltaChild->getLongInt()

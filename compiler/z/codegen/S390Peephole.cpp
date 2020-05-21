@@ -595,40 +595,6 @@ TR_S390Peephole::trueCompEliminationForLoadComp()
    }
 
 void
-TR_S390Peephole::markBlockThatModifiesRegister(TR::Instruction * cursor,
-                                               TR::Register * targetReg)
-   {
-   // some stores use targetReg as part of source
-   if (targetReg && !cursor->isStore() && !cursor->isCompare())
-      {
-      if (targetReg->getRegisterPair())
-         {
-         TR::RealRegister * lowReg = toRealRegister(targetReg->getLowOrder());
-         TR::RealRegister * highReg = toRealRegister(targetReg->getHighOrder());
-         lowReg->setModified(true);
-         highReg->setModified(true);
-         if (cursor->getOpCodeValue() == TR::InstOpCode::getLoadMultipleOpCode())
-            {
-            uint8_t numRegs = (lowReg->getRegisterNumber() - highReg->getRegisterNumber())-1;
-            if (numRegs > 0)
-               {
-               for (uint8_t i=highReg->getRegisterNumber()+1; i++; i<= numRegs)
-                  {
-                  _cg->getS390Linkage()->getRealRegister(REGNUM(i))->setModified(true);
-                  }
-               }
-            }
-         }
-      else
-         {
-         // some stores use targetReg as part of source
-         TR::RealRegister * rReg = toRealRegister(targetReg);
-         rReg->setModified(true);
-         }
-      }
-   }
-
-void
 TR_S390Peephole::reloadLiteralPoolRegisterForCatchBlock()
    {
    // When dynamic lit pool reg is disabled, we lock R6 as dedicated lit pool reg.
@@ -671,22 +637,6 @@ TR_S390Peephole::perform()
             TR::Block * blk = _cursor->getNode()->getBlock();
             if (blk->isCatchBlock() && (blk->getFirstInstruction() == _cursor))
                reloadLiteralPoolRegisterForCatchBlock();
-            }
-
-         if (_cursor->getOpCodeValue() != TR::InstOpCode::FENCE &&
-            _cursor->getOpCodeValue() != TR::InstOpCode::ASSOCREGS &&
-            _cursor->getOpCodeValue() != TR::InstOpCode::DEPEND)
-            {
-            TR::RegisterDependencyConditions * deps = _cursor->getDependencyConditions();
-            bool depCase = (_cursor->isBranchOp() || _cursor->isLabel()) && deps;
-            if (depCase)
-               {
-               _cg->getS390Linkage()->markPreservedRegsInDep(deps);
-               }
-
-            //handle all other regs
-            TR::Register *reg = _cursor->getRegisterOperand(1);
-            markBlockThatModifiesRegister(_cursor, reg);
             }
 
          // this code is used to handle all compare instruction which sets the compare flag

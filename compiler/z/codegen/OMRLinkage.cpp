@@ -164,42 +164,6 @@ OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen,TR_S390LinkageConventions e
       }
    }
 
-
-void
-OMR::Z::Linkage::markPreservedRegsInDep(TR::RegisterDependencyConditions * deps)
-   {
-   for (int32_t curReg = TR::RealRegister::FirstGPR; curReg <= TR::RealRegister::LastFPR; curReg++)
-      {
-      if (self()->getPreserved(REGNUM(curReg)) &&
-          deps->searchPostConditionRegister(REGNUM(curReg)))
-         {
-         self()->getRealRegister(REGNUM(curReg))->setModified(true);
-         }
-      }
-
-  // and the RAReg
-  if (deps && deps->searchPostConditionRegister(self()->cg()->getReturnAddressRegister()))
-     {
-     self()->getRealRegister(self()->getReturnAddressRegister())->setModified(true);
-     }
-  }
-
-void
-OMR::Z::Linkage::markPreservedRegsInBlock(int32_t blockNum)
-   {
-   // kill RAReg
-   self()->getRealRegister(self()->getReturnAddressRegister())->setModified(true);
-
-   // catch blocks kill all preserved regs
-   for (int32_t curReg = TR::RealRegister::FirstGPR; curReg <= TR::RealRegister::LastFPR; curReg++)
-      {
-      if (self()->getPreserved(REGNUM(curReg)))
-         {
-         self()->getRealRegister(REGNUM(curReg))->setModified(true);
-         }
-      }
-   }
-
 TR::Instruction *
 OMR::Z::Linkage::loadUpArguments(TR::Instruction * cursor)
    {

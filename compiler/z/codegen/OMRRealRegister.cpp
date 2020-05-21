@@ -38,13 +38,13 @@
 namespace TR { class CodeGenerator; }
 
 OMR::Z::RealRegister::RealRegister(TR::CodeGenerator *cg):
-      OMR::RealRegister(cg, NoReg),
-      _modified(0) {}
+      OMR::RealRegister(cg, NoReg)
+   {}
 
 OMR::Z::RealRegister::RealRegister(TR_RegisterKinds rk, uint16_t w, RegState s,
                                           RegNum rn, RegMask m, TR::CodeGenerator* cg):
-      OMR::RealRegister(rk, w, s, (uint16_t)rn, rn, m, cg),
-      _modified(0) {}
+      OMR::RealRegister(rk, w, s, (uint16_t)rn, rn, m, cg)
+   {}
 
 
 void

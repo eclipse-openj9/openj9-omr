@@ -2304,41 +2304,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
    bool isPrivateLinkage = (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private);
 
-   TR::Instruction *instr = self()->getFirstInstruction();
-
-   while (instr)
-      {
-      TR::Register *reg = instr->getRegisterOperand(1);
-      if (reg)
-         {
-         if (reg->getRegisterPair())
-            {
-            TR::RealRegister * lowReg = toRealRegister(reg->getLowOrder());
-            TR::RealRegister * highReg = toRealRegister(reg->getHighOrder());
-            lowReg->setModified(true);
-            highReg->setModified(true);
-            if (instr->getOpCodeValue() == TR::InstOpCode::LM ||
-                instr->getOpCodeValue() == TR::InstOpCode::LMG)
-               {
-               uint8_t numRegs = (lowReg->getRegisterNumber() - highReg->getRegisterNumber())-1;
-               if (numRegs > 0)
-                  {
-                  for (uint8_t i=highReg->getRegisterNumber()+1; i++; i<= numRegs)
-                     {
-                     self()->getS390Linkage()->getRealRegister(REGNUM(i))->setModified(true);
-                     }
-                  }
-               }
-            }
-         else
-            {
-            TR::RealRegister * rReg = toRealRegister(reg);
-            rReg->setModified(true);
-            }
-         }
-      instr = instr->getNext();
-      }
-
    // Create epilogues for all return points
    bool skipOneReturn = false;
    while (data.cursorInstruction)

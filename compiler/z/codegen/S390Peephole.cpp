@@ -701,9 +701,6 @@ TR_S390Peephole::perform()
                printInst();
             }
 
-         if (_cursor->isBranchOp())
-            forwardBranchTarget();
-
          moveInstr = true;
          switch (_cursor->getOpCodeValue())
             {
@@ -782,58 +779,4 @@ TR_S390Peephole::perform()
 
    if (comp()->getOption(TR_TraceCG))
       printInfo("\n\n");
-   }
-
-bool TR_S390Peephole::forwardBranchTarget()
-   {
-   TR::LabelSymbol *targetLabelSym = NULL;
-   switch(_cursor->getOpCodeValue())
-      {
-      case TR::InstOpCode::BRC: targetLabelSym = ((TR::S390BranchInstruction*)_cursor)->getLabelSymbol(); break;
-      case TR::InstOpCode::CRJ:
-      case TR::InstOpCode::CGRJ:
-      case TR::InstOpCode::CIJ:
-      case TR::InstOpCode::CGIJ:
-      case TR::InstOpCode::CLRJ:
-      case TR::InstOpCode::CLGRJ:
-      case TR::InstOpCode::CLIJ:
-      case TR::InstOpCode::CLGIJ: targetLabelSym = toS390RIEInstruction(_cursor)->getBranchDestinationLabel(); break;
-      default:
-         return false;
-      }
-   if (!targetLabelSym)
-      return false;
-
-   auto targetLabelInsn = targetLabelSym->getInstruction();
-   if (!targetLabelInsn)
-      return false;
-   auto tmp = targetLabelInsn;
-   while (tmp->isLabel() || tmp->getOpCodeValue() == TR::InstOpCode::FENCE)  // skip labels and fences
-      tmp = tmp->getNext();
-   if (tmp->getOpCodeValue() == TR::InstOpCode::BRC)
-      {
-      auto firstBranch = (TR::S390BranchInstruction*)tmp;
-      if (firstBranch->getBranchCondition() == TR::InstOpCode::COND_BRC &&
-          performTransformation(comp(), "\nO^O S390 PEEPHOLE: forwarding branch target in %p\n", _cursor))
-         {
-         auto newTargetLabelSym = firstBranch->getLabelSymbol();
-         switch(_cursor->getOpCodeValue())
-            {
-            case TR::InstOpCode::BRC: ((TR::S390BranchInstruction*)_cursor)->setLabelSymbol(newTargetLabelSym); break;
-            case TR::InstOpCode::CRJ:
-            case TR::InstOpCode::CGRJ:
-            case TR::InstOpCode::CIJ:
-            case TR::InstOpCode::CGIJ:
-            case TR::InstOpCode::CLRJ:
-            case TR::InstOpCode::CLGRJ:
-            case TR::InstOpCode::CLIJ:
-            case TR::InstOpCode::CLGIJ:
-               toS390RIEInstruction(_cursor)->setBranchDestinationLabel(newTargetLabelSym); break;
-            default:
-               return false;
-            }
-         return true;
-         }
-      }
-   return false;
    }

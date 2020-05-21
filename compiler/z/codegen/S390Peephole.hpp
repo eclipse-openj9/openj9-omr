@@ -38,7 +38,6 @@ public:
 private:
 
    bool clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *reg);
-   bool forwardBranchTarget();
    bool trueCompEliminationForCompareAndBranch();
    bool trueCompEliminationForCompare();
    bool trueCompEliminationForLoadComp();

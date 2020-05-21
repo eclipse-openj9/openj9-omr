@@ -98,6 +98,40 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     true if the reduction was successful; false otherwise.
     */
    bool attemptToFoldLoadRegisterIntoSubsequentInstruction(TR::Instruction* cursor);
+   
+   /** \brief
+    *     Attempts to forward a branch target if the branch instruction transfers control to another unconditional
+    *     branch instruction (i.e. a trampoline). For example:
+    *
+    *     <code>
+    *     CIJ GPR2,0,B'1000',<LABEL_1>
+    *     ...
+    *     LABEL_1:
+    *     BRC B'1000',<LABEL_999>
+    *     ...
+    *     LABEL_999:
+    *     ...
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     CIJ GPR2,0,B'1000',<LABEL_999>
+    *     ...
+    *     LABEL_1:
+    *     BRC B'1000',<LABEL_999>
+    *     ...
+    *     LABEL_999:
+    *     ...
+    *     </code>
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool attemptToForwardBranchTarget(TR::Instruction* cursor);
 
    /** \brief
     *     Attempts to reduce a 64-bit shift instruction to a 32-bit shift instruction based on the IL node associated

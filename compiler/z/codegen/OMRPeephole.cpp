@@ -104,6 +104,9 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
 
    if (cg()->afterRA())
       {
+      if (cursor->isBranchOp())
+         performed |= attemptToForwardBranchTarget(cursor);
+
       switch(cursor->getOpCodeValue())
          {
          case TR::InstOpCode::CGIT:
@@ -650,6 +653,79 @@ OMR::Z::Peephole::attemptToFoldLoadRegisterIntoSubsequentInstruction(TR::Instruc
 
       windowSize++;
       current = current->getNext();
+      }
+
+   return false;
+   }
+
+bool
+OMR::Z::Peephole::attemptToForwardBranchTarget(TR::Instruction* cursor)
+   {
+   TR::LabelSymbol *targetLabelSym = NULL;
+
+   switch(cursor->getOpCodeValue())
+      {
+      case TR::InstOpCode::BRC:
+         targetLabelSym = ((TR::S390BranchInstruction*)cursor)->getLabelSymbol();
+         break;
+
+      case TR::InstOpCode::CRJ:
+      case TR::InstOpCode::CGRJ:
+      case TR::InstOpCode::CIJ:
+      case TR::InstOpCode::CGIJ:
+      case TR::InstOpCode::CLRJ:
+      case TR::InstOpCode::CLGRJ:
+      case TR::InstOpCode::CLIJ:
+      case TR::InstOpCode::CLGIJ:
+         targetLabelSym = toS390RIEInstruction(cursor)->getBranchDestinationLabel();
+         break;
+
+      default:
+         return false;
+      }
+
+   if (targetLabelSym == NULL)
+      return false;
+
+   auto targetInst = targetLabelSym->getInstruction();
+   if (targetInst == NULL)
+      return false;
+
+   while (targetInst->isLabel() || targetInst->getOpCodeValue() == TR::InstOpCode::FENCE)
+      targetInst = targetInst->getNext();
+
+   if (targetInst->getOpCodeValue() == TR::InstOpCode::BRC)
+      {
+      auto firstBranch = (TR::S390BranchInstruction*)targetInst;
+      if (firstBranch->getBranchCondition() == TR::InstOpCode::COND_BRC)
+         {
+         if (performTransformation(comp(), "\nO^O S390 PEEPHOLE: Forwarding branch target on %s [%p].\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
+            {
+            auto newTargetLabelSym = firstBranch->getLabelSymbol();
+            switch (cursor->getOpCodeValue())
+               {
+               case TR::InstOpCode::BRC:
+                  ((TR::S390BranchInstruction*)cursor)->setLabelSymbol(newTargetLabelSym);
+                  break;
+
+               case TR::InstOpCode::CRJ:
+               case TR::InstOpCode::CGRJ:
+               case TR::InstOpCode::CIJ:
+               case TR::InstOpCode::CGIJ:
+               case TR::InstOpCode::CLRJ:
+               case TR::InstOpCode::CLGRJ:
+               case TR::InstOpCode::CLIJ:
+               case TR::InstOpCode::CLGIJ:
+                  toS390RIEInstruction(cursor)->setBranchDestinationLabel(newTargetLabelSym);
+                  break;
+
+               default:
+                  return false;
+               }
+
+            return true;
+            }
+         }
       }
 
    return false;
@@ -1479,7 +1555,7 @@ OMR::Z::Peephole::attemptToRemoveDuplicateLoadRegister(TR::Instruction* cursor)
 bool
 OMR::Z::Peephole::attemptToRemoveDuplicateNILF(TR::Instruction* cursor)
    {
-   if (cursor->getNext()->getKind() == TR::Instruction::IsRIL)
+   if (cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILF)
       {
       TR::S390RILInstruction* currInst = static_cast<TR::S390RILInstruction*>(cursor);
       TR::S390RILInstruction* nextInst = static_cast<TR::S390RILInstruction*>(cursor->getNext());

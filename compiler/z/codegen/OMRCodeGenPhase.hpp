@@ -51,7 +51,6 @@ class OMR_EXTENSIBLE CodeGenPhase : public OMR::CodeGenPhase
    public:
    static void performMarkLoadAsZeroOrSignExtensionPhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);
    static void performSetBranchOnCountFlagPhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);
-   static void performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);
 
    // override base class implementation because new phases are being added
    static int getNumPhases();

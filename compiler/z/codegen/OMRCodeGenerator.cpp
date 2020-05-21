@@ -127,7 +127,6 @@
 #include "z/codegen/S390Evaluator.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
-#include "z/codegen/S390Peephole.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
 #include "z/codegen/SystemLinkageLinux.hpp"
 #include "z/codegen/SystemLinkagezOS.hpp"

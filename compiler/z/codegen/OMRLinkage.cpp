@@ -311,11 +311,11 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
                 performTransformation(self()->comp(), "O^O : Prolog peeking removing [%p]\n", current) )
                {
                self()->cg()->replaceInst(current, newInst);
-               self()->cg()->deleteInst(current);
+               current = newInst;
 
                if(!mustReplace && tReg == sReg)
                  {
-                 self()->cg()->deleteInst(newInst);
+                  newInst->remove();
                  if (self()->comp()->getOption(TR_TraceCG))
                     traceMsg(self()->comp(), "deleting instruction as sreg = treg\n");
                  }

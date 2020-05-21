@@ -1977,37 +1977,14 @@ OMR::Z::CodeGenerator::replaceInst(TR::Instruction* old, TR::Instruction* curr)
    //old used to point to
    if (prv != curr && nxt != curr)
       {
-      self()->deleteInst(curr);
+      curr->remove();
       prv->setNext(curr);
       curr->setNext(nxt);
       nxt->setPrev(curr);
       curr->setPrev(prv);
       }
-   else  //if consecutive, then can just delete the old one
-      {
-      self()->deleteInst(old);
-      }
-   }
 
-// TODO (Issue #254): This should really be a common code generator API. Push this up to the common code generator.
-void
-OMR::Z::CodeGenerator::deleteInst(TR::Instruction* old)
-   {
-   TR::Instruction* prv = old->getPrev();
-   TR::Instruction* nxt = old->getNext();
-   prv->setNext(nxt);
-
-   // The next instruction could be the append instruction
-   if (nxt != NULL)
-      {
-      nxt->setPrev(prv);
-      }
-
-   // Update the append instruction if we are deleting the last instruction in the stream
-   if (self()->getAppendInstruction() == old)
-      {
-      self()->setAppendInstruction(prv);
-      }
+   old->remove();
    }
 
 void

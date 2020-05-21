@@ -742,8 +742,6 @@ public:
 
    void replaceInst(TR::Instruction* old, TR::Instruction* curr);
 
-   void deleteInst(TR::Instruction* old);
-
    static bool isILOpCodeSupported(TR::ILOpCodes);
 
    void setUsesZeroBasePtr( bool v = true );

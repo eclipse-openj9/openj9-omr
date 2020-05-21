@@ -403,7 +403,7 @@ OMR::Z::Peephole::attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpC
             newInst->setNeedsGCMap(storeInst->getGCRegisterMask());
             }
 
-         cg()->deleteInst(storeInst);
+         storeInst->remove();
          cg()->replaceInst(loadInst, newInst);
 
          return true;
@@ -640,7 +640,7 @@ OMR::Z::Peephole::attemptToFoldLoadRegisterIntoSubsequentInstruction(TR::Instruc
                   return false;
                }
 
-            cg()->deleteInst(cursor);
+            cursor->remove();
             cg()->replaceInst(current, newInstr);
 
             return true;
@@ -1028,7 +1028,7 @@ OMR::Z::Peephole::attemptToReduceCLRToCLRJ(TR::Instruction* cursor)
             clrInstruction->getPrev()
          );
          cg()->replaceInst(clrInstruction, clrjInstruction);
-         cg()->deleteInst(brcInstruction);
+         brcInstruction->remove();
          }
       }
 
@@ -1179,7 +1179,7 @@ OMR::Z::Peephole::attemptToReduceLToICM(TR::Instruction* cursor)
          }
 
       cg()->replaceInst(load, icm);
-      cg()->deleteInst(next);
+      next->remove();
 
       memcp->stopUsingMemRefRegister(cg());
       performed = true;
@@ -1212,7 +1212,7 @@ OMR::Z::Peephole::attemptToReduceLToLZRF(TR::Instruction* cursor, TR::InstOpCode
       if (performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming load-and-mask sequence at [%p].\n", nillInst))
          {
          // Remove the NILL instruction
-         cg()->deleteInst(nillInst);
+         nillInst->remove();
 
          loadInst->getMemoryReference()->resetMemRefUsedBefore();
 
@@ -1246,7 +1246,7 @@ OMR::Z::Peephole::attemptToReduceLGRToLGFR(TR::Instruction* cursor)
             {
             ((TR::S390RRInstruction*)current)->setRegisterOperand(2, lgrSourceReg);
 
-            cg()->deleteInst(cursor);
+            cursor->remove();
 
             return true;
             }
@@ -1320,7 +1320,7 @@ OMR::Z::Peephole::attemptToReduceLLCToLLGC(TR::Instruction* cursor)
          if (performTransformation(comp(), "O^O S390 PEEPHOLE: Reducing LLC/%s [%p] to LLGC.\n", TR::InstOpCode::metadata[mnemonic].name, current))
             {
             // Remove the LGFR/LLGTR
-            cg()->deleteInst(current);
+            current->remove();
 
             // Replace the LLC with LLGC
             TR::MemoryReference* memRef = ((TR::S390RXInstruction *) cursor)->getMemoryReference();
@@ -1383,7 +1383,7 @@ OMR::Z::Peephole::attemptToReduceLRCHIToLTR(TR::Instruction* cursor)
                auto ltrInst = generateRRInstruction(cg(), lgrOpCode.is64bit() ? TR::InstOpCode::LTGR : TR::InstOpCode::LTR, cursor->getNode(), lgrTargetReg, lgrSourceReg, cursor->getPrev());
 
                cg()->replaceInst(cursor, ltrInst);
-               cg()->deleteInst(current);
+               current->remove();
 
                return true;
                }
@@ -1455,7 +1455,7 @@ OMR::Z::Peephole::attemptToRemoveDuplicateLR(TR::Instruction* cursor)
        {
        if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant %s [%p]\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
           {
-          cg()->deleteInst(cursor);
+          cursor->remove();
 
           return true;
           }
@@ -1521,7 +1521,7 @@ OMR::Z::Peephole::attemptToRemoveDuplicateLoadRegister(TR::Instruction* cursor)
                {
                if (performTransformation(comp(), "O^O S390 PEEPHOLE: Duplicate LR/CPYA removal at %p\n", current))
                   {
-                  cg()->deleteInst(current);
+                  current->remove();
 
                   performed = true;
                   current = current->getNext();
@@ -1577,7 +1577,7 @@ OMR::Z::Peephole::attemptToRemoveDuplicateNILF(TR::Instruction* cursor)
                {
                if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting duplicate NILF from pair %p %p*\n", currInst, nextInst))
                   {
-                  cg()->deleteInst(nextInst);
+                  nextInst->remove();
 
                   return true;
                   }
@@ -1601,7 +1601,7 @@ OMR::Z::Peephole::attemptToRemoveDuplicateNILF(TR::Instruction* cursor)
                {
                if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting unnecessary NILF from pair %p %p*\n", currInst, nextInst))
                   {
-                  cg()->deleteInst(nextInst);
+                  nextInst->remove();
 
                   return true;
                   }
@@ -1632,7 +1632,7 @@ OMR::Z::Peephole::attemptToRemoveDuplicateNILH(TR::Instruction* cursor)
                   {
                   if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting duplicate NILH from pair %p %p*\n", currInst, nextInst))
                      {
-                     cg()->deleteInst(nextInst);
+                     nextInst->remove();
 
                      return true;
                      }
@@ -1693,7 +1693,7 @@ OMR::Z::Peephole::attemptToRemoveRedundantCompareAndTrap(TR::Instruction* cursor
              {
              if (performTransformation(comp(), "\nO^O S390 PEEPHOLE: removeMergedNullCHK on 0x%p.\n", cgitInst))
                 {
-                cg()->deleteInst(cgitInst);
+                cgitInst->remove();
 
                 return true;
                 }
@@ -1736,7 +1736,7 @@ OMR::Z::Peephole::attemptToRemoveRedundantLA(TR::Instruction* cursor)
       {
       if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant LA [%p].\n", cursor))
          {
-         cg()->deleteInst(cursor);
+         cursor->remove();
          
          return true;
          }
@@ -1771,7 +1771,7 @@ OMR::Z::Peephole::attemptToRemoveRedundantShift(TR::Instruction* cursor)
                if (performTransformation(comp(), "O^O S390 PEEPHOLE: merging SRL/SLL pair [%p] [%p]\n", cursor, cursor->getNext()))
                   {
                   currRSInst->setSourceImmediate(newShift);
-                  cg()->deleteInst(nextInst);
+                  nextInst->remove();
 
                   return true;
                   }
@@ -1806,7 +1806,7 @@ OMR::Z::Peephole::attemptToRemoveRedundantLR(TR::Instruction* cursor)
            {
            if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant %s [%p] which is followed by a load and test register.\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
               {
-              cg()->deleteInst(cursor);
+              cursor->remove();
 
               return true;
               }
@@ -1843,7 +1843,7 @@ OMR::Z::Peephole::attemptToRemoveRedundantLTR(TR::Instruction* cursor)
             {
             if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant Load and Test instruction at %p, because CC can be reused from logical instruction %p\n", cursor, prevInst))
                {
-               cg()->deleteInst(cursor);
+               cursor->remove();
 
                if (branchCond == TR::InstOpCode::COND_BE)
                   ((TR::S390BranchInstruction *) nextInst)->setBranchCondition(TR::InstOpCode::COND_MASK10);

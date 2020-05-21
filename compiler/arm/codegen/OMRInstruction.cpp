@@ -133,13 +133,6 @@ OMR::ARM::Instruction::Instruction(TR::Instruction                     *precedin
       cond->incRegisterTotalUseCounts(cg);
    }
 
-void
-OMR::ARM::Instruction::remove()
-   {
-   self()->getPrev()->setNext(self()->getNext());
-   self()->getNext()->setPrev(self()->getPrev());
-   }
-
 void OMR::ARM::Instruction::ARMNeedsGCMap(uint32_t mask)
    {
    if (TR::comp()->useRegisterMaps())

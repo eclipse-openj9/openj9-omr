@@ -1507,8 +1507,9 @@ OMR::Z::Peephole::attemptToRemoveDuplicateLoadRegister(TR::Instruction* cursor)
       if (curOpCode.getOpCodeValue() == lgrOpCode.getOpCodeValue() &&
           current->getKind() == TR::Instruction::IsRR)
          {
-         TR::Register *curSourceReg = ((TR::S390RRInstruction*)current)->getRegisterOperand(2);
-         TR::Register *curTargetReg = ((TR::S390RRInstruction*)current)->getRegisterOperand(1);
+         TR::Instruction* rrInst = current;
+         TR::Register *curSourceReg = rrInst->getRegisterOperand(2);
+         TR::Register *curTargetReg = rrInst->getRegisterOperand(1);
 
          if ( ((curSourceReg == lgrTargetReg && curTargetReg == lgrSourceReg) ||
               (curSourceReg == lgrSourceReg && curTargetReg == lgrTargetReg)))
@@ -1519,15 +1520,16 @@ OMR::Z::Peephole::attemptToRemoveDuplicateLoadRegister(TR::Instruction* cursor)
 
             if ((!lgrSetCC || !(setCC || useCC)))
                {
-               if (performTransformation(comp(), "O^O S390 PEEPHOLE: Duplicate LR/CPYA removal at %p\n", current))
+               if (performTransformation(comp(), "O^O S390 PEEPHOLE: Duplicate LR/CPYA removal at %p\n", rrInst))
                   {
-                  current->remove();
-
                   performed = true;
                   current = current->getNext();
                   windowSize = 0;
                   setCC = setCC || current->getOpCode().setsCC();
                   useCC = useCC || current->getOpCode().readsCC();
+                  
+                  rrInst->remove();
+
                   continue;
                   }
                }

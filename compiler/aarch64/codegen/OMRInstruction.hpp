@@ -120,11 +120,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    TR::InstOpCode& getOpCode() {return _opcode;}
 
    /**
-    * @brief Removes this instruction from instruction list
-    */
-   void remove();
-
-   /**
     * @brief Answers if this instruction is a label or not
     * @return true if this instruction is a label, false otherwise
     */

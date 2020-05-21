@@ -91,8 +91,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    TR_ARMOpCodes getRecordFormOpCode()             {return _opcode.getRecordFormOpCodeValue();}
    TR_ARMOpCodes setOpCodeValue(TR_ARMOpCodes op)  {return _opcode.setOpCodeValue(op);}
 
-   void remove();
-
    int32_t  getBlockIndex()            { return _blockIndex; }
    void     setBlockIndex(int32_t i)   { _blockIndex = i; }
 

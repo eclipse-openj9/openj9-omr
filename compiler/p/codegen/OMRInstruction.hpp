@@ -76,8 +76,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    TR::InstOpCode::Mnemonic getRecordFormOpCode()             {return _opcode.getRecordFormOpCodeValue();}
    TR::InstOpCode::Mnemonic setOpCodeValue(TR::InstOpCode::Mnemonic op)  {return _opcode.setOpCodeValue(op);}
 
-   void remove();
-
    virtual TR::Register *getTrg1Register()                   {return NULL;}
 
    virtual TR::Register *getTargetRegister(uint32_t i);

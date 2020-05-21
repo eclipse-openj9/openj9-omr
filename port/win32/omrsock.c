@@ -177,7 +177,7 @@ omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val)
 }
 
 int32_t
-omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder)
+omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }

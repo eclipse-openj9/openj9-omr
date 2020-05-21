@@ -562,23 +562,23 @@ omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val)
 }
 
 int32_t
-omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder)
+omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result)
 {
 	int32_t rc;
 #if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	char *addrA2e;
 #endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
-	if (NULL == addrNetworkOrder) {
+	if (NULL == result) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 
 #if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	addrA2e = a2e(addr, strlen(addr));
-	rc = inet_pton(get_os_family(addrFamily), addrA2e, (void *)addrNetworkOrder);
+	rc = inet_pton(get_os_family(addrFamily), addrA2e, (void *)result);
 	free(addrA2e);
 #else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
-	rc = inet_pton(get_os_family(addrFamily), addr, (void *)addrNetworkOrder);
+	rc = inet_pton(get_os_family(addrFamily), addr, (void *)result);
 #endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	if (rc == 0) {

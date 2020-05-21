@@ -29,7 +29,7 @@ def SPECS = [
         'builds' : [
             [
                 'buildDir' : cmakeBuildDir,
-                'configureArgs' : '-Wdev -DCMAKE_C_COMPILER=xlc_r -DCMAKE_CXX_COMPILER=xlC_r -DCMAKE_XL_CreateExportList="/opt/IBM/xlC/13.1.3/bin/CreateExportList -X64" -DOMR_DDR=OFF -C../cmake/caches/Travis.cmake',
+                'configureArgs' : '-Wdev -DCMAKE_C_COMPILER=xlc_r -DCMAKE_CXX_COMPILER=xlC_r -DCMAKE_XL_CreateExportList="" -DOMR_DDR=OFF -C../cmake/caches/Travis.cmake',
                 'compile' : 'export CCACHE_EXTRAFILES="$PWD/omrcfg.h" && make -j8'
             ]
         ],

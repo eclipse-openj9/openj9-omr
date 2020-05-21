@@ -595,29 +595,6 @@ TR_S390Peephole::trueCompEliminationForLoadComp()
    }
 
 void
-TR_S390Peephole::reloadLiteralPoolRegisterForCatchBlock()
-   {
-   // When dynamic lit pool reg is disabled, we lock R6 as dedicated lit pool reg.
-   // This causes a failure when we come back to a catch block because the register context will not be preserved.
-   // Hence, we can not assume that R6 will still contain the lit pool register and hence need to reload it.
-
-   bool isZ10 = comp()->target().cpu.getSupportsArch(TR::CPU::z10);
-
-   // we only need to reload literal pool for Java on older z architecture on zos when on demand literal pool is off
-   if ( comp()->target().isZOS() && !isZ10 && !_cg->isLiteralPoolOnDemandOn())
-      {
-      // check to make sure that we actually need to use the literal pool register
-      TR::Snippet * firstSnippet = _cg->getFirstSnippet();
-      if ((_cg->getLinkage())->setupLiteralPoolRegister(firstSnippet) > 0)
-         {
-         // the imm. operand will be patched when the actual address of the literal pool is known at binary encoding phase
-         TR::S390RILInstruction * inst = (TR::S390RILInstruction *) generateRILInstruction(_cg, TR::InstOpCode::LARL, _cursor->getNode(), _cg->getLitPoolRealRegister(), reinterpret_cast<void*>(0xBABE), _cursor);
-         inst->setIsLiteralPoolAddress();
-         }
-      }
-   }
-
-void
 TR_S390Peephole::perform()
    {
    TR::Delimiter d(comp(), comp()->getOption(TR_TraceCG), "Peephole");
@@ -630,15 +607,6 @@ TR_S390Peephole::perform()
       {
       while (_cursor != NULL)
          {
-         if (_cursor->getNode() != NULL && _cursor->getNode()->getOpCodeValue() == TR::BBStart)
-            {
-            comp()->setCurrentBlock(_cursor->getNode()->getBlock());
-            // reload literal pool for catch blocks that need it
-            TR::Block * blk = _cursor->getNode()->getBlock();
-            if (blk->isCatchBlock() && (blk->getFirstInstruction() == _cursor))
-               reloadLiteralPoolRegisterForCatchBlock();
-            }
-
          // this code is used to handle all compare instruction which sets the compare flag
          // we can eventually extend this to include other instruction which sets the
          // condition code and and uses a complemented register

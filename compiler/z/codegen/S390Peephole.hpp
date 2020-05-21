@@ -42,7 +42,6 @@ private:
    bool trueCompEliminationForCompare();
    bool trueCompEliminationForLoadComp();
    bool isBarrierToPeepHoleLookback(TR::Instruction *current);
-   void reloadLiteralPoolRegisterForCatchBlock();
 
    void printInfo(const char* info)
       {

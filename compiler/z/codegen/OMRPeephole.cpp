@@ -54,15 +54,15 @@ isBarrierToPeepHoleLookback(TR::Instruction* cursor)
    }
 
 static TR::Instruction*
-realInstructionWithLabelsAndRET(TR::Instruction* inst)
+realInstructionWithLabelsAndRET(TR::Instruction* cursor)
    {
-   while (inst && (inst->getKind() == TR::Instruction::IsPseudo ||
-                   inst->getKind() == TR::Instruction::IsNotExtended) && !inst->isRet())
+   while (cursor && (cursor->getKind() == TR::Instruction::IsPseudo ||
+                   cursor->getKind() == TR::Instruction::IsNotExtended) && !cursor->isRet())
       {
-      inst = inst->getNext();
+      cursor = cursor->getNext();
       }
 
-   return inst;
+   return cursor;
    }
 
 static bool
@@ -102,31 +102,34 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
    {
    bool performed = false;
 
+   // Cache the cursor for use in the peephole functions
+   self()->cursor = cursor;
+
    if (cg()->afterRA())
       {
       if (cursor->isBranchOp())
-         performed |= attemptToForwardBranchTarget(cursor);
+         performed |= tryToForwardBranchTarget();
 
       switch(cursor->getOpCodeValue())
          {
          case TR::InstOpCode::CGIT:
             {
-            performed |= attemptToRemoveRedundantCompareAndTrap(cursor);
+            performed |= tryToRemoveRedundantCompareAndTrap();
             break;
             }
          case TR::InstOpCode::CGRJ:
             {
-            performed |= attemptToReduceCRJLHIToLOCHI(cursor, TR::InstOpCode::CGR);
+            performed |= tryToReduceCRJLHIToLOCHI(TR::InstOpCode::CGR);
             break;
             }
          case TR::InstOpCode::CLR:
             {
-            performed |= attemptToReduceCLRToCLRJ(cursor);
+            performed |= tryToReduceCLRToCLRJ();
             break;
             }
          case TR::InstOpCode::CRJ:
             {
-            performed |= attemptToReduceCRJLHIToLOCHI(cursor, TR::InstOpCode::CR);
+            performed |= tryToReduceCRJLHIToLOCHI(TR::InstOpCode::CR);
             break;
             }
          case TR::InstOpCode::L:
@@ -134,17 +137,17 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             bool performedCurrentPeephole = false;
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceLToICM(cursor);
+               performedCurrentPeephole |= tryToReduceLToICM();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceLToLZRF(cursor, TR::InstOpCode::LZRF);
+               performedCurrentPeephole |= tryToReduceLToLZRF(TR::InstOpCode::LZRF);
 
             performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::LA:
             {
-            performed |= attemptToRemoveRedundantLA(cursor);
+            performed |= tryToRemoveRedundantLA();
             break;
             }
          case TR::InstOpCode::LER:
@@ -153,17 +156,17 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             bool performedCurrentPeephole = false;
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToRemoveDuplicateLR(cursor);
+               performedCurrentPeephole |= tryToRemoveDuplicateLR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToRemoveDuplicateLoadRegister(cursor);
+               performedCurrentPeephole |= tryToRemoveDuplicateLoadRegister();
 
             performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::LG:
             {
-            performed |= attemptToReduceLToLZRF(cursor, TR::InstOpCode::LZRG);
+            performed |= tryToReduceLToLZRF(TR::InstOpCode::LZRG);
             break;
             }
          case TR::InstOpCode::LGR:
@@ -171,42 +174,42 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             bool performedCurrentPeephole = false;
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceAGI(cursor);
+               performedCurrentPeephole |= tryToReduceAGI();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceLGRToLGFR(cursor);
+               performedCurrentPeephole |= tryToReduceLGRToLGFR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToRemoveDuplicateLR(cursor);
+               performedCurrentPeephole |= tryToRemoveDuplicateLR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToRemoveRedundantLR(cursor);
+               performedCurrentPeephole |= tryToRemoveRedundantLR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceLRCHIToLTR(cursor);
+               performedCurrentPeephole |= tryToReduceLRCHIToLTR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToRemoveDuplicateLoadRegister(cursor);
+               performedCurrentPeephole |= tryToRemoveDuplicateLoadRegister();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToFoldLoadRegisterIntoSubsequentInstruction(cursor);
+               performedCurrentPeephole |= tryToFoldLoadRegisterIntoSubsequentInstruction();
 
             performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::LHI:
             {
-            performed |= attemptToReduceLHIToXR(cursor);
+            performed |= tryToReduceLHIToXR();
             break;
             }
          case TR::InstOpCode::LLC:
             {
-            performed |= attemptToReduceLLCToLLGC(cursor);
+            performed |= tryToReduceLLCToLLGC();
             break;
             }
          case TR::InstOpCode::LLGF:
             {
-            performed |= attemptToReduceLToLZRF(cursor, TR::InstOpCode::LLZRGF);
+            performed |= tryToReduceLToLZRF(TR::InstOpCode::LLZRGF);
             break;
             }
          case TR::InstOpCode::LR:
@@ -214,22 +217,22 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             bool performedCurrentPeephole = false;
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceAGI(cursor);
+               performedCurrentPeephole |= tryToReduceAGI();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToRemoveDuplicateLR(cursor);
+               performedCurrentPeephole |= tryToRemoveDuplicateLR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToRemoveRedundantLR(cursor);
+               performedCurrentPeephole |= tryToRemoveRedundantLR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceLRCHIToLTR(cursor);
+               performedCurrentPeephole |= tryToReduceLRCHIToLTR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToRemoveDuplicateLoadRegister(cursor);
+               performedCurrentPeephole |= tryToRemoveDuplicateLoadRegister();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToFoldLoadRegisterIntoSubsequentInstruction(cursor);
+               performedCurrentPeephole |= tryToFoldLoadRegisterIntoSubsequentInstruction();
 
             performed |= performedCurrentPeephole;
             break;
@@ -240,28 +243,28 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             bool performedCurrentPeephole = false;
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceAGI(cursor);
+               performedCurrentPeephole |= tryToReduceAGI();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToReduceLTRToCHI(cursor);
+               performedCurrentPeephole |= tryToReduceLTRToCHI();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToRemoveRedundantLTR(cursor);
+               performedCurrentPeephole |= tryToRemoveRedundantLTR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= attemptToRemoveDuplicateLoadRegister(cursor);
+               performedCurrentPeephole |= tryToRemoveDuplicateLoadRegister();
             
             performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::NILF:
             {
-            performed |= attemptToRemoveDuplicateNILF(cursor);
+            performed |= tryToRemoveDuplicateNILF();
             break;
             }
          case TR::InstOpCode::NILH:
             {
-            performed |= attemptToRemoveDuplicateNILH(cursor);
+            performed |= tryToRemoveDuplicateNILH();
             break;
             }
          case TR::InstOpCode::SLLG:
@@ -271,13 +274,13 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
          case TR::InstOpCode::SLAK:
          case TR::InstOpCode::SRAK:
             {
-            performed |= attemptToReduce64BitShiftTo32BitShift(cursor);
+            performed |= tryToReduce64BitShiftTo32BitShift();
             break;
             }
          case TR::InstOpCode::SRL:
          case TR::InstOpCode::SLL:
             {
-            performed |= attemptToRemoveRedundantShift(cursor);
+            performed |= tryToRemoveRedundantShift();
             break;
             }
          default:
@@ -290,17 +293,17 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
          {
          case TR::InstOpCode::L:
             {
-            performed |= attemptLoadStoreReduction(cursor, TR::InstOpCode::ST, 4);
+            performed |= tryLoadStoreReduction(TR::InstOpCode::ST, 4);
             break;
             }
          case TR::InstOpCode::LFH:
             {
-            performed |= attemptLoadStoreReduction(cursor, TR::InstOpCode::STFH, 4);
+            performed |= tryLoadStoreReduction(TR::InstOpCode::STFH, 4);
             break;
             }
          case TR::InstOpCode::LG:
             {
-            performed |= attemptLoadStoreReduction(cursor, TR::InstOpCode::STG, 8);
+            performed |= tryLoadStoreReduction(TR::InstOpCode::STG, 8);
             break;
             }
          default:
@@ -312,7 +315,7 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpCode::Mnemonic storeOpCode, uint16_t size)
+OMR::Z::Peephole::tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size)
    {
    if (cursor->getNext()->getOpCodeValue() == storeOpCode)
       {
@@ -413,7 +416,7 @@ OMR::Z::Peephole::attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpC
    }
 
 bool
-OMR::Z::Peephole::attemptToFoldLoadRegisterIntoSubsequentInstruction(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToFoldLoadRegisterIntoSubsequentInstruction()
    {
    if (!comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
@@ -659,7 +662,7 @@ OMR::Z::Peephole::attemptToFoldLoadRegisterIntoSubsequentInstruction(TR::Instruc
    }
 
 bool
-OMR::Z::Peephole::attemptToForwardBranchTarget(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToForwardBranchTarget()
    {
    TR::LabelSymbol *targetLabelSym = NULL;
 
@@ -732,7 +735,7 @@ OMR::Z::Peephole::attemptToForwardBranchTarget(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToReduce64BitShiftTo32BitShift(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToReduce64BitShiftTo32BitShift()
    {
    TR::S390RSInstruction* shiftInst = static_cast<TR::S390RSInstruction*>(cursor);
 
@@ -800,7 +803,7 @@ OMR::Z::Peephole::attemptToReduce64BitShiftTo32BitShift(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToReduceAGI(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToReduceAGI()
    {
    bool performed=false;
    int32_t windowSize=0;
@@ -950,7 +953,7 @@ OMR::Z::Peephole::attemptToReduceAGI(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToReduceCLRToCLRJ(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToReduceCLRToCLRJ()
    {
    if (!comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       return false;
@@ -1036,7 +1039,7 @@ OMR::Z::Peephole::attemptToReduceCLRToCLRJ(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToReduceCRJLHIToLOCHI(TR::Instruction* cursor, TR::InstOpCode::Mnemonic compareMnemonic)
+OMR::Z::Peephole::tryToReduceCRJLHIToLOCHI(TR::InstOpCode::Mnemonic compareMnemonic)
    {
    // This optimization relies on hardware instructions introduced in z13
    if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
@@ -1103,7 +1106,7 @@ OMR::Z::Peephole::attemptToReduceCRJLHIToLOCHI(TR::Instruction* cursor, TR::Inst
    }
 
 bool
-OMR::Z::Peephole::attemptToReduceLToICM(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToReduceLToICM()
    {
    // Look for L/LTR instruction pair and reduce to LTR
    TR::Instruction* prev = cursor->getPrev();
@@ -1189,7 +1192,7 @@ OMR::Z::Peephole::attemptToReduceLToICM(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToReduceLToLZRF(TR::Instruction* cursor, TR::InstOpCode::Mnemonic loadAndZeroRightMostByteMnemonic)
+OMR::Z::Peephole::tryToReduceLToLZRF(TR::InstOpCode::Mnemonic loadAndZeroRightMostByteMnemonic)
    {
    // This optimization relies on hardware instructions introduced in z13
    if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
@@ -1228,7 +1231,7 @@ OMR::Z::Peephole::attemptToReduceLToLZRF(TR::Instruction* cursor, TR::InstOpCode
    }
 
 bool
-OMR::Z::Peephole::attemptToReduceLGRToLGFR(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToReduceLGRToLGFR()
    {
    TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
    TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
@@ -1266,7 +1269,7 @@ OMR::Z::Peephole::attemptToReduceLGRToLGFR(TR::Instruction* cursor)
  *     the condition code before any instruction that consumes a condition code.
  */
 bool
-OMR::Z::Peephole::attemptToReduceLHIToXR(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToReduceLHIToXR()
   {
   // This optimization is disabled by default because there exist cases in which we cannot determine whether this
   // transformation is functionally valid or not. The issue resides in the various runtime patching sequences using the
@@ -1303,7 +1306,7 @@ OMR::Z::Peephole::attemptToReduceLHIToXR(TR::Instruction* cursor)
   }
 
 bool
-OMR::Z::Peephole::attemptToReduceLLCToLLGC(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToReduceLLCToLLGC()
    {
    TR::Instruction *current = cursor->getNext();
    auto mnemonic = current->getOpCodeValue();
@@ -1337,7 +1340,7 @@ OMR::Z::Peephole::attemptToReduceLLCToLLGC(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToReduceLRCHIToLTR(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToReduceLRCHIToLTR()
    {
    int32_t windowSize = 0;
    const int32_t maxWindowSize = 10;
@@ -1408,7 +1411,7 @@ OMR::Z::Peephole::attemptToReduceLRCHIToLTR(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToReduceLTRToCHI(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToReduceLTRToCHI()
    {
    // The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg.
    cursor->setUseDefRegisters(false);
@@ -1438,7 +1441,7 @@ OMR::Z::Peephole::attemptToReduceLTRToCHI(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToRemoveDuplicateLR(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToRemoveDuplicateLR()
    {
    // The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg
    cursor->setUseDefRegisters(false);
@@ -1465,7 +1468,7 @@ OMR::Z::Peephole::attemptToRemoveDuplicateLR(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToRemoveDuplicateLoadRegister(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToRemoveDuplicateLoadRegister()
    {
    bool performed = false;
    int32_t windowSize = 0;
@@ -1555,7 +1558,7 @@ OMR::Z::Peephole::attemptToRemoveDuplicateLoadRegister(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToRemoveDuplicateNILF(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToRemoveDuplicateNILF()
    {
    if (cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILF)
       {
@@ -1616,7 +1619,7 @@ OMR::Z::Peephole::attemptToRemoveDuplicateNILF(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToRemoveDuplicateNILH(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToRemoveDuplicateNILH()
    {
    if (cursor->getNext()->getKind() == TR::Instruction::IsRI)
       {
@@ -1648,7 +1651,7 @@ OMR::Z::Peephole::attemptToRemoveDuplicateNILH(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToRemoveRedundantCompareAndTrap(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToRemoveRedundantCompareAndTrap()
    {
    if (comp()->target().isZOS())
       {
@@ -1714,7 +1717,7 @@ OMR::Z::Peephole::attemptToRemoveRedundantCompareAndTrap(TR::Instruction* cursor
    }
 
 bool
-OMR::Z::Peephole::attemptToRemoveRedundantLA(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToRemoveRedundantLA()
    {
    TR::Register *laTargetReg = cursor->getRegisterOperand(1);
    TR::MemoryReference *mr = cursor->getMemoryReference();
@@ -1748,7 +1751,7 @@ OMR::Z::Peephole::attemptToRemoveRedundantLA(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToRemoveRedundantShift(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToRemoveRedundantShift()
    {
    TR::Instruction* currInst = cursor;
    TR::Instruction* nextInst = cursor->getNext();
@@ -1786,7 +1789,7 @@ OMR::Z::Peephole::attemptToRemoveRedundantShift(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToRemoveRedundantLR(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToRemoveRedundantLR()
    {
    // The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg
    cursor->setUseDefRegisters(false);
@@ -1820,7 +1823,7 @@ OMR::Z::Peephole::attemptToRemoveRedundantLR(TR::Instruction* cursor)
    }
 
 bool
-OMR::Z::Peephole::attemptToRemoveRedundantLTR(TR::Instruction* cursor)
+OMR::Z::Peephole::tryToRemoveRedundantLTR()
    {
    // The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg
    cursor->setUseDefRegisters(false);

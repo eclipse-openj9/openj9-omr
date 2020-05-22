@@ -57,7 +57,7 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    private:
 
    /** \brief
-    *     Attempts to reduce L[' '|FH|G] R,MR1  ST[' '|FH|G] R,MR2 sequences to MVC MR2, MR1
+    *     Tries to reduce L[' '|FH|G] R,MR1  ST[' '|FH|G] R,MR2 sequences to MVC MR2, MR1
     *     to save a register and instruction.
     *
     *  \param cursor
@@ -72,10 +72,10 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptLoadStoreReduction(TR::Instruction* cursor, TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
+   bool tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
    
    /** \brief
-    *     Attempts to fold a load register instruction (\c LR or \c LGR) into a subsequent three-operand instruction if
+    *     Tries to fold a load register instruction (\c LR or \c LGR) into a subsequent three-operand instruction if
     *     possible. For example:
     *
     *     <code>
@@ -91,16 +91,13 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     AHIK GPR2,GPR3,5
     *     </code>
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToFoldLoadRegisterIntoSubsequentInstruction(TR::Instruction* cursor);
+   bool tryToFoldLoadRegisterIntoSubsequentInstruction();
    
    /** \brief
-    *     Attempts to forward a branch target if the branch instruction transfers control to another unconditional
+    *     Tries to forward a branch target if the branch instruction transfers control to another unconditional
     *     branch instruction (i.e. a trampoline). For example:
     *
     *     <code>
@@ -125,16 +122,13 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     ...
     *     </code>
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToForwardBranchTarget(TR::Instruction* cursor);
+   bool tryToForwardBranchTarget();
 
    /** \brief
-    *     Attempts to reduce a 64-bit shift instruction to a 32-bit shift instruction based on the IL node associated
+    *     Tries to reduce a 64-bit shift instruction to a 32-bit shift instruction based on the IL node associated
     *     with the 64-bit shift. For example if the node which generated the 64-bit shift operation is a \c TR::ishl
     *     then the 64-bit shfit:
     *
@@ -148,16 +142,13 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     SLA GPR15,0(GPR3)
     *     </code>
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduce64BitShiftTo32BitShift(TR::Instruction* cursor);
+   bool tryToReduce64BitShiftTo32BitShift();
 
    /** \brief
-    *     Attempts to reduce AGIs (Address Generation Interlock) which occur when an instruction requires a register
+    *     Tries to reduce AGIs (Address Generation Interlock) which occur when an instruction requires a register
     *     its operand address calculation but the register is unavailable because it is written to by a preceeding
     *     instruction which has not been completed yet. This causes a pipeline stall which we would like to avoid. In
     *     some cases however the AGI can be avoided by register renaming. For example, the following:
@@ -178,16 +169,13 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *
     *     which avoids the AGI because \c GPR3 is no longer used within the memory reference.
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduceAGI(TR::Instruction* cursor);
+   bool tryToReduceAGI();
    
    /** \brief
-    *     Attempts to reduce a compare logical (\c CLR) insturction followed by a branch to a compare and branch
+    *     Tries to reduce a compare logical (\c CLR) insturction followed by a branch to a compare and branch
     *     instruction (\c CLRJ) For example:
     *
     *     <code>
@@ -201,16 +189,13 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     CLRJ GPR1,GPR2,<LABEL>,B'1000'
     *     </code>
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduceCLRToCLRJ(TR::Instruction* cursor);
+   bool tryToReduceCLRToCLRJ();
    
    /** \brief
-    *     Attempts to reduce a simple branch conditional load of an immediate to a load immediate on condition branch-
+    *     Tries to reduce a simple branch conditional load of an immediate to a load immediate on condition branch-
     *     less sequence. For example:
     *
     *     <code>
@@ -228,9 +213,6 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     ...
     *     </code>
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \param compareMnemonic
     *     The compare mnemonic which will replace the compare and branch instruction and feed the condition code into
     *     the conditional load.
@@ -238,10 +220,10 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduceCRJLHIToLOCHI(TR::Instruction* cursor, TR::InstOpCode::Mnemonic compareMnemonic);
+   bool tryToReduceCRJLHIToLOCHI(TR::InstOpCode::Mnemonic compareMnemonic);
    
    /** \brief
-    *     Attempts to reduce a load instruction (\c L) to an insert character under mask (\c ICM) instruction. This can
+    *     Tries to reduce a load instruction (\c L) to an insert character under mask (\c ICM) instruction. This can
     *     be done if following the load we have a load and test or a compare against certain immediates. For example:
     *
     *     <code>
@@ -255,16 +237,13 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     ICM GPR2,8(GPR5),B'1111'
     *     </code>
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduceLToICM(TR::Instruction* cursor);
+   bool tryToReduceLToICM();
 
    /** \brief
-    *     Attempts to reduce a load instruction (\c L, \c LG, \c LLGF) followed by an \c NILL to its equivalent load
+    *     Tries to reduce a load instruction (\c L, \c LG, \c LLGF) followed by an \c NILL to its equivalent load
     *     and zero rightmost byte equivalent instruction. For example:
     *
     *     <code>
@@ -278,19 +257,16 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     LZRG GPR2,8(GPR5)
     *     </code>
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \param loadAndZeroRightMostByteMnemonic
     *     The load and zero rightmost byte mnemonic to replace the original load with.
     *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduceLToLZRF(TR::Instruction* cursor, TR::InstOpCode::Mnemonic loadAndZeroRightMostByteMnemonic);
+   bool tryToReduceLToLZRF(TR::InstOpCode::Mnemonic loadAndZeroRightMostByteMnemonic);
    
    /** \brief
-    *     Attempts to reduce a load register instruction (\c LGR or \c LTGR) followed by a sign extension to \c LGFR.
+    *     Tries to reduce a load register instruction (\c LGR or \c LTGR) followed by a sign extension to \c LGFR.
     *     For example:
     *
     *     <code>
@@ -304,16 +280,13 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     LGFR GPR2,GPR3
     *     </code>
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduceLGRToLGFR(TR::Instruction* cursor);
+   bool tryToReduceLGRToLGFR();
 
    /** \brief
-    *     Attempts to reduce a load halfword immedaite instruction (\c LHI) to an XOR \c XR.
+    *     Tries to reduce a load halfword immedaite instruction (\c LHI) to an XOR \c XR.
     *     For example:
     *
     *     <code>
@@ -326,16 +299,13 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     XR GPR2,GPR2
     *     </code>
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduceLHIToXR(TR::Instruction* cursor);
+   bool tryToReduceLHIToXR();
    
    /** \brief
-    *     Attempts to reduce a load logical character instruction (\c LLC) followed by a zero extension to \c LLGC.
+    *     Tries to reduce a load logical character instruction (\c LLC) followed by a zero extension to \c LLGC.
     *     For example:
     *
     *     <code>
@@ -349,16 +319,13 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     LLGC GPR2,8(GPR3,GPR5)
     *     </code>
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduceLLCToLLGC(TR::Instruction* cursor);
+   bool tryToReduceLLCToLLGC();
    
    /** \brief
-    *     Attempts to reduce a load register instruction (\c LR or \c LGR) and a future compare (\c CHI) against the
+    *     Tries to reduce a load register instruction (\c LR or \c LGR) and a future compare (\c CHI) against the
     *     target register to \c LTR or \c LTGR. For example:
     *
     *     <code>
@@ -379,16 +346,13 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     since none of the instructions between the \c LR and \c CHI set the condition code or define the source or
     *     target registers.
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduceLRCHIToLTR(TR::Instruction* cursor);
+   bool tryToReduceLRCHIToLTR();
    
    /** \brief
-    *     Attempts to reduce a load and test register instruction (\c LTR or \c LTGR) to a compare halfword immediate if
+    *     Tries to reduce a load and test register instruction (\c LTR or \c LTGR) to a compare halfword immediate if
     *     the target register of the load is used in a future memory reference. This is an attempt to reduce the AGI
     *     incurred by using the target register. For example:
     *
@@ -410,86 +374,65 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *
     *     which will avoid the AGI incurred by the memory refrence on the \c L instruction.
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToReduceLTRToCHI(TR::Instruction* cursor);
+   bool tryToReduceLTRToCHI();
 
    /** \brief
-    *     Attempts to remove duplicate (\c LR, \c LGR, \c LDR, \c LER) instructions which have the same source and
+    *     Tries to remove duplicate (\c LR, \c LGR, \c LDR, \c LER) instructions which have the same source and
     *     target registers.
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToRemoveDuplicateLR(TR::Instruction* cursor);
+   bool tryToRemoveDuplicateLR();
 
    /** \brief
-    *     Attempts to use a peephole window to look for and remove duplicate load [and test] register instructions
+    *     Tries to use a peephole window to look for and remove duplicate load [and test] register instructions
     *     which when executed would result in a NOP.
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToRemoveDuplicateLoadRegister(TR::Instruction* cursor);
+   bool tryToRemoveDuplicateLoadRegister();
 
    /** \brief
-    *     Attempts to remove duplicate NILF instructions which target the same register and use the same immediate or
+    *     Tries to remove duplicate NILF instructions which target the same register and use the same immediate or
     *     redundant NILF instructions where the second NILF operation would not change the value of the target register.
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool tryToRemoveDuplicateNILF();
+
+   /** \brief
+    *     Tries to remove duplicate NILH instructions which target the same register and use the same immediate.
     *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToRemoveDuplicateNILF(TR::Instruction* cursor);
+   bool tryToRemoveDuplicateNILH();
 
    /** \brief
-    *     Attempts to remove duplicate NILH instructions which target the same register and use the same immediate.
-    *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
-    *  \return
-    *     true if the reduction was successful; false otherwise.
-    */
-   bool attemptToRemoveDuplicateNILH(TR::Instruction* cursor);
-
-   /** \brief
-    *     Attempts to remove redundant compare and trap instructions which can never be executed because a previous
+    *     Tries to remove redundant compare and trap instructions which can never be executed because a previous
     *     compare and trap instruction would have triggered a trap already.
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool tryToRemoveRedundantCompareAndTrap();
+
+   /** \brief
+    *     Tries to remove redundant \c LA instructions whose evaluation would result in a NOP.
     *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToRemoveRedundantCompareAndTrap(TR::Instruction* cursor);
+   bool tryToRemoveRedundantLA();
 
    /** \brief
-    *     Attempts to remove redundant \c LA instructions whose evaluation would result in a NOP.
-    *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
-    *  \return
-    *     true if the reduction was successful; false otherwise.
-    */
-   bool attemptToRemoveRedundantLA(TR::Instruction* cursor);
-
-   /** \brief
-    *     Attempts to remove redundant shift instructions which can be fused into a single shift. For example:
+    *     Tries to remove redundant shift instructions which can be fused into a single shift. For example:
     *
     *     <code>
     *     SRL GPR2,8(GPR2)
@@ -501,29 +444,23 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     <code>
     *     SRL GPR2,12(GPR2)
     *     </code>
-
-    *  \param cursor
-    *     The instruction cursor currently being processed.
     *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToRemoveRedundantShift(TR::Instruction* cursor);
+   bool tryToRemoveRedundantShift();
 
    /** \brief
-    *     Attempts to remove redundant \c LR or \c LGR instructions which are followed by a load and test instruction
+    *     Tries to remove redundant \c LR or \c LGR instructions which are followed by a load and test instruction
     *     acting on the same source and target registers.
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToRemoveRedundantLR(TR::Instruction* cursor);
+   bool tryToRemoveRedundantLR();
 
    /** \brief
-    *     Attempts to remove redundant \c LTR or \c LTGR instructions if we can reuse the condition code from a
+    *     Tries to remove redundant \c LTR or \c LTGR instructions if we can reuse the condition code from a
     *     previous arithmetic operation. For example:
     *
     *     <code>
@@ -541,13 +478,15 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *
     *     Note the modified mask value of the \c BRC instruction.
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool attemptToRemoveRedundantLTR(TR::Instruction* cursor);
+   bool tryToRemoveRedundantLTR();
+
+   private:
+
+   /// The instruction cursor currently being processed by the peephole optimization
+   TR::Instruction* cursor;
    };
 
 }

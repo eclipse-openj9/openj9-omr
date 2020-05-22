@@ -1363,8 +1363,6 @@ void OMR::Power::CodeGenerator::doPeephole()
    if (disablePeephole)
       return;
 
-   int syncPeepholeWindow = self()->comp()->isOptServer() ? 12 : 6;
-
    if (self()->comp()->getOptLevel() == noOpt)
       return;
 
@@ -1399,21 +1397,6 @@ void OMR::Power::CodeGenerator::doPeephole()
                {
                if (self()->comp()->target().is64Bit())
                   recordFormPeephole(self(), instructionCursor);
-               break;
-               }
-            case TR::InstOpCode::sync:
-               {
-               syncPeephole(self(), instructionCursor, syncPeepholeWindow);
-               break;
-               }
-            case TR::InstOpCode::lwsync:
-               {
-               syncPeephole(self(), instructionCursor, syncPeepholeWindow);
-               break;
-               }
-            case TR::InstOpCode::isync:
-               {
-               syncPeephole(self(), instructionCursor, syncPeepholeWindow);
                break;
                }
             default:

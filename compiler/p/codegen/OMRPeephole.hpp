@@ -74,6 +74,17 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    bool tryToRemoveRedundantLoadAfterStore();
 
    /** \brief
+    *     Tries to remove redundant synchronization instructions.
+    *
+    *  \param window
+    *     The size of the peephole window to look through before giving up.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool tryToRemoveRedundantSync(int32_t window);
+
+   /** \brief
     *     Tries to remove redundant consecutive instruction which write to the same target register.
     *
     *  \return

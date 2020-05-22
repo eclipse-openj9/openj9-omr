@@ -64,6 +64,13 @@ OMR::Power::Peephole::performOnInstruction(TR::Instruction* cursor)
          performed |= tryToRemoveRedundantLoadAfterStore();
          break;
          }
+      case TR::InstOpCode::sync:
+      case TR::InstOpCode::lwsync:
+      case TR::InstOpCode::isync:
+         {
+         performed |= tryToRemoveRedundantSync(self()->comp()->isOptServer() ? 12 : 6);
+         break;
+         }
       default:
          {
          performed |= tryToRemoveRedundantWriteAfterWrite();
@@ -180,6 +187,91 @@ OMR::Power::Peephole::tryToRemoveRedundantLoadAfterStore()
       generateTrg1Src1Instruction(cg(), TR::InstOpCode::mr, loadInstruction->getNode(), trgReg, srcReg, storeInstruction);
       loadInstruction->remove();
       return true;
+      }
+
+   return false;
+   }
+
+bool
+OMR::Power::Peephole::tryToRemoveRedundantSync(int32_t window)
+   {
+   static bool disableSyncPeepholes = feGetEnv("TR_DisableSyncPeepholes") != NULL;
+   if (disableSyncPeepholes)
+      return false;
+
+   TR::Instruction* instructionCursor = cursor;
+   TR::Instruction *first = instructionCursor;
+   TR::InstOpCode::Mnemonic nextOp = instructionCursor->getNext()->getOpCodeValue();
+   int visited = 0;
+   bool removeFirst, removeNext;
+
+   while (visited < window)
+      {
+      instructionCursor = first;
+
+      if (instructionCursor->getNext()->isSyncSideEffectFree())
+         {
+         for (; visited < window && instructionCursor->getNext()->isSyncSideEffectFree(); visited++)
+            {
+            instructionCursor = instructionCursor->getNext();
+            nextOp = instructionCursor->getNext()->getOpCodeValue();
+            }
+         }
+      else
+         {
+         visited++;
+         nextOp = instructionCursor->getNext()->getOpCodeValue();
+         }
+
+      if (visited >= window)
+         return false;
+
+      removeFirst = removeNext = false;
+
+      switch(first->getOpCodeValue())
+         {
+         case TR::InstOpCode::isync:
+            {
+            if(nextOp == TR::InstOpCode::sync || nextOp == TR::InstOpCode::lwsync || nextOp == TR::InstOpCode::isync)
+               removeFirst = true;
+            break;
+            }
+         case TR::InstOpCode::lwsync:
+            {
+            if(nextOp == TR::InstOpCode::sync)
+               removeFirst = true;
+            else if(nextOp == TR::InstOpCode::lwsync || nextOp == TR::InstOpCode::isync)
+               removeNext = true;
+            break;
+            }
+         case TR::InstOpCode::sync:
+            {
+            if(nextOp == TR::InstOpCode::sync || nextOp == TR::InstOpCode::lwsync || nextOp == TR::InstOpCode::isync)
+               removeNext = true;
+            break;
+            }
+         default:
+            return false;
+         }
+
+      if (removeFirst)
+         {
+         if (performTransformation(comp(), "O^O PPC PEEPHOLE: Remove redundant syncronization instruction %p.\n", first))
+            {
+            cg()->generateNop(first->getNode(), first->getPrev(), TR_NOPStandard);
+            first->remove();
+            return true;
+            }
+         }
+      else if(removeNext)
+         {
+         if (performTransformation(comp(), "O^O PPC PEEPHOLE: Remove redundant syncronization instruction %p.\n", instructionCursor->getNext()))
+            {
+            cg()->generateNop(instructionCursor->getNext()->getNode(), instructionCursor, TR_NOPStandard);
+            instructionCursor->getNext()->getNext()->remove();
+            return true;
+            }
+         }
       }
 
    return false;

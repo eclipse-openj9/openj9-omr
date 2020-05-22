@@ -78,6 +78,9 @@ OMR::Power::Peephole::performOnInstruction(TR::Instruction* cursor)
    {
    bool performed = false;
 
+   if (comp()->getOptLevel() == noOpt)
+      return performed;
+
    // Cache the cursor for use in the peephole functions
    self()->cursor = cursor;
 

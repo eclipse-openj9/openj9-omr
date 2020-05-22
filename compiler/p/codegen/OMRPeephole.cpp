@@ -81,44 +81,53 @@ OMR::Power::Peephole::performOnInstruction(TR::Instruction* cursor)
    // Cache the cursor for use in the peephole functions
    self()->cursor = cursor;
 
-   switch(cursor->getOpCodeValue())
+   if ((self()->comp()->target().cpu.id() == TR_PPCp6) && cursor->isTrap())
       {
-      case TR::InstOpCode::cmpi4:
-         {
-         if (self()->comp()->target().is32Bit())
-            performed |= tryToReduceCompareToRecordForm();
-         break;
-         }
-      case TR::InstOpCode::cmpi8:
-         {
-         if (self()->comp()->target().is64Bit())
-            performed |= tryToReduceCompareToRecordForm();
-         break;
-         }
-      case TR::InstOpCode::mr:
-         {
-         performed |= tryToRemoveRedundantMoveRegister();
-         break;
-         }
-      case TR::InstOpCode::stw:
-#if defined(TR_HOST_64BIT)
-      case TR::InstOpCode::std:
+#if defined(AIXPPC)
+      tryToSwapTrapAndLoad();
 #endif
+      }
+   else
+      {
+      switch (cursor->getOpCodeValue())
          {
-         performed |= tryToRemoveRedundantLoadAfterStore();
-         break;
-         }
-      case TR::InstOpCode::sync:
-      case TR::InstOpCode::lwsync:
-      case TR::InstOpCode::isync:
-         {
-         performed |= tryToRemoveRedundantSync(self()->comp()->isOptServer() ? 12 : 6);
-         break;
-         }
-      default:
-         {
-         performed |= tryToRemoveRedundantWriteAfterWrite();
-         break;
+         case TR::InstOpCode::cmpi4:
+            {
+            if (self()->comp()->target().is32Bit())
+               performed |= tryToReduceCompareToRecordForm();
+            break;
+            }
+         case TR::InstOpCode::cmpi8:
+            {
+            if (self()->comp()->target().is64Bit())
+               performed |= tryToReduceCompareToRecordForm();
+            break;
+            }
+         case TR::InstOpCode::mr:
+            {
+            performed |= tryToRemoveRedundantMoveRegister();
+            break;
+            }
+         case TR::InstOpCode::stw:
+#if defined(TR_HOST_64BIT)
+         case TR::InstOpCode::std:
+#endif
+            {
+            performed |= tryToRemoveRedundantLoadAfterStore();
+            break;
+            }
+         case TR::InstOpCode::sync:
+         case TR::InstOpCode::lwsync:
+         case TR::InstOpCode::isync:
+            {
+            performed |= tryToRemoveRedundantSync(self()->comp()->isOptServer() ? 12 : 6);
+            break;
+            }
+         default:
+            {
+            performed |= tryToRemoveRedundantWriteAfterWrite();
+            break;
+            }
          }
       }
 
@@ -893,6 +902,118 @@ OMR::Power::Peephole::tryToRemoveRedundantWriteAfterWrite()
          current = current->getNext();
          window++;
          }
+      }
+
+   return false;
+   }
+
+bool
+OMR::Power::Peephole::tryToSwapTrapAndLoad()
+   {
+   static bool disableTrapPeephole = feGetEnv("TR_DisableTrapPeephole") != NULL;
+   if (disableTrapPeephole)
+      return false;
+
+   int WINDOW = 2;
+   TR::RealRegister *RAr;
+   TR::Register *RAv;
+
+   TR::Instruction* instructionCursor = cursor;
+   if ((RAv = instructionCursor->getSourceRegister(0)) != NULL)
+      RAr = instructionCursor->getSourceRegister(0)->getRealRegister();
+   else
+      return false;
+
+   if (instructionCursor->getSourceRegister(1) != NULL ||
+      instructionCursor->getOffset() != 0)
+      {
+      return false;
+      }
+
+   if ((RAv->getStartOfRange() != NULL) && RAv->getStartOfRange()->isLoad())
+      return false;
+
+   TR::RealRegister *RTr;
+   TR::Instruction *next = instructionCursor->getNext();
+
+   for(int i = 0; i < WINDOW  && next != NULL; i++)
+      {
+      if (next->isStore())
+         return false;
+      if (!next->isLoad() && !next->isStore() && !next->isSyncSideEffectFree())
+         return false;
+      if (NULL != next->getMemoryReference() &&
+          NULL != next->getMemoryReference()->getUnresolvedSnippet())
+         return false;
+      if (NULL != next->getGCMap())
+         return false;
+
+      for (int j = 0; next->getTargetRegister(j) != NULL; j++)
+         {
+         if (next->getTargetRegister(j)->getRealRegister() == RAr)
+            return false;
+         }
+      if (next->isLoad() && next->getSourceRegister(0) != NULL && next->getSourceRegister(0)->getRealRegister() == RAr)
+         {
+         if (next->getSourceRegister(1) != NULL)
+            return false;
+
+         //Page 0 which is readable on AIX is 4096 bytes long, and the largest possible load is 16 bytes.
+         if (next->getOffset() >= (4096-16) || next->getOffset() < 0)
+            return false;
+
+         TR::Instruction *trap = instructionCursor;
+         TR::Instruction *load = next;
+
+         if (trap->getPrev() != NULL && load->getNext() != NULL)
+            {
+            for (TR::Instruction *prev = load->getPrev(); prev != trap->getPrev(); prev = prev->getPrev())
+               {
+               for (int k = 0; load->getTargetRegister(k) != NULL; k++)
+                  {
+                  for (int l = 0; prev->getSourceRegister(l) != NULL; l++)
+                     {
+                     if (prev->getSourceRegister(l)->getRealRegister() == load->getTargetRegister(k)->getRealRegister())
+                        return false;
+                     }
+                  for (int m = 0; prev->getTargetRegister(m) != NULL; m++)
+                     {
+                     if (prev->getTargetRegister(m)->getRealRegister() == load->getTargetRegister(k)->getRealRegister())
+                        return false;
+                     }
+                  }
+               }
+            if (performTransformation(cg()->comp(), "O^O PPC PEEPHOLE: Swap trap %p and load %p instructions.\n", trap, load))
+               {
+               if (i > 0)
+                  {
+                  TR::Instruction *loadPrev = load->getPrev();
+                  TR::Instruction *loadNext = load->getNext();
+                  trap->getPrev()->setNext(load);
+                  trap->getNext()->setPrev(load);
+                  load->setNext(trap->getNext());
+                  load->setPrev(trap->getPrev());
+                  loadPrev->setNext(trap);
+                  loadNext->setPrev(trap);
+                  trap->setNext(loadNext);
+                  trap->setPrev(loadPrev);
+                  }
+               else
+                  {
+                  trap->getPrev()->setNext(load);
+                  load->setPrev(trap->getPrev());
+                  trap->setNext(load->getNext());
+                  load->getNext()->setPrev(trap);
+                  load->setNext(trap);
+                  trap->setPrev(load);
+                  }
+               return true;
+               }
+
+            return false;
+            }
+         }
+      next = next->getNext();
       }
 
    return false;

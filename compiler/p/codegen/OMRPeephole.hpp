@@ -174,6 +174,14 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     */
    bool tryToRemoveRedundantWriteAfterWrite();
 
+   /** \brief
+    *     Tries to swap trap and load instructions.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool tryToSwapTrapAndLoad();
+
    private:
 
    /// The instruction cursor currently being processed by the peephole optimization

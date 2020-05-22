@@ -55,6 +55,29 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    private:
 
    /** \brief
+    *     Tries to eliminate compare instructions by reducing previous instructions into record form. For example:
+    *
+    *     <code>
+    *     <op> r2,...
+    *     ... <no modification of r2 or cr0>
+    *     cmpi cr0, r2, 0
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     <op_r> r2,...
+    *     ... <no modification of r2 or cr0>
+    *     </code>
+    *
+    *     where the \c cmpi is eliminated and \c <op_r> is the record form version of \c <op> instruction.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool tryToReduceCompareToRecordForm();
+
+   /** \brief
     *     Tries to remove redundant loads after stores which have the same source and target. For example:
     *
     *     <code>

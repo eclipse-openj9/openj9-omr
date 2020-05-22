@@ -42,6 +42,33 @@ isWAWOrmrPeepholeCandidateInstr(TR::Instruction *instr)
    return false;
    }
 
+static bool
+isEBBTerminatingBranch(TR::Instruction *instr)
+   {
+   TR::Instruction *ppcInstr = instr;
+   switch (ppcInstr->getOpCodeValue())
+      {
+      case TR::InstOpCode::b:                // Unconditional branch
+      case TR::InstOpCode::bctr:             // Branch to count register
+      case TR::InstOpCode::bctrl:            // Branch to count register and link
+      case TR::InstOpCode::bfctr:            // Branch false to count register
+      case TR::InstOpCode::btctr:            // Branch true to count register
+      case TR::InstOpCode::bl:               // Branch and link
+      case TR::InstOpCode::blr:              // Branch to link register
+      case TR::InstOpCode::blrl:             // Branch to link register and link
+      case TR::InstOpCode::beql:             // Branch and link if equal
+      case TR::InstOpCode::bgel:             // Branch and link if greater than or equal
+      case TR::InstOpCode::bgtl:             // Branch and link if greater than
+      case TR::InstOpCode::blel:             // Branch and link if less than or equal
+      case TR::InstOpCode::bltl:             // Branch and link if less than
+      case TR::InstOpCode::bnel:             // Branch and link if not equal
+      case TR::InstOpCode::vgdnop:           // A vgdnop can be backpatched to a branch
+         return true;
+      default:
+         return false;
+      }
+   }
+
 OMR::Power::Peephole::Peephole(TR::Compilation* comp) :
    OMR::Peephole(comp)
    {}
@@ -56,6 +83,18 @@ OMR::Power::Peephole::performOnInstruction(TR::Instruction* cursor)
 
    switch(cursor->getOpCodeValue())
       {
+      case TR::InstOpCode::cmpi4:
+         {
+         if (self()->comp()->target().is32Bit())
+            performed |= tryToReduceCompareToRecordForm();
+         break;
+         }
+      case TR::InstOpCode::cmpi8:
+         {
+         if (self()->comp()->target().is64Bit())
+            performed |= tryToReduceCompareToRecordForm();
+         break;
+         }
       case TR::InstOpCode::stw:
 #if defined(TR_HOST_64BIT)
       case TR::InstOpCode::std:
@@ -79,6 +118,113 @@ OMR::Power::Peephole::performOnInstruction(TR::Instruction* cursor)
       }
 
    return performed;
+   }
+
+bool
+OMR::Power::Peephole::tryToReduceCompareToRecordForm()
+   {
+   static bool disableRecordFormPeephole = feGetEnv("TR_DisableRecordFormPeephole") != NULL;
+   if (disableRecordFormPeephole)
+      return false;
+
+   TR::Instruction* cmpiInstruction = cursor;
+   TR::Register *cmpiSourceReg = cmpiInstruction->getSourceRegister(0);
+   TR::Register *cmpiTargetReg = cmpiInstruction->getTargetRegister(0);
+
+   if (cmpiInstruction->getSourceImmediate() != 0 ||
+       toRealRegister(cmpiTargetReg)->getRegisterNumber() != TR::RealRegister::cr0)
+      return false;
+
+   TR::Instruction *current = cmpiInstruction->getPrev();
+   while (current != NULL &&
+          !current->isLabel() &&
+          (!isEBBTerminatingBranch(current) ||
+          current->getKind() == OMR::Instruction::IsControlFlow) &&
+          current->getOpCodeValue() != TR::InstOpCode::wrtbar)
+      {
+      if (current->getKind() == OMR::Instruction::IsControlFlow)
+         {
+         current = current->getPrev();
+         continue;
+         }
+
+      if (current->getPrimaryTargetRegister() != NULL &&
+          current->getPrimaryTargetRegister() == cmpiSourceReg)
+         // if target reg is same as source of compare
+         {
+         if (current->getOpCode().isRecordForm())
+            {
+            if (performTransformation(comp(), "O^O PPC PEEPHOLE: Remove redundant compare immediate %p.\n", cmpiInstruction))
+               {
+               cmpiInstruction->remove();
+               return true;
+               }
+            return false;
+            }
+         if (current->getOpCode().hasRecordForm())
+            {
+            // avoid certain record forms on POWER4/POWER5
+            if (comp->target().cpu.is(OMR_PROCESSOR_PPC_GP) ||
+                comp->target().cpu.is(OMR_PROCESSOR_PPC_GR))
+               {
+               TR::InstOpCode::Mnemonic opCode = current->getOpCodeValue();
+               // addc_r, subfc_r, divw_r and divd_r are microcoded
+               if (opCode == TR::InstOpCode::addc || opCode == TR::InstOpCode::subfc ||
+                   opCode == TR::InstOpCode::divw || opCode == TR::InstOpCode::divd)
+                  return false;
+               // rlwinm_r is cracked, so avoid if possible
+               if (opCode == TR::InstOpCode::rlwinm)
+                  {
+                  TR::PPCTrg1Src1Imm2Instruction *inst = (TR::PPCTrg1Src1Imm2Instruction *)current;
+                  // see if we can convert to an andi_r or andis_r
+                  if (inst->getSourceImmediate() == 0 &&
+                      (inst->getMask()&0xffff0000) == 0)
+                     {
+                     if (performTransformation(comp(), "O^O PPC PEEPHOLE: Change %p to andi_r, remove compare immediate %p.\n", current, cmpiInstruction))
+                        {
+                        generateTrg1Src1ImmInstruction(cg(), TR::InstOpCode::andi_r, inst->getNode(), inst->getPrimaryTargetRegister(), inst->getSourceRegister(0),cmpiTargetReg, inst->getMask(), current);
+                        current->remove();
+                        cmpiInstruction->remove();
+                        return true;
+                        }
+                     return false;
+                     }
+                  else if (inst->getSourceImmediate() == 0 &&
+                      (inst->getMask()&0x0000ffff) == 0)
+                     {
+                     if (performTransformation(comp(), "O^O PPC PEEPHOLE: Change %p to andis_r, remove compare immediate %p.\n", current, cmpiInstruction))
+                        {
+                        generateTrg1Src1ImmInstruction(cg(), TR::InstOpCode::andis_r, inst->getNode(), inst->getPrimaryTargetRegister(), inst->getSourceRegister(0), cmpiTargetReg, ((uint32_t)inst->getMask()) >> 16, current);
+                        current->remove();
+                        cmpiInstruction->remove();
+                        return true;
+                        }
+                     return false;
+                     }
+                  }
+               }
+            // change the opcode to get record form
+            if (performTransformation(comp(), "O^O PPC PEEPHOLE: Change %p to record form, remove compare immediate %p.\n", current, cmpiInstruction))
+               {
+               current->setOpCodeValue(current->getRecordFormOpCode());
+               cmpiInstruction->remove();
+               return true;
+               }
+            return false;
+            }
+         return false;
+         }
+      else
+         {
+         if (current->defsRegister(toRealRegister(cmpiSourceReg)) ||
+             current->defsRegister(toRealRegister(cmpiTargetReg)) ||
+             current->getOpCode().isRecordForm())
+            return false;
+         }
+      current = current->getPrev();
+      }
+
+   return false;
    }
 
 bool

@@ -659,13 +659,25 @@ omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const 
 int32_t
 omrsock_timeval_init(struct OMRPortLibrary *portLibrary, omrsock_timeval_t handle, uint32_t secTime, uint32_t uSecTime)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if (NULL == handle) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	memset(handle, 0, sizeof(OMRTimeval));
+	handle->data.tv_sec = secTime;
+	handle->data.tv_usec = uSecTime;
+	return 0;
 }
 
 int32_t
 omrsock_linger_init(struct OMRPortLibrary *portLibrary, omrsock_linger_t handle, int32_t enabled, uint16_t timeout)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if (NULL == handle) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	memset(handle, 0, sizeof(OMRLinger));
+	handle->data.l_onoff = enabled;
+	handle->data.l_linger = (int32_t)timeout; /* Cast to in32_t because WIN system takes uint16_t*/
+	return 0;
 }
 
 int32_t

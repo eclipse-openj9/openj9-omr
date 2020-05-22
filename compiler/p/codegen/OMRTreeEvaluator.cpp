@@ -227,7 +227,15 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t va
       TR_PPCTableOfConstants::setTOCSlot(offset, value);
       if (offset < LOWER_IMMED || offset > UPPER_IMMED)
          {
-         cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, cg->getTOCBaseRegister(), (int16_t)cg->hiValue(offset), cursor);
+         if (0x00008000 == cg->hiValue(offset))
+            {
+            cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, cg->getTOCBaseRegister(), 0x7FFF, cursor);
+            cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, trgReg, 0x1, cursor);
+            }
+         else
+            {
+            cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, cg->getTOCBaseRegister(), cg->hiValue(offset), cursor);
+            }
          cursor = generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, trgReg, new (cg->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, cg), cursor);
          }
       else
@@ -5472,7 +5480,15 @@ TR::Register *OMR::Power::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::C
                   }
                else
                   {
-                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, mref->getBaseRegister(), (int16_t)HI_VALUE(offset));
+                  if (0x00008000 == HI_VALUE(offset))
+                     {
+                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, mref->getBaseRegister(), 0x7FFF);
+                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, resultReg, 0x1);
+                     }
+                  else
+                     {
+                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, mref->getBaseRegister(), HI_VALUE(offset));
+                     }
                   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, resultReg, resultReg, LO_VALUE(offset));
                   }
                }

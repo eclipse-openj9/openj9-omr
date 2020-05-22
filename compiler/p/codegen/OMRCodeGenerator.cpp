@@ -3241,7 +3241,15 @@ OMR::Power::CodeGenerator::fixedLoadLabelAddressIntoReg(
          self()->itemTracking(offset, label);
          if (offset<LOWER_IMMED||offset>UPPER_IMMED)
             {
-            generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, self()->getTOCBaseRegister(), (int16_t)self()->hiValue(offset));
+            if (0x00008000 == self()->hiValue(offset))
+               {
+               generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, self()->getTOCBaseRegister(), 0x7FFF);
+               generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, trgReg, 0x1);
+               }
+            else
+               {
+               generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, self()->getTOCBaseRegister(), self()->hiValue(offset));
+               }
             generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, self()));
             }
          else
@@ -3602,7 +3610,15 @@ TR::Register *addConstantToInteger(TR::Node * node, TR::Register *trgReg, TR::Re
       }
    else
       {
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, srcReg, (int16_t)HI_VALUE(value));
+      if (0x00008000 == HI_VALUE(value))
+         {
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, srcReg, 0x7FFF);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, trgReg, 0x1);
+         }
+      else
+         {
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, srcReg, HI_VALUE(value));
+         }
 
       if (value & 0xFFFF)
          {

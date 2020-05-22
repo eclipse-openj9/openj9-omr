@@ -224,6 +224,26 @@ public:
 		_slot = slot;
 	}
 
+	/**
+	 * Advance the slot address by an integer offset
+	 *
+	 * @param[in] offset the offset to add
+	 */
+	MMINLINE void addToSlotAddress(intptr_t offset)
+	{
+		writeAddressToSlot(addToSlotAddress(readAddressFromSlot(), offset, compressObjectReferences()));
+	}
+
+	/**
+	 * Back up the slot address by an integer offset
+	 *
+	 * @param[in] offset the offset to subtract
+	 */
+	MMINLINE void subtractFromSlotAddress(intptr_t offset)
+	{
+		writeAddressToSlot(subtractFromSlotAddress(readAddressFromSlot(), offset, compressObjectReferences()));
+	}
+
 	GC_SlotObject(OMR_VM *omrVM, volatile fomrobject_t* slot)
 	: _slot(slot)
 #if defined (OMR_GC_COMPRESSED_POINTERS)

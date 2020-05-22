@@ -71,6 +71,11 @@ class InstOpCode: public OMR::InstOpCode
       const char* name;
 
       /** \brief
+       *     The instruction prefix with fields masked out by zeros.
+       */
+      uint32_t prefix;
+
+      /** \brief
        *     The instruction opcode with fields masked out by zeros.
        */
       uint32_t opcode;

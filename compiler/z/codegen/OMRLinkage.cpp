@@ -387,7 +387,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
    )
    {
    TR::RealRegister * stackPtr = self()->getNormalStackPointerRealRegister();
-   static const bool enableVectorLinkage = self()->cg()->getSupportsVectorRegisters();
+   const bool enableVectorLinkage = self()->cg()->getSupportsVectorRegisters();
 
    // for XPLink or FASTLINK, there are cases where the "normal" stack pointer is
    // not appropriate for where to save arguments in registers.
@@ -1952,7 +1952,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
    TR::DataType resType = callNode->getType();
    TR::DataType resDataType = resType.getDataType();
 
-   static const bool enableVectorLinkage = self()->cg()->getSupportsVectorRegisters();
+   const bool enableVectorLinkage = self()->cg()->getSupportsVectorRegisters();
 
 
    //Not kill special registers

@@ -1611,7 +1611,6 @@ bool OMR::Z::MemoryReference::tryBaseIndexDispl(TR::CodeGenerator* cg, TR::Node*
    bool debug = false;
    TR::Register* breg = NULL;
    TR::Register* ireg= NULL;
-   static int folded = 0;
 
    // From here, down, stack memory allocations will expire / die when the function returns
    TR::StackMemoryRegion stackMemoryRegion(*cg->trMemory());
@@ -1698,7 +1697,6 @@ bool OMR::Z::MemoryReference::tryBaseIndexDispl(TR::CodeGenerator* cg, TR::Node*
       if (sub)
          traceMsg(comp, "&&& TBID sub rc %d\n", sub->getReferenceCount());
       traceMsg(comp, "&&& TBID index rc %d\n", index->getReferenceCount());
-      traceMsg(comp, "&&& TBID folded %d\n", ++folded);
       }
 
    self()->setBaseRegister(breg, cg);

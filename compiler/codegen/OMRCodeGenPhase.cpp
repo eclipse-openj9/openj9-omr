@@ -325,7 +325,6 @@ OMR::CodeGenPhase::performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase
 
    TR::Peephole peephole(comp);
    peephole.perform();
-   cg->doPeephole();
 
    if (comp->getOption(TR_TraceCG))
       comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Peephole Instructions", false);

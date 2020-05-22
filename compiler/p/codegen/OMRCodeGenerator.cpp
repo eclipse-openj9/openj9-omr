@@ -728,35 +728,6 @@ bool OMR::Power::CodeGenerator::checkAndFetchRequestor(TR::Instruction *instr, T
    return false;
    }
 
-// PPC Codegen Peephole Pass
-// one forward pass over the code looking for a variety of peephole
-// opportunities
-void OMR::Power::CodeGenerator::doPeephole()
-   {
-   static char *disablePeephole = feGetEnv("TR_DisablePeephole");
-   if (disablePeephole)
-      return;
-
-   if (self()->comp()->getOptLevel() == noOpt)
-      return;
-
-   TR::Instruction *instructionCursor = self()->getFirstInstruction();
-
-   while (instructionCursor)
-      {
-      self()->setCurrentBlockIndex(instructionCursor->getBlockIndex());
-
-      if ((self()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6)) && instructionCursor->isTrap())
-         {
-#if defined(AIXPPC)
-         trapPeephole(self(),instructionCursor);
-#endif
-         }
-      instructionCursor = instructionCursor->getNext();
-      }
-   }
-// end of PPC Codegen Peephole routines
-
 bool OMR::Power::CodeGenerator::supportsAESInstructions()
    {
     if ( self()->comp()->target().cpu.getPPCSupportsAES() && !self()->comp()->getOption(TR_DisableAESInHardware))

@@ -84,7 +84,7 @@ OMR::Power::Peephole::performOnInstruction(TR::Instruction* cursor)
    // Cache the cursor for use in the peephole functions
    self()->cursor = cursor;
 
-   if ((self()->comp()->target().cpu.id() == TR_PPCp6) && cursor->isTrap())
+   if ((self()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6)) && cursor->isTrap())
       {
 #if defined(AIXPPC)
       tryToSwapTrapAndLoad();

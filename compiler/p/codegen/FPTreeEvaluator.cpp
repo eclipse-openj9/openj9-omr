@@ -358,7 +358,16 @@ static TR::Register *fconstHandler(TR::Node *node, TR::CodeGenerator *cg, float 
          if (offset<LOWER_IMMED || offset>UPPER_IMMED)
             {
             srcRegister = cg->allocateRegister();
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, srcRegister, cg->getTOCBaseRegister(), (int16_t)HI_VALUE(offset));
+
+            if (0x00008000 == HI_VALUE(offset))
+               {
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, srcRegister, cg->getTOCBaseRegister(), 0x7FFF);
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, srcRegister, srcRegister, 0x1);
+               }
+            else
+               {
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, srcRegister, cg->getTOCBaseRegister(), HI_VALUE(offset));
+               }
             generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, trgRegister, new (cg->trHeapMemory()) TR::MemoryReference(srcRegister, LO_VALUE(offset), 4, cg));
             cg->stopUsingRegister(srcRegister);
             }
@@ -433,7 +442,16 @@ TR::Register *OMR::Power::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::Cod
          if (offset<LOWER_IMMED || offset>UPPER_IMMED)
             {
             srcRegister = cg->allocateRegister();
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, srcRegister, cg->getTOCBaseRegister(), (int16_t)HI_VALUE(offset));
+
+            if (0x00008000 == HI_VALUE(offset))
+               {
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, srcRegister, cg->getTOCBaseRegister(), 0x7FFF);
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, srcRegister, srcRegister, 0x1);
+               }
+            else
+               {
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, srcRegister, cg->getTOCBaseRegister(), HI_VALUE(offset));
+               }
 
             TR::MemoryReference *memRef = new (cg->trHeapMemory()) TR::MemoryReference(srcRegister, LO_VALUE(offset), 8, cg);
             if (splats)

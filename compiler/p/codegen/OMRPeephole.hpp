@@ -97,6 +97,65 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    bool tryToRemoveRedundantLoadAfterStore();
 
    /** \brief
+    *     Tries to remove redundant move register instructions. This peephole carries out several optimizations which
+    *     can be categorized as follows:
+    *
+    *     1. Remove NOP \c mr
+    *
+    *        <code>
+    *        mr rX,rX
+    *        </code>
+    *
+    *        Can be removed since this is a NOP.
+    *
+    *     2. Remove redundant copyback
+    *
+    *        <code>
+    *        mr rY,rX
+    *        ... <no modification of rY or rX>
+    *        mr rX,rY
+    *        </code>
+    *
+    *        The latter \c mr can be removed.
+    *
+    *     3. Rewrite base or index register
+    *
+    *        <code>
+    *        mr rY,rX
+    *        ... <no modification of rY or rX>
+    *        <load or store with rY as a base or index register>
+    *        </code>
+    *
+    *        The load or store base or index register can be replaced with rX (except for the special cases where a
+    *        base register cannot be changed to gr0 or in an update form).
+    *
+    *     4. Rewrite source operand
+    *
+    *        <code>
+    *        mr rY,rX
+    *        ... <no modification of rY or rX>
+    *        <op> with rY as a source register
+    *        </code>
+    *
+    *        We can rewrite the <op> to replace source rY with rX (which potentially allows the mr and <op> to be
+    *        dispatched/issued together), except for the special cases where rX is gr0 and cannot be used.
+    *
+    *     5. Remove \c mr if all uses rewritten
+    *
+    *        <code>
+    *        mr rY,rX
+    *        ... <no modification of rY or rX> <all uses of rY rewritten to rX>
+    *        <op> with rY as a target register
+    *        </code>
+    *
+    *        We can remove the \c mr and change any intervening register maps that contain rY to rX.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool tryToRemoveRedundantMoveRegister();
+
+   /** \brief
     *     Tries to remove redundant synchronization instructions.
     *
     *  \param window

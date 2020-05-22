@@ -95,6 +95,11 @@ OMR::Power::Peephole::performOnInstruction(TR::Instruction* cursor)
             performed |= tryToReduceCompareToRecordForm();
          break;
          }
+      case TR::InstOpCode::mr:
+         {
+         performed |= tryToRemoveRedundantMoveRegister();
+         break;
+         }
       case TR::InstOpCode::stw:
 #if defined(TR_HOST_64BIT)
       case TR::InstOpCode::std:
@@ -336,6 +341,382 @@ OMR::Power::Peephole::tryToRemoveRedundantLoadAfterStore()
       }
 
    return false;
+   }
+
+bool
+OMR::Power::Peephole::tryToRemoveRedundantMoveRegister()
+   {
+   static bool disableMRPeepholes = feGetEnv("TR_DisableMRPeepholes") != NULL;
+   if (disableMRPeepholes)
+      return false;
+
+   int32_t windowSize = 0;
+   const int32_t maxWindowSize = comp()->isOptServer() ? 16 : 8;
+   TR::list<TR_GCStackMap*> stackMaps(getTypedAllocator<TR_GCStackMap*>(comp()->allocator()));
+   TR::Instruction* mrInstruction = cursor;
+   TR::Register *mrSourceReg = mrInstruction->getSourceRegister(0);
+   TR::Register *mrTargetReg = mrInstruction->getTargetRegister(0);
+
+   if (mrTargetReg == mrSourceReg)
+      {
+      if (performTransformation(comp(), "O^O PPC PEEPHOLE: Remove redundant mr %p.\n", mrInstruction))
+         {
+         mrInstruction->remove();
+         return true;
+         }
+      return false;
+      }
+
+   TR::Instruction *current = mrInstruction->getNext();
+   bool all_mr_source_uses_rewritten = true;
+   bool inEBB = false;
+   bool extendWindow = false;
+   bool performed = false;
+
+   while (isWAWOrmrPeepholeCandidateInstr(current) &&
+          !isEBBTerminatingBranch(current) &&
+          windowSize < maxWindowSize)
+      {
+      // Keep track of any GC points we cross in order to fix them if we remove a register move
+      // Note: Don't care about GC points in snippets, since we won't remove a reg move if inEBB, i.e. if we've encountered a branch (to a snippet or elsewhere)
+      if (current->getGCMap() &&
+          current->getGCMap()->getRegisterMap() & cg()->registerBitMask(toRealRegister(mrTargetReg)->getRegisterNumber()))
+         stackMaps.push_front(current->getGCMap());
+
+      if (current->isBranchOp())
+         inEBB = true;
+
+      if (current->getOpCodeValue() == TR::InstOpCode::mr &&
+          current->getSourceRegister(0) == mrTargetReg &&
+          current->getTargetRegister(0) == mrSourceReg)
+         {
+         if (performTransformation(comp(), "O^O PPC PEEPHOLE: Remove mr copyback %p.\n", current))
+            {
+            current->remove();
+            extendWindow = true;
+            performed = true;
+            }
+         else
+            return performed;
+         // bypass the test below for an overwrite of the source register
+         current = current->getNext();
+         if (extendWindow)
+            {
+            windowSize = 0;
+            extendWindow = false;
+            }
+         else
+            windowSize++;
+         continue;
+         }
+
+      TR::MemoryReference *memRef = current->getMemoryReference();
+
+      if (memRef != NULL)
+         {
+         // See FIXME above: these are all due to defs/refs not accurate.
+         // We didn't try to test if base or index will be modified in delayedIndexForm
+         if (memRef->isUsingDelayedIndexedForm() &&
+             (memRef->getBaseRegister() == mrSourceReg ||
+              memRef->getIndexRegister() == mrSourceReg ||
+              memRef->getBaseRegister() == mrTargetReg ||
+              memRef->getIndexRegister() == mrTargetReg))
+            return performed;
+         if (current->isUpdate() &&
+             (memRef->getBaseRegister() == mrSourceReg ||
+              memRef->getBaseRegister() == mrTargetReg))
+            return performed;
+         if (memRef->getBaseRegister() == mrTargetReg)
+            {
+            if (toRealRegister(mrSourceReg)->getRegisterNumber() == TR::RealRegister::gr0)
+               all_mr_source_uses_rewritten = false;
+            else if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite base register %p.\n", current))
+               {
+               memRef->setBaseRegister(mrSourceReg);
+               extendWindow = true;
+               performed = true;
+               }
+            else
+               return performed;
+            }
+         if (memRef->getIndexRegister() == mrTargetReg)
+            {
+            if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite index register %p.\n", current))
+               {
+               memRef->setIndexRegister(mrSourceReg);
+               extendWindow = true;
+               performed = true;
+               }
+            else
+               return performed;
+            }
+         if (current->getKind() == OMR::Instruction::IsMemSrc1 &&
+             ((TR::PPCMemSrc1Instruction *)current)->getSourceRegister() == mrTargetReg)
+            {
+            if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite store source register %p.\n", current))
+               {
+               ((TR::PPCMemSrc1Instruction *)current)->setSourceRegister(mrSourceReg);
+               extendWindow = true;
+               performed = true;
+               }
+            else
+               return performed;
+            }
+         }
+      else if (current->getOpCodeValue() == TR::InstOpCode::vgdnop)
+         // a vgdnop can be backpatched to a branch, and so we must suppress
+         // any later attempt to remove the mr
+         all_mr_source_uses_rewritten = false;
+      else
+         {
+         switch(current->getKind())
+            {
+            case OMR::Instruction::IsSrc1:
+               {
+               TR::PPCSrc1Instruction *inst = (TR::PPCSrc1Instruction *)current;
+               if (inst->getSource1Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Src1 source register %p.\n", current))
+                     {
+                     inst->setSource1Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               break;
+               }
+            case OMR::Instruction::IsTrg1Src1:
+               {
+               TR::PPCTrg1Src1Instruction *inst = (TR::PPCTrg1Src1Instruction *)current;
+               if (inst->getSource1Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Trg1Src1 source register %p.\n", current))
+                     {
+                     inst->setSource1Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               break;
+               }
+            case OMR::Instruction::IsTrg1Src1Imm:
+               {
+               TR::PPCTrg1Src1ImmInstruction *inst = (TR::PPCTrg1Src1ImmInstruction *)current;
+               if (inst->getSource1Register() == mrTargetReg)
+                  {
+                  if (toRealRegister(mrSourceReg)->getRegisterNumber() == TR::RealRegister::gr0 &&
+                      (current->getOpCodeValue() == TR::InstOpCode::addi ||
+                       current->getOpCodeValue() == TR::InstOpCode::addi2 ||
+                       current->getOpCodeValue() == TR::InstOpCode::addis))
+                     all_mr_source_uses_rewritten = false;
+                  else if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Trg1Src1Imm source register %p.\n", current))
+                     {
+                     inst->setSource1Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               break;
+               }
+            case OMR::Instruction::IsTrg1Src1Imm2:
+               {
+               TR::PPCTrg1Src1Imm2Instruction *inst = (TR::PPCTrg1Src1Imm2Instruction *)current;
+               if (inst->getSource1Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Trg1Src1Imm2 source register %p.\n", current))
+                     {
+                     inst->setSource1Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+
+                  if(current->getOpCode().usesTarget() &&
+                     inst->getTargetRegister() == mrTargetReg)
+                     return performed;
+               break;
+               }
+            case OMR::Instruction::IsSrc2:
+               {
+               TR::PPCSrc2Instruction *inst = (TR::PPCSrc2Instruction *)current;
+               if (inst->getSource1Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Src2 1st source register %p.\n", current))
+                     {
+                     inst->setSource1Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               if (inst->getSource2Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Src2 2nd source register %p.\n", current))
+                     {
+                     inst->setSource2Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               break;
+               }
+            case OMR::Instruction::IsTrg1Src2:
+               {
+               if (current->getOpCodeValue() == TR::InstOpCode::xvmaddadp ||
+                   current->getOpCodeValue() == TR::InstOpCode::xvmsubadp ||
+                   current->getOpCodeValue() == TR::InstOpCode::xvnmsubadp)
+                  return performed;
+
+               TR::PPCTrg1Src2Instruction *inst = (TR::PPCTrg1Src2Instruction *)current;
+               if (inst->getSource1Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Trg1Src2 1st source register %p.\n", current))
+                     {
+                     inst->setSource1Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               if (inst->getSource2Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Trg1Src2 2nd source register %p.\n", current))
+                     {
+                     inst->setSource2Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               break;
+               }
+            case OMR::Instruction::IsTrg1Src3:
+               {
+               TR::PPCTrg1Src3Instruction *inst = (TR::PPCTrg1Src3Instruction *)current;
+               if (inst->getSource1Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Trg1Src3 1st source register %p.\n", current))
+                     {
+                     inst->setSource1Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               if (inst->getSource2Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Trg1Src3 2nd source register %p.\n", current))
+                     {
+                     inst->setSource2Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               if (inst->getSource3Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Trg1Src3 3nd source register %p.\n", current))
+                     {
+                     inst->setSource3Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               break;
+               }
+            case OMR::Instruction::IsTrg1Src2Imm:
+               {
+               TR::PPCTrg1Src2ImmInstruction *inst = (TR::PPCTrg1Src2ImmInstruction *)current;
+               if (inst->getSource1Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Trg1Src2Imm 1st source register %p.\n", current))
+                     {
+                     inst->setSource1Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               if (inst->getSource2Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp(), "O^O PPC PEEPHOLE: Rewrite Trg1Src2Imm 2nd source register %p.\n", current))
+                     {
+                     inst->setSource2Register(mrSourceReg);
+                     extendWindow = true;
+                     performed = true;
+                     }
+                  else
+                     return performed;
+                  }
+               break;
+               }
+            }
+         }
+
+      // if instruction overwrites either of the mr source or target
+      // registers, bail out
+
+      if (current->defsRegister(toRealRegister(mrTargetReg)))
+         {
+         // having rewritten all uses of mrTargetReg, the mr can be removed
+         if (!inEBB && all_mr_source_uses_rewritten &&
+             performTransformation(comp(), "O^O PPC PEEPHOLE: Remove mr %p when target redefined at %p.\n", mrInstruction, current))
+            {
+            // Adjust any register maps that will be invalidated by the removal
+            if (!stackMaps.empty())
+               {
+               for (auto stackMapIter = stackMaps.begin(); stackMapIter != stackMaps.end(); ++stackMapIter)
+                  {
+                  if (cg()->getDebug())
+                     if (comp()->getOption(TR_TraceCG))
+                        traceMsg(comp(), "Adjusting register map %p; removing %s, adding %s due to removal of mr %p\n",
+                                *stackMapIter,
+                                cg()->getDebug()->getName(mrTargetReg),
+                                cg()->getDebug()->getName(mrSourceReg),
+                                mrInstruction);
+                  (*stackMapIter)->resetRegistersBits(cg()->registerBitMask(toRealRegister(mrTargetReg)->getRegisterNumber()));
+                  (*stackMapIter)->setRegisterBits(cg()->registerBitMask(toRealRegister(mrSourceReg)->getRegisterNumber()));
+                  }
+               }
+
+            mrInstruction->remove();
+            performed = true;
+            }
+         return performed;
+         }
+
+      if (current->defsRegister(toRealRegister(mrSourceReg)))
+         return performed;
+
+      current = current->getNext();
+      if (extendWindow)
+         {
+         windowSize = 0;
+         extendWindow = false;
+         }
+      else
+         windowSize++;
+      }
+
+   return performed;
    }
 
 bool

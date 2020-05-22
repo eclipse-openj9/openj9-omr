@@ -1796,6 +1796,7 @@ static void arrayCopy16BitPrimitive(TR::Node* node, TR::Register* dstReg, TR::Re
       generateRepMovsInstruction(REPMOVSW, node, sizeReg, NULL, cg);
       generateInstruction(CLD, node, cg);
       generateLabelInstruction(JMP4, node, mainEndLabel, cg);
+      og.endOutlinedInstructionSequence();
       }
       }
    generateLabelInstruction(LABEL, node, mainEndLabel, dependencies, cg);
@@ -1876,6 +1877,7 @@ static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* 
       generateRepMovsInstruction(repmovs, node, sizeReg, NULL, cg);
       generateInstruction(CLD, node, cg);
       generateLabelInstruction(JMP4, node, mainEndLabel, cg);
+      og.endOutlinedInstructionSequence();
       }
 
       generateLabelInstruction(LABEL, node, mainEndLabel, dependencies, cg);

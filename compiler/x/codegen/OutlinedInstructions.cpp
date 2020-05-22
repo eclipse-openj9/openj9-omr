@@ -371,6 +371,7 @@ TR::Node *TR_OutlinedInstructions::createOutlinedCallNode(TR::Node *callNode, TR
    }
 
 TR_OutlinedInstructionsGenerator::TR_OutlinedInstructionsGenerator(TR::LabelSymbol* entryLabel, TR::Node* node, TR::CodeGenerator* cg)
+   : _hasEnded(false)
    {
    _oi = new (cg->trHeapMemory()) TR_OutlinedInstructions(entryLabel, cg);
    _oi->setCallNode(node);
@@ -382,14 +383,15 @@ TR_OutlinedInstructionsGenerator::TR_OutlinedInstructionsGenerator(TR::LabelSymb
 void
 TR_OutlinedInstructionsGenerator::endOutlinedInstructionSequence()
    {
-   /// TODO: Move cleanup code from destrdductor here
+   generateLabelInstruction(LABEL, _oi->_callNode, generateLabelSymbol(_oi->_cg), _oi->_cg);
+   _oi->swapInstructionListsWithCompilation();
+   _hasEnded = true;
    }
 
 TR_OutlinedInstructionsGenerator::~TR_OutlinedInstructionsGenerator()
    {
    if (!std::uncaught_exception())
       {
-      generateLabelInstruction(LABEL, _oi->_callNode, generateLabelSymbol(_oi->_cg), _oi->_cg);
-      _oi->swapInstructionListsWithCompilation();
+      TR_ASSERT_FATAL(_hasEnded, "TR_OutlinedInstructionsGenerator object has gone out of scope before call to endOutlinedInstructionSequence().");
       }
    }

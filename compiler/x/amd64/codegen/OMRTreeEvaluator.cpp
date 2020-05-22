@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -428,6 +428,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
          TR_OutlinedInstructionsGenerator og(slowPathLabel, node, cg);
          generateRegImm64Instruction(MOV8RegImm64, node, treg, DOUBLE_NAN, cg);
          generateLabelInstruction(JMP4, node, endLabel, cg);
+         og.endOutlinedInstructionSequence();
          }
 
          // Merge point

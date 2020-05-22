@@ -55,6 +55,25 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    private:
 
    /** \brief
+    *     Tries to remove redundant loads after stores which have the same source and target. For example:
+    *
+    *     <code>
+    *     std r10,8(r12)
+    *     ld r10,8(r12)
+    *     </code>
+    *
+    *     can be reduced to:
+    *
+    *     <code>
+    *     std r10,8(r12)
+    *     </code>
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool tryToRemoveRedundantLoadAfterStore();
+
+   /** \brief
     *     Tries to remove redundant consecutive instruction which write to the same target register.
     *
     *  \return

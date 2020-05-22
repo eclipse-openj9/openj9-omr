@@ -22,7 +22,9 @@
 #include "codegen/Peephole.hpp"
 
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/GenerateOMRInstructions.hpp"
 #include "codegen/Instruction.hpp"
+#include "p/codegen/PPCInstruction.hpp"
 
 static bool
 isWAWOrmrPeepholeCandidateInstr(TR::Instruction *instr)
@@ -54,6 +56,14 @@ OMR::Power::Peephole::performOnInstruction(TR::Instruction* cursor)
 
    switch(cursor->getOpCodeValue())
       {
+      case TR::InstOpCode::stw:
+#if defined(TR_HOST_64BIT)
+      case TR::InstOpCode::std:
+#endif
+         {
+         performed |= tryToRemoveRedundantLoadAfterStore();
+         break;
+         }
       default:
          {
          performed |= tryToRemoveRedundantWriteAfterWrite();
@@ -62,6 +72,117 @@ OMR::Power::Peephole::performOnInstruction(TR::Instruction* cursor)
       }
 
    return performed;
+   }
+
+bool
+OMR::Power::Peephole::tryToRemoveRedundantLoadAfterStore()
+   {
+   static bool disableLHSPeephole = feGetEnv("TR_DisableLHSPeephole") != NULL;
+   if (disableLHSPeephole)
+      return false;
+
+   TR::Instruction *storeInstruction = cursor;
+   TR::Instruction   *loadInstruction = storeInstruction->getNext();
+   TR::InstOpCode&      storeOp = storeInstruction->getOpCode();
+   TR::InstOpCode&      loadOp = loadInstruction->getOpCode();
+   TR::MemoryReference *storeMemRef = ((TR::PPCMemSrc1Instruction *)storeInstruction)->getMemoryReference();
+   TR::MemoryReference *loadMemRef = ((TR::PPCTrg1MemInstruction *)loadInstruction)->getMemoryReference();
+
+   // Next instruction has to be a load,
+   // the store and load have to agree on size,
+   // they have to both be GPR ops or FPR ops,
+   // neither can be the update form,
+   // and they both have to be resolved.
+   // TODO: Relax the first constraint a bit and handle cases were unrelated instructions appear between the store and the load
+   if (!loadOp.isLoad() ||
+       storeMemRef->getLength() != loadMemRef->getLength() ||
+       !(storeOp.gprOp() == loadOp.gprOp() ||
+         storeOp.fprOp() == loadOp.fprOp()) ||
+       storeOp.isUpdate() ||
+       loadOp.isUpdate() ||
+       storeMemRef->getUnresolvedSnippet() ||
+       loadMemRef->getUnresolvedSnippet())
+      {
+      return false;
+      }
+
+   // TODO: Don't bother with indexed loads/stores for now, fix them later
+   if (storeMemRef->getIndexRegister() || loadMemRef->getIndexRegister())
+      {
+      return false;
+      }
+
+   // The store and load mem refs have to agree on whether or not they need delayed offsets
+   if (storeMemRef->hasDelayedOffset() != loadMemRef->hasDelayedOffset())
+      {
+      // Memory references that use delayed offsets will not have the correct offset
+      // at this point, so we can't compare their offsets to the offsets used by regular references,
+      // however we can still compare two mem refs that both use delayed offsets.
+      return false;
+      }
+
+   // The store and load have to use the same base and offset
+   if (storeMemRef->getBaseRegister() != loadMemRef->getBaseRegister() ||
+       storeMemRef->getOffset(*comp()) != loadMemRef->getOffset(*comp()))
+      {
+      return false;
+      }
+
+   TR::Register *srcReg = ((TR::PPCMemSrc1Instruction *)storeInstruction)->getSourceRegister();
+   TR::Register *trgReg = ((TR::PPCTrg1MemInstruction *)loadInstruction)->getTargetRegister();
+
+   if (srcReg == trgReg)
+      {
+      // Found the pattern:
+      //   stw/std rX, ...
+      //   lwz/ld rX, ...
+      // will remove ld
+      // and replace lwz with rlwinm, rX, rX, 0, 0xffffffff
+      if (loadInstruction->getOpCodeValue() == TR::InstOpCode::lwz)
+         {
+         if (performTransformation(comp(), "O^O PPC PEEPHOLE: Replace lwz " POINTER_PRINTF_FORMAT " with rlwinm after store " POINTER_PRINTF_FORMAT ".\n", loadInstruction, storeInstruction))
+            {
+            generateTrg1Src1Imm2Instruction(cg(), TR::InstOpCode::rlwinm, loadInstruction->getNode(), trgReg, srcReg, 0, 0xffffffff, storeInstruction);
+            loadInstruction->remove();
+            return true;
+            }
+         }
+      else if (performTransformation(comp(), "O^O PPC PEEPHOLE: Remove redundant load " POINTER_PRINTF_FORMAT " after store " POINTER_PRINTF_FORMAT ".\n", loadInstruction, storeInstruction))
+         {
+         loadInstruction->remove();
+         return true;
+         }
+
+      return false;
+      }
+
+   // Found the pattern:
+   //   stw/std rX, ...
+   //   lwz/ld rY, ...
+   // and will remove lwz, which will result in:
+   //   stw rX, ...
+   //   rlwinm rY, rX, 0, 0xffffffff
+   // or will remove ld, which will result in:
+   //   std rX, ...
+   //   mr rY, rX
+   // and then the mr peephole should run on the resulting mr
+   if (loadInstruction->getOpCodeValue() == TR::InstOpCode::lwz)
+      {
+      if (performTransformation(comp(), "O^O PPC PEEPHOLE: Replace redundant load " POINTER_PRINTF_FORMAT " after store " POINTER_PRINTF_FORMAT " with rlwinm.\n", loadInstruction, storeInstruction))
+         {
+         generateTrg1Src1Imm2Instruction(cg(), TR::InstOpCode::rlwinm, loadInstruction->getNode(), trgReg, srcReg, 0, 0xffffffff, storeInstruction);
+         loadInstruction->remove();
+         return true;
+         }
+      }
+   else if (performTransformation(comp(), "O^O PPC PEEPHOLE: Replace redundant load " POINTER_PRINTF_FORMAT " after store " POINTER_PRINTF_FORMAT " with mr.\n", loadInstruction, storeInstruction))
+      {
+      generateTrg1Src1Instruction(cg(), TR::InstOpCode::mr, loadInstruction->getNode(), trgReg, srcReg, storeInstruction);
+      loadInstruction->remove();
+      return true;
+      }
+
+   return false;
    }
 
 bool

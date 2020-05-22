@@ -39,6 +39,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/p/codegen/PPCSystemLinkage.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRMachine.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/PPCOutOfLineCodeSection.cpp \
+    $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRPeephole.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRRealRegister.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRRegisterDependency.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRSnippet.cpp \

@@ -41,6 +41,7 @@ compiler_library(p
 	${CMAKE_CURRENT_LIST_DIR}/codegen/PPCSystemLinkage.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRMachine.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/PPCOutOfLineCodeSection.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRPeephole.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRealRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterDependency.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRSnippet.cpp

@@ -54,6 +54,16 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
 
    private:
 
+   /** \brief
+    *     Tries to remove redundant consecutive instruction which write to the same target register.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool tryToRemoveRedundantWriteAfterWrite();
+
+   private:
+
    /// The instruction cursor currently being processed by the peephole optimization
    TR::Instruction* cursor;
    };

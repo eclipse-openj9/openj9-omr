@@ -1450,93 +1450,6 @@ static void trapPeephole(TR::CodeGenerator *cg, TR::Instruction *instructionCurs
       }
    }
 
-static void wawPeephole(TR::CodeGenerator *cg, TR::Instruction *instr)
-   {
-   TR::Compilation *comp = cg->comp();
-   static char *disableWAWPeephole = feGetEnv("TR_DisableWAWPeephole");
-   int32_t window = 0, maxWindowSize = comp->isOptServer() ? 20 : 10;
-
-   if (disableWAWPeephole)
-      return;
-
-   // Get and check if there is a target register
-   TR::Register *currTargetReg = instr->getTargetRegister(0);
-
-   if (currTargetReg && currTargetReg->getKind() != TR_CCR && isWAWOrmrPeepholeCandidateInstr(instr) &&
-       !instr->isBranchOp() && !instr->isCall() &&
-       !instr->getOpCode().isRecordForm() &&
-       !instr->getOpCode().setsCarryFlag())
-      {
-      TR::Instruction *current = instr->getNext();
-
-      while (isWAWOrmrPeepholeCandidateInstr(current) &&
-             !current->isBranchOp() &&
-             !current->isCall() &&
-             window < maxWindowSize)
-         {
-
-         if (current->getOpCode().usesTarget())
-            return;
-         switch(current->getKind())
-            {
-            case OMR::Instruction::IsSrc1:
-            case OMR::Instruction::IsTrg1Src1:
-            case OMR::Instruction::IsTrg1Src1Imm:
-            case OMR::Instruction::IsTrg1Src1Imm2:
-               if (currTargetReg == current->getSourceRegister(0))
-                  return;
-               break;
-            case OMR::Instruction::IsSrc2:
-            case OMR::Instruction::IsTrg1Src2:
-            case OMR::Instruction::IsTrg1Src2Imm:
-            case OMR::Instruction::IsMem:
-            case OMR::Instruction::IsTrg1Mem:
-               if (currTargetReg == current->getSourceRegister(0) ||
-                   currTargetReg == current->getSourceRegister(1))
-                  return;
-               break;
-            case OMR::Instruction::IsTrg1Src3:
-            case OMR::Instruction::IsMemSrc1:
-               if (currTargetReg == current->getSourceRegister(0) ||
-                   currTargetReg == current->getSourceRegister(1) ||
-                   currTargetReg == current->getSourceRegister(2))
-                  return;
-               break;
-            default:
-                  return;
-               break;
-            }
-         if (current->getTargetRegister(0) == currTargetReg)
-            {
-            TR::Instruction *q[4];
-            // In case the instruction is part of the requestor
-            bool isConstData = cg->checkAndFetchRequestor(instr, q);
-            if (isConstData)
-               {
-               if (performTransformation(comp, "O^O PPC PEEPHOLE: Remove dead instrcution group from WAW %p -> %p.\n", instr, current))
-                  {
-                  for (int32_t i = 0; i < 4; i++)
-                     {
-                     if (q[i])  q[i]->remove();
-                     }
-                  }
-               return;
-               }
-            else
-               {
-               if (performTransformation(comp, "O^O PPC PEEPHOLE: Remove dead instrcution from WAW %p -> %p.\n", instr, current))
-                  {
-                  instr->remove();
-                  }
-               }
-            return;
-            }
-         current = current->getNext();
-         window++;
-         }
-      }
-   }
-
 bool OMR::Power::CodeGenerator::checkAndFetchRequestor(TR::Instruction *instr, TR::Instruction **q)
    {
    if (_constantData)
@@ -1618,7 +1531,6 @@ void OMR::Power::CodeGenerator::doPeephole()
                }
             default:
                {
-               wawPeephole(self(), instructionCursor);
                break;
                }
             }

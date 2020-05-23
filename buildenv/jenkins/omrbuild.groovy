@@ -292,6 +292,7 @@ timestamps {
                  * hardcode the value in the SPECS.
                  */
                 def customWorkspace = WORKSPACE - "/${JOB_NAME}" + "/${workspaceName}"
+                scmVars = null
                 ws(customWorkspace) {
                     try {
                         timeout(time: 1, unit: 'HOURS') {
@@ -301,19 +302,18 @@ timestamps {
                             withEnv(SPECS[params.BUILDSPEC].environment) {
                                 sh 'printenv'
                                 stage('Get Sources') {
-                                    if (params.ghprbPullId) {
-                                        def gitConfig = scm.getUserRemoteConfigs().get(0)
-                                        checkout poll: false,
-                                            scm: [$class: 'GitSCM',
-                                            branches: [[name: '${sha1}']],
-                                            extensions: [[$class: 'CloneOption', honorRefspec: true, timeout: 30, reference: SPECS[params.BUILDSPEC].reference]],
-                                            userRemoteConfigs: [[name: 'origin',
-                                                refspec: "+refs/pull/${params.ghprbPullId}/merge:refs/remotes/origin/pr/${params.ghprbPullId}/merge",
-                                                url: "${gitConfig.getUrl()}"]
-                                            ]
+                                    def gitConfig = scm.getUserRemoteConfigs().get(0)
+                                    def refspec = (gitConfig.getRefspec()) ? gitConfig.getRefspec() : ''
+                                    scmVars = checkout poll: false,
+                                        scm: [$class: 'GitSCM',
+                                        branches: [[name: "${scm.branches[0].name}"]],
+                                        extensions: [[$class: 'CloneOption', honorRefspec: true, timeout: 30, reference: SPECS[params.BUILDSPEC].reference]],
+                                        userRemoteConfigs: [[name: 'origin',
+                                            refspec: "${refspec}",
+                                            url: "${gitConfig.getUrl()}"]
                                         ]
-                                    } else {
-                                        scmVars = checkout scm
+                                    ]
+                                    if (!params.ghprbPullId) {
                                         setBuildStatus("In Progress","PENDING","${scmVars.GIT_COMMIT}")
                                     }
                                 }
@@ -372,7 +372,7 @@ timestamps {
                             }
                         }
                     } finally {
-                        if (!params.ghprbPullId) {
+                        if (!params.ghprbPullId && scmVars) {
                             setBuildStatus("Complete", currentBuild.currentResult, "${scmVars.GIT_COMMIT}")
                         }
                         cleanWs()

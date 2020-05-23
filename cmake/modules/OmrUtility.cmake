@@ -139,43 +139,66 @@ function(omr_count_true out)
 	set("${out}" "${result}" PARENT_SCOPE)
 endfunction(omr_count_true)
 
-# return the path of the target ${tgt} in VAR
-# (only executable and shared library targets are currently supported)
-function(omr_get_target_path VAR tgt)
+# omr_genex_property_chain(<output_var> <target> [<property> ...] <fallback>)
+#   Create a long generator expression chain which will results in the first
+#   <property> value (of <target>) which evaluates to non-false value, or
+#   <fallback> if they all evaluate to false
+#   Psuedo code for the resulting generator expression (Note: evaluated at generate time)
+#   for (i := 0 to N )
+#      x := $<TARGET_PROPERTY:target,property[i]>
+#      if(x)
+#          return x
+#      else
+#          continue
+#   return fallback;
+function(omr_genex_property_chain output_var target )
+	omr_assert(TEST ARGC GREATER "2" MESSAGE "No fallback case provided")
+
+	list(REVERSE ARGN)
+	# start off the generator expression with the fallback case, which is now
+	# at the front of the list
+	list(GET ARGN 0 out)
+	list(REMOVE_AT ARGN 0)
+
+	foreach(prop_name IN LISTS ARGN)
+
+		set(prop_genex "$<TARGET_PROPERTY:${target},${prop_name}>")
+		set(prop_bool "$<BOOL:${prop_genex}>")
+		set(out "$<${prop_bool}:${prop_genex}>$<$<NOT:${prop_bool}>:${out}>")
+	endforeach()
+	set(${output_var} "${out}" PARENT_SCOPE)
+endfunction()
+
+# omr_get_target_output_genex(<target> <out_var> )
+#   <out_var> receives a generator expression which yields the full path to the
+#   target file, without the file suffix
+#   Note: currently only executable and shared library targets are supported
+function(omr_get_target_output_genex tgt out_var)
 	get_target_property(target_type ${tgt} TYPE)
 	if(target_type STREQUAL "EXECUTABLE")
-		get_target_property(target_directory ${tgt} RUNTIME_OUTPUT_DIRECTORY)
-		get_target_property(target_name      ${tgt} RUNTIME_OUTPUT_NAME)
-		if(NOT target_name)
-			set(target_name "${tgt}${CMAKE_EXECUTABLE_SUFFIX}")
-		endif()
+		set(search_prefixes "RUNTIME_" "")
+		set(output_prefix "")
 	elseif(target_type STREQUAL "SHARED_LIBRARY")
-		get_target_property(target_directory ${tgt} LIBRARY_OUTPUT_DIRECTORY)
-		get_target_property(target_name      ${tgt} LIBRARY_OUTPUT_NAME)
-		if(NOT target_name)
-			set(target_name "lib${tgt}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-		endif()
+		set(search_prefixes "LIBRARY_" "")
+		set(output_prefix "${CMAKE_SHARED_LIBRARY_PREFIX}")
 	else()
-		message(FATAL_ERROR "omr_get_target_path: ${tgt} type is ${target_type}")
+		message(FATAL_ERROR "omr_get_target_output_genex: ${tgt} type is ${target_type}")
 	endif()
-	set(${VAR} "${target_directory}/${target_name}" PARENT_SCOPE)
-endfunction(omr_get_target_path)
 
-# replace the suffix of ${input} with ${new_suffix}
-#
-# The suffix is defined here as the portion string
-# starting with the last "." in the last path segment.
-# This is consistent with:
-#   get_filename_component(suffix ${input} LAST_EXT)
-# without requiring cmake version 3.14.
-function(omr_replace_suffix VAR input new_suffix)
-	string(FIND "${input}" "/" slash_index REVERSE)
-	string(FIND "${input}" "." dot_index REVERSE)
-	if(dot_index GREATER slash_index)
-		string(SUBSTRING "${input}" 0 ${dot_index} base)
-		set(result "${base}${new_suffix}")
-	else()
-		set(result "${input}${new_suffix}")
-	endif()
-	set(${VAR} "${result}" PARENT_SCOPE)
-endfunction(omr_replace_suffix)
+	string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type)
+	set(output_dirs)
+	set(output_names)
+	foreach(prefix IN LISTS search_prefixes)
+		if(build_type)
+			list(APPEND output_dirs  "${prefix}OUTPUT_DIRECTORY_${build_type}")
+			list(APPEND output_names "${prefix}OUTPUT_NAME_${build_type}")
+		endif()
+		list(APPEND output_dirs  "${prefix}OUTPUT_DIRECTORY")
+		list(APPEND output_names "${prefix}OUTPUT_NAME")
+	endforeach()
+
+	omr_genex_property_chain(dir_genex ${tgt} ${output_dirs} "$<TARGET_PROPERTY:${tgt},BINARY_DIR>")
+	omr_genex_property_chain(name_genex ${tgt} ${output_names} "${tgt}")
+	omr_genex_property_chain(prefix_genex ${tgt} PREFIX "${output_prefix}")
+	set(${out_var} "${dir_genex}/${prefix_genex}${name_genex}" PARENT_SCOPE)
+endfunction()

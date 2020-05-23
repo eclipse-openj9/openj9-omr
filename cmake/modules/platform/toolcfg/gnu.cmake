@@ -88,15 +88,20 @@ endif()
 function(_omr_toolchain_separate_debug_symbols tgt)
 	set(exe_file "$<TARGET_FILE:${tgt}>")
 	if(OMR_OS_OSX)
-		set(dbg_file "${exe_file}.dSYM")
+		set(dbg_file "${exe_file}${OMR_DEBUG_INFO_OUTPUT_EXTENSION}")
+		if(OMR_FLATTEN_DEBUG_INFO)
+			set(flatten_arg "-f")
+		else()
+			set(flatten_arg)
+		endif()
 		add_custom_command(
 			TARGET "${tgt}"
 			POST_BUILD
-			COMMAND dsymutil -o "${dbg_file}" "${exe_file}"
+			COMMAND dsymutil ${flatten_arg} -o "${dbg_file}" "${exe_file}"
 		)
 	else()
-		omr_get_target_path(target_path ${tgt})
-		omr_replace_suffix(dbg_file "${target_path}" ".debuginfo")
+		omr_get_target_output_genex(${tgt} output_name)
+		set(dbg_file "${output_name}${OMR_DEBUG_INFO_OUTPUT_EXTENSION}")
 		add_custom_command(
 			TARGET "${tgt}"
 			POST_BUILD

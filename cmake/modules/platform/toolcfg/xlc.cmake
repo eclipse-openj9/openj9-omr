@@ -212,8 +212,8 @@ else()
 
 	function(_omr_toolchain_separate_debug_symbols tgt)
 		set(exe_file "$<TARGET_FILE:${tgt}>")
-		omr_get_target_path(target_path ${tgt})
-		omr_replace_suffix(dbg_file "${target_path}" ".debuginfo")
+		omr_get_target_output_genex(${tgt} output_name)
+		set(dbg_file "${output_name}${OMR_DEBUG_INFO_OUTPUT_EXTENSION}")
 		add_custom_command(
 			TARGET "${tgt}"
 			POST_BUILD

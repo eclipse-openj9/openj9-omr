@@ -34,7 +34,6 @@ include(OmrPlatform)
 set(OMR_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(DDR_INFO_DIR "${CMAKE_BINARY_DIR}/ddr_info")
 
-set(OMR_SEPARATE_DEBUG_INFO OFF CACHE BOOL "Maintain debug info in a separate file")
 
 function(make_ddr_set set_name)
 	set(DDR_TARGET_NAME "${set_name}")
@@ -153,6 +152,11 @@ function(target_enable_ddr tgt)
 		# if no value is present, assume the debug info lives in the target file
 		if(NOT debug_file)
 			set(debug_file "$<TARGET_FILE:${tgt}>")
+		else()
+			# For non flattened debug on osx, the debug "file" is actually a folder
+			if(OMR_OS_OSX AND NOT OMR_FLATTEN_DEBUG_INFO)
+				set(debug_file "${debug_file}/Contents/Resources/DWARF/$<TARGET_FILE_NAME:${tgt}>")
+			endif()
 		endif()
 
 		set(MAGIC_TEMPLATE "OUTPUT_FILE\n${debug_file}\n${MAGIC_TEMPLATE}")

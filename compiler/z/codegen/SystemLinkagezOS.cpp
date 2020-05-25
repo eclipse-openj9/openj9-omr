@@ -394,14 +394,14 @@ TR::S390zOSSystemLinkage::getOutgoingParameterBlockSize()
 TR::Register *
 TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptr_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-      TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
+      TR::Snippet * callDataSnippet, bool isJNIGCPoint)
    {
 
    /*****************************/
    /***Front-end customization***/
    /*****************************/
    generateInstructionsForCall(callNode, deps, targetAddress, methodAddressReg,
-         javaLitOffsetReg, returnFromJNICallLabel, jniCallDataSnippet, isJNIGCPoint);
+         javaLitOffsetReg, returnFromJNICallLabel, callDataSnippet, isJNIGCPoint);
 
    TR::CodeGenerator * codeGen = cg();
 
@@ -526,7 +526,7 @@ TR::S390zOSSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
 void
 TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptr_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-      TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
+      TR::Snippet * callDataSnippet, bool isJNIGCPoint)
    {
     // WCode specific
     //

@@ -2570,7 +2570,7 @@ void
 OMR::Z::Linkage::performCallNativeFunctionForLinkage(TR::Node * callNode, TR_DispatchType dispatchType, TR::Register * &javaReturnRegister, TR::SystemLinkage * systemLinkage,
       TR::RegisterDependencyConditions * &deps, TR::Register * javaLitOffsetReg, TR::Register * methodAddressReg, bool isJNIGCPoint)
    {
-   TR::S390JNICallDataSnippet * jniCallDataSnippet = NULL;
+   TR::Snippet * callDataSnippet = NULL;
    TR::LabelSymbol * returnFromJNICallLabel = generateLabelSymbol(self()->cg());
    intptr_t targetAddress = (intptr_t) 0;
 
@@ -2583,7 +2583,7 @@ OMR::Z::Linkage::performCallNativeFunctionForLinkage(TR::Node * callNode, TR_Dis
 
    javaReturnRegister = systemLinkage->callNativeFunction(
         callNode, deps, targetAddress, methodAddressReg, javaLitOffsetReg, returnFromJNICallLabel,
-        jniCallDataSnippet, isJNIGCPoint);
+        callDataSnippet, isJNIGCPoint);
    }
 
 

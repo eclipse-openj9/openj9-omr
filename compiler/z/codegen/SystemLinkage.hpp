@@ -38,7 +38,6 @@
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 
-namespace TR { class S390JNICallDataSnippet; }
 namespace TR { class Block; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
@@ -117,10 +116,10 @@ class SystemLinkage : public TR::Linkage
 
    virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
          intptr_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-         TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
+         TR::Snippet * callDataSnippet, bool isJNIGCPoint = true);
 
    virtual TR::Register * callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-      intptr_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet,
+      intptr_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::Snippet * callDataSnippet,
       bool isJNIGCPoint = true);
 
    virtual TR::Register *

@@ -1,13 +1,13 @@
 name: "Mark/Close Stale Issues/PRs"
 on:
   schedule:
-  - cron: "* */1 * * *"
+  - cron: "0 13 * * *"
 
 jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/stale@v1.1.0
+    - uses: actions/stale@v3
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         stale-issue-message: |-

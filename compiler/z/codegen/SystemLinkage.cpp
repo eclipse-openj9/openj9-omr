@@ -193,7 +193,7 @@ TR::SystemLinkage::flipBitsRegisterSaveMask(uint16_t mask)
 void
 TR::SystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptr_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-      TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
+      TR::Snippet * callDataSnippet, bool isJNIGCPoint)
    {
    TR_ASSERT(0,"Different system types should have their own implementation.");
    }
@@ -205,7 +205,7 @@ TR::SystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::Register
 TR::Register *
 TR::SystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptr_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-      TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
+      TR::Snippet * callDataSnippet, bool isJNIGCPoint)
    {
    return 0;
    }

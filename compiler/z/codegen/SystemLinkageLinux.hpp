@@ -38,7 +38,6 @@
 class TR_EntryPoint;
 class TR_zOSGlobalCompilationInfo;
 namespace TR { class S390ConstantDataSnippet; }
-namespace TR { class S390JNICallDataSnippet; }
 namespace TR { class AutomaticSymbol; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
@@ -63,8 +62,8 @@ class S390zLinuxSystemLinkage : public TR::SystemLinkage
    virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * method);
    virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol>&parmList);
 
-   virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptr_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint);
-   virtual TR::Register* callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, intptr_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
+   virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptr_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::Snippet * callDataSnippet, bool isJNIGCPoint);
+   virtual TR::Register* callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, intptr_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::Snippet * callDataSnippet, bool isJNIGCPoint = true);
 
    virtual int32_t getRegisterSaveOffset(TR::RealRegister::RegNum);
    virtual void initParamOffset(TR::ResolvedMethodSymbol * method, int32_t stackIndex, List<TR::ParameterSymbol> *parameterList=0);

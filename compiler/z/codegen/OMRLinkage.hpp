@@ -43,7 +43,6 @@ namespace OMR { typedef OMR::Z::Linkage LinkageConnector; }
 #include "il/DataTypes.hpp"
 #include "infra/Assert.hpp"
 
-namespace TR { class S390JNICallDataSnippet; }
 namespace TR { class AutomaticSymbol; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }

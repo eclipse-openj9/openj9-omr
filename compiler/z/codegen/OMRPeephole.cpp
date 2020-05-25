@@ -105,31 +105,31 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
    // Cache the cursor for use in the peephole functions
    self()->cursor = cursor;
 
-   if (cg()->afterRA())
+   if (self()->cg()->afterRA())
       {
       if (cursor->isBranchOp())
-         performed |= tryToForwardBranchTarget();
+         performed |= self()->tryToForwardBranchTarget();
 
       switch(cursor->getOpCodeValue())
          {
          case TR::InstOpCode::CGIT:
             {
-            performed |= tryToRemoveRedundantCompareAndTrap();
+            performed |= self()->tryToRemoveRedundantCompareAndTrap();
             break;
             }
          case TR::InstOpCode::CGRJ:
             {
-            performed |= tryToReduceCRJLHIToLOCHI(TR::InstOpCode::CGR);
+            performed |= self()->tryToReduceCRJLHIToLOCHI(TR::InstOpCode::CGR);
             break;
             }
          case TR::InstOpCode::CLR:
             {
-            performed |= tryToReduceCLRToCLRJ();
+            performed |= self()->tryToReduceCLRToCLRJ();
             break;
             }
          case TR::InstOpCode::CRJ:
             {
-            performed |= tryToReduceCRJLHIToLOCHI(TR::InstOpCode::CR);
+            performed |= self()->tryToReduceCRJLHIToLOCHI(TR::InstOpCode::CR);
             break;
             }
          case TR::InstOpCode::L:
@@ -137,17 +137,17 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             bool performedCurrentPeephole = false;
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToReduceLToICM();
+               performedCurrentPeephole |= self()->tryToReduceLToICM();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToReduceLToLZRF(TR::InstOpCode::LZRF);
+               performedCurrentPeephole |= self()->tryToReduceLToLZRF(TR::InstOpCode::LZRF);
 
             performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::LA:
             {
-            performed |= tryToRemoveRedundantLA();
+            performed |= self()->tryToRemoveRedundantLA();
             break;
             }
          case TR::InstOpCode::LER:
@@ -156,17 +156,17 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             bool performedCurrentPeephole = false;
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToRemoveDuplicateLR();
+               performedCurrentPeephole |= self()->tryToRemoveDuplicateLR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToRemoveDuplicateLoadRegister();
+               performedCurrentPeephole |= self()->tryToRemoveDuplicateLoadRegister();
 
             performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::LG:
             {
-            performed |= tryToReduceLToLZRF(TR::InstOpCode::LZRG);
+            performed |= self()->tryToReduceLToLZRF(TR::InstOpCode::LZRG);
             break;
             }
          case TR::InstOpCode::LGR:
@@ -174,42 +174,42 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             bool performedCurrentPeephole = false;
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToReduceAGI();
+               performedCurrentPeephole |= self()->tryToReduceAGI();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToReduceLGRToLGFR();
+               performedCurrentPeephole |= self()->tryToReduceLGRToLGFR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToRemoveDuplicateLR();
+               performedCurrentPeephole |= self()->tryToRemoveDuplicateLR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToRemoveRedundantLR();
+               performedCurrentPeephole |= self()->tryToRemoveRedundantLR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToReduceLRCHIToLTR();
+               performedCurrentPeephole |= self()->tryToReduceLRCHIToLTR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToRemoveDuplicateLoadRegister();
+               performedCurrentPeephole |= self()->tryToRemoveDuplicateLoadRegister();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToFoldLoadRegisterIntoSubsequentInstruction();
+               performedCurrentPeephole |= self()->tryToFoldLoadRegisterIntoSubsequentInstruction();
 
             performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::LHI:
             {
-            performed |= tryToReduceLHIToXR();
+            performed |= self()->tryToReduceLHIToXR();
             break;
             }
          case TR::InstOpCode::LLC:
             {
-            performed |= tryToReduceLLCToLLGC();
+            performed |= self()->tryToReduceLLCToLLGC();
             break;
             }
          case TR::InstOpCode::LLGF:
             {
-            performed |= tryToReduceLToLZRF(TR::InstOpCode::LLZRGF);
+            performed |= self()->tryToReduceLToLZRF(TR::InstOpCode::LLZRGF);
             break;
             }
          case TR::InstOpCode::LR:
@@ -217,22 +217,22 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             bool performedCurrentPeephole = false;
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToReduceAGI();
+               performedCurrentPeephole |= self()->tryToReduceAGI();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToRemoveDuplicateLR();
+               performedCurrentPeephole |= self()->tryToRemoveDuplicateLR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToRemoveRedundantLR();
+               performedCurrentPeephole |= self()->tryToRemoveRedundantLR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToReduceLRCHIToLTR();
+               performedCurrentPeephole |= self()->tryToReduceLRCHIToLTR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToRemoveDuplicateLoadRegister();
+               performedCurrentPeephole |= self()->tryToRemoveDuplicateLoadRegister();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToFoldLoadRegisterIntoSubsequentInstruction();
+               performedCurrentPeephole |= self()->tryToFoldLoadRegisterIntoSubsequentInstruction();
 
             performed |= performedCurrentPeephole;
             break;
@@ -243,28 +243,28 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
             bool performedCurrentPeephole = false;
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToReduceAGI();
+               performedCurrentPeephole |= self()->tryToReduceAGI();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToReduceLTRToCHI();
+               performedCurrentPeephole |= self()->tryToReduceLTRToCHI();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToRemoveRedundantLTR();
+               performedCurrentPeephole |= self()->tryToRemoveRedundantLTR();
 
             if (!performedCurrentPeephole)
-               performedCurrentPeephole |= tryToRemoveDuplicateLoadRegister();
+               performedCurrentPeephole |= self()->tryToRemoveDuplicateLoadRegister();
             
             performed |= performedCurrentPeephole;
             break;
             }
          case TR::InstOpCode::NILF:
             {
-            performed |= tryToRemoveDuplicateNILF();
+            performed |= self()->tryToRemoveDuplicateNILF();
             break;
             }
          case TR::InstOpCode::NILH:
             {
-            performed |= tryToRemoveDuplicateNILH();
+            performed |= self()->tryToRemoveDuplicateNILH();
             break;
             }
          case TR::InstOpCode::SLLG:
@@ -274,13 +274,13 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
          case TR::InstOpCode::SLAK:
          case TR::InstOpCode::SRAK:
             {
-            performed |= tryToReduce64BitShiftTo32BitShift();
+            performed |= self()->tryToReduce64BitShiftTo32BitShift();
             break;
             }
          case TR::InstOpCode::SRL:
          case TR::InstOpCode::SLL:
             {
-            performed |= tryToRemoveRedundantShift();
+            performed |= self()->tryToRemoveRedundantShift();
             break;
             }
          default:
@@ -293,17 +293,17 @@ OMR::Z::Peephole::performOnInstruction(TR::Instruction* cursor)
          {
          case TR::InstOpCode::L:
             {
-            performed |= tryLoadStoreReduction(TR::InstOpCode::ST, 4);
+            performed |= self()->tryLoadStoreReduction(TR::InstOpCode::ST, 4);
             break;
             }
          case TR::InstOpCode::LFH:
             {
-            performed |= tryLoadStoreReduction(TR::InstOpCode::STFH, 4);
+            performed |= self()->tryLoadStoreReduction(TR::InstOpCode::STFH, 4);
             break;
             }
          case TR::InstOpCode::LG:
             {
-            performed |= tryLoadStoreReduction(TR::InstOpCode::STG, 8);
+            performed |= self()->tryLoadStoreReduction(TR::InstOpCode::STG, 8);
             break;
             }
          default:
@@ -355,9 +355,9 @@ OMR::Z::Peephole::tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, ui
          return false;
          }
 
-      if (performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming load-store sequence at %p to MVC.", storeInst))
+      if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Transforming load-store sequence at %p to MVC.", storeInst))
          {
-         TR::DebugCounter::incStaticDebugCounter(comp(), "z/peephole/load-store");
+         TR::DebugCounter::incStaticDebugCounter(self()->comp(), "z/peephole/load-store");
 
          loadInst->getMemoryReference()->resetMemRefUsedBefore();
          storeInst->getMemoryReference()->resetMemRefUsedBefore();
@@ -384,7 +384,7 @@ OMR::Z::Peephole::tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, ui
             storeInst->getMemoryReference()->getIndexRegister()->decTotalUseCount();
             }
 
-         TR::Instruction * newInst = generateSS1Instruction(cg(), TR::InstOpCode::MVC, comp()->getStartTree()->getNode(), size - 1, storeInst->getMemoryReference(), loadInst->getMemoryReference(), cursor->getPrev());
+         TR::Instruction * newInst = generateSS1Instruction(self()->cg(), TR::InstOpCode::MVC, self()->comp()->getStartTree()->getNode(), size - 1, storeInst->getMemoryReference(), loadInst->getMemoryReference(), cursor->getPrev());
 
          if (loadInst->getGCMap())
             {
@@ -407,7 +407,7 @@ OMR::Z::Peephole::tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, ui
             }
 
          storeInst->remove();
-         cg()->replaceInst(loadInst, newInst);
+         self()->cg()->replaceInst(loadInst, newInst);
 
          return true;
          }
@@ -418,7 +418,7 @@ OMR::Z::Peephole::tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, ui
 bool
 OMR::Z::Peephole::tryToFoldLoadRegisterIntoSubsequentInstruction()
    {
-   if (!comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+   if (!self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
       {
       return false;
       }
@@ -506,64 +506,64 @@ OMR::Z::Peephole::tryToFoldLoadRegisterIntoSubsequentInstruction()
                {
                case TR::InstOpCode::AR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::ARK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::ARK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::AGR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::AGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::AGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::ALR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::ALRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::ALRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::ALGR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::ALGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::ALGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::AHI:
                   {
                   int16_t imm = ((TR::S390RIInstruction*)current)->getSourceImmediate();
-                  newInstr = generateRIEInstruction(cg(), TR::InstOpCode::AHIK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                  newInstr = generateRIEInstruction(self()->cg(), TR::InstOpCode::AHIK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::AGHI:
                   {
                   int16_t imm = ((TR::S390RIInstruction*)current)->getSourceImmediate();
-                  newInstr = generateRIEInstruction(cg(), TR::InstOpCode::AGHIK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                  newInstr = generateRIEInstruction(self()->cg(), TR::InstOpCode::AGHIK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::NR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::NRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::NRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::NGR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::NGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::NGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::XR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::XRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::XRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::XGR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::XGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::XGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::OR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::ORK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::ORK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::OGR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::OGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::OGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::SLA:
@@ -573,10 +573,10 @@ OMR::Z::Peephole::tryToFoldLoadRegisterIntoSubsequentInstruction()
                   if (mf != NULL)
                      {
                      mf->resetMemRefUsedBefore();
-                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SLAK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
+                     newInstr = generateRSInstruction(self()->cg(), TR::InstOpCode::SLAK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
                      }
                   else
-                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SLAK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                     newInstr = generateRSInstruction(self()->cg(), TR::InstOpCode::SLAK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::SLL:
@@ -586,10 +586,10 @@ OMR::Z::Peephole::tryToFoldLoadRegisterIntoSubsequentInstruction()
                   if (mf != NULL)
                      {
                      mf->resetMemRefUsedBefore();
-                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SLLK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
+                     newInstr = generateRSInstruction(self()->cg(), TR::InstOpCode::SLLK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
                      }
                   else
-                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SLLK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                     newInstr = generateRSInstruction(self()->cg(), TR::InstOpCode::SLLK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
                   break;
                   }
 
@@ -600,10 +600,10 @@ OMR::Z::Peephole::tryToFoldLoadRegisterIntoSubsequentInstruction()
                   if (mf != NULL)
                      {
                      mf->resetMemRefUsedBefore();
-                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SRAK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
+                     newInstr = generateRSInstruction(self()->cg(), TR::InstOpCode::SRAK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
                      }
                   else
-                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SRAK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                     newInstr = generateRSInstruction(self()->cg(), TR::InstOpCode::SRAK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::SRL:
@@ -613,30 +613,30 @@ OMR::Z::Peephole::tryToFoldLoadRegisterIntoSubsequentInstruction()
                   if (mf != NULL)
                      {
                      mf->resetMemRefUsedBefore();
-                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SRLK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
+                     newInstr = generateRSInstruction(self()->cg(), TR::InstOpCode::SRLK, current->getNode(), lgrTargetReg, lgrSourceReg, mf, current->getPrev());
                      }
                   else
-                     newInstr = generateRSInstruction(cg(), TR::InstOpCode::SRLK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
+                     newInstr = generateRSInstruction(self()->cg(), TR::InstOpCode::SRLK, current->getNode(), lgrTargetReg, lgrSourceReg, imm, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::SR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::SRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::SRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::SGR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::SGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::SGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::SLR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::SLRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::SLRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                case TR::InstOpCode::SLGR:
                   {
-                  newInstr = generateRRRInstruction(cg(), TR::InstOpCode::SLGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
+                  newInstr = generateRRRInstruction(self()->cg(), TR::InstOpCode::SLGRK, current->getNode(), lgrTargetReg, lgrSourceReg, srcReg, current->getPrev());
                   break;
                   }
                default:
@@ -644,7 +644,7 @@ OMR::Z::Peephole::tryToFoldLoadRegisterIntoSubsequentInstruction()
                }
 
             cursor->remove();
-            cg()->replaceInst(current, newInstr);
+            self()->cg()->replaceInst(current, newInstr);
 
             return true;
             }
@@ -702,7 +702,7 @@ OMR::Z::Peephole::tryToForwardBranchTarget()
       auto firstBranch = (TR::S390BranchInstruction*)targetInst;
       if (firstBranch->getBranchCondition() == TR::InstOpCode::COND_BRC)
          {
-         if (performTransformation(comp(), "\nO^O S390 PEEPHOLE: Forwarding branch target on %s [%p].\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
+         if (performTransformation(self()->comp(), "\nO^O S390 PEEPHOLE: Forwarding branch target on %s [%p].\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
             {
             auto newTargetLabelSym = firstBranch->getLabelSymbol();
             switch (cursor->getOpCodeValue())
@@ -757,7 +757,7 @@ OMR::Z::Peephole::tryToReduce64BitShiftTo32BitShift()
       return false;
       }
 
-   if (performTransformation(comp(), "O^O S390 PEEPHOLE: Reverting int shift at %p from SLLG/SLAG/S[LR][LA]K to SLL/SLA/SRL/SRA.\n", shiftInst))
+   if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Reverting int shift at %p from SLLG/SLAG/S[LR][LA]K to SLL/SLA/SRL/SRA.\n", shiftInst))
       {
       TR::InstOpCode::Mnemonic newOpCode = TR::InstOpCode::BAD;
       switch (oldOpCode)
@@ -781,20 +781,20 @@ OMR::Z::Peephole::tryToReduce64BitShiftTo32BitShift()
 
       if (shiftInst->getSourceImmediate())
          {
-         newInstr = new (cg()->trHeapMemory()) TR::S390RSInstruction(newOpCode, shiftInst->getNode(), shiftInst->getRegisterOperand(1), shiftInst->getSourceImmediate(), shiftInst->getPrev(), cg());
+         newInstr = new (self()->cg()->trHeapMemory()) TR::S390RSInstruction(newOpCode, shiftInst->getNode(), shiftInst->getRegisterOperand(1), shiftInst->getSourceImmediate(), shiftInst->getPrev(), self()->cg());
          }
       else if (shiftInst->getMemoryReference())
          {
          TR::MemoryReference* memRef = shiftInst->getMemoryReference();
          memRef->resetMemRefUsedBefore();
-         newInstr = new (cg()->trHeapMemory()) TR::S390RSInstruction(newOpCode, shiftInst->getNode(), shiftInst->getRegisterOperand(1), memRef, shiftInst->getPrev(), cg());
+         newInstr = new (self()->cg()->trHeapMemory()) TR::S390RSInstruction(newOpCode, shiftInst->getNode(), shiftInst->getRegisterOperand(1), memRef, shiftInst->getPrev(), self()->cg());
          }
       else
          {
          TR_ASSERT_FATAL(false, "Unexpected RSY format\n");
          }
 
-      cg()->replaceInst(shiftInst, newInstr);
+      self()->cg()->replaceInst(shiftInst, newInstr);
 
       return true;
       }
@@ -813,13 +813,13 @@ OMR::Z::Peephole::tryToReduceAGI()
    TR::Register *lgrTargetReg = cursor->getRegisterOperand(1);
    TR::Register *lgrSourceReg = cursor->getRegisterOperand(2);
 
-   TR::RealRegister *gpr0 = cg()->machine()->getRealRegister(TR::RealRegister::GPR0);
+   TR::RealRegister *gpr0 = self()->cg()->machine()->getRealRegister(TR::RealRegister::GPR0);
 
    // no renaming possible if both target and source are the same
    // this can happend with LTR and LTGR
    // or if source reg is gpr0
    if  (toRealRegister(lgrSourceReg)==gpr0 || (lgrTargetReg==lgrSourceReg) ||
-        toRealRegister(lgrTargetReg)==cg()->getStackPointerRealRegister(NULL))
+        toRealRegister(lgrTargetReg)==self()->cg()->getStackPointerRealRegister(NULL))
       return performed;
 
    TR::Instruction* current = cursor->getNext();
@@ -868,9 +868,9 @@ OMR::Z::Peephole::tryToReduceAGI()
                {
                if (!reachedLabel && !reachedBranch && !sourceRegInvalid)
                   {
-                  if (performTransformation(comp(), "O^O S390 PEEPHOLE: AGI register renaming on [%p] from source load [%p].\n", current, cursor))
+                  if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: AGI register renaming on [%p] from source load [%p].\n", current, cursor))
                      {
-                     mr->setBaseRegister(lgrSourceReg, cg());
+                     mr->setBaseRegister(lgrSourceReg, self()->cg());
 
                      performed = true;
                      }
@@ -886,7 +886,7 @@ OMR::Z::Peephole::tryToReduceAGI()
                {
                if (!reachedLabel && !reachedBranch && !sourceRegInvalid)
                   {
-                  if (performTransformation(comp(), "O^O S390 PEEPHOLE: AGI register renaming on [%p] from source load [%p].\n", current, cursor))
+                  if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: AGI register renaming on [%p] from source load [%p].\n", current, cursor))
                      {
                      mr->setIndexRegister(lgrSourceReg);
 
@@ -917,7 +917,7 @@ OMR::Z::Peephole::tryToReduceAGI()
    // We can replace the cursor with an LA instruction if:
    //   1. The mnemonic is LGR
    //   2. The target is 64-bit (because LA sets the upppermost bit to 0 on 31-bit)
-   attemptLA &= cursor->getOpCodeValue() == TR::InstOpCode::LGR && comp()->target().is64Bit();
+   attemptLA &= cursor->getOpCodeValue() == TR::InstOpCode::LGR && self()->comp()->target().is64Bit();
 
    if (attemptLA)
       {
@@ -937,12 +937,12 @@ OMR::Z::Peephole::tryToReduceAGI()
       // if we reached the end of the loop and didn't find a conflict, switch the instruction to LA
       if (windowSize == MaxLAWindowSize)
          {
-         if (performTransformation(comp(), "O^O S390 PEEPHOLE: AGI LA reduction on [%p] from source load [%p].\n", current, cursor))
+         if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: AGI LA reduction on [%p] from source load [%p].\n", current, cursor))
             {
-            auto laInst = generateRXInstruction(cg(), TR::InstOpCode::LA, comp()->getStartTree()->getNode(), lgrTargetReg, 
-               generateS390MemoryReference(lgrSourceReg, 0, cg()), cursor->getPrev());
+            auto laInst = generateRXInstruction(self()->cg(), TR::InstOpCode::LA, self()->comp()->getStartTree()->getNode(), lgrTargetReg, 
+               generateS390MemoryReference(lgrSourceReg, 0, self()->cg()), cursor->getPrev());
 
-            cg()->replaceInst(cursor, laInst);
+            self()->cg()->replaceInst(cursor, laInst);
 
             performed = true;
             }
@@ -955,7 +955,7 @@ OMR::Z::Peephole::tryToReduceAGI()
 bool
 OMR::Z::Peephole::tryToReduceCLRToCLRJ()
    {
-   if (!comp()->target().cpu.getSupportsArch(TR::CPU::z10))
+   if (!self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
       return false;
 
    bool branchTakenPerformReduction = false;
@@ -1016,12 +1016,12 @@ OMR::Z::Peephole::tryToReduceCLRToCLRJ()
 
       if (fallThroughPerformReduction
          && branchTakenPerformReduction
-         && performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming CLR [%p] and BRC [%p] to CLRJ\n", clrInstruction, brcInstruction))
+         && performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Transforming CLR [%p] and BRC [%p] to CLRJ\n", clrInstruction, brcInstruction))
          {
          TR_ASSERT_FATAL(clrInstruction->getNumRegisterOperands() == 2, "Number of register operands was not 2: %d\n", clrInstruction->getNumRegisterOperands());
 
          TR::Instruction *clrjInstruction = generateRIEInstruction(
-            cg(),
+            self()->cg(),
             TR::InstOpCode::CLRJ,
             clrInstruction->getNode(),
             clrInstruction->getRegisterOperand(1),
@@ -1030,7 +1030,7 @@ OMR::Z::Peephole::tryToReduceCLRToCLRJ()
             static_cast<TR::S390BranchInstruction*>(brcInstruction)->getBranchCondition(),
             clrInstruction->getPrev()
          );
-         cg()->replaceInst(clrInstruction, clrjInstruction);
+         self()->cg()->replaceInst(clrInstruction, clrjInstruction);
          brcInstruction->remove();
          }
       }
@@ -1074,7 +1074,7 @@ OMR::Z::Peephole::tryToReduceCRJLHIToLOCHI(TR::InstOpCode::Mnemonic compareMnemo
 
    TR::InstOpCode::S390BranchCondition cond = getBranchConditionForMask(0xF - (getMaskForBranchCondition(branchInst->getBranchCondition()) & 0xF));
 
-   if (performTransformation(comp(), "O^O S390 PEEPHOLE: Conditionalizing fall-through block following [%p].\n", currInst))
+   if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Conditionalizing fall-through block following [%p].\n", currInst))
       {
       // Conditionalize the fall-though block
       while (currInst = realInstructionWithLabelsAndRET(nextInst))
@@ -1085,19 +1085,19 @@ OMR::Z::Peephole::tryToReduceCRJLHIToLOCHI(TR::InstOpCode::Mnemonic compareMnemo
          // Because of the previous checks, LHI or LGHI instruction is guaranteed to be here
          TR::S390RIInstruction* RIInst = static_cast<TR::S390RIInstruction*>(currInst);
 
-         auto lochiInst = generateRIEInstruction(cg(), RIInst->getOpCode().getOpCodeValue() == TR::InstOpCode::LHI ? TR::InstOpCode::LOCHI : TR::InstOpCode::LOCGHI, RIInst->getNode(), RIInst->getRegisterOperand(1), RIInst->getSourceImmediate(), cond, RIInst->getPrev());
+         auto lochiInst = generateRIEInstruction(self()->cg(), RIInst->getOpCode().getOpCodeValue() == TR::InstOpCode::LHI ? TR::InstOpCode::LOCHI : TR::InstOpCode::LOCGHI, RIInst->getNode(), RIInst->getRegisterOperand(1), RIInst->getSourceImmediate(), cond, RIInst->getPrev());
 
          // Conditionalize from "Load Immediate" to "Load Immediate on Condition"
-         cg()->replaceInst(RIInst, lochiInst);
+         self()->cg()->replaceInst(RIInst, lochiInst);
 
          currInst = lochiInst;
          nextInst = lochiInst->getNext();
          }
 
-      auto crInst = generateRRInstruction(cg(), compareMnemonic, branchInst->getNode(), branchInst->getRegisterOperand(1), branchInst->getRegisterOperand(2), branchInst->getPrev());
+      auto crInst = generateRRInstruction(self()->cg(), compareMnemonic, branchInst->getNode(), branchInst->getRegisterOperand(1), branchInst->getRegisterOperand(2), branchInst->getPrev());
 
       // Conditionalize the branch instruction from "Compare and Branch" to "Compare"
-      cg()->replaceInst(branchInst, crInst);
+      self()->cg()->replaceInst(branchInst, crInst);
 
       return true;
       }
@@ -1154,20 +1154,20 @@ OMR::Z::Peephole::tryToReduceLToICM()
       isICMOpportunity = true;
       }
 
-   if (isICMOpportunity && performTransformation(comp(), "\nO^O S390 PEEPHOLE: Reducing L [%p] being reduced to ICM.\n", cursor))
+   if (isICMOpportunity && performTransformation(self()->comp(), "\nO^O S390 PEEPHOLE: Reducing L [%p] being reduced to ICM.\n", cursor))
       {
       // Prevent reuse of memory reference
-      TR::MemoryReference* memcp = generateS390MemoryReference(*load->getMemoryReference(), 0, cg());
+      TR::MemoryReference* memcp = generateS390MemoryReference(*load->getMemoryReference(), 0, self()->cg());
 
       if ((memcp->getBaseRegister() == NULL) &&
           (memcp->getIndexRegister() != NULL))
          {
-         memcp->setBaseRegister(memcp->getIndexRegister(), cg());
+         memcp->setBaseRegister(memcp->getIndexRegister(), self()->cg());
          memcp->setIndexRegister(0);
          }
 
       // Do the reduction - create the icm instruction
-      TR::S390RSInstruction* icm = new (cg()->trHeapMemory()) TR::S390RSInstruction(TR::InstOpCode::ICM, load->getNode(), load->getRegisterOperand(1), 0xF, memcp, prev, cg());
+      TR::S390RSInstruction* icm = new (self()->cg()->trHeapMemory()) TR::S390RSInstruction(TR::InstOpCode::ICM, load->getNode(), load->getRegisterOperand(1), 0xF, memcp, prev, self()->cg());
 
       // Check if the load has an implicit NULLCHK.  If so, we need to ensure a GCmap is copied.
       if (load->throwsImplicitNullPointerException())
@@ -1176,15 +1176,15 @@ OMR::Z::Peephole::tryToReduceLToICM()
          icm->setThrowsImplicitNullPointerException();
          icm->setGCMap(load->getGCMap());
 
-         TR_Debug * debugObj = cg()->getDebug();
+         TR_Debug * debugObj = self()->cg()->getDebug();
          if (debugObj)
             debugObj->addInstructionComment(icm, "Throws Implicit Null Pointer Exception");
          }
 
-      cg()->replaceInst(load, icm);
+      self()->cg()->replaceInst(load, icm);
       next->remove();
 
-      memcp->stopUsingMemRefRegister(cg());
+      memcp->stopUsingMemRefRegister(self()->cg());
       performed = true;
       }
 
@@ -1212,17 +1212,17 @@ OMR::Z::Peephole::tryToReduceLToLZRF(TR::InstOpCode::Mnemonic loadAndZeroRightMo
       if (loadTargetReg != nillTargetReg)
          return false;
 
-      if (performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming load-and-mask sequence at [%p].\n", nillInst))
+      if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Transforming load-and-mask sequence at [%p].\n", nillInst))
          {
          // Remove the NILL instruction
          nillInst->remove();
 
          loadInst->getMemoryReference()->resetMemRefUsedBefore();
 
-         auto lzrbInst = generateRXInstruction(cg(), loadAndZeroRightMostByteMnemonic, comp()->getStartTree()->getNode(), loadTargetReg, loadInst->getMemoryReference(), cursor->getPrev());
+         auto lzrbInst = generateRXInstruction(self()->cg(), loadAndZeroRightMostByteMnemonic, self()->comp()->getStartTree()->getNode(), loadTargetReg, loadInst->getMemoryReference(), cursor->getPrev());
 
          // Replace the load instruction with load-and-mask instruction
-         cg()->replaceInst(loadInst, lzrbInst);
+         self()->cg()->replaceInst(loadInst, lzrbInst);
 
          return true;
          }
@@ -1245,7 +1245,7 @@ OMR::Z::Peephole::tryToReduceLGRToLGFR()
 
       if (curSourceReg == lgrTargetReg && curTargetReg == lgrTargetReg)
          {
-         if (performTransformation(comp(), "O^O S390 PEEPHOLE: Reducing %s [%p] to LGFR.\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
+         if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Reducing %s [%p] to LGFR.\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
             {
             ((TR::S390RRInstruction*)current)->setRegisterOperand(2, lgrSourceReg);
 
@@ -1290,10 +1290,10 @@ OMR::Z::Peephole::tryToReduceLHIToXR()
         {
         if (nextInstruction->getOpCode().setsCC() || nextInstruction->getNode()->getOpCodeValue() == TR::BBEnd)
            {
-           TR::DebugCounter::incStaticDebugCounter(comp(), "z/peephole/LHI/XR");
+           TR::DebugCounter::incStaticDebugCounter(self()->comp(), "z/peephole/LHI/XR");
 
-           TR::Instruction* xrInstruction = generateRRInstruction(cg(), TR::InstOpCode::XR, lhiInstruction->getNode(), lhiInstruction->getRegisterOperand(1), lhiInstruction->getRegisterOperand(1));
-           cg()->replaceInst(lhiInstruction, xrInstruction);
+           TR::Instruction* xrInstruction = generateRRInstruction(self()->cg(), TR::InstOpCode::XR, lhiInstruction->getNode(), lhiInstruction->getRegisterOperand(1), lhiInstruction->getRegisterOperand(1));
+           self()->cg()->replaceInst(lhiInstruction, xrInstruction);
 
            return true;
            }
@@ -1320,7 +1320,7 @@ OMR::Z::Peephole::tryToReduceLLCToLLGC()
 
       if (llcTgtReg == curSrcReg && llcTgtReg == curTgtReg)
          {
-         if (performTransformation(comp(), "O^O S390 PEEPHOLE: Reducing LLC/%s [%p] to LLGC.\n", TR::InstOpCode::metadata[mnemonic].name, current))
+         if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Reducing LLC/%s [%p] to LLGC.\n", TR::InstOpCode::metadata[mnemonic].name, current))
             {
             // Remove the LGFR/LLGTR
             current->remove();
@@ -1328,8 +1328,8 @@ OMR::Z::Peephole::tryToReduceLLCToLLGC()
             // Replace the LLC with LLGC
             TR::MemoryReference* memRef = ((TR::S390RXInstruction *) cursor)->getMemoryReference();
             memRef->resetMemRefUsedBefore();
-            auto llgcInst = generateRXInstruction(cg(), TR::InstOpCode::LLGC, comp()->getStartTree()->getNode(), llcTgtReg, memRef, cursor->getPrev());
-            cg()->replaceInst(cursor, llgcInst);
+            auto llgcInst = generateRXInstruction(self()->cg(), TR::InstOpCode::LLGC, self()->comp()->getStartTree()->getNode(), llcTgtReg, memRef, cursor->getPrev());
+            self()->cg()->replaceInst(cursor, llgcInst);
             
             return true;
             }
@@ -1381,11 +1381,11 @@ OMR::Z::Peephole::tryToReduceLRCHIToLTR()
          int32_t srcImm = ((TR::S390RIInstruction*)current)->getSourceImmediate();
          if (curTargetReg == lgrTargetReg && srcImm == 0)
             {
-            if (performTransformation(comp(), "O^O S390 PEEPHOLE: Transforming LR/CHI to LTR at %p\n", cursor))
+            if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Transforming LR/CHI to LTR at %p\n", cursor))
                {
-               auto ltrInst = generateRRInstruction(cg(), lgrOpCode.is64bit() ? TR::InstOpCode::LTGR : TR::InstOpCode::LTR, cursor->getNode(), lgrTargetReg, lgrSourceReg, cursor->getPrev());
+               auto ltrInst = generateRRInstruction(self()->cg(), lgrOpCode.is64bit() ? TR::InstOpCode::LTGR : TR::InstOpCode::LTR, cursor->getNode(), lgrTargetReg, lgrSourceReg, cursor->getPrev());
 
-               cg()->replaceInst(cursor, ltrInst);
+               self()->cg()->replaceInst(cursor, ltrInst);
                current->remove();
 
                return true;
@@ -1426,11 +1426,11 @@ OMR::Z::Peephole::tryToReduceLTRToCHI()
       {
       if (seekRegInFutureMemRef(cursor, 4, lgrTargetReg))
          {
-         if (performTransformation(comp(), "\nO^O S390 PEEPHOLE: Eliminating AGI by transforming %s [%p] to a compare halfword immediate.\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
+         if (performTransformation(self()->comp(), "\nO^O S390 PEEPHOLE: Eliminating AGI by transforming %s [%p] to a compare halfword immediate.\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
             {
-            auto chiInst = generateRIInstruction(cg(), TR::InstOpCode::getCmpHalfWordImmOpCode(), cursor->getNode(), lgrTargetReg, 0, cursor->getPrev());
+            auto chiInst = generateRIInstruction(self()->cg(), TR::InstOpCode::getCmpHalfWordImmOpCode(), cursor->getNode(), lgrTargetReg, 0, cursor->getPrev());
 
-            cg()->replaceInst(cursor, chiInst);
+            self()->cg()->replaceInst(cursor, chiInst);
 
             return true;
             }
@@ -1456,7 +1456,7 @@ OMR::Z::Peephole::tryToRemoveDuplicateLR()
        lgrOpCode.getOpCodeValue() == TR::InstOpCode::LDR ||
        lgrOpCode.getOpCodeValue() == TR::InstOpCode::LER))
        {
-       if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant %s [%p]\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
+       if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Removing redundant %s [%p]\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
           {
           cursor->remove();
 
@@ -1523,7 +1523,7 @@ OMR::Z::Peephole::tryToRemoveDuplicateLoadRegister()
 
             if ((!lgrSetCC || !(setCC || useCC)))
                {
-               if (performTransformation(comp(), "O^O S390 PEEPHOLE: Duplicate LR/CPYA removal at %p\n", rrInst))
+               if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Duplicate LR/CPYA removal at %p\n", rrInst))
                   {
                   performed = true;
                   current = current->getNext();
@@ -1580,7 +1580,7 @@ OMR::Z::Peephole::tryToRemoveDuplicateNILF()
             {
             if (currInst->getSourceImmediate() == nextInst->getSourceImmediate())
                {
-               if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting duplicate NILF from pair %p %p*\n", currInst, nextInst))
+               if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: deleting duplicate NILF from pair %p %p*\n", currInst, nextInst))
                   {
                   nextInst->remove();
 
@@ -1604,7 +1604,7 @@ OMR::Z::Peephole::tryToRemoveDuplicateNILF()
             else if (((currInst->getSourceImmediate() & nextInst->getSourceImmediate()) == currInst->getSourceImmediate()) &&
                ((nextInst->getSourceImmediate() & currInst->getSourceImmediate()) != nextInst->getSourceImmediate()))
                {
-               if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting unnecessary NILF from pair %p %p*\n", currInst, nextInst))
+               if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: deleting unnecessary NILF from pair %p %p*\n", currInst, nextInst))
                   {
                   nextInst->remove();
 
@@ -1635,7 +1635,7 @@ OMR::Z::Peephole::tryToRemoveDuplicateNILH()
                if (currInst->matchesTargetRegister(nextInst->getRegisterOperand(1)) &&
                    nextInst->matchesTargetRegister(currInst->getRegisterOperand(1)))
                   {
-                  if (performTransformation(comp(), "O^O S390 PEEPHOLE: deleting duplicate NILH from pair %p %p*\n", currInst, nextInst))
+                  if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: deleting duplicate NILH from pair %p %p*\n", currInst, nextInst))
                      {
                      nextInst->remove();
 
@@ -1653,7 +1653,7 @@ OMR::Z::Peephole::tryToRemoveDuplicateNILH()
 bool
 OMR::Z::Peephole::tryToRemoveRedundantCompareAndTrap()
    {
-   if (comp()->target().isZOS())
+   if (self()->comp()->target().isZOS())
       {
       // CLT cannot do the job in zOS because in zOS it is legal to read low memory address (like 0x000000, literally NULL),
       // and CLT will read the low memory address legally (in this case NULL) to compare it with the other operand.
@@ -1696,7 +1696,7 @@ OMR::Z::Peephole::tryToRemoveRedundantCompareAndTrap()
              return false;
           if (toRealRegister(cltSource2)->getRegisterNumber() == toRealRegister(cgitSource)->getRegisterNumber())
              {
-             if (performTransformation(comp(), "\nO^O S390 PEEPHOLE: removeMergedNullCHK on 0x%p.\n", cgitInst))
+             if (performTransformation(self()->comp(), "\nO^O S390 PEEPHOLE: removeMergedNullCHK on 0x%p.\n", cgitInst))
                 {
                 cgitInst->remove();
 
@@ -1739,7 +1739,7 @@ OMR::Z::Peephole::tryToRemoveRedundantLA()
          (symRef == NULL || symRef->getOffset() == 0) &&
          (symRef == NULL || symRef->getSymbol() == NULL))
       {
-      if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant LA [%p].\n", cursor))
+      if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Removing redundant LA [%p].\n", cursor))
          {
          cursor->remove();
          
@@ -1773,7 +1773,7 @@ OMR::Z::Peephole::tryToRemoveRedundantShift()
             uint32_t newShift = currRSInst->getSourceImmediate() + nextRSInst->getSourceImmediate();
             if (newShift < 64)
                {
-               if (performTransformation(comp(), "O^O S390 PEEPHOLE: merging SRL/SLL pair [%p] [%p]\n", cursor, cursor->getNext()))
+               if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: merging SRL/SLL pair [%p] [%p]\n", cursor, cursor->getNext()))
                   {
                   currRSInst->setSourceImmediate(newShift);
                   nextInst->remove();
@@ -1809,7 +1809,7 @@ OMR::Z::Peephole::tryToRemoveRedundantLR()
 
         if (lgrTargetReg == ltgrTargetReg || lgrTargetReg == ltgrSourceReg)
            {
-           if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant %s [%p] which is followed by a load and test register.\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
+           if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Removing redundant %s [%p] which is followed by a load and test register.\n", TR::InstOpCode::metadata[cursor->getOpCodeValue()].name, cursor))
               {
               cursor->remove();
 
@@ -1846,7 +1846,7 @@ OMR::Z::Peephole::tryToRemoveRedundantLTR()
 
          if (branchCond == TR::InstOpCode::COND_BE || branchCond == TR::InstOpCode::COND_BNE)
             {
-            if (performTransformation(comp(), "O^O S390 PEEPHOLE: Removing redundant Load and Test instruction at %p, because CC can be reused from logical instruction %p\n", cursor, prevInst))
+            if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Removing redundant Load and Test instruction at %p, because CC can be reused from logical instruction %p\n", cursor, prevInst))
                {
                cursor->remove();
 

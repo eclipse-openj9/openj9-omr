@@ -51,7 +51,7 @@ OMR::Peephole::perform()
    bool performed = false;
 
    TR::Instruction* prevInst = NULL;
-   TR::Instruction* currInst = cg()->getFirstInstruction();
+   TR::Instruction* currInst = self()->cg()->getFirstInstruction();
 
    while (currInst != NULL)
       {

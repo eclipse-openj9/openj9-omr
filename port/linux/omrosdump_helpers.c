@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -973,14 +973,14 @@ getSharedAndPrivateDataSegments(struct OMRPortLibrary *portLibrary, intptr_t fd,
 
 						/* get the offset */
 						next++;
-						strtoull(next, &next, 16);
+						J9_IGNORE_RETURNVAL(strtoull(next, &next, 16));
 
 						/* skip over the device */
 						next += 5;
 
 						/* get the inode */
 						next++;
-						strtoull(next, &next, 10);
+						J9_IGNORE_RETURNVAL(strtoull(next, &next, 10));
 
 						/* get the path */
 						while (isspace(*next)) {

@@ -3785,6 +3785,7 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
    TR::InstOpCode::Mnemonic move_op = type.isIntegral() ? TR::InstOpCode::mr : TR::InstOpCode::fmr;
    TR::InstOpCode::Mnemonic cmp_op;
    bool two_reg = (cg->comp()->target().is32Bit() && type.isInt64());
+   bool check_nan = type.isFloatingPoint();
 
    switch (node->getOpCodeValue())
       {
@@ -3850,8 +3851,16 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
       }
 
    TR::Register *condReg = cg->allocateRegister(TR_CCR);
-   TR::LabelSymbol *label = generateLabelSymbol(cg);
+   TR::LabelSymbol *start_label = generateLabelSymbol(cg);
+   TR::LabelSymbol *end_label = generateLabelSymbol(cg);
+   start_label->setStartInternalControlFlow();
+   end_label->setEndInternalControlFlow();
+   TR::LabelSymbol *nan_label;
+   if (check_nan)
+      nan_label = generateLabelSymbol(cg);
    TR::RegisterDependencyConditions *dep;
+
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, start_label);
    if (two_reg)
       {
       TR::PPCControlFlowInstruction *cfop = (TR::PPCControlFlowInstruction *)
@@ -3861,12 +3870,13 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
       cfop->addSourceRegister(trgReg->getLowOrder());
       cfop->addSourceRegister(src2Reg->getHighOrder());
       cfop->addSourceRegister(src2Reg->getLowOrder());
-      cfop->setLabelSymbol(label);
+      cfop->setLabelSymbol(end_label);
       cfop->setOpCode2Value(max ? TR::InstOpCode::bge : TR::InstOpCode::ble);
       generateTrg1Src1Instruction(cg, move_op, node, trgReg->getLowOrder(), src2Reg->getLowOrder());
       generateTrg1Src1Instruction(cg, move_op, node, trgReg->getHighOrder(), src2Reg->getHighOrder());
 
-      dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+      dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg->trMemory());
+      dep->addPostCondition(condReg, TR::RealRegister::NoReg);
       dep->addPostCondition(trgReg->getLowOrder(), TR::RealRegister::NoReg);
       dep->addPostCondition(trgReg->getHighOrder(), TR::RealRegister::NoReg);
       dep->addPostCondition(src2Reg->getLowOrder(), TR::RealRegister::NoReg);
@@ -3875,14 +3885,23 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
    else
       {
       generateTrg1Src2Instruction(cg, cmp_op, node, condReg, trgReg, src2Reg);
-      generateConditionalBranchInstruction(cg, max ? TR::InstOpCode::bge : TR::InstOpCode::ble, node, label, condReg);
+      if (check_nan)
+         {
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::bnun, node, nan_label, condReg);
+         // Move the NaN which is in one of trgReg or src2Reg to trgReg by fadd
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::fadd, node, trgReg, trgReg, src2Reg);
+         generateLabelInstruction(cg, TR::InstOpCode::b, node, end_label);
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, nan_label);
+         }
+      generateConditionalBranchInstruction(cg, max ? TR::InstOpCode::bge : TR::InstOpCode::ble, node, end_label, condReg);
       generateTrg1Src1Instruction(cg, move_op, node, trgReg, src2Reg);
 
-      dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+      dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+      dep->addPostCondition(condReg, TR::RealRegister::NoReg);
       dep->addPostCondition(trgReg, TR::RealRegister::NoReg);
       dep->addPostCondition(src2Reg, TR::RealRegister::NoReg);
       }
-   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, label, dep);
+   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, end_label, dep);
    cg->stopUsingRegister(condReg);
 
    node->setRegister(trgReg);

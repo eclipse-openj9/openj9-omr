@@ -17388,20 +17388,19 @@ TR::Node *lucmpSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier * s)
 
 TR::Node *imaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   TR_ASSERT(node->getNumChildren() == 2, "max/min node should only support 2 children");
    simplifyChildren(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
    int32_t min = 0, max = 0;
    uint32_t umin = 0, umax = 0;
-   bool is_both_const = firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst();
-   bool is_signed  = node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::imin;
-   bool max_opcode = node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::iumax;
+   bool isBothConst = firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst();
+   bool isSigned  = node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::imin;
+   bool maxOpcode = node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::iumax;
 
-   if (is_both_const)
+   if (isBothConst)
       {
-      if(is_signed)
+      if(isSigned)
          {
          if (firstChild->getInt() <= secondChild->getInt())
             {
@@ -17413,7 +17412,7 @@ TR::Node *imaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
             min = secondChild->getInt();
             max = firstChild->getInt();
             }
-         foldIntConstant(node, max_opcode ? max : min, s, false /* !anchorChildren*/);
+         foldIntConstant(node, maxOpcode ? max : min, s, false /* !anchorChildren*/);
          }
       else
          {
@@ -17427,7 +17426,7 @@ TR::Node *imaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
             umin = secondChild->getUnsignedInt();
             umax = firstChild->getUnsignedInt();
             }
-         foldUIntConstant(node, max_opcode ? umax : umin, s, false /* !anchorChildren*/);
+         foldUIntConstant(node, maxOpcode ? umax : umin, s, false /* !anchorChildren*/);
          }
       }
 
@@ -17437,20 +17436,19 @@ TR::Node *imaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 // Used for lmax, lumax, lmin, lumin
 TR::Node *lmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   TR_ASSERT(node->getNumChildren() == 2, "max/min node should only support 2 children");
    simplifyChildren(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
-   bool is_both_const = firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst();
+   bool isBothConst = firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst();
    int64_t min = 0, max = 0;
    uint64_t umin = 0, umax = 0;
-   bool is_signed = node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lmin;
-   bool max_opcode = node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lumax;
+   bool isSigned = node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lmin;
+   bool maxOpcode = node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lumax;
 
-   if (is_both_const)
+   if (isBothConst)
       {
-      if(is_signed)
+      if(isSigned)
          {
          if (firstChild->getLongInt() <= secondChild->getLongInt())
             {
@@ -17462,7 +17460,7 @@ TR::Node *lmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
             min = secondChild->getLongInt();
             max = firstChild->getLongInt();
             }
-         foldLongIntConstant(node, max_opcode ? max : min, s, false /* !anchorChildren */);
+         foldLongIntConstant(node, maxOpcode ? max : min, s, false /* !anchorChildren */);
          }
       else
          {
@@ -17476,7 +17474,7 @@ TR::Node *lmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
             umin = secondChild->getUnsignedLongInt();
             umax = firstChild->getUnsignedLongInt();
             }
-         foldUnsignedLongIntConstant(node, max_opcode ? umax : umin, s, false /* !anchorChildren */);
+         foldUnsignedLongIntConstant(node, maxOpcode ? umax : umin, s, false /* !anchorChildren */);
          }
       }
 
@@ -17485,28 +17483,34 @@ TR::Node *lmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *fmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   TR_ASSERT(node->getNumChildren() == 2, "max/min node should only support 2 children");
    simplifyChildren(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
-   bool is_both_const = firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst();
+   bool isBothConst = firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst();
    float fmin = 0, fmax = 0;
-   bool max_opcode = node->getOpCodeValue() == TR::fmax;
+   bool maxOpcode = node->getOpCodeValue() == TR::fmax;
 
-   if (is_both_const)
+   if (isBothConst)
       {
-      if (firstChild->getFloat() <= secondChild->getFloat())
-         {
-         fmin = firstChild->getFloat();
-         fmax = secondChild->getFloat();
-         }
+      if (isNaNFloat(firstChild))
+         fmin = fmax = firstChild->getFloat();
+      else if (isNaNFloat(secondChild))
+         fmin = fmax = secondChild->getFloat();
       else
          {
-         fmin = secondChild->getFloat();
-         fmax = firstChild->getFloat();
+         if (firstChild->getFloat() <= secondChild->getFloat())
+            {
+            fmin = firstChild->getFloat();
+            fmax = secondChild->getFloat();
+            }
+         else
+            {
+            fmin = secondChild->getFloat();
+            fmax = firstChild->getFloat();
+            }
          }
-      foldFloatConstant(node, max_opcode ? fmax : fmin, s);
+      foldFloatConstant(node, maxOpcode ? fmax : fmin, s);
       }
 
    return node;
@@ -17514,28 +17518,34 @@ TR::Node *fmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *dmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   TR_ASSERT(node->getNumChildren() == 2, "max/min node should only support 2 children");
    simplifyChildren(node, block, s);
 
    double min, max;
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
-   bool is_both_const = firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst();
-   bool max_opcode = node->getOpCodeValue() == TR::dmax;
+   bool isBothConst = firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst();
+   bool maxOpcode = node->getOpCodeValue() == TR::dmax;
 
-   if (is_both_const)
+   if (isBothConst)
       {
-      if (firstChild->getDouble() <= secondChild->getDouble())
-         {
-         min = firstChild->getDouble();
-         max = secondChild->getDouble();
-         }
+      if (isNaNDouble(firstChild))
+         min = max = firstChild->getDouble();
+      else if (isNaNDouble(secondChild))
+         min = max = secondChild->getDouble();
       else
          {
-         min = secondChild->getDouble();
-         max = firstChild->getDouble();
+         if (firstChild->getDouble() <= secondChild->getDouble())
+            {
+            min = firstChild->getDouble();
+            max = secondChild->getDouble();
+            }
+         else
+            {
+            min = secondChild->getDouble();
+            max = firstChild->getDouble();
+            }
          }
-      foldDoubleConstant(node, max_opcode ? max : min, s);
+      foldDoubleConstant(node, maxOpcode ? max : min, s);
       }
 
    return node;

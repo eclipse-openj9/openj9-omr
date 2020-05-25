@@ -317,17 +317,21 @@ OMR::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator * cg, TR::CodeGe
 void
 OMR::CodeGenPhase::performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
-   TR::Compilation * comp = cg->comp();
-   phase->reportPhase(PeepholePhase);
+   TR::Compilation* comp = cg->comp();
 
-   TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
-   LexicalTimer pt(phase->getName(), comp->phaseTimer());
+   if (!comp->getOption(TR_DisablePeephole))
+      {
+      phase->reportPhase(PeepholePhase);
 
-   TR::Peephole peephole(comp);
-   peephole.perform();
+      TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
+      LexicalTimer pt(phase->getName(), comp->phaseTimer());
 
-   if (comp->getOption(TR_TraceCG))
-      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Peephole Instructions", false);
+      TR::Peephole peephole(comp);
+      bool performed = peephole.perform();
+
+      if (performed && comp->getOption(TR_TraceCG))
+         comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Peephole Instructions", false);
+      }
    }
 
 

@@ -345,7 +345,11 @@ enum TR_CompilationOptions
    TR_DisableSelectiveNoOptServer         = 0x00020000 + 8,
    TR_DisableStripMining                  = 0x00040000 + 8,
    TR_EnableSharedCacheTiming             = 0x00080000 + 8,
+<<<<<<< HEAD
    TR_EnableTM                            = 0x00100000 + 8,
+=======
+   TR_DisablePeephole                     = 0x00100000 + 8,
+>>>>>>> Add option to disable peephole phase and dump instr. only if performed
    // Available                           = 0x00200000 + 8,
    TR_NoOptServer                         = 0x00400000 + 8,
    TR_DisableDLTrecompilationPrevention   = 0x00800000 + 8,

@@ -38,13 +38,13 @@
     TR::TreeEvaluator::bloadEvaluator, // TR::bload		// load byte
     TR::TreeEvaluator::sloadEvaluator, // TR::sload		// load short integer
     TR::TreeEvaluator::lloadEvaluator, // TR::lload		// load long integer
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::irdbarEvaluator ,	// TR::irdbar
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::frdbarEvaluator ,	// TR::frdbar
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::drdbarEvaluator ,	// TR::drdbar
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ardbarEvaluator ,	// TR::ardbar
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::brdbarEvaluator ,	// TR::brdbar
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::srdbarEvaluator ,	// TR::srdbar
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lrdbarEvaluator ,	// TR::lrdbar
+    TR::TreeEvaluator::irdbarEvaluator, // TR::irdbar
+    TR::TreeEvaluator::frdbarEvaluator, // TR::frdbar
+    TR::TreeEvaluator::drdbarEvaluator, // TR::drdbar
+    TR::TreeEvaluator::ardbarEvaluator, // TR::ardbar
+    TR::TreeEvaluator::brdbarEvaluator, // TR::brdbar
+    TR::TreeEvaluator::srdbarEvaluator, // TR::srdbar
+    TR::TreeEvaluator::lrdbarEvaluator, // TR::lrdbar
     TR::TreeEvaluator::iloadEvaluator, // TR::iloadi		// load indirect integer
     TR::TreeEvaluator::floadEvaluator, // TR::floadi		// load indirect float
     TR::TreeEvaluator::dloadEvaluator, // TR::dloadi		// load indirect double
@@ -52,13 +52,13 @@
     TR::TreeEvaluator::bloadEvaluator, // TR::bloadi		// load indirect byte
     TR::TreeEvaluator::sloadEvaluator, // TR::sloadi		// load indirect short integer
     TR::TreeEvaluator::lloadEvaluator, // TR::lloadi		// load indirect long integer
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::irdbariEvaluator ,	// TR::irdbari
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::frdbariEvaluator ,	// TR::frdbari
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::drdbariEvaluator ,	// TR::drdbari
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ardbariEvaluator ,	// TR::ardbari
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::brdbariEvaluator ,	// TR::brdbari
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::srdbariEvaluator ,	// TR::srdbari
-    TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lrdbariEvaluator ,	// TR::lrdbari
+    TR::TreeEvaluator::irdbariEvaluator, // TR::irdbari
+    TR::TreeEvaluator::frdbariEvaluator, // TR::frdbari
+    TR::TreeEvaluator::drdbariEvaluator, // TR::drdbari
+    TR::TreeEvaluator::ardbariEvaluator, // TR::ardbari
+    TR::TreeEvaluator::brdbariEvaluator, // TR::brdbari
+    TR::TreeEvaluator::srdbariEvaluator, // TR::srdbari
+    TR::TreeEvaluator::lrdbariEvaluator, // TR::lrdbari
     TR::TreeEvaluator::istoreEvaluator, // TR::istore		// store integer
     TR::TreeEvaluator::lstoreEvaluator, // TR::lstore		// store long integer
     TR::TreeEvaluator::fstoreEvaluator, // TR::fstore		// store float

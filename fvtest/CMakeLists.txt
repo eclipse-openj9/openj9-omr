@@ -52,6 +52,10 @@ if(OMR_TEST_COMPILER)
 	add_subdirectory(compilertest)
 endif()
 
+if(OMR_LLJB_TEST)
+	add_subdirectory(lljbtest)
+endif()
+
 if(OMR_JITBUILDER_TEST)
 	add_subdirectory(tril)
 	add_subdirectory(compilertriltest)

@@ -3776,13 +3776,15 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
 // generates max/min code for i, iu, l, lu, f, and d
 static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool max)
    {
-   TR::Node *child  = node->getFirstChild();
-   TR::DataType data_type = child->getDataType();
-   TR::DataType type = child->getType();
+   TR_ASSERT(node->getNumChildren() == 2, "max/min node should only support 2 children");
+
+   TR::Node * firstChild = node->getFirstChild();
+   TR::Node * secondChild = node->getSecondChild();
+   TR::DataType data_type = firstChild->getDataType();
+   TR::DataType type = firstChild->getType();
    TR::InstOpCode::Mnemonic move_op = type.isIntegral() ? TR::InstOpCode::mr : TR::InstOpCode::fmr;
    TR::InstOpCode::Mnemonic cmp_op;
    bool two_reg = (cg->comp()->target().is32Bit() && type.isInt64());
-   TR::Register *trgReg;
 
    switch (node->getOpCodeValue())
       {
@@ -3806,11 +3808,13 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
       default:       TR_ASSERT(false, "assertion failure");       break;
       }
 
-   TR::Register *reg = cg->evaluate(child);
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+   TR::Register *trgReg;
 
-   if (cg->canClobberNodesRegister(child))
+   if (cg->canClobberNodesRegister(firstChild))
       {
-      trgReg = reg; // use first child as a target
+      trgReg = src1Reg; // use first child as a target
       }
    else
       {
@@ -3836,62 +3840,54 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
          }
       if (two_reg)
          {
-         generateTrg1Src1Instruction(cg, move_op, node, trgReg->getLowOrder(), reg->getLowOrder());
-         generateTrg1Src1Instruction(cg, move_op, node, trgReg->getHighOrder(), reg->getHighOrder());
+         generateTrg1Src1Instruction(cg, move_op, node, trgReg->getLowOrder(), src1Reg->getLowOrder());
+         generateTrg1Src1Instruction(cg, move_op, node, trgReg->getHighOrder(), src1Reg->getHighOrder());
          }
       else
          {
-         generateTrg1Src1Instruction(cg, move_op, node, trgReg, reg);
+         generateTrg1Src1Instruction(cg, move_op, node, trgReg, src1Reg);
          }
       }
 
-   int n = node->getNumChildren();
-   for (int i = 1; i < n; i++)
+   TR::Register *condReg = cg->allocateRegister(TR_CCR);
+   TR::LabelSymbol *label = generateLabelSymbol(cg);
+   TR::RegisterDependencyConditions *dep;
+   if (two_reg)
       {
-      TR::Node *child = node->getChild(i);
-      TR::Register *reg = cg->evaluate(child);
-      TR::Register *condReg = cg->allocateRegister(TR_CCR);
-      TR::LabelSymbol *label = generateLabelSymbol(cg);
-      TR::RegisterDependencyConditions *dep;
-      if (two_reg)
-         {
-         TR::PPCControlFlowInstruction *cfop = (TR::PPCControlFlowInstruction *)
-            generateControlFlowInstruction(cg, TR::InstOpCode::iflong, node, NULL /*deps */);
-         cfop->addTargetRegister(condReg);
-         cfop->addSourceRegister(trgReg->getHighOrder());
-         cfop->addSourceRegister(trgReg->getLowOrder());
-         cfop->addSourceRegister(reg->getHighOrder());
-         cfop->addSourceRegister(reg->getLowOrder());
-         cfop->setLabelSymbol(label);
-         cfop->setOpCode2Value(max ? TR::InstOpCode::bge : TR::InstOpCode::ble);
-         generateTrg1Src1Instruction(cg, move_op, node, trgReg->getLowOrder(), reg->getLowOrder());
-         generateTrg1Src1Instruction(cg, move_op, node, trgReg->getHighOrder(), reg->getHighOrder());
+      TR::PPCControlFlowInstruction *cfop = (TR::PPCControlFlowInstruction *)
+         generateControlFlowInstruction(cg, TR::InstOpCode::iflong, node, NULL /*deps */);
+      cfop->addTargetRegister(condReg);
+      cfop->addSourceRegister(trgReg->getHighOrder());
+      cfop->addSourceRegister(trgReg->getLowOrder());
+      cfop->addSourceRegister(src2Reg->getHighOrder());
+      cfop->addSourceRegister(src2Reg->getLowOrder());
+      cfop->setLabelSymbol(label);
+      cfop->setOpCode2Value(max ? TR::InstOpCode::bge : TR::InstOpCode::ble);
+      generateTrg1Src1Instruction(cg, move_op, node, trgReg->getLowOrder(), src2Reg->getLowOrder());
+      generateTrg1Src1Instruction(cg, move_op, node, trgReg->getHighOrder(), src2Reg->getHighOrder());
 
-         dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
-         dep->addPostCondition(trgReg->getLowOrder(), TR::RealRegister::NoReg);
-         dep->addPostCondition(trgReg->getHighOrder(), TR::RealRegister::NoReg);
-         dep->addPostCondition(reg->getLowOrder(), TR::RealRegister::NoReg);
-         dep->addPostCondition(reg->getHighOrder(), TR::RealRegister::NoReg);
-         }
-      else
-         {
-         generateTrg1Src2Instruction(cg, cmp_op, node, condReg, trgReg, reg);
-         generateConditionalBranchInstruction(cg, max ? TR::InstOpCode::bge : TR::InstOpCode::ble, node, label, condReg);
-         generateTrg1Src1Instruction(cg, move_op, node, trgReg, reg);
-
-         dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
-         dep->addPostCondition(trgReg, TR::RealRegister::NoReg);
-         dep->addPostCondition(reg, TR::RealRegister::NoReg);
-         }
-      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, label, dep);
-      cg->stopUsingRegister(condReg);
+      dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+      dep->addPostCondition(trgReg->getLowOrder(), TR::RealRegister::NoReg);
+      dep->addPostCondition(trgReg->getHighOrder(), TR::RealRegister::NoReg);
+      dep->addPostCondition(src2Reg->getLowOrder(), TR::RealRegister::NoReg);
+      dep->addPostCondition(src2Reg->getHighOrder(), TR::RealRegister::NoReg);
       }
+   else
+      {
+      generateTrg1Src2Instruction(cg, cmp_op, node, condReg, trgReg, src2Reg);
+      generateConditionalBranchInstruction(cg, max ? TR::InstOpCode::bge : TR::InstOpCode::ble, node, label, condReg);
+      generateTrg1Src1Instruction(cg, move_op, node, trgReg, src2Reg);
+
+      dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+      dep->addPostCondition(trgReg, TR::RealRegister::NoReg);
+      dep->addPostCondition(src2Reg, TR::RealRegister::NoReg);
+      }
+   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, label, dep);
+   cg->stopUsingRegister(condReg);
 
    node->setRegister(trgReg);
-   for (int i = 0; i < n; i++)
-      {
-      cg->decReferenceCount(node->getChild(i));
-      }
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
    return trgReg;
    }
 

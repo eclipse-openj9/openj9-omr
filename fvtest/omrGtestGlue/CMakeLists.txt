@@ -31,6 +31,11 @@ target_include_directories(omrGtest
 		${PROJECT_SOURCE_DIR}/third_party/gtest-1.8.0/include
 )
 
+# MSVC throws a bunch of warnings (STL4002)about the TR1 namespace on gtest headers
+if(OMR_TOOLCONFIG STREQUAL msvc)
+	target_compile_definitions(omrGtest PUBLIC  _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+endif()
+
 if(OMR_OS_ZOS)
 	if(OMR_TOOLS_USE_NATIVE_ENCODING)
 		target_link_libraries(omrGtest PUBLIC omr_ebcdic)

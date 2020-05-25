@@ -35,14 +35,6 @@ target_link_libraries(j9pool
 		omr_base
 )
 
-if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(j9pool PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-endif()
-
-if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(j9pool PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-endif()
-
 set_property(TARGET j9pool PROPERTY FOLDER util)
 
 target_enable_ddr(j9pool)

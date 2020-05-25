@@ -36,14 +36,6 @@ target_link_libraries(j9a2e
 		omr_base
 )
 
-if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(j9a2e PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-endif()
-
-if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(j9a2e PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-endif()
-
 target_include_directories(j9a2e
 	PUBLIC
 		$<BUILD_INTERFACE:${OMR_SOURCE_DIR}/include_core>

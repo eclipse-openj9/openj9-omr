@@ -45,14 +45,6 @@ target_include_directories(j9avl
 		${CMAKE_CURRENT_BINARY_DIR}
 )
 
-if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(j9avl PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-endif()
-
-if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(j9avl PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-endif()
-
 set_property(TARGET j9avl PROPERTY FOLDER util)
 
 set_target_properties(j9avl PROPERTIES PUBLIC_HEADER ${j9avl_public_headers})

@@ -72,6 +72,19 @@ function(omr_add_library name)
 	if(opt_OUTPUT_NAME)
 		set_target_properties(${name} PROPERTIES OUTPUT_NAME "${opt_OUTPUT_NAME}")
 	endif()
+
+	if(NOT lib_type STREQUAL "INTERFACE")
+		if(OMR_WARNINGS_AS_ERRORS)
+			target_compile_options(${name} PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+		endif()
+
+		if(OMR_ENHANCED_WARNINGS)
+			target_compile_options(${name} PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+		else()
+			target_compile_options(${name} PRIVATE ${OMR_BASE_WARNING_FLAGS})
+		endif()
+	endif()
+
 	if(opt_SHARED)
 		# split debug info if applicable. Note: omr_split_debug is responsible for checking OMR_SEPARATE_DEBUG_INFO
 		omr_process_split_debug(${name})
@@ -93,6 +106,17 @@ function(omr_add_executable name)
 	cmake_parse_arguments(opt "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
 	add_executable(${name} ${opt_UNPARSED_ARGUMENTS})
+
+	if(OMR_WARNINGS_AS_ERRORS)
+		target_compile_options(${name} PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+	endif()
+
+	if(OMR_ENHANCED_WARNINGS)
+		target_compile_options(${name} PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+	else()
+		target_compile_options(${name} PRIVATE ${OMR_BASE_WARNING_FLAGS})
+	endif()
+
 	if(opt_OUTPUT_NAME)
 		set_target_properties(${name} PROPERTIES OUTPUT_NAME "${opt_OUTPUT_NAME}")
 	endif()

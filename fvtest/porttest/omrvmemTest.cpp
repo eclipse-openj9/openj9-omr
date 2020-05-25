@@ -2841,12 +2841,12 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 	BOOLEAN sixteenMBPageSize = FALSE;
 	BOOLEAN sixtyFourKBPageSize = FALSE;
 
-	void *address = NULL;
 	uintptr_t dataSegmentPageSize = 0;
 
 	intptr_t caseIndex = 1;
 	intptr_t i = 0;
 	intptr_t rc = 0;
+	(void) rc;
 
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
@@ -2859,7 +2859,7 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 
 	if (pageSizes[0] == 0) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "There aren't any supported page sizes on this platform \n");
-		goto _exit;
+		return reportTestExit(OMRPORTLIB, testName);
 	}
 
 	for (i = 0 ; pageSizes[i] != 0 ; i++) {
@@ -3024,17 +3024,17 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 #if defined(AIXPPC)
 #define SAMPLE_BLOCK_SIZE 4
 	/* Allocate a memory block using omrmem_allocate_memory, and use the address to get the page size of data segment */
-	address = omrmem_allocate_memory(SAMPLE_BLOCK_SIZE, OMRMEM_CATEGORY_PORT_LIBRARY);
+	void *address = omrmem_allocate_memory(SAMPLE_BLOCK_SIZE, OMRMEM_CATEGORY_PORT_LIBRARY);
 	if (NULL == address) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to allocate block of memory to determine page size of data segment");
-		goto _exit;
+		return reportTestExit(OMRPORTLIB, testName);
 	}
 	struct vm_page_info pageInfo;
 	pageInfo.addr = (uint64_t) address;
 	rc = vmgetinfo(&pageInfo, VM_PAGE_INFO, sizeof(struct vm_page_info));
 	if (-1 == rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to get page size of data segment using vmgetinfo()");
-		goto _exit;
+		return reportTestExit(OMRPORTLIB, testName);
 	} else {
 		dataSegmentPageSize = (uintptr_t) pageInfo.pagesize;
 	}
@@ -3095,7 +3095,7 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 	rc = setenv("TR_ppcCodeCacheConsolidationEnabled", "true", 1 /*overwrite any existing value */);
 	if (-1 == rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to set environment variable TR_ppcCodeCacheConsolidationEnabled");
-		goto _exit;
+		return reportTestExit(OMRPORTLIB, testName);
 	}
 	mode = OMRPORT_VMEM_MEMORY_MODE_EXECUTE;
 	requestedPageSize = 16 * ONE_MB;
@@ -3144,7 +3144,7 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 	rc = setenv("TR_ppcCodeCacheConsolidationEnabled", "true", 1 /*overwrite any existing value */);
 	if (-1 == rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to set environment variable TR_ppcCodeCacheConsolidationEnabled");
-		goto _exit;
+		return reportTestExit(OMRPORTLIB, testName);
 	}
 	mode = OMRPORT_VMEM_MEMORY_MODE_EXECUTE;
 	requestedPageSize = 16 * FOUR_KB;
@@ -3187,7 +3187,7 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 	rc = setenv("TR_ppcCodeCacheConsolidationEnabled", "true", 1 /*overwrite any existing value */);
 	if (-1 == rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to set environment variable TR_ppcCodeCacheConsolidationEnabled");
-		goto _exit;
+		return reportTestExit(OMRPORTLIB, testName);
 	}
 	mode = OMRPORT_VMEM_MEMORY_MODE_EXECUTE;
 	requestedPageSize = FOUR_KB;
@@ -3230,7 +3230,7 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 	rc = setenv("TR_ppcCodeCacheConsolidationEnabled", "true", 1 /*overwrite any existing value */);
 	if (-1 == rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to set environment variable TR_ppcCodeCacheConsolidationEnabled");
-		goto _exit;
+		return reportTestExit(OMRPORTLIB, testName);
 	}
 	mode = OMRPORT_VMEM_MEMORY_MODE_EXECUTE;
 	requestedPageSize = 8 * ONE_MB;
@@ -3251,7 +3251,6 @@ omrvmem_testFindValidPageSize_impl(struct OMRPortLibrary *portLibrary, const cha
 								  requestedPageSize, requestedPageFlags, isSizeSupported);
 #endif /* !defined(OMR_ENV_DATA64) */
 
-_exit:
 	return reportTestExit(OMRPORTLIB, testName);
 }
 

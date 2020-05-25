@@ -21,6 +21,8 @@
 
 include(OmrCompilerSupport)
 
+set(OMR_WARNINGS_AS_ERRORS OFF)
+
 set(COMPILERTEST_FILES
 	compile/ResolvedMethod.cpp
 	control/TestJit.cpp

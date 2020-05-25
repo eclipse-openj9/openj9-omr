@@ -345,14 +345,6 @@ endif()
 
 add_dependencies(omrgc omrgc_hookgen)
 
-if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(omrgc PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-endif()
-
-if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(omrgc PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-endif()
-
 target_include_directories(omrgc
 	PUBLIC
 		.

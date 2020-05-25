@@ -390,15 +390,6 @@ endif()
 
 target_sources(omrport_obj PRIVATE ${resolvedPaths})
 
-
-if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(omrport_obj PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-endif()
-
-if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(omrport_obj PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-endif()
-
 target_include_directories(omrport_obj PRIVATE
 	../nls
 )

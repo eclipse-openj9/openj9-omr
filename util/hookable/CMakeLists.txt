@@ -59,16 +59,6 @@ omr_add_library(j9hookstatic STATIC
 get_target_property(hook_exports j9hook_obj EXPORTED_SYMBOLS)
 omr_add_exports(j9hookstatic ${hook_exports})
 
-if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(j9hook_obj PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-	target_compile_options(j9hookstatic PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-endif()
-
-if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(j9hook_obj PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-	target_compile_options(j9hookstatic PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-endif()
-
 target_include_directories(j9hookstatic
 	PUBLIC
 	$<TARGET_PROPERTY:j9hook_obj,INTERFACE_INCLUDE_DIRECTORIES>

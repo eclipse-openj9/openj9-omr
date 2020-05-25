@@ -37,9 +37,21 @@ public:
         _words.push_back(instr);
     }
 
+    BinaryInstruction(uint32_t prefix, uint32_t suffix) {
+        _words.push_back(prefix);
+        _words.push_back(suffix);
+    }
+
     BinaryInstruction(std::vector<uint32_t> words) : _words(words) {}
 
     const std::vector<uint32_t>& words() const { return _words; }
+
+    BinaryInstruction prepend(BinaryInstruction other) const {
+        std::vector<uint32_t> new_words(other._words);
+        for (size_t i = 0; i < _words.size(); i++)
+            new_words.push_back(_words[i]);
+        return new_words;
+    }
 
     BinaryInstruction operator^(const BinaryInstruction& other) const {
         if (_words.size() != other._words.size())
@@ -76,29 +88,35 @@ public:
 
     uint32_t buf[64];
 
+    // POWER10 prefixed instructions cannot cross a 64-byte boundary, so we need to ensure the
+    // buffer that we encode to is 64-byte aligned to get consistent behaviour.
+    uint32_t* getAlignedBuf() {
+        return reinterpret_cast<uint32_t*>(((reinterpret_cast<uintptr_t>(buf) - 1) & ~0x3f) + 0x40);
+    }
+
     TR::RealRegister* createReg(TR_RegisterKinds kind, TR::RealRegister::RegNum reg, TR::RealRegister::RegMask mask) {
         return new (cg()->trHeapMemory()) TR::RealRegister(kind, 0, TR::RealRegister::Free, reg, mask, cg());
     }
 
     PowerBinaryEncoderTest() {
         fakeNode = TR::Node::create(TR::treetop);
-        cg()->setBinaryBufferStart(reinterpret_cast<uint8_t*>(&buf[0]));
+        cg()->setBinaryBufferStart(reinterpret_cast<uint8_t*>(&getAlignedBuf()[0]));
     }
 
     BinaryInstruction getEncodedInstruction(size_t size, uint32_t off = 0) {
-        return std::vector<uint32_t>(&buf[off], &buf[off + (size / 4)]);
+        return std::vector<uint32_t>(&getAlignedBuf()[off / 4], &getAlignedBuf()[(off + size) / 4]);
     }
 
     BinaryInstruction encodeInstruction(TR::Instruction *instr, uint32_t off = 0) {
         instr->estimateBinaryLength(0);
-        cg()->setBinaryBufferCursor(reinterpret_cast<uint8_t*>(&buf[0]) + off);
+        cg()->setBinaryBufferCursor(reinterpret_cast<uint8_t*>(&getAlignedBuf()[0]) + off);
 
         instr->generateBinaryEncoding();
         return getEncodedInstruction(instr->getBinaryLength(), off);
     }
 
     BinaryInstruction getBlankEncoding(TR::InstOpCode opCode) {
-        opCode.copyBinaryToBuffer(reinterpret_cast<uint8_t*>(&buf[0]));
+        opCode.copyBinaryToBuffer(reinterpret_cast<uint8_t*>(&getAlignedBuf()[0]));
 
         return getEncodedInstruction(opCode.getBinaryLength());
     }
@@ -145,7 +163,7 @@ TEST_P(PPCRecordFormSanityTest, checkFlippedBit) {
     );
 }
 
-class PPCDirectEncodingTest : public PowerBinaryEncoderTest, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, BinaryInstruction>> {};
+class PPCDirectEncodingTest : public PowerBinaryEncoderTest, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, BinaryInstruction, bool>> {};
 
 TEST_P(PPCDirectEncodingTest, encode) {
     auto instr = generateInstruction(cg(), std::get<0>(GetParam()), fakeNode);
@@ -153,11 +171,22 @@ TEST_P(PPCDirectEncodingTest, encode) {
     ASSERT_EQ(std::get<1>(GetParam()), encodeInstruction(instr));
 }
 
+TEST_P(PPCDirectEncodingTest, encodePrefixCrossingBoundary) {
+    auto instr = generateInstruction(cg(), std::get<0>(GetParam()), fakeNode);
+
+    ASSERT_EQ(
+        std::get<2>(GetParam())
+            ? std::get<1>(GetParam()).prepend(TR::InstOpCode::metadata[TR::InstOpCode::nop].opcode)
+            : std::get<1>(GetParam()),
+        encodeInstruction(instr, 60)
+    );
+}
+
 class PPCLabelEncodingTest : public PowerBinaryEncoderTest, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, ssize_t, BinaryInstruction>> {};
 
 TEST_P(PPCLabelEncodingTest, encode) {
     auto label = generateLabelSymbol(cg());
-    label->setCodeLocation(reinterpret_cast<uint8_t*>(buf) + std::get<1>(GetParam()));
+    label->setCodeLocation(reinterpret_cast<uint8_t*>(getAlignedBuf()) + std::get<1>(GetParam()));
 
     auto instr = generateLabelInstruction(
         cg(),
@@ -185,7 +214,7 @@ TEST_P(PPCLabelEncodingTest, encodeWithRelocation) {
     );
 
     auto size = encodeInstruction(instr)._words.size() * 4;
-    label->setCodeLocation(reinterpret_cast<uint8_t*>(buf) + std::get<1>(GetParam()));
+    label->setCodeLocation(reinterpret_cast<uint8_t*>(getAlignedBuf()) + std::get<1>(GetParam()));
     cg()->processRelocations();
 
     ASSERT_EQ(std::get<2>(GetParam()), getEncodedInstruction(size));
@@ -193,7 +222,7 @@ TEST_P(PPCLabelEncodingTest, encodeWithRelocation) {
 
 TEST_P(PPCLabelEncodingTest, labelLocation) {
     auto label = generateLabelSymbol(cg());
-    label->setCodeLocation(reinterpret_cast<uint8_t*>(buf) + std::get<1>(GetParam()));
+    label->setCodeLocation(reinterpret_cast<uint8_t*>(getAlignedBuf()) + std::get<1>(GetParam()));
 
     auto instr = generateLabelInstruction(
         cg(),
@@ -207,7 +236,7 @@ TEST_P(PPCLabelEncodingTest, labelLocation) {
     if (std::get<1>(GetParam()) == -1)
         ASSERT_EQ(instr->getBinaryEncoding(), label->getCodeLocation());
     else
-        ASSERT_EQ(reinterpret_cast<uint8_t*>(buf) + std::get<1>(GetParam()), label->getCodeLocation());
+        ASSERT_EQ(reinterpret_cast<uint8_t*>(getAlignedBuf()) + std::get<1>(GetParam()), label->getCodeLocation());
 }
 
 class PPCConditionalBranchEncodingTest : public PowerBinaryEncoderTest, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, ssize_t, BinaryInstruction>> {};
@@ -215,7 +244,7 @@ class PPCConditionalBranchEncodingTest : public PowerBinaryEncoderTest, public :
 TEST_P(PPCConditionalBranchEncodingTest, encode) {
     auto label = std::get<2>(GetParam()) != -1 ? generateLabelSymbol(cg()) : NULL;
     if (label)
-        label->setCodeLocation(reinterpret_cast<uint8_t*>(buf) + std::get<2>(GetParam()));
+        label->setCodeLocation(reinterpret_cast<uint8_t*>(getAlignedBuf()) + std::get<2>(GetParam()));
 
     auto instr = generateConditionalBranchInstruction(
         cg(),
@@ -242,7 +271,7 @@ TEST_P(PPCConditionalBranchEncodingTest, encodeWithRelocation) {
     );
 
     auto size = encodeInstruction(instr)._words.size() * 4;
-    label->setCodeLocation(reinterpret_cast<uint8_t*>(buf) + std::get<2>(GetParam()));
+    label->setCodeLocation(reinterpret_cast<uint8_t*>(getAlignedBuf()) + std::get<2>(GetParam()));
     cg()->processRelocations();
 
     ASSERT_EQ(std::get<3>(GetParam()), getEncodedInstruction(size));
@@ -835,12 +864,13 @@ TEST_P(PPCFenceEncodingTest, testEntryRelative32Bit) {
  */
 
 INSTANTIATE_TEST_CASE_P(Special, PPCDirectEncodingTest, ::testing::Values(
-    std::make_tuple(TR::InstOpCode::assocreg, BinaryInstruction()),
-    std::make_tuple(TR::InstOpCode::bad,      0x00000000u),
-    std::make_tuple(TR::InstOpCode::isync,    0x4c00012cu),
-    std::make_tuple(TR::InstOpCode::lwsync,   0x7c2004acu),
-    std::make_tuple(TR::InstOpCode::sync,     0x7c0004acu),
-    std::make_tuple(TR::InstOpCode::nop,      0x60000000u)
+    std::make_tuple(TR::InstOpCode::assocreg, BinaryInstruction(), false),
+    std::make_tuple(TR::InstOpCode::bad,      0x00000000u, false),
+    std::make_tuple(TR::InstOpCode::isync,    0x4c00012cu, false),
+    std::make_tuple(TR::InstOpCode::lwsync,   0x7c2004acu, false),
+    std::make_tuple(TR::InstOpCode::sync,     0x7c0004acu, false),
+    std::make_tuple(TR::InstOpCode::nop,      0x60000000u, false),
+    std::make_tuple(TR::InstOpCode::pnop,     BinaryInstruction(0x07000000u, 0x00000000u), true)
 ));
 
 INSTANTIATE_TEST_CASE_P(Special, PPCLabelEncodingTest, ::testing::Values(
@@ -866,10 +896,10 @@ INSTANTIATE_TEST_CASE_P(Special, PPCRecordFormSanityTest, ::testing::Values(
 ));
 
 INSTANTIATE_TEST_CASE_P(Branch, PPCDirectEncodingTest, ::testing::Values(
-    std::make_tuple(TR::InstOpCode::bctr,  0x4e800420u),
-    std::make_tuple(TR::InstOpCode::bctrl, 0x4e800421u),
-    std::make_tuple(TR::InstOpCode::blr,   0x4e800020u),
-    std::make_tuple(TR::InstOpCode::blrl,  0x4e800021u)
+    std::make_tuple(TR::InstOpCode::bctr,  0x4e800420u, false),
+    std::make_tuple(TR::InstOpCode::bctrl, 0x4e800421u, false),
+    std::make_tuple(TR::InstOpCode::blr,   0x4e800020u, false),
+    std::make_tuple(TR::InstOpCode::blrl,  0x4e800021u, false)
 ));
 
 INSTANTIATE_TEST_CASE_P(Branch, PPCLabelEncodingTest, ::testing::Values(
@@ -2850,10 +2880,10 @@ INSTANTIATE_TEST_CASE_P(DFP, PPCRecordFormSanityTest, ::testing::Values(
 ));
 
 INSTANTIATE_TEST_CASE_P(TM, PPCDirectEncodingTest, ::testing::Values(
-    std::make_tuple(TR::InstOpCode::tabort_r,   0x7c00071du),
-    std::make_tuple(TR::InstOpCode::tbegin_r,   0x7c00051du),
-    std::make_tuple(TR::InstOpCode::tbeginro_r, 0x7c20051du),
-    std::make_tuple(TR::InstOpCode::tend_r,     0x7c00055du)
+    std::make_tuple(TR::InstOpCode::tabort_r,   0x7c00071du, false),
+    std::make_tuple(TR::InstOpCode::tbegin_r,   0x7c00051du, false),
+    std::make_tuple(TR::InstOpCode::tbeginro_r, 0x7c20051du, false),
+    std::make_tuple(TR::InstOpCode::tend_r,     0x7c00055du, false)
 ));
 
 INSTANTIATE_TEST_CASE_P(TM, PPCSrc1EncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, uint32_t, BinaryInstruction>>(

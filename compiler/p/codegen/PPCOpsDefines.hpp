@@ -32,9 +32,10 @@ FORMAT_UNKNOWN,
 // Format for pseudoinstructions that don't emit any actual instructions.
 FORMAT_NONE,
 
-// Format for instructions whose binary encoding is copied directly into the instruction stream
+// Formats for instructions whose binary encoding is copied directly into the instruction stream
 // without filling in any fields.
 FORMAT_DIRECT,
+FORMAT_DIRECT_PREFIXED,
 
 // Format for the dd instruction, which is simply a single word placed into the instruction stream.
 FORMAT_DD,

@@ -13274,9 +13274,9 @@
    /* .mnemonic    = */ OMR::InstOpCode::pnop,
    /* .name        = */ "pnop",
    /* .description =    "Prefixed Nop", */
-   /* .prefix      = */ 0x00000000,
+   /* .prefix      = */ 0x07000000,
    /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_DIRECT_PREFIXED,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },

@@ -175,6 +175,8 @@ class InstOpCode: public OMR::InstOpCode
          {
          case FORMAT_NONE:
             return 0;
+         case FORMAT_DIRECT_PREFIXED:
+            return 8;
          default:
             return 4;
          }
@@ -182,20 +184,43 @@ class InstOpCode: public OMR::InstOpCode
 
    int8_t getMaxBinaryLength()
       {
-      return getBinaryLength();
+      switch (getFormat())
+         {
+         case FORMAT_NONE:
+            return 0;
+         case FORMAT_DIRECT_PREFIXED:
+            // Prefixed instructions can't cross a 64-byte boundary, so we may need to emit a nop
+            // to avoid this.
+            return 12;
+         default:
+            return 4;
+         }
       }
 
-   uint8_t *copyBinaryToBuffer(uint8_t *cursor)
+   uint8_t *copyBinaryToBuffer(uint8_t *byteCursor)
       {
+      uint32_t *cursor = reinterpret_cast<uint32_t*>(byteCursor);
       switch (getFormat())
          {
          case FORMAT_NONE:
             break;
+         case FORMAT_DIRECT_PREFIXED:
+            // Prefixed instructions can't cross a 64-byte boundary, so we may need to emit a nop
+            // to avoid this.
+            if (reinterpret_cast<uintptr_t>(cursor + 1) % 64 == 0)
+               {
+               *cursor = metadata[OMR::InstOpCode::nop].opcode;
+               cursor++;
+               byteCursor += 4;
+               }
+            cursor[0] = metadata[_mnemonic].prefix;
+            cursor[1] = metadata[_mnemonic].opcode;
+            break;
          default:
-            *reinterpret_cast<uint32_t*>(cursor) = metadata[_mnemonic].opcode;
+            *cursor = metadata[_mnemonic].opcode;
             break;
          }
-      return cursor;
+      return byteCursor;
       }
    };
 }

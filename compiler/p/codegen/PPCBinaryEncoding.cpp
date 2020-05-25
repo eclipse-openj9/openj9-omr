@@ -859,6 +859,7 @@ OMR::Power::Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          break;
 
       case FORMAT_DIRECT:
+      case FORMAT_DIRECT_PREFIXED:
          // TODO: Split genop into two instructions depending on version of Power in use
          if (self()->getOpCodeValue() == TR::InstOpCode::genop)
             {

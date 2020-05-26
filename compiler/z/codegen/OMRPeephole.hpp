@@ -60,9 +60,6 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
     *     Tries to reduce L[' '|FH|G] R,MR1  ST[' '|FH|G] R,MR2 sequences to MVC MR2, MR1
     *     to save a register and instruction.
     *
-    *  \param cursor
-    *     The instruction cursor currently being processed.
-    *
     *  \param storeOpCode
     *     The store op code that matches the load.
     *

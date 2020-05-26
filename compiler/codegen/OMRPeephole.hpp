@@ -57,7 +57,27 @@ class OMR_EXTENSIBLE Peephole
 
    public:
 
+   /** \brief
+    *     Performs peephole optimizations on the entire instruction stream by traversing instructions from start until
+    *     the end of the method and repeatedly calling performOnInstruction API for each instruction. If the result of
+    *     the API call performOnInstruction indicates that a transformation was performed, the peephole window restarts
+    *     on the previous instruction. All peepholes optimizations must ensure they only modify instructions downstream
+    *     and never affect any instructions previously processed.
+    *
+    *  \return
+    *     true if any transformation was performed; false otherwise.
+    */
    virtual bool perform();
+
+   /** \brief
+    *     Performs peephole optimizations on an instruction cursor.
+    *
+    *  \param cursor
+    *     The instruction cursor currently being processed.
+    *
+    *  \return
+    *     true if any transformation was performed; false otherwise.
+    */
    virtual bool performOnInstruction(TR::Instruction* cursor);
 
    private:

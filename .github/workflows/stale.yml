@@ -19,3 +19,4 @@ jobs:
         exempt-issue-labels: 'backlog'
         stale-issue-label: 'stale'
         stale-pr-label: 'stale'
+        debug-only: true

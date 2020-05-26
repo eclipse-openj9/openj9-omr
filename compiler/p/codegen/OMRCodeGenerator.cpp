@@ -279,8 +279,10 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
    /*
     * TODO: TM is currently not compatible with read barriers. If read barriers are required, TM is disabled until the issue is fixed.
+    *       TM is now disabled by default, due to various reasons (OS, hardware, etc), unless it is explicitly enabled.
     */
-   if (self()->comp()->target().cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
+   if (self()->comp()->target().cpu.getPPCSupportsTM() && self()->comp()->getOption(TR_EnableTM) &&
+       !self()->comp()->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
       self()->setSupportsTM();
 
    if (self()->comp()->target().cpu.getPPCSupportsVMX() && self()->comp()->target().cpu.getPPCSupportsVSX())

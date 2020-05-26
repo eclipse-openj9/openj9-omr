@@ -747,6 +747,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableSymbolValidationManager",      "M\tEnable Symbol Validation Manager for Relocatable Compile Validations", SET_OPTION_BIT(TR_EnableSymbolValidationManager), "F"},
    {"enableTailCallOpt",                  "R\tenable tall call optimization in peephole", SET_OPTION_BIT(TR_EnableTailCallOpt), "F"},
    {"enableThisLiveRangeExtension",       "R\tenable this live range extesion to the end of the method", SET_OPTION_BIT(TR_EnableThisLiveRangeExtension), "F"},
+   {"enableTM",                           "O\tenable transactional memory support", SET_OPTION_BIT(TR_EnableTM), "F"},
    {"enableTraps",                        "C\tenable trap instructions",                     RESET_OPTION_BIT(TR_DisableTraps), "F"},
    {"enableTreePatternMatching",          "O\tEnable opts that use the TR_Pattern framework", RESET_OPTION_BIT(TR_DisableTreePatternMatching), "F"},
    {"enableUpgradesByJitSamplingWhenHWProfilingEnabled", "O\tAllow Jit Sampling to upgrade cold compilations when HW Profiling is on",

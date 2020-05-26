@@ -20,7 +20,9 @@
  *******************************************************************************/
 
 #include "codegen/Peephole.hpp"
+
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/Instruction.hpp"
 
 OMR::Peephole::Peephole(TR::Compilation* comp) :

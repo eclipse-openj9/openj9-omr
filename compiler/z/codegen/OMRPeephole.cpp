@@ -26,6 +26,7 @@
 #include "codegen/Peephole.hpp"
 
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/S390GenerateInstructions.hpp"
 #include "codegen/S390Instruction.hpp"

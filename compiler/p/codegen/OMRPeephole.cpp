@@ -22,6 +22,7 @@
 #include "codegen/Peephole.hpp"
 
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/GenerateOMRInstructions.hpp"
 #include "codegen/Instruction.hpp"
 #include "p/codegen/PPCInstruction.hpp"

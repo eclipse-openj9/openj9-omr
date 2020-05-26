@@ -2159,7 +2159,7 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsock.c::omrsock_htonl "omrsock_htonl"*/
 	uint32_t (*sock_htonl)(struct OMRPortLibrary *portLibrary, uint32_t val) ;
 	/** see @ref omrsock.c::omrsock_inet_pton "omrsock_inet_pton"*/
-	int32_t (*sock_inet_pton)(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder) ;
+	int32_t (*sock_inet_pton)(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result) ;
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 #if defined(OMR_OPT_CUDA)
 	/** CUDA configuration data */
@@ -2630,7 +2630,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsock_shutdown() privateOmrPortLibrary->sock_shutdown(privateOmrPortLibrary)
 #define omrsock_htons(param1) privateOmrPortLibrary->sock_htons(privateOmrPortLibrary, (param1))
 #define omrsock_htonl(param1) privateOmrPortLibrary->sock_htonl(privateOmrPortLibrary, (param1))
-#define omrsock_inet_pton(param1) privateOmrPortLibrary->sock_inet_pton(privateOmrPortLibrary, (param1))
+#define omrsock_inet_pton(param1,param2,param3) privateOmrPortLibrary->sock_inet_pton(privateOmrPortLibrary, (param1), (param2), (param3))
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 
 #if defined(OMR_OPT_CUDA)

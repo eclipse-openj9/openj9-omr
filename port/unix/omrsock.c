@@ -41,6 +41,10 @@
 #include "omrporterror.h"
 #include "omrsockptb.h"
 
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+#include "atoe.h"
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
+
 /* Internal: OMRSOCK user interface constants TO OS dependent constants mapping. */
 
 /**
@@ -490,13 +494,57 @@ omrsock_listen(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_
 int32_t
 omrsock_connect(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_sockaddr_t addr)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	socklen_t addrLength;
+
+	if (NULL == addr || NULL == sock) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	if (OS_SOCK_AF_INET == addr->data.ss_family) {
+		addrLength = sizeof(omr_os_sockaddr_in);
+	}
+	else {
+		addrLength = sizeof(omr_os_sockaddr_in6);
+	}
+
+	if (connect(sock->data, (omr_os_sockaddr *)&addr->data, addrLength) < 0) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_CONNECT_FAILED);
+		return OMRPORT_ERROR_SOCK_CONNECT_FAILED;
+	}
+	return 0;
 }
 
 int32_t
 omrsock_accept(struct OMRPortLibrary *portLibrary, omrsock_socket_t serverSock, omrsock_sockaddr_t addrHandle, omrsock_socket_t *sockHandle)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	int32_t	connSocketDescriptor;
+
+#if defined(OMR_OS_ZOS)
+	int32_t addrLength = sizeof(omr_os_sockaddr_storage);
+#else
+	socklen_t addrLength = sizeof(omr_os_sockaddr_storage);
+#endif
+
+	if (NULL == serverSock || NULL == addrHandle) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	*sockHandle = NULL;
+
+	connSocketDescriptor = accept(serverSock->data, (omr_os_sockaddr *)&addrHandle->data, &addrLength);
+	if (connSocketDescriptor < 0) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_ACCEPT_FAILED);
+		return OMRPORT_ERROR_SOCK_ACCEPT_FAILED;
+	}
+
+	*sockHandle = (omrsock_socket_t)portLibrary->mem_allocate_memory(portLibrary, sizeof(struct OMRSocket), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+	if (*sockHandle == NULL) {
+		close(connSocketDescriptor);
+		return OMRPORT_ERROR_SOCK_SYSTEM_FULL; 
+	}
+
+	(*sockHandle)->data = connSocketDescriptor;
+	return 0;
 }
 
 int32_t
@@ -558,16 +606,32 @@ omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val)
 }
 
 int32_t
-omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder)
+omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result)
 {
-	if (NULL == addrNetworkOrder) {
+	int32_t rc;
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+	char *addrA2e;
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
+
+	if (NULL == result) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 
-	if (1 != inet_pton(get_os_family(addrFamily), addr, addrNetworkOrder)) {
-		return OMRPORT_ERROR_SOCK_INET_PTON_FAILED;
-	}
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+	addrA2e = a2e(addr, strlen(addr));
+	rc = inet_pton(get_os_family(addrFamily), addrA2e, (void *)result);
+	free(addrA2e);
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
+	rc = inet_pton(get_os_family(addrFamily), addr, (void *)result);
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
+	if (rc == 0) {
+		portLibrary->error_set_last_error(portLibrary, 0, OMRPORT_ERROR_SOCK_INVALID_ADDRESS);
+		return OMRPORT_ERROR_SOCK_INVALID_ADDRESS;
+	} else if (rc == -1) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_UNSUPPORTED_AF);
+		return OMRPORT_ERROR_SOCK_UNSUPPORTED_AF;
+	}
 	return 0;
 }
 

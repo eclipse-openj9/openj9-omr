@@ -33,6 +33,11 @@
 #define _OE_SOCKETS
 #endif
 
+/* This exposes some definitions needed by the socket api */
+#if defined(OMR_OS_ZOS) && !defined(_OPEN_SYS_SOCK_IPV6)
+#define _OPEN_SYS_SOCK_IPV6
+#endif
+
 #include <sys/types.h> /* Some historical implementations need this file, POSIX.1-2001 does not. */
 #include <sys/socket.h>
 

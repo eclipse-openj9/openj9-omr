@@ -41,9 +41,18 @@
  * @return 0 on success, return an error otherwise.
  */ 
 int32_t
-start_server(struct OMRPortLibrary *portLibrary, const char *addrStr, const char *port, int32_t family, omrsock_socket_t *serverSocket, omrsock_sockaddr_t serverAddr) 
+start_server(struct OMRPortLibrary *portLibrary, int32_t family, int32_t socktype, omrsock_socket_t *serverSocket, omrsock_sockaddr_t serverSockAddr) 
 {
-	return OMRPORT_ERROR_NOTEXIST;
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, serverSocket, family, socktype, OMRSOCK_IPPROTO_DEFAULT), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, *serverSocket, serverSockAddr), 0);
+
+	if (OMRSOCK_STREAM == socktype) {
+		EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, *serverSocket, 10), 0);
+	}
+
+	return 0;
 }
 
 /**
@@ -59,9 +68,37 @@ start_server(struct OMRPortLibrary *portLibrary, const char *addrStr, const char
  * @return 0 on success, return an error otherwise.
  */ 
 int32_t
-connect_client_to_server(struct OMRPortLibrary *portLibrary, const char *addrStr, const char *port, int32_t family, omrsock_socket_t *sessionClientSocket, omrsock_sockaddr_t sessionClientAddr) 
+connect_client_to_server(struct OMRPortLibrary *portLibrary, const char *addrStr, const char *port, int32_t family, int32_t socktype, omrsock_socket_t *clientSocket, omrsock_sockaddr_t clientSockAddr, omrsock_sockaddr_t serverSockAddr) 
 {
-	return OMRPORT_ERROR_NOTEXIST;
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	omrsock_addrinfo_t hints = NULL;
+	OMRAddrInfoNode result;
+	uint32_t length = 0;
+	int32_t resultFamily;
+	int32_t resultSocktype;
+	int32_t resultProtocol;
+
+	EXPECT_EQ(OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, family, socktype, OMRSOCK_IPPROTO_DEFAULT, 0), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, addrStr, port, hints, &result), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length), 0);
+	EXPECT_NE(length, 0);
+
+	/* Create a socket with results. */
+	for (uint32_t i = 0; i < length; i++) {
+		EXPECT_EQ(OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, &result, i, &resultFamily), 0);
+		EXPECT_EQ(OMRPORTLIB->sock_addrinfo_socktype(OMRPORTLIB, &result, i, &resultSocktype), 0);
+		EXPECT_EQ(OMRPORTLIB->sock_addrinfo_protocol(OMRPORTLIB, &result, i, &resultProtocol), 0);
+
+		if(0 == OMRPORTLIB->sock_socket(OMRPORTLIB, clientSocket, resultFamily, resultSocktype, resultProtocol)) {
+			EXPECT_NE(clientSocket, (void *)NULL);
+			EXPECT_EQ(OMRPORTLIB->sock_addrinfo_address(OMRPORTLIB, &result, i, clientSockAddr), 0);
+			break;
+		}
+	}
+	EXPECT_EQ(OMRPORTLIB->sock_connect(OMRPORTLIB, *clientSocket, serverSockAddr), 0);
+
+	return 0;
 }
 
 /**
@@ -358,7 +395,6 @@ TEST(PortSockTest, create_dotted_decimal_IPv4_socket_address)
 	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
-
 }
 
 /**
@@ -437,21 +473,83 @@ TEST(PortSockTest, create_IPv4_mapped_IPv6_Socket_Address)
 }
 
 /**
- * Test functions to set up a connection by using two sockets, which talk to each other.
+ * Test functions to set up a stream connection by using two sockets, which talk to each other.
  *
  * First, the server starts and listens for connections. Then, the
  * client starts and sends a request to connect to the server. The messages are
  * sent both ways, and it is checked if they were sent correctly.
  * 
- * Address families tested include IPv4 and IPv6 (if supported). Socket types
- * tested include stream and datagram.
+ * Address families tested include IPv4 and socket types tested is stream.
  *
  * @note Errors such as failed function calls, failure to create server and/or client, wrong 
  * message sent/received, will be reported.
  */
-TEST(PortSockTest, two_socket_communication)
+TEST(PortSockTest, two_socket_stream_communication)
 {
-	/* Unimplemented. */
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	OMRSockAddrStorage serverStreamSockAddr;
+	omrsock_socket_t serverStreamSocket = NULL;
+	uint16_t port = 4930;
+	uint8_t serverAddr[4];
+
+	/* To Create a Server Socket and Address */
+	uint32_t inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
+	memcpy(serverAddr, &inaddrAny, 4);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &serverStreamSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+	EXPECT_EQ(start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_STREAM, &serverStreamSocket, &serverStreamSockAddr), 0);
+
+	/* To Create a Client Socket and Address */
+	OMRSockAddrStorage clientStreamSockAddr;
+	omrsock_socket_t clientStreamSocket = NULL;
+	EXPECT_EQ(connect_client_to_server(OMRPORTLIB, (char *)"localhost", NULL, OMRSOCK_AF_INET, OMRSOCK_STREAM, &clientStreamSocket, &clientStreamSockAddr, &serverStreamSockAddr), 0);
+
+	/* Accept Connection */
+	OMRSockAddrStorage connectedClientStreamSockAddr;
+	omrsock_socket_t connectedClientStreamSocket = NULL;
+	EXPECT_EQ(OMRPORTLIB->sock_accept(OMRPORTLIB, serverStreamSocket, &connectedClientStreamSockAddr, &connectedClientStreamSocket), 0);
+
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedClientStreamSocket), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientStreamSocket), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverStreamSocket), 0);
+}
+
+/**
+ * Test functions to set up a datagram connection by using two sockets, which talk to each other.
+ *
+ * First, the server is set up, and then, the client is set up sends a request to 
+ * connect to the server (this is optional). The messages are sent both ways, and 
+ * it is checked if they were sent correctly.
+ * 
+ * Address families tested include IPv4 in this test case. Socket types
+ * tested is datagram.
+ *
+ * @note Errors such as failed function calls, failure to create server and/or client, wrong 
+ * message sent/received, will be reported.
+ */
+TEST(PortSockTest, two_socket_datagram_communication)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	OMRSockAddrStorage serverSockAddr;
+	omrsock_socket_t serverSocket = NULL;
+	uint16_t port = 4930;
+	uint8_t serverAddr[4];
+
+	/* To Create a Server Socket and Address */
+	uint32_t inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
+	memcpy(serverAddr, &inaddrAny, 4);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB,  &serverSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+	/* Datagram server sockets does not need to listen and accept */
+	EXPECT_EQ(start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_DGRAM, &serverSocket, &serverSockAddr), 0);
+
+	OMRSockAddrStorage clientSockAddr;
+	omrsock_socket_t clientSocket = NULL;
+	/* Connect is optional for datagram clients */
+	EXPECT_EQ(connect_client_to_server(OMRPORTLIB, (char *)"localhost", NULL, OMRSOCK_AF_INET, OMRSOCK_DGRAM, &clientSocket, &clientSockAddr, &serverSockAddr), 0);
+
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
 }
 
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

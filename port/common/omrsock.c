@@ -507,12 +507,12 @@ omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val)
  * @param[in] portLibrary The port library.
  * @param[in] addrFamily The address family.
  * @param[in] addr The address string to be converted.
- * @param[out] addrNetworkOrder The address in network order.
+ * @param[out] result The address in network order.
  *
  * @return 0, if no errors occurred, otherwise return an error.
  */
 int32_t
-omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder)
+omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }

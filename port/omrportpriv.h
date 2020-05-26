@@ -664,7 +664,7 @@ omrsock_htons(struct OMRPortLibrary *portLibrary, uint16_t val);
 extern J9_CFUNC uint32_t
 omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val);
 extern J9_CFUNC int32_t
-omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *addrNetworkOrder);
+omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result);
 #endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 
 /* J9SourceJ9Str*/

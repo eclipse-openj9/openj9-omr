@@ -348,60 +348,70 @@ static TR::Register *icmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool 
    return trgReg;
    }
 
+// also handles bcmpeq, bucmpeq, scmpeq, sucmpeq
 TR::Register *
 OMR::ARM64::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_EQ, false, cg);
    }
 
+// also handles bcmpne, bucmpne, scmpne, sucmpne
 TR::Register *
 OMR::ARM64::TreeEvaluator::icmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_NE, false, cg);
    }
 
+// also handles bcmplt, scmplt
 TR::Register *
 OMR::ARM64::TreeEvaluator::icmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_LT, false, cg);
    }
 
+// also handles bcmple, scmple
 TR::Register *
 OMR::ARM64::TreeEvaluator::icmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_LE, false, cg);
    }
 
+// also handles bcmpge, scmpge
 TR::Register *
 OMR::ARM64::TreeEvaluator::icmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_GE, false, cg);
    }
 
+// also handles bcmpgt, scmpgt
 TR::Register *
 OMR::ARM64::TreeEvaluator::icmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_GT, false, cg);
    }
 
+// also handles bucmplt, sucmplt
 TR::Register *
 OMR::ARM64::TreeEvaluator::iucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_CC, false, cg);
    }
 
+// also handles bucmple, sucmple
 TR::Register *
 OMR::ARM64::TreeEvaluator::iucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_LS, false, cg);
    }
 
+// also handles bucmpge, sucmpge
 TR::Register *
 OMR::ARM64::TreeEvaluator::iucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_CS, false, cg);
    }
 
+// also handles bucmpgt, sucmpgt
 TR::Register *
 OMR::ARM64::TreeEvaluator::iucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

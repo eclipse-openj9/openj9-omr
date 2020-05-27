@@ -759,7 +759,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, bool d_form)
    if (mr->getIndexRegister() != NULL)
       print(pOutFile, mr->getIndexRegister());
    else
-      trfprintf(pOutFile, "%d", mr->getOffset(*_comp));
+      trfprintf(pOutFile, "%lld", mr->getOffset(*_comp));
 
    trfprintf(pOutFile, "]");
    }

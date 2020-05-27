@@ -69,6 +69,10 @@ class TR_OpaqueClassBlock;
 
 static TR::RealRegister::RegNum choose_rX(TR::Instruction *, TR::RealRegister *);
 
+TR::MemoryReference *TR::MemoryReference::withDisplacement(TR::CodeGenerator *cg, TR::Register *baseReg, int64_t displacement, int8_t length)
+   {
+   return new (cg->trHeapMemory()) TR::MemoryReference(baseReg, displacement, length, cg, 0);
+   }
 
 OMR::Power::MemoryReference::MemoryReference(
       TR::CodeGenerator *cg) :
@@ -111,6 +115,14 @@ OMR::Power::MemoryReference::MemoryReference(
       int32_t disp,
       uint8_t len,
       TR::CodeGenerator *cg) :
+   OMR::Power::MemoryReference(br, static_cast<int64_t>(disp), len, cg, 0) {}
+
+OMR::Power::MemoryReference::MemoryReference(
+      TR::Register *br,
+      int64_t disp,
+      uint8_t len,
+      TR::CodeGenerator *cg,
+      int) :
    _baseRegister(br),
    _baseNode(NULL),
    _indexRegister(NULL),
@@ -292,7 +304,7 @@ int32_t OMR::Power::MemoryReference::getTOCOffset()
    return 0;
    }
 
-void OMR::Power::MemoryReference::addToOffset(TR::Node * node, intptr_t amount, TR::CodeGenerator *cg)
+void OMR::Power::MemoryReference::addToOffset(TR::Node * node, int64_t amount, TR::CodeGenerator *cg)
    {
    // in compressedRefs mode, amount maybe heapBase constant, which in
    // most cases is quite large
@@ -570,7 +582,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             self()->populateMemoryReference(addressChild, cg);
             if (cg->comp()->target().is64Bit())
                {
-               intptr_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
+               int64_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
                                    integerChild->getInt() :
                                    integerChild->getLongInt();
                self()->addToOffset(integerChild, amount, cg);
@@ -596,7 +608,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          {
          if (cg->comp()->target().is64Bit())
             { // 64-bit
-            intptr_t amount = (subTree->getSecondChild()->getOpCodeValue() == TR::iconst) ?
+            int64_t amount = (subTree->getSecondChild()->getOpCodeValue() == TR::iconst) ?
                                 subTree->getSecondChild()->getInt() :
                                 subTree->getSecondChild()->getLongInt();
             // lshl
@@ -672,7 +684,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
                subTree->getOpCodeValue() == TR::iconst || // subTree->getOpCode().isLoadConst ?
                subTree->getOpCodeValue() == TR::lconst)
          {
-         intptr_t amount = (subTree->getOpCodeValue() == TR::iconst) ?
+         int64_t amount = (subTree->getOpCodeValue() == TR::iconst) ?
                              subTree->getInt() : subTree->getLongInt();
          self()->addToOffset(subTree, amount, cg);
          }
@@ -1683,10 +1695,10 @@ OMR::Power::MemoryReference::checkRegisters(TR::CodeGenerator *cg)
       }
    }
 
-int32_t
+int64_t
 OMR::Power::MemoryReference::getOffset(TR::Compilation& comp)
    {
-   int32_t displacement = _offset;
+   int64_t displacement = _offset;
    if (self()->hasDelayedOffset() && !self()->isDelayedOffsetDone())
       displacement += _symbolReference->getSymbol()->getOffset();
 

@@ -66,7 +66,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    TR::Register *_indexRegister;
    TR::Node *_indexNode;
    TR::Register *_modBase;
-   intptr_t _offset;
+   int64_t _offset;
 
    TR::UnresolvedDataSnippet *_unresolvedSnippet;
    TR::PPCPairedRelocation *_staticRelocation;
@@ -75,6 +75,20 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    uint8_t _flag;
    uint8_t _length;
+
+   protected:
+
+   // The extra int parameter at the end is needed to ensure that this constructor is never
+   // ambiguous with the legacy constructor taking an int32_t for its displacement. This detail
+   // is hidden from other code, since this constructor can only be used by calling the
+   // MemoryReference::withDisplacement helper. Once the legacy constructor is removed, the extra
+   // parameter here can also be removed.
+   MemoryReference(
+         TR::Register *br,
+         int64_t disp,
+         uint8_t len,
+         TR::CodeGenerator *cg,
+         int);
 
    public:
 
@@ -159,10 +173,10 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
     */
    void setDelayedOffsetDone() { _flag |= TR_PPCMemoryReferenceControl_DelayedOffsetDone; }
 
-   int32_t setOffset(int32_t o) {return _offset = o;}
-   int32_t getOffset() {return _offset;}
+   int64_t setOffset(int64_t o) {return _offset = o;}
+   int64_t getOffset() {return _offset;}
 
-   int32_t getOffset(TR::Compilation& comp);
+   int64_t getOffset(TR::Compilation& comp);
 
    bool isBaseModifiable()
       {
@@ -290,7 +304,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    void accessStaticItem(TR::Node *node, TR::SymbolReference *ref, bool isStore, TR::CodeGenerator *cg);
 
-   void addToOffset(TR::Node * node, intptr_t amount, TR::CodeGenerator *cg);
+   void addToOffset(TR::Node * node, int64_t amount, TR::CodeGenerator *cg);
 
    void forceIndexedForm(TR::Node * node, TR::CodeGenerator *cg, TR::Instruction *cursor = 0);
 

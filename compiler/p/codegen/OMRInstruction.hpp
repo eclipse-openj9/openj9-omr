@@ -87,7 +87,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    virtual TR::Register *getMemoryBase()                     {return NULL;}
    virtual TR::Register *getMemoryIndex()                    {return NULL;}
-   virtual int32_t      getOffset()                         {return 0;}
+   virtual int64_t      getOffset()                         {return 0;}
    virtual bool  usesCountRegister()                        {return _opcode.usesCountRegister();}
    virtual bool  setsCountRegister();
 

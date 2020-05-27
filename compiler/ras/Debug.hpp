@@ -185,6 +185,7 @@ namespace TR { class PPCTrg1ImmInstruction;              }
 namespace TR { class PPCTrg1Src1ImmInstruction;          }
 namespace TR { class PPCTrg1Src1Imm2Instruction;         }
 namespace TR { class PPCSrc2Instruction;                 }
+namespace TR { class PPCSrc3Instruction;                 }
 namespace TR { class PPCTrg1Src2Instruction;             }
 namespace TR { class PPCTrg1Src2ImmInstruction;          }
 namespace TR { class PPCTrg1Src3Instruction;             }
@@ -900,6 +901,7 @@ public:
    void print(TR::FILE *, TR::PPCTrg1Src1ImmInstruction *);
    void print(TR::FILE *, TR::PPCTrg1Src1Imm2Instruction *);
    void print(TR::FILE *, TR::PPCSrc2Instruction *);
+   void print(TR::FILE *, TR::PPCSrc3Instruction *);
    void print(TR::FILE *, TR::PPCTrg1Src2Instruction *);
    void print(TR::FILE *, TR::PPCTrg1Src2ImmInstruction *);
    void print(TR::FILE *, TR::PPCTrg1Src3Instruction *);

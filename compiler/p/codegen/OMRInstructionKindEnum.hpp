@@ -47,6 +47,7 @@
             IsTrg1Src3,
       IsTrg1Mem,
    IsSrc2,
+      IsSrc3,
    IsMem,
       IsMemSrc1,
    IsControlFlow,

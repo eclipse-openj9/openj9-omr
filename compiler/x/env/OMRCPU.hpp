@@ -68,9 +68,6 @@ public:
 
    bool getSupportsHardwareSQRT();
 
-   bool testOSForSSESupport();
-
-
    /** @brief Determines whether the Transactional Memory (TM) facility is available on the current processor.
     *
     *  @return true if TM is available, false otherwise.
@@ -101,6 +98,17 @@ public:
    bool supportsLFence();
    bool supportsSFence();
    bool prefersMultiByteNOP();
+   bool supportsAVX();
+   bool testOSForSSESupport() { return false; }
+   
+   // Will be removed once we no longer need the old processor detection apis
+   bool is(OMRProcessorArchitecture p);
+   bool is_old_api(OMRProcessorArchitecture p);
+   bool is_test(OMRProcessorArchitecture p);
+
+   bool supportsFeature(uint32_t feature);
+   bool supports_feature_old_api(uint32_t feature);
+   bool supports_feature_test(uint32_t feature);
    };
 }
 

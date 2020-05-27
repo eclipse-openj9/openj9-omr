@@ -203,7 +203,6 @@ TEST_P(FloatMaxMin, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
-       SKIP_ON_POWER(KnownBug) << "fmin / fmax returns wrong value for NaN on POWER (see issue #5156)";
        SKIP_ON_S390(KnownBug) << "fmin / fmax returns wrong value for NaN on Z (see issue #5157)";
        SKIP_ON_S390X(KnownBug) << "fmin / fmax returns wrong value for NaN on Z (see issue #5157)";
     }
@@ -239,7 +238,6 @@ TEST_P(FloatMaxMin, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
     if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
-       SKIP_ON_POWER(KnownBug) << "fmin / fmax returns wrong value for NaN on POWER (see issue #5156)";
        SKIP_ON_S390(KnownBug) << "fmin / fmax returns wrong value for NaN on Z (see issue #5157)";
        SKIP_ON_S390X(KnownBug) << "fmin / fmax returns wrong value for NaN on Z (see issue #5157)";
     }
@@ -283,7 +281,6 @@ TEST_P(DoubleMaxMin, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
-       SKIP_ON_POWER(KnownBug) << "dmin / dmax returns wrong value for NaN on POWER (see issue #5156)";
        SKIP_ON_S390(KnownBug) << "dmin / dmax returns wrong value for NaN on Z (see issue #5157)";
        SKIP_ON_S390X(KnownBug) << "dmin / dmax returns wrong value for NaN on Z (see issue #5157)";
     }
@@ -319,7 +316,6 @@ TEST_P(DoubleMaxMin, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
     if (std::isnan(param.lhs) || std::isnan(param.rhs)) {
-       SKIP_ON_POWER(KnownBug) << "dmin / dmax returns wrong value for NaN on POWER (see issue #5156)";
        SKIP_ON_S390(KnownBug) << "dmin / dmax returns wrong value for NaN on Z (see issue #5157)";
        SKIP_ON_S390X(KnownBug) << "dmin / dmax returns wrong value for NaN on Z (see issue #5157)";
 

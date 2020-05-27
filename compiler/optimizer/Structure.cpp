@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1166,7 +1166,7 @@ void TR_RegionStructure::addGlobalRegisterCandidateToExits(TR_RegisterCandidate 
       }
    }
 
-static bool findCycle(TR_StructureSubGraphNode *node, TR_BitVector &regionNodes, TR_BitVector &nodesSeenOnPath, TR_BitVector &nodesCleared, int32_t entryNode)
+static bool findCycleDEPRECATED(TR_StructureSubGraphNode *node, TR_BitVector &regionNodes, TR_BitVector &nodesSeenOnPath, TR_BitVector &nodesCleared, int32_t entryNode)
    {
    if (nodesSeenOnPath.get(node->getNumber()))
       return true;             // An internal cycle found
@@ -1180,7 +1180,7 @@ static bool findCycle(TR_StructureSubGraphNode *node, TR_BitVector &regionNodes,
       TR_ASSERT((*edge)->getTo()->asStructureSubGraphNode(),"Expecting a CFG node which can be downcast to StructureSubGraphNode");
       TR_StructureSubGraphNode *succ = toStructureSubGraphNode((*edge)->getTo());
       if (succ->getNumber() != entryNode && regionNodes.get(succ->getNumber()) &&
-          findCycle(succ,regionNodes,nodesSeenOnPath,nodesCleared,entryNode))
+          findCycleDEPRECATED(succ,regionNodes,nodesSeenOnPath,nodesCleared,entryNode))
          return true;
       }
    for (auto edge = node->getExceptionSuccessors().begin(); edge != node->getExceptionSuccessors().end(); ++edge)
@@ -1188,7 +1188,7 @@ static bool findCycle(TR_StructureSubGraphNode *node, TR_BitVector &regionNodes,
       TR_ASSERT((*edge)->getTo()->asStructureSubGraphNode(),"Expecting a CFG node which can be downcast to StructureSubGraphNode");
       TR_StructureSubGraphNode *succ = toStructureSubGraphNode((*edge)->getTo());
       if (/* succ->getNumber() != entryNode && */ regionNodes.get(succ->getNumber()) &&
-          findCycle(succ,regionNodes,nodesSeenOnPath,nodesCleared,entryNode))
+          findCycleDEPRECATED(succ,regionNodes,nodesSeenOnPath,nodesCleared,entryNode))
          return true;
       }
 
@@ -1197,18 +1197,146 @@ static bool findCycle(TR_StructureSubGraphNode *node, TR_BitVector &regionNodes,
    return false;
    }
 
+   /*
+    * findCycle is a depth first traversal of the graph in search for a cycle.
+    * Returns true if a cycle is found, otherwise returns false.
+    */
+static bool findCycle(TR::Compilation *comp, TR_StructureSubGraphNode *origin, TR_BitVector &regionNodes, int32_t entryNode)
+   {
+   TR::StackMemoryRegion memRegion(*(comp->trMemory()));
+
+   int32_t numNodes = comp->getFlowGraph()->getNextNodeNumber();
+
+   /*
+    * First element of the pair is the subgraph node being looked at.
+    * Second element of the pair is a bool that indicates if the node's children have already been processed.
+    */
+   TR::deque<std::pair<TR_StructureSubGraphNode *, bool>, TR::Region&> nodeStack(0, memRegion);
+
+   /*
+    * nodesDiscovered is a bit vector that tracks the path of subgraph nodes from origin to the node being looked at.
+    * If a node is set to Discovered and its next child to examine is also set to Discovered, a cycle has been found.
+    * Processed flag supersedes Discovered flag. If the node is marked as Processed, it counts as being in the Processed state.
+    */
+   TR_BitVector nodesDiscovered(numNodes, memRegion);
+
+   /*
+    * nodesProcessed is a bit vector that tracks which subgraph nodes have been confirmed to not be part of a cycle.
+    * If a node is set to Processed, both that node and its children have already been looked at and a cycle was not found.
+    */
+   TR_BitVector nodesProcessed(numNodes, memRegion);
+
+   /*
+    * Two pairs for each node are added to nodeStack.
+    * The first one pushed has childrenProcessed set to true and the second one has it set to false.
+    * Note that this is a stack so the pair where childrenProcessed is false is pushed second but handled first.
+    * When the node where childrenProcessed is false is being handled, that node's children will be added to nodeStack.
+    * After all the children have been handled and set to Processed the node on the top of the stack will have childrenProcessed
+    * set to true which sets the node to being Processed.
+    */
+   nodeStack.push_front(std::make_pair(origin,true));
+   nodeStack.push_front(std::make_pair(origin,false));
+
+   while (!nodeStack.empty())
+      {
+      TR_StructureSubGraphNode *node = nodeStack.front().first;
+      int32_t nodeNum = node->getNumber();
+      bool childrenProcessed = nodeStack.front().second;
+      nodeStack.pop_front();
+
+      /*
+       * If all children are set to processed and a cycle was not found, the current node is also not part of a cycle
+       * and should be set to processed as well.
+       */
+      if (childrenProcessed)
+         {
+         nodesProcessed.set(nodeNum);
+         continue;
+         }
+
+      /*
+       * If the current node is set to processed than it is already known to NOT be part of a cycle.
+       */
+      if (nodesProcessed.get(nodeNum))
+         {
+         continue;
+         }
+
+      /*
+       * If the current node is set to Discovered then that means it was seen before as part of the path between origin and the current
+       * node. This means a cycle has been found. findCycle can end immediately and return true.
+       *
+       * If the current node is not set to Discovered, set it to Discovered to indicate it is now part of the path back to origin.
+       */
+      if (nodesDiscovered.get(nodeNum))
+         {
+         return true;
+         }
+      else
+         {
+         nodesDiscovered.set(nodeNum);
+         }
+
+      /*
+       * Iterate over the children nodes and add them to nodeStack.
+       * Similar to before, two pairs for each node are added to nodeStack.
+       * The first one pushed has childrenProcessed set to true and the second one has it set to false.
+       * This is a stack so the pair where childrenProcessed is false is pushed second but handled first.
+       */
+      for (auto edge = node->getExceptionSuccessors().begin(); edge != node->getExceptionSuccessors().end(); ++edge)
+         {
+         TR_StructureSubGraphNode *succ = toStructureSubGraphNode((*edge)->getTo());
+         int32_t succNumber = succ->getNumber();
+
+         if (regionNodes.get(succNumber))
+            {
+            nodeStack.push_front(std::make_pair(succ, true));
+            nodeStack.push_front(std::make_pair(succ, false));
+            }
+         }
+
+      for (auto edge = node->getSuccessors().begin(); edge != node->getSuccessors().end(); ++edge)
+         {
+         TR_StructureSubGraphNode *succ = toStructureSubGraphNode((*edge)->getTo());
+         int32_t succNumber = succ->getNumber();
+
+         if (succNumber != entryNode && regionNodes.get(succNumber))
+            {
+            nodeStack.push_front(std::make_pair(succ, true));
+            nodeStack.push_front(std::make_pair(succ, false));
+            }
+         }
+      }
+
+   return false;
+   }
+
+
 void TR_RegionStructure::checkForInternalCycles()
    {
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
    int32_t numNodes = comp()->getFlowGraph()->getNextNodeNumber();
-   TR_BitVector nodesSeenOnPath(numNodes, stackMemoryRegion);
-   TR_BitVector nodesCleared(numNodes, stackMemoryRegion);
    TR_BitVector regionNodes(numNodes, stackMemoryRegion);
    for (auto itr = _subNodes.begin(), end = _subNodes.end(); itr != end; ++itr)
       regionNodes.set((*itr)->getNumber());
 
-   setContainsInternalCycles(findCycle(getEntry(), regionNodes, nodesSeenOnPath, nodesCleared, getNumber()));
+   /*
+    * findCycleDEPRECATED is the old recursive implentation while findCycle is the new iterative implementation.
+    * findCycleDEPRECATED is still available via the TR_UseOldFindCycle envvar but will be removed in a future release.
+    */
+   static bool useOldFindCycle = (feGetEnv("TR_UseOldFindCycle") != NULL);
+
+   if (!useOldFindCycle)
+      {
+      setContainsInternalCycles(findCycle(comp(), getEntry(), regionNodes, getNumber()));
+      }
+   else
+      {
+      TR_BitVector nodesSeenOnPath(numNodes, stackMemoryRegion);
+      TR_BitVector nodesCleared(numNodes, stackMemoryRegion);
+      setContainsInternalCycles(findCycleDEPRECATED(getEntry(), regionNodes, nodesSeenOnPath, nodesCleared, getNumber()));
+      }
    }
 
 bool TR_RegionStructure::hasExceptionOutEdges()

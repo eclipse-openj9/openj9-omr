@@ -1181,7 +1181,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceOSRGuardRemoval",             "L\ttrace HCR guard removal",                      TR::Options::traceOptimization, osrGuardRemoval, 0, "P"},
 #endif
    {"traceOSRLiveRangeAnalysis",        "L\ttrace OSR live range analysis",                TR::Options::traceOptimization, osrLiveRangeAnalysis, 0, "P"},
-   {"tracePartialInlining",             "L\ttrace partial inlining heuristics",            SET_OPTION_BIT(TR_TracePartialInlining), "P" },
    {"tracePRE",                         "L\ttrace partial redundancy elimination",        TR::Options::traceOptimization, partialRedundancyElimination, 0, "P"},
    {"tracePrefetchInsertion",           "L\ttrace prefetch insertion",                     TR::Options::traceOptimization, prefetchInsertion, 0, "P"},
    {"tracePREForSubNodeReplacement",    "L\ttrace partial redundancy elimination focussed on optimal subnode replacement", SET_OPTION_BIT(TR_TracePREForOptimalSubNodeReplacement), "P" },

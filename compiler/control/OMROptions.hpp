@@ -521,7 +521,7 @@ enum TR_CompilationOptions
    TR_NoAotSecondRunDetection                         = 0x00010000 + 14,
    // Available                                       = 0x00020000 + 14,
    TR_DebugInliner                                    = 0x00040000 + 14,
-   TR_TracePartialInlining                            = 0x00080000 + 14,
+   // Available                                       = 0x00080000 + 14,
    // Available                                       = 0x00100000 + 14,
    TR_TraceOSR                                        = 0x00200000 + 14,
    TR_EnableOSR                                       = 0x00400000 + 14,

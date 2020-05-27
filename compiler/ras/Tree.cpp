@@ -785,18 +785,19 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Block * block, uint32_t indentation)
                  ", frequency = %d",
                  block->getFrequency());
 
-      if (_comp->getOption(TR_TracePartialInlining))
-    {
-         trfprintf(pOutFile,", partialFlags = ");
-         if(block->isUnsanitizeable())
-            trfprintf(pOutFile,"U, ");
-         if(block->containsCall())
-            trfprintf(pOutFile,"C, ");
-         if(block->isRestartBlock())
-            trfprintf(pOutFile,"R, ");
-         if(block->isPartialInlineBlock())
-            trfprintf(pOutFile,"P, ");
-    }
+      static const bool enableTracePartialInlining = feGetEnv("TR_EnableTracePartialInlining") != NULL;
+      if (enableTracePartialInlining)
+         {
+         trfprintf(pOutFile, ", partialFlags = ");
+         if (block->isUnsanitizeable())
+            trfprintf(pOutFile, "U, ");
+         if (block->containsCall())
+            trfprintf(pOutFile, "C, ");
+         if (block->isRestartBlock())
+            trfprintf(pOutFile, "R, ");
+         if (block->isPartialInlineBlock())
+            trfprintf(pOutFile, "P, ");
+         }
 
       trfprintf(pOutFile, "\n");
       }

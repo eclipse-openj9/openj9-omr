@@ -110,7 +110,11 @@ class TR_InlinerTracer : public TR_LogTracer
       TR_PersistentMemory * trPersistentMemory(){ return _trMemory->trPersistentMemory(); }
 
       // determine the tracing level
-      bool partialLevel()                            { return comp()->getOption(TR_TracePartialInlining); }        // the > ensures partial tracing gets turned on for debug
+      bool partialLevel() 
+         {
+         static const bool enableTracePartialInlining = feGetEnv("TR_EnableTracePartialInlining") != NULL;
+         return enableTracePartialInlining;
+         }
 
 
       // trace statements for specific tracing levels

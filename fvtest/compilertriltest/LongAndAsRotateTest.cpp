@@ -110,8 +110,6 @@ class i2lLongAndAsRotateTest : public LongAndAsRotateTest<int32_t, uint64_t> {};
 
 TEST_P(i2lLongAndAsRotateTest, SimpleTest)
    {
-   SKIP_ON_RISCV(KnownBug);
-
    auto param = to_struct(GetParam());
 
    char inputTrees[512] = {0};
@@ -140,8 +138,6 @@ TEST_P(i2lLongAndAsRotateTest, SimpleTest)
 
 TEST_P(i2lLongAndAsRotateTest, iConstTest)
    {
-   SKIP_ON_RISCV(KnownBug);
-
    auto param = to_struct(GetParam());
 
    // this is an arbitrary value that will be used to create
@@ -184,8 +180,6 @@ TEST_P(i2lLongAndAsRotateTest, iConstTest)
 
 TEST_P(i2lLongAndAsRotateTest, GreaterThanOneRefCount1)
    {
-   SKIP_ON_RISCV(KnownBug);
-
    auto param = to_struct(GetParam());
 
    // this is an arbitrary value that will be used to create
@@ -234,8 +228,6 @@ TEST_P(i2lLongAndAsRotateTest, GreaterThanOneRefCount1)
 
 TEST_P(i2lLongAndAsRotateTest, GreaterThanOneRefCount2)
    {
-   SKIP_ON_RISCV(KnownBug);
-
    auto param = to_struct(GetParam());
 
    // these are arbitrary values that will be used to create

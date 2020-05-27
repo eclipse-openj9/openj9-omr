@@ -107,35 +107,35 @@
     TR::TreeEvaluator::laddEvaluator ,	// TR::ladd		// add 2 long integers
     TR::TreeEvaluator::faddEvaluator, // TR::fadd		// add 2 floats
     TR::TreeEvaluator::daddEvaluator, // TR::dadd		// add 2 doubles
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::baddEvaluator ,	// TR::badd		// add 2 bytes
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::saddEvaluator ,	// TR::sadd		// add 2 short integers
+    TR::TreeEvaluator::iaddEvaluator ,	// TR::badd		// add 2 bytes
+    TR::TreeEvaluator::iaddEvaluator ,	// TR::sadd		// add 2 short integers
     TR::TreeEvaluator::isubEvaluator, // TR::isub		// subtract 2 integers                (child1 - child2)
     TR::TreeEvaluator::lsubEvaluator ,	// TR::lsub		// subtract 2 long integers           (child1 - child2)
     TR::TreeEvaluator::fsubEvaluator, // TR::fsub		// subtract 2 floats                  (child1 - child2)
     TR::TreeEvaluator::dsubEvaluator, // TR::dsub		// subtract 2 doubles                 (child1 - child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bsubEvaluator ,	// TR::bsub		// subtract 2 bytes                   (child1 - child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::ssubEvaluator ,	// TR::ssub		// subtract 2 short integers          (child1 - child2)
+    TR::TreeEvaluator::isubEvaluator ,	// TR::bsub		// subtract 2 bytes                   (child1 - child2)
+    TR::TreeEvaluator::isubEvaluator ,	// TR::ssub		// subtract 2 short integers          (child1 - child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::asubEvaluator ,	// TR::asub		// subtract 2 addresses (child1 - child2)
     TR::TreeEvaluator::imulEvaluator, // TR::imul		// multiply 2 integers
     TR::TreeEvaluator::imulEvaluator ,	// TR::lmul		// multiply 2 signed or unsigned long integers
     TR::TreeEvaluator::fmulEvaluator, // TR::fmul		// multiply 2 floats
     TR::TreeEvaluator::dmulEvaluator, // TR::dmul		// multiply 2 doubles
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bmulEvaluator ,	// TR::bmul		// multiply 2 bytes
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::smulEvaluator ,	// TR::smul		// multiply 2 short integers
+    TR::TreeEvaluator::imulEvaluator ,	// TR::bmul		// multiply 2 bytes
+    TR::TreeEvaluator::imulEvaluator ,	// TR::smul		// multiply 2 short integers
     TR::TreeEvaluator::idivEvaluator, // TR::idiv		// divide 2 integers                (child1 / child2)
     TR::TreeEvaluator::ldivEvaluator, // TR::ldiv		// divide 2 long integers           (child1 / child2)
     TR::TreeEvaluator::fdivEvaluator, // TR::fdiv		// divide 2 floats                  (child1 / child2)
     TR::TreeEvaluator::ddivEvaluator, // TR::ddiv		// divide 2 doubles                 (child1 / child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bdivEvaluator ,	// TR::bdiv		// divide 2 bytes                   (child1 / child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sdivEvaluator ,	// TR::sdiv		// divide 2 short integers          (child1 / child2)
+    TR::TreeEvaluator::idivEvaluator ,	// TR::bdiv		// divide 2 bytes                   (child1 / child2)
+    TR::TreeEvaluator::idivEvaluator ,	// TR::sdiv		// divide 2 short integers          (child1 / child2)
     TR::TreeEvaluator::iudivEvaluator ,	// TR::iudiv		// divide 2 unsigned integers       (child1 / child2)
     TR::TreeEvaluator::ludivEvaluator ,	// TR::ludiv		// divide 2 unsigned long integers  (child1 / child2)
     TR::TreeEvaluator::iremEvaluator, // TR::irem		// remainder of 2 integers                (child1 % child2)
     TR::TreeEvaluator::lremEvaluator, // TR::lrem		// remainder of 2 long integers           (child1 % child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fremEvaluator ,	// TR::frem		// remainder of 2 floats                  (child1 % child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dremEvaluator ,	// TR::drem		// remainder of 2 doubles                 (child1 % child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bremEvaluator ,	// TR::brem		// remainder of 2 bytes                   (child1 % child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sremEvaluator ,	// TR::srem		// remainder of 2 short integers          (child1 % child2)
+    TR::TreeEvaluator::iremEvaluator ,	// TR::brem		// remainder of 2 bytes                   (child1 % child2)
+    TR::TreeEvaluator::iremEvaluator ,	// TR::srem		// remainder of 2 short integers          (child1 % child2)
     TR::TreeEvaluator::iuremEvaluator ,	// TR::iurem		// remainder of 2 unsigned integers       (child1 % child2)
     TR::TreeEvaluator::inegEvaluator, // TR::ineg		// negate an integer
     TR::TreeEvaluator::inegEvaluator, // TR::lneg		// negate a long integer
@@ -148,31 +148,31 @@
     TR::TreeEvaluator::fabsEvaluator, // TR::fabs		// absolute value of float
     TR::TreeEvaluator::dabsEvaluator, // TR::dabs		// absolute value of double
     TR::TreeEvaluator::ishlEvaluator, // TR::ishl		// shift integer left                (child1 << child2)
-    TR::TreeEvaluator::lshlEvaluator, // TR::lshl		// shift long integer left           (child1 << child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bshlEvaluator ,	// TR::bshl		// shift byte left                   (child1 << child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sshlEvaluator ,	// TR::sshl		// shift short integer left          (child1 << child2)
+    TR::TreeEvaluator::ishlEvaluator, // TR::lshl		// shift long integer left           (child1 << child2)
+    TR::TreeEvaluator::ishlEvaluator ,	// TR::bshl		// shift byte left                   (child1 << child2)
+    TR::TreeEvaluator::ishlEvaluator ,	// TR::sshl		// shift short integer left          (child1 << child2)
     TR::TreeEvaluator::ishrEvaluator, // TR::ishr		// shift integer right arithmetically               (child1 >> child2)
-    TR::TreeEvaluator::lshrEvaluator, // TR::lshr		// shift long integer right arithmetically          (child1 >> child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bshrEvaluator ,	// TR::bshr		// shift byte right arithmetically                  (child1 >> child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sshrEvaluator ,	// TR::sshr		// shift short integer arithmetically               (child1 >> child2)
+    TR::TreeEvaluator::ishrEvaluator, // TR::lshr		// shift long integer right arithmetically          (child1 >> child2)
+    TR::TreeEvaluator::ishrEvaluator ,	// TR::bshr		// shift byte right arithmetically                  (child1 >> child2)
+    TR::TreeEvaluator::ishrEvaluator ,	// TR::sshr		// shift short integer arithmetically               (child1 >> child2)
     TR::TreeEvaluator::iushrEvaluator, // TR::iushr		// shift integer right logically                   (child1 >> child2)
-    TR::TreeEvaluator::lushrEvaluator, // TR::lushr		// shift long integer right logically              (child1 >> child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bushrEvaluator ,	// TR::bushr		// shift byte right logically                      (child1 >> child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sushrEvaluator ,	// TR::sushr		// shift short integer right logically             (child1 >> child2)
+    TR::TreeEvaluator::iushrEvaluator, // TR::lushr		// shift long integer right logically              (child1 >> child2)
+    TR::TreeEvaluator::iushrEvaluator ,	// TR::bushr		// shift byte right logically                      (child1 >> child2)
+    TR::TreeEvaluator::iushrEvaluator ,	// TR::sushr		// shift short integer right logically             (child1 >> child2)
     TR::TreeEvaluator::irolEvaluator, // TR::irol		// rotate integer left
     TR::TreeEvaluator::irolEvaluator, // TR::lrol		// rotate long integer left
     TR::TreeEvaluator::iandEvaluator ,	// TR::iand		// boolean and of 2 integers
-    TR::TreeEvaluator::landEvaluator ,	// TR::land		// boolean and of 2 long integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bandEvaluator ,	// TR::band		// boolean and of 2 bytes
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sandEvaluator ,	// TR::sand		// boolean and of 2 short integers
+    TR::TreeEvaluator::iandEvaluator ,	// TR::land		// boolean and of 2 long integers
+    TR::TreeEvaluator::iandEvaluator ,	// TR::band		// boolean and of 2 bytes
+    TR::TreeEvaluator::iandEvaluator ,	// TR::sand		// boolean and of 2 short integers
     TR::TreeEvaluator::iorEvaluator ,	// TR::ior		// boolean or of 2 integers
-    TR::TreeEvaluator::lorEvaluator ,	// TR::lor		// boolean or of 2 long integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::borEvaluator ,	// TR::bor		// boolean or of 2 bytes
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sorEvaluator ,	// TR::sor		// boolean or of 2 short integers
+    TR::TreeEvaluator::iorEvaluator ,	// TR::lor		// boolean or of 2 long integers
+    TR::TreeEvaluator::iorEvaluator ,	// TR::bor		// boolean or of 2 bytes
+    TR::TreeEvaluator::iorEvaluator ,	// TR::sor		// boolean or of 2 short integers
     TR::TreeEvaluator::ixorEvaluator ,	// TR::ixor		// boolean xor of 2 integers
-    TR::TreeEvaluator::lxorEvaluator ,	// TR::lxor		// boolean xor of 2 long integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bxorEvaluator ,	// TR::bxor		// boolean xor of 2 bytes
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sxorEvaluator ,	// TR::sxor		// boolean xor of 2 short integers
+    TR::TreeEvaluator::ixorEvaluator ,	// TR::lxor		// boolean xor of 2 long integers
+    TR::TreeEvaluator::ixorEvaluator ,	// TR::bxor		// boolean xor of 2 bytes
+    TR::TreeEvaluator::ixorEvaluator ,	// TR::sxor		// boolean xor of 2 short integers
     TR::TreeEvaluator::i2lEvaluator, // TR::i2l		// convert integer to long integer with sign extension
     TR::TreeEvaluator::i2fEvaluator ,	// TR::i2f		// convert integer to float
     TR::TreeEvaluator::i2dEvaluator ,	// TR::i2d		// convert integer to double

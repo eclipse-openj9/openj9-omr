@@ -297,8 +297,6 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int64ShiftAndRotate, ::testing::Comb
 class Int8ShiftAndRotate : public ShiftAndRotateArithmetic<int8_t> {};
 
 TEST_P(Int8ShiftAndRotate, UsingConst) {
-    SKIP_ON_RISCV(MissingImplementation);
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -326,8 +324,6 @@ TEST_P(Int8ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(Int8ShiftAndRotate, UsingRhsConst) {
-    SKIP_ON_RISCV(MissingImplementation);
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -354,8 +350,6 @@ TEST_P(Int8ShiftAndRotate, UsingRhsConst) {
 }
 
 TEST_P(Int8ShiftAndRotate, UsingLhsConst) {
-    SKIP_ON_RISCV(MissingImplementation);
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -382,8 +376,6 @@ TEST_P(Int8ShiftAndRotate, UsingLhsConst) {
 }
 
 TEST_P(Int8ShiftAndRotate, UsingLoadParam) {
-    SKIP_ON_RISCV(MissingImplementation);
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -417,8 +409,6 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int8ShiftAndRotate, ::testing::Combi
 class Int16ShiftAndRotate : public ShiftAndRotateArithmetic<int16_t> {};
 
 TEST_P(Int16ShiftAndRotate, UsingConst) {
-    SKIP_ON_RISCV(MissingImplementation);
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -446,7 +436,6 @@ TEST_P(Int16ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(Int16ShiftAndRotate, UsingRhsConst) {
-    SKIP_ON_RISCV(MissingImplementation);
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -473,7 +462,6 @@ TEST_P(Int16ShiftAndRotate, UsingRhsConst) {
 }
 
 TEST_P(Int16ShiftAndRotate, UsingLhsConst) {
-    SKIP_ON_RISCV(MissingImplementation);
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -500,7 +488,6 @@ TEST_P(Int16ShiftAndRotate, UsingLhsConst) {
 }
 
 TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
-    SKIP_ON_RISCV(MissingImplementation);
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -748,8 +735,6 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, UInt64ShiftAndRotate, ::testing::Com
 class UInt8ShiftAndRotate : public ShiftAndRotateArithmetic<uint8_t> {};
 
 TEST_P(UInt8ShiftAndRotate, UsingConst) {
-    SKIP_ON_RISCV(MissingImplementation);
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -777,8 +762,6 @@ TEST_P(UInt8ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(UInt8ShiftAndRotate, UsingRhsConst) {
-    SKIP_ON_RISCV(MissingImplementation);
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -805,8 +788,6 @@ TEST_P(UInt8ShiftAndRotate, UsingRhsConst) {
 }
 
 TEST_P(UInt8ShiftAndRotate, UsingLhsConst) {
-    SKIP_ON_RISCV(MissingImplementation);
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -833,7 +814,6 @@ TEST_P(UInt8ShiftAndRotate, UsingLhsConst) {
 }
 
 TEST_P(UInt8ShiftAndRotate, UsingLoadParam) {
-    SKIP_ON_RISCV(MissingImplementation);
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -866,8 +846,6 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, UInt8ShiftAndRotate, ::testing::Comb
 class UInt16ShiftAndRotate : public ShiftAndRotateArithmetic<uint16_t> {};
 
 TEST_P(UInt16ShiftAndRotate, UsingConst) {
-    SKIP_ON_RISCV(MissingImplementation);
-
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -895,7 +873,6 @@ TEST_P(UInt16ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(UInt16ShiftAndRotate, UsingRhsConst) {
-    SKIP_ON_RISCV(MissingImplementation);
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -922,7 +899,6 @@ TEST_P(UInt16ShiftAndRotate, UsingRhsConst) {
 }
 
 TEST_P(UInt16ShiftAndRotate, UsingLhsConst) {
-    SKIP_ON_RISCV(MissingImplementation);
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -949,7 +925,6 @@ TEST_P(UInt16ShiftAndRotate, UsingLhsConst) {
 }
 
 TEST_P(UInt16ShiftAndRotate, UsingLoadParam) {
-    SKIP_ON_RISCV(MissingImplementation);
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[300] = {0};
@@ -1297,7 +1272,6 @@ class UInt16MaskThenShift : public MaskThenShiftArithmetic<uint16_t> {};
 TEST_P(UInt16MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    SKIP_ON_RISCV(MissingImplementation);
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int16 args=[Int16]"
@@ -1334,7 +1308,6 @@ class Int16MaskThenShift : public MaskThenShiftArithmetic<int16_t> {};
 TEST_P(Int16MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    SKIP_ON_RISCV(MissingImplementation);
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int16 args=[Int16]"
@@ -1371,7 +1344,6 @@ class UInt8MaskThenShift : public MaskThenShiftArithmetic<uint8_t> {};
 TEST_P(UInt8MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    SKIP_ON_RISCV(MissingImplementation);
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int8]"
@@ -1408,7 +1380,6 @@ class Int8MaskThenShift : public MaskThenShiftArithmetic<int8_t> {};
 TEST_P(Int8MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
-    SKIP_ON_RISCV(MissingImplementation);
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int8]"

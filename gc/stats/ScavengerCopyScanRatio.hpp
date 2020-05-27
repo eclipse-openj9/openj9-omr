@@ -98,7 +98,7 @@ public:
 		uint64_t waits;		/* number of stalled treads */
 		uint64_t copied;	/* number of slots copied */
 		uint64_t scanned;	/* number of slots scanned */
-		uint64_t updates;	/* number of thread samples */
+		uintptr_t updates;	/* number of thread samples */
 		uint64_t threads;	/* number of active or stalled threads */
 		uint64_t lists;		/* number of nonempty scan lists */
 		uint64_t caches;	/* number of caches in scan queues */
@@ -203,7 +203,7 @@ public:
 			/* add this thread's samples to the accumulating register */
 			uint64_t updateSample = sample(scannedCount, copiedCount, waitingCount);
 			uint64_t updateResult = atomicAddThreadUpdate(updateSample);
-			uint64_t updateCount = updates(updateResult);
+			uintptr_t updateCount = updates(updateResult);
 			(*copyScanUpdates)++;
 
 			/* this next section includes a critical region for the thread that increments the update counter to threshold */
@@ -333,7 +333,7 @@ private:
 	 * @return a value >=0.0 and <= 1.0 that can be used to scale copy/scan cache sizes to reduce stalling
 	 */
 	MMINLINE double
-	getScalingFactor(MM_EnvironmentBase* env, uint64_t threadCount, uint64_t waits, uint64_t copied, uint64_t scanned, uint64_t updates)
+	getScalingFactor(MM_EnvironmentBase* env, uint64_t threadCount, uint64_t waits, uint64_t copied, uint64_t scanned, uintptr_t updates)
 	{
 		double scalingFactor= 0.0;
 
@@ -392,7 +392,7 @@ private:
 		uint64_t oldValue = *localAddr;
 		if (oldValue == MM_AtomicOperations::lockCompareExchangeU64(localAddr, oldValue, oldValue + threadUpdate)) {
 			newValue = oldValue + threadUpdate;
-			uint64_t updateCount = updates(newValue);
+			uintptr_t updateCount = updates(newValue);
 			if (SCAVENGER_THREAD_UPDATES_PER_MAJOR_UPDATE <= updateCount) {
 				MM_AtomicOperations::setU64(&_accumulatingSamples, 0);
 				if (SCAVENGER_THREAD_UPDATES_PER_MAJOR_UPDATE < updateCount) {
@@ -415,7 +415,7 @@ private:
 
 	MMINLINE uint64_t scanned(uint64_t samples) { return (SCAVENGER_SLOTS_SCANNED_MASK & samples) >> SCAVENGER_SLOTS_SCANNED_SHIFT; }
 
-	MMINLINE uint64_t updates(uint64_t samples) { return samples & SCAVENGER_SLOTS_UPDATE_MASK; }
+	MMINLINE uintptr_t updates(uint64_t samples) { return samples & SCAVENGER_SLOTS_UPDATE_MASK; }
 
 	uintptr_t record(MM_EnvironmentBase* env, uintptr_t nonEmptyScanLists, uintptr_t cachesQueued);
 

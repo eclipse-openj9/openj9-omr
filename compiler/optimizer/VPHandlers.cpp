@@ -12188,6 +12188,63 @@ TR::Node *constrainArrayCopyBndChk(OMR::ValuePropagation *vp, TR::Node *node)
    return node;
    }
 
+/**
+ * Determine whether the component type of an array is, or might be, a value
+ * type.
+ * \param vp The \ref OMR::ValuePropagation object
+ * \param arrayConstraint The \ref TR::VPConstraint type constraint for the array reference
+ * \returns \c TR_yes if the array's component type is definitely a value type;\n
+ *          \c TR_no if it is definitely not a value type; or\n
+ *          \c TR_maybe otherwise.
+ */
+static TR_YesNoMaybe isArrayCompTypeValueType(OMR::ValuePropagation *vp, TR::VPConstraint *arrayConstraint)
+   {
+   TR_YesNoMaybe isValueType = TR_maybe;
+
+   if (!TR::Compiler->om.areValueTypesEnabled())
+      {
+      isValueType = TR_no;
+      }
+   else if (!arrayConstraint || !arrayConstraint->getClass())
+      {
+      isValueType = TR_maybe;
+      }
+   else
+      {
+      TR_OpaqueClassBlock *arrayComponentClass = vp->fe()->getComponentClassFromArrayClass(arrayConstraint->getClass());
+
+      if (!arrayComponentClass)
+         {
+         isValueType = TR_maybe;
+         }
+      else if (TR::Compiler->cls.isValueTypeClass(arrayComponentClass))
+         {
+         isValueType = TR_yes;
+         }
+      else if (TR::Compiler->cls.isAbstractClass(vp->comp(), arrayComponentClass))
+         {
+         isValueType = TR_maybe;
+         }
+      else
+         {
+         int32_t len;
+         const char *sig = arrayConstraint->getClassSignature(len);
+
+         if (!sig || !arrayConstraint->isFixedClass() && sig[0] == '[' && len == 19
+                     && !strncmp(sig, "[Ljava/lang/Object;", 19))
+            {
+            isValueType = TR_maybe;
+            }
+         else
+            {
+            isValueType = TR_no;
+            }
+         }
+      }
+
+   return isValueType;
+   }
+
 TR::Node *constrainArrayStoreChk(OMR::ValuePropagation *vp, TR::Node *node)
    {
    constrainChildren(vp, node);
@@ -12223,12 +12280,22 @@ TR::Node *constrainArrayStoreChk(OMR::ValuePropagation *vp, TR::Node *node)
       TR::VPConstraint *object = vp->getConstraint(objectRef, isGlobal);
       TR::VPConstraint *array  = vp->getConstraint(arrayRef, isGlobal);
 
-      // If the object reference is null we can remove this check.
+      TR_YesNoMaybe arrayCompIsValueType = isArrayCompTypeValueType(vp, array);
+
+      // If the object reference is null we can remove this check, if the
+      // array's element type is not a value type
+      // Null references are not allowed for value types, so only remove the
+      // check if the array type is resolved and cannot be of a type whose
+      // actual component type can be a value type
+      //
+      if (object && object->isNullObject() && arrayCompIsValueType == TR_no)
+         {
+         canBeRemoved = true;
+         }
+
       // If the array reference is null we can remove this check, since there
       // will be a nullcheck on the array reference before storing into it.
       //
-      if (object && object->isNullObject())
-         canBeRemoved = true;
       else if (array && array->isNullObject())
          canBeRemoved = true;
 
@@ -12246,8 +12313,8 @@ TR::Node *constrainArrayStoreChk(OMR::ValuePropagation *vp, TR::Node *node)
             // TODO -  get a pointer to the Object class from somewhere and
             // compare object pointers instead of signatures
             //
-            if (len == 19 && array->isFixedClass() &&
-                !strncmp(sig, "[Ljava/lang/Object;", 19))
+            if (len == 19 && array->isFixedClass()
+                && !strncmp(sig, "[Ljava/lang/Object;", 19))
                {
                canBeRemoved = true;
                }
@@ -12272,7 +12339,21 @@ TR::Node *constrainArrayStoreChk(OMR::ValuePropagation *vp, TR::Node *node)
                if (isInstance == TR_yes)
                   {
                   vp->registerPreXClass(object);
-                  canBeRemoved = true;
+
+                  // Arrays with value type component types must throw NPE if
+                  // the value assigned is null.  Can only remove the check if
+                  // the array cannot have a value type as its component type
+                  // or the value cannot be a null reference
+                  //
+                  // VALUE_TYPES_TODO:  For case where array component type is
+                  // definitely a value type and source might be null, can
+                  // remove the ArrayStoreCHK and add a NullCHK of the source
+                  // object.
+                  //
+                  if (arrayCompIsValueType == TR_no || object->isNonNullObject())
+                     {
+                     canBeRemoved = true;
+                     }
                   }
                else if (isInstance == TR_no && debug("enableMustFailArrayStoreCheckOpt"))
                   {

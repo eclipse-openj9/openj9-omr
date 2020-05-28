@@ -58,6 +58,8 @@ class ObjectModel
 
    bool mayRequireSpineChecks() { return false; }
 
+   bool areValueTypesEnabled() { return false; }
+
    bool generateCompressedObjectHeaders() { return false; }
 
    // This query answers whether or not this VM is capable of generating arraylet

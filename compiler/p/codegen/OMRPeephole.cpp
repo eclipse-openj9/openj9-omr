@@ -182,8 +182,8 @@ OMR::Power::Peephole::tryToReduceCompareToRecordForm()
          if (current->getOpCode().hasRecordForm())
             {
             // avoid certain record forms on POWER4/POWER5
-            if (comp->target().cpu.is(OMR_PROCESSOR_PPC_GP) ||
-                comp->target().cpu.is(OMR_PROCESSOR_PPC_GR))
+            if (self()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_GP) ||
+                self()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_GR))
                {
                TR::InstOpCode::Mnemonic opCode = current->getOpCodeValue();
                // addc_r, subfc_r, divw_r and divd_r are microcoded
@@ -201,6 +201,14 @@ OMR::Power::Peephole::tryToReduceCompareToRecordForm()
                      if (performTransformation(self()->comp(), "O^O PPC PEEPHOLE: Change %p to andi_r, remove compare immediate %p.\n", current, cmpiInstruction))
                         {
                         generateTrg1Src1ImmInstruction(self()->cg(), TR::InstOpCode::andi_r, inst->getNode(), inst->getPrimaryTargetRegister(), inst->getSourceRegister(0),cmpiTargetReg, inst->getMask(), current);
+
+                        // Removing consecutive instructions in a backwards peephole window requires us to update the
+                        // restart point so the peephole traversal is able to continue
+                        if (current->getNext() == cmpiInstruction)
+                           {
+                           self()->prevInst = current->getPrev();
+                           }
+
                         current->remove();
                         cmpiInstruction->remove();
                         return true;
@@ -213,6 +221,14 @@ OMR::Power::Peephole::tryToReduceCompareToRecordForm()
                      if (performTransformation(self()->comp(), "O^O PPC PEEPHOLE: Change %p to andis_r, remove compare immediate %p.\n", current, cmpiInstruction))
                         {
                         generateTrg1Src1ImmInstruction(self()->cg(), TR::InstOpCode::andis_r, inst->getNode(), inst->getPrimaryTargetRegister(), inst->getSourceRegister(0), cmpiTargetReg, ((uint32_t)inst->getMask()) >> 16, current);
+
+                        // Removing consecutive instructions in a backwards peephole window requires us to update the
+                        // restart point so the peephole traversal is able to continue
+                        if (current->getNext() == cmpiInstruction)
+                           {
+                           self()->prevInst = current->getPrev();
+                           }
+
                         current->remove();
                         cmpiInstruction->remove();
                         return true;

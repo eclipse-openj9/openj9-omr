@@ -26,7 +26,7 @@
 #include "codegen/Instruction.hpp"
 
 OMR::Peephole::Peephole(TR::Compilation* comp) :
-   _comp(comp), _cg(comp->cg())
+   _comp(comp), _cg(comp->cg()), prevInst(NULL)
    {}
 
 TR::Peephole*
@@ -52,7 +52,6 @@ OMR::Peephole::perform()
    {
    bool performed = false;
 
-   TR::Instruction* prevInst = NULL;
    TR::Instruction* currInst = self()->cg()->getFirstInstruction();
 
    while (currInst != NULL)

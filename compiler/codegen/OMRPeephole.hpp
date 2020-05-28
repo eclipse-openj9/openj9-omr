@@ -61,8 +61,7 @@ class OMR_EXTENSIBLE Peephole
     *     Performs peephole optimizations on the entire instruction stream by traversing instructions from start until
     *     the end of the method and repeatedly calling performOnInstruction API for each instruction. If the result of
     *     the API call performOnInstruction indicates that a transformation was performed, the peephole window restarts
-    *     on the previous instruction. All peepholes optimizations must ensure they only modify instructions downstream
-    *     and never affect any instructions previously processed.
+    *     on the previous instruction.
     *
     *  \return
     *     true if any transformation was performed; false otherwise.
@@ -84,6 +83,12 @@ class OMR_EXTENSIBLE Peephole
 
    TR::Compilation* _comp;
    TR::CodeGenerator* _cg;
+
+   protected:
+
+   /// Represents the previous instruction on which peepholes were performed, which is also the restart point in case a
+   /// transformation was performed on the current instruction being processed
+   TR::Instruction* prevInst;
    };
 
 }

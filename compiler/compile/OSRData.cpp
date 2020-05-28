@@ -520,11 +520,18 @@ uint32_t TR_OSRCompilationData::getOSRStackFrameSize(uint32_t methodIndex)
 
 void TR_OSRCompilationData::printMap(DefiningMap *map)
    {
-   for (auto it = map->begin(); it != map->end(); ++it)
+   if (map)
       {
-      traceMsg(comp, "# %d:", it->first);
-      it->second->print(comp);
-      traceMsg(comp, "\n");
+      for (auto it = map->begin(); it != map->end(); ++it)
+         {
+         traceMsg(comp, "# %d:", it->first);
+         it->second->print(comp);
+         traceMsg(comp, "\n");
+         }
+      }
+   else
+      {
+      traceMsg(comp, "Empty map\n");
       }
    }
 
@@ -544,9 +551,12 @@ void TR_OSRCompilationData::printMap(DefiningMap *map)
  *
  * Combining the FinalMap with liveness info from OSRLiveRangeAnalysis, we are able to find which
  * symbols should be kept alive at each osrPoints.
+ *
+ * \param region A \ref TR::Region memory region in which the final DefiningMaps
+ *               will be allocated.  The caller is responsible for releasing
+ *               the memory in which the DefiningMaps are allocated
  */
-
-void TR_OSRCompilationData::buildDefiningMap()
+void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
    {
    const TR_Array<TR_OSRMethodData *>& methodDataArray = getOSRMethodDataArray();
    int numOfMethods = methodDataArray.size();
@@ -586,7 +596,11 @@ void TR_OSRCompilationData::buildDefiningMap()
       else osrCodeBlockRemoved = true;
 
       if (!osrCatchBlockRemoved && !osrCodeBlockRemoved )
-         buildFinalMap(i-1, osrMethodData->getDefiningMap(), definingMapAtOSRCatchBlocks[i], definingMapAtOSRCodeBlocks, definingMapAtPrepareForOSRCalls);
+         {
+         DefiningMap *finalMap = new (region) DefiningMap(DefiningMapComparator(), DefiningMapAllocator(region));
+         buildFinalMap(i-1, finalMap, definingMapAtOSRCatchBlocks[i], definingMapAtOSRCodeBlocks, definingMapAtPrepareForOSRCalls);
+         osrMethodData->setDefiningMap(finalMap);
+         }
       }
 
    if (comp->getOption(TR_TraceOSR))
@@ -602,6 +616,19 @@ void TR_OSRCompilationData::buildDefiningMap()
             traceMsg(comp, "final map for OSRCatchBlock(block_%d): \n", osrMethodData->getOSRCatchBlock()->getNumber());
             printMap(definingMap);
             }
+         }
+      }
+   }
+
+void TR_OSRCompilationData::clearDefiningMap()
+   {
+   const TR_Array<TR_OSRMethodData *>& methodDataArray = getOSRMethodDataArray();
+   for (intptr_t i = 0; i < methodDataArray.size(); ++i)
+      {
+      TR_OSRMethodData *osrMethodData = methodDataArray[i];
+      if (osrMethodData)
+         {
+         osrMethodData->setDefiningMap(NULL);
          }
       }
    }
@@ -1379,9 +1406,13 @@ TR_OSRMethodData::setNumOfSymsThatShareSlot(int32_t newValue)
 DefiningMap *
 TR_OSRMethodData::getDefiningMap()
    {
-   if (_symRefDefiningMap == NULL)
-      _symRefDefiningMap = new DefiningMap(DefiningMapComparator(), DefiningMapAllocator(comp()->trMemory()->heapMemoryRegion()));
    return _symRefDefiningMap;
+   }
+
+void
+TR_OSRMethodData::setDefiningMap(DefiningMap* definingMap)
+   {
+   _symRefDefiningMap = definingMap;
    }
 
 TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRMethodData& osrMethodData)

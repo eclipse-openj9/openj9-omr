@@ -77,7 +77,7 @@ endif
 ###
 
 ifneq (,$(findstring shared,$(ARTIFACT_TYPE)))
-  GLOBAL_LDFLAGS+=-shared
+  GLOBAL_LDFLAGS+=-shared -compatibility_version 1.0.0 -current_version 1.0.0
   GLOBAL_SHARED_LIBS+=c m dl
 
   ## Export File

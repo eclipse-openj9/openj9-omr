@@ -392,7 +392,7 @@ bool OMR::Z::CodeGenerator::canTransformUnsafeCopyToArrayCopy()
 
 bool OMR::Z::CodeGenerator::supportsDirectIntegralLoadStoresFromLiteralPool()
    {
-   return self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10);
+   return self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10);
    }
 
 OMR::Z::CodeGenerator::CodeGenerator()
@@ -430,14 +430,14 @@ OMR::Z::CodeGenerator::CodeGenerator()
    bool enableBranchPreload = comp->getOption(TR_EnableBranchPreload);
    bool disableBranchPreload = comp->getOption(TR_DisableBranchPreload);
 
-   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && self()->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12)))
+   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
       self()->setEnableBranchPreload();
    else
       self()->setDisableBranchPreload();
 
    static bool bpp = (feGetEnv("TR_BPRP")!=NULL);
 
-   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && self()->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12)))
+   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
       self()->setEnableBranchPreloadForCalls();
    else
       self()->setDisableBranchPreloadForCalls();
@@ -495,7 +495,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
    self()->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
 
-   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
       {
       self()->setSupportsTranslateAndTestCharString();
 
@@ -514,7 +514,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       comp->setOption(TR_DisableTraps);
       }
 
-   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
       {
       self()->setSupportsAtomicLoadAndAdd();
       }
@@ -525,17 +525,17 @@ OMR::Z::CodeGenerator::CodeGenerator()
       comp->setOption(TR_DisableMaxMinOptimization);
       }
 
-   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12))
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
       {
       self()->setSupportsZonedDFPConversions();
-      if (self()->comp()->target().cpu.getSupportsTransactionalMemoryFacility() && !comp->getOption(TR_DisableTM))
+      if (self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_TE) && !comp->getOption(TR_DisableTM))
          self()->setSupportsTM();
       }
 
-   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
       self()->setSupportsFastPackedDFPConversions();
 
-   if (!self()->comp()->target().cpu.getSupportsArch(TR::CPU::z14))
+   if (!self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
       {
       comp->setOption(TR_DisableVectorBCD);
       }
@@ -831,7 +831,7 @@ OMR::Z::CodeGenerator::mulDecompositionCostIsJustified(int32_t numOfOperations, 
    {
    bool trace = self()->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
 
-   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
       {
       int32_t numCycles = 0;
       numCycles = numOfOperations+1;
@@ -846,7 +846,7 @@ OMR::Z::CodeGenerator::mulDecompositionCostIsJustified(int32_t numOfOperations, 
             traceMsg(self()->comp(), "MulDecomp cost is too high. numCycle=%i(max:3)\n", numCycles);
       return numCycles <= 3;
       }
-   else if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
+   else if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
       {
       int32_t numCycles = 0;
       numCycles = numOfOperations+1;
@@ -968,7 +968,7 @@ OMR::Z::CodeGenerator::isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild)
    {
    static char * disableASI = feGetEnv("TR_DISABLEASI");
 
-   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
       {
       if (!disableASI && self()->isMemoryUpdate(node) && valueChild->getSecondChild()->getOpCode().isLoadConst())
          {
@@ -1532,7 +1532,7 @@ OMR::Z::CodeGenerator::isLitPoolFreeForAssignment()
       {
       litPoolRegIsFree = true;
       }
-   else if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10) && !self()->anyLitPoolSnippets())
+   else if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && !self()->anyLitPoolSnippets())
       {
       litPoolRegIsFree = true;
       }
@@ -2107,7 +2107,7 @@ OMR::Z::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelp
       case TR::SymbolReferenceTable::atomicAddSymbol:
       case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
          {
-         result = self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196);
+         result = self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196);
          break;
          }
 
@@ -2210,7 +2210,7 @@ OMR::Z::CodeGenerator::anyLitPoolSnippets()
 bool
 OMR::Z::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
    {
-   if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
       {
       return (!self()->comp()->getOption(TR_DisableUTF16BEEncoder) ||
                (self()->getSupportsVectorRegisters() && !self()->comp()->getOption(TR_DisableSIMDUTF16BEEncoder)));
@@ -2418,7 +2418,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);
    // need to reset constant data snippets offset for inlineEXTarget peephole optimization
    static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
-   if (!(bool)disableEXRLDispatch && self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
+   if (!(bool)disableEXRLDispatch && self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
       {
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets();
       }
@@ -2889,7 +2889,7 @@ OMR::Z::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node * node)
          {
          int64_t value = getIntegralValue(node->getSecondChild());
 
-         if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12) && value >= MIN_IMMEDIATE_BYTE_VAL && value <= MAX_IMMEDIATE_BYTE_VAL)
+         if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) && value >= MIN_IMMEDIATE_BYTE_VAL && value <= MAX_IMMEDIATE_BYTE_VAL)
             {
             return maxGPRs - 2;   // CLGIJ R,IMM,LAB,MASK, last instruction on block boundary
             }
@@ -4548,8 +4548,8 @@ bool OMR::Z::CodeGenerator::isActiveCompareCC(TR::InstOpCode::Mnemonic opcd, TR:
       TR::Register* ccSrcReg = ccInst->srcRegArrElem(0);
 
       // On z10 trueCompElimination may swap the previous compare operands, so give up early
-      if (self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10) &&
-          !self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+      if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) &&
+          !self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
          {
          if (tReg->getKind() != TR_FPR)
             {
@@ -5428,7 +5428,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
     * Prior to z14, vector operations that operated on floating point numbers only supported
     * Doubles. On z14 and onward, Float type floating point numbers are supported as well.
     */
-   if (dt == TR::Float && !self()->comp()->target().cpu.getSupportsArch(TR::CPU::z14))
+   if (dt == TR::Float && !self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
       {
       return false;
       }

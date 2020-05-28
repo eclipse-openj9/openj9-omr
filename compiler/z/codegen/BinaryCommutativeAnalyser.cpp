@@ -249,7 +249,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
    // rely on the miscellaneous-instruction-extension facility 2 being installed
 
    // TODO: add MH and MHY here; outside of the z14 if check.
-   if(cg()->comp()->target().cpu.getSupportsMiscellaneousInstructionExtensions2Facility())
+   if (cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_2))
       {
       bool isSetReg2Mem1 = false;
 
@@ -343,7 +343,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          }
       else
          {
-         if(cg()->comp()->target().cpu.getSupportsMiscellaneousInstructionExtensions2Facility())
+         if (cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_2))
             {
             // Check for multiplications on z14
             TR::InstOpCode::Mnemonic z14OpCode = TR::InstOpCode::BAD;
@@ -742,7 +742,7 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
       }
 
    /* Attempt to use AGH to add halfword from memory */
-   if (cg()->comp()->target().cpu.getSupportsMiscellaneousInstructionExtensions2Facility() &&
+   if (cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_2) &&
        secondChild->getOpCodeValue() == TR::s2l &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
        secondChild->isSingleRefUnevaluated() &&
@@ -794,7 +794,7 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
       TR::Register * tempReg = root->setRegister(allocateAddSubRegister(root, firstRegister));
       bool done = false;
 
-      if (cg()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+      if (cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
          {
          if (regToRegOpCode == TR::InstOpCode::AR)
             {

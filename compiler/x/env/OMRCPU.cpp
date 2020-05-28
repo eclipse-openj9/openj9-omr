@@ -34,7 +34,7 @@ OMR::X86::CPU::detect(OMRPortLibrary * const omrPortLib)
    {
    if (omrPortLib == NULL)
       return TR::CPU();
-
+   
    // Only enable the features that compiler currently uses
    uint32_t enabledFeatures [] = {OMR_FEATURE_X86_FPU, OMR_FEATURE_X86_CX8, OMR_FEATURE_X86_CMOV,
                                   OMR_FEATURE_X86_MMX, OMR_FEATURE_X86_SSE, OMR_FEATURE_X86_SSE2,

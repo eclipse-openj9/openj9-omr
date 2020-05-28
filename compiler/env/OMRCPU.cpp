@@ -167,6 +167,7 @@ bool
 OMR::CPU::supportsFeature(uint32_t feature)
    {
    TR_ASSERT_FATAL(TR::Compiler->omrPortLib != NULL, "Should not be calling this OMR level API without a valid port library pointer. Perhaps we did not initialize the port library properly?\n");
+
    OMRPORT_ACCESS_FROM_OMRPORT(TR::Compiler->omrPortLib);
    BOOLEAN supported = omrsysinfo_processor_has_feature(&_processorDescription, feature);
    return (TRUE == supported);

@@ -127,7 +127,7 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
 
    /** \brief
     *     Determines whether the Transactional Memory (TM) facility is available on the current processor.
-    *     Alias of getSupportsTransactionalMemoryFacility() as a platform agnostic query.
+    *     Alias of supportsFeature(OMR_FEATURE_S390_TE) as a platform agnostic query.
     */
    bool supportsTransactionalMemoryInstructions();
    
@@ -277,10 +277,23 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
     */
    bool isTargetWithinBranchRelativeRILRange(intptr_t targetAddress, intptr_t sourceAddress);
 
+   bool isAtLeast(OMRProcessorArchitecture p);
+   bool supportsFeature(uint32_t feature);
+   bool is_at_least_old_api(OMRProcessorArchitecture p);
+   bool supports_feature_old_api(uint32_t feature);
+   bool is_at_least_test(OMRProcessorArchitecture p);
+   bool supports_feature_test(uint32_t feature);
+
    protected:
 
-   CPU() : OMR::CPU(), _supportedArch(z9) {}
-   CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription) {}
+   CPU() : OMR::CPU(), _supportedArch(z9)
+      {
+      _processorDescription.processor = OMR_PROCESSOR_S390_UNKNOWN;
+      _processorDescription.physicalProcessor = OMR_PROCESSOR_S390_UNKNOWN;
+      memset(_processorDescription.features, 0, OMRPORT_SYSINFO_FEATURES_SIZE*sizeof(uint32_t));
+      }
+
+   CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription), _supportedArch(z9) {}
 
    enum
       {

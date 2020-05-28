@@ -130,7 +130,7 @@ TR::Register *inlineTrtEvaluator(
    TR::Register *r1Reg = cg->allocateRegister();
    TR::Register *r2Reg = cg->allocateRegister();
 
-   if (packR2 && !cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
+   if (packR2 && !cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
       {
       generateRRInstruction(cg, TR::InstOpCode::XR, node, r2Reg, r2Reg);
       }
@@ -169,11 +169,11 @@ TR::Register *inlineTrtEvaluator(
       {
       TR::Register *conditionCodeReg = getConditionCode(node, cg);
 
-      if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::zEC12))
+      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
          {
          generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node,  conditionCodeReg, r2Reg, 48, 55, 8);
          }
-      else if (cg->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
+      else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
          {
          generateRIEInstruction(cg, TR::InstOpCode::RISBG, node,  conditionCodeReg, r2Reg, 48, 55, 8);
          }

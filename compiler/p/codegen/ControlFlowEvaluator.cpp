@@ -3001,15 +3001,8 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
          TR_PPCTableOfConstants::setTOCSlot(offset, address);
          if (offset<LOWER_IMMED||offset>UPPER_IMMED)
             {
-            if (0x00008000 == cg->hiValue(offset))
-               {
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, addrRegister, cg->getTOCBaseRegister(), 0x7FFF);
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, addrRegister, addrRegister, 0x1);
-               }
-            else
-               {
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, addrRegister, cg->getTOCBaseRegister(), cg->hiValue(offset));
-               }
+            TR_ASSERT_FATAL(0x00008000 != cg->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, addrRegister, cg->getTOCBaseRegister(), cg->hiValue(offset));
             generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, LO_VALUE(offset), 8, cg));
             }
          else
@@ -3311,15 +3304,8 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
          TR_PPCTableOfConstants::setTOCSlot(offset, address);
          if (offset<LOWER_IMMED||offset>UPPER_IMMED)
             {
-            if (0x00008000 == cg->hiValue(offset))
-               {
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, pivotRegister, cg->getTOCBaseRegister(), 0x7FFF);
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, pivotRegister, pivotRegister, 0x1);
-               }
-            else
-               {
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, pivotRegister, cg->getTOCBaseRegister(), cg->hiValue(offset));
-               }
+            TR_ASSERT_FATAL(0x00008000 != cg->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, pivotRegister, cg->getTOCBaseRegister(), cg->hiValue(offset));
             generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(pivotRegister, LO_VALUE(offset), 8, cg));
             }
          else
@@ -3512,15 +3498,8 @@ TR::Register *OMR::Power::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
             cg->itemTracking(offset, table);
             if (offset<LOWER_IMMED||offset>UPPER_IMMED)
                {
-               if (0x00008000 == cg->hiValue(offset))
-                  {
-                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, reg1, cg->getTOCBaseRegister(), 0x7FFF);
-                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, reg1, reg1, 0x1);
-                  }
-               else
-                  {
-                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, reg1, cg->getTOCBaseRegister(), cg->hiValue(offset));
-                  }
+               TR_ASSERT_FATAL(0x00008000 != cg->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, reg1, cg->getTOCBaseRegister(), cg->hiValue(offset));
                generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, reg1, new (cg->trHeapMemory()) TR::MemoryReference(reg1, LO_VALUE(offset), 8, cg));
                }
             else

@@ -145,7 +145,7 @@ class OMR_EXTENSIBLE Peephole : public OMR::Peephole
    bool tryToReduce64BitShiftTo32BitShift();
 
    /** \brief
-    *     Tries to reduce AGIs (Address Generation Interlock) which occur when an instruction requires a register
+    *     Tries to reduce AGIs (Address Generation Interlock) which occur when an instruction requires a register in
     *     its operand address calculation but the register is unavailable because it is written to by a preceeding
     *     instruction which has not been completed yet. This causes a pipeline stall which we would like to avoid. In
     *     some cases however the AGI can be avoided by register renaming. For example, the following:

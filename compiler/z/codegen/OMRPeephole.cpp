@@ -385,7 +385,7 @@ OMR::Z::Peephole::tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, ui
             storeInst->getMemoryReference()->getIndexRegister()->decTotalUseCount();
             }
 
-         TR::Instruction * newInst = generateSS1Instruction(self()->cg(), TR::InstOpCode::MVC, self()->comp()->getStartTree()->getNode(), size - 1, storeInst->getMemoryReference(), loadInst->getMemoryReference(), cursor->getPrev());
+         TR::Instruction * newInst = generateSS1Instruction(self()->cg(), TR::InstOpCode::MVC, loadInst->getNode(), size - 1, storeInst->getMemoryReference(), loadInst->getMemoryReference(), cursor->getPrev());
 
          if (loadInst->getGCMap())
             {
@@ -940,7 +940,7 @@ OMR::Z::Peephole::tryToReduceAGI()
          {
          if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: AGI LA reduction on [%p] from source load [%p].\n", current, cursor))
             {
-            auto laInst = generateRXInstruction(self()->cg(), TR::InstOpCode::LA, self()->comp()->getStartTree()->getNode(), lgrTargetReg, 
+            auto laInst = generateRXInstruction(self()->cg(), TR::InstOpCode::LA, cursor->getNode(), lgrTargetReg, 
                generateS390MemoryReference(lgrSourceReg, 0, self()->cg()), cursor->getPrev());
 
             self()->cg()->replaceInst(cursor, laInst);
@@ -1220,7 +1220,7 @@ OMR::Z::Peephole::tryToReduceLToLZRF(TR::InstOpCode::Mnemonic loadAndZeroRightMo
 
          loadInst->getMemoryReference()->resetMemRefUsedBefore();
 
-         auto lzrbInst = generateRXInstruction(self()->cg(), loadAndZeroRightMostByteMnemonic, self()->comp()->getStartTree()->getNode(), loadTargetReg, loadInst->getMemoryReference(), cursor->getPrev());
+         auto lzrbInst = generateRXInstruction(self()->cg(), loadAndZeroRightMostByteMnemonic, loadInst->getNode(), loadTargetReg, loadInst->getMemoryReference(), cursor->getPrev());
 
          // Replace the load instruction with load-and-mask instruction
          self()->cg()->replaceInst(loadInst, lzrbInst);
@@ -1329,7 +1329,7 @@ OMR::Z::Peephole::tryToReduceLLCToLLGC()
             // Replace the LLC with LLGC
             TR::MemoryReference* memRef = ((TR::S390RXInstruction *) cursor)->getMemoryReference();
             memRef->resetMemRefUsedBefore();
-            auto llgcInst = generateRXInstruction(self()->cg(), TR::InstOpCode::LLGC, self()->comp()->getStartTree()->getNode(), llcTgtReg, memRef, cursor->getPrev());
+            auto llgcInst = generateRXInstruction(self()->cg(), TR::InstOpCode::LLGC, cursor->getNode(), llcTgtReg, memRef, cursor->getPrev());
             self()->cg()->replaceInst(cursor, llgcInst);
             
             return true;

@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2019 IBM Corp. and others
+Copyright (c) 2016, 2020 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -164,51 +164,26 @@ associated with queries that compose the larger query.
 ### TR_AliasSetInterface
 
 The `TR_AliasSetInterface` class is a wrapper around a bit vector representing aliased
-symrefs. It provides various methods for performing common operations on these bit vectors.
-[The CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) is used
-to achieve static polymorphism.
+symrefs. It provides various methods for performing common operations on these bit vectors. 
+The non-type template parameter is one of the two values of
+the `AliasSetInterface` enum: `UseDefAliasSet` or `UseOnlyAliasSet`.
 
-One key interface method that *must* be overridden by sub-classes is `getTRAliases()`.
-This is the method responsible for returning the bit vector of aliases.
+One key interface method is `getTRAliases()`. This template specialized method is responsible for 
+returning the bit vector of aliases.
+
+The class can also be initialized from a `TR::Node` instance through `Node::mayKill()` or 
+`Node::mayUse()` method. It provides an API for dealing with aliases of the symref *contained* in 
+the node. If the`TR::Node` instance calls `mayKill()` or `mayUse()` method with NULL `symref`, it 
+will initialize an empty `AliasSetInterface` and `getTRAliases()` will return a NULL pointer.
 
 It is worth noting that some of these operations are templated. So, theoretically, they
 can be used on bit vector types different from `TR_BitVector`. However, the type is
 required to satisfy the (unspecified) interface of `TR_BitVector`.
 
-Another noteworthy point is that some of the operations rely on calls to functions in
-the derived class, as is common with the CRTP. However, because of C++ lazy template
-instantiation, these operations will only be materialized if they are called. Hence,
-derived classes are not strictly required to define these called functions, as long
-as the operations that require them are never called on an instance of this class.
-
-There two classes that inherit from this base class, namely `TR_SymAliasSetInterface`
-and `TR_NodeAliasSetInterface`.
-
-### TR_SymAliasSetInterface
-
-`TR_SymAliasSetInterface` acts as a wrapper around a symref and provides an API for
-dealing with aliases of the symref. As should be expected, its `getTRAliases()`
-method returns the set of aliases of the symref.
-
-Being a class template, it has two specializations with different implementations
-of `getTRAliases()`. The non-type template parameter is one of the two values of
-the `TR_AliasSetType` enum: `useDefAliasSet` or `UseOnlyAliasSet`. 
-
-### TR_NodeAliasSetInterface
-
-The `TR_NodeAliasSetInterface` is a wrapper around a node (instance of `TR::Node`).
-It provides an API for dealing with aliases of the symref *contained* by the node.
-That is, its `getTRAliases()` method returns the set of aliases of the symref
-contained by the node.
-
-It too is a template class with two specializations having different implementations
-of `getTRAliases()`. In this case, the non-type template parameter is one of the two
-values of the `TR_NodeAliasSetType` enum: `mayUseAliasSet` or `mayKillAliasSet`.
-
-It should be noted that this class mostly exists for historic reasons. Once upon a time,
-aliasing could apply to instances of `TR::Node` as well as symrefs. However, since this
-is no longer the case, the class is only used as a shortcut to access the aliases of the
-contained symref.
+Another noteworthy point is that the class has 2 constructors: one with a `bool shares_symbol` 
+argument and one without it. The latter one checks whether the `_symbolReference` can have a valid alias 
+through method `sharesSymbol()` and then put the result into `_shares_symbol` while the former one simply 
+sets `sharesSymbol()` = `true`.
 
 ### Aliasing Bit Vectors
 

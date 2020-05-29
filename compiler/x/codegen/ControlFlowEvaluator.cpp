@@ -1300,8 +1300,24 @@ TR::Register *OMR::X86::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::Code
    TR::Register *falseReg = cg->evaluate(falseVal);
    bool trueValIs64Bit = TR::TreeEvaluator::getNodeIs64Bit(trueVal, cg);
    TR::Register *trueReg  = TR::TreeEvaluator::intOrLongClobberEvaluate(trueVal, trueValIs64Bit, cg);
-   if (!node->isNotCollected())
+
+   // Internal pointers cannot be handled since we cannot set the pinning array
+   // on the result register without knowing which side of the select will be
+   // taken.
+   TR_ASSERT_FATAL_WITH_NODE(
+      node,
+      !trueReg->containsInternalPointer() && !falseReg->containsInternalPointer(),
+      "Select nodes cannot have children that are internal pointers"
+   );
+   if (falseReg->containsCollectedReference())
+      {
+      if (cg->comp()->getOption(TR_TraceCG))
+         traceMsg(
+            cg->comp(),
+            "Setting containsCollectedReference on result of select node in register %s\n",
+            cg->getDebug()->getName(trueReg));
       trueReg->setContainsCollectedReference();
+      }
 
    // don't need to test if we're already using a compare eq or compare ne
    auto conditionOp = condition->getOpCode();

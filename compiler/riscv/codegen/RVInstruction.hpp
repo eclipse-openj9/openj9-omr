@@ -209,6 +209,39 @@ class ItypeInstruction : public TR::Instruction
       useRegister(s1reg);
       }
 
+   ItypeInstruction(TR::InstOpCode::Mnemonic op,
+            TR::Node          *n,
+            TR::Register      *treg,
+            TR::Register      *s1reg,
+            uint32_t          imm,
+            TR::RegisterDependencyConditions *cond,
+            TR::CodeGenerator *codeGen)
+      : TR::Instruction(op, n, cond, codeGen),
+        _target1Register(treg),
+        _source1Register(s1reg),
+        _imm(imm)
+      {
+      useRegister(treg);
+      useRegister(s1reg);
+      }
+
+   ItypeInstruction(TR::InstOpCode::Mnemonic op,
+            TR::Node          *n,
+            TR::Register      *treg,
+            TR::Register      *s1reg,
+            uint32_t          imm,
+            TR::RegisterDependencyConditions *cond,
+            TR::Instruction   *precedingInstruction,
+            TR::CodeGenerator *codeGen)
+      : TR::Instruction(op, n, cond, precedingInstruction, codeGen),
+        _target1Register(treg),
+        _source1Register(s1reg),
+        _imm(imm)
+      {
+      useRegister(treg);
+      useRegister(s1reg);
+      }
+
    /**
     * @brief Gets instruction kind
     * @return instruction kind

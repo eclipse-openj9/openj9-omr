@@ -131,6 +131,7 @@ public:
 	static TR::Register *acallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *callEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *laddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *faddEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -228,7 +228,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
    //
    // TODO: We should be using OMR::align here once mapStack is fixed so we don't pass negative offsets
    size_t localSize = ((-1 * static_cast<int32_t>(bodySymbol->getLocalMappingCursor())) + (8 - 1)) & ~(8 - 1);
-   setStackFrameSize((((getOffsetToFirstParm() + argSize + localSize) + (32 - 1)) & ~(32 - 1)) - XPLINK_STACK_FRAME_BIAS);
+   setStackFrameSize((((self()->getOffsetToFirstParm() + argSize + localSize) + (32 - 1)) & ~(32 - 1)) - XPLINK_STACK_FRAME_BIAS);
 
    int32_t stackFrameSize = getStackFrameSize();
 
@@ -236,7 +236,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    if (comp()->getOption(TR_TraceCG))
       {
-      traceMsg(comp(), "Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, getOffsetToFirstParm(), argSize, localSize);
+      traceMsg(comp(), "Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, self()->getOffsetToFirstParm(), argSize, localSize);
       }
 
    // Now that we know the stack frame size, map the stack backwards
@@ -1075,7 +1075,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
    TR::RealRegister * gpr0Real = getRealRegister(TR::RealRegister::GPR0);
    TR::RealRegister * gpr3Real = getRealRegister(TR::RealRegister::GPR3);
    TR::RealRegister * caaReal  = getRealRegister(getCAAPointerRegister());  // 31 bit oly
-   gpr3ParmOffset = getOffsetToFirstParm() + 2 * gprSize;
+   gpr3ParmOffset = self()->getOffsetToFirstParm() + 2 * gprSize;
 
    _firstSaved = REGNUM(firstSaved + TR::RealRegister::FirstGPR);
    _lastSaved  = REGNUM(lastSaved  + TR::RealRegister::FirstGPR);

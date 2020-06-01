@@ -267,7 +267,7 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
    //
    // TODO: We should be using OMR::align here once mapStack is fixed so we don't pass negative offsets
    size_t localSize = ((-1 * static_cast<int32_t>(bodySymbol->getLocalMappingCursor())) + (8 - 1)) & ~(8 - 1);
-   setStackFrameSize(((getOffsetToFirstParm() + argSize + localSize) + (8 - 1)) & ~(8 - 1));
+   setStackFrameSize(((self()->getOffsetToFirstParm() + argSize + localSize) + (8 - 1)) & ~(8 - 1));
 
    int32_t stackFrameSize = getStackFrameSize();
 
@@ -275,7 +275,7 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    if (comp()->getOption(TR_TraceCG))
       {
-      traceMsg(comp(), "Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, getOffsetToFirstParm(), argSize, localSize);
+      traceMsg(comp(), "Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, self()->getOffsetToFirstParm(), argSize, localSize);
       }
 
    // Now that we know the stack frame size, map the stack backwards

@@ -132,6 +132,42 @@ class OMR_EXTENSIBLE Linkage
     */
    virtual void performPostBinaryEncoding() { }
 
+   /** @brief
+    *    Gets the offset (in number of bytes) from the stack frame pointer to the location on the stack where the first
+    *    (closest to the frame pointer) parameter is located. 
+    *
+    *  @details
+    *    For example given the following stack frame layout, for a stack which grows towards 0x0000 (we subtract the
+    *    stack pointer for each additional frame), and assuming a call to a function with 4 parameters:
+    *
+    *    @code
+    *        0x04E8     +--------+   <- stack pointer
+    *                   |  ....  |
+    *        0x0518     +--------+   <- frame pointer
+    *                   |  ....  |
+    *        0x0550     +--------+   <- offset to first parm relative to the frame pointer (0x0550 - 0x0518 = 0x0038)
+    *                   |  ARG4  |
+    *        0x0558     +--------+
+    *                   |  ARG3  |
+    *        0x0560     +--------+
+    *                   |  ARG2  |
+    *        0x0568     +--------+
+    *                   |  ARG1  |
+    *        0x0570     +--------+
+    *    @endcode
+    *
+    *    The offset returned by this function (0x0038 in the above example) may not be the first argument (in argument
+    *    order) passed by the caller on the stack. It is up to the linkage to make use of this function to initialize
+    *    parameter offsets depending on the order in which the caller passes the arguments to the callee.
+    */
+   inline int32_t getOffsetToFirstParm() const;
+
+   /** @brief
+    *    Sets the offset (in number of bytes) from the stack frame pointer to the location on the stack where the first
+    *    (closest to the frame pointer) parameter is located. 
+    */
+   inline int32_t setOffsetToFirstParm(int32_t offset);
+
    /**
     * @brief Provides the entry point in a method to use when that method is invoked
     *        from a method compiled with the same linkage.
@@ -167,6 +203,8 @@ class OMR_EXTENSIBLE Linkage
 protected:
 
    TR::CodeGenerator *_cg;
+
+   int32_t _offsetToFirstParm;
    };
 }
 

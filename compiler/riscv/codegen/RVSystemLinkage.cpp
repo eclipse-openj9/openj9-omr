@@ -183,7 +183,7 @@ TR::RVSystemLinkage::RVSystemLinkage(TR::CodeGenerator *cg)
    _properties._framePointerRegister        = TR::RealRegister::s0;
 
    _properties._numberOfDependencyGPRegisters = 32; // To be determined
-   _properties._offsetToFirstParm             = 0; // To be determined
+   setOffsetToFirstParm(0); // To be determined
    _properties._offsetToFirstLocal            = 0; // To be determined
    }
 

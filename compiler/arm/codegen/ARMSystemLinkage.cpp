@@ -159,7 +159,6 @@ TR::ARMLinkageProperties TR::ARMSystemLinkage::properties =
        TR::RealRegister::NoReg, // vtable index register
        TR::RealRegister::NoReg,  // j9method argument register
        15,                      // numberOfDependencyGPRegisters
-       0,                       // offsetToFirstStackParm (relative to old sp)
        -4,                      // offsetToFirstLocal (not counting out-args)
        4,                       // numIntegerArgumentRegisters
        0,                       // firstIntegerArgumentRegister (index into ArgumentRegisters)
@@ -175,6 +174,12 @@ TR::ARMLinkageProperties TR::ARMSystemLinkage::properties =
        0                        // firstFloatReturnRegister
 #endif
     };
+
+TR::ARMSystemLinkage::ARMSystemLinkage(TR::CodeGenerator *cg)
+   : TR::Linkage(cg)
+   {
+   setOffsetToFirstParm(0);
+   }
 
 void TR::ARMSystemLinkage::initARMRealRegisterLinkage()
    {

@@ -167,7 +167,7 @@ TR::AMD64Win64FastCallLinkage::AMD64Win64FastCallLinkage(TR::CodeGenerator *cg)
 
    _properties._framePointerRegister = TR::RealRegister::ebp;
    _properties._methodMetaDataRegister = TR::RealRegister::NoReg;
-   _properties._offsetToFirstParm = RETURN_ADDRESS_SIZE;
+   setOffsetToFirstParm(RETURN_ADDRESS_SIZE);
    _properties._offsetToFirstLocal = _properties.getAlwaysDedicateFramePointerRegister() ? -GPR_REG_WIDTH : 0;
 
    memset(_properties._registerFlags, 0, sizeof(_properties._registerFlags));
@@ -361,7 +361,7 @@ TR::AMD64ABILinkage::AMD64ABILinkage(TR::CodeGenerator *cg)
 
    _properties._framePointerRegister = TR::RealRegister::ebp;
    _properties._methodMetaDataRegister = TR::RealRegister::NoReg;
-   _properties._offsetToFirstParm = RETURN_ADDRESS_SIZE;
+   setOffsetToFirstParm(RETURN_ADDRESS_SIZE);
    _properties._offsetToFirstLocal = _properties.getAlwaysDedicateFramePointerRegister() ? -GPR_REG_WIDTH : 0;
 
    memset(_properties._registerFlags, 0, sizeof(_properties._registerFlags));

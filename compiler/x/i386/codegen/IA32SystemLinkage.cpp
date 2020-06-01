@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -127,7 +127,7 @@ TR::IA32SystemLinkage::IA32SystemLinkage(
    _properties._numberOfVolatileXMMRegisters = p - _properties._numberOfVolatileGPRegisters;
    _properties._numVolatileRegisters = p;
 
-   _properties._offsetToFirstParm = RETURN_ADDRESS_SIZE;
+   setOffsetToFirstParm(RETURN_ADDRESS_SIZE);
    _properties._offsetToFirstLocal = _properties.getAlwaysDedicateFramePointerRegister() ? -GPR_REG_WIDTH : 0;
    _properties._OutgoingArgAlignment = IA32_DEFAULT_STACK_ALIGNMENT;
 

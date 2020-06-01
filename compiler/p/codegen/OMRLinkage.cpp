@@ -83,7 +83,7 @@ TR::MemoryReference *OMR::Power::Linkage::getOutgoingArgumentMemRef(int32_t argS
    const TR::PPCLinkageProperties& properties = self()->getProperties();
 
    TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(machine->getRealRegister(properties.getNormalStackPointerRegister()),
-                                                                              argSize+properties.getOffsetToFirstParm(), length, self()->cg());
+                                                                              argSize+self()->getOffsetToFirstParm(), length, self()->cg());
    memArg.argRegister = argReg;
    memArg.argMemory = result;
    memArg.opCode = opCode;

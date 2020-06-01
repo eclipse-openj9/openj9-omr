@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -79,4 +79,15 @@ OMR::Linkage::trStackMemory()
    return self()->trMemory();
    }
 
+int32_t
+OMR::Linkage::getOffsetToFirstParm() const
+   { 
+   return _offsetToFirstParm;
+   }
+
+int32_t
+OMR::Linkage::setOffsetToFirstParm(int32_t offset)
+   {
+   return _offsetToFirstParm = offset;
+   }
 #endif

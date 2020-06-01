@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -91,7 +91,6 @@ struct ARMLinkageProperties
    TR::RealRegister::RegNum _j9methodArgumentRegister;    // for icallVMprJavaSendStatic
 
    uint8_t                                 _numberOfDependencyGPRegisters;
-   int8_t                                  _offsetToFirstParm;
    int8_t                                  _offsetToFirstLocal;
 
    uint8_t                                 _numIntegerArgumentRegisters;
@@ -262,8 +261,6 @@ struct ARMLinkageProperties
       {
       return _j9methodArgumentRegister;
       }
-
-   int32_t getOffsetToFirstParm() const {return _offsetToFirstParm;}
 
    int32_t getOffsetToFirstLocal() const {return _offsetToFirstLocal;}
 

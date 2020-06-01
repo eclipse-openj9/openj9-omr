@@ -1118,16 +1118,17 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMCallSnippet * snippet)
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet), getName(methodSymRef));
 
    TR::Machine *machine = _cg->machine();
-   const TR::ARMLinkageProperties &linkage = _cg->getLinkage(methodSymbol->getLinkageConvention())->getProperties();
+   TR::Linkage *linkage = _cg->getLinkage(methodSymbol->getLinkageConvention());
+   const TR::ARMLinkageProperties &linkageProperties = linkage->getProperties();
 
    uint32_t numIntArgs   = 0;
    uint32_t numFloatArgs = 0;
 
    int32_t offset;
-   if (linkage.getRightToLeft())
-      offset = linkage.getOffsetToFirstParm();
+   if (linkageProperties.getRightToLeft())
+      offset = linkage->getOffsetToFirstParm();
    else
-      offset = snippet->getSizeOfArguments() + linkage.getOffsetToFirstParm();
+      offset = snippet->getSizeOfArguments() + linkage->getOffsetToFirstParm();
 
    for (int i = callNode->getFirstArgumentIndex(); i < callNode->getNumChildren(); i++)
       {
@@ -1137,68 +1138,68 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMCallSnippet * snippet)
          case TR::Int16:
          case TR::Int32:
          case TR::Address:
-            if (!linkage.getRightToLeft())
+            if (!linkageProperties.getRightToLeft())
                offset -= 4;
-            if (numIntArgs < linkage.getNumIntArgRegs())
+            if (numIntArgs < linkageProperties.getNumIntArgRegs())
                {
                printPrefix(pOutFile, NULL, bufferPos, 4);
                trfprintf(pOutFile, "str\t[gr7, %+d], ", offset);
-               print(pOutFile, machine->getRealRegister(linkage.getIntegerArgumentRegister(numIntArgs)));
+               print(pOutFile, machine->getRealRegister(linkageProperties.getIntegerArgumentRegister(numIntArgs)));
                bufferPos += 4;
                }
             numIntArgs++;
-            if (linkage.getRightToLeft())
+            if (linkageProperties.getRightToLeft())
                offset += 4;
             break;
          case TR::Int64:
-            if (!linkage.getRightToLeft())
+            if (!linkageProperties.getRightToLeft())
                offset -= 8;
-            if (numIntArgs < linkage.getNumIntArgRegs())
+            if (numIntArgs < linkageProperties.getNumIntArgRegs())
                {
                printPrefix(pOutFile, NULL, bufferPos, 4);
                trfprintf(pOutFile, "str\t[gr7, %+d], ", offset);
-               print(pOutFile, machine->getRealRegister(linkage.getIntegerArgumentRegister(numIntArgs)));
+               print(pOutFile, machine->getRealRegister(linkageProperties.getIntegerArgumentRegister(numIntArgs)));
                bufferPos += 4;
-               if (numIntArgs < linkage.getNumIntArgRegs() - 1)
+               if (numIntArgs < linkageProperties.getNumIntArgRegs() - 1)
                   {
                   printPrefix(pOutFile, NULL, bufferPos, 4);
                   trfprintf(pOutFile, "str\t[gr7, %+d], ", offset + 4);
-                  print(pOutFile, machine->getRealRegister(linkage.getIntegerArgumentRegister(numIntArgs + 1)));
+                  print(pOutFile, machine->getRealRegister(linkageProperties.getIntegerArgumentRegister(numIntArgs + 1)));
                   bufferPos += 4;
                   }
                }
             numIntArgs += 2;
-            if (linkage.getRightToLeft())
+            if (linkageProperties.getRightToLeft())
                offset += 8;
             break;
 // TODO FLOAT
 #if 0
          case TR::Float:
-            if (!linkage.getRightToLeft())
+            if (!linkageProperties.getRightToLeft())
                offset -= 4;
-            if (numFloatArgs < linkage.getNumFloatArgRegs())
+            if (numFloatArgs < linkageProperties.getNumFloatArgRegs())
                {
                printPrefix(pOutFile, NULL, bufferPos, 4);
                trfprintf(pOutFile, "stfs\t[gr7, %+d], ", offset);
-               print(pOutFile, machine->getRealRegister(linkage.getFloatArgumentRegister(numFloatArgs)));
+               print(pOutFile, machine->getRealRegister(linkageProperties.getFloatArgumentRegister(numFloatArgs)));
                bufferPos += 4;
                }
             numFloatArgs++;
-            if (linkage.getRightToLeft())
+            if (linkageProperties.getRightToLeft())
                offset += 4;
             break;
          case TR::Double:
-            if (!linkage.getRightToLeft())
+            if (!linkageProperties.getRightToLeft())
                offset -= 8;
-            if (numFloatArgs < linkage.getNumFloatArgRegs())
+            if (numFloatArgs < linkageProperties.getNumFloatArgRegs())
                {
                printPrefix(pOutFile, NULL, bufferPos, 4);
                trfprintf(pOutFile, "stfd\t[gr7, %+d], ", offset);
-               print(pOutFile, machine->getRealRegister(linkage.getFloatArgumentRegister(numFloatArgs)));
+               print(pOutFile, machine->getRealRegister(linkageProperties.getFloatArgumentRegister(numFloatArgs)));
                bufferPos += 4;
                }
             numFloatArgs++;
-            if (linkage.getRightToLeft())
+            if (linkageProperties.getRightToLeft())
                offset += 8;
             break;
 #endif

@@ -222,7 +222,6 @@ private:
 
    int32_t _offsetToRegSaveArea;
    int32_t _offsetToLongDispSlot;
-   int32_t _offsetToFirstParm;
    uint8_t _numberOfDependencyGPRegisters;
    int32_t _offsetToFirstLocal;
    bool    _stackSizeCheckNeeded;
@@ -549,9 +548,6 @@ enum TR_DispatchType
    virtual TR::RealRegister::RegNum getENVPointerRegister() { return TR::RealRegister::NoReg; }
    virtual TR::RealRegister::RegNum getCAAPointerRegister() { return TR::RealRegister::NoReg; }
    virtual TR::RealRegister::RegNum getParentDSAPointerRegister() { return TR::RealRegister::NoReg; }
-
-   virtual int32_t setOffsetToFirstParm   (int32_t offset)  { return _offsetToFirstParm = offset; }
-   virtual int32_t getOffsetToFirstParm()    { return _offsetToFirstParm; }
 
    virtual uint32_t setOffsetToFirstLocal(uint32_t offset)  { return _offsetToFirstLocal = offset; }
    virtual uint32_t getOffsetToFirstLocal()        { return _offsetToFirstLocal; }

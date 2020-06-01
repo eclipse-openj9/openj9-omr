@@ -316,101 +316,172 @@ OMR::RV::TreeEvaluator::dnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return doublePrecisionUnaryEvaluator(node, TR::InstOpCode::_fsgnjn_d, cg);
    }
 
-static TR::Register *
-conversionHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
-{
+static TR::Register*
+commonFPtoINTconversionEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op,
+      TR::CodeGenerator *cg)
+   {
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Register *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
-   TR::Register *trgReg = cg->allocateRegister(node->getDataType().isFloatingPoint() ? TR_FPR : TR_GPR);
+   TR::Register *trgReg = cg->allocateRegister(TR_GPR);
+
+   /*
+    * Converting NaN to integral type should produce 0. Since
+    * RISC-V fcvt* instructions don't do it, we have to test
+    * for NaN before and eventually load 0 into result (target)
+    * register.
+    */
+
+   TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *joinLabel = generateLabelSymbol(cg);
+
+   startLabel->setStartInternalControlFlow();
+   joinLabel->setEndInternalControlFlow();
+
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+
+   deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
+
+   generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
+
+   /*
+    * Check if srcReg is NaN, if so then result 0.
+    *
+    * To do so, we use _feq_d / _feq_s on the same register
+    * which for NaN value returns 0. This is very convenient
+    * since 0 is the desired result value, so by using target
+    * register to hold the result of comparison, we can just
+    * jump over the actual conversion via fcvt_?_?.
+    */
+   TR::InstOpCode::Mnemonic feqOp = firstChild->getDataType().isDouble()
+                                       ? TR::InstOpCode::_feq_d
+                                       : TR::InstOpCode::_feq_s;
+   generateRTYPE(feqOp, node, trgReg, src1Reg, src1Reg, cg);
+   generateBTYPE(TR::InstOpCode::_beq, node, joinLabel, trgReg, zero, cg);
+   /*
+    * Now do the actual conversion
+    */
+   generateRTYPE(op, node, trgReg, src1Reg, zero, cg);
+
+   generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
+
+   cg->decReferenceCount(firstChild);
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
+static TR::Register*
+commonINTtoFPconversionEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
+   TR::Register *trgReg = cg->allocateRegister(TR_FPR);
 
    generateRTYPE(op, node, trgReg, src1Reg, zero, cg);
 
    cg->decReferenceCount(firstChild);
    node->setRegister(trgReg);
    return trgReg;
-}
+   }
+
+static TR::Register*
+commonFPPtoFPconversionEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
+   TR::Register *trgReg = cg->allocateRegister(TR_FPR);
+
+   generateRTYPE(op, node, trgReg, src1Reg, zero, cg);
+
+   cg->decReferenceCount(firstChild);
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
 
 TR::Register *
 OMR::RV::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return conversionHelper(node, TR::InstOpCode::_fcvt_s_w, cg);
-	}
+   {
+   return commonINTtoFPconversionEvaluator(node, TR::InstOpCode::_fcvt_s_w, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
-   return conversionHelper(node, TR::InstOpCode::_fcvt_d_w, cg);
+   return commonINTtoFPconversionEvaluator(node, TR::InstOpCode::_fcvt_d_w, cg);
    }
 
-TR::Register *
+TR::Register*
 OMR::RV::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return conversionHelper(node, TR::InstOpCode::_fcvt_s_l, cg);
-	}
-
-TR::Register *
-OMR::RV::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return conversionHelper(node, TR::InstOpCode::_fcvt_d_l, cg);
-	}
-
-TR::Register *
-OMR::RV::TreeEvaluator::f2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return conversionHelper(node, TR::InstOpCode::_fcvt_d_s, cg);
-	}
-
-TR::Register *
-OMR::RV::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return conversionHelper(node, TR::InstOpCode::_fcvt_w_s, cg);
-	}
-
-TR::Register *
-OMR::RV::TreeEvaluator::d2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return conversionHelper(node, TR::InstOpCode::_fcvt_w_d, cg);
+   {
+   return commonINTtoFPconversionEvaluator(node, TR::InstOpCode::_fcvt_s_l, cg);
    }
 
-TR::Register *
+TR::Register*
+OMR::RV::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonINTtoFPconversionEvaluator(node, TR::InstOpCode::_fcvt_d_l, cg);
+   }
+
+TR::Register*
+OMR::RV::TreeEvaluator::f2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonFPPtoFPconversionEvaluator(node, TR::InstOpCode::_fcvt_d_s, cg);
+   }
+
+TR::Register*
+OMR::RV::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonFPtoINTconversionEvaluator(node, TR::InstOpCode::_fcvt_w_s, cg);
+   }
+
+TR::Register*
+OMR::RV::TreeEvaluator::d2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonFPtoINTconversionEvaluator(node, TR::InstOpCode::_fcvt_w_d, cg);
+   }
+
+TR::Register*
 OMR::RV::TreeEvaluator::d2cEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::d2cEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   // TODO:RV: Enable TR::TreeEvaluator::d2cEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
+   return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
 
-TR::Register *
+TR::Register*
 OMR::RV::TreeEvaluator::d2sEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::d2sEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   // TODO:RV: Enable TR::TreeEvaluator::d2sEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
+   return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
 
-TR::Register *
+TR::Register*
 OMR::RV::TreeEvaluator::d2bEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::d2bEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   // TODO:RV: Enable TR::TreeEvaluator::d2bEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
+   return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
 
-TR::Register *
+TR::Register*
 OMR::RV::TreeEvaluator::f2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return conversionHelper(node, TR::InstOpCode::_fcvt_l_s, cg);
-	}
+   {
+   return commonFPtoINTconversionEvaluator(node, TR::InstOpCode::_fcvt_l_s, cg);
+   }
 
-TR::Register *
+TR::Register*
 OMR::RV::TreeEvaluator::d2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return conversionHelper(node, TR::InstOpCode::_fcvt_l_d, cg);
-	}
+   {
+   return commonFPtoINTconversionEvaluator(node, TR::InstOpCode::_fcvt_l_d, cg);
+   }
 
-TR::Register *
+TR::Register*
 OMR::RV::TreeEvaluator::d2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return conversionHelper(node, TR::InstOpCode::_fcvt_s_d, cg);
-	}
+   {
+   return commonFPPtoFPconversionEvaluator(node, TR::InstOpCode::_fcvt_s_d, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::ifdcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -470,9 +541,49 @@ compareHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, bool reverse, TR::Cod
       generateRTYPE(op, node, trgReg, src1Reg, src2Reg, cg);
 
    cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
    node->setRegister(trgReg);
    return trgReg;
 }
+
+static TR::Register *
+compareNotEqualHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+
+   TR::Register *tmpReg = cg->allocateRegister();
+   TR::Register *trgReg = cg->allocateRegister();
+
+   /*
+    * fcmpne / dcmpne should return 0 if either operand is
+    * NaN. Since feq.s / feq.d returns 0 in that case, simply
+    * comparing for equality (using feq.s / feq.d) and negating
+    * the result is not enough.
+    *
+    * We have to explicitly check for both operands to be non-NaN
+    * before negating result of feq.s / feq.d. To check whether a value
+    * is NaN, we again use feq.s / feq.d on the same value, this returns
+    * 0 only when the value is NaN. The result of fcmpne / dcmpne is then
+    * logical and of all three comparisons. This way, we avoid branching.
+    */
+
+   generateRTYPE(op,                    node, trgReg, src1Reg, src1Reg, cg);
+   generateRTYPE(op,                    node, tmpReg, src2Reg, src2Reg, cg);
+   generateRTYPE(TR::InstOpCode::_and,  node, trgReg, trgReg,  tmpReg,  cg);
+
+   generateRTYPE(op,                    node, tmpReg, src1Reg, src2Reg, cg);
+   generateITYPE(TR::InstOpCode::_xori, node, tmpReg, tmpReg,  1,       cg);
+   generateRTYPE(TR::InstOpCode::_and,  node, trgReg, trgReg,  tmpReg,  cg);
+
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   cg->stopUsingRegister(tmpReg);
+   node->setRegister(trgReg);
+   return trgReg;
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::fcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -483,9 +594,7 @@ OMR::RV::TreeEvaluator::fcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::RV::TreeEvaluator::fcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *trgReg = compareHelper(node, TR::InstOpCode::_feq_s, false, cg);
-   generateITYPE(TR::InstOpCode::_xori, node, trgReg, trgReg, 1, cg);
-   return trgReg;
+   return compareNotEqualHelper(node, TR::InstOpCode::_feq_s, cg);
    }
 
 TR::Register *
@@ -520,11 +629,9 @@ OMR::RV::TreeEvaluator::dcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-   TR::Register *trgReg = compareHelper(node, TR::InstOpCode::_feq_d, false, cg);
-	generateITYPE(TR::InstOpCode::_xori, node, trgReg, trgReg, 1, cg);
-   return trgReg;
-	}
+   {
+   return compareNotEqualHelper(node, TR::InstOpCode::_feq_d, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -568,7 +675,7 @@ OMR::RV::TreeEvaluator::fRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 static TR::Register *
-commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, bool reverse, bool isDouble, TR::CodeGenerator *cg)
+commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic cmpOp, bool reverse, bool isDouble, TR::CodeGenerator *cg)
    {
    TR_ASSERT(node->getNumChildren() == 2, "The number of children for fmax/fmin/dmax/dmin must be 2.");
 
@@ -580,6 +687,8 @@ commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, bool revers
    TR::Register *cmpReg = cg->allocateRegister();
    TR::RealRegister *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
    TR::Register *trgReg;
+
+   TR::InstOpCode::Mnemonic feqOp = isDouble ? TR::InstOpCode::_feq_d : TR::InstOpCode::_feq_s;
 
    if (cg->canClobberNodesRegister(firstChild))
       {
@@ -595,27 +704,55 @@ commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, bool revers
       }
 
    TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *moveSrc2RegToTrgReg = generateLabelSymbol(cg);
    TR::LabelSymbol *joinLabel = generateLabelSymbol(cg);
 
    startLabel->setStartInternalControlFlow();
    joinLabel->setEndInternalControlFlow();
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
    deps->addPostCondition(cmpReg, TR::RealRegister::NoReg);
    deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
    deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
 
-   if (reverse)
-      generateRTYPE(op, node, cmpReg, src2Reg, src1Reg, cg);
-   else
-      generateRTYPE(op, node, cmpReg, src1Reg, src2Reg, cg);
-
    generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
+
+   /*
+    * Check if src1Reg is NaN, if so then result is NaN.
+    *
+    * Note, that the value is already stored in trgReg, so we check
+    * src1Reg (using feq.s / feq.d) and if it's NaN, we just jump
+    * to the end (joinLabel)
+    */
+   generateRTYPE(feqOp, node, cmpReg, src1Reg, src1Reg, cg);
+   generateBTYPE(TR::InstOpCode::_beq, node, joinLabel, cmpReg, zero, cg);
+
+   /*
+    * Check if src2Reg is NaN, if so then result is NaN.
+    *
+    * If src2Reg is NaN, we have to move it to trgReg, just like
+    * later on when we compare and (eventually) move src2Reg into trgReg.
+    * So if src2Reg is NaN, just jump over comparison to that move.
+    */
+   generateRTYPE(feqOp, node, cmpReg, src2Reg, src2Reg, cg);
+   generateBTYPE(TR::InstOpCode::_beq, node, moveSrc2RegToTrgReg, cmpReg, zero, cg);
+
+   /*
+    * Finally, compare the two values.
+    */
+   if (reverse)
+      generateRTYPE(cmpOp, node, cmpReg, src2Reg, src1Reg, cg);
+   else
+      generateRTYPE(cmpOp, node, cmpReg, src1Reg, src2Reg, cg);
+
    generateBTYPE(TR::InstOpCode::_bne, node, joinLabel, cmpReg, zero, cg);
+   generateLABEL(cg, TR::InstOpCode::label, node, moveSrc2RegToTrgReg);
    if (isDouble)
       generateRTYPE(TR::InstOpCode::_fsgnj_d, node, trgReg, src2Reg, src2Reg, cg);
    else
       generateRTYPE(TR::InstOpCode::_fsgnj_s, node, trgReg, src2Reg, src2Reg, cg);
+
    generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
 
    cg->stopUsingRegister(cmpReg);

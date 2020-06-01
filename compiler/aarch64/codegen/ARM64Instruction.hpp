@@ -558,7 +558,7 @@ class ARM64CompareBranchInstruction : public ARM64LabelInstruction
     * @param[in] cg : CodeGenerator
     */
    ARM64CompareBranchInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *sreg, TR::LabelSymbol *sym,
-                                     TR::CodeGenerator *cg)
+                                 TR::CodeGenerator *cg)
       : ARM64LabelInstruction(op, node, sym, cg), _source1Register(sreg),
         _estimatedBinaryLocation(0)
       {
@@ -575,8 +575,44 @@ class ARM64CompareBranchInstruction : public ARM64LabelInstruction
     * @param[in] cg : CodeGenerator
     */
    ARM64CompareBranchInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *sreg, TR::LabelSymbol *sym,
-                                     TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+                                 TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
       : ARM64LabelInstruction(op, node, sym, precedingInstruction, cg), _source1Register(sreg),
+        _estimatedBinaryLocation(0)
+      {
+      useRegister(sreg);
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] sreg : source register
+    * @param[in] sym : label symbol
+    * @param[in] cond : register dependency condition
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64CompareBranchInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *sreg, TR::LabelSymbol *sym,
+                                 TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
+      : ARM64LabelInstruction(op, node, sym, cond, cg), _source1Register(sreg),
+        _estimatedBinaryLocation(0)
+      {
+      useRegister(sreg);
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] sreg : source register
+    * @param[in] sym : label symbol
+    * @param[in] cond : register dependency condition
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64CompareBranchInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *sreg, TR::LabelSymbol *sym,
+                                 TR::RegisterDependencyConditions *cond, TR::Instruction *precedingInstruction,
+                                 TR::CodeGenerator *cg)
+      : ARM64LabelInstruction(op, node, sym, cond, precedingInstruction, cg), _source1Register(sreg),
         _estimatedBinaryLocation(0)
       {
       useRegister(sreg);

@@ -64,7 +64,7 @@ int32_t TR_LoadExtensions::perform()
    {
    static bool enableGRALoadExtensions = feGetEnv("TR_EnableGRALoadExtensions") != NULL;
 
-   // Make sure the UseDefInfo is set to NULL when GRA Load Extensions are disable.
+   // Make sure the UseDefInfo is set to NULL when GRA Load Extensions are disabled
    if (!enableGRALoadExtensions)
       optimizer()->setUseDefInfo(NULL);
 

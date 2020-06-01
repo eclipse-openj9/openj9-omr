@@ -401,6 +401,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableLinkageRegisterAllocation",   "O\tdon't turn parm loads into RegLoads in first basic block",  SET_OPTION_BIT(TR_DisableLinkageRegisterAllocation), "F"},
    {"disableLiveMonitorMetadata",         "O\tdisable the creation of live monitor metadata", SET_OPTION_BIT(TR_DisableLiveMonitorMetadata), "F"},
    {"disableLiveRangeSplitter",          "O\tdisable live range splitter",                    SET_OPTION_BIT(TR_DisableLiveRangeSplitter), "F"},
+   {"disableLoadExtensions",              "O\tdisable load extensions",                        TR::Options::disableOptimization, loadExtensions, 0, "P"},
    {"disableLocalCSE",                    "O\tdisable local common subexpression elimination", TR::Options::disableOptimization, localCSE, 0, "P"},
    {"disableLocalCSEVolatileCommoning",   "O\tdisable local common subexpression elimination volatile commoning", SET_OPTION_BIT(TR_DisableLocalCSEVolatileCommoning), "F"},
    {"disableLocalDSE",                    "O\tdisable local dead store elimination",           TR::Options::disableOptimization, localDeadStoreElimination, 0, "P"},

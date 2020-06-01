@@ -114,6 +114,6 @@
    OPTIMIZATION(virtualGuardHeadMerger)
    OPTIMIZATION(trivialDeadBlockRemover)
    OPTIMIZATION(IVTypeTransformation)
-   OPTIMIZATION(loadExtensions)  // added temporarily for omr optimizer work
+   OPTIMIZATION(loadExtensions)
    OPTIMIZATION(regDepCopyRemoval)
    OPTIMIZATION(asyncCheckInsertion)

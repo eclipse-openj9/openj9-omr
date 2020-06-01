@@ -3241,7 +3241,7 @@ OMR::Power::CodeGenerator::fixedLoadLabelAddressIntoReg(
          self()->itemTracking(offset, label);
          if (offset<LOWER_IMMED||offset>UPPER_IMMED)
             {
-            TR_ASSERT_FATAL(0x00008000 != self()->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
+            TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != self()->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
             generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, self()->getTOCBaseRegister(), self()->hiValue(offset));
             generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, self()));
             }

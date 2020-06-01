@@ -66,17 +66,6 @@ struct ILGenFailure : public virtual CompilationException
    };
 
 /**
- * Unsupported value type operation exception type.
- *
- * Thrown if an unsupported value type operation is encountered that requires
- * compilation to be aborted.
- */
-struct UnsupportedValueTypeOperation : public virtual CompilationException
-   {
-   virtual const char* what() const throw() { return "Unsupported value type operation"; }
-   };
-
-/**
  * Recoverable IL Generation Failure exception type.
  *
  * Thrown on an IL Generation Failure condition which the compiler can
@@ -98,6 +87,17 @@ struct RecoverableILGenException : public virtual CompilationException
 struct NoRecompilationRecoverableILGenException: public RecoverableILGenException
    {
    virtual const char* what() const throw() { return "Recoverable IL Gen Exception with no recompilation if failing method is outermost"; }
+   };
+
+/**
+ * Unsupported value type operation exception type.
+ *
+ * Thrown if an unsupported value type operation is encountered that requires
+ * compilation to be aborted.
+ */
+struct UnsupportedValueTypeOperation : public virtual RecoverableILGenException
+   {
+   virtual const char* what() const throw() { return "Unsupported value type operation"; }
    };
 
 /**

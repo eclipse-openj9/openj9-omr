@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -595,7 +595,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 				}
 			} else {
 				/* Unset the portlibSignalFlag for other handlers. One signal must be associated to only one handler. */
-				cursor->flags &= ~portlibSignalFlag;
+				cursor->flags &= ~(portlibSignalFlag & ~OMRPORT_SIG_FLAG_CONTROL_BITS_MASK);
 			}
 		}
 		previousLink = &cursor->next;

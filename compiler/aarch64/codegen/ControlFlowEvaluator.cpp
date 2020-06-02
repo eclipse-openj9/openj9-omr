@@ -136,6 +136,11 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
          generateCompareImmInstruction(cg, node, src1Reg, value, is64bit);
          useRegCompare = false;
          }
+      else if (constantIsUnsignedImm12(-value))
+         {
+         generateCompareImmInstruction(cg, node, src1Reg, value, is64bit);
+         useRegCompare = false;
+         }
       }
 
    if (useRegCompare)
@@ -328,6 +333,11 @@ static TR::Register *icmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool 
       {
       int64_t value = is64bit ? secondChild->getLongInt() : secondChild->getInt();
       if (constantIsUnsignedImm12(value))
+         {
+         generateCompareImmInstruction(cg, node, src1Reg, value, is64bit);
+         useRegCompare = false;
+         }
+      else if (constantIsUnsignedImm12(-value))
          {
          generateCompareImmInstruction(cg, node, src1Reg, value, is64bit);
          useRegCompare = false;

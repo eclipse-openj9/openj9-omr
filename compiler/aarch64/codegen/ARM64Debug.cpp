@@ -916,15 +916,31 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
    printPrefix(pOutFile, instr);
    TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
    bool done = false;
-   if (op == TR::InstOpCode::subsimmx || op == TR::InstOpCode::subsimmw)
+   if (op == TR::InstOpCode::subsimmx || op == TR::InstOpCode::subsimmw ||
+       op == TR::InstOpCode::addsimmx || op == TR::InstOpCode::addsimmw)
       {
       TR::Register *r = instr->getTargetRegister();
       if (r && r->getRealRegister()
           && toRealRegister(r)->getRegisterNumber() == TR::RealRegister::xzr)
          {
-         // cmp alias
+         // cmp/cmn alias
+         char *mnemonic = NULL;
          done = true;
-         trfprintf(pOutFile, "cmpimm%c \t", (op == TR::InstOpCode::subsimmx) ? 'x' : 'w');
+         switch (op)
+            {
+            case TR::InstOpCode::subsimmx:
+               mnemonic = "cmpimmx";
+               break;
+            case TR::InstOpCode::subsimmw:
+               mnemonic = "cmpimmw";
+               break;
+            case TR::InstOpCode::addsimmx:
+               mnemonic = "cmnimmx";
+               break;
+            case TR::InstOpCode::addsimmw:
+               mnemonic = "cmnimmw";
+            }
+         trfprintf(pOutFile, "%s \t", mnemonic);
          print(pOutFile, instr->getSource1Register(), TR_WordReg);
          trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
          }

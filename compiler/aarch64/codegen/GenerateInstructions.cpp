@@ -372,10 +372,21 @@ static TR::Instruction *generateZeroSrc1ImmInstruction(TR::CodeGenerator *cg, TR
 TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
    TR::Register *sreg, int32_t imm, bool is64bit, TR::Instruction *preced)
    {
-   /* Alias of SUBS instruction */
+   TR::InstOpCode::Mnemonic op;
 
-   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::subsimmx : TR::InstOpCode::subsimmw;
-   TR_ASSERT_FATAL(constantIsUnsignedImm12(imm), "Immediate value is out of range for subsimm");
+   if (constantIsUnsignedImm12(imm))
+      {
+      /* Alias of SUBS instruction */
+      op = is64bit ? TR::InstOpCode::subsimmx : TR::InstOpCode::subsimmw;
+      }
+   else
+      {
+      TR_ASSERT_FATAL(constantIsUnsignedImm12(-imm), "Immediate value is out of range for cmp/cmn");
+
+      /* Alias of ADDS instruction */
+      op = is64bit ? TR::InstOpCode::addsimmx : TR::InstOpCode::addsimmw;
+      imm = -imm;
+      }
 
    return generateZeroSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
    }

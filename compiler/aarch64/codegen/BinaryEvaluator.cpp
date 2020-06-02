@@ -539,13 +539,13 @@ static TR::Register *shiftHelper(TR::Node *node, TR::ARM64ShiftCode shiftType, T
       switch (shiftType)
          {
          case TR::SH_LSL:
-            generateLogicalShiftLeftImmInstruction(cg, node, trgReg, srcReg, shift);
+            generateLogicalShiftLeftImmInstruction(cg, node, trgReg, srcReg, shift, is64bit);
             break;
          case TR::SH_LSR:
-            generateLogicalShiftRightImmInstruction(cg, node, trgReg, srcReg, shift);
+            generateLogicalShiftRightImmInstruction(cg, node, trgReg, srcReg, shift, is64bit);
             break;
          case TR::SH_ASR:
-            generateArithmeticShiftRightImmInstruction(cg, node, trgReg, srcReg, shift);
+            generateArithmeticShiftRightImmInstruction(cg, node, trgReg, srcReg, shift, is64bit);
             break;
          default:
             TR_ASSERT(false, "Unsupported shift type.");

@@ -116,7 +116,7 @@ static TR::Register *commonIntegerAbsEvaluator(TR::Node *node, TR::CodeGenerator
    TR::InstOpCode::Mnemonic eorOp = is64bit ? TR::InstOpCode::eorx : TR::InstOpCode::eorw;
    TR::InstOpCode::Mnemonic subOp = is64bit ? TR::InstOpCode::subx : TR::InstOpCode::subw;
 
-   generateArithmeticShiftRightImmInstruction(cg, node, tempReg, reg, is64bit ? 63 : 31);
+   generateArithmeticShiftRightImmInstruction(cg, node, tempReg, reg, is64bit ? 63 : 31, is64bit);
    generateTrg1Src2Instruction(cg, eorOp, node, reg, reg, tempReg);
    generateTrg1Src2Instruction(cg, subOp, node, reg, reg, tempReg);
 

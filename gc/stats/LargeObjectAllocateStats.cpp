@@ -519,7 +519,7 @@ MM_LargeObjectAllocateStats::simulateAllocateObjects(MM_EnvironmentBase *env, ui
 				maxFreeEntrySize = _sizeClassSizes[sizeClassIndex + 1];
 			}
 
-			uintptr_t guessedFreeEntrySize = minFreeEntrySize + (uintptr_t) ((maxFreeEntrySize - minFreeEntrySize) * (float)rand() / RAND_MAX);
+			uintptr_t guessedFreeEntrySize = minFreeEntrySize + (uintptr_t) ((maxFreeEntrySize - minFreeEntrySize) * ((float)rand() / (float)RAND_MAX));
 
 			uintptr_t freeEntriesUsedInteger = (uintptr_t)freeEntriesUsed;
 			float freeEntriesUsedFractional = freeEntriesUsed - freeEntriesUsedInteger;
@@ -757,7 +757,7 @@ MM_LargeObjectAllocateStats::simulateAllocateTLHs(MM_EnvironmentBase *env, uintp
 					maxFreeEntrySize = _sizeClassSizes[sizeClassIndex + 1];
 				}
 
-				uintptr_t freeEntrySize = minFreeEntrySize + (uintptr_t) ((maxFreeEntrySize - minFreeEntrySize) * (float)rand() / RAND_MAX);
+				uintptr_t freeEntrySize = minFreeEntrySize + (uintptr_t) ((maxFreeEntrySize - minFreeEntrySize) * ((float)rand() / (float)RAND_MAX));
 
 				uintptr_t freeEntriesUsedInteger = (uintptr_t)freeEntriesUsed;
 				float freeEntriesUsedFractional = freeEntriesUsed - freeEntriesUsedInteger;

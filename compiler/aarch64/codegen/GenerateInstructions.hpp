@@ -643,6 +643,7 @@ TR::Instruction *generateSrc2Instruction(
  * @param[in] treg : target register
  * @param[in] sreg : source register
  * @param[in] shiftAmount : shift amount
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -652,6 +653,7 @@ TR::Instruction *generateArithmeticShiftRightImmInstruction(
                    TR::Register *treg,
                    TR::Register *sreg,
                    uint32_t shiftAmount,
+                   bool is64bit = true,
                    TR::Instruction *preced = NULL);
 
 /*
@@ -661,6 +663,7 @@ TR::Instruction *generateArithmeticShiftRightImmInstruction(
  * @param[in] treg : target register
  * @param[in] sreg : source register
  * @param[in] shiftAmount : shift amount
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -670,6 +673,7 @@ TR::Instruction *generateLogicalShiftRightImmInstruction(
                    TR::Register *treg,
                    TR::Register *sreg,
                    uint32_t shiftAmount,
+                   bool is64bit = true,
                    TR::Instruction *preced = NULL);
 
 /*
@@ -679,6 +683,7 @@ TR::Instruction *generateLogicalShiftRightImmInstruction(
  * @param[in] treg : target register
  * @param[in] sreg : source register
  * @param[in] shiftAmount : shift amount
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -688,6 +693,7 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(
                    TR::Register *treg,
                    TR::Register *sreg,
                    uint32_t shiftAmount,
+                   bool is64bit = true,
                    TR::Instruction *preced = NULL);
 
 /*

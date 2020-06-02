@@ -289,11 +289,10 @@ TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::
    }
 
 TR::Instruction *generateArithmeticShiftRightImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
+   TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of SBFM instruction */
 
-   bool is64bit = node->getDataType().isInt64();
    TR_ASSERT_FATAL(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::sbfmx : TR::InstOpCode::sbfmw;
@@ -307,11 +306,10 @@ TR::Instruction *generateArithmeticShiftRightImmInstruction(TR::CodeGenerator *c
    }
 
 TR::Instruction *generateLogicalShiftRightImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
+   TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of UBFM instruction */
 
-   bool is64bit = node->getDataType().isInt64();
    TR_ASSERT_FATAL(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw;
@@ -325,11 +323,10 @@ TR::Instruction *generateLogicalShiftRightImmInstruction(TR::CodeGenerator *cg, 
    }
 
 TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
+   TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of UBFM instruction */
 
-   bool is64bit = node->getDataType().isInt64();
    TR_ASSERT_FATAL(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::ubfmx : TR::InstOpCode::Mnemonic::ubfmw;

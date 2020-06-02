@@ -3648,6 +3648,14 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_aNewArray:                 return "jitANewArray";
          case TR_aNewArrayNoZeroInit:       return "jitANewArrayNoZeroInit";
 
+         case TR_getFlattenableField:       return "jitGetFlattenableField";
+         case TR_withFlattenableField:      return "jitWithFlattenableField";
+         case TR_putFlattenableField:       return "jitPutFlattenableField";
+         case TR_getFlattenableStaticField: return "jitGetFlattenableStaticField";
+         case TR_putFlattenableStaticField: return "jitPutFlattenableStaticField";
+         case TR_loadFlattenableArrayElement: return "jitLoadFlattenableArrayElement";
+         case TR_storeFlattenableArrayElement: return "jitStoreFlattenableArrayElement";
+
          case TR_multiANewArray:            return "jitAMultiANewArray";
          case TR_aThrow:                    return "jitThrowException";
          case TR_methodTypeCheck:           return "jitThrowWrongMethodTypeException";

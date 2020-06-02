@@ -37,6 +37,7 @@
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
+#include "codegen/Relocation.hpp"
 #include "codegen/Snippet.hpp"
 #include "env/IO.hpp"
 #include "il/Block.hpp"
@@ -535,6 +536,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsException:
          print(pOutFile, (TR::ARM64ImmInstruction *)instr); // printing handled by superclass
          break;
+      case OMR::Instruction::IsRelocatableImm:
+         print(pOutFile, (TR::ARM64RelocatableImmInstruction *)instr);
+         break;
       case OMR::Instruction::IsImmSym:
          print(pOutFile, (TR::ARM64ImmSymInstruction *)instr);
          break;
@@ -649,6 +653,19 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ImmInstruction *instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t0x%08x", getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64RelocatableImmInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT "\t; %s",
+             getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate(),
+             TR::ExternalRelocation::getName(instr->getReloKind()));
+   TR::SymbolReference *sr = instr->getSymbolReference();
+   if (sr)
+      trfprintf(pOutFile, " \"%s\"", getName(sr));
    trfflush(_comp->getOutFile());
    }
 

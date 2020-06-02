@@ -119,7 +119,6 @@ class ARM64ImmInstruction : public TR::Instruction
 
 public:
 
-   // Constructors without relocation types
    /*
     * @brief Constructor
     * @param[in] op : instruction opcode
@@ -140,7 +139,7 @@ public:
     * @param[in] cg : CodeGenerator
     */
    ARM64ImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, uint32_t imm,
-                        TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+                       TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
       : TR::Instruction(op, node, precedingInstruction, cg), _sourceImmediate(imm)
       {
       }
@@ -181,6 +180,143 @@ public:
     * @return instruction cursor
     */
    virtual uint8_t *generateBinaryEncoding();
+   };
+
+class ARM64RelocatableImmInstruction : public TR::Instruction
+   {
+   uintptr_t _sourceImmediate;
+   TR_ExternalRelocationTargetKind _reloKind;
+   TR::SymbolReference *_symbolReference;
+
+public:
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] imm : immediate value
+    * @param[in] relocationKind : relocation kind
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64RelocatableImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, uintptr_t imm,
+                       TR_ExternalRelocationTargetKind relocationKind, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cg),
+        _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(NULL)
+      {
+      }
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] imm : immediate value
+    * @param[in] relocationKind : relocation kind
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64RelocatableImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, uintptr_t imm,
+                       TR_ExternalRelocationTargetKind relocationKind, TR::Instruction *precedingInstruction,
+                       TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, precedingInstruction, cg),
+        _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(NULL)
+      {
+      }
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] imm : immediate value
+    * @param[in] relocationKind : relocation kind
+    * @param[in] sr : symbol reference
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64RelocatableImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, uintptr_t imm,
+                       TR_ExternalRelocationTargetKind relocationKind, TR::SymbolReference *sr,
+                       TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cg),
+        _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(sr)
+      {
+      }
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] imm : immediate value
+    * @param[in] relocationKind : relocation kind
+    * @param[in] sr : symbol reference
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64RelocatableImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, uintptr_t imm,
+                       TR_ExternalRelocationTargetKind relocationKind, TR::SymbolReference *sr,
+                       TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, precedingInstruction, cg),
+        _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(sr)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsRelocatableImm; }
+
+   /**
+    * @brief Gets source immediate
+    * @return source immediate
+    */
+   uintptr_t getSourceImmediate() {return _sourceImmediate;}
+   /**
+    * @brief Sets source immediate
+    * @param[in] si : immediate value
+    * @return source immediate
+    */
+   uintptr_t setSourceImmediate(intptr_t si) {return (_sourceImmediate = si);}
+
+   /**
+    * @brief Encodes the immediate value into the instruction
+    * @param[in] instruction : instruction address
+    */
+   void insertImmediateField(uintptr_t *instruction)
+      {
+      *instruction = _sourceImmediate;
+      }
+
+   /**
+    * @brief Sets relocation kind
+    * @param[in] reloKind : relocation kind
+    * @return relocation kind
+    */
+   TR_ExternalRelocationTargetKind setReloKind(TR_ExternalRelocationTargetKind reloKind) { return (_reloKind = reloKind); }
+   /**
+    * @brief Gets relocation kind
+    * @return relocation kind
+    */
+   TR_ExternalRelocationTargetKind getReloKind() { return _reloKind; }
+
+   /**
+    * @brief Sets symbol reference
+    * @param[in] sr : symbol reference
+    * @return symbol reference
+    */
+   TR::SymbolReference *setSymbolReference(TR::SymbolReference *sr) { return (_symbolReference = sr); }
+   /**
+    * @brief Gets symbol reference
+    * @return symbol reference
+    */
+   TR::SymbolReference *getSymbolReference() { return _symbolReference; }
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+
+   /**
+    * @brief Estimates binary length
+    * @param[in] currentEstimate : current estimated length
+    * @return estimated binary length
+    */
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 class ARM64ImmSymInstruction : public TR::Instruction

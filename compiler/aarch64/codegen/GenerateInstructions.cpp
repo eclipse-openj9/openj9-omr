@@ -52,6 +52,22 @@ TR::ARM64ImmInstruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstO
    return new (cg->trHeapMemory()) TR::ARM64ImmInstruction(op, node, imm, cg);
    }
 
+TR::Instruction *generateRelocatableImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   uintptr_t imm, TR_ExternalRelocationTargetKind relocationKind, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64RelocatableImmInstruction(op, node, imm, relocationKind, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64RelocatableImmInstruction(op, node, imm, relocationKind, cg);
+   }
+
+TR::Instruction *generateRelocatableImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   uintptr_t imm, TR_ExternalRelocationTargetKind relocationKind, TR::SymbolReference *sr, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64RelocatableImmInstruction(op, node, imm, relocationKind, sr, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64RelocatableImmInstruction(op, node, imm, relocationKind, sr, cg);
+   }
+
 TR::Instruction *generateImmSymInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    uintptr_t imm, TR::RegisterDependencyConditions *cond, TR::SymbolReference *sr, TR::Snippet *s,
    TR::Instruction *preced)

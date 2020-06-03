@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,7 +28,7 @@
 
 typedef struct LanguageThreadLocalHeapStruct {
     uint8_t* heapBase;
-    uint8_t* realHeapAlloc;
+    uint8_t* realHeapTop;
     uintptr_t objectFlags;
     uintptr_t refreshSize;
     void* memorySubSpace;

@@ -93,19 +93,25 @@ private:
 	MMINLINE void *getBase() { return (void *)_tlh->heapBase; };
 	MMINLINE void setBase(void *basePtr) { _tlh->heapBase = (uint8_t *)basePtr; };
 
-	/* CMVC 143597: setRealAlloc and getRealAlloc are fix to ensure we seal the
+	/* CMVC 143597: setRealTop and getRealTop are fix to ensure we seal the
 	 * TLH properly under frequent hook and unhook of ObjectAllocInstrumentable, which toggles
-	 * enable/disable of TLH. If TLH is disabled, realHeapAlloc holds the true TLH alloc ptr.
+	 * enable/disable of TLH. If TLH is disabled, realHeapTop holds the true TLH top ptr.
 	 */
-	MMINLINE void setRealAlloc(void *realAllocPtr) { _tlh->realHeapAlloc = (uint8_t *)realAllocPtr; };
-	MMINLINE void *getRealAlloc()
+	MMINLINE void setRealTop(void *realTopPtr) { _tlh->realHeapTop = (uint8_t *)realTopPtr; };
+	MMINLINE void *getRealTop()
 	{
-		if (NULL != _tlh->realHeapAlloc) {
-			return _tlh->realHeapAlloc;
+		if (NULL != _tlh->realHeapTop) {
+			return _tlh->realHeapTop;
 		} else {
-			return *_pointerToHeapAlloc;
+			return *_pointerToHeapTop;
 		}
 	};
+
+	/* @return the number of bytes, which are available for allocation in the TLH */
+	MMINLINE uintptr_t getRemainingSize() { return (uintptr_t)getRealTop() - (uintptr_t)getAlloc(); };
+	/* @return the number of used bytes in the TLH */
+	MMINLINE uintptr_t getUsedSize() { return (uintptr_t)getAlloc() - (uintptr_t)getBase(); };
+
 	MMINLINE void *getAlloc() { return (void *) *_pointerToHeapAlloc; };
 	MMINLINE void setAlloc(void *allocPtr) { *_pointerToHeapAlloc = (uint8_t *)allocPtr; };
 	MMINLINE void *getTop() { return (void *) *_pointerToHeapTop; };
@@ -145,14 +151,14 @@ private:
 	MMINLINE void wipeTLH(MM_EnvironmentBase *env)
 	{
 #if defined(OMR_GC_OBJECT_ALLOCATION_NOTIFY)
-		objectAllocationNotify(env, _tlh->heapBase, getRealAlloc());
+		objectAllocationNotify(env, _tlh->heapBase, getAlloc());
 #endif /* OMR_GC_OBJECT_ALLOCATION_NOTIFY */
 #if defined(OMR_GC_OBJECT_MAP)
 		/* Mark all newly allocated objects from the TLH as valid objects */
-		markValidObjectForRange(env, _tlh->heapBase, getRealAlloc());
+		markValidObjectForRange(env, _tlh->heapBase, getAlloc());
 #endif
 		setupTLH(env, NULL, NULL, NULL, NULL);
-		setRealAlloc(NULL);
+		setRealTop(NULL);
 	}
 
 #if defined(OMR_GC_OBJECT_ALLOCATION_NOTIFY)

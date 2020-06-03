@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,6 +30,7 @@ MM_AllocationStats::clear()
 	_tlhRefreshCountFresh = 0;
 	_tlhRefreshCountReused = 0;
 	_tlhAllocatedFresh = 0;
+	_tlhAllocatedUsed = 0;
 	_tlhAllocatedReused = 0;
 	_tlhRequestedBytes = 0;
 	_tlhDiscardedBytes = 0;
@@ -54,6 +55,7 @@ MM_AllocationStats::merge(MM_AllocationStats *stats)
 	MM_AtomicOperations::add(&_tlhRefreshCountFresh, stats->_tlhRefreshCountFresh);
 	MM_AtomicOperations::add(&_tlhRefreshCountReused, stats->_tlhRefreshCountReused);
 	MM_AtomicOperations::add(&_tlhAllocatedFresh, stats->_tlhAllocatedFresh);
+	MM_AtomicOperations::add(&_tlhAllocatedUsed, stats->_tlhAllocatedUsed);
 	MM_AtomicOperations::add(&_tlhRequestedBytes, stats->_tlhRequestedBytes);
 	MM_AtomicOperations::add(&_tlhDiscardedBytes, stats->_tlhDiscardedBytes);
 	MM_AtomicOperations::add(&_tlhAllocatedReused, stats->_tlhAllocatedReused);

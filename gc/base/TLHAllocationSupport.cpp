@@ -91,7 +91,7 @@ MM_TLHAllocationSupport::clear(MM_EnvironmentBase *env)
 
 	/* Any previous cache to clear  ? */
 	if (NULL != memoryPool) {
-		memoryPool->abandonTlhHeapChunk(getRealAlloc(), getTop());
+		memoryPool->abandonTlhHeapChunk(getAlloc(), getRealTop());
 		reportClearCache(env);
 	}
 	wipeTLH(env);
@@ -172,17 +172,19 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 
 	MM_AllocationStats *stats = _objectAllocationInterface->getAllocationStats();
 
-	stats->_tlhDiscardedBytes += getSize();
+	stats->_tlhDiscardedBytes += getRemainingSize();
+	uintptr_t usedSize = getUsedSize();
+	stats->_tlhAllocatedUsed += usedSize;
 
 	/* Try to cache the current TLH */
-	if (NULL != getRealAlloc() && getSize() >= tlhMinimumSize) {
+	if ((NULL != getRealTop()) && (getRemainingSize() >= tlhMinimumSize)) {
 		/* Cache the current TLH because it is bigger than the minimum size */
-		MM_HeapLinkedFreeHeaderTLH* newCache = (MM_HeapLinkedFreeHeaderTLH*)getRealAlloc();
+		MM_HeapLinkedFreeHeaderTLH* newCache = (MM_HeapLinkedFreeHeaderTLH*)getAlloc();
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 		valgrindMakeMemUndefined((uintptr_t)newCache, sizeof(MM_HeapLinkedFreeHeaderTLH));			
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
-	    newCache->setSize(getSize());
+	    newCache->setSize(getRemainingSize());
 		newCache->_memoryPool = getMemoryPool();
 		newCache->_memorySubSpace = getMemorySubSpace();
 		newCache->setNext(_abandonedList, compressed);
@@ -263,6 +265,12 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 	}
 
 	if (didRefresh) {
+
+		uintptr_t samplingBytesGranularity = env->getExtensions()->objectSamplingBytesGranularity;
+		if (!extensions->needDisableInlineAllocation() && (UDATA_MAX != samplingBytesGranularity)) {
+			uintptr_t traceBytes = (env->_traceAllocationBytes + usedSize) % samplingBytesGranularity;
+			env->setTLHSamplingTop(samplingBytesGranularity - traceBytes);
+		}
 		/*
 		 * THL was refreshed however it might be already flushed in GC
 		 * Some special features (like Prepare Heap For Walk called by GC check)

@@ -1326,7 +1326,12 @@ TR_Debug::methodSigCanBeCompiledOrRelocated(const char *methodSig, TR_FilterBST 
       {
       if (compOrReloFilter->excludedMethodFilter)
          {
-         // Excluded methods SHOULD be compiled in this case.
+         // The -Xjit:ifExcluded(...) option set is used to set alternate compile options for methods
+         // that are excluded from compilation.  This can be useful for debugging timing-sensitive
+         // optimization bugs where dropping optimization levels can make problems go away.
+         //
+         // If there is an excludedMethodFilter set then excluded methods should be compiled
+         // using that option set.
          //
          found = true;
          filter = compOrReloFilter->excludedMethodFilter;

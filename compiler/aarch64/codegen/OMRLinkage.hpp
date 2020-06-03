@@ -311,20 +311,16 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    virtual TR::MemoryReference *getOutgoingArgumentMemRef(TR::Register *argMemReg, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::ARM64MemoryArgument &memArg);
 
    /**
-    * @brief Saves arguments
+    * @brief Loads parameters from stack
     * @param[in] cursor : instruction cursor
     */
-   virtual TR::Instruction *saveArguments(TR::Instruction *cursor); // may need more parameters
+   virtual TR::Instruction *loadStackParametersToLinkageRegisters(TR::Instruction *cursor);
    /**
-    * @brief Loads up arguments
+    * @brief Saves parameters to stack
     * @param[in] cursor : instruction cursor
     */
-   virtual TR::Instruction *loadUpArguments(TR::Instruction *cursor);
-   /**
-    * @brief Flushes arguments
-    * @param[in] cursor : instruction cursor
-    */
-   virtual TR::Instruction *flushArguments(TR::Instruction *cursor);
+   virtual TR::Instruction *saveParametersToStack(TR::Instruction *cursor);
+
    /**
     * @brief Sets parameter linkage register index
     * @param[in] method : method symbol

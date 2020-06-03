@@ -202,6 +202,14 @@ public:
    bool isCall()                     const { return properties1().testAny(ILProp1::Call); }
    bool isCallDirect()               const { return properties1().testValue(ILProp1::Indirect | ILProp1::Call, ILProp1::Call); }
    bool isCallIndirect()             const { return properties1().testAll(ILProp1::Call | ILProp1::Indirect); }
+
+   /**
+    * @brief This query must return true for any opcode that may appear at the
+    *        top of a tree (i.e., any node that a `TR::TreeTop` points to).  For
+    *        example, a store opcode would return true because it may appear under
+    *        a TR::TreeTop, even though it might also appear as a child of a NULLCHK
+    *        node in another circumstance.
+    */
    bool isTreeTop()                  const { return properties1().testAny(ILProp1::TreeTop); }
    bool hasSymbolReference()         const { return properties1().testAny(ILProp1::HasSymbolRef); }
    bool isMemoryReference()          const { return properties1().testAll(ILProp1::HasSymbolRef | ILProp1::LoadVar); }

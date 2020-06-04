@@ -184,11 +184,9 @@ list(APPEND OBJECTS
 	omrportptb.c
 
 	omrsignal.c
+	omrsock.c
+	omrsockptb.c
 )
-
-if(OMR_PORT_SOCKET_SUPPORT)
-	list(APPEND OBJECTS omrsock.c omrsockptb.c)
-endif()
 
 if(NOT OMR_HOST_OS STREQUAL "win")
 	list(APPEND OBJECTS omrsignal_context.c)

@@ -43,7 +43,7 @@ if(OMR_OPT_CUDA)
 endif()
 
 # TODO: Remove AND (NOT OMR_HOST_OS STREQUAL "win") after OMRSOCK API is implemented on Windows.
-if((OMR_PORT_SOCKET_SUPPORT) AND (NOT OMR_HOST_OS STREQUAL "win"))
+if(NOT OMR_HOST_OS STREQUAL "win")
 	set(socketSources
 		omrsockTest.cpp
 	)

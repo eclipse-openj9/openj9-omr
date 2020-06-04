@@ -27,7 +27,6 @@
  */
 
 #include "omrcfg.h"
-#if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrsock.h"
 
 #include <arpa/inet.h>
@@ -656,5 +655,3 @@ omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const 
 	}
 	return 0;
 }
-
-#endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

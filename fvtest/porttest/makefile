@@ -53,11 +53,9 @@ OBJECTS := \
   testProcessHelpers \
   main_function
 
-ifeq (1,$(OMR_PORT_SOCKET_SUPPORT))
-  # TODO: Remove ifneq (win,$(OMR_HOST_OS)) after OMRSOCK API is implemented on Windows.
-  ifneq (win,$(OMR_HOST_OS))
+# TODO: Remove ifneq (win,$(OMR_HOST_OS)) after OMRSOCK API is implemented on Windows.
+ifneq (win,$(OMR_HOST_OS))
     OBJECTS += omrsockTest
-  endif
 endif
 
 vpath main_function.cpp $(top_srcdir)/util/main_function

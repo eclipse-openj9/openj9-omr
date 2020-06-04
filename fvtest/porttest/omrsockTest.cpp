@@ -20,7 +20,6 @@
  *******************************************************************************/
 
 #include "omrcfg.h"
-#if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrport.h"
 #include "omrporterror.h"
 #include "omrportsock.h"
@@ -579,5 +578,3 @@ TEST(PortSockTest, two_socket_datagram_communication)
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
 }
-
-#endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

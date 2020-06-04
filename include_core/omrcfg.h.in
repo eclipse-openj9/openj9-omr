@@ -265,12 +265,6 @@
 #endif
 
 /**
- * This flag enables the usage of OMR socket API. The API contains functions for
- * establishing network connections and communications through sockets.
- */
- #undef OMR_PORT_SOCKET_SUPPORT
-
-/**
  * This flag enables the usage of the MCS (queue-based) lock instead of the default
  * TATAS (Test & Test & Set) lock in the OMR thread monitor.
  */

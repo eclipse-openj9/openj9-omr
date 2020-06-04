@@ -230,6 +230,12 @@ class TR_OSRCompilationData
                       DefiningMaps &symRefNumberMapForPrepareForOSRCalls
                       );
 
+   /**
+    * \brief Debug dump of \ref DefiningMap
+    * \param map The \c DefiningMap to print out
+    */
+   void printMap(DefiningMap *map);
+
    class TR_ScratchBufferInfo
       {
       public:

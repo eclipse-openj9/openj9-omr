@@ -518,7 +518,7 @@ uint32_t TR_OSRCompilationData::getOSRStackFrameSize(uint32_t methodIndex)
       return 0;
    }
 
-static void printMap(DefiningMap *map, TR::Compilation *comp)
+void TR_OSRCompilationData::printMap(DefiningMap *map)
    {
    for (auto it = map->begin(); it != map->end(); ++it)
       {
@@ -600,7 +600,7 @@ void TR_OSRCompilationData::buildDefiningMap()
          if (osrMethodData->getOSRCatchBlock())
             {
             traceMsg(comp, "final map for OSRCatchBlock(block_%d): \n", osrMethodData->getOSRCatchBlock()->getNumber());
-            printMap(definingMap, comp);
+            printMap(definingMap);
             }
          }
       }
@@ -661,9 +661,9 @@ static void mergeDefiningMaps(DefiningMap *firstMap, DefiningMap *secondMap, TR:
    if (comp->getOption(TR_TraceOSR))
       {
       traceMsg(comp, "mergeDefiningMaps: firstMap before\n");
-      printMap(firstMap, comp);
+      comp->getOSRCompilationData()->printMap(firstMap);
       traceMsg(comp, "mergeDefiningMaps: secondMap before\n");
-      printMap(secondMap, comp);
+      comp->getOSRCompilationData()->printMap(secondMap);
       }
 
    for (auto it = secondMap->begin(); it != secondMap->end(); ++it)
@@ -684,7 +684,7 @@ static void mergeDefiningMaps(DefiningMap *firstMap, DefiningMap *secondMap, TR:
    if (comp->getOption(TR_TraceOSR))
       {
       traceMsg(comp, "mergeDefiningMaps: firstMap after\n");
-      printMap(firstMap, comp);
+      comp->getOSRCompilationData()->printMap(firstMap);
       }
    }
 

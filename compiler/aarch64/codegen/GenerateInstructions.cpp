@@ -409,7 +409,7 @@ TR::Instruction *generateTestInstruction(TR::CodeGenerator *cg, TR::Node *node,
    {
    /* Alias of ANDS instruction */
 
-   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::andx : TR::InstOpCode::andw;
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::andsx : TR::InstOpCode::andsw;
 
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64ZeroSrc2Instruction(op, node, s1reg, s2reg, preced, cg);

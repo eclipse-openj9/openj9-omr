@@ -448,19 +448,9 @@ TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node,
    bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::maddx : TR::InstOpCode::maddw;
 
-   /* Use xzr as the third source register */
-   TR::Register *zeroReg = cg->allocateRegister();
-   TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
-   TR::addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
-
-   TR::Instruction *instr =
-      (preced) ?
-      new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, zeroReg, cond, preced, cg) :
-      new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, zeroReg, cond, cg);
-
-   cg->stopUsingRegister(zeroReg);
-
-   return instr;
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src2ZeroInstruction(op, node, treg, s1reg, s2reg, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src2ZeroInstruction(op, node, treg, s1reg, s2reg, cg);
    }
 
 TR::Instruction *generateCSetInstruction(TR::CodeGenerator *cg, TR::Node *node,

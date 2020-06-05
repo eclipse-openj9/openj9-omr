@@ -1161,7 +1161,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ZeroSrc1ImmInstruction *instr)
       auto immr = imm12 >> 6;
       auto imms = imm12 & 0x3f;
       auto n = instr->getNbit();
-      if (op == TR::InstOpCode::andimmx)
+      if (op == TR::InstOpCode::andsimmx)
          {
          uint64_t immediate;
          if (decodeBitMasks(n, immr, imms, immediate))

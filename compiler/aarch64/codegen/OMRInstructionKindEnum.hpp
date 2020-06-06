@@ -47,6 +47,7 @@
             IsCondTrg1Src2,
             IsTrg1Src2Shifted,
             IsTrg1Src2Extended,
+            IsTrg1Src2Zero,
             IsTrg1Src3,
       IsTrg1Mem,
          IsTrg1MemSrc1,

@@ -746,6 +746,10 @@ LDFLAGS
 CFLAGS
 CC
 OMR_ALLOW_NATIVE_ENCODING
+OMR_ZOS_LINK_COMPAT
+OMR_ZOS_COMPILE_TUNE
+OMR_ZOS_COMPILE_TARGET
+OMR_ZOS_COMPILE_ARCHITECTURE
 OMR_PRODUCT_VERSION
 OMR_PRODUCT_DESCRIPTION
 OMR_COMPANY_COPYRIGHT
@@ -918,6 +922,10 @@ OMR_COMPANY_NAME
 OMR_COMPANY_COPYRIGHT
 OMR_PRODUCT_DESCRIPTION
 OMR_PRODUCT_VERSION
+OMR_ZOS_COMPILE_ARCHITECTURE
+OMR_ZOS_COMPILE_TARGET
+OMR_ZOS_COMPILE_TUNE
+OMR_ZOS_LINK_COMPAT
 CC
 CFLAGS
 LDFLAGS
@@ -1739,6 +1747,14 @@ Some influential environment variables:
               The description of product integrating OMR. (Default: OMR 0.1)
   OMR_PRODUCT_VERSION
               The version of product integrating OMR. (Default: 0.1)
+  OMR_ZOS_COMPILE_ARCHITECTURE
+              The z/OS compile machine architecture. (Default: 7)
+  OMR_ZOS_COMPILE_TARGET
+              The z/OS compile target operating system. (Default: zOSV1R13)
+  OMR_ZOS_COMPILE_TUNE
+              The z/OS compile machine architecture tuning. (Default: 10)
+  OMR_ZOS_LINK_COMPAT
+              The z/OS link compatible operating system. (Default: ZOSV1R13)
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -2855,11 +2871,21 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 
 
+
+
+
+
+
 OMR_COMPANY_NAME=${OMR_COMPANY_NAME:-""}
 OMR_COMPANY_COPYRIGHT=${OMR_COMPANY_COPYRIGHT:-""}
 OMR_PRODUCT_DESCRIPTION=${OMR_PRODUCT_DESCRIPTION:-"OMR 0.1 "}
 OMR_PRODUCT_NAME=${OMR_PRODUCT_NAME:-"OMR"}
 OMR_PRODUCT_VERSION=${OMR_PRODUCT_VERSION:-"0.1"}
+
+OMR_ZOS_COMPILE_ARCHITECTURE=${OMR_ZOS_COMPILE_ARCHITECTURE:-"7"}
+OMR_ZOS_COMPILE_TARGET=${OMR_ZOS_COMPILE_TARGET:-"zOSV1R13"}
+OMR_ZOS_COMPILE_TUNE=${OMR_ZOS_COMPILE_TUNE:-"10"}
+OMR_ZOS_LINK_COMPAT=${OMR_ZOS_LINK_COMPAT:-"ZOSV1R13"}
 
 # Check whether --enable-optimized was given.
 if test "${enable_optimized+set}" = set; then :

@@ -460,11 +460,10 @@ uint8_t *TR::ARM64Trg1ZeroSrc1Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor = instructionStart;
-   TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
    insertTargetRegister(toARM64Cursor(cursor));
    insertSource1Register(toARM64Cursor(cursor));
-   zeroReg->setRegisterFieldRN(toARM64Cursor(cursor));
+   insertZeroRegister(toARM64Cursor(cursor));
    cursor += ARM64_INSTRUCTION_LENGTH;
    setBinaryLength(ARM64_INSTRUCTION_LENGTH);
    setBinaryEncoding(instructionStart);
@@ -490,10 +489,8 @@ uint8_t *TR::ARM64ZeroSrc1ImmInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor = instructionStart;
-   TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
-
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   zeroReg->setRegisterFieldRD(toARM64Cursor(cursor));
+   insertZeroRegister(toARM64Cursor(cursor));
    insertSource1Register(toARM64Cursor(cursor));
    insertImmediateField(toARM64Cursor(cursor));
    insertNbit(toARM64Cursor(cursor));
@@ -717,10 +714,8 @@ uint8_t *TR::ARM64ZeroSrc2Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor = instructionStart;
-   TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
-
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
-   zeroReg->setRegisterFieldRD(toARM64Cursor(cursor));
+   insertZeroRegister(toARM64Cursor(cursor));
    insertSource1Register(toARM64Cursor(cursor));
    insertSource2Register(toARM64Cursor(cursor));
    cursor += ARM64_INSTRUCTION_LENGTH;

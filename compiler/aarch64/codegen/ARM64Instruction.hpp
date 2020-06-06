@@ -1578,7 +1578,7 @@ class ARM64Trg1Src1Instruction : public ARM64Trg1Instruction
 
 /*
  * This class is designated to be used for alias instruction such as movw, movx, negw, negx
- */ 
+ */
 class ARM64Trg1ZeroSrc1Instruction : public ARM64Trg1Src1Instruction
    {
    public:
@@ -1627,6 +1627,16 @@ class ARM64Trg1ZeroSrc1Instruction : public ARM64Trg1Src1Instruction
       {
       TR::RealRegister *source1 = toRealRegister(getSource1Register());
       source1->setRegisterFieldRM(instruction);
+      }
+
+   /**
+    * @brief Sets zero register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertZeroRegister(uint32_t *instruction)
+      {
+      TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
+      zeroReg->setRegisterFieldRN(instruction);
       }
 
    /**
@@ -3171,7 +3181,7 @@ class ARM64Src1Instruction : public TR::Instruction
 
 /*
  * This class is designated to be used for alias instruction such as cmpimmw, cmpimmx, tstimmw, tstimmx
- */ 
+ */
 class ARM64ZeroSrc1ImmInstruction : public ARM64Src1Instruction
    {
    uint32_t _source1Immediate;
@@ -3268,8 +3278,18 @@ class ARM64ZeroSrc1ImmInstruction : public ARM64Src1Instruction
     * @brief Sets the N bit (bit 22)
     * @param[in] n : N bit value
     * @return N bit value
-    */ 
+    */
    bool setNbit(bool n) { return (_Nbit = n);}
+
+   /**
+    * @brief Sets zero register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertZeroRegister(uint32_t *instruction)
+      {
+      TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
+      zeroReg->setRegisterFieldRD(instruction);
+      }
 
    /**
     * @brief Sets immediate field in binary encoding
@@ -3461,6 +3481,16 @@ class ARM64ZeroSrc2Instruction : public ARM64Src2Instruction
     * @return instruction kind
     */
    virtual Kind getKind() { return IsZeroSrc2; }
+
+   /**
+    * @brief Sets zero register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertZeroRegister(uint32_t *instruction)
+      {
+      TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
+      zeroReg->setRegisterFieldRD(instruction);
+      }
 
    /**
     * @brief Generates binary encoding of the instruction

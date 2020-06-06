@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2019 IBM Corp. and others
+# Copyright (c) 2015, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,8 +31,8 @@ ifneq ($(USE_NATIVE_ENCODING),1)
 endif
 
 # Specify the minimum arch for 64-bit programs
-GLOBAL_CFLAGS+=-Wc,"ARCH(7)"
-GLOBAL_CXXFLAGS+=-Wc,"ARCH(7)"
+GLOBAL_CFLAGS+=-Wc,"ARCH($(OMR_ZOS_COMPILE_ARCHITECTURE))"
+GLOBAL_CXXFLAGS+=-Wc,"ARCH($(OMR_ZOS_COMPILE_ARCHITECTURE))"
 
 # Enable Warnings as Errors
 ifeq ($(OMR_WARNINGS_AS_ERRORS),1)
@@ -51,7 +51,7 @@ endif
 
 # Enable Optimizations
 ifeq ($(OMR_OPTIMIZE),1)
-    COPTFLAGS=-O3 -Wc,"TUNE(10)" -Wc,"inline(auto,noreport,600,5000)"
+    COPTFLAGS=-O3 -Wc,"TUNE($(OMR_ZOS_COMPILE_TUNE))" -Wc,"inline(auto,noreport,600,5000)"
 
     # OMRTODO: The COMPAT=ZOSV1R13 option does not appear to be related to
     # optimizations.  This linker option is supplied only on the compile line,
@@ -60,7 +60,7 @@ ifeq ($(OMR_OPTIMIZE),1)
     # would give a performance boost.
     # option means: "COMPAT=ZOSV1R13 is the minimum level that supports conditional sequential RLDs"
     # http://www-01.ibm.com/support/knowledgecenter/SSLTBW_2.1.0/com.ibm.zos.v2r1.ieab100/compat.htm
-    COPTFLAGS+=-Wl,compat=ZOSV1R13
+    COPTFLAGS+=-Wl,compat=$(OMR_ZOS_LINK_COMPAT)
 else
     COPTFLAGS=-0
 endif
@@ -79,7 +79,7 @@ GLOBAL_CPPFLAGS+=-DJ9ZOS390 -DLONGLONG -D_ALL_SOURCE -D_XOPEN_SOURCE_EXTENDED -D
 # a,goff   Assemble into GOFF object files
 # NOANSIALIAS Do not generate ALIAS binder control statements
 # TARGET   Generate code for the target operating system
-GLOBAL_FLAGS+=-Wc,"xplink,rostring,FLOAT(IEEE,FOLD,AFP),enum(4)" -Wa,goff -Wc,NOANSIALIAS -Wc,"TARGET(zOSV1R13)"
+GLOBAL_FLAGS+=-Wc,"xplink,rostring,FLOAT(IEEE,FOLD,AFP),enum(4)" -Wa,goff -Wc,NOANSIALIAS -Wc,"TARGET($(OMR_ZOS_COMPILE_TARGET))"
 
 ifeq (1,$(USE_NATIVE_ENCODING))
   GLOBAL_CPPFLAGS+=-DOMR_EBCDIC

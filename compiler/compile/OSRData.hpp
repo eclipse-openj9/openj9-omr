@@ -222,13 +222,42 @@ class TR_OSRCompilationData
    int32_t getSymRefOrder(int32_t symRefNumber);
    TR_OSRSlotSharingInfo* getSlotsInfo(const TR_ByteCodeInfo &bcInfo);
 
-   void buildDefiningMap();
+   /**
+    * \brief This is the top level function to start building \ref DefiningMaps
+    * for the symbol references under \c prepareForOSR call for each method
+    *
+    * \c DefiningMap maps each symRef to the set of symRefs that define it in
+    * one block or several contiguous blocks.
+    *
+    * After the \c DefiningMaps are no longer needed, the client must call
+    * \ref clearDefiningMap in order to drop all references to the
+    * \ref TR::Region that was supplied.
+    *
+    * \param region A \ref TR::Region memory region in which the final
+    *               \c DefiningMaps will be allocated.  The caller is
+    *               responsible for releasing the memory in which the
+    *               \c DefiningMaps are allocated
+    * \see clearDefiningMap
+    */
+   void buildDefiningMap(TR::Region &region);
    void buildFinalMap(int32_t callerIndex,
                       DefiningMap *finalMap,
                       DefiningMap *workingCatchBlockMap,
                       DefiningMaps &definingSymRefsMapAtOSRCodeBlocks, 
                       DefiningMaps &symRefNumberMapForPrepareForOSRCalls
                       );
+   /**
+    * \brief Clears the \ref DefiningMap associated with each
+    * \c prepareForOSR call.
+    * \see buildDefiningMap
+    */
+   void clearDefiningMap();
+
+   /**
+    * \brief Debug dump of \ref DefiningMap
+    * \param map The \c DefiningMap to print out
+    */
+   void printMap(DefiningMap *map);
 
    class TR_ScratchBufferInfo
       {
@@ -358,9 +387,12 @@ class TR_OSRMethodData
    TR_OSRSlotSharingInfo* getSlotsInfo(int32_t byteCodeIndex);
 
    friend TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRMethodData& osrMethodData);
+   friend void TR_OSRCompilationData::buildDefiningMap(TR::Region& region);
+   friend void TR_OSRCompilationData::clearDefiningMap();
 
    private:
    void createOSRBlocks(TR::Node* n);
+   void setDefiningMap(DefiningMap *definingMap);
 
    typedef CS2::HashTable<int32_t, TR_BitVector *, TR::Allocator> TR_BCLiveRangeInfoHashTable;
    typedef CS2::HashTable<int32_t, TR_OSRSlotSharingInfo*, TR::Allocator> TR_BCInfoHashTable;

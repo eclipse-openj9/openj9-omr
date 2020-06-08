@@ -3653,8 +3653,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_putFlattenableField:       return "jitPutFlattenableField";
          case TR_getFlattenableStaticField: return "jitGetFlattenableStaticField";
          case TR_putFlattenableStaticField: return "jitPutFlattenableStaticField";
-         case TR_loadFlattenableArrayElement: return "jitLoadFlattenableArrayElement";
-         case TR_storeFlattenableArrayElement: return "jitStoreFlattenableArrayElement";
+         case TR_ldFlattenableArrayElement: return "jitLoadFlattenableArrayElement";
+         case TR_strFlattenableArrayElement: return "jitStoreFlattenableArrayElement";
 
          case TR_multiANewArray:            return "jitAMultiANewArray";
          case TR_aThrow:                    return "jitThrowException";

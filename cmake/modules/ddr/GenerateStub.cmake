@@ -23,18 +23,22 @@ if(NOT input_file)
 	message(FATAL_ERROR "No input file")
 endif()
 
-execute_process(COMMAND grep -E -q "@ddr_(namespace|options):" ${input_file} TIMEOUT 2 RESULT_VARIABLE rc)
+if(NOT EXISTS "${input_file}")
+	message(FATAL_ERROR "Input file '${input_file}' does not exist")
+endif()
 
-if(rc)
+execute_process(COMMAND grep -E -q "@ddr_(namespace|options):" ${input_file} RESULT_VARIABLE rc)
+
+if(NOT rc EQUAL 0)
 	# input didn't have any DDR directives, so just dump an empty file
 	file(WRITE ${output_file} "")
 	set(rc 0)
 else()
 	file(REMOVE ${output_file})
 
-	execute_process(COMMAND awk -f ${AWK_SCRIPT} ${input_file} TIMEOUT 2 OUTPUT_VARIABLE awk_result RESULT_VARIABLE rc)
+	execute_process(COMMAND awk -f ${AWK_SCRIPT} ${input_file} OUTPUT_VARIABLE awk_result RESULT_VARIABLE rc)
 
-	if(NOT ${rc})
+	if(rc EQUAL 0)
 		file(WRITE "${output_file}" "/* generated file, DO NOT EDIT */\n")
 		if(pre_includes)
 			foreach(inc_file IN LISTS pre_includes)
@@ -43,6 +47,8 @@ else()
 		endif()
 		file(APPEND ${output_file} "#include \"${input_file}\"\n")
 		file(APPEND ${output_file} "${awk_result}")
+	else()
+		message(FATAL_ERROR "GenerateStub: Invoking awk script failed (${rc})")
 	endif()
 endif()
 

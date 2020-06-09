@@ -574,6 +574,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsTrg1ImmSym:
          print(pOutFile, (TR::ARM64Trg1ImmSymInstruction *)instr);
          break;
+      case OMR::Instruction::IsTrg1ZeroSrc1:
+         print(pOutFile, (TR::ARM64Trg1ZeroSrc1Instruction *)instr);
+         break;
       case OMR::Instruction::IsTrg1Src1:
          print(pOutFile, (TR::ARM64Trg1Src1Instruction *)instr);
          break;
@@ -613,8 +616,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsSrc1:
          print(pOutFile, (TR::ARM64Src1Instruction *)instr);
          break;
+      case OMR::Instruction::IsZeroSrc1Imm:
+         print(pOutFile, (TR::ARM64ZeroSrc1ImmInstruction *)instr);
+         break;
       case OMR::Instruction::IsSrc2:
          print(pOutFile, (TR::ARM64Src2Instruction *)instr);
+         break;
+      case OMR::Instruction::IsZeroSrc2:
+         print(pOutFile, (TR::ARM64ZeroSrc2Instruction *)instr);
          break;
       default:
          TR_ASSERT(false, "unexpected instruction kind");
@@ -911,6 +920,32 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1Instruction *instr)
    }
 
 void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ZeroSrc1Instruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+
+   if (op == TR::InstOpCode::orrx || op == TR::InstOpCode::orrw)
+      {
+      // mov alias
+      trfprintf(pOutFile, "mov%c \t", (op == TR::InstOpCode::orrx) ? 'x' : 'w');
+      }
+   else if (op == TR::InstOpCode::subx || op == TR::InstOpCode::subw)
+      {
+      // neg alias
+      trfprintf(pOutFile, "neg%c \t", (op == TR::InstOpCode::subx) ? 'x' : 'w');
+      }
+   else
+      {
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      }
+
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   trfflush(_comp->getOutFile());
+   }
+
+void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
    {
    printPrefix(pOutFile, instr);
@@ -1098,6 +1133,69 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
    }
 
 void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ZeroSrc1ImmInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   bool done = false;
+   if (op == TR::InstOpCode::subsimmx || op == TR::InstOpCode::subsimmw)
+      {
+      // cmp alias
+      done = true;
+      trfprintf(pOutFile, "cmpimm%c \t", (op == TR::InstOpCode::subsimmx) ? 'x' : 'w');
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
+      }
+   else if (op == TR::InstOpCode::addsimmx || op == TR::InstOpCode::addsimmw)
+      {
+      // cmn alias
+      done = true;
+      trfprintf(pOutFile, "cmnimm%c \t", (op == TR::InstOpCode::addsimmx) ? 'x' : 'w');
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
+      }
+   else if (op == TR::InstOpCode::andsimmx || op == TR::InstOpCode::andsimmw)
+      {
+      // tst alias
+      uint32_t imm12 = instr->getSourceImmediate();
+      auto immr = imm12 >> 6;
+      auto imms = imm12 & 0x3f;
+      auto n = instr->getNbit();
+      if (op == TR::InstOpCode::andsimmx)
+         {
+         uint64_t immediate;
+         if (decodeBitMasks(n, immr, imms, immediate))
+            {
+            done = true;
+            trfprintf(pOutFile, "tstimmx \t");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", 0x%llx", immediate);
+            }
+         }
+      else
+         {
+         uint32_t immediate;
+         if (decodeBitMasks(n, immr, imms, immediate))
+            {
+            done = true;
+            trfprintf(pOutFile, "%tstimmw \t");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", 0x%lx", immediate);
+            }
+         }
+      }
+
+   if (!done)
+      {
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
+      }
+
+   trfflush(_comp->getOutFile());
+   }
+
+void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src2Instruction *instr)
    {
    printPrefix(pOutFile, instr);
@@ -1124,6 +1222,36 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src2Instruction *instr)
 
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
+
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ZeroSrc2Instruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   if (op == TR::InstOpCode::subsx || op == TR::InstOpCode::subsw)
+      {
+      // cmp alias
+      trfprintf(pOutFile, "cmp%c \t", (op == TR::InstOpCode::subsx) ? 'x' : 'w');
+      }
+   else if (op == TR::InstOpCode::addsx || op == TR::InstOpCode::addsw)
+      {
+      // cmn alias
+      trfprintf(pOutFile, "cmn%c \t", (op == TR::InstOpCode::addsx) ? 'x' : 'w');
+      }
+   else if (op == TR::InstOpCode::andsx || op == TR::InstOpCode::andsw)
+      {
+      // tst alias
+      trfprintf(pOutFile, "tst%c \t", (op == TR::InstOpCode::andsx) ? 'x' : 'w');
+      }
+   else
+      {
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      }
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg);
 
    trfflush(_comp->getOutFile());
    }

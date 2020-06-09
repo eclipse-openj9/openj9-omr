@@ -345,6 +345,7 @@ namespace TR { class ARM64Trg1CondInstruction; }
 namespace TR { class ARM64Trg1ImmInstruction; }
 namespace TR { class ARM64Trg1ImmSymInstruction; }
 namespace TR { class ARM64Trg1Src1Instruction; }
+namespace TR { class ARM64Trg1ZeroSrc1Instruction; }
 namespace TR { class ARM64Trg1Src1ImmInstruction; }
 namespace TR { class ARM64Trg1Src2Instruction; }
 namespace TR { class ARM64CondTrg1Src2Instruction; }
@@ -357,7 +358,9 @@ namespace TR { class ARM64MemSrc1Instruction; }
 namespace TR { class ARM64MemSrc2Instruction; }
 namespace TR { class ARM64Trg1MemSrc1Instruction; }
 namespace TR { class ARM64Src1Instruction; }
+namespace TR { class ARM64ZeroSrc1ImmInstruction; }
 namespace TR { class ARM64Src2Instruction; }
+namespace TR { class ARM64ZeroSrc2Instruction; }
 namespace TR { class ARM64HelperCallSnippet; }
 
 namespace TR { class LabelInstruction; }
@@ -1116,6 +1119,7 @@ public:
    void print(TR::FILE *, TR::ARM64Trg1ImmInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1ImmSymInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1Src1Instruction *);
+   void print(TR::FILE *, TR::ARM64Trg1ZeroSrc1Instruction *);
    void print(TR::FILE *, TR::ARM64Trg1Src1ImmInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1Src2Instruction *);
    void print(TR::FILE *, TR::ARM64CondTrg1Src2Instruction *);
@@ -1128,7 +1132,9 @@ public:
    void print(TR::FILE *, TR::ARM64MemSrc2Instruction *);
    void print(TR::FILE *, TR::ARM64Trg1MemSrc1Instruction *);
    void print(TR::FILE *, TR::ARM64Src1Instruction *);
+   void print(TR::FILE *, TR::ARM64ZeroSrc1ImmInstruction *);
    void print(TR::FILE *, TR::ARM64Src2Instruction *);
+   void print(TR::FILE *, TR::ARM64ZeroSrc2Instruction *);
 #ifdef J9_PROJECT_SPECIFIC
    void print(TR::FILE *, TR::ARM64VirtualGuardNOPInstruction *);
 #endif

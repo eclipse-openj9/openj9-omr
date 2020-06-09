@@ -103,8 +103,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    bool     doubleFPOp()            {return _opcode.doubleFPOp();}
    bool     gprOp()                 {return _opcode.gprOp();}
    bool     fprOp()                 {return _opcode.fprOp();}
-   bool     useAlternateFormat()    {return _opcode.useAlternateFormat();}
-   bool     useAlternateFormatx()   {return _opcode.useAlternateFormatx();}
    bool     readsCarryFlag()        {return _opcode.readsCarryFlag();}
    bool     setsCarryFlag()         {return _opcode.setsCarryFlag();}
    bool     setsOverflowFlag()      {return _opcode.setsOverflowFlag();}

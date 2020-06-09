@@ -101,9 +101,6 @@ class InstOpCode: public OMR::InstOpCode
    bool gprOp() {return (metadata[_mnemonic].properties & (PPCOpProp_DoubleFP | PPCOpProp_SingleFP))==0;}
    bool fprOp() {return (metadata[_mnemonic].properties & (PPCOpProp_DoubleFP | PPCOpProp_SingleFP))!=0;}
 
-   bool useAlternateFormat() {return (metadata[_mnemonic].properties & PPCOpProp_AltFormat)!=0;}
-   bool useAlternateFormatx() {return (metadata[_mnemonic].properties & PPCOpProp_AltFormatx)!=0;}
-
    bool readsCarryFlag() {return (metadata[_mnemonic].properties & PPCOpProp_ReadsCarryFlag)!=0;}
    bool setsCarryFlag() {return (metadata[_mnemonic].properties & PPCOpProp_SetsCarryFlag)!=0;}
 
@@ -127,7 +124,6 @@ class InstOpCode: public OMR::InstOpCode
    bool isVSX() {return (metadata[_mnemonic].properties & PPCOpProp_IsVSX)!=0;}
 
    bool usesTarget() {return (metadata[_mnemonic].properties & PPCOpProp_UsesTarget)!=0;}
-   bool useMaskEnd() {return (metadata[_mnemonic].properties & PPCOpProp_UseMaskEnd)!=0;}
 
    bool isRotateOrShift() {return (metadata[_mnemonic].properties & PPCOpProp_IsRotateOrShift)!=0;}
    bool isCompare() {return (metadata[_mnemonic].properties & PPCOpProp_CompareOp)!=0;}

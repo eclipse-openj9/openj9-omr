@@ -750,8 +750,6 @@ FORMAT_RT_RA_RB_BFC
 #define PPCOpProp_DoubleFP          0x00000100
 #define PPCOpProp_SingleFP          0x00000200
 #define PPCOpProp_UpdateForm        0x00000400
-#define PPCOpProp_AltFormat         0x00000800  // use alternate instruction format
-#define PPCOpProp_AltFormatx        0x00001000  // use alternate instruction format
 #define PPCOpProp_IsRecordForm      0x00002000
 #define PPCOpProp_IsLoad            0x00004000
 #define PPCOpProp_IsStore           0x00008000
@@ -760,7 +758,6 @@ FORMAT_RT_RA_RB_BFC
 #define PPCOpProp_SetsCtr           0x00040000
 #define PPCOpProp_UsesCtr           0x00080000
 #define PPCOpProp_DWord             0x00100000
-#define PPCOpProp_UseMaskEnd        0x00200000  // ME or MB should be encoded
 #define PPCOpProp_IsSync            0x00400000
 #define PPCOpProp_IsRotateOrShift   0x00800000
 #define PPCOpProp_CompareOp         0x01000000

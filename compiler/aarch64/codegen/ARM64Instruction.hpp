@@ -1578,7 +1578,7 @@ class ARM64Trg1Src1Instruction : public ARM64Trg1Instruction
 
 /*
  * This class is designated to be used for alias instruction such as movw, movx, negw, negx
- */ 
+ */
 class ARM64Trg1ZeroSrc1Instruction : public ARM64Trg1Src1Instruction
    {
    public:
@@ -1627,6 +1627,16 @@ class ARM64Trg1ZeroSrc1Instruction : public ARM64Trg1Src1Instruction
       {
       TR::RealRegister *source1 = toRealRegister(getSource1Register());
       source1->setRegisterFieldRM(instruction);
+      }
+
+   /**
+    * @brief Sets zero register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertZeroRegister(uint32_t *instruction)
+      {
+      TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
+      zeroReg->setRegisterFieldRN(instruction);
       }
 
    /**
@@ -2296,6 +2306,75 @@ class ARM64Trg1Src2ExtendedInstruction : public ARM64Trg1Src2Instruction
    void insertExtend(uint32_t *instruction)
       {
       *instruction |= ((_extendType & 0x7) << 13) | ((_shiftAmount & 0x7) << 10);
+      }
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
+/*
+ * This class is designated to be used for alias instruction such as mulw, mulx
+ */
+class ARM64Trg1Src2ZeroInstruction : public ARM64Trg1Src2Instruction
+   {
+   public:
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] s1reg : source register 1
+    * @param[in] s2reg : source register 2
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Src2ZeroInstruction( TR::InstOpCode::Mnemonic op,
+                                 TR::Node *node,
+                                 TR::Register *treg,
+                                 TR::Register *s1reg,
+                                 TR::Register *s2reg,
+                                 TR::CodeGenerator *cg)
+      : ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, cg)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] s1reg : source register 1
+    * @param[in] s2reg : source register 2
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Src2ZeroInstruction( TR::InstOpCode::Mnemonic op,
+                                 TR::Node *node,
+                                 TR::Register *treg,
+                                 TR::Register *s1reg,
+                                 TR::Register *s2reg,
+                                 TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, precedingInstruction, cg)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsTrg1Src2Zero; }
+
+   /**
+    * @brief Sets zero register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertZeroRegister(uint32_t *instruction)
+      {
+      TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
+      zeroReg->setRegisterFieldRA(instruction);
       }
 
    /**
@@ -3171,7 +3250,7 @@ class ARM64Src1Instruction : public TR::Instruction
 
 /*
  * This class is designated to be used for alias instruction such as cmpimmw, cmpimmx, tstimmw, tstimmx
- */ 
+ */
 class ARM64ZeroSrc1ImmInstruction : public ARM64Src1Instruction
    {
    uint32_t _source1Immediate;
@@ -3268,8 +3347,18 @@ class ARM64ZeroSrc1ImmInstruction : public ARM64Src1Instruction
     * @brief Sets the N bit (bit 22)
     * @param[in] n : N bit value
     * @return N bit value
-    */ 
+    */
    bool setNbit(bool n) { return (_Nbit = n);}
+
+   /**
+    * @brief Sets zero register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertZeroRegister(uint32_t *instruction)
+      {
+      TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
+      zeroReg->setRegisterFieldRD(instruction);
+      }
 
    /**
     * @brief Sets immediate field in binary encoding
@@ -3461,6 +3550,16 @@ class ARM64ZeroSrc2Instruction : public ARM64Src2Instruction
     * @return instruction kind
     */
    virtual Kind getKind() { return IsZeroSrc2; }
+
+   /**
+    * @brief Sets zero register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertZeroRegister(uint32_t *instruction)
+      {
+      TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
+      zeroReg->setRegisterFieldRD(instruction);
+      }
 
    /**
     * @brief Generates binary encoding of the instruction

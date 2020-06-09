@@ -12943,7 +12943,8 @@
    // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
    //       problems prior to Power 10. As a result, it should not be used until Power 10.
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12956,7 +12957,8 @@
    // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
    //       problems prior to Power 10. As a result, it should not be used until Power 10.
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12969,7 +12971,8 @@
    // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
    //       problems prior to Power 10. As a result, it should not be used until Power 10.
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12982,7 +12985,8 @@
    // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
    //       problems prior to Power 10. As a result, it should not be used until Power 10.
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {

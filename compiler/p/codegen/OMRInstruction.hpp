@@ -84,8 +84,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual TR::Register *getSourceRegister(uint32_t i);
    virtual TR::MemoryReference *getMemoryReference()      {return NULL;}
    virtual uint32_t     getSourceImmediate()                {return 0;}
-   virtual void         updateImmediateField(uint32_t imm)
-    { TR_ASSERT(0, "updateImmediateField needs to implemented for each imm instruction"); }
 
    virtual TR::Register *getMemoryBase()                     {return NULL;}
    virtual TR::Register *getMemoryIndex()                    {return NULL;}

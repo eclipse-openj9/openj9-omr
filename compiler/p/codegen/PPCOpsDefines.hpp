@@ -758,7 +758,6 @@ FORMAT_RT_RA_RB_BFC
 #define PPCOpProp_UsesCtr           0x00080000
 #define PPCOpProp_DWord             0x00100000
 #define PPCOpProp_IsSync            0x00400000
-#define PPCOpProp_IsRotateOrShift   0x00800000
 #define PPCOpProp_CompareOp         0x01000000
 #define PPCOpProp_SetsFPSCR         0x02000000
 #define PPCOpProp_ReadsFPSCR        0x04000000

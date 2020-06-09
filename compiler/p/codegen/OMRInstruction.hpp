@@ -111,7 +111,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    bool     isTMAbort()             {return _opcode.isTMAbort();}
    bool     isRegCopy()             {return _opcode.isRegCopy();}
    bool     isDoubleWord()          {return _opcode.isDoubleWord();}
-   bool     isRotateOrShift()       {return _opcode.isRotateOrShift();}
    bool     isCompare()             {return _opcode.isCompare();}
    bool     isLongRunningFPOp()     {return _opcode.isLongRunningFPOp();}
    bool     isFXMult()              {return _opcode.isFXMult();}

@@ -125,7 +125,6 @@ class InstOpCode: public OMR::InstOpCode
 
    bool usesTarget() {return (metadata[_mnemonic].properties & PPCOpProp_UsesTarget)!=0;}
 
-   bool isRotateOrShift() {return (metadata[_mnemonic].properties & PPCOpProp_IsRotateOrShift)!=0;}
    bool isCompare() {return (metadata[_mnemonic].properties & PPCOpProp_CompareOp)!=0;}
 
    bool readsFPSCR() {return (metadata[_mnemonic].properties & PPCOpProp_ReadsFPSCR)!=0;}

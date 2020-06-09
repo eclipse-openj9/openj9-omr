@@ -1280,8 +1280,9 @@ private:
 protected:
 #ifdef J9_PROJECT_SPECIFIC
    TR_CHTable *                      _transientCHTable;   // per compilation CHTable
-   OMR::RuntimeAssumption *            _metadataAssumptionList; // A special OMR::RuntimeAssumption to play the role of a sentinel for a linked list
+   OMR::RuntimeAssumption *          _metadataAssumptionList; // A special OMR::RuntimeAssumption to play the role of a sentinel for a linked list
 #endif
+   TR::Environment                   _target;
 
 private:
    void *                            _relocatableMethodCodeStart;
@@ -1319,8 +1320,6 @@ private:
    typedef std::less<TR_OpaqueClassBlock*> LayoutComparator;
    typedef std::map<TR_OpaqueClassBlock *, const TR::TypeLayout *, LayoutComparator, LayoutAllocator> TypeLayoutMap;
    TypeLayoutMap _typeLayoutMap;
-
-   TR::Environment _target;
 
    /*
     * This must be last

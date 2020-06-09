@@ -33,6 +33,7 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/LabelSymbol.hpp"
+#include "p/codegen/PPCInstruction.hpp"
 #include "runtime/Runtime.hpp"
 
 void TR::PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
@@ -61,6 +62,48 @@ void TR::PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
       }
    }
 
+static void update16BitImmediate(TR::Instruction *instr, uint16_t imm)
+   {
+   int32_t extImm;
+
+   switch (instr->getOpCode().getFormat())
+      {
+      case FORMAT_RT_RA_SI16:
+      case FORMAT_RT_SI16:
+      case FORMAT_RT_D16_RA:
+      case FORMAT_FRT_D16_RA:
+      case FORMAT_RS_D16_RA:
+      case FORMAT_FRS_D16_RA:
+         extImm = (int16_t)imm;
+         break;
+      case FORMAT_RA_RS_UI16:
+         extImm = imm;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, false, "Unhandled instruction format in update16BitImmediate");
+      }
+
+   switch (instr->getKind())
+      {
+      case TR::Instruction::IsTrg1Imm:
+         static_cast<TR::PPCTrg1ImmInstruction*>(instr)->setSourceImmediate(extImm);
+         break;
+      case TR::Instruction::IsTrg1Src1Imm:
+         static_cast<TR::PPCTrg1Src1ImmInstruction*>(instr)->setSourceImmediate(extImm);
+         break;
+      case TR::Instruction::IsTrg1Mem:
+         static_cast<TR::PPCTrg1MemInstruction*>(instr)->getMemoryReference()->setOffset(extImm);
+         break;
+      case TR::Instruction::IsMemSrc1:
+         static_cast<TR::PPCMemSrc1Instruction*>(instr)->getMemoryReference()->setOffset(extImm);
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, false, "Unhandled instruction kind in update16BitImmediate");
+      }
+
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, instr->getBinaryEncoding(), "Attempt to patch unencoded instruction in update16BitImmediate");
+   *reinterpret_cast<uint32_t*>(instr->getBinaryEncoding()) |= extImm & 0xffff;
+   }
 
 void TR::PPCPairedLabelAbsoluteRelocation::apply(TR::CodeGenerator *cg)
    {
@@ -68,22 +111,38 @@ void TR::PPCPairedLabelAbsoluteRelocation::apply(TR::CodeGenerator *cg)
 
    if (cg->comp()->target().is32Bit())
       {
-      _instr1->updateImmediateField(cg->hiValue(p) & 0x0000ffff);
-      _instr2->updateImmediateField(LO_VALUE(p) & 0x0000ffff);
+      // We're patching one of the following sequences:
+      //
+      // 1. _instr1 = lis rX, HI_VALUE(p)
+      //    _instr2 = addi rX, rX, LO_VALUE(p)
+      //
+      // 2. _instr1 = addis rX, rX, HI_VALUE(p)
+      //    _instr2 = addi rX, rX, LO_VALUE(p)
+
+      update16BitImmediate(_instr1, cg->hiValue(p) & 0xffff);
+      update16BitImmediate(_instr2, LO_VALUE(p));
       }
    else
       {
-      if (_instr4->getMemoryReference() != NULL)
-	 {
-         // We should add an updateImmediateField method to Mem instruction classes instead
-         int32_t *cursor = (int32_t *)_instr4->getBinaryEncoding();
-         *cursor |= LO_VALUE(p) & 0x0000ffff;
-	 }
-      else
-         _instr4->updateImmediateField(LO_VALUE(p) & 0x0000ffff);
-      p = cg->hiValue(p);
-      _instr1->updateImmediateField((p>>32) & 0x0000ffff);
-      _instr2->updateImmediateField((p>>16) & 0x0000ffff);
-      _instr3->updateImmediateField(p & 0x0000ffff);
+      intptr_t hi = cg->hiValue(p);
+
+      // We're patching one of the following sequences:
+      //
+      // 1. _instr1 = lis rX, (int16_t)(HI_VALUE(p) >> 32)
+      //    _instr2 = ori rX, rX, (HI_VALUE(p) >> 16) & 0xffff
+      //              rldicr rX, rX, 32, 31
+      //    _instr3 = oris rX, rX, HI_VALUE(p) & 0xffff
+      //    _instr4 = addi rX, rX, LO_VALUE(p)
+      //
+      // 2. _instr1 = lis rX, (int16_t)(HI_VALUE(p) >> 32)
+      //    _instr3 = lis rY, (int16_t)HI_VALUE(p)
+      //    _instr2 = ori rX, rX, (HI_VALUE(p) >> 16) & 0xffff
+      //    _instr4 = ori rX, rX, LO_VALUE(p)
+      //              rldimi rX, rX, 32, 0
+
+      update16BitImmediate(_instr1, (hi >> 32) & 0xffff);
+      update16BitImmediate(_instr2, (hi >> 16) & 0xffff);
+      update16BitImmediate(_instr3, hi & 0xffff);
+      update16BitImmediate(_instr4, LO_VALUE(p));
       }
    }

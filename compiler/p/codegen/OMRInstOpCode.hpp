@@ -160,6 +160,8 @@ class InstOpCode: public OMR::InstOpCode
                           _mnemonic==assocreg ||
                           _mnemonic==dd;}
 
+   bool excludesR0ForRA() {return (metadata[_mnemonic].properties & PPCOpProp_ExcludeR0ForRA)!=0;}
+
    static const uint32_t getOpCodeBinaryEncoding(Mnemonic opCode)
       {return metadata[opCode].opcode;}
    const uint32_t getOpCodeBinaryEncoding()

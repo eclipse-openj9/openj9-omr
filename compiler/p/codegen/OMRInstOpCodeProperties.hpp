@@ -391,8 +391,7 @@
    /* .opcode      =    0x10000037, */
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_DefaultPPCProcessor, */
-   /* .properties  =    PPCOpProp_None | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
+   /* .properties  =    PPCOpProp_SyncSideEffectFree, */
    /* }, */
 
    {
@@ -952,8 +951,7 @@
    /* .opcode      = */ 0x4C000202,
    /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -963,8 +961,7 @@
    /* .opcode      = */ 0x4C000102,
    /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -974,8 +971,7 @@
    /* .opcode      = */ 0x4C000242,
    /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -985,8 +981,7 @@
    /* .opcode      = */ 0x4C0001C2,
    /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -996,8 +991,7 @@
    /* .opcode      = */ 0x4C000042,
    /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1007,8 +1001,7 @@
    /* .opcode      = */ 0x4C000382,
    /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1018,8 +1011,7 @@
    /* .opcode      = */ 0x4C000342,
    /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {
@@ -1029,8 +1021,7 @@
    /* .opcode      = */ 0x4C000182,
    /* .format      = */ FORMAT_BT_BA_BB,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_CRLogical |
-                        PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {

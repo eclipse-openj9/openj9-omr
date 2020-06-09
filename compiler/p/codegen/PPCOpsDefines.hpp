@@ -746,7 +746,6 @@ FORMAT_RT_RA_RB_BFC
 #define PPCOpProp_ReadsCarryFlag    0x00000008
 #define PPCOpProp_TMAbort           0x00000010
 #define PPCOpProp_BranchOp          0x00000040
-#define PPCOpProp_CRLogical         0x00000080
 #define PPCOpProp_DoubleFP          0x00000100
 #define PPCOpProp_SingleFP          0x00000200
 #define PPCOpProp_UpdateForm        0x00000400

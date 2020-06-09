@@ -88,6 +88,11 @@ elseif(OMR_OS_LINUX)
 		-qxflag=selinux
 	)
 elseif(OMR_OS_ZOS)
+	set(OMR_ZOS_COMPILE_ARCHITECTURE "7" CACHE STRING "z/OS compile machine architecture")
+	set(OMR_ZOS_COMPILE_TARGET "zOSV1R13" CACHE STRING "z/OS compile target operating system")
+	set(OMR_ZOS_COMPILE_TUNE "10" CACHE STRING "z/OS compile machine architecture tuning")
+	set(OMR_ZOS_LINK_COMPAT "ZOSV1R13" CACHE STRING "z/OS link compatible operating system")
+
 	# TODO: This should technically be -qhalt=w however c89 compiler used to compile the C sources does not like this
 	# flag. We'll need to investigate whether we actually need c89 for C sources or if we can use xlc and what to do
 	# with this flag. For now I'm leaving it as empty.
@@ -103,19 +108,21 @@ elseif(OMR_OS_ZOS)
 		"\"-Wc,enum(4)\""              # Specifies how many bytes of storage enums occupy
 		"\"-Wa,goff\""                 # Assemble into GOFF object files
 		"\"-Wc,NOANSIALIAS\""          # Do not generate ALIAS binder control statements
-		"\"-Wc,TARGET(zOSV1R13)\""     # Generate code for the target operating system
+		"\"-Wc,TARGET(${OMR_ZOS_COMPILE_TARGET})\""     # Generate code for the target operating system
 	)
 
 	list(APPEND OMR_PLATFORM_C_COMPILE_OPTIONS
-		"\"-Wc,ARCH(7)\""
-		"\"-Wc,TUNE(10)\""
+		"\"-Wc,ARCH(${OMR_ZOS_COMPILE_ARCHITECTURE})\""
+		"\"-Wc,TUNE(${OMR_ZOS_COMPILE_TUNE})\""
+		"\"-Wl,compat=${OMR_ZOS_LINK_COMPAT}\""
 		"\"-Wc,langlvl(extc99)\""
 	)
 
 	list(APPEND OMR_PLATFORM_CXX_COMPILE_OPTIONS
 		-+                             # Compiles any file as a C++ language file
-		"\"-Wc,ARCH(7)\""
-		"\"-Wc,TUNE(10)\""
+		"\"-Wc,ARCH(${OMR_ZOS_COMPILE_ARCHITECTURE})\""
+		"\"-Wc,TUNE(${OMR_ZOS_COMPILE_TUNE})\""
+		"\"-Wl,compat=${OMR_ZOS_LINK_COMPAT}\""
 		"\"-Wc,langlvl(extended)\""
 		-qlanglvl=extended0x
 	)

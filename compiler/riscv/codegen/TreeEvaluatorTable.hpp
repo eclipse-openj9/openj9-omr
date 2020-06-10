@@ -259,24 +259,24 @@
     TR::TreeEvaluator::fcmpgeEvaluator ,	// TR::fcmpge		// float compare if greater than or equal
     TR::TreeEvaluator::fcmpgtEvaluator ,	// TR::fcmpgt		// float compare if greater than
     TR::TreeEvaluator::fcmpleEvaluator ,	// TR::fcmple		// float compare if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fcmpequEvaluator ,	// TR::fcmpequ		// float compare if equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fcmpneuEvaluator ,	// TR::fcmpneu		// float compare if not equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fcmpltuEvaluator ,	// TR::fcmpltu		// float compare if less than or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fcmpgeuEvaluator ,	// TR::fcmpgeu		// float compare if greater than or equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fcmpgtuEvaluator ,	// TR::fcmpgtu		// float compare if greater than or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fcmpleuEvaluator ,	// TR::fcmpleu		// float compare if less than or equal or unordered
+    TR::TreeEvaluator::fcmpequEvaluator ,	// TR::fcmpequ		// float compare if equal or unordered
+    TR::TreeEvaluator::fcmpneuEvaluator ,	// TR::fcmpneu		// float compare if not equal or unordered
+    TR::TreeEvaluator::fcmpltuEvaluator ,	// TR::fcmpltu		// float compare if less than or unordered
+    TR::TreeEvaluator::fcmpgeuEvaluator ,	// TR::fcmpgeu		// float compare if greater than or equal or unordered
+    TR::TreeEvaluator::fcmpgtuEvaluator ,	// TR::fcmpgtu		// float compare if greater than or unordered
+    TR::TreeEvaluator::fcmpleuEvaluator ,	// TR::fcmpleu		// float compare if less than or equal or unordered
     TR::TreeEvaluator::dcmpeqEvaluator ,	// TR::dcmpeq		// double compare if equal
     TR::TreeEvaluator::dcmpneEvaluator ,	// TR::dcmpne		// double compare if not equal
     TR::TreeEvaluator::dcmpltEvaluator ,	// TR::dcmplt		// double compare if less than
     TR::TreeEvaluator::dcmpgeEvaluator ,	// TR::dcmpge		// double compare if greater than or equal
     TR::TreeEvaluator::dcmpgtEvaluator ,	// TR::dcmpgt		// double compare if greater than
     TR::TreeEvaluator::dcmpleEvaluator ,	// TR::dcmple		// double compare if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dcmpequEvaluator ,	// TR::dcmpequ		// double compare if equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dcmpneuEvaluator ,	// TR::dcmpneu		// double compare if not equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dcmpltuEvaluator ,	// TR::dcmpltu		// double compare if less than or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dcmpgeuEvaluator ,	// TR::dcmpgeu		// double compare if greater than or equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dcmpgtuEvaluator ,	// TR::dcmpgtu		// double compare if greater than or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dcmpleuEvaluator ,	// TR::dcmpleu		// double compare if less than or equal or unordered
+    TR::TreeEvaluator::dcmpequEvaluator ,	// TR::dcmpequ		// double compare if equal or unordered
+    TR::TreeEvaluator::dcmpneuEvaluator ,	// TR::dcmpneu		// double compare if not equal or unordered
+    TR::TreeEvaluator::dcmpltuEvaluator ,	// TR::dcmpltu		// double compare if less than or unordered
+    TR::TreeEvaluator::dcmpgeuEvaluator ,	// TR::dcmpgeu		// double compare if greater than or equal or unordered
+    TR::TreeEvaluator::dcmpgtuEvaluator ,	// TR::dcmpgtu		// double compare if greater than or unordered
+    TR::TreeEvaluator::dcmpleuEvaluator ,	// TR::dcmpleu		// double compare if less than or equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::acmpeqEvaluator ,	// TR::acmpeq		// address compare if equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::acmpneEvaluator ,	// TR::acmpne		// address compare if not equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::acmpltEvaluator ,	// TR::acmplt		// address compare if less than

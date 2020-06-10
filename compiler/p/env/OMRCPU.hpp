@@ -48,7 +48,13 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
    {
 protected:
 
-   CPU() : OMR::CPU() {}
+   CPU() :
+         OMR::CPU()
+      {
+      _processorDescription.processor = OMR_PROCESSOR_PPC_UNKNOWN;
+      _processorDescription.physicalProcessor = OMR_PROCESSOR_PPC_UNKNOWN;
+      memset(_processorDescription.features, 0, OMRPORT_SYSINFO_FEATURES_SIZE*sizeof(uint32_t));
+      }
    CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription) {}
 
 public:
@@ -56,15 +62,13 @@ public:
    bool getSupportsHardwareSQRT();
    bool getSupportsHardwareRound();
    bool getSupportsHardwareCopySign();
+   bool getPPCSupportsAES();
 
-   bool getPPCis64bit();
-   bool getPPCSupportsVMX() { return false; }
-   bool getPPCSupportsVSX() { return false; }
-   bool getPPCSupportsAES() { return false; }
-   bool getPPCSupportsTM()  { return false; }
+   bool hasPopulationCountInstruction();
+   bool supportsDecimalFloatingPoint();
 
    /** @brief Determines whether the Transactional Memory (TM) facility is available on the current processor.
-    *         Alias of getPPCSupportsTM() as a platform agnostic query.
+    *         Alias of supportsFeature(OMR_FEATURE_PPC_HTM) as a platform agnostic query.
     *
     *  @return true if TM is available, false otherwise.
     */
@@ -99,7 +103,13 @@ public:
     * @return true if the target is within range; false otherwise.
     */
    bool isTargetWithinIFormBranchRange(intptr_t targetAddress, intptr_t sourceAddress);
-
+  
+   bool supportsFeature(uint32_t feature);
+   bool is(OMRProcessorArchitecture p);
+   bool isAtLeast(OMRProcessorArchitecture p);
+   bool isAtMost(OMRProcessorArchitecture p);
+   TR_Processor get_old_processor_type_from_new_processor_type(OMRProcessorArchitecture p);
+   void applyUserOptions();
    };
 
 }

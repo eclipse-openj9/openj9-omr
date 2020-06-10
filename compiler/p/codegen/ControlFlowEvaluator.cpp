@@ -2497,7 +2497,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeG
       {
       if (secondChild->getOpCode().isLoadConst() && secondChild->getLongInt()==0)
          {
-         if (cg->comp()->target().cpu.id() >= TR_PPCp9)
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
             {
             TR::Register *condReg = cg->allocateRegister(TR_CCR);
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi8, node, condReg, src1Reg, 0);
@@ -2518,7 +2518,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeG
       else
          {
          TR::Register *src2Reg = cg->evaluate(secondChild);
-         if (cg->comp()->target().cpu.id() >= TR_PPCp9)
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
             {
             TR::Register *condReg = cg->allocateRegister(TR_CCR);
             generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp8, node, condReg, src1Reg, src2Reg);

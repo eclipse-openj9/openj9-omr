@@ -138,6 +138,7 @@ public:
    void setMinorArch(TR::MinorArchitecture a) { _minorArch = a; }
    bool isI386() { return _minorArch == TR::m_arch_i386; }
    bool isAMD64() { return _minorArch == TR::m_arch_amd64; }
+   void applyUserOptions() {}
 
    /** 
     * @brief Determines whether the Transactional Memory (TM) facility is available on the current processor.
@@ -150,7 +151,7 @@ public:
     * @param[in] p : the input processor type
     * @return true when current processor is the same as the input processor type
     */
-   bool is(OMRProcessorArchitecture p);
+   bool is(OMRProcessorArchitecture p) { return _processorDescription.processor == p; }
 
    /**
     * @brief Determines whether current processor is equal or newer than the input processor type
@@ -170,7 +171,7 @@ public:
     * @brief Retrieves current processor's processor description
     * @return processor description which includes processor type and processor features
     */
-   const OMRProcessorDesc & getProcessorDescription() const { return _processorDescription; }
+   OMRProcessorDesc getProcessorDescription() { return _processorDescription; }
 
    /** 
     * @brief Determines whether current processor supports the input processor feature

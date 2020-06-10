@@ -218,7 +218,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
        }
     self()->setSupportsArrayCmp();
 
-    if (self()->comp()->target().cpu.getPPCSupportsVSX())
+    if (self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
        {
        static bool disablePPCTRTO = (feGetEnv("TR_disablePPCTRTO") != NULL);
        static bool disablePPCTRTO255 = (feGetEnv("TR_disablePPCTRTO255") != NULL);
@@ -281,11 +281,11 @@ OMR::Power::CodeGenerator::CodeGenerator() :
     * TODO: TM is currently not compatible with read barriers. If read barriers are required, TM is disabled until the issue is fixed.
     *       TM is now disabled by default, due to various reasons (OS, hardware, etc), unless it is explicitly enabled.
     */
-   if (self()->comp()->target().cpu.getPPCSupportsTM() && self()->comp()->getOption(TR_EnableTM) &&
+   if (self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HTM) && self()->comp()->getOption(TR_EnableTM) &&
        !self()->comp()->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
       self()->setSupportsTM();
 
-   if (self()->comp()->target().cpu.getPPCSupportsVMX() && self()->comp()->target().cpu.getPPCSupportsVSX())
+   if (self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_ALTIVEC) && self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
       self()->setSupportsAutoSIMD();
 
    if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
@@ -504,24 +504,29 @@ OMR::Power::CodeGenerator::mulDecompositionCostIsJustified(
 
    // Notice: the total simple operations is (2*numOfOperations-1). The following checking is a heuristic
    //         on processors we still care about.
-   switch (self()->comp()->target().cpu.id())
+   switch (self()->comp()->target().cpu.getProcessorDescription().processor)
       {
-      case TR_PPCpwr630: // 2S+1M FXU out-of-order
+      case OMR_PROCESSOR_PPC_PWR630: // 2S+1M FXU out-of-order
+         TR_ASSERT_FATAL(self()->comp()->target().cpu.id() == TR_PPCpwr630, "TR_PPCpwr630");
          return (numOfOperations<=4);
 
-      case TR_PPCnstar:
-      case TR_PPCpulsar: // 1S+1M FXU in-order
+      case OMR_PROCESSOR_PPC_NSTAR:
+      case OMR_PROCESSOR_PPC_PULSAR: // 1S+1M FXU in-order
+         TR_ASSERT_FATAL(self()->comp()->target().cpu.id() == TR_PPCnstar || self()->comp()->target().cpu.id() == TR_PPCpulsar, "TR_PPCnstar, TR_PPCpulsar");
          return (numOfOperations<=8);
 
-      case TR_PPCgpul:
-      case TR_PPCgp:
-      case TR_PPCgr:    // 2 FXU out-of-order back-to-back 2 cycles. Mul is only 4 to 6 cycles
+      case OMR_PROCESSOR_PPC_GPUL:
+      case OMR_PROCESSOR_PPC_GP:
+      case OMR_PROCESSOR_PPC_GR:    // 2 FXU out-of-order back-to-back 2 cycles. Mul is only 4 to 6 cycles
+         TR_ASSERT_FATAL(self()->comp()->target().cpu.id() == TR_PPCgpul || self()->comp()->target().cpu.id() == TR_PPCgp || self()->comp()->target().cpu.id() == TR_PPCgr, "TR_PPCgpul, TR_PPCgp, TR_PPCgr");
          return (numOfOperations<=2);
 
-      case TR_PPCp6:    // Mul is on FPU for 17cycles blocking other operations
+      case OMR_PROCESSOR_PPC_P6:    // Mul is on FPU for 17cycles blocking other operations
+         TR_ASSERT_FATAL(self()->comp()->target().cpu.id() == TR_PPCp6, "TR_PPCp6");
          return (numOfOperations<=16);
 
-      case TR_PPCp7:    // Mul blocks other operations for up to 4 cycles
+      case OMR_PROCESSOR_PPC_P7:    // Mul blocks other operations for up to 4 cycles
+         TR_ASSERT_FATAL(self()->comp()->target().cpu.id() == TR_PPCp7, "TR_PPCp7");
          return (numOfOperations<=3);
 
       default:          // assume a generic design similar to 604
@@ -614,7 +619,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateNop(TR::Node *n, TR::Instruc
 
 TR::Instruction *OMR::Power::CodeGenerator::generateGroupEndingNop(TR::Node *node , TR::Instruction *preced)
    {
-   if (self()->comp()->target().cpu.id() >= TR_PPCp6) // handles P7, P8
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6)) // handles P7, P8
       {
       preced = self()->generateNop(node , preced , TR_NOPEndGroup);
       }
@@ -1100,8 +1105,8 @@ static void recordFormPeephole(TR::CodeGenerator *cg, TR::Instruction *cmpiInstr
          if (current->getOpCode().hasRecordForm())
             {
             // avoid certain record forms on POWER4/POWER5
-            if (comp->target().cpu.id() == TR_PPCgp ||
-                comp->target().cpu.id() == TR_PPCgr)
+            if (comp->target().cpu.is(OMR_PROCESSOR_PPC_GP) ||
+                comp->target().cpu.is(OMR_PROCESSOR_PPC_GR))
                {
                TR::InstOpCode::Mnemonic opCode = current->getOpCodeValue();
                // addc_r, subfc_r, divw_r and divd_r are microcoded
@@ -1560,7 +1565,7 @@ void OMR::Power::CodeGenerator::doPeephole()
       {
       self()->setCurrentBlockIndex(instructionCursor->getBlockIndex());
 
-      if ((self()->comp()->target().cpu.id() == TR_PPCp6) && instructionCursor->isTrap())
+      if ((self()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6)) && instructionCursor->isTrap())
          {
 #if defined(AIXPPC)
          trapPeephole(self(),instructionCursor);
@@ -2812,7 +2817,7 @@ bool OMR::Power::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumbe
 
 bool OMR::Power::CodeGenerator::supportsSinglePrecisionSQRT()
    {
-   return self()->comp()->target().cpu.getSupportsHardwareSQRT();
+   return self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_HW_SQRT_FIRST);
    }
 
 
@@ -2860,12 +2865,12 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
    {
 
    // alignment issues
-   if (self()->comp()->target().cpu.id() < TR_PPCp8 &&
+   if (!self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
        dt != TR::Double &&
        dt != TR::Int64)
       return false;
 
-   if (self()->comp()->target().cpu.id() >= TR_PPCp8 &&
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
        (opcode.getOpCodeValue() == TR::vadd || opcode.getOpCodeValue() == TR::vsub) &&
        dt == TR::Int64)
       return true;
@@ -2917,14 +2922,14 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
 bool
 OMR::Power::CodeGenerator::getSupportsEncodeUtf16LittleWithSurrogateTest()
    {
-   return self()->comp()->target().cpu.getPPCSupportsVSX() &&
+   return self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX) &&
           !self()->comp()->getOption(TR_DisableSIMDUTF16LEEncoder);
    }
 
 bool
 OMR::Power::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
    {
-   return self()->comp()->target().cpu.getPPCSupportsVSX() &&
+   return self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX) &&
           !self()->comp()->getOption(TR_DisableSIMDUTF16BEEncoder);
    }
 
@@ -3300,7 +3305,7 @@ void TR_PPCScratchRegisterManager::addScratchRegistersToDependencyList(
 
 TR::SymbolReference & OMR::Power::CodeGenerator::getArrayCopySymbolReference()
    {
-   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayCopy, false, false, false);
@@ -3308,7 +3313,7 @@ TR::SymbolReference & OMR::Power::CodeGenerator::getArrayCopySymbolReference()
 
 TR::SymbolReference & OMR::Power::CodeGenerator::getWordArrayCopySymbolReference()
    {
-   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCwordArrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCwordArrayCopy, false, false, false);
@@ -3316,7 +3321,7 @@ TR::SymbolReference & OMR::Power::CodeGenerator::getWordArrayCopySymbolReference
 
 TR::SymbolReference & OMR::Power::CodeGenerator::getHalfWordArrayCopySymbolReference()
    {
-   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPChalfWordArrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPChalfWordArrayCopy, false, false, false);
@@ -3324,7 +3329,7 @@ TR::SymbolReference & OMR::Power::CodeGenerator::getHalfWordArrayCopySymbolRefer
 
 TR::SymbolReference & OMR::Power::CodeGenerator::getForwardArrayCopySymbolReference()
    {
-   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardArrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardArrayCopy, false, false, false);
@@ -3332,7 +3337,7 @@ TR::SymbolReference & OMR::Power::CodeGenerator::getForwardArrayCopySymbolRefere
 
 TR::SymbolReference &OMR::Power::CodeGenerator::getForwardWordArrayCopySymbolReference()
    {
-   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardWordArrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardWordArrayCopy, false, false, false);
@@ -3340,18 +3345,16 @@ TR::SymbolReference &OMR::Power::CodeGenerator::getForwardWordArrayCopySymbolRef
 
 TR::SymbolReference &OMR::Power::CodeGenerator::getForwardHalfWordArrayCopySymbolReference()
    {
-   if (self()->comp()->target().cpu.id() >= TR_PPCp6)
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardHalfWordArrayCopy_dp, false, false, false);
    else
       return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCforwardHalfWordArrayCopy, false, false, false);
    }
 
-
 bool OMR::Power::CodeGenerator::supportsTransientPrefetch()
    {
-   return TR::comp()->target().cpu.id() >= TR_PPCp7;
+   return TR::comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7);
    }
-
 
 bool OMR::Power::CodeGenerator::is64BitProcessor()
    {
@@ -3365,7 +3368,7 @@ bool OMR::Power::CodeGenerator::is64BitProcessor()
       }
    else
       {
-      return self()->comp()->target().cpu.getPPCis64bit();
+      return self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_64BIT_FIRST);
       }
    }
 

@@ -580,7 +580,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             cg->decReferenceCount(integerChild);
             }
          else if (integerChild->getEvaluationPriority(cg)>addressChild->getEvaluationPriority(cg) &&
-                  !(subTree->getOpCode().isArrayRef() && cg->comp()->target().cpu.id()==TR_PPCp6))
+                  !(subTree->getOpCode().isArrayRef() && cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6)))
             {
             self()->populateMemoryReference(integerChild, cg);
             self()->populateMemoryReference(addressChild, cg);

@@ -204,7 +204,7 @@ TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeG
 
    TR::Node *firstChild = node->getFirstChild();
 
-  if (cg->comp()->target().cpu.id() >= TR_PPCp9 &&
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9)  &&
       firstChild->getOpCodeValue() == TR::imul &&
       firstChild->getReferenceCount() == 1 &&
       firstChild->getRegister() == NULL)
@@ -508,7 +508,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
          return trgReg;
          }
 
-      if (cg->comp()->target().cpu.id() >= TR_PPCp9 &&
+      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) &&
           !setsOrReadsCC &&
           (node->getOpCodeValue() == TR::ladd || node->getOpCodeValue() == TR::aladd) &&
           firstChild->getOpCodeValue() == TR::lmul &&
@@ -1621,7 +1621,7 @@ static TR::Register *signedIntegerDivisionOrRemainderAnalyser(TR::Node          
             generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, trgReg, trgReg);
          }
       }
-   else if (cg->comp()->target().cpu.id() >= TR_PPCp9 && isRemainder)
+   else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) && isRemainder)
       {
       if (divisorReg == NULL)
          divisorReg = cg->evaluate(node->getSecondChild());
@@ -2078,7 +2078,7 @@ strengthReducingLongDivideOrRemainder32BitMode(TR::Node *node,      TR::CodeGene
 
          if (isRemainder)
             {
-            if (cg->comp()->target().cpu.id() >= TR_PPCp9)
+            if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
                {
                generateTrg1Src2Instruction(cg, TR::InstOpCode::moduw, node, dr_l, dd_l, dr_l);
                }
@@ -2099,7 +2099,7 @@ strengthReducingLongDivideOrRemainder32BitMode(TR::Node *node,      TR::CodeGene
 
    TR_RuntimeHelper helper;
 
-   if (cg->comp()->target().cpu.id() >= TR_PPCp7 && !isDivisorImpossible32Bit)
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) && !isDivisorImpossible32Bit)
       helper = isSignedOp ? TR_PPClongDivideEP : TR_PPCunsignedLongDivideEP;
    else
       helper = isSignedOp ? TR_PPClongDivide : TR_PPCunsignedLongDivide;
@@ -2154,7 +2154,7 @@ TR::Register *OMR::Power::TreeEvaluator::iremEvaluator(TR::Node *node, TR::CodeG
          {
          TR::Register *divisorReg = cg->evaluate(secondChild);
          trgReg = cg->allocateRegister();
-         if(cg->comp()->target().cpu.id() >= TR_PPCp9)
+         if(cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsw, node, trgReg, dividendReg, divisorReg);
             }
@@ -2210,7 +2210,7 @@ TR::Register *OMR::Power::TreeEvaluator::iremEvaluator(TR::Node *node, TR::CodeG
             generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, doneLabel, condReg);
             cg->stopUsingRegister(condReg);
             }
-         if(cg->comp()->target().cpu.id() >= TR_PPCp9)
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsw, node, trgReg, dividendReg, divisorReg);
             }
@@ -2250,7 +2250,7 @@ TR::Register *lrem64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
          {
          TR::Register *divisorReg = cg->evaluate(secondChild);
          trgReg = cg->allocateRegister();
-         if(cg->comp()->target().cpu.id() >= TR_PPCp9)
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsd, node, trgReg, dividendReg, divisorReg);
             }
@@ -2306,7 +2306,7 @@ TR::Register *lrem64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
             generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, doneLabel, condReg);
             cg->stopUsingRegister(condReg);
             }
-         if (cg->comp()->target().cpu.id() >= TR_PPCp9)
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsd, node, trgReg, dividendReg, divisorReg);
             }
@@ -2350,7 +2350,7 @@ TR::Register *OMR::Power::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeG
 static bool isPower9Extswsli(TR::CodeGenerator *cg, TR::Node *node)
    {
    static bool disableExtswsli = feGetEnv("TR_DisableExtswsli");
-   if (disableExtswsli || cg->comp()->target().cpu.id() < TR_PPCp9)
+   if (disableExtswsli || !cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
       return false;
 
    TR::Node *lhs = node->getFirstChild();

@@ -3411,6 +3411,15 @@ OMR::Power::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, 
       self()->comp()->getOption(TR_StressTrampolines);
    }
 
+uint32_t
+OMR::Power::CodeGenerator::getHotLoopAlignment()
+   {
+   if (self()->comp()->target().cpu.id() >= TR_PPCp9)
+      return 16;
+   else
+      return 32;
+   }
+
 // Multiply a register by a constant
 void mulConstant(TR::Node * node, TR::Register *trgReg, TR::Register *sourceReg, int32_t value, TR::CodeGenerator *cg)
    {

@@ -5657,7 +5657,7 @@ TR::Register *OMR::Power::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Co
                                TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._startPC));
 
    if (block->firstBlockInLoop() && !block->isCold())
-      generateAlignmentNopInstruction(cg, node, 32);
+      generateAlignmentNopInstruction(cg, node, cg->getHotLoopAlignment());
 
    TR::Instruction *labelInst = NULL;
 

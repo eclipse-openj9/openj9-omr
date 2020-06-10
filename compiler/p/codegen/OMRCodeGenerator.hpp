@@ -530,6 +530,16 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     */
    bool directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress);
 
+   /**
+    * @brief Gets the preferred alignment of hot loops in bytes.
+    *
+    * In order to reduce the number of unnecessary instructions fetched when jumping back to the
+    * start of a loop, hot loops should be aligned to match the boundary on which the CPU will
+    * begin fetching instructions. This function determines what alignment should be used when
+    * doing this.
+    */
+   uint32_t getHotLoopAlignment();
+
    private:
 
    enum // flags

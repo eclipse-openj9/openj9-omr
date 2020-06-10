@@ -6052,7 +6052,7 @@ TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR:
       {
       TR::Register *srcRegister = cg->evaluate(firstChild);
 
-      if (cg->comp()->target().cpu.id() >= TR_PPCp10)
+      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
          {
          generateTrg1Src1Instruction(cg, TR::InstOpCode::brw, node, tgtRegister, srcRegister);
          }

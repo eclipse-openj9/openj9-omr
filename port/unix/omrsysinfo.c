@@ -4342,6 +4342,7 @@ retrieveOSXProcessorStats(struct OMRPortLibrary *portLibrary, struct J9Processor
 			procInfo->procInfoArray[0].idleTime += procInfo->procInfoArray[i + 1].idleTime;
 			procInfo->procInfoArray[0].busyTime += procInfo->procInfoArray[i + 1].busyTime;
 		}
+		procInfo->procInfoArray[0].online = OMRPORT_PROCINFO_PROC_ONLINE;
 		ret = 0;
 	}
 	return ret;

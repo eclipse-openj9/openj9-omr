@@ -1213,18 +1213,24 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 	} /* for */
 }
 
-/*
- * Tests the async signals to verify that our handler is called both when the signal is raised and injected by another process
+/**
+ * Tests the async signals to verify that our handler is called both when the
+ * signal is raised and injected by another process.
  *
- * To test that the handler was called, omrsig_test_async_unix_handler sets controlFlag to 0, then expects the handler to have set it to 1
+ * To test that the handler was called, omrsig_test_async_unix_handler sets
+ * controlFlag to 0, then expects the handler to have set it to 1.
  *
- * The child process is another instance of pltest with the argument -child_omrsig_injectSignal_<PID>_<signal to inject>.
- * In the child process:
- * 	- main.c peels off -child_
- * 	- omrsig_run_tests looks for omrsig_injectSignal, and if found, reads the PID and signal number and injects it
+ * The child process is another instance of pltest with the argument
+ * -child_omrsig_injectSignal_<PID>_<signal to inject>.
  *
- * NOTE : Assumes 0.5 seconds is long enough for a child process to be kicked off, inject a signal and have our handler kick in
- * */
+ * In the child process,
+ * (1) main.c peels off "-child_".
+ * (2) omrsig_run_tests looks for omrsig_injectSignal, and if found, reads the
+ *     PID and signal number and injects it.
+ *
+ * NOTE: This test assumes that 0.5 seconds is long enough for a child process
+ * to be kicked off, inject a signal and invoke the handler.
+ */
 TEST(PortSigTest, sig_test_async_unix_handler)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());

@@ -135,9 +135,10 @@ asyncTestHandler(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *hand
 static void
 injectSignal(struct OMRPortLibrary *portLibrary, int pid, int signal)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
-	/* this is run by the child process. To see the tty_printf output on the console, set OMRPORT_PROCESS_INHERIT_STDOUT | OMRPORT_PROCESS_INHERIT_STDIN
-	 * in the options passed into j9process_create() in launchChildProcess (in testProcessHelpers.c).
+	/* This is run by the child process. To see the tty_printf output on the
+	 * console, set OMRPORT_PROCESS_INHERIT_STDOUT | OMRPORT_PROCESS_INHERIT_STDIN
+	 * in the options passed into j9process_create() in launchChildProcess
+	 * (in testProcessHelpers.c).
 	 */
 	portTestEnv->log("\t\tCHILD:	 calling kill: %i %i\n", pid, signal);
 	kill(pid, signal);

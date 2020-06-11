@@ -1133,7 +1133,11 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 20000, 0);
 
 		if (1 != handlerInfo->controlFlag) {
-			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was not invoked when %s was raised\n", testSignalMap[index].portLibSignalString, testSignalMap[index].osSignalString);
+			outputErrorMessage(
+					PORTTEST_ERROR_ARGS,
+					"%s handler was not invoked when %s was raised\n",
+					testSignalMap[index].portLibSignalString,
+					testSignalMap[index].osSignalString);
 		}
 
 		handlerInfo->controlFlag = 0;
@@ -1159,7 +1163,11 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 20000, 0);
 
 		if (1 != handlerInfo->controlFlag) {
-			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was NOT invoked when %s was injected by another process\n", testSignalMap[index].portLibSignalString, testSignalMap[index].osSignalString);
+			outputErrorMessage(
+					PORTTEST_ERROR_ARGS,
+					"%s handler was NOT invoked when %s was injected by another process\n",
+					testSignalMap[index].portLibSignalString,
+					testSignalMap[index].osSignalString);
 		}
 
 		omrthread_monitor_exit(asyncMonitor);
@@ -1196,8 +1204,11 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 
 		/* verify that the signal was NOT received */
 		if (0 != handlerInfo->controlFlag) {
-			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was unexpectedly invoked when %s was injected by another process\n",
-							   testSignalMap[index].portLibSignalString, testSignalMap[index].osSignalString);
+			outputErrorMessage(
+					PORTTEST_ERROR_ARGS,
+					"%s handler was unexpectedly invoked when %s was injected by another process\n",
+					testSignalMap[index].portLibSignalString,
+					testSignalMap[index].osSignalString);
 		}
 
 		/* unblock the signal and handle it */
@@ -1205,7 +1216,11 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		sigrelse(signum);
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 20000, 0);
 		if (1 != handlerInfo->controlFlag) {
-			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was NOT invoked when %s was injected by another process\n", testSignalMap[index].portLibSignalString, testSignalMap[index].osSignalString);
+			outputErrorMessage(
+					PORTTEST_ERROR_ARGS,
+					"%s handler was NOT invoked when %s was injected by another process\n",
+					testSignalMap[index].portLibSignalString,
+					testSignalMap[index].osSignalString);
 		}
 
 		omrthread_monitor_exit(asyncMonitor);

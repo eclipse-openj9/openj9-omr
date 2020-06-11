@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1132,7 +1132,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsig_set_async_signal_handler returned: OMRPORT_SIG_ERROR\n");
 		goto exit;
 	}
-#endif
+#endif /* defined(AIXPPC) */
 
 	/* iterate through all the known signals */
 	for (index = 0; index < sizeof(testSignalMap) / sizeof(testSignalMap[0]); index++) {
@@ -1160,7 +1160,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 			sighold(signum);
 			raise(signum);
 			sigrelse(signum);
-#endif
+#endif /* defined(J9ZOS390) */
 		} else {
 			raise(signum);
 		}
@@ -1247,7 +1247,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 		omrthread_monitor_exit(asyncMonitor);
 
 		j9process_close(OMRPORTLIB, &childProcess, 0);
-#endif
+#endif /* defined(J9ZOS390) */
 
 	} /* for */
 

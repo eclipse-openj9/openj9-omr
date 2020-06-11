@@ -54,13 +54,9 @@
 #include "testProcessHelpers.hpp"
 #include "omrport.h"
 
-#if !defined(OMR_OS_WINDOWS) && defined(OMR_PORT_ASYNC_HANDLER)
-#define J9SIGNAL_TEST_RUN_ASYNC_UNIX_TESTS
-#endif /* !defined(OMR_OS_WINDOWS) && defined(OMR_PORT_ASYNC_HANDLER) */
-
 #define SIG_TEST_SIZE_EXENAME 1024
 
-#if defined(J9SIGNAL_TEST_RUN_ASYNC_UNIX_TESTS)
+#if defined(OMR_PORT_ASYNC_HANDLER)
 
 extern PortTestEnvironment *portTestEnv;
 
@@ -95,7 +91,7 @@ typedef struct AsyncHandlerInfo {
 static uintptr_t asyncTestHandler(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *gpInfo, void *userData);
 static void injectUnixSignal(struct OMRPortLibrary *portLibrary, int pid, int unixSignal);
 
-#endif /* J9SIGNAL_TEST_RUN_ASYNC_UNIX_TESTS */
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 typedef struct SigProtectHandlerInfo {
 	uint32_t expectedType;
@@ -105,7 +101,7 @@ typedef struct SigProtectHandlerInfo {
 
 static U_32 portTestOptionsGlobal;
 
-#if defined(J9SIGNAL_TEST_RUN_ASYNC_UNIX_TESTS)
+#if defined(OMR_PORT_ASYNC_HANDLER)
 
 /*
  * Sets  the controlFlag to 1 such that we can test that it was actually invoked
@@ -148,7 +144,7 @@ injectUnixSignal(struct OMRPortLibrary *portLibrary, int pid, int unixSignal)
 	return;
 }
 
-#endif /* J9SIGNAL_TEST_RUN_ASYNC_UNIX_TESTS */
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 /**
  * Verify port library signal handling.
@@ -166,7 +162,7 @@ omrsig_runTests(struct OMRPortLibrary *portLibrary, char *exeName, char *argumen
 
 	portTestOptionsGlobal = omrsig_get_options();
 
-#if defined(J9SIGNAL_TEST_RUN_ASYNC_UNIX_TESTS)
+#if defined(OMR_PORT_ASYNC_HANDLER)
 	if (argument != NULL) {
 		if (1 == startsWith(argument, "omrsig_injectSignal")) {
 			char *scratch;
@@ -191,7 +187,7 @@ omrsig_runTests(struct OMRPortLibrary *portLibrary, char *exeName, char *argumen
 			return TEST_PASS /* doesn't matter what we return here */;
 		}
 	}
-#endif
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 	return 0;
 }
 
@@ -1087,7 +1083,7 @@ TEST(PortSigTest, sig_test8)
 }
 
 
-#if defined(J9SIGNAL_TEST_RUN_ASYNC_UNIX_TESTS)
+#if defined(OMR_PORT_ASYNC_HANDLER)
 /**
  * Invoke the asyncTestHandler using raise and from a child process for all signals in
  * testSignalMap. Output an error message in case of a failure.
@@ -1277,7 +1273,7 @@ exit:
 	omrthread_monitor_destroy(asyncMonitor);
 	reportTestExit(OMRPORTLIB, testName);
 }
-#endif /* J9SIGNAL_TEST_RUN_ASYNC_UNIX_TESTS */
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 
 /*

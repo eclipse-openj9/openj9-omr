@@ -1251,7 +1251,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 	handlerInfo.monitor = &asyncMonitor;
 
 	setAsyncRC = omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGABRT | OMRPORT_SIG_FLAG_SIGTERM | OMRPORT_SIG_FLAG_SIGINT);
-	if (setAsyncRC == (uint32_t)OMRPORT_SIG_ERROR) {
+	if (setAsyncRC == OMRPORT_SIG_ERROR) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsig_set_async_signal_handler returned: OMRPORT_SIG_ERROR\n");
 		goto exit;
 	}

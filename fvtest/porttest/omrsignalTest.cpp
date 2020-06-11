@@ -1231,9 +1231,9 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 	const char *testName = "omrsig_test_async_unix_handler";
 	AsyncHandlerInfo handlerInfo = {0};
 	int32_t rc = 0;
-	unsigned int index = 0;
 	omrthread_monitor_t asyncMonitor = NULL;
 	int pid = getpid();
+	uint32_t signalFlags = 0;
 
 	reportTestEntry(OMRPORTLIB, testName);
 	portTestEnv->log("\tpid: %i\n", pid);
@@ -1249,19 +1249,15 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 
 	handlerInfo.monitor = &asyncMonitor;
 
-	rc = omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGABRT | OMRPORT_SIG_FLAG_SIGTERM | OMRPORT_SIG_FLAG_SIGINT);
-	if (rc == OMRPORT_SIG_ERROR) {
-		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsig_set_async_signal_handler returned: OMRPORT_SIG_ERROR\n");
-		goto exit;
+	for (unsigned int index = 0; index < (sizeof(testSignalMap)/sizeof(testSignalMap[0])); index++) {
+		signalFlags |= testSignalMap[index].portLibSignalNo;
 	}
 
-#if defined(AIXPPC)
-	rc = omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, OMRPORT_SIG_FLAG_SIGRECONFIG);
+	rc = omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, signalFlags);
 	if (rc == OMRPORT_SIG_ERROR) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsig_set_async_signal_handler returned: OMRPORT_SIG_ERROR\n");
 		goto exit;
 	}
-#endif /* defined(AIXPPC) */
 
 	invokeAsyncTestHandler(asyncMonitor, testName, &handlerInfo, pid);
 
@@ -1269,7 +1265,6 @@ exit:
 	omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, 0);
 	omrthread_monitor_destroy(asyncMonitor);
 	reportTestExit(OMRPORTLIB, testName);
-
 }
 #endif /* J9SIGNAL_TEST_RUN_ASYNC_UNIX_TESTS */
 

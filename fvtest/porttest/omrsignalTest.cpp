@@ -1317,6 +1317,58 @@ exit:
 	omrthread_monitor_destroy(asyncMonitor);
 	reportTestExit(OMRPORTLIB, testName);
 }
+
+/**
+ * Similar to test sig_test_async_unix_handler. This test alternates between
+ * omrsig_set_async_signal_handler and omrsig_set_single_async_signal_handler
+ * to register the async handler with the signals in testSignalMap. The goal
+ * is to verify that the two functions can be used together.
+ */
+TEST(PortSigTest, sig_test_mix_async_unix_handler)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsig_test_mix_async_unix_handler";
+	AsyncHandlerInfo handlerInfo = {0};
+	int32_t rc = 0;
+	omrthread_monitor_t asyncMonitor = NULL;
+	int pid = getpid();
+
+	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->log("\tpid: %i\n", pid);
+
+	handlerInfo.testName = testName;
+
+	rc = omrthread_monitor_init_with_name(&asyncMonitor, 0, "omrsignalTest_async_monitor");
+
+	if (0 != rc) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrthread_monitor_init_with_name failed with %i\n", rc);
+		FAIL();
+	}
+
+	handlerInfo.monitor = &asyncMonitor;
+
+	for (unsigned int index = 0; index < (sizeof(testSignalMap)/sizeof(testSignalMap[0])); index++) {
+		/* Signals on even indices are registered using omrsig_set_async_signal_handler.
+		 * Signals on odd indices are registered using omrsig_set_single_async_signal_handler.
+		 */
+		if (index % 2 == 0) {
+			rc = omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, testSignalMap[index].portLibSignalNo);
+		} else {
+			rc = omrsig_set_single_async_signal_handler(asyncTestHandler, &handlerInfo, testSignalMap[index].portLibSignalNo, NULL);
+		}
+		if (rc == OMRPORT_SIG_ERROR) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsig_set*_async_signal_handler returned: OMRPORT_SIG_ERROR\n");
+			goto exit;
+		}
+	}
+
+	invokeAsyncTestHandler(asyncMonitor, testName, &handlerInfo, pid);
+
+exit:
+	omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, 0);
+	omrthread_monitor_destroy(asyncMonitor);
+	reportTestExit(OMRPORTLIB, testName);
+}
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 

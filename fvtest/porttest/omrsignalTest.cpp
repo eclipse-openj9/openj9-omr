@@ -63,8 +63,8 @@ extern PortTestEnvironment *portTestEnv;
 struct PortSigMap {
 	uint32_t portLibSignalNo;
 	const char *portLibSignalString ;
-	int unixSignalNo;
-	const char *unixSignalString;
+	int osSignalNo;
+	const char *osSignalString;
 } PortSigMap;
 
 struct PortSigMap testSignalMap[] = {
@@ -89,7 +89,7 @@ typedef struct AsyncHandlerInfo {
 } AsyncHandlerInfo;
 
 static uintptr_t asyncTestHandler(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *gpInfo, void *userData);
-static void injectUnixSignal(struct OMRPortLibrary *portLibrary, int pid, int unixSignal);
+static void injectSignal(struct OMRPortLibrary *portLibrary, int pid, int signal);
 
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
@@ -133,14 +133,14 @@ asyncTestHandler(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *hand
 }
 
 static void
-injectUnixSignal(struct OMRPortLibrary *portLibrary, int pid, int unixSignal)
+injectSignal(struct OMRPortLibrary *portLibrary, int pid, int signal)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 	/* this is run by the child process. To see the tty_printf output on the console, set OMRPORT_PROCESS_INHERIT_STDOUT | OMRPORT_PROCESS_INHERIT_STDIN
 	 * in the options passed into j9process_create() in launchChildProcess (in testProcessHelpers.c).
 	 */
-	portTestEnv->log("\t\tCHILD:	 calling kill: %i %i\n", pid, unixSignal);
-	kill(pid, unixSignal);
+	portTestEnv->log("\t\tCHILD:	 calling kill: %i %i\n", pid, signal);
+	kill(pid, signal);
 	return;
 }
 
@@ -165,9 +165,10 @@ omrsig_runTests(struct OMRPortLibrary *portLibrary, char *exeName, char *argumen
 #if defined(OMR_PORT_ASYNC_HANDLER)
 	if (argument != NULL) {
 		if (1 == startsWith(argument, "omrsig_injectSignal")) {
-			char *scratch;
-			int pid, unixSignal;
-			char *strTokSavePtr;
+			char *scratch = NULL;
+			int pid = 0;
+			int signal = 0;
+			char *strTokSavePtr = NULL;
 
 			/* consume "omrsig" */
 			(void)strtok_r(argument, "_", &strTokSavePtr);
@@ -181,9 +182,9 @@ omrsig_runTests(struct OMRPortLibrary *portLibrary, char *exeName, char *argumen
 
 			/* consume signal number */
 			scratch = strtok_r(NULL, "_", &strTokSavePtr);
-			unixSignal = atoi(scratch);
+			signal = atoi(scratch);
 
-			injectUnixSignal(OMRPORTLIB, pid, unixSignal);
+			injectSignal(OMRPORTLIB, pid, signal);
 			return TEST_PASS /* doesn't matter what we return here */;
 		}
 	}
@@ -1103,11 +1104,11 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 	for (unsigned int index = 0; index < (sizeof(testSignalMap)/sizeof(testSignalMap[0])); index++) {
 		OMRProcessHandle childProcess = NULL;
 		char options[SIG_TEST_SIZE_EXENAME];
-		int signum = testSignalMap[index].unixSignalNo;
+		int signum = testSignalMap[index].osSignalNo;
 
 		handlerInfo->expectedType = testSignalMap[index].portLibSignalNo;
 
-		portTestEnv->log("\n\tTesting %s\n", testSignalMap[index].unixSignalString);
+		portTestEnv->log("\n\tTesting %s\n", testSignalMap[index].osSignalString);
 
 		/* asyncTestHandler notifies the monitor once it has set controlFlag to 0; */
 		omrthread_monitor_enter(asyncMonitor);
@@ -1132,7 +1133,7 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 20000, 0);
 
 		if (1 != handlerInfo->controlFlag) {
-			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was not invoked when %s was raised\n", testSignalMap[index].portLibSignalString, testSignalMap[index].unixSignalString);
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was not invoked when %s was raised\n", testSignalMap[index].portLibSignalString, testSignalMap[index].osSignalString);
 		}
 
 		handlerInfo->controlFlag = 0;
@@ -1158,7 +1159,7 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 20000, 0);
 
 		if (1 != handlerInfo->controlFlag) {
-			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was NOT invoked when %s was injected by another process\n", testSignalMap[index].portLibSignalString, testSignalMap[index].unixSignalString);
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was NOT invoked when %s was injected by another process\n", testSignalMap[index].portLibSignalString, testSignalMap[index].osSignalString);
 		}
 
 		omrthread_monitor_exit(asyncMonitor);
@@ -1196,7 +1197,7 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		/* verify that the signal was NOT received */
 		if (0 != handlerInfo->controlFlag) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was unexpectedly invoked when %s was injected by another process\n",
-							   testSignalMap[index].portLibSignalString, testSignalMap[index].unixSignalString);
+							   testSignalMap[index].portLibSignalString, testSignalMap[index].osSignalString);
 		}
 
 		/* unblock the signal and handle it */
@@ -1204,7 +1205,7 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		sigrelse(signum);
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 20000, 0);
 		if (1 != handlerInfo->controlFlag) {
-			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was NOT invoked when %s was injected by another process\n", testSignalMap[index].portLibSignalString, testSignalMap[index].unixSignalString);
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s handler was NOT invoked when %s was injected by another process\n", testSignalMap[index].portLibSignalString, testSignalMap[index].osSignalString);
 		}
 
 		omrthread_monitor_exit(asyncMonitor);
@@ -1218,7 +1219,7 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
  * Tests the async signals to verify that our handler is called both when the
  * signal is raised and injected by another process.
  *
- * To test that the handler was called, omrsig_test_async_unix_handler sets
+ * To test that the handler was called, omrsig_test_async_handler sets
  * controlFlag to 0, then expects the handler to have set it to 1.
  *
  * The child process is another instance of pltest with the argument
@@ -1232,10 +1233,10 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
  * NOTE: This test assumes that 0.5 seconds is long enough for a child process
  * to be kicked off, inject a signal and invoke the handler.
  */
-TEST(PortSigTest, sig_test_async_unix_handler)
+TEST(PortSigTest, sig_test_async_handler)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
-	const char *testName = "omrsig_test_async_unix_handler";
+	const char *testName = "omrsig_test_async_handler";
 	AsyncHandlerInfo handlerInfo = {0};
 	int32_t rc = 0;
 	omrthread_monitor_t asyncMonitor = NULL;
@@ -1275,14 +1276,14 @@ exit:
 }
 
 /**
- * Similar to test sig_test_async_unix_handler. Instead of
+ * Similar to test sig_test_async_handler. Instead of
  * omrsig_set_async_signal_handler, omrsig_set_single_async_signal_handler is
  * used to register the async handler with the signals in testSignalMap.
  */
-TEST(PortSigTest, sig_test_single_async_unix_handler)
+TEST(PortSigTest, sig_test_single_async_handler)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
-	const char *testName = "omrsig_test_single_async_unix_handler";
+	const char *testName = "omrsig_test_single_async_handler";
 	AsyncHandlerInfo handlerInfo = {0};
 	int32_t rc = 0;
 	omrthread_monitor_t asyncMonitor = NULL;
@@ -1319,15 +1320,15 @@ exit:
 }
 
 /**
- * Similar to test sig_test_async_unix_handler. This test alternates between
+ * Similar to test sig_test_async_handler. This test alternates between
  * omrsig_set_async_signal_handler and omrsig_set_single_async_signal_handler
  * to register the async handler with the signals in testSignalMap. The goal
  * is to verify that the two functions can be used together.
  */
-TEST(PortSigTest, sig_test_mix_async_unix_handler)
+TEST(PortSigTest, sig_test_mix_async_handler)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
-	const char *testName = "omrsig_test_mix_async_unix_handler";
+	const char *testName = "omrsig_test_mix_async_handler";
 	AsyncHandlerInfo handlerInfo = {0};
 	int32_t rc = 0;
 	omrthread_monitor_t asyncMonitor = NULL;

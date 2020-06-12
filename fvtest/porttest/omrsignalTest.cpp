@@ -139,7 +139,9 @@ injectSignal(struct OMRPortLibrary *portLibrary, int pid, int signal)
 	 * (in testProcessHelpers.c).
 	 */
 	portTestEnv->log("\t\tCHILD:	 calling kill: %i %i\n", pid, signal);
+#if !defined(OMR_OS_WINDOWS)
 	kill(pid, signal);
+#endif /* !defined(OMR_OS_WINDOWS) */
 	return;
 }
 
@@ -161,7 +163,7 @@ omrsig_runTests(struct OMRPortLibrary *portLibrary, char *exeName, char *argumen
 
 	portTestOptionsGlobal = omrsig_get_options();
 
-#if defined(OMR_PORT_ASYNC_HANDLER)
+#if defined(OMR_PORT_ASYNC_HANDLER) && !defined(OMR_OS_WINDOWS)
 	if (argument != NULL) {
 		if (1 == startsWith(argument, "omrsig_injectSignal")) {
 			char *scratch = NULL;
@@ -169,25 +171,27 @@ omrsig_runTests(struct OMRPortLibrary *portLibrary, char *exeName, char *argumen
 			int signal = 0;
 			char *strTokSavePtr = NULL;
 
-			/* consume "omrsig" */
+			/* Consume "omrsig". */
 			(void)strtok_r(argument, "_", &strTokSavePtr);
 
-			/* consume "injectSignal" */
+			/* Consume "injectSignal". */
 			(void)strtok_r(NULL, "_", &strTokSavePtr);
 
-			/* consume PID */
+			/* Consume PID. */
 			scratch = strtok_r(NULL, "_", &strTokSavePtr);
 			pid = atoi(scratch);
 
-			/* consume signal number */
+			/* Consume signal number. */
 			scratch = strtok_r(NULL, "_", &strTokSavePtr);
 			signal = atoi(scratch);
 
 			injectSignal(OMRPORTLIB, pid, signal);
-			return TEST_PASS /* doesn't matter what we return here */;
+
+			/* Return value is insignificant. */
+			return TEST_PASS;
 		}
 	}
-#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) && !defined(OMR_OS_WINDOWS) */
 	return 0;
 }
 
@@ -1099,7 +1103,7 @@ static void
 invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, AsyncHandlerInfo *handlerInfo, int pid)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
-	/* iterate through all the known signals */
+	/* Iterate through all the signals in testSignalMap. */
 	for (unsigned int index = 0; index < (sizeof(testSignalMap)/sizeof(testSignalMap[0])); index++) {
 		OMRProcessHandle childProcess = NULL;
 		char options[SIG_TEST_SIZE_EXENAME];
@@ -1109,17 +1113,17 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 
 		portTestEnv->log("\n\tTesting %s\n", testSignalMap[index].osSignalString);
 
-		/* asyncTestHandler notifies the monitor once it has set controlFlag to 0; */
+		/* asyncTestHandler notifies the monitor once it has set controlFlag to 0. */
 		omrthread_monitor_enter(asyncMonitor);
 
-		/* asyncTestHandler will change controlFlag to 1 */
+		/* asyncTestHandler will change controlFlag to 1. */
 		handlerInfo->controlFlag = 0;
 
-		/* test that we handle the signal when it is raise()'d */
+		/* Verify that the signal is handled after it is raised. */
 		portTestOptionsGlobal = omrsig_get_options();
 		if (0 != (OMRPORT_SIG_OPTIONS_ZOS_USE_CEEHDLR & portTestOptionsGlobal)) {
 #if defined(J9ZOS390)
-			/* This prevents LE from sending the corresponding LE condition to our thread */
+			/* This prevents LE from sending the corresponding LE condition to our thread. */
 			sighold(signum);
 			raise(signum);
 			sigrelse(signum);
@@ -1128,7 +1132,9 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 			raise(signum);
 		}
 
-		/* we don't want to hang - if we haven't been notified in 20 seconds it doesn't work */
+		/* Avoid hangs. Proceed without notification after waiting for 20 seconds. If no
+		 * notification is received, then the signal was not handled properly.
+		 */
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 20000, 0);
 
 		if (1 != handlerInfo->controlFlag) {
@@ -1142,9 +1148,10 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		handlerInfo->controlFlag = 0;
 		omrthread_monitor_exit(asyncMonitor);
 
-		/* Test that we handle the signal when it is injected */
-
-		/* build the pid and signal number in the form "-child_omrsig_injectSignal_<PID>_<signal>" */
+#if !defined(OMR_OS_WINDOWS)
+		/* Test that we handle the signal when it is injected. Build the pid and signal number
+		 * in the form "-child_omrsig_injectSignal_<PID>_<signal>".
+		 */
 		omrstr_printf(options, SIG_TEST_SIZE_EXENAME, "-child_omrsig_injectSignal_%i_%i", pid, signum);
 		portTestEnv->log("\t\tlaunching child process with arg %s\n", options);
 
@@ -1174,8 +1181,7 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		j9process_close(OMRPORTLIB, &childProcess, 0);
 
 #if defined(J9ZOS390)
-		/*
-		 * Verify that async signals can't be received by the asyncSignalReporter thread.
+		/* Verify that async signals can't be received by the asyncSignalReporter thread.
 		 * pltest runs with 2 threads only, this thread and the asyncSignalReporter thread.
 		 * We will mask the signal on this thread, inject it via kill, and verify that it does
 		 * not get received.
@@ -1183,7 +1189,7 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		portTestEnv->log("\t\tmasking signal %i on this thread\n", signum);
 		sighold(signum);
 
-		/* build the pid and signal number in the form "-child_omrsig_injectSignal_<PID>_<signal>_unhandled" */
+		/* Build the pid and signal number in the form "-child_omrsig_injectSignal_<PID>_<signal>_unhandled". */
 		omrstr_printf(options, SIG_TEST_SIZE_EXENAME, "-child_omrsig_injectSignal_%i_%i_unhandled", pid, signum);
 		portTestEnv->log("\t\tlaunching child process with arg %s\n", options);
 
@@ -1198,10 +1204,10 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 			return;
 		}
 
-		/* wait 5 seconds for the signal to be received */
+		/* Wait for 5 seconds to receive the signal. */
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 5000, 0);
 
-		/* verify that the signal was NOT received */
+		/* Verify that the signal was received. */
 		if (0 != handlerInfo->controlFlag) {
 			outputErrorMessage(
 					PORTTEST_ERROR_ARGS,
@@ -1210,7 +1216,7 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 					testSignalMap[index].osSignalString);
 		}
 
-		/* unblock the signal and handle it */
+		/* Unblock the signal and handle it. */
 		portTestEnv->log("\t\tunmasking signal %i on this thread\n", signum);
 		sigrelse(signum);
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 20000, 0);
@@ -1226,12 +1232,15 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 
 		j9process_close(OMRPORTLIB, &childProcess, 0);
 #endif /* defined(J9ZOS390) */
+#endif /* !defined(OMR_OS_WINDOWS) */
 	} /* for */
 }
 
 /**
  * Tests the async signals to verify that our handler is called both when the
- * signal is raised and injected by another process.
+ * signal is raised and injected by another (child) process. Signal injection
+ * by a child process is disabled on Windows since kill(pid, signal) is not
+ * supported on it.
  *
  * To test that the handler was called, omrsig_test_async_handler sets
  * controlFlag to 0, then expects the handler to have set it to 1.

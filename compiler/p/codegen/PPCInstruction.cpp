@@ -457,7 +457,7 @@ TR::PPCTrg1Src1Instruction::PPCTrg1Src1Instruction(
       _source1Register(sreg)
    {
    useRegister(sreg);
-   if (op == TR::InstOpCode::addi || op == TR::InstOpCode::addis || op == TR::InstOpCode::addi2)
+   if (op == TR::InstOpCode::addi || op == TR::InstOpCode::addis || op == TR::InstOpCode::addi2 || op == TR::InstOpCode::lxvl)
       {
       cg->addRealRegisterInterference(sreg, TR::RealRegister::gr0);
       }
@@ -474,7 +474,7 @@ TR::PPCTrg1Src1Instruction::PPCTrg1Src1Instruction(
       _source1Register(sreg)
    {
    useRegister(sreg);
-   if (op == TR::InstOpCode::addi || op == TR::InstOpCode::addis || op == TR::InstOpCode::addi2)
+   if (op == TR::InstOpCode::addi || op == TR::InstOpCode::addis || op == TR::InstOpCode::addi2 || op == TR::InstOpCode::lxvl)
       {
       cg->addRealRegisterInterference(sreg, TR::RealRegister::gr0);
       }
@@ -517,7 +517,7 @@ void TR::PPCTrg1Src1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssign
    TR_RegisterKinds  kindOfRegister = sourceVirtual->getKind();
    bool              excludeGPR0 = false;
 
-   if (getOpCodeValue()==TR::InstOpCode::addi || getOpCodeValue()==TR::InstOpCode::addis || getOpCodeValue()==TR::InstOpCode::addi2)
+   if (getOpCodeValue()==TR::InstOpCode::addi || getOpCodeValue()==TR::InstOpCode::addis || getOpCodeValue()==TR::InstOpCode::addi2 || getOpCodeValue()==TR::InstOpCode::lxvl)
       excludeGPR0 = true;
 
    sourceVirtual->block();
@@ -562,6 +562,35 @@ void TR::PPCTrg1Src1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssign
 
 // TR::PPCSrc2Instruction:: member functions
 
+TR::PPCSrc2Instruction::PPCSrc2Instruction(
+      TR::InstOpCode::Mnemonic op,
+      TR::Node *n,
+      TR::Register *s1reg,
+      TR::Register *s2reg,
+      TR::CodeGenerator *cg)
+   : TR::Instruction(op, n, cg), _source1Register(s1reg), _source2Register(s2reg)
+   {
+   useRegister(s1reg);
+   useRegister(s2reg);
+   if (op == TR::InstOpCode::stxvl)
+      cg->addRealRegisterInterference(s2reg, TR::RealRegister::gr0);
+   }
+
+TR::PPCSrc2Instruction::PPCSrc2Instruction(
+      TR::InstOpCode::Mnemonic op,
+      TR::Node *n,
+      TR::Register *s1reg,
+      TR::Register *s2reg,
+      TR::Instruction *precedingInstruction,
+      TR::CodeGenerator *cg)
+   : TR::Instruction(op, n, precedingInstruction, cg), _source1Register(s1reg), _source2Register(s2reg)
+   {
+   useRegister(s1reg);
+   useRegister(s2reg);
+   if (op == TR::InstOpCode::stxvl)
+      cg->addRealRegisterInterference(s2reg, TR::RealRegister::gr0);
+   }
+
 bool TR::PPCSrc2Instruction::refsRegister(TR::Register *reg)
    {
    if (reg == getSource1Register() || reg == getSource2Register())
@@ -593,33 +622,76 @@ bool TR::PPCSrc2Instruction::usesRegister(TR::Register *reg)
 
 void TR::PPCSrc2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   TR::Register           *virtualRegister1 = getSource2Register();
-   TR::Register           *virtualRegister2 = getSource1Register();
+   TR::Register           *virtualRegister1 = getSource1Register();
+   TR::Register           *virtualRegister2 = getSource2Register();
    TR::RealRegister       *assignedRegister;
    TR::Machine *machine = cg()->machine();
+   bool excludeGPR0 = getOpCodeValue() == TR::InstOpCode::stxvl;
 
+   virtualRegister1->block();
+
+   assignedRegister = virtualRegister2->getAssignedRealRegister();
+   if (excludeGPR0 && (assignedRegister != NULL) &&
+       (toRealRegister(assignedRegister) == machine->getRealRegister(TR::RealRegister::gr0)))
+      {
+      TR::RealRegister    *alternativeRegister;
+
+      if ((alternativeRegister = machine->findBestFreeRegister(this, virtualRegister2->getKind(), excludeGPR0, false, virtualRegister2)) == NULL)
+         {
+         cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
+         alternativeRegister = machine->freeBestRegister(this, virtualRegister2, NULL, excludeGPR0);
+         }
+      machine->coerceRegisterAssignment(this, virtualRegister2, toRealRegister(alternativeRegister)->getRegisterNumber());
+      assignedRegister = alternativeRegister;
+      }
+   else if (assignedRegister == NULL)
+      {
+      assignedRegister = machine->assignOneRegister(this, virtualRegister2, excludeGPR0);
+      }
+   setSource2Register(assignedRegister);
+
+   virtualRegister1->unblock();
    virtualRegister2->block();
+
    assignedRegister = virtualRegister1->getAssignedRealRegister();
    if (assignedRegister == NULL)
       {
       assignedRegister = machine->assignOneRegister(this, virtualRegister1, false);
       }
-   setSource2Register(assignedRegister);
-
-   virtualRegister2->unblock();
-   virtualRegister1->block();
-
-   assignedRegister = virtualRegister2->getAssignedRealRegister();
-   if (assignedRegister == NULL)
-      {
-      assignedRegister = machine->assignOneRegister(this, virtualRegister2, false);
-      }
    setSource1Register(assignedRegister);
 
-   virtualRegister1->unblock();
+   virtualRegister2->unblock();
 
    machine->decFutureUseCountAndUnlatch(virtualRegister1);
    machine->decFutureUseCountAndUnlatch(virtualRegister2);
+   }
+
+// TR::PPCSrc3Instruction:: member functions
+
+void TR::PPCSrc3Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   TR::Register *source3Virtual = getSource3Register();
+   TR::Machine *machine = cg()->machine();
+   TR::RealRegister *assignedRegister;
+
+   source3Virtual->block();
+   TR::PPCSrc2Instruction::assignRegisters(kindToBeAssigned);
+   source3Virtual->unblock();
+
+   getSource1Register()->block();
+   getSource2Register()->block();
+
+   assignedRegister = source3Virtual->getAssignedRealRegister();
+   if (assignedRegister == NULL)
+      {
+      assignedRegister = machine->assignOneRegister(this, source3Virtual, false);
+      }
+
+   getSource2Register()->unblock();
+   getSource1Register()->unblock();
+
+   machine->decFutureUseCountAndUnlatch(source3Virtual);
+   setSource3Register(assignedRegister);
    }
 
 // TR::PPCTrg1Src2Instruction:: member functions

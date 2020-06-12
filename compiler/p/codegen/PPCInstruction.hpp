@@ -831,21 +831,11 @@ class PPCSrc2Instruction : public TR::Instruction
    public:
 
    PPCSrc2Instruction(TR::InstOpCode::Mnemonic op, TR::Node *n, TR::Register   *s1reg,
-                         TR::Register   *s2reg, TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, codeGen), _source1Register(s1reg), _source2Register(s2reg)
-      {
-      useRegister(s1reg);
-      useRegister(s2reg);
-      }
+                         TR::Register   *s2reg, TR::CodeGenerator *codeGen);
 
    PPCSrc2Instruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register   *s1reg,
                          TR::Register    *s2reg,
-                         TR::Instruction *precedingInstruction, TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, precedingInstruction, codeGen), _source1Register(s1reg), _source2Register(s2reg)
-      {
-      useRegister(s1reg);
-      useRegister(s2reg);
-      }
+                         TR::Instruction *precedingInstruction, TR::CodeGenerator *codeGen);
 
    virtual Kind getKind() { return IsSrc2; }
 
@@ -877,6 +867,64 @@ class PPCSrc2Instruction : public TR::Instruction
       {
       state->removeVirtualRegister(getSource1Register());
       state->removeVirtualRegister(getSource2Register());
+      }
+   };
+
+class PPCSrc3Instruction : public PPCSrc2Instruction
+   {
+   TR::Register *_source3Register;
+
+   public:
+
+   PPCSrc3Instruction(TR::InstOpCode::Mnemonic op, TR::Node *n, TR::Register *s1reg,
+                      TR::Register *s2reg, TR::Register *s3reg, TR::CodeGenerator *cg)
+      : TR::PPCSrc2Instruction(op, n, s1reg, s2reg, cg), _source3Register(s3reg)
+      {
+      useRegister(s3reg);
+      }
+
+   PPCSrc3Instruction(TR::InstOpCode::Mnemonic op, TR::Node *n, TR::Register *s1reg,
+                      TR::Register *s2reg, TR::Register *s3reg,
+                      TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : TR::PPCSrc2Instruction(op, n, s1reg, s2reg, precedingInstruction, cg), _source3Register(s3reg)
+      {
+      useRegister(s3reg);
+      }
+
+   virtual Kind getKind() { return IsSrc3; }
+
+   TR::Register *getSource3Register() { return _source3Register; }
+   TR::Register *setSource3Register(TR::Register *sr) { return (_source3Register = sr); }
+
+   virtual TR::Register *getSourceRegister(uint32_t i)
+      {
+      return i == 2 ? _source3Register : PPCSrc2Instruction::getSourceRegister(i);
+      }
+
+   virtual void fillBinaryEncodingFields(uint32_t *cursor);
+
+   virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
+
+   virtual bool refsRegister(TR::Register *reg)
+      {
+      return reg == _source3Register || TR::PPCSrc2Instruction::refsRegister(reg);
+      }
+   virtual bool usesRegister(TR::Register *reg)
+      {
+      return reg == _source3Register || TR::PPCSrc2Instruction::usesRegister(reg);
+      }
+
+   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
+      {
+      state->addVirtualRegister(getSource1Register());
+      state->addVirtualRegister(getSource2Register());
+      state->addVirtualRegister(getSource3Register());
+      }
+   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
+      {
+      state->removeVirtualRegister(getSource1Register());
+      state->removeVirtualRegister(getSource2Register());
+      state->removeVirtualRegister(getSource3Register());
       }
    };
 

@@ -304,6 +304,7 @@ FORMAT_VRT_VRA_VRB,
 // |      | XT       | RA       | RB       |                 | XT |
 // | 0    | 6        | 11       | 16       | 21              | 31 |
 // +------+----------+----------+----------+-----------------+----+
+FORMAT_XT_RA_RB,
 FORMAT_XT_RA_RB_MEM,
 
 // Format for instructions with an XT field encoding the target VSX register and XA and XB fields
@@ -699,6 +700,7 @@ FORMAT_RS_DS_RA,
 // |      | RS       | RA       | RB       |                      |
 // | 0    | 6        | 11       | 16       | 21                   |
 // +------+----------+----------+----------+----------------------+
+FORMAT_RS_RA_RB,
 FORMAT_RS_RA_RB_MEM,
 
 // Format for instructions with an FRS field encoding the source FP register, and RA and RB fields
@@ -726,6 +728,7 @@ FORMAT_VRS_RA_RB_MEM,
 // |      | XS       | RA       | RB       |                 | XS |
 // | 0    | 6        | 11       | 16       | 21              | 31 |
 // +------+----------+----------+----------+-----------------+----+
+FORMAT_XS_RA_RB,
 FORMAT_XS_RA_RB_MEM,
 
 // Format for instructions with an RT field encoding the target register, RA and RB fields encoding

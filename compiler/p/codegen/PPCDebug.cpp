@@ -177,6 +177,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * instr)
       case OMR::Instruction::IsSrc2:
          print(pOutFile, (TR::PPCSrc2Instruction *)instr);
          break;
+      case OMR::Instruction::IsSrc3:
+         print(pOutFile, (TR::PPCSrc3Instruction *)instr);
+         break;
       case OMR::Instruction::IsMem:
          print(pOutFile, (TR::PPCMemInstruction *)instr);
          break;
@@ -531,6 +534,17 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCSrc2Instruction * instr)
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource2Register(), TR_WordReg);
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::PPCSrc3Instruction * instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource3Register(), TR_WordReg);
    trfflush(_comp->getOutFile());
    }
 

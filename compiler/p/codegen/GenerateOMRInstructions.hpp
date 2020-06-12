@@ -305,6 +305,15 @@ TR::Instruction *generateSrc2Instruction(
                    TR::Register    *s2reg,
                    TR::Instruction *preced = 0);
 
+TR::Instruction *generateSrc3Instruction(
+                   TR::CodeGenerator      *cg,
+                   TR::InstOpCode::Mnemonic   op,
+                   TR::Node        *n,
+                   TR::Register    *s1reg,
+                   TR::Register    *s2reg,
+                   TR::Register    *s3reg,
+                   TR::Instruction *preced = 0);
+
 TR::Instruction *generateShiftLeftImmediate(
                    TR::CodeGenerator      *cg,
                    TR::Node        *n,

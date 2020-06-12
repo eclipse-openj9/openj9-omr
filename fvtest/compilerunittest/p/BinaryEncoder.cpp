@@ -404,6 +404,24 @@ TEST_P(PPCSrc2EncodingTest, encodeRecordForm) {
     );
 }
 
+class PPCSrc3EncodingTest : public PowerBinaryEncoderTest, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, BinaryInstruction>> {};
+
+TEST_P(PPCSrc3EncodingTest, encode) {
+    auto instr = generateSrc3Instruction(
+        cg(),
+        std::get<0>(GetParam()),
+        fakeNode,
+        cg()->machine()->getRealRegister(std::get<1>(GetParam())),
+        cg()->machine()->getRealRegister(std::get<2>(GetParam())),
+        cg()->machine()->getRealRegister(std::get<3>(GetParam()))
+    );
+
+    ASSERT_EQ(
+        std::get<4>(GetParam()),
+        encodeInstruction(instr)
+    );
+}
+
 class PPCTrg1ImmEncodingTest : public PowerBinaryEncoderTest, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, uint32_t, BinaryInstruction>> {};
 
 TEST_P(PPCTrg1ImmEncodingTest, encode) {
@@ -765,6 +783,27 @@ TEST_P(PPCMemSrc1EncodingTest, encode) {
         fakeNode,
         std::get<1>(GetParam()).reify(cg()),
         cg()->machine()->getRealRegister(std::get<2>(GetParam()))
+    );
+
+    ASSERT_EQ(
+        std::get<3>(GetParam()),
+        encodeInstruction(instr)
+    );
+}
+
+TEST_P(PPCMemSrc1EncodingTest, encodeFlat) {
+    const MemoryReference& mr = std::get<1>(GetParam());
+
+    if (!mr.isIndexForm())
+        return;
+
+    auto instr = generateSrc3Instruction(
+        cg(),
+        std::get<0>(GetParam()),
+        fakeNode,
+        cg()->machine()->getRealRegister(std::get<2>(GetParam())),
+        cg()->machine()->getRealRegister(mr.baseReg()),
+        cg()->machine()->getRealRegister(mr.indexReg())
     );
 
     ASSERT_EQ(
@@ -3206,11 +3245,6 @@ INSTANTIATE_TEST_CASE_P(LoadIndex, PPCTrg1MemEncodingTest, ::testing::ValuesIn(*
     std::make_tuple(TR::InstOpCode::lxvdsx,  TR::RealRegister::vsr63, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), 0x7fe00299u),
     std::make_tuple(TR::InstOpCode::lxvdsx,  TR::RealRegister::vsr0,  MemoryReference(TR::RealRegister::gr31, TR::RealRegister::gr0 ), 0x7c1f0298u),
     std::make_tuple(TR::InstOpCode::lxvdsx,  TR::RealRegister::vsr0,  MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr31), 0x7c00fa98u),
-    std::make_tuple(TR::InstOpCode::lxvl,    TR::RealRegister::vsr0,  MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), 0x7c00021au),
-    std::make_tuple(TR::InstOpCode::lxvl,    TR::RealRegister::vsr31, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), 0x7fe0021au),
-    std::make_tuple(TR::InstOpCode::lxvl,    TR::RealRegister::vsr63, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), 0x7fe0021bu),
-    std::make_tuple(TR::InstOpCode::lxvl,    TR::RealRegister::vsr0,  MemoryReference(TR::RealRegister::gr31, TR::RealRegister::gr0 ), 0x7c1f021au),
-    std::make_tuple(TR::InstOpCode::lxvl,    TR::RealRegister::vsr0,  MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr31), 0x7c00fa1au),
     std::make_tuple(TR::InstOpCode::lxvw4x,  TR::RealRegister::vsr0,  MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), 0x7c000618u),
     std::make_tuple(TR::InstOpCode::lxvw4x,  TR::RealRegister::vsr31, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), 0x7fe00618u),
     std::make_tuple(TR::InstOpCode::lxvw4x,  TR::RealRegister::vsr63, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), 0x7fe00619u),
@@ -3253,6 +3287,18 @@ INSTANTIATE_TEST_CASE_P(LoadIndex, PPCRecordFormSanityTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::lxvd2x,  TR::InstOpCode::bad, BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::lxvdsx,  TR::InstOpCode::bad, BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::lxvw4x,  TR::InstOpCode::bad, BinaryInstruction())
+));
+
+INSTANTIATE_TEST_CASE_P(LoadVSXLength, PPCTrg1Src2EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::lxvl, TR::RealRegister::vsr0,  TR::RealRegister::gr0,  TR::RealRegister::gr0,  0x7c00021au),
+    std::make_tuple(TR::InstOpCode::lxvl, TR::RealRegister::vsr31, TR::RealRegister::gr0,  TR::RealRegister::gr0,  0x7fe0021au),
+    std::make_tuple(TR::InstOpCode::lxvl, TR::RealRegister::vsr63, TR::RealRegister::gr0,  TR::RealRegister::gr0,  0x7fe0021bu),
+    std::make_tuple(TR::InstOpCode::lxvl, TR::RealRegister::vsr0,  TR::RealRegister::gr31, TR::RealRegister::gr0,  0x7c1f021au),
+    std::make_tuple(TR::InstOpCode::lxvl, TR::RealRegister::vsr0,  TR::RealRegister::gr0,  TR::RealRegister::gr31, 0x7c00fa1au)
+));
+
+INSTANTIATE_TEST_CASE_P(LoadVSXLength, PPCRecordFormSanityTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::lxvl, TR::InstOpCode::bad, BinaryInstruction())
 ));
 
 INSTANTIATE_TEST_CASE_P(StoreDisp, PPCMemSrc1EncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, MemoryReference, TR::RealRegister::RegNum, BinaryInstruction>>(
@@ -3452,11 +3498,6 @@ INSTANTIATE_TEST_CASE_P(StoreIndex, PPCMemSrc1EncodingTest, ::testing::ValuesIn(
     std::make_tuple(TR::InstOpCode::stxsspx, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr31), TR::RealRegister::vsr0,  0x7c00fd18u),
     std::make_tuple(TR::InstOpCode::stxsspx, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr31, 0x7fe00518u),
     std::make_tuple(TR::InstOpCode::stxsspx, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr63, 0x7fe00519u),
-    std::make_tuple(TR::InstOpCode::stxvl,   MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr0,  0x7c00031au),
-    std::make_tuple(TR::InstOpCode::stxvl,   MemoryReference(TR::RealRegister::gr31, TR::RealRegister::gr0 ), TR::RealRegister::vsr0,  0x7c1f031au),
-    std::make_tuple(TR::InstOpCode::stxvl,   MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr31), TR::RealRegister::vsr0,  0x7c00fb1au),
-    std::make_tuple(TR::InstOpCode::stxvl,   MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr31, 0x7fe0031au),
-    std::make_tuple(TR::InstOpCode::stxvl,   MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr63, 0x7fe0031bu),
     std::make_tuple(TR::InstOpCode::stxvd2x, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr0,  0x7c000798u),
     std::make_tuple(TR::InstOpCode::stxvd2x, MemoryReference(TR::RealRegister::gr31, TR::RealRegister::gr0 ), TR::RealRegister::vsr0,  0x7c1f0798u),
     std::make_tuple(TR::InstOpCode::stxvd2x, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr31), TR::RealRegister::vsr0,  0x7c00ff98u),
@@ -3496,4 +3537,16 @@ INSTANTIATE_TEST_CASE_P(StoreIndex, PPCRecordFormSanityTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::stxsspx, TR::InstOpCode::bad,     BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::stxvd2x, TR::InstOpCode::bad,     BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::stxvw4x, TR::InstOpCode::bad,     BinaryInstruction())
+));
+
+INSTANTIATE_TEST_CASE_P(StoreVSXLength, PPCSrc3EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::stxvl, TR::RealRegister::vsr31, TR::RealRegister::gr0,  TR::RealRegister::gr0,  0x7fe0031au),
+    std::make_tuple(TR::InstOpCode::stxvl, TR::RealRegister::vsr63, TR::RealRegister::gr0,  TR::RealRegister::gr0,  0x7fe0031bu),
+    std::make_tuple(TR::InstOpCode::stxvl, TR::RealRegister::vsr0,  TR::RealRegister::gr0,  TR::RealRegister::gr0,  0x7c00031au),
+    std::make_tuple(TR::InstOpCode::stxvl, TR::RealRegister::vsr0,  TR::RealRegister::gr31, TR::RealRegister::gr0,  0x7c1f031au),
+    std::make_tuple(TR::InstOpCode::stxvl, TR::RealRegister::vsr0,  TR::RealRegister::gr0,  TR::RealRegister::gr31, 0x7c00fb1au)
+));
+
+INSTANTIATE_TEST_CASE_P(StoreVSXLength, PPCRecordFormSanityTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::stxvl, TR::InstOpCode::bad, BinaryInstruction())
 ));

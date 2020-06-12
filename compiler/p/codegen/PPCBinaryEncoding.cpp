@@ -1690,6 +1690,7 @@ void TR::PPCTrg1Src2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldVRB(self(), cursor, src2);
          break;
 
+      case FORMAT_XT_RA_RB:
       case FORMAT_XT_RA_RB_MEM:
          fillFieldXT(self(), cursor, trg);
          fillFieldRA(self(), cursor, src1);
@@ -1867,6 +1868,45 @@ void TR::PPCSrc2Instruction::fillBinaryEncodingFields(uint32_t *cursor)
 
       default:
          TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCSrc2Instruction", getOpCode().getFormat());
+      }
+   }
+
+void TR::PPCSrc3Instruction::fillBinaryEncodingFields(uint32_t *cursor)
+   {
+   TR::RealRegister *src1 = toRealRegister(getSource1Register());
+   TR::RealRegister *src2 = toRealRegister(getSource2Register());
+   TR::RealRegister *src3 = toRealRegister(getSource3Register());
+
+   switch (getOpCode().getFormat())
+      {
+      case FORMAT_RS_RA_RB:
+      case FORMAT_RS_RA_RB_MEM:
+         fillFieldRS(self(), cursor, src1);
+         fillFieldRA(self(), cursor, src2);
+         fillFieldRB(self(), cursor, src3);
+         break;
+
+      case FORMAT_FRS_RA_RB_MEM:
+         fillFieldFRS(self(), cursor, src1);
+         fillFieldRA(self(), cursor, src2);
+         fillFieldRB(self(), cursor, src3);
+         break;
+
+      case FORMAT_VRS_RA_RB_MEM:
+         fillFieldVRS(self(), cursor, src1);
+         fillFieldRA(self(), cursor, src2);
+         fillFieldRB(self(), cursor, src3);
+         break;
+
+      case FORMAT_XS_RA_RB:
+      case FORMAT_XS_RA_RB_MEM:
+         fillFieldXS(self(), cursor, src1);
+         fillFieldRA(self(), cursor, src2);
+         fillFieldRB(self(), cursor, src3);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCSrc3Instruction", getOpCode().getFormat());
       }
    }
 

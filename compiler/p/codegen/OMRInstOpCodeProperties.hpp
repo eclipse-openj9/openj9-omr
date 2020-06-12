@@ -12175,7 +12175,9 @@
    /* .name        = */ "lxvl",
    /* .description =    "Load VSX Vector with Length", */
    /* .opcode      = */ 0x7C00021A,
-   /* .format      = */ FORMAT_XT_RA_RB_MEM,
+   // Even though lxvl is a memory instruction, its RB register is *not* an index register, so it
+   // should not be used with a TR::MemoryReference.
+   /* .format      = */ FORMAT_XT_RA_RB,
    // NOTE: This instruction was technically added in Power 9, but the Power 9 chips have
    //       functional and performance problems with this instruction. As a result, it should not
    //       be used until Power 10.
@@ -12589,7 +12591,9 @@
    /* .name        = */ "stxvl",
    /* .description =    "Store VSX Vector with Length", */
    /* .opcode      = */ 0x7C00031A,
-   /* .format      = */ FORMAT_XS_RA_RB_MEM,
+   // Even though stxvl is a memory instruction, its RB register is *not* an index register, so it
+   // should not be used with a TR::MemoryReference.
+   /* .format      = */ FORMAT_XS_RA_RB,
    // NOTE: This instruction was technically added in Power 9, but the Power 9 chips have
    //       functional and performance problems with this instruction. As a result, it should not
    //       be used until Power 10.

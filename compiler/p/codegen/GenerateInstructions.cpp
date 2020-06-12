@@ -426,6 +426,14 @@ TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::
    return new (cg->trHeapMemory()) TR::PPCSrc2Instruction(op, n, s1reg, s2reg, cg);
    }
 
+TR::Instruction *generateSrc3Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
+   TR::Register *s1reg, TR::Register *s2reg, TR::Register *s3reg, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::PPCSrc3Instruction(op, n, s1reg, s2reg, s3reg, preced, cg);
+   return new (cg->trHeapMemory()) TR::PPCSrc3Instruction(op, n, s1reg, s2reg, s3reg, cg);
+   }
+
 TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *treg, TR::Register *s1reg, TR::Instruction *preced)
    {

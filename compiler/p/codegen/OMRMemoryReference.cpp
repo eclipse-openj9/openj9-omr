@@ -1365,7 +1365,7 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
 
       self()->setOffset(0);
       }
-   else if (displacement < LOWER_IMMED || displacement > UPPER_IMMED)
+   else if ((displacement < LOWER_IMMED || displacement > UPPER_IMMED) && currentInstruction->getOpCode().getMaxBinaryLength() == 4)
       {
       if (self()->isBaseModifiable())
          {

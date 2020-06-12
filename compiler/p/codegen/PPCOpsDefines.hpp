@@ -739,7 +739,127 @@ FORMAT_XS_RA_RB_MEM,
 // |      | RT     | RA     | RB     | BFC |                      |
 // | 0    | 6      | 11     | 16     | 21  | 28                   |
 // +------+--------+--------+--------+-----+----------------------+
-FORMAT_RT_RA_RB_BFC
+FORMAT_RT_RA_RB_BFC,
+
+// Format for load instructions for loading into a GPR with an MLS/8LS prefix word and a D-form
+// instruction word. An RT field encodes the target register, a D field (split between d0 in the
+// prefix word and d1 in the instruction word) encodes the offset, and an R field is used as a flag
+// to indicate the use of PC-relative addressing:
+//
+// +-------------+----+------+------------------------------------+
+// |             | R  |      | d0                                 |
+// | 0           | 11 | 12   | 14                                 |
+// +-------------+----+------+------------------------------------+
+// +------+----------+----------+---------------------------------+
+// |      | RT       | RA       | d1                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RT_D34_RA_R,
+
+// Format for load instructions for loading into an FPR with an MLS/8LS prefix word and a D-form
+// instruction word. An FRT field encodes the target register, a D field (split between d0 in the
+// prefix word and d1 in the instruction word) encodes the offset, and an R field is used as a flag
+// to indicate the use of PC-relative addressing:
+//
+// +-------------+----+------+------------------------------------+
+// |             | R  |      | d0                                 |
+// | 0           | 11 | 12   | 14                                 |
+// +-------------+----+------+------------------------------------+
+// +------+----------+----------+---------------------------------+
+// |      | FRT      | RA       | d1                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_FRT_D34_RA_R,
+
+// Format for load instructions for loading into a VR with an MLS/8LS prefix word and a D-form
+// instruction word. A VRT field encodes the target register, a D field (split between d0 in the
+// prefix word and d1 in the instruction word) encodes the offset, and an R field is used as a flag
+// to indicate the use of PC-relative addressing:
+//
+// +-------------+----+------+------------------------------------+
+// |             | R  |      | d0                                 |
+// | 0           | 11 | 12   | 14                                 |
+// +-------------+----+------+------------------------------------+
+// +------+----------+----------+---------------------------------+
+// |      | VRT      | RA       | d1                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_VRT_D34_RA_R,
+
+// Format for load instructions for loading into a VSR with an MLS/8LS prefix word and a D-form
+// instruction word. An XT field encodes the target register, a D field (split between d0 in the
+// prefix word and d1 in the instruction word) encodes the offset, and an R field is used as a flag
+// to indicate the use of PC-relative addressing:
+//
+// +-------------+----+------+------------------------------------+
+// |             | R  |      | d0                                 |
+// | 0           | 11 | 12   | 14                                 |
+// +-------------+----+------+------------------------------------+
+// +-----+-----------+----------+---------------------------------+
+// |     | XT        | RA       | d1                              |
+// | 0   | 5         | 11       | 16                              |
+// +-----+-----------+----------+---------------------------------+
+FORMAT_XT5_D34_RA_R,
+
+// Format for store instructions for storing a GPR with an MLS/8LS prefix word and a D-form
+// instruction word. An RS field encodes the source register, a D field (split between d0 in the
+// prefix word and d1 in the instruction word) encodes the offset, and an R field is used as a flag
+// to indicate the use of PC-relative addressing:
+//
+// +-------------+----+------+------------------------------------+
+// |             | R  |      | d0                                 |
+// | 0           | 11 | 12   | 14                                 |
+// +-------------+----+------+------------------------------------+
+// +------+----------+----------+---------------------------------+
+// |      | RS       | RA       | d1                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RS_D34_RA_R,
+
+// Format for store instructions for storing an FPR with an MLS/8LS prefix word and a D-form
+// instruction word. An FRS field encodes the source register, a D field (split between d0 in the
+// prefix word and d1 in the instruction word) encodes the offset, and an R field is used as a flag
+// to indicate the use of PC-relative addressing:
+//
+// +-------------+----+------+------------------------------------+
+// |             | R  |      | d0                                 |
+// | 0           | 11 | 12   | 14                                 |
+// +-------------+----+------+------------------------------------+
+// +------+----------+----------+---------------------------------+
+// |      | FRS      | RA       | d1                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_FRS_D34_RA_R,
+
+// Format for store instructions for storing a VR with an MLS/8LS prefix word and a D-form
+// instruction word. A VRS field encodes the source register, a D field (split between d0 in the
+// prefix word and d1 in the instruction word) encodes the offset, and an R field is used as a flag
+// to indicate the use of PC-relative addressing:
+//
+// +-------------+----+------+------------------------------------+
+// |             | R  |      | d0                                 |
+// | 0           | 11 | 12   | 14                                 |
+// +-------------+----+------+------------------------------------+
+// +------+----------+----------+---------------------------------+
+// |      | VRS      | RA       | d1                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_VRS_D34_RA_R,
+
+// Format for store instructions for storing a VSR with an MLS/8LS prefix word and a D-form
+// instruction word. An XS field encodes the source register, a D field (split between d0 in the
+// prefix word and d1 in the instruction word) encodes the offset, and an R field is used as a flag
+// to indicate the use of PC-relative addressing:
+//
+// +-------------+----+------+------------------------------------+
+// |             | R  |      | d0                                 |
+// | 0           | 11 | 12   | 14                                 |
+// +-------------+----+------+------------------------------------+
+// +-----+-----------+----------+---------------------------------+
+// |     | XS        | RA       | d1                              |
+// | 0   | 5         | 11       | 16                              |
+// +-----+-----------+----------+---------------------------------+
+FORMAT_XS5_D34_RA_R
 
 };
 

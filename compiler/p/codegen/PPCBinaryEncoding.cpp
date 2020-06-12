@@ -65,6 +65,13 @@ static bool isValidInSignExtendedField(uint32_t value, uint32_t mask)
    return (value & signMask) == 0 || (value & signMask) == signMask;
    }
 
+static bool isValidInSignExtendedField(uint64_t value, uint64_t mask)
+   {
+   uint64_t signMask = ~(mask >> 1);
+
+   return (value & signMask) == 0 || (value & signMask) == signMask;
+   }
+
 static bool canUseAsVsxRegister(TR::RealRegister *reg)
    {
    switch (reg->getKind())
@@ -128,7 +135,8 @@ static void fillFieldVRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    }
 
 /**
- * Fills in the XT field of a binary-encoded instruction with the provided VSX register:
+ * Fills in the XT field of a binary-encoded instruction with the provided VSX register, placing
+ * the uppermost bit in bit 31 of the instruction word:
  *
  * +------+----------+---------------------------------------+----+
  * |      | XT       |                                       | XT |
@@ -140,6 +148,22 @@ static void fillFieldXT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XT field with null register");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XT field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
    reg->setRegisterFieldXT(cursor);
+   }
+
+/**
+ * Fills in the XT field of a binary-encoded instruction with the provided VSX register, placing
+ * the uppermost bit in bit 5 of the instruction word:
+ *
+ * +-----+-----------+--------------------------------------------+
+ * |     | XT        |                                            |
+ * | 0   | 5         | 11                                         |
+ * +-----+-----------+--------------------------------------------+
+ */
+static void fillFieldXT5(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XT field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XT field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   *cursor |= (reg->getRegisterNumber() - TR::RealRegister::vsr0) << TR::RealRegister::pos_RT;
    }
 
 /**
@@ -190,7 +214,8 @@ static void fillFieldVRS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegis
    }
 
 /**
- * Fills in the XS field of a binary-encoded instruction with the provided VSX register:
+ * Fills in the XS field of a binary-encoded instruction with the provided VSX register, placing
+ * the uppermost bit in bit 31 of the instruction word:
  *
  * +------+----------+---------------------------------------+----+
  * |      | XS       |                                       | XS |
@@ -202,6 +227,22 @@ static void fillFieldXS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XS field with null register");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XS field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
    reg->setRegisterFieldXS(cursor);
+   }
+
+/**
+ * Fills in the XS field of a binary-encoded instruction with the provided VSX register, placing
+ * the uppermost bit in bit 5 of the instruction word:
+ *
+ * +-----+-----------+--------------------------------------------+
+ * |     | XS        |                                            |
+ * | 0   | 5         | 11                                         |
+ * +-----+-----------+--------------------------------------------+
+ */
+static void fillFieldXS5(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XS field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XS field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   *cursor |= (reg->getRegisterNumber() - TR::RealRegister::vsr0) << TR::RealRegister::pos_RT;
    }
 
 /**
@@ -658,6 +699,26 @@ static void fillFieldDS(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    }
 
 /**
+ * Fills in the 34-bit D field of a binary-encoded prefixed instruction with the provided immediate
+ * value:
+ *
+ * +-------------------------+------------------------------------+
+ * |                         | d0                                 |
+ * | 0                       | 14                                 |
+ * +-------------------------+------------------------------------+
+ * +----------------------------+---------------------------------+
+ * |                            | d1                              |
+ * | 0                          | 16                              |
+ * +----------------------------+---------------------------------+
+ */
+static void fillFieldD34(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0x3ffffffffull), "0x%llx is out-of-range for D(34) field", val);
+   cursor[0] |= (static_cast<int64_t>(val) >> 16) & 0x3ffff;
+   cursor[1] |= val & 0xffff;
+   }
+
+/**
  * Fills in the 16-bit SI field of a binary-encoded instruction with the provided immediate value:
  *
  * +----------------------------+---------------------------------+
@@ -822,6 +883,25 @@ static void fillFieldSHW(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3) == val, "0x%llx is out-of-range for SHW field", val);
    *cursor |= static_cast<uint32_t>(val << 8);
+   }
+
+/**
+ * Fills in the 1-bit R field of a binary-encoded prefixed instruction with the provided immediate
+ * value:
+ *
+ * +-------------+----+-------------------------------------------+
+ * |             | R  |                                           |
+ * | 0           | 11 | 12                                        |
+ * +-------------+----+-------------------------------------------+
+ * +--------------------------------------------------------------+
+ * |                                                              |
+ * | 0                                                            |
+ * +--------------------------------------------------------------+
+ */
+static void fillFieldR(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x1) == val, "0x%x is out-of-range for R field", val);
+   cursor[0] |= (val << 20);
    }
 
 uint8_t *
@@ -1432,7 +1512,7 @@ void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
    {
    TR::RealRegister *trg = toRealRegister(getTargetRegister());
    TR::RealRegister *src = toRealRegister(getSource1Register());
-   uint32_t imm = getSourceImmediate();
+   uintptr_t imm = getSourceImmPtr();
 
    addMetaDataForCodeAddress(reinterpret_cast<uint8_t*>(cursor));
 
@@ -1454,6 +1534,34 @@ void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldRT(self(), cursor, trg);
          fillFieldRA(self(), cursor, src);
          fillFieldDS(self(), cursor, imm);
+         break;
+
+      case FORMAT_RT_D34_RA_R:
+         fillFieldRT(self(), cursor + 1, trg);
+         fillFieldRA(self(), cursor + 1, src);
+         fillFieldD34(self(), cursor, imm);
+         fillFieldR(self(), cursor, 0);
+         break;
+
+      case FORMAT_FRT_D34_RA_R:
+         fillFieldFRT(self(), cursor + 1, trg);
+         fillFieldRA(self(), cursor + 1, src);
+         fillFieldD34(self(), cursor, imm);
+         fillFieldR(self(), cursor, 0);
+         break;
+
+      case FORMAT_VRT_D34_RA_R:
+         fillFieldVRT(self(), cursor + 1, trg);
+         fillFieldRA(self(), cursor + 1, src);
+         fillFieldD34(self(), cursor, imm);
+         fillFieldR(self(), cursor, 0);
+         break;
+
+      case FORMAT_XT5_D34_RA_R:
+         fillFieldXT5(self(), cursor + 1, trg);
+         fillFieldRA(self(), cursor + 1, src);
+         fillFieldD34(self(), cursor, imm);
+         fillFieldR(self(), cursor, 0);
          break;
 
       case FORMAT_RA_RS_UI16:
@@ -1930,6 +2038,14 @@ void fillMemoryReferenceDSRA(TR::Instruction *instr, uint32_t *cursor, TR::Memor
    fillFieldRA(instr, cursor, toRealBaseRegister(instr, mr->getBaseRegister()));
    }
 
+void fillMemoryReferenceD34RAR(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getIndexRegister(), "Cannot use index-form MemoryReference with non-index-form instruction");
+   fillFieldD34(instr, cursor, mr->getOffset());
+   fillFieldRA(instr, cursor + 1, toRealBaseRegister(instr, mr->getBaseRegister()));
+   fillFieldR(instr, cursor, 0);
+   }
+
 void fillMemoryReferenceRARB(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mr->getOffset() == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
@@ -1958,6 +2074,26 @@ void TR::PPCMemSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
       case FORMAT_FRS_D16_RA:
          fillFieldFRS(self(), cursor, src);
          fillMemoryReferenceD16RA(self(), cursor, memRef);
+         break;
+
+      case FORMAT_RS_D34_RA_R:
+         fillFieldRS(self(), cursor + 1, src);
+         fillMemoryReferenceD34RAR(self(), cursor, memRef);
+         break;
+
+      case FORMAT_FRS_D34_RA_R:
+         fillFieldFRS(self(), cursor + 1, src);
+         fillMemoryReferenceD34RAR(self(), cursor, memRef);
+         break;
+
+      case FORMAT_VRS_D34_RA_R:
+         fillFieldVRS(self(), cursor + 1, src);
+         fillMemoryReferenceD34RAR(self(), cursor, memRef);
+         break;
+
+      case FORMAT_XS5_D34_RA_R:
+         fillFieldXS5(self(), cursor + 1, src);
+         fillMemoryReferenceD34RAR(self(), cursor, memRef);
          break;
 
       case FORMAT_RS_RA_RB_MEM:
@@ -2027,6 +2163,26 @@ void TR::PPCTrg1MemInstruction::fillBinaryEncodingFields(uint32_t *cursor)
       case FORMAT_FRT_D16_RA:
          fillFieldFRT(self(), cursor, trg);
          fillMemoryReferenceD16RA(self(), cursor, memRef);
+         break;
+
+      case FORMAT_RT_D34_RA_R:
+         fillFieldRT(self(), cursor + 1, trg);
+         fillMemoryReferenceD34RAR(self(), cursor, memRef);
+         break;
+
+      case FORMAT_FRT_D34_RA_R:
+         fillFieldFRT(self(), cursor + 1, trg);
+         fillMemoryReferenceD34RAR(self(), cursor, memRef);
+         break;
+
+      case FORMAT_VRT_D34_RA_R:
+         fillFieldVRT(self(), cursor + 1, trg);
+         fillMemoryReferenceD34RAR(self(), cursor, memRef);
+         break;
+
+      case FORMAT_XT5_D34_RA_R:
+         fillFieldXT5(self(), cursor + 1, trg);
+         fillMemoryReferenceD34RAR(self(), cursor, memRef);
          break;
 
       case FORMAT_RT_RA_RB_MEM:

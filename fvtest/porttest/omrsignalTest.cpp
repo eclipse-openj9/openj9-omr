@@ -37,6 +37,10 @@
 
 #include <signal.h>
 
+#if defined(OMR_OS_WINDOWS)
+#include <process.h>
+#endif /* defined(OMR_OS_WINDOWS) */
+
 #if defined(J9ZOS390)
 #include "atoe.h"
 #endif
@@ -55,6 +59,12 @@
 #define SIG_TEST_SIZE_EXENAME 1024
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
+
+#if defined(OMR_OS_WINDOWS)
+#define GET_PID() _getpid()
+#else /* defined(OMR_OS_WINDOWS) */
+#define GET_PID() getpid()
+#endif /* defined(OMR_OS_WINDOWS) */
 
 extern PortTestEnvironment *portTestEnv;
 
@@ -1263,7 +1273,7 @@ TEST(PortSigTest, sig_test_async_handler)
 	AsyncHandlerInfo handlerInfo = {0};
 	intptr_t rc = 0;
 	omrthread_monitor_t asyncMonitor = NULL;
-	int pid = getpid();
+	int pid = GET_PID();
 	uint32_t signalFlags = 0;
 
 	reportTestEntry(OMRPORTLIB, testName);
@@ -1310,7 +1320,7 @@ TEST(PortSigTest, sig_test_single_async_handler)
 	AsyncHandlerInfo handlerInfo = {0};
 	intptr_t rc = 0;
 	omrthread_monitor_t asyncMonitor = NULL;
-	int pid = getpid();
+	int pid = GET_PID();
 
 	reportTestEntry(OMRPORTLIB, testName);
 	portTestEnv->log("\tpid: %i\n", pid);
@@ -1355,7 +1365,7 @@ TEST(PortSigTest, sig_test_mix_async_handler)
 	AsyncHandlerInfo handlerInfo = {0};
 	intptr_t rc = 0;
 	omrthread_monitor_t asyncMonitor = NULL;
-	int pid = getpid();
+	int pid = GET_PID();
 
 	reportTestEntry(OMRPORTLIB, testName);
 	portTestEnv->log("\tpid: %i\n", pid);

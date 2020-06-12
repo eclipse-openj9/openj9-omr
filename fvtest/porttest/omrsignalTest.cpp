@@ -1261,7 +1261,7 @@ TEST(PortSigTest, sig_test_async_handler)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrsig_test_async_handler";
 	AsyncHandlerInfo handlerInfo = {0};
-	int32_t rc = 0;
+	intptr_t rc = 0;
 	omrthread_monitor_t asyncMonitor = NULL;
 	int pid = getpid();
 	uint32_t signalFlags = 0;
@@ -1308,7 +1308,7 @@ TEST(PortSigTest, sig_test_single_async_handler)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrsig_test_single_async_handler";
 	AsyncHandlerInfo handlerInfo = {0};
-	int32_t rc = 0;
+	intptr_t rc = 0;
 	omrthread_monitor_t asyncMonitor = NULL;
 	int pid = getpid();
 
@@ -1353,7 +1353,7 @@ TEST(PortSigTest, sig_test_mix_async_handler)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrsig_test_mix_async_handler";
 	AsyncHandlerInfo handlerInfo = {0};
-	int32_t rc = 0;
+	intptr_t rc = 0;
 	omrthread_monitor_t asyncMonitor = NULL;
 	int pid = getpid();
 

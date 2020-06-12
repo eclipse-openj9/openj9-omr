@@ -35,9 +35,7 @@
  *
  */
 
-#if !defined(OMR_OS_WINDOWS)
 #include <signal.h>
-#endif /* defined(OMR_OS_WINDOWS) */
 
 #if defined(J9ZOS390)
 #include "atoe.h"

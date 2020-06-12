@@ -1116,7 +1116,6 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 	/* Iterate through all the signals in testSignalMap. */
 	for (unsigned int index = 0; index < (sizeof(testSignalMap)/sizeof(testSignalMap[0])); index++) {
 		OMRProcessHandle childProcess = NULL;
-		char options[SIG_TEST_SIZE_EXENAME];
 		int signum = testSignalMap[index].osSignalNo;
 
 		handlerInfo->expectedType = testSignalMap[index].portLibSignalNo;
@@ -1162,6 +1161,7 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 		/* Test that we handle the signal when it is injected. Build the pid and signal number
 		 * in the form "-child_omrsig_injectSignal_<PID>_<signal>".
 		 */
+		char options[SIG_TEST_SIZE_EXENAME] = {0};
 		omrstr_printf(options, SIG_TEST_SIZE_EXENAME, "-child_omrsig_injectSignal_%i_%i", pid, signum);
 		portTestEnv->log("\t\tlaunching child process with arg %s\n", options);
 

@@ -227,6 +227,7 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t va
       TR_PPCTableOfConstants::setTOCSlot(offset, value);
       if (offset < LOWER_IMMED || offset > UPPER_IMMED)
          {
+         TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != cg->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
          cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, cg->getTOCBaseRegister(), cg->hiValue(offset), cursor);
          cursor = generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, trgReg, new (cg->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, cg), cursor);
          }
@@ -310,22 +311,22 @@ TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, intptr
 
    if (cg->comp()->target().is32Bit())
       {
-      nibbles[0] = cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, baseReg, hiAddr, cursor);
+      nibbles[0] = cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, baseReg, (int16_t)hiAddr, cursor);
       idx = 1;
       }
    else
       {
       if (tempReg == NULL)
          {
-         nibbles[0] = cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, baseReg, hiAddr>>32, cursor);
+         nibbles[0] = cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, baseReg, (int16_t)(hiAddr>>32), cursor);
          nibbles[1] = cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, baseReg, baseReg, (hiAddr>>16)&0x0000FFFF, cursor);
          cursor = generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicr, node, baseReg, baseReg, 32, CONSTANT64(0xFFFFFFFF00000000), cursor);
          nibbles[2] = cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::oris, node, baseReg, baseReg, hiAddr&0x0000FFFF, cursor);
          }
       else
          {
-         nibbles[0] = cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, tempReg, hiAddr>>32, cursor);
-         nibbles[2] = cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, baseReg, hiAddr&0x0000FFFF, cursor);
+         nibbles[0] = cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, tempReg, (int16_t)(hiAddr>>32), cursor);
+         nibbles[2] = cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, baseReg, (int16_t)hiAddr, cursor);
          nibbles[1] = cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ori, node, tempReg, tempReg, (hiAddr>>16)&0x0000FFFF, cursor);
          cursor = generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldimi, node, baseReg, tempReg, 32, CONSTANT64(0xFFFFFFFF00000000), cursor);
          }
@@ -5173,8 +5174,8 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
           && !deltaChild->getRegister()
           && (deltaChild->getDataType() == TR::Int32
                  || (deltaChild->getDataType() == TR::Int64
-                        && deltaChild->getLongInt() <= UPPER_IMMED
-                        && deltaChild->getLongInt() >= LOWER_IMMED)))
+                        && deltaChild->getLongInt() <= 0x000000007FFFFFFFL
+                        && deltaChild->getLongInt() >= 0xFFFFFFFF80000000L)))
       {
       const int64_t deltaLong = (deltaChild->getDataType() == TR::Int64)
                                    ? deltaChild->getLongInt()
@@ -5188,9 +5189,7 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
          // avoid evaluating immediates for add operations
          isDeltaImmediate = true;
          }
-      else if (deltaLong & 0xFFFF == 0
-                  && ((deltaLong >> 32) == -1
-                         || (deltaLong >> 32) == 0))
+      else if ((delta == deltaLong) && (0 == (deltaLong & 0xFFFF)))
          {
          // avoid evaluating shifted immediates for add operations
          isDeltaImmediate = true;
@@ -5233,14 +5232,11 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
       newValueReg = cg->allocateRegister();
 
       if (isDeltaImmediateShifted)
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node,
-               newValueReg, oldValueReg, ((delta & 0xFFFF0000) >> 16));
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, newValueReg, oldValueReg, delta >> 16);
       else if (isDeltaImmediate)
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node,
-               newValueReg, oldValueReg, delta);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, newValueReg, oldValueReg, delta);
       else
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, newValueReg,
-               oldValueReg, deltaReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, newValueReg, oldValueReg, deltaReg);
       }
    else
       {
@@ -5477,8 +5473,16 @@ TR::Register *OMR::Power::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::C
                   }
                else
                   {
-                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, mref->getBaseRegister(), ((offset>>16) + ((offset & (1<<15))?1:0)) & 0x0000ffff);
-                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, resultReg, resultReg, offset & 0x0000ffff);
+                  if (0x00008000 == HI_VALUE(offset))
+                     {
+                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, mref->getBaseRegister(), 0x7FFF);
+                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, resultReg, 0x1);
+                     }
+                  else
+                     {
+                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, mref->getBaseRegister(), HI_VALUE(offset));
+                     }
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, resultReg, resultReg, LO_VALUE(offset));
                   }
                }
            }

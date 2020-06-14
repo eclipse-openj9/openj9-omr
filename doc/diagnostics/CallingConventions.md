@@ -239,6 +239,56 @@ Useful links:
 * [z/Architecture Principles of Operation](http://publibfi.boulder.ibm.com/epubs/pdf/dz9zr008.pdf)
 * [z/Architecture Reference Summary](http://publibfi.boulder.ibm.com/epubs/pdf/dz9zs006.pdf)
 
+# 32-bit Arm
+
+## Linux
+
+Scratch registers are not preserved across calls, while non-volatile registers are preserved by called functions.
+Usage of the VFP registers in this table assumes hard-float ABI.
+
+|Register|System Linkage|
+|--|--|
+|R0|1st argument / return value|
+|R1|2nd argument / return value|
+|R2-3|3rd-4th arguments|
+|R4-10|Non-volatile|
+|R11|System Frame Pointer (FP)|
+|R12|Scratch; Intra-Procedure-Call Register (IP)|
+|R13|System Stack Pointer (SP)|
+|R14|Link Register (LR)|
+|R15|Program Counter (PC)|
+|D0|1st floating point argument / floating point return value|
+|D1-7|2nd-8th floating point arguments|
+|D8-15|Non-volatile|
+|D16-D31|Scratch<sup>1</sup>|
+
+<hr/>
+
+1. Unavailable in some VFP versions
+
+# AArch64 (64-bit Arm)
+
+## Linux
+
+Scratch registers are not preserved across calls, while non-volatile registers are preserved by called functions.
+
+|Register|System Linkage|
+|--|--|
+|R0|1st argument / return value|
+|R1-7|2nd-8th arguments|
+|R8-15|Scratch|
+|R16-17|Scratch; Intra-Procedure-Call Registers (IP0-1)|
+|R18|Scratch; Platform Register|
+|R19-28|Non-volatile|
+|R29|System Frame Pointer (FP)|
+|R30|Link Register (LR)|
+|SP|System Stack Pointer|
+|PC|Program Counter (PC)|
+|V0|1st floating point argument / floating point return value|
+|V1-7|2nd-8th floating point arguments|
+|V8-15|Non-volatile|
+|V16-31|Scratch|
+
 # RISC-V
 
 | Register     | System Linkage         | Callee Preserved    |

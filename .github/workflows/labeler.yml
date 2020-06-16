@@ -5,6 +5,7 @@ on:
 
 jobs:
   triage:
+    if: github.repository == 'eclipse/omr'
     runs-on: ubuntu-latest
     steps:
     - uses: fjeremic/cron-labeler@0.3.0

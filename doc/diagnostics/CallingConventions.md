@@ -239,3 +239,32 @@ Useful links:
 * [z/Architecture Principles of Operation](http://publibfi.boulder.ibm.com/epubs/pdf/dz9zr008.pdf)
 * [z/Architecture Reference Summary](http://publibfi.boulder.ibm.com/epubs/pdf/dz9zs006.pdf)
 
+# RISC-V
+
+| Register     | System Linkage         | Callee Preserved    |
+|--------------|------------------------|---------------------|
+| zero         | Zero                   |                     |
+| ra           | Return address         |                     |
+| sp           | Stack pointer          | :heavy_check_mark:  |
+| gp           | Global pointer         |                     |
+| tp           | Thread pointer         |                     |
+| t0-t2        | Temporary register     |                     |
+| s0-s1        | Callee-saved registers | :heavy_check_mark:  |
+| a0           | Argument / Return reg. |                     |
+| a1           | Argument / Return reg. |                     |
+| a2-a7        | Argument registers     |                     |
+| s2-s11       | Callee-saved registers | :heavy_check_mark:  |
+| t3-t6        | Temporary registers    |                     |
+|              |                        |                     |
+| ft0-ft7      | Temporary registers    |                     |
+| fs0-fs1      | Callee-saved registers | :heavy_check_mark:  |
+| fa0          | Argument registers     |                     |
+| fa1          | Argument registers     |                     |
+| fa2-fa7      | Argument registers     |                     |
+| fs2-fs11     | Callee-saved registers | :heavy_check_mark:  |
+| ft8-ft11     | Temporary registers    |                     |
+
+Useful links:
+
+ * [RISC-V ELF psABI specification](https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md#register-convention)
+ * [RVSystemLinkage.cpp](https://github.com/eclipse/omr/blob/master/compiler/riscv/codegen/RVSystemLinkage.cpp)

@@ -96,7 +96,7 @@ typedef struct AsyncHandlerInfo {
 	uint32_t controlFlag;
 } AsyncHandlerInfo;
 
-static uintptr_t asyncTestHandler(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *gpInfo, void *userData);
+static uintptr_t asyncTestHandler1(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *gpInfo, void *userData);
 static void injectSignal(struct OMRPortLibrary *portLibrary, int pid, int signal);
 
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
@@ -118,7 +118,7 @@ static U_32 portTestOptionsGlobal;
  *
  */
 static uintptr_t
-asyncTestHandler(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *handlerInfo, void *userData)
+asyncTestHandler1(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *handlerInfo, void *userData)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 	AsyncHandlerInfo *info = (AsyncHandlerInfo *) userData;
@@ -127,9 +127,9 @@ asyncTestHandler(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *hand
 
 	omrthread_monitor_enter(monitor);
 	portTestEnv->changeIndent(2);
-	portTestEnv->log("asyncTestHandler invoked (type = 0x%x)\n", gpType);
+	portTestEnv->log("asyncTestHandler1 invoked (type = 0x%x)\n", gpType);
 	if (info->expectedType != gpType) {
-		outputErrorMessage(PORTTEST_ERROR_ARGS, "asyncTestHandler -- incorrect type. Expecting 0x%x, got 0x%x\n", info->expectedType, gpType);
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "asyncTestHandler1 -- incorrect type. Expecting 0x%x, got 0x%x\n", info->expectedType, gpType);
 	}
 
 	portTestEnv->changeIndent(-2);
@@ -1099,7 +1099,7 @@ TEST(PortSigTest, sig_test8)
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
 /**
- * Invoke the asyncTestHandler using raise and from a child process for all signals in
+ * Invoke asyncTestHandler1 using raise and from a child process for all signals in
  * testSignalMap. Output an error message in case of a failure.
  *
  * @param[in] asyncMonitor the OMR thread monitor used for synchronization
@@ -1122,10 +1122,10 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 
 		portTestEnv->log("\n\tTesting %s\n", testSignalMap[index].osSignalString);
 
-		/* asyncTestHandler notifies the monitor once it has set controlFlag to 0. */
+		/* asyncTestHandler1 notifies the monitor once it has set controlFlag to 0. */
 		omrthread_monitor_enter(asyncMonitor);
 
-		/* asyncTestHandler will change controlFlag to 1. */
+		/* asyncTestHandler1 will change controlFlag to 1. */
 		handlerInfo->controlFlag = 0;
 
 		/* Verify that the signal is handled after it is raised. */
@@ -1294,7 +1294,7 @@ TEST(PortSigTest, sig_test_async_handler)
 		signalFlags |= testSignalMap[index].portLibSignalNo;
 	}
 
-	rc = omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, signalFlags);
+	rc = omrsig_set_async_signal_handler(asyncTestHandler1, &handlerInfo, signalFlags);
 	if (rc == OMRPORT_SIG_ERROR) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsig_set_async_signal_handler returned: OMRPORT_SIG_ERROR\n");
 		goto exit;
@@ -1303,7 +1303,7 @@ TEST(PortSigTest, sig_test_async_handler)
 	invokeAsyncTestHandler(asyncMonitor, testName, &handlerInfo, pid);
 
 exit:
-	omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, 0);
+	omrsig_set_async_signal_handler(asyncTestHandler1, &handlerInfo, 0);
 	omrthread_monitor_destroy(asyncMonitor);
 	reportTestExit(OMRPORTLIB, testName);
 }
@@ -1337,7 +1337,7 @@ TEST(PortSigTest, sig_test_single_async_handler)
 	handlerInfo.monitor = &asyncMonitor;
 
 	for (unsigned int index = 0; index < (sizeof(testSignalMap)/sizeof(testSignalMap[0])); index++) {
-		rc = omrsig_set_single_async_signal_handler(asyncTestHandler, &handlerInfo, testSignalMap[index].portLibSignalNo, NULL);
+		rc = omrsig_set_single_async_signal_handler(asyncTestHandler1, &handlerInfo, testSignalMap[index].portLibSignalNo, NULL);
 		if (rc == OMRPORT_SIG_ERROR) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsig_set_single_async_signal_handler returned: OMRPORT_SIG_ERROR\n");
 			goto exit;
@@ -1347,7 +1347,7 @@ TEST(PortSigTest, sig_test_single_async_handler)
 	invokeAsyncTestHandler(asyncMonitor, testName, &handlerInfo, pid);
 
 exit:
-	omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, 0);
+	omrsig_set_async_signal_handler(asyncTestHandler1, &handlerInfo, 0);
 	omrthread_monitor_destroy(asyncMonitor);
 	reportTestExit(OMRPORTLIB, testName);
 }
@@ -1386,9 +1386,9 @@ TEST(PortSigTest, sig_test_mix_async_handler)
 		 * Signals on odd indices are registered using omrsig_set_single_async_signal_handler.
 		 */
 		if (index % 2 == 0) {
-			rc = omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, testSignalMap[index].portLibSignalNo);
+			rc = omrsig_set_async_signal_handler(asyncTestHandler1, &handlerInfo, testSignalMap[index].portLibSignalNo);
 		} else {
-			rc = omrsig_set_single_async_signal_handler(asyncTestHandler, &handlerInfo, testSignalMap[index].portLibSignalNo, NULL);
+			rc = omrsig_set_single_async_signal_handler(asyncTestHandler1, &handlerInfo, testSignalMap[index].portLibSignalNo, NULL);
 		}
 		if (rc == OMRPORT_SIG_ERROR) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsig_set*_async_signal_handler returned: OMRPORT_SIG_ERROR\n");
@@ -1399,7 +1399,7 @@ TEST(PortSigTest, sig_test_mix_async_handler)
 	invokeAsyncTestHandler(asyncMonitor, testName, &handlerInfo, pid);
 
 exit:
-	omrsig_set_async_signal_handler(asyncTestHandler, &handlerInfo, 0);
+	omrsig_set_async_signal_handler(asyncTestHandler1, &handlerInfo, 0);
 	omrthread_monitor_destroy(asyncMonitor);
 	reportTestExit(OMRPORTLIB, testName);
 }

@@ -411,8 +411,6 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
 
    uint16_t localIndex = INVALID_LIVENESS_INDEX;
    TR::RegisterMappedSymbol *local=NULL;
-   TR::SparseBitVector indirectMethodMetaUses(comp()->allocator());
-   TR::SparseBitVector regStarAsmUses(comp()->allocator());
 
    //TR::SymbolReference *symRef = node->getSymbolReference();
    if (node->getOpCode().isLoadVarDirect() || node->getOpCodeValue() == TR::loadaddr)
@@ -491,7 +489,7 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
       visitTreeForLocals(node->getChild(i), blockGenSetInfo, blockKillSetInfo, movingForwardThroughTrees, visitEntireTree, visitCount, commonedLoads, belowCommonedNode);
 
    // if we reference a local symbol, then record it
-   if (local || !indirectMethodMetaUses.IsZero() || !regStarAsmUses.IsZero())
+   if (local)
       {
       if (traceLiveVarInfo() && local)
          traceMsg(comp(), "            Node [%p] local [%p] idx %d\n", node, local, localIndex);
@@ -535,9 +533,7 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
          //
          if (!movingForwardThroughTrees  ||
              blockKillSetInfo == NULL ||
-             (local && !blockKillSetInfo->get(localIndex)) ||
-             !regStarAsmUses.IsZero() ||
-             !indirectMethodMetaUses.IsZero()
+             (local && !blockKillSetInfo->get(localIndex))
              )
              //!blockKillSetInfo->get(localIndex))
             {
@@ -550,37 +546,6 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
             if (local)
                (*blockGenSetInfo)->set(localIndex);
 
-            if (!indirectMethodMetaUses.IsZero())
-               {
-               TR::SparseBitVector::Cursor aliasesCursor(indirectMethodMetaUses);
-               for (aliasesCursor.SetToFirstOne(); aliasesCursor.Valid(); aliasesCursor.SetToNextOne())
-                  {
-                  uint16_t usedSymbolIndex;
-                  TR::SymbolReference *usedSymRef = comp()->getSymRefTab()->getSymRef(aliasesCursor);
-                  TR::RegisterMappedSymbol *usedSymbol = usedSymRef->getSymbol()->getRegisterMappedSymbol();
-                  if (usedSymbol && usedSymbol->getDataType() != TR::NoType)
-                     {
-                     usedSymbolIndex = usedSymbol->getLiveLocalIndex();
-                     if (usedSymbolIndex != INVALID_LIVENESS_INDEX && usedSymbolIndex < _numLocals && (!blockKillSetInfo || !blockKillSetInfo->get(usedSymbolIndex)))
-                        {
-                        if (traceLiveVarInfo())
-                           traceMsg(comp(),"       setting symIdx %d (from symRef %d) on usedSymbols (in liveness)\n",usedSymbolIndex,usedSymRef->getReferenceNumber());
-                        (*blockGenSetInfo)->set(usedSymbolIndex);
-                        }
-                     }
-                  }
-               }
-            if (!regStarAsmUses.IsZero())
-               {
-               TR::SparseBitVector::Cursor aliasesCursor(regStarAsmUses);
-               for (aliasesCursor.SetToFirstOne(); aliasesCursor.Valid(); aliasesCursor.SetToNextOne())
-                  {
-                  int32_t nextElement = aliasesCursor;
-                  if (comp()->getSymRefTab()->getSymRef(nextElement) == NULL)
-                     continue;
-                  TR::Symbol *usedSym = comp()->getSymRefTab()->getSymRef(nextElement)->getSymbol();
-                  }
-               }
             if (_splitLongs && local && local->getType().isInt64())
                {
                (*blockGenSetInfo)->set(localIndex+1);

@@ -97,6 +97,7 @@ typedef struct AsyncHandlerInfo {
 } AsyncHandlerInfo;
 
 static uintptr_t asyncTestHandler1(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *gpInfo, void *userData);
+static uintptr_t asyncTestHandler2(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *gpInfo, void *userData);
 static void injectSignal(struct OMRPortLibrary *portLibrary, int pid, int signal);
 
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
@@ -111,11 +112,9 @@ static U_32 portTestOptionsGlobal;
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
 
-/*
- * Sets  the controlFlag to 1 such that we can test that it was actually invoked
+/* Sets the controlFlag to 1 such that we can test that it was actually invoked.
  *
- * Synchronizes using AsyncHandlerInfo->monitor
- *
+ * Synchronizes using AsyncHandlerInfo->monitor.
  */
 static uintptr_t
 asyncTestHandler1(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *handlerInfo, void *userData)
@@ -137,7 +136,32 @@ asyncTestHandler1(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *han
 	omrthread_monitor_notify(monitor);
 	omrthread_monitor_exit(monitor);
 	return 0;
+}
 
+/* Sets the controlFlag to 1 such that we can test that it was actually invoked.
+ *
+ * Synchronizes using AsyncHandlerInfo->monitor.
+ */
+static uintptr_t
+asyncTestHandler2(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *handlerInfo, void *userData)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
+	AsyncHandlerInfo *info = (AsyncHandlerInfo *) userData;
+	const char *testName = info->testName;
+	omrthread_monitor_t monitor = *(info->monitor);
+
+	omrthread_monitor_enter(monitor);
+	portTestEnv->changeIndent(2);
+	portTestEnv->log("asyncTestHandler2 invoked (type = 0x%x)\n", gpType);
+	if (info->expectedType != gpType) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "asyncTestHandler2 -- incorrect type. Expecting 0x%x, got 0x%x\n", info->expectedType, gpType);
+	}
+
+	portTestEnv->changeIndent(-2);
+	info->controlFlag = 1;
+	omrthread_monitor_notify(monitor);
+	omrthread_monitor_exit(monitor);
+	return 0;
 }
 
 static void
@@ -1099,7 +1123,7 @@ TEST(PortSigTest, sig_test8)
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
 /**
- * Invoke asyncTestHandler1 using raise and from a child process for all signals in
+ * Invoke asyncTestHandler[1|2] using raise and from a child process for all signals in
  * testSignalMap. Output an error message in case of a failure.
  *
  * @param[in] asyncMonitor the OMR thread monitor used for synchronization
@@ -1122,10 +1146,10 @@ invokeAsyncTestHandler(omrthread_monitor_t asyncMonitor, const char *testName, A
 
 		portTestEnv->log("\n\tTesting %s\n", testSignalMap[index].osSignalString);
 
-		/* asyncTestHandler1 notifies the monitor once it has set controlFlag to 0. */
+		/* asyncTestHandler[1|2] notifies the monitor once it has set controlFlag to 0. */
 		omrthread_monitor_enter(asyncMonitor);
 
-		/* asyncTestHandler1 will change controlFlag to 1. */
+		/* asyncTestHandler[1|2] will change controlFlag to 1. */
 		handlerInfo->controlFlag = 0;
 
 		/* Verify that the signal is handled after it is raised. */

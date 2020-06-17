@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,15 +46,15 @@ class Scanner
 {
 public:
 	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir,
-			vector<string> *debugFiles, const char *blacklistPath) = 0;
+			vector<string> *debugFiles, const char *excludesFilePath) = 0;
 
 protected:
-	set<string> _blacklistedFiles;
-	set<string> _blacklistedTypes;
+	set<string> _excludedFiles;
+	set<string> _excludedTypes;
 
-	bool checkBlacklistedType(const string &name) const;
-	bool checkBlacklistedFile(const string &name) const;
-	DDR_RC loadBlacklist(OMRPortLibrary *portLibrary, const char *file);
+	bool checkExcludedType(const string &name) const;
+	bool checkExcludedFile(const string &name) const;
+	DDR_RC loadExcludesFile(OMRPortLibrary *portLibrary, const char *file);
 };
 
 #endif /* SCANNER_HPP */

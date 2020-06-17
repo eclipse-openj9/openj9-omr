@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 IBM Corp. and others
+ * Copyright (c) 2016, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -50,9 +50,9 @@ struct Options
 	const char *blobFile;
 	const char *overrideListFile;
 	vector<string> debugFiles;
-	const char *blacklistFile;
+	const char *excludesFile;
 	bool printEmptyTypes;
-	bool showBlacklisted;
+	bool showExcluded;
 
 	Options()
 		: macroFile(NULL)
@@ -60,9 +60,9 @@ struct Options
 		, blobFile(NULL)
 		, overrideListFile(NULL)
 		, debugFiles()
-		, blacklistFile(NULL)
+		, excludesFile(NULL)
 		, printEmptyTypes(false)
-		, showBlacklisted(false)
+		, showExcluded(false)
 	{
 	}
 
@@ -129,7 +129,7 @@ main(int argc, char *argv[])
 #endif /* DEBUG_PRINT_TYPES */
 
 	if ((DDR_RC_OK == rc) && !options.debugFiles.empty()) {
-		rc = scanner.startScan(&portLibrary, &ir, &options.debugFiles, options.blacklistFile);
+		rc = scanner.startScan(&portLibrary, &ir, &options.debugFiles, options.excludesFile);
 
 #if defined(DEBUG_PRINT_TYPES)
 		OMRPORT_ACCESS_FROM_OMRPORT(&portLibrary);
@@ -169,22 +169,22 @@ main(int argc, char *argv[])
 		rc = ir.applyOverridesList(options.overrideListFile);
 	}
 
-	if ((DDR_RC_OK == rc) && options.showBlacklisted) {
+	if ((DDR_RC_OK == rc) && options.showExcluded) {
 		OMRPORT_ACCESS_FROM_OMRPORT(&portLibrary);
 		bool none = true;
 
 		for (vector<Type *>::const_iterator type = ir._types.begin(); type != ir._types.end(); ++type) {
-			if ((*type)->_blacklisted) {
+			if ((*type)->_excluded) {
 				if (none) {
 					none = false;
-					omrtty_printf("Blacklisted types:\n");
+					omrtty_printf("Excluded types:\n");
 				}
 				omrtty_printf("  %s\n", (*type)->_name.c_str());
 			}
 		}
 
 		if (none) {
-			omrtty_printf("No blacklisted types.\n");
+			omrtty_printf("No excluded types.\n");
 		}
 	}
 
@@ -247,15 +247,25 @@ Options::configure(OMRPortLibrary *portLibrary, int argc, char *argv[])
 				overrideListFile = argv[++i];
 			}
 		} else if (matchesEither(argv[i], "-l", "--blacklist")) {
+			/* temporarily support old options until downstream projects adapt */
 			if (argc < i + 2) {
 				showHelp = true;
 			} else {
-				blacklistFile = argv[++i];
+				excludesFile = argv[++i];
+			}
+		} else if (matchesEither(argv[i], "-x", "--excludes")) {
+			if (argc < i + 2) {
+				showHelp = true;
+			} else {
+				excludesFile = argv[++i];
 			}
 		} else if (matchesEither(argv[i], "-e", "--show-empty")) {
 			printEmptyTypes = true;
 		} else if (matchesEither(argv[i], "-sb", "--show-blacklisted")) {
-			showBlacklisted = true;
+			/* temporarily support old options until downstream projects adapt */
+			showExcluded = true;
+		} else if (matchesEither(argv[i], "-sx", "--show-excluded")) {
+			showExcluded = true;
 		} else if (matchesEither(argv[i], "-v", "--version")) {
 			showVersion = true;
 		} else if ('-' == argv[i][0]) {
@@ -292,14 +302,14 @@ Options::configure(OMRPortLibrary *portLibrary, int argc, char *argv[])
 			"        fieldoverride.TypeName.FieldName=NewFieldName\n"
 			"      or\n"
 			"        typeoverride.TypeName.FieldName=NewFieldType\n"
-			"  -l FILE, --blacklist FILE\n"
+			"  -x FILE, --exclude FILE\n"
 			"      Optional file containing list of type names and source file paths to\n"
-			"      ignore. Format is 'file:[filename]' or 'type:[typename]' on each line.\n"
+			"      exclude. Format is 'file:[filename]' or 'type:[typename]' on each line.\n"
 			"  -e, --show-empty\n"
 			"      Print structures, enums, and unions to the superset and blob even if\n"
 			"      they do not contain any fields. The default behaviour is to hide them.\n"
-			"  -sb, --show-blacklisted\n"
-			"      Print names of types that were blacklisted.\n"
+			"  -sx, --show-excluded\n"
+			"      Print names of types that were excluded.\n"
 		  );
 	} else if (showVersion) {
 		printf("Version 0.1\n");

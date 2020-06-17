@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -55,7 +55,7 @@ class PdbScanner : public Scanner
 {
 public:
 	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir,
-			vector<string> *debugFiles, const char *blacklistPath);
+			vector<string> *debugFiles, const char *excludesFilePath);
 
 private:
 	Symbol_IR *_ir;

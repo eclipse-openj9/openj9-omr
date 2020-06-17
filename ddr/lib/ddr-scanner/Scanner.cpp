@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -69,11 +69,11 @@ stringMatchesAny(const string &candidate, const set<string> &patterns)
 }
 
 bool
-Scanner::checkBlacklistedType(const string &name) const
+Scanner::checkExcludedType(const string &name) const
 {
-	bool blacklisted = false;
+	bool excluded = false;
 
-	/* Implicitly blacklisted are non-empty names that don't start
+	/* Implicitly excluded are non-empty names that don't start
 	 * with a letter or an underscore.
 	 */
 	if (!name.empty()) {
@@ -86,39 +86,39 @@ Scanner::checkBlacklistedType(const string &name) const
 				|| (('a' <= start) && (start <= 'i'))
 				|| (('j' <= start) && (start <= 'r'))
 				|| (('s' <= start) && (start <= 'z'))) {
-			blacklisted = stringMatchesAny(name, _blacklistedTypes);
+			excluded = stringMatchesAny(name, _excludedTypes);
 		} else {
-			blacklisted = true;
+			excluded = true;
 		}
 	}
 
-	return blacklisted;
+	return excluded;
 }
 
 bool
-Scanner::checkBlacklistedFile(const string &name) const
+Scanner::checkExcludedFile(const string &name) const
 {
-	return stringMatchesAny(name, _blacklistedFiles);
+	return stringMatchesAny(name, _excludedFiles);
 }
 
 DDR_RC
-Scanner::loadBlacklist(OMRPortLibrary *portLibrary, const char *path)
+Scanner::loadExcludesFile(OMRPortLibrary *portLibrary, const char *path)
 {
-	/* Load the blacklist file. The blacklist contains a list of types
+	/* Load the excludes file which contains a list of files and types
 	 * to ignore and not add to the IR, such as system types.
 	 */
 	DDR_RC rc = DDR_RC_OK;
 
 	if (NULL != path) {
-		TextFile blackListInput(portLibrary);
+		TextFile excludesFile(portLibrary);
 
-		if (!blackListInput.openRead(path)) {
-			ERRMSG("cannot open blacklist file %s", path);
+		if (!excludesFile.openRead(path)) {
+			ERRMSG("cannot open excludes file %s", path);
 			rc = DDR_RC_ERROR;
 		} else {
 			string line;
 
-			while (blackListInput.readLine(line)) {
+			while (excludesFile.readLine(line)) {
 				size_t end = line.length();
 
 				if (end <= 5) {
@@ -129,13 +129,13 @@ Scanner::loadBlacklist(OMRPortLibrary *portLibrary, const char *path)
 				string pattern = line.substr(5, end);
 
 				if ("file:" == tag) {
-					_blacklistedFiles.insert(pattern);
+					_excludedFiles.insert(pattern);
 				} else if ("type:" == tag) {
-					_blacklistedTypes.insert(pattern);
+					_excludedTypes.insert(pattern);
 				}
 			}
 
-			blackListInput.close();
+			excludesFile.close();
 		}
 	}
 

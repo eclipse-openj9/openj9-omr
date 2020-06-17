@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 IBM Corp. and others
+ * Copyright (c) 2016, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -48,7 +48,7 @@ class Type
 public:
 	static bool isStandardType(const char *type, size_t typeLen, bool *isSigned, size_t *bitWidth);
 
-	bool _blacklisted;
+	bool _excluded;
 	bool _opaque;
 	string _name;
 	size_t _sizeOf; /* Size of type in bytes */

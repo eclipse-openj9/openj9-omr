@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 IBM Corp. and others
+ * Copyright (c) 2016, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -356,7 +356,7 @@ JavaBlobGenerator::countStructsAndStrings(Symbol_IR *ir)
 	/* just count everything */
 	for (vector<Type *>::iterator v = ir->_types.begin(); v != ir->_types.end(); ++v) {
 		Type *type = *v;
-		if (!type->_blacklisted) {
+		if (!type->_excluded) {
 			rc = type->acceptVisitor(enumerator);
 			if (DDR_RC_OK != rc) {
 				break;
@@ -394,7 +394,7 @@ JavaBlobGenerator::buildBlobData(OMRPortLibrary *portLibrary, Symbol_IR *ir)
 
 	for (vector<Type *>::iterator v = ir->_types.begin(); v != ir->_types.end(); ++v) {
 		Type *type = *v;
-		if (!type->_blacklisted) {
+		if (!type->_excluded) {
 			rc = type->acceptVisitor(builder);
 			if (DDR_RC_OK != rc) {
 				break;
@@ -416,7 +416,7 @@ isNeededBy(UDT *type, const vector<Field *> &fields)
 {
 	bool referenced = true;
 
-	if (type->_blacklisted) {
+	if (type->_excluded) {
 		referenced = false;
 	} else if (type->isAnonymousType()) {
 		referenced = false;
@@ -639,7 +639,7 @@ BlobBuildVisitor::visitNamespace(NamespaceUDT *ns) const
 		for (vector<UDT *>::const_iterator it = ns->_subUDTs.begin(); it != ns->_subUDTs.end(); ++it) {
 			UDT *nested = *it;
 
-			if (!nested->_blacklisted && !nested->isAnonymousType()) {
+			if (!nested->_excluded && !nested->isAnonymousType()) {
 				rc = nested->acceptVisitor(builder);
 				if (DDR_RC_OK != rc) {
 					break;
@@ -908,7 +908,7 @@ JavaBlobGenerator::formatFieldType(Field *field, string *fieldType)
 	} else {
 		typeSuffix = field->_modifiers.getPointerType();
 
-		if ((NULL == type) || type->_blacklisted || (field->_modifiers._pointerCount > 1)) {
+		if ((NULL == type) || type->_excluded || (field->_modifiers._pointerCount > 1)) {
 			typePrefix = "void";
 		} else {
 			typePrefix = field->_modifiers.getModifierNames();
@@ -989,7 +989,7 @@ BlobEnumerateVisitor::visitNamespace(NamespaceUDT *type) const
 		for (vector<UDT *>::const_iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
 			UDT *nested = *it;
 
-			if (!nested->_blacklisted && !nested->isAnonymousType()) {
+			if (!nested->_excluded && !nested->isAnonymousType()) {
 				rc = nested->acceptVisitor(*this);
 				if (DDR_RC_OK != rc) {
 					break;

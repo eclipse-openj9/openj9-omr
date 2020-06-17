@@ -34,7 +34,6 @@ include(OmrPlatform)
 set(OMR_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(DDR_INFO_DIR "${CMAKE_BINARY_DIR}/ddr_info")
 
-
 function(make_ddr_set set_name)
 	set(DDR_TARGET_NAME "${set_name}")
 	set(DDR_BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/${DDR_TARGET_NAME}")

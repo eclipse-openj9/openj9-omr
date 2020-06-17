@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -66,7 +66,7 @@ public:
 	~DwarfScanner();
 
 	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir,
-			vector<string> *debugFiles, const char *blacklistPath);
+			vector<string> *debugFiles, const char *excludesFilePath);
 	static const char * getScanFileName() { return scanFileName; }
 private:
 	static const char * scanFileName;
@@ -90,7 +90,7 @@ private:
 	DDR_RC getTypeSize(Dwarf_Die die, size_t *typeSize);
 	DDR_RC getTypeTag(Dwarf_Die die, Dwarf_Die *typedie, Dwarf_Half *tag);
 	DDR_RC getSourcelist(Dwarf_Die die);
-	DDR_RC blackListedDie(Dwarf_Die die, bool *dieBlackListed);
+	DDR_RC excludedDie(Dwarf_Die die, bool *dieExcluded);
 	DDR_RC getName(Dwarf_Die die, string *name, Dwarf_Off *dieOffset = NULL);
 	DDR_RC getNextSibling(Dwarf_Die *die);
 	DDR_RC getBitField(Dwarf_Die die, size_t *bitField);

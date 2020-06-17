@@ -1427,6 +1427,59 @@ exit:
 	omrthread_monitor_destroy(asyncMonitor);
 	reportTestExit(OMRPORTLIB, testName);
 }
+
+/**
+ * Similar to test sig_test_mix_async_handler. Here, omrsig_set_async_signal_handler
+ * uses asyncTestHandler1, and omrsig_set_single_async_signal_handler uses
+ * asyncTestHandler2. This test verifies the management of multiple async
+ * handlers by omrsig_set*_async_signal_handler functions.
+ */
+TEST(PortSigTest, sig_test_mix_two_async_handlers)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsig_test_mix_two_async_handlers";
+	AsyncHandlerInfo handlerInfo = {0};
+	intptr_t rc = 0;
+	omrthread_monitor_t asyncMonitor = NULL;
+	int pid = GET_PID();
+
+	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->log("\tpid: %i\n", pid);
+
+	handlerInfo.testName = testName;
+
+	rc = omrthread_monitor_init_with_name(&asyncMonitor, 0, "omrsignalTest_async_monitor");
+
+	if (0 != rc) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrthread_monitor_init_with_name failed with %i\n", rc);
+		FAIL();
+	}
+
+	handlerInfo.monitor = &asyncMonitor;
+
+	for (unsigned int index = 0; index < (sizeof(testSignalMap)/sizeof(testSignalMap[0])); index++) {
+		/* Signals on even indices are registered using omrsig_set_async_signal_handler and asyncTestHandler1.
+		 * Signals on odd indices are registered using omrsig_set_single_async_signal_handler and asyncTestHandler2.
+		 */
+		if (index % 2 == 0) {
+			rc = omrsig_set_async_signal_handler(asyncTestHandler1, &handlerInfo, testSignalMap[index].portLibSignalNo);
+		} else {
+			rc = omrsig_set_single_async_signal_handler(asyncTestHandler2, &handlerInfo, testSignalMap[index].portLibSignalNo, NULL);
+		}
+		if (rc == OMRPORT_SIG_ERROR) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsig_set*_async_signal_handler returned: OMRPORT_SIG_ERROR\n");
+			goto exit;
+		}
+	}
+
+	invokeAsyncTestHandler(asyncMonitor, testName, &handlerInfo, pid);
+
+exit:
+	omrsig_set_async_signal_handler(asyncTestHandler1, &handlerInfo, 0);
+	omrsig_set_single_async_signal_handler(asyncTestHandler2, &handlerInfo, 0, NULL);
+	omrthread_monitor_destroy(asyncMonitor);
+	reportTestExit(OMRPORTLIB, testName);
+}
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 

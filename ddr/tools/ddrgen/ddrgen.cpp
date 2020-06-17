@@ -246,13 +246,6 @@ Options::configure(OMRPortLibrary *portLibrary, int argc, char *argv[])
 			} else {
 				overrideListFile = argv[++i];
 			}
-		} else if (matchesEither(argv[i], "-l", "--blacklist")) {
-			/* temporarily support old options until downstream projects adapt */
-			if (argc < i + 2) {
-				showHelp = true;
-			} else {
-				excludesFile = argv[++i];
-			}
 		} else if (matchesEither(argv[i], "-x", "--excludes")) {
 			if (argc < i + 2) {
 				showHelp = true;
@@ -261,9 +254,6 @@ Options::configure(OMRPortLibrary *portLibrary, int argc, char *argv[])
 			}
 		} else if (matchesEither(argv[i], "-e", "--show-empty")) {
 			printEmptyTypes = true;
-		} else if (matchesEither(argv[i], "-sb", "--show-blacklisted")) {
-			/* temporarily support old options until downstream projects adapt */
-			showExcluded = true;
 		} else if (matchesEither(argv[i], "-sx", "--show-excluded")) {
 			showExcluded = true;
 		} else if (matchesEither(argv[i], "-v", "--version")) {

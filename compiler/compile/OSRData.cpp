@@ -870,7 +870,8 @@ TR_OSRMethodData::buildDefiningMap(TR::Block *block, DefiningMap *blockMap, Defi
                }
             }
          }
-      else if (node->getFirstChild() &&
+      else if (node->getNumChildren() > 0 &&
+               node->getFirstChild() &&
                node->getFirstChild()->getOpCode().isCall() &&
                node->getFirstChild()->getSymbolReference()->getReferenceNumber() == TR_prepareForOSR)
          {

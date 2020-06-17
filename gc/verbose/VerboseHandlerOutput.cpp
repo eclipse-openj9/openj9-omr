@@ -270,13 +270,13 @@ MM_VerboseHandlerOutput::handleInitialized(J9HookInterface** hook, uintptr_t eve
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->isConcurrentScavengerEnabled()) {
 		writer->formatAndOutput(env, 1, "<attribute name=\"concurrentScavenger\" value=\"%s\" />",
-#if defined(S390)
+#if defined(S390) || defined(J9ZOS390)
 				_extensions->concurrentScavengerHWSupport ?
 				"enabled, with H/W assistance" :
 				"enabled, without H/W assistance");
-#else /* defined(S390) */
+#else /* defined(S390) || defined(J9ZOS390) */
 				"enabled");
-#endif /* defined(S390) */
+#endif /* defined(S390) || defined(J9ZOS390) */
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	writer->formatAndOutput(env, 1, "<attribute name=\"maxHeapSize\" value=\"0x%zx\" />", event->maxHeapSize);

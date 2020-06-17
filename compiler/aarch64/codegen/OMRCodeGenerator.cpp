@@ -35,6 +35,7 @@
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterIterator.hpp"
 #include "codegen/TreeEvaluator.hpp"
+#include "control/Recompilation.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/StaticSymbol.hpp"
@@ -70,6 +71,8 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
    self()->setSupportsGlRegDepOnFirstBlock();
 
    self()->setSupportsVirtualGuardNOPing();
+
+   self()->setSupportsRecompilation();
 
    self()->setSupportsSelect();
 
@@ -236,11 +239,27 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
    TR_ARM64BinaryEncodingData data;
    data.estimate = 0;
    TR::Compilation *comp = self()->comp();
+   TR::Instruction *tempInstruction;
 
    self()->generateBinaryEncodingPrePrologue(data);
-   self()->getLinkage()->createPrologue(data.cursorInstruction);
 
    data.cursorInstruction = self()->getFirstInstruction();
+
+   while (data.cursorInstruction && data.cursorInstruction->getOpCodeValue() != TR::InstOpCode::proc)
+      {
+      data.estimate = data.cursorInstruction->estimateBinaryLength(data.estimate);
+      data.cursorInstruction = data.cursorInstruction->getNext();
+      }
+
+   tempInstruction = data.cursorInstruction;
+
+   if (data.recomp != NULL)
+      {
+      tempInstruction = data.recomp->generatePrologue(tempInstruction);
+      }
+
+   self()->getLinkage()->createPrologue(tempInstruction);
+
    bool skipOneReturn = false;
    while (data.cursorInstruction)
       {

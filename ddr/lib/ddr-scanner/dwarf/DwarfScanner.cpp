@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -204,16 +204,16 @@ Failed:
 }
 
 DDR_RC
-DwarfScanner::blackListedDie(Dwarf_Die die, bool *dieBlackListed)
+DwarfScanner::excludedDie(Dwarf_Die die, bool *dieExcluded)
 {
 	DDR_RC rc = DDR_RC_OK;
 	Dwarf_Error err = NULL;
-	bool blacklistedFile = true;
-	bool blacklistedType = true;
+	bool excludedFile = true;
+	bool excludedType = true;
 
 	/* Check if the Die has the decl_file attribute. */
-	if (_blacklistedFiles.empty()) {
-		blacklistedFile = false;
+	if (_excludedFiles.empty()) {
+		excludedFile = false;
 	} else {
 		Dwarf_Bool hasDeclFile = false;
 		if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_decl_file, &hasDeclFile, &err)) {
@@ -222,7 +222,7 @@ DwarfScanner::blackListedDie(Dwarf_Die die, bool *dieBlackListed)
 			goto Done;
 		}
 		if (!hasDeclFile) {
-			blacklistedFile = false;
+			excludedFile = false;
 		} else {
 			/* If the Die has the attribute, then get the attribute and its value. */
 			Dwarf_Attribute attr = NULL;
@@ -243,27 +243,27 @@ DwarfScanner::blackListedDie(Dwarf_Die die, bool *dieBlackListed)
 
 			if (0 == declFile) {
 				/* no declaring file is specified */
-				blacklistedFile = false;
+				excludedFile = false;
 			} else if (declFile <= (Dwarf_Unsigned)_fileNameCount) {
 				const string fileName(_fileNamesTable[declFile - 1]);
-				blacklistedFile = checkBlacklistedFile(fileName);
+				excludedFile = checkExcludedFile(fileName);
 			} else {
 				/* declFile refers to a file for which we don't have a name */
-				blacklistedFile = false;
+				excludedFile = false;
 			}
 		}
 	}
 
-	/* Check if the die's name is blacklisted. */
-	if ((DDR_RC_OK == rc) && !blacklistedFile) {
+	/* Check if the die's name is excluded. */
+	if ((DDR_RC_OK == rc) && !excludedFile) {
 		string dieName = "";
 		rc = getName(die, &dieName);
 		if (DDR_RC_OK == rc) {
-			blacklistedType = checkBlacklistedType(dieName);
+			excludedType = checkExcludedType(dieName);
 		}
 	}
 
-	*dieBlackListed = blacklistedType || blacklistedFile;
+	*dieExcluded = excludedType | excludedFile;
 
 Done:
 	if (NULL != err) {
@@ -695,22 +695,22 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, NamespaceUDT *outerUDT, 
 {
 	DDR_RC rc = DDR_RC_OK;
 	Type *newType = NULL;
-	bool dieBlackListed = false;
+	bool dieExcluded = false;
 	bool isSubUDT = (NULL != outerUDT);
 	bool isNewType = false;
 
 	rc = getOrCreateNewType(die, tag, &newType, outerUDT, &isNewType);
 
 	if ((DDR_RC_OK == rc) && isNewType && (NULL == outerUDT)) {
-		rc = blackListedDie(die, &dieBlackListed);
+		rc = excludedDie(die, &dieExcluded);
 	}
 
 	if (DDR_RC_OK == rc) {
-		if (dieBlackListed) {
-			newType->_blacklisted = true;
+		if (dieExcluded) {
+			newType->_excluded = true;
 		}
-		if (newType->_blacklisted) {
-			/* ignore blacklisted types */
+		if (newType->_excluded) {
+			/* ignore excluded types */
 		} else if ((DW_TAG_class_type == tag)
 				|| (DW_TAG_structure_type == tag)
 				|| (DW_TAG_union_type == tag)
@@ -1519,7 +1519,7 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *ir)
 			break;
 		}
 
-		if (!_blacklistedFiles.empty()) {
+		if (!_excludedFiles.empty()) {
 			if (DDR_RC_OK != getSourcelist(cuDie)) {
 				ERRMSG("Failed to get source file list.\n");
 				rc = DDR_RC_ERROR;
@@ -1576,11 +1576,11 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *ir)
 }
 
 DDR_RC
-DwarfScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<string> *debugFiles, const char *blacklistPath)
+DwarfScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<string> *debugFiles, const char *excludesFilePath)
 {
 	DEBUGPRINTF("Initializing libDwarf:");
 
-	DDR_RC rc = loadBlacklist(portLibrary, blacklistPath);
+	DDR_RC rc = loadExcludesFile(portLibrary, excludesFilePath);
 
 	if (DDR_RC_OK == rc) {
 		/* Read list of debug files to scan from the input file. */

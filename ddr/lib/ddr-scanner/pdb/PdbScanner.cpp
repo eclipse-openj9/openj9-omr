@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -111,7 +111,7 @@ PdbScanner::initBaseTypeList()
 }
 
 DDR_RC
-PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<string> *debugFiles, const char *blacklistPath)
+PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<string> *debugFiles, const char *excludesFilePath)
 {
 	DDR_RC rc = DDR_RC_OK;
 	IDiaDataSource *diaDataSource = NULL;
@@ -126,7 +126,7 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<string>
 	}
 
 	if (DDR_RC_OK == rc) {
-		rc = loadBlacklist(portLibrary, blacklistPath);
+		rc = loadExcludesFile(portLibrary, excludesFilePath);
 	}
 
 	if (DDR_RC_OK == rc) {
@@ -287,7 +287,7 @@ PdbScanner::updatePostponedFieldNames()
 		} else {
 			*type = new ClassUDT(0);
 			(*type)->_name = getSimpleName(fullName);
-			(*type)->_blacklisted = checkBlacklistedType((*type)->_name);
+			(*type)->_excluded = checkExcludedType((*type)->_name);
 		}
 	}
 	_postponedFields.clear();
@@ -400,7 +400,7 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 DDR_RC
 PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 {
-	/* Get the typedef name and check if it is blacklisted. */
+	/* Get the typedef name and check if it should be excluded. */
 	string symbolName = "";
 	DDR_RC rc = getName(symbol, &symbolName);
 
@@ -408,7 +408,7 @@ PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 		string typedefName = getSimpleName(symbolName);
 		TypedefUDT *newTypedef = new TypedefUDT;
 		newTypedef->_name = typedefName;
-		newTypedef->_blacklisted = checkBlacklistedType(typedefName);
+		newTypedef->_excluded = checkExcludedType(typedefName);
 		newTypedef->_outerNamespace = outerNamespace;
 		/* Get the base type. */
 		rc = setType(symbol, &newTypedef->_aliasedType, &newTypedef->_modifiers, NULL);
@@ -568,7 +568,7 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 				/* If this is a new enum, get its members and add it to the IR. */
 				EnumUDT *enumUDT = new EnumUDT;
 				enumUDT->_name = name;
-				enumUDT->_blacklisted = checkBlacklistedType(name);
+				enumUDT->_excluded = checkExcludedType(name);
 				enumUDT->_outerNamespace = outerNamespace;
 				rc = addEnumMembers(symbol, enumUDT);
 
@@ -1206,7 +1206,7 @@ PdbScanner::createClassUDT(IDiaSymbol *symbol, ClassUDT **newClass, NamespaceUDT
 		if (_typeMap.end() == _typeMap.find(fullName)) {
 			ClassUDT *classUDT = new ClassUDT((size_t)size);
 			classUDT->_name = name;
-			classUDT->_blacklisted = checkBlacklistedType(name);
+			classUDT->_excluded = checkExcludedType(name);
 			classUDT->_outerNamespace = outerUDT;
 			rc = addChildrenSymbols(symbol, SymTagNull, classUDT);
 
@@ -1273,7 +1273,7 @@ PdbScanner::getNamespaceFromName(const string &name, NamespaceUDT **outerUDT)
 				 */
 				ns = new ClassUDT(0);
 				ns->_name = namespaceName;
-				ns->_blacklisted = checkBlacklistedType(namespaceName);
+				ns->_excluded = checkExcludedType(namespaceName);
 				ns->_outerNamespace = outerNamespace;
 				addType(ns, outerNamespace);
 			} else if ((NULL != outerNamespace) && (NULL == ns->_outerNamespace)) {

@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2017 IBM Corp. and others
+Copyright (c) 2016, 2020 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,7 +56,7 @@ Possible values for `<option>`:
 
 ### Properties files
 
-### Blacklisting Sources
+### Excluding Files and Types
 ## DDR & CMake
 
 ### New Terms
@@ -67,7 +67,7 @@ For every target added to a ddr set a text file is generated which holds info wh
 + source directory of the target
 + list of source files in the target
 + include path used when building the target
-+ Pre processor defines which are set when building the target
++ pre-processor defines which are set when building the target
 
 For each ddr set a CMakeLists.txt file is generated which will process the target information text files, and do appropriate procesing to get the macro list needed for ddrgen.
-In addition rules will be added to run cmake and run make on the generated output as part of the build
+In addition rules will be added to run cmake and run make on the generated output as part of the build.

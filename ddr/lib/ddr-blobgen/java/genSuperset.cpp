@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -247,7 +247,7 @@ JavaSupersetGenerator::getFieldType(Field *field, string *assembledTypeName, str
 	if (DDR_RC_OK == rc) {
 		Type *fieldType = field->_fieldType;
 
-		if ((NULL == fieldType) || fieldType->_blacklisted || (field->_modifiers._pointerCount > 1)) {
+		if ((NULL == fieldType) || fieldType->_excluded || (field->_modifiers._pointerCount > 1)) {
 			typeName = "void";
 			simpleName = "void";
 		} else {
@@ -458,7 +458,7 @@ SupersetVisitor::visitComposite(ClassType *type, Type *superClass) const
 				(DDR_RC_OK == rc) && (it != type->_subUDTs.end()); ++it) {
 			UDT *nested = *it;
 
-			if (nested->_blacklisted) {
+			if (nested->_excluded) {
 				continue;
 			}
 
@@ -537,7 +537,7 @@ SupersetVisitor::visitNamespace(NamespaceUDT *type) const
 				(DDR_RC_OK == rc) && (v != type->_subUDTs.end()); ++v) {
 			UDT *nested = *v;
 
-			if (!nested->_blacklisted && !nested->isAnonymousType()) {
+			if (!nested->_excluded && !nested->isAnonymousType()) {
 				rc = nested->acceptVisitor(*this);
 			}
 		}
@@ -560,7 +560,7 @@ JavaSupersetGenerator::printSuperset(OMRPortLibrary *portLibrary, Symbol_IR *ir,
 	for (vector<Type *>::const_iterator v = ir->_types.begin();
 			(DDR_RC_OK == rc) && (v != ir->_types.end()); ++v) {
 		Type *type = *v;
-		if (!type->_blacklisted) {
+		if (!type->_excluded) {
 			rc = type->acceptVisitor(printer);
 		}
 	}

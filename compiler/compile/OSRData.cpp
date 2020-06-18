@@ -581,7 +581,7 @@ void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
       TR::Block *osrCatchBlock = osrMethodData->getOSRCatchBlock();
       if (osrCatchBlock && osrCatchBlock->getExceptionPredecessors().size() > 0)
          {
-         definingMapAtOSRCatchBlocks[i] = new DefiningMap(DefiningMapComparator(), DefiningMapAllocator(comp->trMemory()->currentStackRegion()));
+         definingMapAtOSRCatchBlocks[i] = new (comp->trMemory()->currentStackRegion()) DefiningMap(DefiningMapComparator(), DefiningMapAllocator(comp->trMemory()->currentStackRegion()));
          osrMethodData->buildDefiningMapForBlock(osrCatchBlock, definingMapAtOSRCatchBlocks[i]);
          }
       else osrCatchBlockRemoved = true;
@@ -589,8 +589,8 @@ void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
       TR::Block *osrCodeBlock = osrMethodData->getOSRCodeBlock();
       if (osrCodeBlock && osrCodeBlock->getPredecessors().size() > 0)
          {
-         definingMapAtOSRCodeBlocks[i] = new DefiningMap(DefiningMapComparator(), DefiningMapAllocator(comp->trMemory()->currentStackRegion()));
-         definingMapAtPrepareForOSRCalls[i] = new DefiningMap(DefiningMapComparator(), DefiningMapAllocator(comp->trMemory()->currentStackRegion()));
+         definingMapAtOSRCodeBlocks[i] = new (comp->trMemory()->currentStackRegion()) DefiningMap(DefiningMapComparator(), DefiningMapAllocator(comp->trMemory()->currentStackRegion()));
+         definingMapAtPrepareForOSRCalls[i] = new (comp->trMemory()->currentStackRegion()) DefiningMap(DefiningMapComparator(), DefiningMapAllocator(comp->trMemory()->currentStackRegion()));
          osrMethodData->buildDefiningMapForOSRCodeBlockAndPrepareForOSRCall(osrCodeBlock, definingMapAtOSRCodeBlocks[i], definingMapAtPrepareForOSRCalls[i]);
          }
       else osrCodeBlockRemoved = true;
@@ -920,7 +920,7 @@ TR_OSRMethodData::collectSubTreeSymRefs(TR::Node *node, TR_BitVector *subTreeSym
       {
       subTreeSymRefs->set(node->getSymbolReference()->getReferenceNumber());
       }
-   else if (node->getRegLoadStoreSymbolReference())
+   else if (node->getOpCode().isStoreReg() || node->getOpCode().isLoadReg())
       {
       subTreeSymRefs->set(node->getRegLoadStoreSymbolReference()->getReferenceNumber());
       }

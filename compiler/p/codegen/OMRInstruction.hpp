@@ -84,8 +84,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual TR::Register *getSourceRegister(uint32_t i);
    virtual TR::MemoryReference *getMemoryReference()      {return NULL;}
    virtual uint32_t     getSourceImmediate()                {return 0;}
-   virtual void         updateImmediateField(uint32_t imm)
-    { TR_ASSERT(0, "updateImmediateField needs to implemented for each imm instruction"); }
 
    virtual TR::Register *getMemoryBase()                     {return NULL;}
    virtual TR::Register *getMemoryIndex()                    {return NULL;}
@@ -105,8 +103,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    bool     doubleFPOp()            {return _opcode.doubleFPOp();}
    bool     gprOp()                 {return _opcode.gprOp();}
    bool     fprOp()                 {return _opcode.fprOp();}
-   bool     useAlternateFormat()    {return _opcode.useAlternateFormat();}
-   bool     useAlternateFormatx()   {return _opcode.useAlternateFormatx();}
    bool     readsCarryFlag()        {return _opcode.readsCarryFlag();}
    bool     setsCarryFlag()         {return _opcode.setsCarryFlag();}
    bool     setsOverflowFlag()      {return _opcode.setsOverflowFlag();}
@@ -115,11 +111,9 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    bool     isTMAbort()             {return _opcode.isTMAbort();}
    bool     isRegCopy()             {return _opcode.isRegCopy();}
    bool     isDoubleWord()          {return _opcode.isDoubleWord();}
-   bool     isRotateOrShift()       {return _opcode.isRotateOrShift();}
    bool     isCompare()             {return _opcode.isCompare();}
    bool     isLongRunningFPOp()     {return _opcode.isLongRunningFPOp();}
    bool     isFXMult()              {return _opcode.isFXMult();}
-   bool     isCRLogical()           {return _opcode.isCRLogical();}
 
    virtual bool     isLoad()           {return _opcode.isLoad();}
    virtual bool     isStore()          {return _opcode.isStore();}

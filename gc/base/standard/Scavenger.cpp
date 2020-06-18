@@ -3036,10 +3036,15 @@ MM_Scavenger::getFreeCache(MM_EnvironmentStandard *env)
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 		uint64_t duration = omrtime_current_time_millis();
 
+		bool resizePerformed = false;
 		omrthread_monitor_enter(_freeCacheMonitor);
-		bool result = _scavengeCacheFreeList.resizeCacheEntries(env, 1+_scavengeCacheFreeList.getAllocatedCacheCount(), 0);
+		/* Acquires a cache to check if other threads have resized the cache pool */
+		cache = _scavengeCacheFreeList.popCache(env);
+		if (NULL == cache) {
+			resizePerformed = _scavengeCacheFreeList.resizeCacheEntries(env, 1+_scavengeCacheFreeList.getAllocatedCacheCount(), 0);
+		}		
 		omrthread_monitor_exit(_freeCacheMonitor);
-		if (result) {
+		if (resizePerformed) {
 			cache = _scavengeCacheFreeList.popCache(env);
 		}
 		if (NULL == cache) {
@@ -4250,11 +4255,6 @@ MM_Scavenger::collectorExpanded(MM_EnvironmentBase *env, MM_MemorySubSpace *subS
 		env->_scavengerStats._tenureExpandedCount += 1;
 		env->_scavengerStats._tenureExpandedBytes += expandSize;
 		env->_scavengerStats._tenureExpandedTime += resizeStats->getLastExpandTime();
-
-		uintptr_t totalActiveCacheCount = calculateMaxCacheCount(_extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW));
-
-		/* TODO: can fail? */
-		_scavengeCacheFreeList.resizeCacheEntries(env, totalActiveCacheCount, 0);
 	}
 }
 

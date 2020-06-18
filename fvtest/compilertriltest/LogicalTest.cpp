@@ -105,8 +105,8 @@ TEST_P(Int32LogicalUnary, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(LogicalTest, Int32LogicalUnary, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_values<int32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int32_t)>("ineg", ineg),
-        std::make_tuple<const char*, int32_t(*)(int32_t)>("iabs", iabs)
+        std::tuple<const char*, int32_t(*)(int32_t)>("ineg", ineg),
+        std::tuple<const char*, int32_t(*)(int32_t)>("iabs", iabs)
     )));
 
 class Int32LogicalBinary : public TRTest::BinaryOpTest<int32_t> {};
@@ -151,9 +151,9 @@ TEST_P(Int32LogicalBinary, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(LogicalTest, Int32LogicalBinary, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int32_t,int32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("ior", ior),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("iand", iand),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("ixor", ixor)
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("ior", ior),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("iand", iand),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("ixor", ixor)
     )));
 
 class Int64LogicalBinary : public TRTest::BinaryOpTest<int64_t> {};
@@ -212,9 +212,9 @@ TEST_P(Int64LogicalBinary, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(LogicalTest, Int64LogicalBinary, ::testing::Combine(
 	::testing::ValuesIn(TRTest::const_value_pairs<int64_t,int64_t>()),
 	::testing::Values(
-		std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lor", lor),
-		std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("land", land),
-		std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lxor", lxor)
+		std::tuple<const char*, int64_t(*)(int64_t, int64_t)>("lor", lor),
+		std::tuple<const char*, int64_t(*)(int64_t, int64_t)>("land", land),
+		std::tuple<const char*, int64_t(*)(int64_t, int64_t)>("lxor", lxor)
    )));
 
                 
@@ -276,5 +276,5 @@ TEST_P(Int64LogicalUnary, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(LogicalTest, Int64LogicalUnary, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_values<int64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int64_t(*)(int64_t)>("lneg", lneg)
+        std::tuple<const char*, int64_t(*)(int64_t)>("lneg", lneg)
         )));

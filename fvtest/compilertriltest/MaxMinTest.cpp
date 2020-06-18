@@ -130,8 +130,8 @@ TEST_P(Int32MaxMin, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(MaxMin, Int32MaxMin, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("imax", imax),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("imin", imin))));
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("imax", imax),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("imin", imin))));
 
 class Int64MaxMin : public TRTest::BinaryOpTest<int64_t> {};
 
@@ -191,8 +191,8 @@ TEST_P(Int64MaxMin, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(MaxMin, Int64MaxMin, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int64_t, int64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lmax", lmax),
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lmin", lmin))));
+        std::tuple<const char*, int64_t(*)(int64_t, int64_t)>("lmax", lmax),
+        std::tuple<const char*, int64_t(*)(int64_t, int64_t)>("lmin", lmin))));
 
 class FloatMaxMin : public TRTest::BinaryOpTest<float> {};
 
@@ -269,8 +269,8 @@ INSTANTIATE_TEST_CASE_P(MaxMin, FloatMaxMin, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
     ::testing::Values(
-        std::make_tuple<const char*, float(*)(float, float)>("fmax", f_max),
-        std::make_tuple<const char*, float(*)(float, float)>("fmin", f_min))));
+        std::tuple<const char*, float(*)(float, float)>("fmax", f_max),
+        std::tuple<const char*, float(*)(float, float)>("fmin", f_min))));
 
 class DoubleMaxMin : public TRTest::BinaryOpTest<double> {};
 
@@ -348,5 +348,5 @@ INSTANTIATE_TEST_CASE_P(MaxMin, DoubleMaxMin, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
     ::testing::Values(
-        std::make_tuple<const char*, double(*)(double, double)>("dmax", dmax),
-        std::make_tuple<const char*, double(*)(double, double)>("dmin", dmin))));
+        std::tuple<const char*, double(*)(double, double)>("dmax", dmax),
+        std::tuple<const char*, double(*)(double, double)>("dmin", dmin))));

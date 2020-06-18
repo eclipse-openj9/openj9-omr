@@ -591,31 +591,31 @@ TEST_P(Int8Arithmetic, UsingLoadParamAndLoadConst) {
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("iadd", add),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("isub", sub),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("imul", mul),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("imulh", imulh))));
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("iadd", add),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("isub", sub),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("imul", mul),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("imulh", imulh))));
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int64Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int64_t, int64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("ladd", add),
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lsub", sub),
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lmul", mul))));
+        std::tuple<const char*, int64_t(*)(int64_t, int64_t)>("ladd", add),
+        std::tuple<const char*, int64_t(*)(int64_t, int64_t)>("lsub", sub),
+        std::tuple<const char*, int64_t(*)(int64_t, int64_t)>("lmul", mul))));
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int16Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int16_t, int16_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("sadd", add<int16_t>),
-        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("ssub", sub<int16_t>),
-        std::make_tuple<const char*, int16_t(*)(int16_t, int16_t)>("smul", mul<int16_t>))));
+        std::tuple<const char*, int16_t(*)(int16_t, int16_t)>("sadd", add<int16_t>),
+        std::tuple<const char*, int16_t(*)(int16_t, int16_t)>("ssub", sub<int16_t>),
+        std::tuple<const char*, int16_t(*)(int16_t, int16_t)>("smul", mul<int16_t>))));
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int8Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int8_t, int8_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("badd", add<int8_t>),
-        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bsub", sub<int8_t>),
-        std::make_tuple<const char*, int8_t(*)(int8_t, int8_t)>("bmul", mul<int8_t>))));
+        std::tuple<const char*, int8_t(*)(int8_t, int8_t)>("badd", add<int8_t>),
+        std::tuple<const char*, int8_t(*)(int8_t, int8_t)>("bsub", sub<int8_t>),
+        std::tuple<const char*, int8_t(*)(int8_t, int8_t)>("bmul", mul<int8_t>))));
 
 /**
  * @brief Filter function for *div opcodes
@@ -643,15 +643,15 @@ INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<int32_t, int32_t>(), div_filter<int32_t> )),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("idiv", div),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("irem", rem))));
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("idiv", div),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("irem", rem))));
 
 INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int64Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<int64_t, int64_t>(), div_filter<int64_t> )),
     ::testing::Values(
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("ldiv", div),
-        std::make_tuple<const char*, int64_t(*)(int64_t, int64_t)>("lrem", rem))));
+        std::tuple<const char*, int64_t(*)(int64_t, int64_t)>("ldiv", div),
+        std::tuple<const char*, int64_t(*)(int64_t, int64_t)>("lrem", rem))));
 
 /**
  * @brief Filter function for *udiv opcodes
@@ -671,14 +671,14 @@ INSTANTIATE_TEST_CASE_P(DivArithmeticTest, UInt32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<uint32_t, uint32_t>(), udiv_filter<uint32_t> )),
     ::testing::Values(
-        std::make_tuple<const char*, uint32_t(*)(uint32_t, uint32_t)>("iudiv", udiv),
-        std::make_tuple<const char*, uint32_t(*)(uint32_t, uint32_t)>("iurem", urem))));
+        std::tuple<const char*, uint32_t(*)(uint32_t, uint32_t)>("iudiv", udiv),
+        std::tuple<const char*, uint32_t(*)(uint32_t, uint32_t)>("iurem", urem))));
 
 INSTANTIATE_TEST_CASE_P(DivArithmeticTest, UInt64Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<uint64_t, uint64_t>(), udiv_filter<uint64_t> )),
     ::testing::Values(
-        std::make_tuple<const char*, uint64_t(*)(uint64_t, uint64_t)>("ludiv", udiv))));
+        std::tuple<const char*, uint64_t(*)(uint64_t, uint64_t)>("ludiv", udiv))));
 
 template <typename T>
 bool smallFp_filter(std::tuple<T, T> a)
@@ -788,10 +788,10 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatArithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
     ::testing::Values(
-        std::make_tuple<const char*, float (*)(float, float)>("fadd", static_cast<float (*)(float, float)>(add)),
-        std::make_tuple<const char*, float (*)(float, float)>("fsub", static_cast<float (*)(float, float)>(sub)),
-        std::make_tuple<const char*, float (*)(float, float)>("fmul", static_cast<float (*)(float, float)>(mul)),
-        std::make_tuple<const char*, float (*)(float, float)>("fdiv", static_cast<float (*)(float, float)>(div))
+        std::tuple<const char*, float (*)(float, float)>("fadd", static_cast<float (*)(float, float)>(add)),
+        std::tuple<const char*, float (*)(float, float)>("fsub", static_cast<float (*)(float, float)>(sub)),
+        std::tuple<const char*, float (*)(float, float)>("fmul", static_cast<float (*)(float, float)>(mul)),
+        std::tuple<const char*, float (*)(float, float)>("fdiv", static_cast<float (*)(float, float)>(div))
     )));
 
 #ifdef OMR_ENV_DATA64
@@ -906,7 +906,7 @@ TEST_P(AddressInt64Arithmetic, UsingLoadConstAndLoadParam) {
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, AddressInt64Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint64_t, int64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, uint64_t(*)(uint64_t, int64_t)>("aladd", aladd))));
+        std::tuple<const char*, uint64_t(*)(uint64_t, int64_t)>("aladd", aladd))));
 #endif
 
 #ifdef OMR_ENV_DATA32
@@ -1021,7 +1021,7 @@ TEST_P(AddressInt32Arithmetic, UsingLoadConstAndLoadParam) {
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, AddressInt32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint32_t, int32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, uint32_t(*)(uint32_t, int32_t)>("aiadd", aiadd))));
+        std::tuple<const char*, uint32_t(*)(uint32_t, int32_t)>("aiadd", aiadd))));
 #endif
 
 class DoubleArithmetic : public TRTest::BinaryOpTest<double> {};
@@ -1122,10 +1122,10 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, DoubleArithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
     ::testing::Values(
-        std::make_tuple<const char*, double (*)(double, double)>("dadd", add),
-        std::make_tuple<const char*, double (*)(double, double)>("dsub", sub),
-        std::make_tuple<const char*, double (*)(double, double)>("dmul", mul),
-        std::make_tuple<const char*, double (*)(double, double)>("ddiv", div)
+        std::tuple<const char*, double (*)(double, double)>("dadd", add),
+        std::tuple<const char*, double (*)(double, double)>("dsub", sub),
+        std::tuple<const char*, double (*)(double, double)>("dmul", mul),
+        std::tuple<const char*, double (*)(double, double)>("ddiv", div)
     )));
 
 template <typename T>
@@ -1202,8 +1202,8 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatUnaryArithmetic, ::testing::Combine
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_values<float>(), smallFp_unary_filter<float>)),
     ::testing::Values(
-        std::make_tuple<const char*, float (*)(float)>("fabs", static_cast<float (*)(float)>(std::abs)),
-        std::make_tuple<const char*, float (*)(float)>("fneg", fneg)
+        std::tuple<const char*, float (*)(float)>("fabs", static_cast<float (*)(float)>(std::abs)),
+        std::tuple<const char*, float (*)(float)>("fneg", fneg)
     )));
 
 double dneg(double x) {
@@ -1273,6 +1273,6 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, DoubleUnaryArithmetic, ::testing::Combin
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_values<double>(), smallFp_unary_filter<double>)),
     ::testing::Values(
-        std::make_tuple<const char*, double (*)(double)>("dabs", static_cast<double (*)(double)>(std::abs)),
-        std::make_tuple<const char*, double (*)(double)>("dneg", dneg)
+        std::tuple<const char*, double (*)(double)>("dabs", static_cast<double (*)(double)>(std::abs)),
+        std::tuple<const char*, double (*)(double)>("dneg", dneg)
     )));

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 IBM Corp. and others
+ * Copyright (c) 2014, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,7 +39,6 @@ typedef struct J9TDFGroupTp {
 	unsigned int id;
 	struct J9TDFGroupTp *next;
 } J9TDFGroupTp;
-
 
 /* Trace group and link-list of TP ids that belong to this group*/
 typedef struct J9TDFGroup {
@@ -135,6 +134,7 @@ typedef struct J9TDFOptions {
 
 	bool force;
 	bool generateCFiles;
+	bool statErrorsAreFatal;
 	bool writeToCurrentDir;
 
 	Path *rootDirectory;
@@ -151,6 +151,7 @@ typedef struct J9TDFOptions {
 		, threshold(1)
 		, force(false)
 		, generateCFiles(false)
+		, statErrorsAreFatal(false)
 		, writeToCurrentDir(false)
 		, rootDirectory(NULL)
 		, files(NULL)

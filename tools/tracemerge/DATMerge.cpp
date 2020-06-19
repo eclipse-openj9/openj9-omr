@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2018 IBM Corp. and others
+ * Copyright (c) 2014, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -90,20 +90,20 @@ startTraceMerge(int argc, char *argv[])
 
 	dir = options.rootDirectory;
 	while (NULL != dir) {
-		if (0 != FileUtils::visitDirectory(&options, dir->path, TRACE_FILE_FRAGMENT_EXT, &datMerge, DATMerge::mergeCallback))	{
+		if (0 != FileUtils::visitDirectory(&options, dir->path, TRACE_FILE_FRAGMENT_EXT, &datMerge, DATMerge::mergeCallback)) {
 			FileUtils::printError("Failed to merge PDAT files\n");
 			goto failed;
 		}
 		dir = dir->next;
 	}
 
+done:
 	argParser.freeOptions(&options);
 	return rc;
 failed:
-	argParser.freeOptions(&options);
-	return RC_FAILED;
+	rc = RC_FAILED;
+	goto done;
 }
-
 
 RCType
 DATMerge::merge(J9TDFOptions *options, const char *fromFileName)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2019 IBM Corp. and others
+ * Copyright (c) 2014, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -135,14 +135,13 @@ FileUtils::visitDirectory(J9TDFOptions *options, const char *dirName, const char
 
 	while (RC_FAILED != rc) {
 		char *nextEntry = NULL;
+		size_t nextEntrySize = 0;
 		/* skip current and parent dir */
-		if (resultBuffer[0] == '.' || 0 == strcmp(resultBuffer, "..")) {
-			Port::omrmem_free((void **)&resultBuffer);
-			rc = Port::omrfile_findnext(handle, &resultBuffer);
-			continue;
+		if ((0 == strcmp(resultBuffer, ".")) || (0 == strcmp(resultBuffer, ".."))) {
+			goto next;
 		}
 
-		size_t nextEntrySize = strlen(dirName) + 1 /* PATH_SEP */ + strlen(resultBuffer) + 1;
+		nextEntrySize = strlen(dirName) + 1 /* PATH_SEP */ + strlen(resultBuffer) + 1;
 		nextEntry = (char *)Port::omrmem_calloc(1, nextEntrySize);
 		if (NULL == nextEntry) {
 			goto failed;
@@ -151,11 +150,11 @@ FileUtils::visitDirectory(J9TDFOptions *options, const char *dirName, const char
 
 		struct J9FileStat buf;
 		if (RC_OK != Port::omrfile_stat(nextEntry, 0, &buf)) {
-			printError("stat failed %s\n", nextEntry);
-			goto failed;
-		}
-
-		if (buf.isDir) {
+			if (options->statErrorsAreFatal) {
+				printError("stat failed %s\n", nextEntry);
+				goto failed;
+			}
+		} else if (buf.isDir) {
 			visitDirectory(options, nextEntry, fileExtFilter, targetObject, callback);
 		} else {
 			const char *ext = FileUtils::getFileExt(resultBuffer);
@@ -166,6 +165,7 @@ FileUtils::visitDirectory(J9TDFOptions *options, const char *dirName, const char
 			}
 		}
 		Port::omrmem_free((void **)&nextEntry);
+next:
 		Port::omrmem_free((void **)&resultBuffer);
 		rc = Port::omrfile_findnext(handle, &resultBuffer);
 	}

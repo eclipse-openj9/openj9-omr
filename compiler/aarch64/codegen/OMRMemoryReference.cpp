@@ -423,7 +423,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             intptr_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
                                 integerChild->getInt() : integerChild->getLongInt();
             self()->addToOffset(integerChild, amount, cg);
-            integerChild->decReferenceCount();
+            cg->decReferenceCount(integerChild);
             }
          else if (integerChild->getEvaluationPriority(cg) > addressChild->getEvaluationPriority(cg))
             {
@@ -442,8 +442,8 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          {
          self()->addToOffset(subTree, subTree->getFirstChild()->getInt() <<
                      subTree->getSecondChild()->getInt(), cg);
-         subTree->getFirstChild()->decReferenceCount();
-         subTree->getSecondChild()->decReferenceCount();
+         cg->decReferenceCount(subTree->getFirstChild());
+         cg->decReferenceCount(subTree->getSecondChild());
          }
       else if ((subTree->getOpCodeValue() == TR::loadaddr) && !cg->comp()->compileRelocatableCode())
          {
@@ -495,8 +495,8 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
                }
             }
          self()->addToOffset(subTree, subTree->getSymbolReference()->getOffset(), cg);
-         subTree->decReferenceCount(); // need to decrement ref count because
-                                       // nodes weren't set on memoryreference
+         cg->decReferenceCount(subTree); // need to decrement ref count because
+                                         // nodes weren't set on memoryreference
          }
       else if (subTree->getOpCodeValue() == TR::aconst ||
                subTree->getOpCodeValue() == TR::iconst ||

@@ -166,11 +166,11 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
       result = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, cc);
       }
 
-   firstChild->decReferenceCount();
-   secondChild->decReferenceCount();
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
    if (thirdChild)
       {
-      thirdChild->decReferenceCount();
+      cg->decReferenceCount(thirdChild);
       }
    return result;
    }
@@ -353,8 +353,8 @@ static TR::Register *icmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool 
    generateCSetInstruction(cg, node, trgReg, cc);
 
    node->setRegister(trgReg);
-   firstChild->decReferenceCount();
-   secondChild->decReferenceCount();
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
    return trgReg;
    }
 
@@ -512,8 +512,8 @@ OMR::ARM64::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->stopUsingRegister(tmpReg);
 
    node->setRegister(trgReg);
-   firstChild->decReferenceCount();
-   secondChild->decReferenceCount();
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
    return trgReg;
    }
 

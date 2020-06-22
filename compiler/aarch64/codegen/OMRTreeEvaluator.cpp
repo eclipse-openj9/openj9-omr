@@ -495,7 +495,7 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
       generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xF); // dmb SY
       }
 
-   valueChild->decReferenceCount();
+   cg->decReferenceCount(valueChild);
    tempMR->decNodeReferenceCounts(cg);
 
    return NULL;
@@ -820,7 +820,7 @@ OMR::ARM64::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeGenerator *c
                }
             }
          }
-      child->decReferenceCount();
+      cg->decReferenceCount(child);
       }
 
    TR::LabelSymbol *labelSym = node->getLabel();
@@ -870,7 +870,7 @@ OMR::ARM64::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       TR::Node *child = node->getFirstChild();
       cg->evaluate(child);
       deps = generateRegisterDependencyConditions(cg, child, 0);
-      child->decReferenceCount();
+      cg->decReferenceCount(child);
       }
 
    // put the dependencies (if any) on the fence
@@ -885,7 +885,7 @@ OMR::ARM64::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::CodeGenerato
    {
    TR::Node *child = node->getFirstChild();
    TR::Register *trgReg = cg->evaluate(child);
-   child->decReferenceCount();
+   cg->decReferenceCount(child);
    node->setRegister(trgReg);
    return trgReg;
    }

@@ -93,7 +93,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::inegEvaluator(TR::Node *node, TR::CodeG
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *reg = cg->gprClobberEvaluate(firstChild);
    generateNegInstruction(cg, node, reg, reg);
-   firstChild->decReferenceCount();
+   cg->decReferenceCount(firstChild);
    return node->setRegister(reg);
    }
 
@@ -102,7 +102,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::lnegEvaluator(TR::Node *node, TR::CodeG
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *tempReg = cg->gprClobberEvaluate(firstChild);
    generateNegInstruction(cg, node, tempReg, tempReg, true);
-   firstChild->decReferenceCount();
+   cg->decReferenceCount(firstChild);
    return node->setRegister(tempReg);
    }
 
@@ -157,7 +157,7 @@ static TR::Register *extendToIntOrLongHelper(TR::Node *node, TR::InstOpCode::Mne
    generateTrg1Src1ImmInstruction(cg, op, node, trgReg, trgReg, imms);
 
    node->setRegister(trgReg);
-   child->decReferenceCount();
+   cg->decReferenceCount(child);
    return trgReg;
    }
 

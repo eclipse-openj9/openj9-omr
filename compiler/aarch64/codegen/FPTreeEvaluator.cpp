@@ -329,7 +329,7 @@ intFpTypeConversionHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeG
 
    generateTrg1Src1Instruction(cg, op, node, trgReg, srcReg);
 
-   child->decReferenceCount();
+   cg->decReferenceCount(child);
    node->setRegister(trgReg);
    return trgReg;
    }
@@ -471,11 +471,11 @@ static TR::Instruction *iffcmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
          }
       }
 
-   firstChild->decReferenceCount();
-   secondChild->decReferenceCount();
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
    if (thirdChild)
       {
-      thirdChild->decReferenceCount();
+      cg->decReferenceCount(thirdChild);
       }
    return result;
    }
@@ -594,8 +594,8 @@ static TR::Register *fcmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool 
    generateCSetInstruction(cg, node, trgReg, cc);
 
    node->setRegister(trgReg);
-   firstChild->decReferenceCount();
-   secondChild->decReferenceCount();
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
    return trgReg;
    }
 

@@ -417,8 +417,12 @@ TEST(PortSockTest, create_IPv6_socket_address)
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET6, "::1", addr6), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB,  &sockAddr, OMRSOCK_AF_INET6, addr6, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	if (0 == (OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr))) {
+		EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	} else {
+		/* Test IPv6 support on current machine by trying to bind to ::1 localhost. Mark test as success for machines that has no IPv6 support. */
+		portTestEnv->log(LEVEL_ERROR, "WARNING: Cannot test IPV6: Failed to find to IPV6 interface. \n");
+	}
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
@@ -508,6 +512,30 @@ TEST(PortSockTest, two_socket_stream_communication)
 	OMRSockAddrStorage connectedClientStreamSockAddr;
 	omrsock_socket_t connectedClientStreamSocket = NULL;
 	EXPECT_EQ(OMRPORTLIB->sock_accept(OMRPORTLIB, serverStreamSocket, &connectedClientStreamSockAddr, &connectedClientStreamSocket), 0);
+
+	const char *msg = "This is an omrsock test for 2 socket stream communications.";
+	int32_t bytesLeft = strlen(msg) + 1;
+	uint8_t *cursor = (uint8_t *)msg;
+	int32_t bytesSent = 0;
+	while (0 != bytesLeft) {
+		bytesSent = OMRPORTLIB->sock_send(OMRPORTLIB, connectedClientStreamSocket, cursor, bytesLeft, 0);
+		ASSERT_GE(bytesSent, 0);
+		bytesLeft -= bytesSent;
+		cursor += bytesSent;
+	}
+
+	char buf[100] = {0};
+	bytesLeft = strlen(msg) + 1;
+	cursor = (uint8_t *)buf;
+	int32_t bytesRecv = 0;
+	while (0 != bytesLeft) {
+		bytesRecv = OMRPORTLIB->sock_recv(OMRPORTLIB, clientStreamSocket, cursor, bytesLeft, 0);
+		ASSERT_GE(bytesRecv, 0);
+		bytesLeft -= bytesRecv;
+		cursor += bytesRecv;
+	}
+	
+	EXPECT_STREQ(msg, buf);
 
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedClientStreamSocket), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientStreamSocket), 0);

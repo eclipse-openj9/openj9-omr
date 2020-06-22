@@ -3414,7 +3414,7 @@ OMR::Power::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, 
 uint32_t
 OMR::Power::CodeGenerator::getHotLoopAlignment()
    {
-   if (self()->comp()->target().cpu.id() >= TR_PPCp9)
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
       return 16;
    else
       return 32;

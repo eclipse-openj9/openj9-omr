@@ -83,9 +83,9 @@ class PPCPairedRelocation: public TR::PPCRelocation
    TR::Node                         *_node;
    };
 
-// This class has nothing to do with AOT, but for the lack of more appropriate locations
-// this class is defined here.
-//
+// TODO(#5404): The classes defined below here are specific to Power, but are not actually AOT
+//              relocations. They are only here for lack of a better place to put them.
+
 // PPC Specific Relocation: update the immediate fields of a pair of ppc instructions
 // with the absolute address of a label (extended to 64bit as well).  For example:
 //   lis  gr3, addr_hi
@@ -107,6 +107,41 @@ class PPCPairedLabelAbsoluteRelocation : public TR::LabelRelocation
    TR::Instruction *_instr2;
    TR::Instruction *_instr3;
    TR::Instruction *_instr4;
+   };
+
+/**
+ * \brief Represents a relocation on the D34 field of a PC-relative prefixed load/store instruction
+ *        that should use an offset from a TR::LabelSymbol.
+ */
+class PPCD34LabelRelocation : public TR::LabelRelocation
+   {
+   public:
+
+   /**
+    * \brief
+    *   Creates a new PPCD34LabelRelocation.
+    *
+    * \param instr
+    *   The TR::Instruction for which this relocation was created, or \c NULL if this relocation is
+    *   not associated with an instruction object.
+    *
+    * \param cursor
+    *   The start of the prefixed load/store instruction to relocate.
+    *
+    * \param label
+    *   The label relative to which the load/store should occur.
+    *
+    * \param offset
+    *   The byte offset from the label at which the load/store should occur.
+    */
+   PPCD34LabelRelocation(TR::Instruction *instr, uint32_t *cursor, TR::LabelSymbol *label, int64_t offset)
+      : TR::LabelRelocation(reinterpret_cast<uint8_t*>(cursor), label), _instr(instr), _offset(offset) {}
+
+   virtual void apply(TR::CodeGenerator *cg);
+
+   private:
+   TR::Instruction *_instr;
+   int64_t _offset;
    };
 
 }

@@ -74,6 +74,11 @@ TR::MemoryReference *TR::MemoryReference::withDisplacement(TR::CodeGenerator *cg
    return new (cg->trHeapMemory()) TR::MemoryReference(baseReg, displacement, length, cg, 0);
    }
 
+TR::MemoryReference *TR::MemoryReference::withLabel(TR::CodeGenerator *cg, TR::LabelSymbol *label, int64_t offset, int8_t length)
+   {
+   return new (cg->trHeapMemory()) TR::MemoryReference(label, offset, length, cg);
+   }
+
 OMR::Power::MemoryReference::MemoryReference(
       TR::CodeGenerator *cg) :
    _baseRegister(NULL),
@@ -84,10 +89,32 @@ OMR::Power::MemoryReference::MemoryReference(
    _staticRelocation(NULL),
    _unresolvedSnippet(NULL),
    _conditions(NULL),
-   _flag(0)
+   _flag(0),
+   _label(NULL)
    {
    _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _offset = _symbolReference->getOffset();
+   }
+
+OMR::Power::MemoryReference::MemoryReference(
+      TR::LabelSymbol *label,
+      int64_t disp,
+      uint8_t len,
+      TR::CodeGenerator *cg) :
+   _baseRegister(NULL),
+   _baseNode(NULL),
+   _indexRegister(NULL),
+   _indexNode(NULL),
+   _modBase(NULL),
+   _unresolvedSnippet(NULL),
+   _staticRelocation(NULL),
+   _conditions(NULL),
+   _length(len),
+   _offset(disp),
+   _flag(0),
+   _label(label)
+   {
+   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    }
 
 OMR::Power::MemoryReference::MemoryReference(
@@ -104,7 +131,8 @@ OMR::Power::MemoryReference::MemoryReference(
    _staticRelocation(NULL),
    _conditions(NULL),
    _length(len),
-   _flag(0)
+   _flag(0),
+   _label(NULL)
    {
    _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _offset = _symbolReference->getOffset();
@@ -133,7 +161,8 @@ OMR::Power::MemoryReference::MemoryReference(
    _conditions(NULL),
    _length(len),
    _offset(disp),
-   _flag(0)
+   _flag(0),
+   _label(NULL)
    {
    _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    }
@@ -147,7 +176,7 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, uint32_t
    : _baseRegister(NULL), _indexRegister(NULL), _unresolvedSnippet(NULL),
      _modBase(NULL), _flag(0), _baseNode(NULL), _indexNode(NULL),
      _symbolReference(rootLoadOrStore->getSymbolReference()), _offset(0),
-     _conditions(NULL), _length(len), _staticRelocation(NULL)
+     _conditions(NULL), _length(len), _staticRelocation(NULL), _label(NULL)
    {
    TR::Compilation *comp = cg->comp();
    TR::SymbolReference *ref = rootLoadOrStore->getSymbolReference();
@@ -223,7 +252,7 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *node, TR::SymbolReference
    : _baseRegister(NULL), _indexRegister(NULL), _unresolvedSnippet(NULL),
      _modBase(NULL), _flag(0), _baseNode(NULL), _indexNode(NULL),
      _symbolReference(symRef), _offset(0),
-     _conditions(NULL), _length(len), _staticRelocation(NULL)
+     _conditions(NULL), _length(len), _staticRelocation(NULL), _label(NULL)
    {
    TR::Symbol *symbol = symRef->getSymbol();
 
@@ -266,6 +295,7 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *node, TR::MemoryReference
    _staticRelocation  = NULL;
    _conditions        = NULL;
    mr._flag           = 0;
+   _label             = mr._label;
 
    TR_ASSERT(mr.getStaticRelocation() == NULL, "Relocated memory reference should not be re-used.");
 
@@ -1196,6 +1226,9 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
    // start of the instruction stream at the moment. As a result, we cannot peform expansion if the first instruction is
    // a memory instruction.
    TR_ASSERT_FATAL(currentInstruction->getPrev(), "The first instruction cannot be a memory instruction");
+
+   if (self()->getLabel())
+      return currentInstruction;
 
    self()->mapOpCode(currentInstruction);
 

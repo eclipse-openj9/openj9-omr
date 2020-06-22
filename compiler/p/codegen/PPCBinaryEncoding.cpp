@@ -49,6 +49,7 @@
 #include "infra/Bit.hpp"
 #include "infra/List.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
+#include "p/codegen/PPCAOTRelocation.hpp"
 #include "p/codegen/PPCInstruction.hpp"
 #include "p/codegen/PPCOpsDefines.hpp"
 #include "runtime/Runtime.hpp"
@@ -2077,6 +2078,7 @@ TR::RealRegister *toRealBaseRegister(TR::Instruction *instr, TR::Register *r)
 
 void fillMemoryReferenceD16RA(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
    {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getLabel(), "Cannot use PC-relative load with non-prefixed instruction");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getIndexRegister(), "Cannot use index-form MemoryReference with non-index-form instruction");
    fillFieldD16(instr, cursor, mr->getOffset());
    fillFieldRA(instr, cursor, toRealBaseRegister(instr, mr->getBaseRegister()));
@@ -2084,6 +2086,7 @@ void fillMemoryReferenceD16RA(TR::Instruction *instr, uint32_t *cursor, TR::Memo
 
 void fillMemoryReferenceDSRA(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
    {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getLabel(), "Cannot use PC-relative load with non-prefixed instruction");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getIndexRegister(), "Cannot use index-form MemoryReference with non-index-form instruction");
    fillFieldDS(instr, cursor, mr->getOffset());
    fillFieldRA(instr, cursor, toRealBaseRegister(instr, mr->getBaseRegister()));
@@ -2092,13 +2095,27 @@ void fillMemoryReferenceDSRA(TR::Instruction *instr, uint32_t *cursor, TR::Memor
 void fillMemoryReferenceD34RAR(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getIndexRegister(), "Cannot use index-form MemoryReference with non-index-form instruction");
-   fillFieldD34(instr, cursor, mr->getOffset());
-   fillFieldRA(instr, cursor + 1, toRealBaseRegister(instr, mr->getBaseRegister()));
-   fillFieldR(instr, cursor, 0);
+   if (mr->getLabel())
+      {
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getBaseRegister(), "Cannot have base register on PC-relative MemoryReference");
+
+      if (mr->getLabel()->getCodeLocation())
+         fillFieldD34(instr, cursor, static_cast<uint64_t>(mr->getLabel()->getCodeLocation() - reinterpret_cast<uint8_t*>(cursor)) + mr->getOffset());
+      else
+         instr->cg()->addRelocation(new (instr->cg()->trHeapMemory()) TR::PPCD34LabelRelocation(instr, cursor, mr->getLabel(), mr->getOffset()));
+      fillFieldR(instr, cursor, 1);
+      }
+   else
+      {
+      fillFieldD34(instr, cursor, mr->getOffset());
+      fillFieldRA(instr, cursor + 1, toRealBaseRegister(instr, mr->getBaseRegister()));
+      fillFieldR(instr, cursor, 0);
+      }
    }
 
 void fillMemoryReferenceRARB(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
    {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getLabel(), "Cannot use PC-relative load with non-prefixed instruction");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, mr->getOffset() == 0, "Cannot use non-index-form MemoryReference with index-form instruction");
    fillFieldRA(instr, cursor, toRealBaseRegister(instr, mr->getBaseRegister()));
    fillFieldRB(instr, cursor, toRealRegister(mr->getIndexRegister()));
@@ -2274,6 +2291,17 @@ void TR::PPCTrg1MemInstruction::fillBinaryEncodingFields(uint32_t *cursor)
 TR::Instruction *TR::PPCTrg1MemInstruction::expandInstruction()
    {
    return getMemoryReference()->expandInstruction(self(), cg());
+   }
+
+void TR::PPCD34LabelRelocation::apply(TR::CodeGenerator *cg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(_instr, getLabel()->getCodeLocation(), "Attempt to relocate against an unencoded label");
+
+   fillFieldD34(
+      _instr,
+      reinterpret_cast<uint32_t*>(getUpdateLocation()),
+      static_cast<uint64_t>(getLabel()->getCodeLocation() - getUpdateLocation()) + _offset
+   );
    }
 
 uint8_t *TR::PPCControlFlowInstruction::generateBinaryEncoding()

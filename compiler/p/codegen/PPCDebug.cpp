@@ -755,6 +755,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, bool d_form)
       print(pOutFile, mr->getBaseRegister());
       trfprintf(pOutFile, ", ");
       }
+   else if (mr->getLabel() != NULL)
+      {
+      print(pOutFile, mr->getLabel());
+      trfprintf(pOutFile, ", ");
+      }
 
    if (mr->getIndexRegister() != NULL)
       print(pOutFile, mr->getIndexRegister());

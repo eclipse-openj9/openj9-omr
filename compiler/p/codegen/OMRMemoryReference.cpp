@@ -1214,6 +1214,11 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
       TR_ASSERT_FATAL_WITH_INSTRUCTION(currentInstruction, !self()->getModBase(), "Cannot have mod base and base register");
       }
 
+   // MemoryReference instruction expansion as implemented here is deprecated and should not be
+   // used for prefixed instructions, since this implementation assumes 16-bit displacements.
+   if (currentInstruction->getOpCode().getTemplateFormat() == FORMAT_DIRECT_PREFIXED)
+      return currentInstruction;
+
    TR::Compilation *comp = cg->comp();
    TR::Node *node = currentInstruction->getNode();
    TR::Instruction *prevInstruction = currentInstruction->getPrev();

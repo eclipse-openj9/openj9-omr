@@ -811,6 +811,64 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseLargeNegativeDisp) {
     ASSERT_EQ(0, mr->getOffset());
 }
 
+TEST_F(PPCMemInstructionExpansionTest, prefixNoExpandPositiveDisp) {
+    TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
+    TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
+    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0x1ffffffff, 4);
+
+    TR::Node* fakeNode = TR::Node::create(TR::treetop);
+    TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
+    TR::Instruction* instr = generateTrg1MemInstruction(
+        cg(),
+        TR::InstOpCode::plwz,
+        fakeNode,
+        dataReg,
+        mr
+    );
+
+    ASSERT_EQ(instr, instr->expandInstruction());
+    ASSERT_EQ(startInstr, cg()->getFirstInstruction());
+    ASSERT_EQ(instr, startInstr->getNext());
+    ASSERT_EQ(instr, cg()->getAppendInstruction());
+    ASSERT_FALSE(instr->getNext());
+
+    ASSERT_EQ(TR::InstOpCode::plwz, instr->getOpCodeValue());
+    ASSERT_EQ(dataReg, instr->getTargetRegister(0));
+    ASSERT_EQ(mr, instr->getMemoryReference());
+    ASSERT_EQ(baseReg, mr->getBaseRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
+    ASSERT_EQ(0x1ffffffff, mr->getOffset());
+}
+
+TEST_F(PPCMemInstructionExpansionTest, prefixNoExpandNegativeDisp) {
+    TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
+    TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
+    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, -0x200000000, 4);
+
+    TR::Node* fakeNode = TR::Node::create(TR::treetop);
+    TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
+    TR::Instruction* instr = generateTrg1MemInstruction(
+        cg(),
+        TR::InstOpCode::plwz,
+        fakeNode,
+        dataReg,
+        mr
+    );
+
+    ASSERT_EQ(instr, instr->expandInstruction());
+    ASSERT_EQ(startInstr, cg()->getFirstInstruction());
+    ASSERT_EQ(instr, startInstr->getNext());
+    ASSERT_EQ(instr, cg()->getAppendInstruction());
+    ASSERT_FALSE(instr->getNext());
+
+    ASSERT_EQ(TR::InstOpCode::plwz, instr->getOpCodeValue());
+    ASSERT_EQ(dataReg, instr->getTargetRegister(0));
+    ASSERT_EQ(mr, instr->getMemoryReference());
+    ASSERT_EQ(baseReg, mr->getBaseRegister());
+    ASSERT_FALSE(mr->getIndexRegister());
+    ASSERT_EQ(-0x200000000, mr->getOffset());
+}
+
 TEST_F(PPCMemInstructionExpansionTest, tocSmallPositiveDisp) {
     if (!cg()->comp()->target().is64Bit())
         return;

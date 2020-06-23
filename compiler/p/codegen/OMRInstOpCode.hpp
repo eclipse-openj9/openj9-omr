@@ -177,10 +177,12 @@ class InstOpCode: public OMR::InstOpCode
             return FORMAT_NONE;
          case FORMAT_DIRECT_PREFIXED:
          case FORMAT_RT_D34_RA_R:
+         case FORMAT_RTP_D34_RA_R:
          case FORMAT_FRT_D34_RA_R:
          case FORMAT_VRT_D34_RA_R:
          case FORMAT_XT5_D34_RA_R:
          case FORMAT_RS_D34_RA_R:
+         case FORMAT_RSP_D34_RA_R:
          case FORMAT_FRS_D34_RA_R:
          case FORMAT_VRS_D34_RA_R:
          case FORMAT_XS5_D34_RA_R:

@@ -104,6 +104,28 @@ static void fillFieldRT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    }
 
 /**
+ * Fills in the RTp field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | RTp      |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
+static void fillFieldRTP(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RTp field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RTp field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(
+      instr,
+      (toRealRegister(reg)->getRegisterNumber() - TR::RealRegister::gr0) % 2 == 0,
+      "Attempt to fill RTp field with %s, which is an odd GPR",
+      reg->getRegisterName(instr->cg()->comp())
+   );
+   reg->setRegisterFieldRT(cursor);
+   }
+
+/**
  * Fills in the FRT field of a binary-encoded instruction with the provided floating-point
  * register:
  *
@@ -179,6 +201,28 @@ static void fillFieldRS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RS field with null register");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RS field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   reg->setRegisterFieldRS(cursor);
+   }
+
+/**
+ * Fills in the RSp field of a binary-encoded instruction with the provided general-purpose
+ * register:
+ *
+ * +------+----------+--------------------------------------------+
+ * |      | RSp      |                                            |
+ * | 0    | 6        | 11                                         |
+ * +------+----------+--------------------------------------------+
+ */
+static void fillFieldRSP(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill RSp field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_GPR, "Attempt to fill RSp field with %s, which is not a GPR", reg->getRegisterName(instr->cg()->comp()));
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(
+      instr,
+      (toRealRegister(reg)->getRegisterNumber() - TR::RealRegister::gr0) % 2 == 0,
+      "Attempt to fill RSp field with %s, which is an odd GPR",
+      reg->getRegisterName(instr->cg()->comp())
+   );
    reg->setRegisterFieldRS(cursor);
    }
 
@@ -1543,6 +1587,13 @@ void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldR(self(), cursor, 0);
          break;
 
+      case FORMAT_RTP_D34_RA_R:
+         fillFieldRTP(self(), cursor + 1, trg);
+         fillFieldRA(self(), cursor + 1, src);
+         fillFieldD34(self(), cursor, imm);
+         fillFieldR(self(), cursor, 0);
+         break;
+
       case FORMAT_FRT_D34_RA_R:
          fillFieldFRT(self(), cursor + 1, trg);
          fillFieldRA(self(), cursor + 1, src);
@@ -2081,6 +2132,11 @@ void TR::PPCMemSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillMemoryReferenceD34RAR(self(), cursor, memRef);
          break;
 
+      case FORMAT_RSP_D34_RA_R:
+         fillFieldRSP(self(), cursor + 1, src);
+         fillMemoryReferenceD34RAR(self(), cursor, memRef);
+         break;
+
       case FORMAT_FRS_D34_RA_R:
          fillFieldFRS(self(), cursor + 1, src);
          fillMemoryReferenceD34RAR(self(), cursor, memRef);
@@ -2167,6 +2223,11 @@ void TR::PPCTrg1MemInstruction::fillBinaryEncodingFields(uint32_t *cursor)
 
       case FORMAT_RT_D34_RA_R:
          fillFieldRT(self(), cursor + 1, trg);
+         fillMemoryReferenceD34RAR(self(), cursor, memRef);
+         break;
+
+      case FORMAT_RTP_D34_RA_R:
+         fillFieldRTP(self(), cursor + 1, trg);
          fillMemoryReferenceD34RAR(self(), cursor, memRef);
          break;
 

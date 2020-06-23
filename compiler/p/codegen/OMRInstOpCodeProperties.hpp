@@ -13068,7 +13068,7 @@
    /* .description =    "Prefixed Load Quadword", */
    /* .prefix      = */ 0x04000000,
    /* .opcode      = */ 0xE0000000,
-   /* .format      = */ FORMAT_RT_D34_RA_R,
+   /* .format      = */ FORMAT_RTP_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsLoad,
    },
@@ -13206,7 +13206,7 @@
    /* .description =    "Prefixed Store Quadword", */
    /* .prefix      = */ 0x04000000,
    /* .opcode      = */ 0xF0000000,
-   /* .format      = */ FORMAT_RS_D34_RA_R,
+   /* .format      = */ FORMAT_RSP_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsStore,
    },

@@ -756,6 +756,21 @@ FORMAT_RT_RA_RB_BFC,
 // +------+----------+----------+---------------------------------+
 FORMAT_RT_D34_RA_R,
 
+// Format for load instructions for loading into a GPR pair with an MLS/8LS prefix word and a
+// D-form instruction word. An RTp field encodes the target register pair, a D field (split between
+// d0 in the prefix word and d1 in the instruction word) encodes the offset, and an R field is used
+// as a flag to indicate the use of PC-relative addressing:
+//
+// +-------------+----+------+------------------------------------+
+// |             | R  |      | d0                                 |
+// | 0           | 11 | 12   | 14                                 |
+// +-------------+----+------+------------------------------------+
+// +------+----------+----------+---------------------------------+
+// |      | RTp      | RA       | d1                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RTP_D34_RA_R,
+
 // Format for load instructions for loading into an FPR with an MLS/8LS prefix word and a D-form
 // instruction word. An FRT field encodes the target register, a D field (split between d0 in the
 // prefix word and d1 in the instruction word) encodes the offset, and an R field is used as a flag
@@ -815,6 +830,21 @@ FORMAT_XT5_D34_RA_R,
 // | 0    | 6        | 11       | 16                              |
 // +------+----------+----------+---------------------------------+
 FORMAT_RS_D34_RA_R,
+
+// Format for store instructions for storing a GPR pair with an MLS/8LS prefix word and a D-form
+// instruction word. An RSp field encodes the source register pair, a D field (split between d0 in
+// the prefix word and d1 in the instruction word) encodes the offset, and an R field is used as a
+// flag to indicate the use of PC-relative addressing:
+//
+// +-------------+----+------+------------------------------------+
+// |             | R  |      | d0                                 |
+// | 0           | 11 | 12   | 14                                 |
+// +-------------+----+------+------------------------------------+
+// +------+----------+----------+---------------------------------+
+// |      | RSp      | RA       | d1                              |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RSP_D34_RA_R,
 
 // Format for store instructions for storing an FPR with an MLS/8LS prefix word and a D-form
 // instruction word. An FRS field encodes the source register, a D field (split between d0 in the

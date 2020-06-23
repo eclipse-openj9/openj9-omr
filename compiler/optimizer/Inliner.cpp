@@ -3974,11 +3974,16 @@ void TR_InlinerBase::getSymbolAndFindInlineTargets(TR_CallStack *callStack, TR_C
          if (callsite->_initialCalleeMethod)
             callsite->_receiverClass = callsite->_initialCalleeMethod->classOfMethod();
 
-         int32_t len;
-         const char * s = callNode->getChild(callNode->getFirstArgumentIndex())->getTypeSignature(len);
-         TR_OpaqueClassBlock * type = s ? fe()->getClassFromSignature(s, len, callsite->_callerResolvedMethod, true) : 0;
-         if (type && (!callsite->_receiverClass || (type != callsite->_receiverClass && fe()->isInstanceOf(type, callsite->_receiverClass, true, true) == TR_yes)))
-            callsite->_receiverClass = type;
+         TR::Node* receiverNode = callNode->getChild(callNode->getFirstArgumentIndex());
+         TR::Symbol* receiverSymbol = receiverNode->getOpCode().hasSymbolReference() ? receiverNode->getSymbol() : NULL;
+         if (!receiverSymbol || !receiverSymbol->isParm() || !receiverNode->getSymbolReference()->getOwningMethodSymbol(comp())->isParmVariant(receiverSymbol->getParmSymbol()))
+            {
+            int32_t len;
+            const char * s = receiverNode->getTypeSignature(len);
+            TR_OpaqueClassBlock * type = s ? fe()->getClassFromSignature(s, len, callsite->_callerResolvedMethod, true) : 0;
+            if (type && (!callsite->_receiverClass || (type != callsite->_receiverClass && fe()->isInstanceOf(type, callsite->_receiverClass, true, true) == TR_yes)))
+               callsite->_receiverClass = type;
+            }
          }
       }
 

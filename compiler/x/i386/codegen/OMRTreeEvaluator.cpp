@@ -465,7 +465,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
                }
             else
                {
-               TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_CX8), "Assumption of support of the CMPXCHG8B instruction failed in lstoreEvaluator()" );
+               TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_CX8), "Assumption of support of the CMPXCHG8B instruction failed in lstoreEvaluator()" );
 
                eaxReg = cg->allocateRegister();
                edxReg = cg->allocateRegister();
@@ -500,7 +500,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
             }
          else if(symRef && symRef->isUnresolved() && symRef->getSymbol()->isVolatile() && (!comp->getOption(TR_DisableNewX86VolatileSupport) && cg->comp()->target().is32Bit()) )
             {
-            TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_CX8), "Assumption of support of the CMPXCHG8B instruction failed in lstoreEvaluator()" );
+            TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_CX8), "Assumption of support of the CMPXCHG8B instruction failed in lstoreEvaluator()" );
             eaxReg = cg->allocateRegister();
             edxReg = cg->allocateRegister();
             ecxReg = cg->allocateRegister();
@@ -3147,7 +3147,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::performLload(TR::Node *node, TR::Me
          }
       else
          {
-         TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_CX8), "Assumption of support of the CMPXCHG8B instruction failed in performLload()" );
+         TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_CX8), "Assumption of support of the CMPXCHG8B instruction failed in performLload()" );
 
          TR::Register *ecxReg=NULL, *ebxReg=NULL;
          TR::RegisterDependencyConditions  *deps = NULL;

@@ -103,7 +103,7 @@ int32_t memoryBarrierRequired(
 
    static char *mbou = feGetEnv("TR_MemoryBarriersOnUnresolved");
 
-   TR_ASSERT_FATAL(cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.requiresLFence() == cg->getX86ProcessorInfo().requiresLFENCE(), "requiresLFence() failed\n");
+   TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.requiresLFence() == cg->getX86ProcessorInfo().requiresLFENCE(), "requiresLFence() failed\n");
    
    // Unresolved references are assumed to be volatile until they can be proven otherwise.
    // The memory barrier will be removed by PicBuilder when the reference is resolved and
@@ -143,8 +143,8 @@ int32_t memoryBarrierRequired(
    static char *disableExplicitFences = feGetEnv("TR_DisableExplicitFences");
    if (barrier)
       {
-      TR_ASSERT_FATAL(cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.supportsLFence() == cg->getX86ProcessorInfo().supportsLFence(), "supportsLFence() failed\n");
-      TR_ASSERT_FATAL(cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.supportsMFence() == cg->getX86ProcessorInfo().supportsMFence(), "supportsMFence() failed\n");
+      TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.supportsLFence() == cg->getX86ProcessorInfo().supportsLFence(), "supportsLFence() failed\n");
+      TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.supportsMFence() == cg->getX86ProcessorInfo().supportsMFence(), "supportsMFence() failed\n");
       if ((!cg->comp()->target().cpu.supportsLFence() ||
            !cg->comp()->target().cpu.supportsMFence()) || disableExplicitFences)
          {
@@ -1395,7 +1395,7 @@ TR::X86RegInstruction::enlarge(int32_t requestedEnlargementSize, int32_t maxEnla
    if (disableRexExpansion || cg()->comp()->getOption(TR_DisableZealousCodegenOpts))
       return OMR::X86::EnlargementResult(0, 0);
 
-   TR_ASSERT_FATAL(cg()->comp()->isOutOfProcessCompilation() || cg()->comp()->target().cpu.supportsAVX() == cg()->getX86ProcessorInfo().supportsAVX(), "supportsAVX() failed\n");
+   TR_ASSERT_FATAL(cg()->comp()->compileRelocatableCode() || cg()->comp()->isOutOfProcessCompilation() || cg()->comp()->target().cpu.supportsAVX() == cg()->getX86ProcessorInfo().supportsAVX(), "supportsAVX() failed\n");
 
    if (getOpCode().info().supportsAVX() && cg()->comp()->target().cpu.supportsAVX())
       return OMR::X86::EnlargementResult(0, 0); // REX expansion isn't allowed for AVX instructions

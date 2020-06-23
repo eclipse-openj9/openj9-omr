@@ -210,9 +210,9 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    bool supportsSSE2 = false;
    _targetProcessorInfo.initialize(self());
 
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.isGenuineIntel() == _targetProcessorInfo.isGenuineIntel(), "isGenuineIntel() failed\n");
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.prefersMultiByteNOP() == _targetProcessorInfo.prefersMultiByteNOP(), "prefersMultiByteNOP() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.isGenuineIntel() == _targetProcessorInfo.isGenuineIntel(), "isGenuineIntel() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.prefersMultiByteNOP() == _targetProcessorInfo.prefersMultiByteNOP(), "prefersMultiByteNOP() failed\n");
 
    // Pick a padding table
    //
@@ -231,13 +231,13 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    //
 
 #if defined(TR_TARGET_X86) && !defined(J9HAMMER)
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == _targetProcessorInfo.supportsSSE2(), "supportsSSE2() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == _targetProcessorInfo.supportsSSE2(), "supportsSSE2() failed\n");
    
    if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) && comp->target().cpu.testOSForSSESupport())
       supportsSSE2 = true;
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
 
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_RTM) == _targetProcessorInfo.supportsTM(), "supportsTM() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_RTM) == _targetProcessorInfo.supportsTM(), "supportsTM() failed\n");
 
    if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_RTM) && !comp->getOption(TR_DisableTM))
       {
@@ -247,7 +247,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
         *
         * TODO: Need to figure out from which mode of Broadwell start supporting TM
         */
-      TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELHASWELL) == _targetProcessorInfo.isIntelHaswell(), "isIntelHaswell() failed\n");
+      TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELHASWELL) == _targetProcessorInfo.isIntelHaswell(), "isIntelHaswell() failed\n");
       if (!comp->target().cpu.is(OMR_PROCESSOR_X86_INTELHASWELL))
          {
          if (comp->target().is64Bit())
@@ -273,7 +273,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    //
    if (self()->useSSEForDoublePrecision())
       {
-      TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
+      TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
       static char *forceMOVLPD = feGetEnv("TR_forceMOVLPDforDoubleLoads");
       if (comp->target().cpu.isAuthenticAMD() || forceMOVLPD)
          {
@@ -291,7 +291,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    // 32-bit platforms must check the processor and OS.
    // 64-bit platforms unconditionally support prefetching.
    //
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) == _targetProcessorInfo.supportsSSE(), "supportsSSE() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) == _targetProcessorInfo.supportsSSE(), "supportsSSE() failed\n");
    if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) && comp->target().cpu.testOSForSSESupport())
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
       {
@@ -301,8 +301,8 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    // Enable software prefetch of the TLH and configure the TLH prefetching
    // geometry.
    //
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELCORE2) == comp->cg()->getX86ProcessorInfo().isIntelCore2(), "isIntelCore2() failed\n");
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELNEHALEM) == comp->cg()->getX86ProcessorInfo().isIntelNehalem(), "isIntelNehalem() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELCORE2) == comp->cg()->getX86ProcessorInfo().isIntelCore2(), "isIntelCore2() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELNEHALEM) == comp->cg()->getX86ProcessorInfo().isIntelNehalem(), "isIntelNehalem() failed\n");
    if (((!comp->getOption(TR_DisableTLHPrefetch) && (comp->target().cpu.is(OMR_PROCESSOR_X86_INTELCORE2) || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELNEHALEM))) ||
        (comp->getOption(TR_TLHPrefetch) && self()->targetSupportsSoftwarePrefetches())))
       {
@@ -395,7 +395,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       static bool disableX86TRTO = (bool)feGetEnv("TR_disableX86TRTO");
       if (!disableX86TRTO)
          {
-         TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == self()->getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1() failed\n");
+         TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == self()->getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1() failed\n");
          if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1))
             {
             self()->setSupportsArrayTranslateTRTO();
@@ -404,8 +404,8 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       static bool disableX86TROT = (bool)feGetEnv("TR_disableX86TROT");
       if (!disableX86TROT)
          {
-         TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == self()->getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1() failed\n");
-         TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == self()->getX86ProcessorInfo().supportsSSE2(), "supportsSSE4_1() failed\n");
+         TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == self()->getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1() failed\n");
+         TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == self()->getX86ProcessorInfo().supportsSSE2(), "supportsSSE4_1() failed\n");
          if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1))
             {
             self()->setSupportsArrayTranslateTROT();
@@ -444,9 +444,9 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    // Make a conservative estimate of the boundary over which an executable instruction cannot
    // be patched.
    //
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.isGenuineIntel() == _targetProcessorInfo.isGenuineIntel(), "isGenuineIntel() failed\n");
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
-   TR_ASSERT_FATAL(comp->isOutOfProcessCompilation() || comp->target().cpu.is(OMR_PROCESSOR_X86_AMDFAMILY15H) == _targetProcessorInfo.isAMD15h(), "isAMD15h() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.isGenuineIntel() == _targetProcessorInfo.isGenuineIntel(), "isGenuineIntel() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.is(OMR_PROCESSOR_X86_AMDFAMILY15H) == _targetProcessorInfo.isAMD15h(), "isAMD15h() failed\n");
    int32_t boundary;
    if (comp->target().cpu.isGenuineIntel() || (comp->target().cpu.isAuthenticAMD() && comp->target().cpu.is(OMR_PROCESSOR_X86_AMDFAMILY15H)))
       boundary = 32;
@@ -1008,7 +1008,7 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
          else
             return false;
       case TR::vmul:
-         TR_ASSERT_FATAL(self()->comp()->isOutOfProcessCompilation() || self()->getX86ProcessorInfo().supportsSSE4_1() == self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1), "supportsSSE4_1() failed\n");
+         TR_ASSERT_FATAL(self()->comp()->compileRelocatableCode() || self()->comp()->isOutOfProcessCompilation() || self()->getX86ProcessorInfo().supportsSSE4_1() == self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1), "supportsSSE4_1() failed\n");
          if (dt == TR::Float || dt == TR::Double || (dt == TR::Int32 && self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1)))
             return true;
          else
@@ -1065,7 +1065,7 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
 bool
 OMR::X86::CodeGenerator::getSupportsEncodeUtf16LittleWithSurrogateTest()
    {
-   TR_ASSERT_FATAL(self()->comp()->isOutOfProcessCompilation() || self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == TR::CodeGenerator::getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1()");
+   TR_ASSERT_FATAL(self()->comp()->compileRelocatableCode() || self()->comp()->isOutOfProcessCompilation() || self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == TR::CodeGenerator::getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1()");
    return self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) &&
           !self()->comp()->getOption(TR_DisableSIMDUTF16LEEncoder);
    }
@@ -1073,7 +1073,7 @@ OMR::X86::CodeGenerator::getSupportsEncodeUtf16LittleWithSurrogateTest()
 bool
 OMR::X86::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
    {
-   TR_ASSERT_FATAL(self()->comp()->isOutOfProcessCompilation() || self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == TR::CodeGenerator::getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1()");
+   TR_ASSERT_FATAL(self()->comp()->compileRelocatableCode() || self()->comp()->isOutOfProcessCompilation() || self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == TR::CodeGenerator::getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1()");
    return self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) &&
           !self()->comp()->getOption(TR_DisableSIMDUTF16BEEncoder);
    }

@@ -107,6 +107,13 @@ public:
     */
    static TR::CPU detect(OMRPortLibrary * const omrPortLib);
 
+  /** 
+    * @brief Returns the processor type and features that will be used by portable AOT compilations
+    * @param[in] omrPortLib : the port library
+    * @return TR::CPU
+    */
+   static TR::CPU detectRelocatable(OMRPortLibrary * const omrPortLib);
+
    TR_Processor setProcessor(TR_Processor p) { return(_processor = p); }
 
    // Processor identity and generation comparisons

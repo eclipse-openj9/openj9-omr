@@ -3602,6 +3602,7 @@ OMR::Options::jitPostProcess()
       {
       TR::Compiler->host.setSMP(false);
       TR::Compiler->target.setSMP(false);
+      TR::Compiler->relocatableTarget.setSMP(false);
       }
 
    if (_logFileName)
@@ -5182,12 +5183,6 @@ bool OMR::Options::showOptionsInEffect()
 
 bool OMR::Options::fePreProcess(void*)
    {
-#if !defined(J9_PROJECT_SPECIFIC)
-   TR::Compiler->host.setNumberOfProcessors(2);
-   TR::Compiler->target.setNumberOfProcessors(2);
-   TR::Compiler->host.setSMP(true);
-   TR::Compiler->target.setSMP(true);
-#endif
    return true;
    }
 

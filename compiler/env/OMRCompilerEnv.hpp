@@ -70,6 +70,10 @@ public:
    //
    TR::Environment target;
 
+   // Compilation relocatable target environment
+   //
+   TR::Environment relocatableTarget;
+
    // Class information in this compilation environment.
    //
    TR::ClassEnv cls;
@@ -113,6 +117,10 @@ protected:
    // Initialize 'target' environment for this compiler
    //
    void initializeTargetEnvironment();
+
+   // Initialize 'relocatableTarget' environment for this compiler
+   //
+   void initializeRelocatableTargetEnvironment();
 
    // Initialize 'host' environment for this compiler
    //

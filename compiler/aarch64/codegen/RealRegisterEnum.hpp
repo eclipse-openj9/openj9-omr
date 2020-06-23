@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -55,11 +55,11 @@
       x26               = 27,
       x27               = 28,
       x28               = 29,
+      LastAssignableGPR = x28,
       x29               = 30,
       x30               = 31,
       lr                = x30,
       LastGPR           = x30,
-      LastAssignableGPR = x29,
       sp                = 32,
       xzr               = 33,
       v0                = 34,

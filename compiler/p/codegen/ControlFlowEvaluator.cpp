@@ -227,6 +227,34 @@ TR::InstOpCode::Mnemonic compareConditionToBranch(CompareCondition cond)
 
 /**
  * \brief
+ *    Gets the opcode of an isel instruction that selects based on the given condition code bit.
+ *
+ * \param cond
+ *    The condition code bit to select based on.
+ *
+ * \return
+ *    An extended mnemonic for the isel instruction that selects based on the given condition code
+ *    bit.
+ */
+TR::InstOpCode::Mnemonic compareConditionToISel(TR::RealRegister::CRCC crcc)
+   {
+   switch (crcc)
+      {
+      case TR::RealRegister::CRCC_EQ:
+         return TR::InstOpCode::iseleq;
+      case TR::RealRegister::CRCC_LT:
+         return TR::InstOpCode::isellt;
+      case TR::RealRegister::CRCC_GT:
+         return TR::InstOpCode::iselgt;
+      case TR::RealRegister::CRCC_FU:
+         return TR::InstOpCode::iselun;
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CRCC %d in compareConditionToISel", static_cast<int>(crcc));
+      }
+   }
+
+/**
+ * \brief
  *    Represents information about a comparison to be performed.
  */
 struct CompareInfo
@@ -1705,53 +1733,95 @@ TR::Register *OMR::Power::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::Co
    TR::Node *condNode = node->getFirstChild();
    TR::Node *trueNode = node->getSecondChild();
    TR::Node *falseNode = node->getThirdChild();
-   bool selectReverse = checkSelectReverse(cg, node, trueNode, falseNode);
 
-   TR::Register *trgReg = cg->gprClobberEvaluate(trueNode);
-   TR::Register *falseReg = cg->evaluate(falseNode);
-
-   if (falseReg->containsCollectedReference())
-      trgReg->setContainsCollectedReference();
-
+   TR::Register *trgReg;
    TR::Register *condReg = cg->allocateRegister(TR_CCR);
-   auto cond = evaluateToConditionRegister(condReg, node, condNode, cg);
-   if (selectReverse)
-      cond = reverseCondition(cond);
 
-   TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
-   startLabel->setStartInternalControlFlow();
-
-   TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
-   endLabel->setEndInternalControlFlow();
-
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, startLabel);
-   generateConditionalBranchInstruction(cg, compareConditionToBranch(cond), node, endLabel, condReg);
-
-   TR::RegisterDependencyConditions *deps;
-
-   if (node->getOpCodeValue() == TR::lselect && !cg->comp()->target().is64Bit())
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
       {
-      deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg->trMemory());
-      deps->addPostCondition(condReg, TR::RealRegister::NoReg);
-      deps->addPostCondition(trgReg->getLowOrder(), TR::RealRegister::NoReg);
-      deps->addPostCondition(trgReg->getHighOrder(), TR::RealRegister::NoReg);
-      deps->addPostCondition(falseReg->getLowOrder(), TR::RealRegister::NoReg);
-      deps->addPostCondition(falseReg->getHighOrder(), TR::RealRegister::NoReg);
+      TR::Register *trueReg = cg->evaluate(trueNode);
+      TR::Register *falseReg = cg->evaluate(falseNode);
 
-      generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg->getLowOrder(), falseReg->getLowOrder());
-      generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg->getHighOrder(), falseReg->getHighOrder());
+      auto cond = evaluateToConditionRegister(condReg, node, condNode, cg);
+
+      CRCompareCondition crCond = compareConditionInCR(cond);
+      TR::InstOpCode::Mnemonic iselOp = compareConditionToISel(crCond.crcc);
+
+      if (node->getOpCodeValue() == TR::lselect && !cg->comp()->target().is64Bit())
+         {
+         trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
+         if (crCond.isReversed)
+            {
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg->getLowOrder(), falseReg->getLowOrder(), trueReg->getLowOrder(), condReg);
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg->getHighOrder(), falseReg->getHighOrder(), trueReg->getHighOrder(), condReg);
+            }
+         else
+            {
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg->getLowOrder(), trueReg->getLowOrder(), falseReg->getLowOrder(), condReg);
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg->getHighOrder(), trueReg->getHighOrder(), falseReg->getHighOrder(), condReg);
+            }
+         }
+      else
+         {
+         trgReg = cg->allocateRegister();
+         if (crCond.isReversed)
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg, falseReg, trueReg, condReg);
+         else
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg, trueReg, falseReg, condReg);
+         }
+
+      if (trueReg->containsCollectedReference() || falseReg->containsCollectedReference())
+         trgReg->setContainsCollectedReference();
       }
    else
       {
-      deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
-      deps->addPostCondition(condReg, TR::RealRegister::NoReg);
-      deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
-      deps->addPostCondition(falseReg, TR::RealRegister::NoReg);
+      bool selectReverse = checkSelectReverse(cg, node, trueNode, falseNode);
 
-      generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg, falseReg);
+      trgReg = cg->gprClobberEvaluate(trueNode);
+      TR::Register *falseReg = cg->evaluate(falseNode);
+
+      if (falseReg->containsCollectedReference())
+         trgReg->setContainsCollectedReference();
+
+      auto cond = evaluateToConditionRegister(condReg, node, condNode, cg);
+      if (selectReverse)
+         cond = reverseCondition(cond);
+
+      TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+      startLabel->setStartInternalControlFlow();
+
+      TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
+      endLabel->setEndInternalControlFlow();
+
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, startLabel);
+      generateConditionalBranchInstruction(cg, compareConditionToBranch(cond), node, endLabel, condReg);
+
+      TR::RegisterDependencyConditions *deps;
+
+      if (node->getOpCodeValue() == TR::lselect && !cg->comp()->target().is64Bit())
+         {
+         deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg->trMemory());
+         deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+         deps->addPostCondition(trgReg->getLowOrder(), TR::RealRegister::NoReg);
+         deps->addPostCondition(trgReg->getHighOrder(), TR::RealRegister::NoReg);
+         deps->addPostCondition(falseReg->getLowOrder(), TR::RealRegister::NoReg);
+         deps->addPostCondition(falseReg->getHighOrder(), TR::RealRegister::NoReg);
+
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg->getLowOrder(), falseReg->getLowOrder());
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg->getHighOrder(), falseReg->getHighOrder());
+         }
+      else
+         {
+         deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+         deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+         deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+         deps->addPostCondition(falseReg, TR::RealRegister::NoReg);
+
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg, falseReg);
+         }
+
+      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, endLabel, deps);
       }
-
-   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, endLabel, deps);
 
    node->setRegister(trgReg);
    cg->decReferenceCount(condNode);

@@ -27,7 +27,6 @@
  */
 
 #include "omrcfg.h"
-#if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrport.h"
 #include "omrporterror.h"
 #include "omrsockptb.h"
@@ -181,5 +180,3 @@ omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const 
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
-
-#endif /* defined(OMR_PORT_SOCKET_SUPPORT) */

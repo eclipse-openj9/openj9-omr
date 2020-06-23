@@ -43,9 +43,7 @@
 #include "omrthread.h"
 #include "omrmemcategories.h"
 #include "omrporterror.h"
-#if defined(OMR_PORT_SOCKET_SUPPORT)
 #include "omrportsock.h"
-#endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 #if defined(OMR_OPT_CUDA)
 #include "omrcuda.h"
 #endif /* OMR_OPT_CUDA */
@@ -2110,7 +2108,6 @@ typedef struct OMRPortLibrary {
 	uintptr_t (*heap_query_size)(struct OMRPortLibrary *portLibrary, struct J9Heap *heap, void *address) ;
 	/** see @ref omrheap.c::omrheap_grow "omrheap_grow"*/
 	BOOLEAN (*heap_grow)(struct OMRPortLibrary *portLibrary, struct J9Heap *heap, uintptr_t growAmount) ;
-#if defined(OMR_PORT_SOCKET_SUPPORT)
 	/** see @ref omrsock.c::omrsock_startup "omrsock_startup"*/
 	int32_t (*sock_startup)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrsock.c::omrsock_getaddrinfo_create_hints "omrsock_getaddrinfo_create_hints"*/
@@ -2161,7 +2158,6 @@ typedef struct OMRPortLibrary {
 	uint32_t (*sock_htonl)(struct OMRPortLibrary *portLibrary, uint32_t val) ;
 	/** see @ref omrsock.c::omrsock_inet_pton "omrsock_inet_pton"*/
 	int32_t (*sock_inet_pton)(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result) ;
-#endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 #if defined(OMR_OPT_CUDA)
 	/** CUDA configuration data */
 	J9CudaConfig *cuda_configData;
@@ -2606,7 +2602,6 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrmem_categories_decrement_counters(param1,param2) privateOmrPortLibrary->mem_categories_decrement_counters((param1), (param2))
 #define omrheap_query_size(param1,param2) privateOmrPortLibrary->heap_query_size(privateOmrPortLibrary, (param1), (param2))
 #define omrheap_grow(param1,param2) privateOmrPortLibrary->heap_grow(privateOmrPortLibrary, (param1), (param2))
-#if defined(OMR_PORT_SOCKET_SUPPORT)
 #define omrsock_startup() privateOmrPortLibrary->sock_startup(privateOmrPortLibrary)
 #define omrsock_getaddrinfo_create_hints(param1,param2,param3,param4,param5) privateOmrPortLibrary->sock_getaddrinfo_create_hints(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
 #define omrsock_getaddrinfo(param1,param2,param3,param4) privateOmrPortLibrary->sock_getaddrinfo(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
@@ -2632,7 +2627,6 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsock_htons(param1) privateOmrPortLibrary->sock_htons(privateOmrPortLibrary, (param1))
 #define omrsock_htonl(param1) privateOmrPortLibrary->sock_htonl(privateOmrPortLibrary, (param1))
 #define omrsock_inet_pton(param1,param2,param3) privateOmrPortLibrary->sock_inet_pton(privateOmrPortLibrary, (param1), (param2), (param3))
-#endif /* defined(OMR_PORT_SOCKET_SUPPORT) */
 
 #if defined(OMR_OPT_CUDA)
 #define omrcuda_startup() \

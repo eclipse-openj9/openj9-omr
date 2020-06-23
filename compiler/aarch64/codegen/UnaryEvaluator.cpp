@@ -163,12 +163,36 @@ static TR::Register *extendToIntOrLongHelper(TR::Node *node, TR::InstOpCode::Mne
 
 TR::Register *OMR::ARM64::TreeEvaluator::b2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return extendToIntOrLongHelper(node, TR::InstOpCode::sbfmw, 7, cg);
+   TR::Node *child = node->getFirstChild();
+   TR::Register *trgReg = cg->gprClobberEvaluate(child);
+   if (child->getOpCodeValue() == TR::bload || child->getOpCodeValue() == TR::bloadi)
+      {
+      // No sign extension needed.
+      }
+   else
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmw, node, trgReg, trgReg, 7);
+      }
+   node->setRegister(trgReg);
+   cg->decReferenceCount(child);
+   return trgReg;
    }
 
 TR::Register *OMR::ARM64::TreeEvaluator::s2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return extendToIntOrLongHelper(node, TR::InstOpCode::sbfmw, 15, cg);
+   TR::Node *child = node->getFirstChild();
+   TR::Register *trgReg = cg->gprClobberEvaluate(child);
+   if (child->getOpCodeValue() == TR::sload || child->getOpCodeValue() == TR::sloadi)
+      {
+      // No sign extension needed.
+      }
+   else
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmw, node, trgReg, trgReg, 15);
+      }
+   node->setRegister(trgReg);
+   cg->decReferenceCount(child);
+   return trgReg;
    }
 
 TR::Register *OMR::ARM64::TreeEvaluator::b2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)

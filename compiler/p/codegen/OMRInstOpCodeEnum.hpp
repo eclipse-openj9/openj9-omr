@@ -549,12 +549,6 @@
    vgdnop,           // Virtual Guard NOP instruction
    probenop,         // Probe NOP (for RI)
    iflong,           // compare and branch long
-   setblong,         // compare long and set boolean
-   setbool,          // compare and set boolean (int or simple float)
-   setbflt,          // compare float and set boolean (complex float)
-   lcmp,             // compare long and set result -1,0,1
-   flcmpl,           // compare float and set result -1(less,unordered),0(equal),1(greater)
-   flcmpg,           // compare float and set result -1(less),0(equal),1(greater,unordered)
    idiv,             // integer divide
    ldiv,             // long divide for 64 bit target
    irem,             // integer remainder

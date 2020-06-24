@@ -2448,7 +2448,6 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
    switch(getOpCodeValue())
       {
       case TR::InstOpCode::iflong:
-      case TR::InstOpCode::setbool:
       case TR::InstOpCode::idiv:
       case TR::InstOpCode::ldiv:
       case TR::InstOpCode::iselect:
@@ -2467,12 +2466,6 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
                setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 6);
             }
          break;
-      case TR::InstOpCode::setbflt:
-         setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 5);
-         break;
-      case TR::InstOpCode::setblong:
-      case TR::InstOpCode::flcmpg:
-      case TR::InstOpCode::flcmpl:
       case TR::InstOpCode::irem:
       case TR::InstOpCode::lrem:
       case TR::InstOpCode::d2i:
@@ -2483,9 +2476,6 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
             setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 6);
        else
             setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 8);
-         break;
-      case TR::InstOpCode::lcmp:
-         setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 11);
          break;
       default:
          TR_ASSERT(false,"unknown control flow instruction (estimateBinaryLength)");

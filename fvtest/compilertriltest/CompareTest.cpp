@@ -870,6 +870,24 @@ int32_t fcmple(float l, float r) {
     return (l <= r) ? 1 : 0;
 }
 
+int32_t fcmpl(float l, float r) {
+    if (l == r)
+        return 0;
+    else if (l > r)
+        return 1;
+    else
+        return -1;
+}
+
+int32_t fcmpg(float l, float r) {
+    if (l == r)
+        return 0;
+    else if (l < r)
+        return -1;
+    else
+        return 1;
+}
+
 class FloatCompare : public TRTest::OpCodeTest<int32_t, float, float> {};
 
 TEST_P(FloatCompare, UsingConst) {
@@ -969,7 +987,9 @@ INSTANTIATE_TEST_CASE_P(CompareTest, FloatCompare, ::testing::Combine(
         std::tuple<const char*, int32_t (*)(float, float)>("fcmpgt", fcmpgt),
         std::tuple<const char*, int32_t (*)(float, float)>("fcmpge", fcmpge),
         std::tuple<const char*, int32_t (*)(float, float)>("fcmplt", fcmplt),
-        std::tuple<const char*, int32_t (*)(float, float)>("fcmple", fcmple)
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmple", fcmple),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpl", fcmpl),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpg", fcmpg)
     )));
 
 int32_t dcmpeq(double l, double r) {
@@ -1006,6 +1026,24 @@ int32_t dcmple(double l, double r) {
     if (std::isnan(l)) return 0;
     if (std::isnan(r)) return 0;
     return (l <= r) ? 1 : 0;
+}
+
+int32_t dcmpl(double l, double r) {
+    if (l == r)
+        return 0;
+    else if (l > r)
+        return 1;
+    else
+        return -1;
+}
+
+int32_t dcmpg(double l, double r) {
+    if (l == r)
+        return 0;
+    else if (l < r)
+        return -1;
+    else
+        return 1;
 }
 
 class DoubleCompare : public TRTest::OpCodeTest<int32_t, double, double> {};
@@ -1107,7 +1145,9 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleCompare, ::testing::Combine(
         std::tuple<const char*, int32_t (*)(double, double)>("dcmpgt", dcmpgt),
         std::tuple<const char*, int32_t (*)(double, double)>("dcmpge", dcmpge),
         std::tuple<const char*, int32_t (*)(double, double)>("dcmplt", dcmplt),
-        std::tuple<const char*, int32_t (*)(double, double)>("dcmple", dcmple)
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmple", dcmple),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpl", dcmpl),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpg", dcmpg)
     )));
 
 int32_t iffcmpeq(float l, float r) {

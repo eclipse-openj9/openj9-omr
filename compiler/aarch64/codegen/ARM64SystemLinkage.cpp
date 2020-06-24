@@ -46,7 +46,6 @@ uint32_t TR::ARM64SystemLinkage::_globalRegisterNumberToRealRegisterMap[] =
    TR::RealRegister::x10,
    TR::RealRegister::x9,
    TR::RealRegister::x8, // indirect result location register
-   TR::RealRegister::x18, // platform register
    // callee-saved registers
    TR::RealRegister::x28,
    TR::RealRegister::x27,
@@ -127,9 +126,10 @@ TR::ARM64SystemLinkage::ARM64SystemLinkage(TR::CodeGenerator *cg)
 
    _properties._registerFlags[TR::RealRegister::x16]   = ARM64_Reserved; // IP0
    _properties._registerFlags[TR::RealRegister::x17]   = ARM64_Reserved; // IP1
+   _properties._registerFlags[TR::RealRegister::x18]   = ARM64_Reserved; // Platform Register
 
-   for (i = TR::RealRegister::x18; i <= TR::RealRegister::x28; i++)
-      _properties._registerFlags[i] = Preserved; // x18 - x28 Preserved
+   for (i = TR::RealRegister::x19; i <= TR::RealRegister::x28; i++)
+      _properties._registerFlags[i] = Preserved; // x19 - x28 Preserved
 
    _properties._registerFlags[TR::RealRegister::x29]   = ARM64_Reserved; // FP
    _properties._registerFlags[TR::RealRegister::x30]   = ARM64_Reserved; // LR
@@ -180,7 +180,7 @@ TR::ARM64SystemLinkage::ARM64SystemLinkage(TR::CodeGenerator *cg)
    _properties._returnRegisters[0]  = TR::RealRegister::x0;
    _properties._returnRegisters[1]  = TR::RealRegister::v0;
 
-   _properties._numAllocatableIntegerRegisters = 27;
+   _properties._numAllocatableIntegerRegisters = 26;
    _properties._numAllocatableFloatRegisters   = 32;
 
    _properties._preservedRegisterMapForGC   = 0x00000000; // ToDo: Determine the value
@@ -191,7 +191,7 @@ TR::ARM64SystemLinkage::ARM64SystemLinkage(TR::CodeGenerator *cg)
    _properties._vtableIndexArgumentRegister = TR::RealRegister::NoReg;
    _properties._j9methodArgumentRegister    = TR::RealRegister::NoReg;
 
-   _properties._numberOfDependencyGPRegisters = 32; // To be determined
+   _properties._numberOfDependencyGPRegisters = 19 + 24; // x0-x18, v0-v7, v16-v31
    setOffsetToFirstParm(0); // To be determined
    _properties._offsetToFirstLocal            = 0; // To be determined
    }
@@ -219,6 +219,10 @@ TR::ARM64SystemLinkage::initARM64RealRegisterLinkage()
    reg->setState(TR::RealRegister::Locked);
    reg->setAssignedRegister(reg);
 
+   reg = machine->getRealRegister(TR::RealRegister::RegNum::x18); // Platform Register
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
+
    reg = machine->getRealRegister(TR::RealRegister::RegNum::x29); // FP
    reg->setState(TR::RealRegister::Locked);
    reg->setAssignedRegister(reg);
@@ -239,8 +243,8 @@ TR::ARM64SystemLinkage::initARM64RealRegisterLinkage()
    for (icount = TR::RealRegister::x0; icount <= TR::RealRegister::x15; icount++)
       machine->getRealRegister((TR::RealRegister::RegNum)icount)->setWeight(0xf000);
 
-   // assign "maximum" weight to registers x18-x28
-   for (icount = TR::RealRegister::x18; icount <= TR::RealRegister::x28; icount++)
+   // assign "maximum" weight to registers x19-x28
+   for (icount = TR::RealRegister::x19; icount <= TR::RealRegister::x28; icount++)
       machine->getRealRegister((TR::RealRegister::RegNum)icount)->setWeight(0xf000);
 
    // assign "maximum" weight to registers v0-v31
@@ -806,6 +810,15 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
          TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
          }
       numIntegerArgs++;
+      }
+
+   for (i = (TR::RealRegister::RegNum)((uint32_t)TR::RealRegister::x0 + properties.getNumIntArgRegs()); i <= TR::RealRegister::LastAssignableGPR; i++)
+      {
+      if (!properties.getPreserved((TR::RealRegister::RegNum)i))
+         {
+         // NULL dependency for non-preserved regs
+         TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_GPR, cg());
+         }
       }
 
    int32_t floatRegsUsed = (numFloatArgs > properties.getNumFloatArgRegs()) ? properties.getNumFloatArgRegs() : numFloatArgs;

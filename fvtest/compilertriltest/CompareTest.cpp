@@ -1239,7 +1239,6 @@ class FloatCompareOrUnordered : public TRTest::OpCodeTest<int32_t, float, float>
 TEST_P(FloatCompareOrUnordered, UsingConst) {
     SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
     SKIP_ON_AARCH64(MissingImplementation);
-    SKIP_ON_RISCV(MissingImplementation);
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -1273,7 +1272,6 @@ TEST_P(FloatCompareOrUnordered, UsingConst) {
 TEST_P(FloatCompareOrUnordered, UsingLoadParam) {
     SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
     SKIP_ON_AARCH64(MissingImplementation);
-    SKIP_ON_RISCV(MissingImplementation);
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -1353,7 +1351,6 @@ class DoubleCompareOrUnordered : public TRTest::OpCodeTest<int32_t, double, doub
 TEST_P(DoubleCompareOrUnordered, UsingConst) {
     SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
     SKIP_ON_AARCH64(MissingImplementation);
-    SKIP_ON_RISCV(MissingImplementation);
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -1387,7 +1384,6 @@ TEST_P(DoubleCompareOrUnordered, UsingConst) {
 TEST_P(DoubleCompareOrUnordered, UsingLoadParam) {
     SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
     SKIP_ON_AARCH64(MissingImplementation);
-    SKIP_ON_RISCV(MissingImplementation);
 
     auto param = TRTest::to_struct(GetParam());
 

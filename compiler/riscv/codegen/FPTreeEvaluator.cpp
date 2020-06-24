@@ -585,6 +585,77 @@ compareNotEqualHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGener
    return trgReg;
    }
 
+static TR::Register *
+compareUnorderedHelper(TR::Node *node, TR::InstOpCode::Mnemonic cmpOp, bool reverse, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+
+   TR::Register *trgReg = cg->allocateRegister();
+
+   /*
+    * To avoid explicit NaN checks, we perform opposite comparison
+    * and flip the result, i.e, when computing "(x >= y) or unordered",
+    * actually compute "not (x < y)"
+    *
+    * The cmpOp passed as parameter is already the opposite comparison.
+    */
+
+   if (reverse)
+      generateRTYPE(cmpOp, node, trgReg, src2Reg, src1Reg, cg);
+   else
+      generateRTYPE(cmpOp, node, trgReg, src1Reg, src2Reg, cg);
+
+   generateITYPE(TR::InstOpCode::_xori, node, trgReg, trgReg, 1, cg);
+
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
+static TR::Register *
+compareEqualOrUnorderedHelper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+
+   TR::Register *trgReg = cg->allocateRegister();
+
+   /*
+    * Here we exploit the fact that exactly one of the following conditions
+    * must always be true:
+    *
+    *   1. x < y
+    *   2. x > y
+    *   3. x == y
+    *   4  x and y are unordered
+    *
+    *   We want to check whether conditions 3 or 4 are true, but we can as well check that
+    *   neither 1 nor 2 are true, i.e., compute !(x < y || x > y). This takes only two
+    *   comparisons.
+    */
+   TR::InstOpCode::Mnemonic ltOp = firstChild->getDataType().isDouble()
+                                       ? TR::InstOpCode::_flt_d
+                                       : TR::InstOpCode::_flt_s;
+   TR::Register *tmpReg = cg->allocateRegister();
+
+   generateRTYPE(ltOp,                  node, trgReg, src1Reg, src2Reg, cg);
+   generateRTYPE(ltOp,                  node, tmpReg, src2Reg, src1Reg, cg);
+   generateRTYPE(TR::InstOpCode::_or,   node, trgReg, trgReg,  tmpReg,  cg);
+   generateITYPE(TR::InstOpCode::_xori, node, trgReg, trgReg,  1,       cg);
+
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   cg->stopUsingRegister(tmpReg);
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
 TR::Register *
 OMR::RV::TreeEvaluator::fcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -623,9 +694,9 @@ OMR::RV::TreeEvaluator::fcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return compareHelper(node, TR::InstOpCode::_feq_d, false, cg);
-	}
+   {
+   return compareHelper(node, TR::InstOpCode::_feq_d, false, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -635,9 +706,9 @@ OMR::RV::TreeEvaluator::dcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	return compareHelper(node, TR::InstOpCode::_flt_d, false, cg);
-	}
+   {
+   return compareHelper(node, TR::InstOpCode::_flt_d, false, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -844,40 +915,105 @@ OMR::RV::TreeEvaluator::ifdcmpleuEvaluator(TR::Node *node, TR::CodeGenerator *cg
 	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
 
-TR::Register *
+TR::Register*
+OMR::RV::TreeEvaluator::fcmpequEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return compareEqualOrUnorderedHelper(node, cg);
+   }
+
+TR::Register*
+OMR::RV::TreeEvaluator::fcmpneuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   /*
+    * To implement fcmpneu, we just use feq.s and flip the result without
+    * further checks, i.e.,
+    *
+    *   feq.s  trgReg, src1Reg, src2Reg
+    *   xori   trgReg, trgReg, trgReg
+    *
+    * This works since feq.s returns 0 if either operand is NaN.
+    *
+    * We reuse compareUnorderedHelper() with feq.s to do this since
+    * it essentially generates a comparison followed by xori to negate
+    * the result.
+    */
+
+   return compareUnorderedHelper(node, TR::InstOpCode::_feq_s, false, cg);
+   }
+
+TR::Register*
+OMR::RV::TreeEvaluator::fcmpltuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return compareUnorderedHelper(node, TR::InstOpCode::_fle_s, true, cg);
+   }
+
+TR::Register*
+OMR::RV::TreeEvaluator::fcmpgeuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return compareUnorderedHelper(node, TR::InstOpCode::_flt_s, false, cg);
+   }
+
+TR::Register*
+OMR::RV::TreeEvaluator::fcmpgtuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return compareUnorderedHelper(node, TR::InstOpCode::_fle_s, false, cg);
+   }
+
+TR::Register*
+OMR::RV::TreeEvaluator::fcmpleuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return compareUnorderedHelper(node, TR::InstOpCode::_flt_s, true, cg);
+   }
+
+TR::Register*
 OMR::RV::TreeEvaluator::dcmpequEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::dcmpequEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return compareEqualOrUnorderedHelper(node, cg);
+   }
 
-TR::Register *
+TR::Register*
+OMR::RV::TreeEvaluator::dcmpneuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   /*
+    * To implement dcmpneu, we just use feq.d and flip the result without
+    * further checks, i.e.,
+    *
+    *   feq.d  trgReg, src1Reg, src2Reg
+    *   xori   trgReg, trgReg, trgReg
+    *
+    * This works since feq.d returns 0 if either operand is NaN.
+    *
+    * We reuse compareUnorderedHelper() with feq.d to do this since
+    * it essentially generates a comparison followed by xori to negate
+    * the result.
+    */
+
+   return compareUnorderedHelper(node, TR::InstOpCode::_feq_d, false, cg);
+   }
+
+TR::Register*
 OMR::RV::TreeEvaluator::dcmpltuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::dcmpltuEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return compareUnorderedHelper(node, TR::InstOpCode::_fle_d, true, cg);
+   }
 
-TR::Register *
+TR::Register*
 OMR::RV::TreeEvaluator::dcmpgeuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::dcmpgeuEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return compareUnorderedHelper(node, TR::InstOpCode::_flt_d, false, cg);
+   }
 
-TR::Register *
+TR::Register*
 OMR::RV::TreeEvaluator::dcmpgtuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::dcmpgtuEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return compareUnorderedHelper(node, TR::InstOpCode::_fle_d, false, cg);
+   }
 
-TR::Register *
+TR::Register*
 OMR::RV::TreeEvaluator::dcmpleuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::dcmpleuEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return compareUnorderedHelper(node, TR::InstOpCode::_flt_d, true, cg);
+   }
 
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpgEvaluator(TR::Node *node, TR::CodeGenerator *cg)

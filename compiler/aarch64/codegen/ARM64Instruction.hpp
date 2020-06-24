@@ -203,6 +203,7 @@ public:
       : TR::Instruction(op, node, cg),
         _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(NULL)
       {
+      setNeedsAOTRelocation();
       }
    /*
     * @brief Constructor
@@ -219,6 +220,7 @@ public:
       : TR::Instruction(op, node, precedingInstruction, cg),
         _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(NULL)
       {
+      setNeedsAOTRelocation();
       }
    /*
     * @brief Constructor
@@ -235,6 +237,7 @@ public:
       : TR::Instruction(op, node, cg),
         _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(sr)
       {
+      setNeedsAOTRelocation();
       }
    /*
     * @brief Constructor
@@ -252,6 +255,7 @@ public:
       : TR::Instruction(op, node, precedingInstruction, cg),
         _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(sr)
       {
+      setNeedsAOTRelocation();
       }
 
    /**

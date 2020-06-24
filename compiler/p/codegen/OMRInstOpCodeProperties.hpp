@@ -13383,8 +13383,8 @@
    /* .name        = */ "setbc",
    /* .description =    "Set Boolean Condition", */
    /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .opcode      = */ 0x7C000300,
+   /* .format      = */ FORMAT_RT_BI,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -13394,8 +13394,8 @@
    /* .name        = */ "setbcr",
    /* .description =    "Set Boolean Condition Reverse", */
    /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .opcode      = */ 0x7C000340,
+   /* .format      = */ FORMAT_RT_BI,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -13405,8 +13405,8 @@
    /* .name        = */ "setnbc",
    /* .description =    "Set Negative Boolean Condition", */
    /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .opcode      = */ 0x7C000380,
+   /* .format      = */ FORMAT_RT_BI,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -13416,8 +13416,8 @@
    /* .name        = */ "setnbcr",
    /* .description =    "Set Negative Boolean Condition Reverse", */
    /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .opcode      = */ 0x7C0003C0,
+   /* .format      = */ FORMAT_RT_BI,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },

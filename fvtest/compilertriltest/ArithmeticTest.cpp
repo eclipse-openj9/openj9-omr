@@ -696,7 +696,8 @@ TEST_P(FloatArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -756,7 +757,8 @@ TEST_P(FloatArithmetic, UsingLoadParamAndLoadConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -1030,7 +1032,8 @@ TEST_P(DoubleArithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -1091,6 +1094,7 @@ TEST_P(DoubleArithmetic, UsingLoadParamAndLoadConst) {
 
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -1146,6 +1150,7 @@ TEST_P(FloatUnaryArithmetic, UsingConst) {
 
     if ( std::isnan(param.value) ) {
        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -1217,6 +1222,7 @@ TEST_P(DoubleUnaryArithmetic, UsingConst) {
 
     if ( std::isnan(param.value) ) {
        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};

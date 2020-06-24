@@ -985,6 +985,7 @@ TEST_P(FloatToInt32, UsingConst) {
 
     if ( std::isnan(param.value) ) {
        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[160] = {0};
@@ -1051,6 +1052,7 @@ TEST_P(FloatToInt64, UsingConst) {
 
     if ( std::isnan(param.value) ) {
        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[160] = {0};
@@ -1111,7 +1113,8 @@ TEST_P(DoubleToInt32, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.value) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[512] = {0};
@@ -1172,7 +1175,8 @@ TEST_P(DoubleToInt64, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.value) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[512] = {0};
@@ -1248,7 +1252,8 @@ TEST_P(FloatToDouble, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.value) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[160] = {0};
@@ -1317,7 +1322,8 @@ TEST_P(DoubleToFloat, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.value) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[512] = {0};

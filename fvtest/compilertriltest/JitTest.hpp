@@ -704,18 +704,20 @@ AssertionResult CmpHelperEQ<volatile double, volatile double>(const char* lhs_ex
    SKIP_ON(OMRPORT_ARCH_X86, reason)
 
 /*
- * @brief A macro to allow a test to be conditionally skipped on X86 running under the Windows operating system.
+ * @brief A macro to allow a test to be conditionally skipped under the Windows operating system.
  *
  * The basic syntax for using this macro is:
  *
- *    SKIP_ON_X86_WINDOWS(<reason>) << <message>;
+ *    SKIP_ON_WINDOWS(<reason>) << <message>;
  *
  */
-#define SKIP_ON_X86_WINDOWS(reason) \
-   switch (0) case 0: default: /* guard against ambiguous else */ \
-   if (strcmp("Windows", omrsysinfo_get_OS_type()) != 0) { /* allow test to proceed normally */ } \
-   else \
-      SKIP_ON(OMRPORT_ARCH_X86, reason)
+#if defined (OMR_OS_WINDOWS)
+   #define SKIP_ON_WINDOWS(reason) \
+      SKIP_IF(true, reason)
+#else
+   #define SKIP_ON_WINDOWS(reason) \
+      SKIP_IF(false, reason)
+#endif /* defined(OMR_OS_WINDOWS) */
 
 /*
  * @brief A macro to allow a test to be conditionally skipped on POWER

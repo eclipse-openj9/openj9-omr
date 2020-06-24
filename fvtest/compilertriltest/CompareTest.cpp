@@ -775,7 +775,8 @@ TEST_P(FloatCompare, UsingConst) {
         SKIP_ON_POWER(KnownBug) << "fcmpne returns wrong value on POWER (see #5152)";
     }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -888,7 +889,8 @@ TEST_P(DoubleCompare, UsingConst) {
         SKIP_ON_POWER(KnownBug) << "dcmpne returns wrong value on POWER (see #5152)";
     }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -1004,6 +1006,7 @@ TEST_P(FloatIfCompare, UsingConst) {
     }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[256] = {0};
@@ -1125,6 +1128,7 @@ TEST_P(DoubleIfCompare, UsingConst) {
     }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};

@@ -128,6 +128,7 @@ OMR::ResolvedMethodSymbol::ResolvedMethodSymbol(TR_ResolvedMethod * method, TR::
      _firstJitTempIndex(-1),
      _cannotAttemptOSR(NULL),
      _properties(0),
+     _variantParms(NULL),
      _bytecodeProfilingOffsets(comp->allocator())
    {
    _flags.setValue(KindMask, IsResolvedMethod);
@@ -2385,6 +2386,33 @@ OMR::ResolvedMethodSymbol::setUsesSinglePrecisionMode(bool b)
    {
    TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
    _methodFlags.set(SinglePrecisionMode, b);
+   }
+
+bool
+OMR::ResolvedMethodSymbol::isParmVariant(TR::ParameterSymbol * parmSymbol)
+   {
+   if (_variantParms == NULL)
+      self()->detectVariantParms();
+   const auto numberOfParameters = self()->getResolvedMethod()->numberOfParameters();
+   TR_ASSERT_FATAL(parmSymbol->getOrdinal() < numberOfParameters,
+                  "Parm %d (%p) cannot be owned by current method that only has %d parms", parmSymbol->getOrdinal(), parmSymbol, numberOfParameters);
+   TR_ASSERT_FATAL(self()->getParmSymRef(parmSymbol->getSlot())->getSymbol()->getParmSymbol() == parmSymbol,
+                  "Parm %p is not owned by current method %s", parmSymbol, self()->signature(self()->comp()->trMemory()));
+   return _variantParms->get(parmSymbol->getOrdinal());
+   }
+
+void
+OMR::ResolvedMethodSymbol::detectVariantParms()
+   {
+   TR_ASSERT_FATAL(self()->getFirstTreeTop() != NULL && self()->getLastTreeTop() != NULL, "Can only detect variant parms for methods with Trees.");
+   if (_variantParms == NULL)
+      _variantParms = new (self()->comp()->trHeapMemory()) TR_BitVector(self()->getResolvedMethod()->numberOfParameters(), self()->comp()->trMemory(), heapAlloc, notGrowable);
+   for (TR::TreeTop* tt = self()->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
+      {
+      TR::Node* storeNode = tt->getNode()->getStoreNode();
+      if (storeNode && storeNode->getSymbol()->isParm())
+         _variantParms->set(storeNode->getSymbol()->getParmSymbol()->getOrdinal());
+      }
    }
 
 /**

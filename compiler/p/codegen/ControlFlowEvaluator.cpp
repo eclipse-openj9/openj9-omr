@@ -2051,6 +2051,22 @@ void generateCompareBranchSequence(
    cg->stopUsingRegister(condReg);
    }
 
+void generateCompareSetBoolean(
+      TR::Register *trgReg,
+      TR::Node *node,
+      TR::Node *firstChild,
+      TR::Node *secondChild,
+      const CompareInfo& compareInfo,
+      TR::CodeGenerator *cg)
+   {
+   TR::Register *condReg = cg->allocateRegister(TR_CCR);
+   CRCompareCondition cond = compareConditionInCR(evaluateCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg));
+
+   generateTrg1Src1ImmInstruction(cg, cond.isReversed ? TR::InstOpCode::setbcr : TR::InstOpCode::setbc, node, trgReg, condReg, cond.crcc);
+
+   cg->stopUsingRegister(condReg);
+   }
+
 TR::Register *intEqualityEvaluator(TR::Node *node, bool flipResult, TR::DataTypes type, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
@@ -2058,16 +2074,15 @@ TR::Register *intEqualityEvaluator(TR::Node *node, bool flipResult, TR::DataType
 
    TR::Register *trgReg = cg->allocateRegister();
 
-   if (cg->comp()->target().is32Bit() && type == TR::Int64)
+   CompareInfo compareInfo(flipResult ? CompareCondition::ne : CompareCondition::eq, type, false);
+
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
       {
-      generateCompareBranchSequence(
-         trgReg,
-         node,
-         firstChild,
-         secondChild,
-         CompareInfo(flipResult ? CompareCondition::ne : CompareCondition::eq, type, false),
-         cg
-      );
+      generateCompareSetBoolean(trgReg, node, firstChild, secondChild, compareInfo, cg);
+      }
+   else if (cg->comp()->target().is32Bit() && type == TR::Int64)
+      {
+      generateCompareBranchSequence(trgReg, node, firstChild, secondChild, compareInfo, cg);
       }
    else
       {
@@ -2213,7 +2228,11 @@ TR::Register *intOrderEvaluator(TR::Node *node, const CompareInfo& compareInfo, 
 
    TR::Register *trgReg = cg->allocateRegister();
 
-   if (isSimpleSignedCompareToKnownSign(secondChild, compareInfo, cg))
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      {
+      generateCompareSetBoolean(trgReg, node, firstChild, secondChild, compareInfo, cg);
+      }
+   else if (isSimpleSignedCompareToKnownSign(secondChild, compareInfo, cg))
       {
       int32_t bitLength = getTypeBitLength(compareInfo.type, cg);
       TR::Register *signReg;
@@ -2584,7 +2603,10 @@ TR::Register *floatCompareEvaluator(TR::Node *node, const CompareInfo& compareIn
 
    TR::Register *trgReg = cg->allocateRegister();
 
-   generateCompareBranchSequence(trgReg, node, node->getFirstChild(), node->getSecondChild(), compareInfo, cg);
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      generateCompareSetBoolean(trgReg, node, firstChild, secondChild, compareInfo, cg);
+   else
+      generateCompareBranchSequence(trgReg, node, firstChild, secondChild, compareInfo, cg);
 
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);

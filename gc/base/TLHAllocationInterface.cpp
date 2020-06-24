@@ -282,6 +282,11 @@ MM_TLHAllocationInterface::flushCache(MM_EnvironmentBase *env)
 	MM_GCExtensionsBase *extensions = env->getExtensions();
 	
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)	
+	/* update traceAllocationBytes with allocatedSizeInsideTLH during flushing TLH Cache */
+	uintptr_t allocatedSizeInsideTLH = _owningEnv->getAllocatedSizeInsideTLH();
+	_owningEnv->_oolTraceAllocationBytes += allocatedSizeInsideTLH;
+	_owningEnv->_traceAllocationBytes += allocatedSizeInsideTLH;
+
 	if (!_owningEnv->isInlineTLHAllocateEnabled()) {
 		/* Clear out realHeapTop field; tlh code below will take care of rest */
 		_owningEnv->enableInlineTLHAllocate();

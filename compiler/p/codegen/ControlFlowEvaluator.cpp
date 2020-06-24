@@ -2714,70 +2714,68 @@ TR::Register *OMR::Power::TreeEvaluator::dcmpleuEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *trgReg           = cg->allocateRegister();
-   TR::Node     *firstChild  = node->getFirstChild();
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+
+   TR::Register *trgReg = cg->allocateRegister();
    TR::Register *src1Reg = cg->evaluate(firstChild);
-   TR::Node     *secondChild = node->getSecondChild();
-   TR::Register *temp1Reg, *temp2Reg, *temp3Reg;
 
    if (cg->comp()->target().is64Bit())
       {
-      if (secondChild->getOpCode().isLoadConst() && secondChild->getLongInt()==0)
+      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
          {
-         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+         TR::Register *condReg = cg->allocateRegister(TR_CCR);
+
+         if (secondChild->getOpCode().isLoadConst() && is16BitSignedImmediate(secondChild->get64bitIntegralValue()))
             {
-            TR::Register *condReg = cg->allocateRegister(TR_CCR);
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi8, node, condReg, src1Reg, 0);
-            generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, trgReg, condReg);
-            cg->stopUsingRegister(condReg);
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi8, node, condReg, src1Reg, secondChild->get64bitIntegralValue());
             }
          else
             {
-            temp1Reg = cg->allocateRegister();
-
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sradi, node, trgReg, src1Reg, 63);
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, temp1Reg, src1Reg, -1);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::adde, node, trgReg, trgReg, trgReg);
-
-            cg->stopUsingRegister(temp1Reg);
+            TR::Register *src2Reg = cg->evaluate(secondChild);
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp8, node, condReg, src1Reg, src2Reg);
             }
+
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, trgReg, condReg);
+
+         cg->stopUsingRegister(condReg);
+         }
+      else if (secondChild->getOpCode().isLoadConst() && secondChild->get64bitIntegralValue() == 0)
+         {
+         TR::Register *temp1Reg = cg->allocateRegister();
+
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sradi, node, trgReg, src1Reg, 63);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addic, node, temp1Reg, src1Reg, -1);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::adde, node, trgReg, trgReg, trgReg);
+
+         cg->stopUsingRegister(temp1Reg);
          }
       else
          {
          TR::Register *src2Reg = cg->evaluate(secondChild);
-         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
-            {
-            TR::Register *condReg = cg->allocateRegister(TR_CCR);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp8, node, condReg, src1Reg, src2Reg);
-            generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, trgReg, condReg);
-            cg->stopUsingRegister(condReg);
-            }
-         else
-            {
-            temp1Reg = cg->allocateRegister();
-            temp2Reg = cg->allocateRegister();
-            temp3Reg = cg->allocateRegister();
+         TR::Register *temp1Reg = cg->allocateRegister();
+         TR::Register *temp2Reg = cg->allocateRegister();
+         TR::Register *temp3Reg = cg->allocateRegister();
 
-            generateShiftRightLogicalImmediateLong(cg, node, temp1Reg, src1Reg, 63);
-            generateShiftRightLogicalImmediateLong(cg, node, temp2Reg, src2Reg, 63);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::subfc, node, temp3Reg, src1Reg, src2Reg);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::subfe, node, trgReg, temp2Reg, temp1Reg);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::subfc, node, temp2Reg, temp3Reg, trgReg);
-            generateTrg1Src1Instruction(cg, TR::InstOpCode::subfze, node, trgReg, trgReg);
+         generateShiftRightLogicalImmediateLong(cg, node, temp1Reg, src1Reg, 63);
+         generateShiftRightLogicalImmediateLong(cg, node, temp2Reg, src2Reg, 63);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::subfc, node, temp3Reg, src1Reg, src2Reg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::subfe, node, trgReg, temp2Reg, temp1Reg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::subfc, node, temp2Reg, temp3Reg, trgReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::subfze, node, trgReg, trgReg);
 
-            cg->stopUsingRegister(temp1Reg);
-            cg->stopUsingRegister(temp2Reg);
-            cg->stopUsingRegister(temp3Reg);
-            }
+         cg->stopUsingRegister(temp1Reg);
+         cg->stopUsingRegister(temp2Reg);
+         cg->stopUsingRegister(temp3Reg);
          }
       }
    else
       {
-      if (secondChild->getOpCode().isLoadConst() && secondChild->getLongInt()==0)
+      if (secondChild->getOpCode().isLoadConst() && secondChild->get64bitIntegralValue() == 0)
          {
-         temp1Reg = cg->allocateRegister();
-         temp2Reg = cg->allocateRegister();
-         temp3Reg = cg->allocateRegister();
+         TR::Register *temp1Reg = cg->allocateRegister();
+         TR::Register *temp2Reg = cg->allocateRegister();
+         TR::Register *temp3Reg = cg->allocateRegister();
 
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, temp1Reg, src1Reg->getHighOrder(), 31);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, temp2Reg, src1Reg->getLowOrder(), 0);
@@ -2792,25 +2790,115 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeG
       else
          {
          TR::Register *src2Reg = cg->evaluate(secondChild);
-         TR::Register *cond1Reg = cg->allocateRegister(TR_CCR);
+         TR::Register *condReg = cg->allocateRegister(TR_CCR);
 
-         TR::PPCControlFlowInstruction *cfop = (TR::PPCControlFlowInstruction *)
-            generateControlFlowInstruction(cg, TR::InstOpCode::lcmp, node);
-         cfop->addTargetRegister(cond1Reg);
-         cfop->addTargetRegister(trgReg);
-         cfop->addSourceRegister(src1Reg->getHighOrder());
-         cfop->addSourceRegister(src1Reg->getLowOrder());
-         cfop->addSourceRegister(src2Reg->getHighOrder());
-         cfop->addSourceRegister(src2Reg->getLowOrder());
+         TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+         startLabel->setStartInternalControlFlow();
 
-         cg->stopUsingRegister(cond1Reg);
+         TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
+         endLabel->setEndInternalControlFlow();
+
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, startLabel);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, src1Reg->getHighOrder(), src2Reg->getHighOrder());
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, 1);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::bgt, node, endLabel, condReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, -1);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, endLabel, condReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg, src1Reg->getLowOrder(), src2Reg->getLowOrder());
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, endLabel, condReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, 1);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::bgt, node, endLabel, condReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, 0);
+
+         TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 6, cg->trMemory());
+
+         deps->addPostCondition(src1Reg->getLowOrder(), TR::RealRegister::NoReg);
+         deps->addPostCondition(src1Reg->getHighOrder(), TR::RealRegister::NoReg);
+         deps->addPostCondition(src2Reg->getLowOrder(), TR::RealRegister::NoReg);
+         deps->addPostCondition(src2Reg->getHighOrder(), TR::RealRegister::NoReg);
+         deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+         deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+
+         generateDepLabelInstruction(cg, TR::InstOpCode::label, node, endLabel, deps);
+
+         cg->stopUsingRegister(condReg);
          }
       }
 
+   node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
-   node->setRegister(trgReg);
    return trgReg;
+   }
+
+static TR::Register *floatThreeWayCompareEvaluator(TR::Node *node, bool unorderedIsLess, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+
+   TR::Register *trgReg = cg->allocateRegister();
+   TR::Register *condReg = cg->allocateRegister(TR_CCR);
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, src1Reg, src2Reg);
+
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+      {
+      TR::RealRegister::CRCC crcc = unorderedIsLess ? TR::RealRegister::CRCC_LT : TR::RealRegister::CRCC_GT;
+      generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::cror, node, condReg, condReg, condReg,
+         (crcc << TR::RealRegister::pos_RT) | (crcc << TR::RealRegister::pos_RA) | (TR::RealRegister::CRCC_FU << TR::RealRegister::pos_RB));
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, trgReg, condReg);
+      }
+   else
+      {
+      TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+      startLabel->setStartInternalControlFlow();
+
+      TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
+      endLabel->setEndInternalControlFlow();
+
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, startLabel);
+      if (unorderedIsLess)
+         {
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, 1);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::bgt, node, endLabel, condReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, 0);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, endLabel, condReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, -1);
+         }
+      else
+         {
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, -1);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, endLabel, condReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, 0);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, endLabel, condReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg, 1);
+         }
+
+      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+
+      deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+      deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+
+      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, endLabel, deps);
+      }
+
+   node->setRegister(trgReg);
+   cg->stopUsingRegister(condReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   return trgReg;
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::dcmplEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return floatThreeWayCompareEvaluator(node, true, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::dcmpgEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return floatThreeWayCompareEvaluator(node, false, cg);
    }
 
 static

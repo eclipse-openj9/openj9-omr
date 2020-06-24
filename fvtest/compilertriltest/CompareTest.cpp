@@ -771,9 +771,6 @@ class FloatCompare : public TRTest::OpCodeTest<int32_t, float, float> {};
 TEST_P(FloatCompare, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    if ( param.opcode == "fcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
-        SKIP_ON_POWER(KnownBug) << "fcmpne returns wrong value on POWER (see #5152)";
-    }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
         SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
         SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
@@ -804,10 +801,6 @@ TEST_P(FloatCompare, UsingConst) {
 
 TEST_P(FloatCompare, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
-
-    if ( param.opcode == "fcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
-        SKIP_ON_POWER(KnownBug) << "fcmpne returns wrong value on POWER (see #5152)";
-    }
 
     char inputTrees[160] = {0};
     std::snprintf(inputTrees, 160,
@@ -885,9 +878,6 @@ class DoubleCompare : public TRTest::OpCodeTest<int32_t, double, double> {};
 TEST_P(DoubleCompare, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    if ( param.opcode == "dcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
-        SKIP_ON_POWER(KnownBug) << "dcmpne returns wrong value on POWER (see #5152)";
-    }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
         SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
         SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
@@ -918,10 +908,6 @@ TEST_P(DoubleCompare, UsingConst) {
 
 TEST_P(DoubleCompare, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
-
-    if ( param.opcode == "dcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
-        SKIP_ON_POWER(KnownBug) << "dcmpne returns wrong value on POWER (see #5152)";
-    }
 
     char inputTrees[160] = {0};
     std::snprintf(inputTrees, 160,

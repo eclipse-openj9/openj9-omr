@@ -50,6 +50,10 @@
 #include <sys/sysctl.h>
 #endif /* defined(OSX) || defined(OMR_OS_BSD) */
 
+#if defined(OSX)
+#include <crt_externs.h>
+#endif /* defined(OSX) */
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -188,9 +192,6 @@ uintptr_t Get_Number_Of_CPUs();
 #define JIFFIES         100
 #define USECS_PER_SEC   1000000
 #define TICKS_TO_USEC   ((uint64_t)(USECS_PER_SEC/JIFFIES))
-
-/* For the omrsysinfo_env_iterator */
-extern char **environ;
 
 static uintptr_t copyEnvToBuffer(struct OMRPortLibrary *portLibrary, void *args);
 static uintptr_t copyEnvToBufferSignalHandler(struct OMRPortLibrary *portLib, uint32_t gpType, void *gpInfo, void *unUsed);
@@ -3963,6 +3964,13 @@ copyEnvToBuffer(struct OMRPortLibrary *portLibrary, void *args)
 	BOOLEAN bufferBigEnough = TRUE;
 	uintptr_t i;
 	uintptr_t rc;
+
+	/* For the omrsysinfo_env_iterator */
+#if defined(OSX)
+	char **environ = *_NSGetEnviron();
+#else /* defined(OSX) */
+	extern char **environ;
+#endif /* defined(OSX) */
 
 #if defined(J9VM_USE_ICONV)
 	iconv_t converter;

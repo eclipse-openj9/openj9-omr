@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,8 +33,8 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 	RCType rc = RC_OK;
 
 	for (int i = 1; i < argc; i++) {
-		if (StringUtils::startsWithUpperLower(argv[i], "-root") || StringUtils::startsWithUpperLower(argv[i], "-file")) {
-			bool parsingRoot = StringUtils::startsWithUpperLower(argv[i], "-root");
+		bool parsingRoot = StringUtils::startsWithUpperLower(argv[i], "-root");
+		if (parsingRoot || StringUtils::startsWithUpperLower(argv[i], "-file")) {
 			i++;
 			if (i >= argc) {
 				if (parsingRoot) {
@@ -42,15 +42,13 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 				} else {
 					FileUtils::printError("File not specified\n");
 				}
-				rc = RC_FAILED;
-				goto done;
+				goto fail;
 			} else {
 				/* Construct linked list of root directories. */
 				char *pathArgs = strdup(argv[i]);
 				char *dirToken = NULL;
 				if (NULL == pathArgs) {
-					rc = RC_FAILED;
-					goto done;
+					goto fail;
 				}
 				dirToken = strtok(pathArgs, ",");
 				Path **current = NULL;
@@ -63,8 +61,7 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 				while (NULL != dirToken) {
 					*current = (Path *)Port::omrmem_calloc(1, sizeof(Path));
 					if (NULL == *current) {
-						rc = RC_FAILED;
-						goto done;
+						goto fail;
 					}
 					(*current)->path = strdup(dirToken);
 					(*current)->next = NULL;
@@ -78,8 +75,7 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 			i++;
 			if (i >= argc) {
 				FileUtils::printError("TraceGen: threshold specified with no number aborting\n");
-				rc = RC_FAILED;
-				goto done;
+				goto fail;
 			} else {
 				options->threshold = atoi(argv[i]);
 			}
@@ -87,8 +83,7 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 			i++;
 			if (i >= argc) {
 				FileUtils::printError("TraceGen: majorversion specified with no number aborting\n");
-				rc = RC_FAILED;
-				goto done;
+				goto fail;
 			} else {
 				options->rasMajorVersion = atoi(argv[i]);
 			}
@@ -96,8 +91,7 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 			i++;
 			if (i >= argc) {
 				FileUtils::printError("TraceGen: minorversion specified with no number aborting\n");
-				rc = RC_FAILED;
-				goto done;
+				goto fail;
 			} else {
 				options->rasMinorVersion = atoi(argv[i]);
 			}
@@ -111,20 +105,20 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 			options->generateCFiles = true;
 		} else if (StringUtils::startsWithUpperLower(argv[i], "-treatWarningAsError")) {
 			options->treatWarningAsError = true;
+		} else if (StringUtils::startsWithUpperLower(argv[i], "-statErrorsAreFatal")) {
+			options->statErrorsAreFatal = true;
 		} else if (StringUtils::startsWithUpperLower(argv[i], "-force")) {
 			options->force = true;
 		} else {
 			FileUtils::printError("Unknown option: %s\n", argv[i]);
-			rc = RC_FAILED;
-			goto done;
+			goto fail;
 		}
 	}
 
-	if (NULL == options->rootDirectory && NULL == options->files) {
+	if ((NULL == options->rootDirectory) && (NULL == options->files)) {
 		options->rootDirectory = (Path *)Port::omrmem_calloc(1, sizeof(Path));
 		if (NULL == options->rootDirectory) {
-			rc = RC_FAILED;
-			goto done;
+			goto fail;
 		}
 		options->rootDirectory->path = strdup(".");
 		options->rootDirectory->next = NULL;
@@ -132,15 +126,17 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 
 done:
 	return rc;
+fail:
+	rc = RC_FAILED;
+	goto done;
 }
 
 RCType
 ArgParser::freeOptions(J9TDFOptions *options)
 {
 	Path *dir = options->rootDirectory;
-	Path *tmpDir = NULL;
 	while (NULL != dir) {
-		tmpDir = dir->next;
+		Path *tmpDir = dir->next;
 		Port::omrmem_free((void **)&(dir->path));
 		Port::omrmem_free((void **)&dir);
 		dir = tmpDir;

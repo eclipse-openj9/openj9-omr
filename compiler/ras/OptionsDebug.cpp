@@ -219,7 +219,7 @@ void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * fir
          //
          if (!entry->length)
             entry->length = strlen(entry->name);
-         TR_VerboseLog::write("%*s%s",OPTION_NAME_INDENT," ",entry->name);
+         TR_VerboseLog::write("%*s%s", OPTION_NAME_INDENT, " ", entry->name);
          int32_t currentColumn = entry->length+OPTION_NAME_INDENT;
 
          // Set up the argument text
@@ -237,7 +237,8 @@ void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * fir
             TR_VerboseLog::write("%*s", DESCRIPTION_START_COLUMN-currentColumn, " ");
          else
             {
-            TR_VerboseLog::writeLine(TR_Vlog_INFO,"%*s", DESCRIPTION_START_COLUMN, " ");
+            TR_VerboseLog::writeLine("");
+            TR_VerboseLog::write(TR_Vlog_INFO, "%*s", DESCRIPTION_START_COLUMN, " ");
             }
          currentColumn = DESCRIPTION_START_COLUMN;
 
@@ -258,9 +259,10 @@ void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * fir
                {
                if (lastWordBreak == start)
                   lastWordBreak = i;
-               TR_VerboseLog::write("%.*s",lastWordBreak-start,entry->helpText+start);
+               TR_VerboseLog::write("%.*s", lastWordBreak-start, entry->helpText+start);
                currentColumn = DESCRIPTION_START_COLUMN + DESCRIPTION_TEXT_INDENT;
-               TR_VerboseLog::writeLine(TR_Vlog_INFO,"%*s", currentColumn, " ");
+               TR_VerboseLog::writeLine("");
+               TR_VerboseLog::write(TR_Vlog_INFO, "%*s", currentColumn, " ");
                start = i = ++lastWordBreak;
                continue;
                }
@@ -269,10 +271,11 @@ void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * fir
             i++;
             }
 
-         TR_VerboseLog::write("%s",entry->helpText+start);
+         TR_VerboseLog::write("%s", entry->helpText+start);
          }
       }
-   TR_VerboseLog::writeLine(TR_Vlog_INFO,"");
+   TR_VerboseLog::writeLine("");
+   TR_VerboseLog::writeLine(TR_Vlog_INFO, "");
    }
 
 void
@@ -472,7 +475,7 @@ TR_Debug::dumpOptions(
 
       if (printIt && (entry->msg[0]=='F'|| extendCheck))
          {
-         TR_VerboseLog::writeLine(TR_Vlog_INFO,"     %s", entry->name);
+         TR_VerboseLog::write(TR_Vlog_INFO,"     %s", entry->name);
 
          if (regex)
             regex->print(false);
@@ -495,16 +498,17 @@ TR_Debug::dumpOptions(
                }
             TR_VerboseLog::write("}");
             }
+
+         TR_VerboseLog::writeLine("");
          }
       }
 
 #ifdef J9_PROJECT_SPECIFIC
    if (fej9->generateCompressedPointers())
       {
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"     ");
-      TR_VerboseLog::write("compressedRefs shiftAmount=%d", TR::Compiler->om.compressedReferenceShift());
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"     ");
-      TR_VerboseLog::write("compressedRefs isLowMemHeap=%d", (TR::Compiler->vm.heapBaseAddress() == 0));
+      TR_VerboseLog::writeLine("");
+      TR_VerboseLog::writeLine(TR_Vlog_INFO, "     compressedRefs shiftAmount=%d", TR::Compiler->om.compressedReferenceShift());
+      TR_VerboseLog::writeLine(TR_Vlog_INFO, "     compressedRefs isLowMemHeap=%d", (TR::Compiler->vm.heapBaseAddress() == 0));
       }
 #endif
    }

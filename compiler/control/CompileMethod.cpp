@@ -301,8 +301,7 @@ compileMethodFromDetails(
       {
       if (TR::Options::getCmdLineOptions()->getVerboseOption(TR_VerboseCompileExclude))
          {
-         TR_VerboseLog::write("<JIT: %s cannot be translated>\n",
-                              compilee.signature(&trMemory));
+         TR_VerboseLog::writeLine(TR_Vlog_INFO, "%s cannot be translated", compilee.signature(&trMemory));
          }
       return 0;
       }
@@ -313,8 +312,7 @@ compileMethodFromDetails(
       // so that we don't have to deal with OOM ugliness below
       if (TR::Options::getCmdLineOptions()->getVerboseOption(TR_VerboseCompileExclude))
          {
-         TR_VerboseLog::write("<JIT: %s out-of-memory allocating optimization plan>\n",
-                              compilee.signature(&trMemory));
+         TR_VerboseLog::writeLine(TR_Vlog_INFO, "%s out-of-memory allocating optimization plan", compilee.signature(&trMemory));
          }
       return 0;
       }
@@ -386,7 +384,7 @@ compileMethodFromDetails(
             {
             const char *signature = compilee.signature(&trMemory);
             TR_VerboseLog::vlogAcquire();
-            TR_VerboseLog::writeLine(TR_Vlog_COMP,"(%s) %s @ " POINTER_PRINTF_FORMAT "-" POINTER_PRINTF_FORMAT,
+            TR_VerboseLog::write(TR_Vlog_COMP, "(%s) %s @ " POINTER_PRINTF_FORMAT "-" POINTER_PRINTF_FORMAT,
                                            compiler.getHotnessName(compiler.getMethodHotness()),
                                            signature,
                                            startPC,
@@ -401,6 +399,7 @@ compileMethodFromDetails(
                   );
                }
 
+            TR_VerboseLog::writeLine("");
             TR_VerboseLog::vlogRelease();
             trfflush(jitConfig->options.vLogFile);
             }

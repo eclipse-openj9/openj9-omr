@@ -123,7 +123,7 @@ TR_Debug::addFilter(char * & filterString, int32_t scanningExclude, int32_t opti
       TR::SimpleRegex *regex = TR::SimpleRegex::create(filterCursor);
       if (!regex)
          {
-         TR_VerboseLog::write("<JIT: Bad regular expression at --> '%s'>\n", filterCursor);
+         TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", filterCursor);
          return 0;
          }
       nameLength = filterCursor - filterString;
@@ -318,7 +318,7 @@ TR_Debug::scanInlineFilters(FILE * inlineFile, int32_t & lineNumber, TR::Compila
 
       if (includeFlag == '[')
          {
-         //TR_VerboseLog::write("<JIT: sub inline file entry start --> '%s'>\n", limitReadBuffer);
+         //TR_VerboseLog::writeLine(TR_Vlog_INFO, "Sub inline file entry start --> '%s'", limitReadBuffer);
 
          if (filter)
             {
@@ -330,7 +330,7 @@ TR_Debug::scanInlineFilters(FILE * inlineFile, int32_t & lineNumber, TR::Compila
          }
       else if (includeFlag == ']')
          {
-         //TR_VerboseLog::write("<JIT: sub inline file entry end --> '%s'>\n", limitReadBuffer);
+         //TR_VerboseLog::writeLine(TR_Vlog_INFO, "Sub inline file entry end --> '%s'", limitReadBuffer);
          // always return true (success)
          // this will ignore the rest of the filters if no matching open bracket.
          return true;
@@ -371,7 +371,7 @@ TR_Debug::scanInlineFilters(FILE * inlineFile, int32_t & lineNumber, TR::Compila
          if (!filter)
             {
             inlineFileError = true;
-            TR_VerboseLog::write("<JIT: bad inline file entry --> '%s'>\n", limitReadBuffer);
+            TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad inline file entry --> '%s'", limitReadBuffer);
             break;
             }
          }
@@ -445,7 +445,7 @@ TR_Debug::inlinefileOption(char *option, void *base, TR::OptionTable *entry, TR:
 
    if (!success)
       {
-      TR_VerboseLog::write("<JIT: fatal: unable to read inline file --> '%s'>\n", inlineFileName);
+      TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Unable to read inline file --> '%s'", inlineFileName);
       return fail; // We want to fail if we can't read the file because it is too easy to miss that the file wasn't picked up
       }
    return endOpt;
@@ -687,14 +687,14 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
          }
       if (limitFileError)
          {
-         TR_VerboseLog::write("<JIT: fatal: bad limit file entry --> '%s'>\n", limitReadBuffer);
+         TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad limit file entry --> '%s'", limitReadBuffer);
          return fail;
          }
       fclose(limitFile);
       }
    else
       {
-      TR_VerboseLog::write("<JIT: fatal: unable to read limit file --> '%s'>\n", limitFileName);
+      TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Unable to read limit file --> '%s'", limitFileName);
       return fail; //We want to fail if we can't read the file because it is too easy to miss that the file wasn't picked up
       }
    return endOpt;
@@ -732,7 +732,7 @@ TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Opti
          if (!optLevelRegex || *p != '(')
             {
             if (!optLevelRegex)
-               TR_VerboseLog::write("<JIT: Bad regular expression at --> '%s'>\n", p);
+               TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", p);
             return option;
             }
          }
@@ -980,17 +980,17 @@ TR_Debug::printFilters(TR::CompilationFilters * filters)
 void
 TR_Debug::printFilters()
    {
-   TR_VerboseLog::write("<compilationFilters>\n");
+   TR_VerboseLog::writeLine("<compilationFilters>");
    printFilters(_compilationFilters);
-   TR_VerboseLog::write("</compilationFilters>\n");
+   TR_VerboseLog::writeLine("</compilationFilters>");
 
-   TR_VerboseLog::write("<relocationFilters>\n");
+   TR_VerboseLog::writeLine("<relocationFilters>");
    printFilters(_relocationFilters);
-   TR_VerboseLog::write("</relocationFilters>\n");
+   TR_VerboseLog::writeLine("</relocationFilters>");
 
-   TR_VerboseLog::write("<inlineFilters>\n");
+   TR_VerboseLog::writeLine("<inlineFilters>");
    printFilters(_inlineFilters);
-   TR_VerboseLog::write("</inlineFilters>\n");
+   TR_VerboseLog::writeLine("</inlineFilters>");
    }
 
 void
@@ -1010,7 +1010,7 @@ TR_Debug::printSamplingPoints()
    {
       if (filter->getFilterType() == TR_FILTER_SAMPLE_INTERPRETED)
       {
-         TR_VerboseLog::write("(%d)\tInterpreted %s.%s%s\tcount=%d\n",
+         TR_VerboseLog::writeLine("(%d)\tInterpreted %s.%s%s\tcount=%d",
             filter->getTickCount(),
             filter->getClass(), filter->getName(), filter->getSignature(),
             filter->getSampleCount()
@@ -1018,7 +1018,7 @@ TR_Debug::printSamplingPoints()
       }
       else
       {
-         TR_VerboseLog::write("(%d)\tCompiled %s.%s%s\tlevel=%d%s\n",
+         TR_VerboseLog::writeLine("(%d)\tCompiled %s.%s%s\tlevel=%d%s",
             filter->getTickCount(),
             filter->getClass(), filter->getName(), filter->getSignature(),
             filter->getSampleLevel(),
@@ -1038,7 +1038,7 @@ TR_Debug::scanFilterName(char *string, TR_FilterBST *filter)
 
    // Walk the filter to determine the type.
    //
-   //TR_VerboseLog::write("filterName: %s\n", string);
+   //TR_VerboseLog::writeLine("filterName: %s", string);
    char *nameChars = NULL;
    int32_t nameLen = 0;
    char *classChars = NULL;
@@ -1370,7 +1370,7 @@ TR_Debug::loadCustomStrategy(char *fileName)
          {
          if (optCount >= (sizeof(optNumBuffer)/sizeof(optNumBuffer[0])))
             {
-            TR_VerboseLog::write("<JIT: WARNING: reached limit of %d optFile lines; ignoring subsequent lines\n", optCount);
+            TR_VerboseLog::writeLine(TR_Vlog_INFO, "Reached limit of %d optFile lines; ignoring subsequent lines", optCount);
             break;
             }
 
@@ -1395,7 +1395,7 @@ TR_Debug::loadCustomStrategy(char *fileName)
                }
             }
          if (optNum == OMR::numOpts)
-            TR_VerboseLog::write("<JIT: WARNING: ignoring optFile line; no matching opt name for '%s'\n", name);
+            TR_VerboseLog::writeLine(TR_Vlog_INFO, "Ignoring optFile line; no matching opt name for '%s'", name);
 
          }
 
@@ -1408,12 +1408,12 @@ TR_Debug::loadCustomStrategy(char *fileName)
          }
       else
          {
-         TR_VerboseLog::write("<JIT: WARNING: ignoring optFile; contains no suitable opt names\n");
+         TR_VerboseLog::writeLine(TR_Vlog_INFO, "Ignoring optFile; contains no suitable opt names");
          }
       }
    else
       {
-      TR_VerboseLog::write("<JIT: WARNING: optFile not found: %s\n", fileName);
+      TR_VerboseLog::writeLine(TR_Vlog_INFO, "optFile not found: '%s'", fileName);
       }
    return customStrategy;
    }

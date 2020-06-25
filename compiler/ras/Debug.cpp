@@ -3916,8 +3916,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
 
          case TR_PPCquadWordArrayCopy_vsx:                         return "__quadWordArrayCopy_vsx";
          case TR_PPCforwardQuadWordArrayCopy_vsx:                  return "__forwardQuadWordArrayCopy_vsx";
-         case TR_PPCforwardLEArrayCopy:                            return "__forwardLEArrayCopy";
-         case TR_PPCLEArrayCopy:                                   return "__leArrayCopy";
+         case TR_PPCpostP10ForwardCopy:                            return "__postP10ForwardCopy";
+         case TR_PPCpostP10GenericCopy:                            return "__postP10GenericCopy";
 
          case TR_PPCP256Multiply:                                  return "ECP256MUL_PPC";
          case TR_PPCP256Mod:                                       return "ECP256MOD_PPC";

@@ -67,6 +67,10 @@
    .globl    __forwardLEArrayCopy{DS}
    .globl    .__leArrayCopy
    .globl    __leArrayCopy{DS}
+   .globl    .__postP10ForwardCopy
+   .globl    __postP10ForwardCopy{DS}
+   .globl    .__postP10GenericCopy
+   .globl    __postP10GenericCopy{DS}
 
    .lglobl    .__codeForShortArrayCopy
    .lglobl    L.0copy
@@ -136,6 +140,10 @@
    .type     FUNC_LABEL(__forwardLEArrayCopy),@function
    .globl    FUNC_LABEL(__leArrayCopy)
    .type     FUNC_LABEL(__leArrayCopy),@function
+   .globl    FUNC_LABEL(__postP10ForwardCopy)
+   .type     FUNC_LABEL(__postP10ForwardCopy),@function
+   .globl    FUNC_LABEL(__postP10GenericCopy)
+   .type     FUNC_LABEL(__postP10GenericCopy),@function
 
 #elif defined(LINUX)
    .globl    __arrayCopy
@@ -154,6 +162,8 @@
    .globl    __quadWordArrayCopy_vsx
    .globl    __forwardLEArrayCopy
    .globl    __leArrayCopy
+   .globl    __postP10ForwardCopy
+   .globl    __postP10GenericCopy
 #endif
 
 
@@ -2226,6 +2236,197 @@ L.reverseQuadWordAligned_vsx_residue:
    bclr  BO_IF, CR0_EQ              ! return if no residue left.
    b     .L.reverseTableDispatch    ! table dispatch the remaining residue.
 
+
+! POWER10 offers instructions we can do arrayCopy much faster, especially with short
+! copy without branch mis-predictions
+!  1) VSX load/store with length coupled with isel allows us to do copy almost without 
+!  branches; 2) D-form VSX load/store makes it easy to do 64-byte copy loop; 3) the
+!  two sets of D-form VSX load/store are very likely fused to do 32-byte load/store
+!  at a time;
+
+! __postP10ForwardCopy:
+!  kills: r7, r8, r9, r11, cr0
+!  kills: vs32, vs33, vs8, vs9
+!
+! __postP10GenericCopy:
+!  additionally kills: r5
+
+#ifdef AIXPPC
+   .csect   __postP10ForwardCopy{PR}, 4
+.__postP10ForwardCopy:
+   .function .__postP10ForwardCopy,startproc.__postP10ForwardCopy,16,0,(endproc.__postP10ForwardCopy-startproc.__postP10ForwardCopy)
+#elif defined(LINUXPPC64)
+   .align   4
+FUNC_LABEL(__postP10ForwardCopy):
+#elif defined(LINUX)
+   .align   4
+__postP10ForwardCopy:
+#else
+__postP10ForwardCopy:
+#endif
+   startproc.__postP10ForwardCopy:
+      cmpli cr0, CmpAddr, r7, 32
+      bgt   cr0, L.p10_Forward_gt32       ! no taken branch for small copy for both fwd and reverse
+L.p10_le32:
+      sldi   r11, r7, 56
+      LXVL(vs32, r8, r11)
+      addic. r7, r7, -16
+      ISELLT(r7, 0, r7, cr0)            ! r0 here really means value 0
+      sldi   r7, r7, 56
+      addi   r8, r8, 16
+      LXVL(vs33, r8, r7)
+      STXVL(vs32, r9, r11)
+      addi   r9, r9, 16
+      STXVL(vs33, r9, r7)
+      blr
+
+L.p10_Forward_gt32:
+      andi.  r11, r8, 0xf                 ! align the source
+      subfic r11, r11, 16
+      sldi   r11, r11, 56
+      LXVL(vs32, r8, r11)
+      STXVL(vs32, r9, r11)
+      srdi   r11, r11, 56
+      subf   r7, r11, r7
+      add    r8, r8, r11                  ! source address aligned to 16
+      add    r9, r9, r11
+      cmpli  cr0, CmpAddr, r7, 64
+      bge    cr0, L.p10_Forward_preloop64
+L.p10_Forward_lt64:
+      sldi   r11, r7, 56
+      LXVL(vs32, r8, r11)
+      STXVL(vs32, r9, r11)
+      addic. r7, r7, -16
+      ISELLT(r11, 0, r7, cr0)
+      addi   r8, r8, 16
+      sldi   r11, r11, 56
+      addic. r7, r7, -16
+      addi   r9, r9, 16
+      LXVL(vs32, r8, r11)
+      STXVL(vs32, r9, r11)
+      blelr
+      sldi   r11, r7, 56
+      addi   r8, r8, 16
+      addi   r9, r9, 16
+      LXVL(vs32, r8, r11)
+      addic. r7, r7, -16
+      STXVL(vs32, r9, r11)
+      blelr
+      sldi   r11, r7, 56
+      addi   r8, r8, 16
+      addi   r9, r9, 16
+      LXVL(vs32, r8, r11)
+      STXVL(vs32, r9, r11)
+      blr
+L.p10_Forward_preloop64:
+      srdi   r11, r7, 6
+      andi.  r7, r7, 63
+      mtctr  r11
+L.p10_Forward_loop64:
+      LXV(vs8, r8, 0)
+      LXV(vs9, r8, 16)
+      LXV(vs32, r8, 32)
+      LXV(vs33, r8, 48)
+      addi   r8, r8, 64
+      STXV(vs8, r9, 0)
+      STXV(vs9, r9, 16)
+      STXV(vs32, r9, 32)
+      STXV(vs33, r9, 48)
+      addi   r9, r9, 64
+      bdnz   L.p10_Forward_loop64
+      beqlr
+      b      L.p10_Forward_lt64
+
+   endproc.__postP10ForwardCopy:
+
+
+#ifdef AIXPPC
+   .csect   __postP10GenericCopy{PR}, 4
+.__postP10GenericCopy:
+   .function .__postP10GenericCopy,startproc.__postP10GenericCopy,16,0,(endproc.__postP10GenericCopy-startproc.__postP10GenericCopy)
+#elif defined(LINUXPPC64)
+   .align   4
+FUNC_LABEL(__postP10GenericCopy):
+#elif defined(LINUX)
+   .align   4
+__postP10GenericCopy:
+#else
+__postP10GenericCopy:
+#endif
+   startproc.__postP10GenericCopy:
+      cmpli cr0, CmpAddr, r7, 32
+      ble     L.p10_le32
+      subf    r11, r8, r9
+      cmpl    cr0, CmpAddr, r11, r7
+      bge     L.p10_Forward_gt32
+      add     r8, r8, r7                          ! Reverse copy
+      add     r9, r9, r7
+      andi.   r5, r8, 0xf                         ! Align the source
+      sldi    r11, r5, 56
+      subf    r8, r5, r8
+      subf    r9, r5, r9
+      subf    r7, r5, r7
+      LXVL(vs32, r8, r11)
+      STXVL(vs32, r9, r11)
+      cmpli   cr0, CmpAddr, r7, 64
+      bge     L.post_P10_Generic_preloop64
+L.post_P10_Generic_lt64:
+      li      r11, 16
+      addic.  r5, r7, -16
+      ISELLT(r5, r7, r11, cr0)
+      subf    r8, r5, r8
+      subf    r9, r5, r9
+      subf    r7, r5, r7
+      sldi    r5, r5, 56
+      LXVL(vs32, r8, r5)
+      STXVL(vs32, r9, r5)
+      addic.  r5, r7, -16
+      ISELLT(r5, r7, r11, cr0)
+      subf    r8, r5, r8
+      subf    r9, r5, r9
+      subf    r7, r5, r7
+      sldi    r5, r5, 56
+      LXVL(vs32, r8, r5)
+      STXVL(vs32, r9, r5)
+      blelr
+      addic.  r5, r7, -16
+      ISELLT(r5, r7, r11, cr0)
+      subf    r8, r5, r8
+      subf    r9, r5, r9
+      subf    r7, r5, r7
+      sldi    r5, r5, 56
+      LXVL(vs32, r8, r5)
+      STXVL(vs32, r9, r5)
+      blelr
+      sldi    r5, r7, 56
+      subf    r8, r7, r8
+      subf    r9, r7, r9
+      LXVL(vs32, r8, r5)
+      STXVL(vs32, r9, r5)
+      blr
+L.post_P10_Generic_preloop64:
+      srdi    r5, r7, 6
+      andi.   r7, r7, 63
+      mtctr   r5
+L.post_P10_Generic_loop64:
+      LXV(vs32, r8, -16)
+      LXV(vs33, r8, -32)
+      LXV(vs8, r8, -48)
+      LXV(vs9, r8, -64)
+      addi    r8, r8, -64
+      STXV(vs32, r9, -16)
+      STXV(vs33, r9, -32)
+      STXV(vs8, r9, -48)
+      STXV(vs9, r9, -64)
+      addi    r9, r9, -64
+      bdnz    L.post_P10_Generic_loop64
+      beqlr
+      b       L.post_P10_Generic_lt64
+
+   endproc.__postP10GenericCopy:
+
+
+
 #ifdef AIXPPC
    .csect   __forwardLEArrayCopy{PR}
 .__forwardLEArrayCopy:
@@ -2491,6 +2692,18 @@ TOC__shortArrayCopyLabelTable:
    ADDR      0x00000000
 ! End   csect     __leArrayCopy{DS}
 
+   .csect    __postP10ForwardCopy{DS}
+   ADDR      .__postP10ForwardCopy
+   ADDR      TOC{TC0}
+   ADDR      0x00000000
+! End   csect     __postP10ForwardCopy{DS}
+
+   .csect    __postP10GenericCopy{DS}
+   ADDR      .__postP10GenericCopy
+   ADDR      TOC{TC0}
+   ADDR      0x00000000
+! End   csect     __postP10GenericCopy{DS}
+
 
 #elif defined(LINUXPPC64)
    .section  ".toc"
@@ -2624,6 +2837,22 @@ __forwardLEArrayCopy:
    .size     __leArrayCopy,24
 __leArrayCopy:
    .quad     .__leArrayCopy
+   .quad     .TOC.@tocbase
+   .long     0x00000000
+   .long     0x00000000
+
+   .globl    __postP10ForwardCopy
+   .size     __postP10ForwardCopy,24
+__postP10ForwardCopy:
+   .quad     .__postP10ForwardCopy
+   .quad     .TOC.@tocbase
+   .long     0x00000000
+   .long     0x00000000
+
+   .globl    __postP10GenericCopy
+   .size     __postP10GenericCopy,24
+__postP10GenericCopy:
+   .quad     .__postP10GenericCopy
    .quad     .TOC.@tocbase
    .long     0x00000000
    .long     0x00000000

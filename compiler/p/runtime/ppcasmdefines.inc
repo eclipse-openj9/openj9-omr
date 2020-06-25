@@ -498,6 +498,23 @@
         .macro mtvsrwz  vrt, ra
         .int 0x7c0001e6 | \ra << 16 | (\vrt & 31) << 21 | (\vrt & 32) >> 5
         .endm
+
+        .macro lxv      vrt, ra, dq
+        .int 0xf4000001 | \ra << 16 | (\vrt & 31) << 21 | (\vrt & 32) >> 2 | (\dq & 0xfff0)
+        .endm
+        .macro stxv     vrs, ra, dq
+        .int 0xf4000005 | \ra << 16 | (\vrs & 31) << 21 | (\vrs & 32) >> 2 | (\dq & 0xfff0)
+        .endm
+        .macro lxvl     vrt, ra, rb
+        .int 0x7c00021a | \ra << 16 | \rb << 11 | (\vrt & 31) << 21 | (\vrt & 32) >> 5
+        .endm
+        .macro stxvl    vrs, ra, rb
+        .int 0x7c00031a | \ra << 16 | \rb << 11 | (\vrs & 31) << 21 | (\vrs & 32) >> 5
+        .endm
+
+        .macro isellt   rt, ra, rb, bc
+        .int 0x7c00001e | \rt << 21 | \ra << 16 | \rb << 11 | \bc << 8
+        .endm
 #endif
 
 !The record form instructions break the Linux Assembler, this is the workaround for it
@@ -535,7 +552,14 @@
 #define MFVSRD(ra,vrs)                  .long 0x7c000066 | ra < 16 | (vrs & 31) < 21 | (vrs & 32) > 5
 #define MTVSRD(vrt,ra)                  .long 0x7c000166 | ra < 16 | (vrt & 31) < 21 | (vrt & 32) > 5
 #define MTVSRWZ(vrt,ra)                 .long 0x7c0001e6 | ra < 16 | (vrt & 31) < 21 | (vrt & 32) > 5
+#define LXV(vrt,ra,dq)                  .long 0xf4000001 | ra < 16 | (vrt & 31) < 21 | (vrt & 32) > 2 | (dq & 0xfff0)
+#define STXV(vrs,ra,dq)                 .long 0xf4000005 | ra < 16 | (vrs & 31) < 21 | (vrs & 32) > 2 | (dq & 0xfff0)
+#define LXVL(vrt,ra,rb)                 .long 0x7c00021a | ra < 16 | rb < 11 | (vrt & 31) < 21 | (vrt & 32) > 5
+#define STXVL(vrs,ra,rb)                .long 0x7c00031a | ra < 16 | rb < 11 | (vrs & 31) < 21 | (vrs & 32) > 5
+#define ISELLT(rt,ra,rb,bc)             .long 0x7c00001e | rt < 21 | ra < 16 | rb < 11 | bc < 8
+
 #else
+
 #define VCIPHER(vrt,vra,vrb)            vcipher         vrt, vra, vrb
 #define VCIPHERLAST(vrt,vra,vrb)        vcipherlast     vrt, vra, vrb
 #define VNCIPHER(vrt,vra,vrb)           vncipher        vrt, vra, vrb
@@ -563,6 +587,12 @@
 #define MFVSRD(ra,vrs)                  mfvsrd          ra, vrs
 #define MTVSRD(vrt,ra)                  mtvsrd          vrt, ra
 #define MTVSRWZ(vrt,ra)                 mtvsrwz         vrt, ra
+#define LXV(vrt,ra,dq)                  lxv             vrt, ra, dq
+#define STXV(vrs,ra,dq)                 stxv            vrs, ra, dq
+#define LXVL(vrt,ra,rb)                 lxvl            vrt, ra, rb
+#define STXVL(vrs,ra,rb)                stxvl           vrs, ra, rb
+#define ISELLT(rt,ra,rb,bc)             isellt          rt, ra, rb, bc
+
 #endif
 
 #define VSHASIGMA_256_s0(vrt,vra)   VSHASIGMAW(vrt,vra,0,0)

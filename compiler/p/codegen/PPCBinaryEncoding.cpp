@@ -2085,7 +2085,7 @@ void fillMemoryReferenceD16RA(TR::Instruction *instr, uint32_t *cursor, TR::Memo
 void fillMemoryReferenceDSRA(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getIndexRegister(), "Cannot use index-form MemoryReference with non-index-form instruction");
-   fillFieldD16(instr, cursor, mr->getOffset());
+   fillFieldDS(instr, cursor, mr->getOffset());
    fillFieldRA(instr, cursor, toRealBaseRegister(instr, mr->getBaseRegister()));
    }
 

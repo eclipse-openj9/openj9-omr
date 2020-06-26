@@ -303,6 +303,23 @@ public:
    void clearProfilingOffsetInfo();
    void dumpProfilingOffsetInfo(TR::Compilation *comp);
 
+   /**
+    * @brief Detects whether a parameter is variant.
+    *
+    * A variant parameter is a reference parameter that is written to,
+    * potentially with a reference to a different class than the reference
+    * originally held by the parameter. In such cases,the type signature
+    * of the parameter symbol cannot be trusted.
+    *
+    * The behavior when invoking this function with a ParameterSymbol that
+    * does not belong to the current ResolvedMethodSymbol is unspecified.
+    *
+    * @param parmSymbol is the parameter symbol to be checked
+    * @return true if the parameter is variant
+    * @return false if the parameter is invariant
+    */
+   bool isParmVariant(TR::ParameterSymbol * parmSymbol);
+
 protected:
    enum Properties
       {
@@ -327,6 +344,18 @@ protected:
       };
 
    flags32_t _properties;
+
+   // Containes a bit for each method parameter.
+   // If a bit is set, the corresponding paramter is variant.
+   TR_BitVector * _variantParms;
+
+   /**
+    * @brief Detects any vairant method parameters
+    *
+    * If _variantParms is null, a new bitvector instance is
+    * allocated and populated.
+    */
+   void detectVariantParms();
 
 private:
 
